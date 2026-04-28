@@ -12,6 +12,17 @@ type Service = {
   description?: string | null
 }
 
+type StaffMember = {
+  id: string
+  name: string
+  role_title?: string | null
+}
+
+type StaffService = {
+  staff_member_id: string
+  service_id: string
+}
+
 type UserRole = 'customer' | 'business' | null
 
 export default function BusinessBookingPage() {
@@ -22,6 +33,10 @@ export default function BusinessBookingPage() {
   const [services, setServices] = useState<Service[]>([])
   const [availability, setAvailability] = useState<any[]>([])
   const [bookings, setBookings] = useState<any[]>([])
+
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
+  const [staffServices, setStaffServices] = useState<StaffService[]>([])
+  const [selectedStaffId, setSelectedStaffId] = useState<string>('any')
 
   const [customerUserId, setCustomerUserId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<UserRole>(null)
@@ -50,7 +65,7 @@ export default function BusinessBookingPage() {
         return
       }
 
-            setCustomerUserId(session.user.id)
+      setCustomerUserId(session.user.id)
       setCustomerEmail(session.user.email || '')
 
       const { data: profile } = await supabase
@@ -116,6 +131,40 @@ export default function BusinessBookingPage() {
 
       setServices(servicesData || [])
 
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff_members')
+        .select('id, name, role_title')
+        .eq('business_id', businessId)
+        .eq('active', true)
+        .order('created_at', { ascending: false })
+
+      if (staffError) {
+        setError(staffError.message)
+        setPageLoading(false)
+        return
+      }
+
+      setStaffMembers(staffData || [])
+
+      const staffIds = (staffData || []).map((staff) => staff.id)
+
+      if (staffIds.length > 0) {
+        const { data: staffServiceData, error: staffServiceError } = await supabase
+          .from('staff_services')
+          .select('staff_member_id, service_id')
+          .in('staff_member_id', staffIds)
+
+        if (staffServiceError) {
+          setError(staffServiceError.message)
+          setPageLoading(false)
+          return
+        }
+
+        setStaffServices(staffServiceData || [])
+      } else {
+        setStaffServices([])
+      }
+
       const { data: availabilityData, error: availabilityError } = await supabase
         .from('availability')
         .select('*')
@@ -141,6 +190,18 @@ export default function BusinessBookingPage() {
 
     load()
   }, [businessId])
+
+  function staffThatCanDoSelectedService() {
+    if (!selectedService) return []
+
+    return staffMembers.filter((staff) =>
+      staffServices.some(
+        (link) =>
+          link.staff_member_id === staff.id &&
+          link.service_id === selectedService.id
+      )
+    )
+  }
 
   function generateTimeSlots() {
     if (!date || !selectedService) {
@@ -169,6 +230,10 @@ export default function BusinessBookingPage() {
       const timeString = slotStart.toTimeString().slice(0, 5)
 
       const overlapsBooking = bookings.some(b => {
+        if (selectedStaffId !== 'any' && b.staff_member_id && b.staff_member_id !== selectedStaffId) {
+          return false
+        }
+
         const bookingStart = new Date(b.start_at)
         const bookingEnd = b.end_at
           ? new Date(b.end_at)
@@ -189,7 +254,7 @@ export default function BusinessBookingPage() {
 
   useEffect(() => {
     generateTimeSlots()
-  }, [date, selectedService, availability, bookings])
+  }, [date, selectedService, selectedStaffId, availability, bookings])
 
   async function createBooking(e: React.FormEvent) {
     e.preventDefault()
@@ -213,6 +278,7 @@ export default function BusinessBookingPage() {
       .insert({
         business_id: businessId,
         service_id: selectedService.id,
+        staff_member_id: selectedStaffId === 'any' ? null : selectedStaffId,
         customer_user_id: customerUserId,
         customer_name: customerName,
         customer_email: customerEmail.trim().toLowerCase(),
@@ -234,20 +300,20 @@ export default function BusinessBookingPage() {
     }
 
     const { data: latestBooking } = await supabase
-  .from('bookings')
-  .select('id')
-  .eq('business_id', businessId)
-  .eq('customer_user_id', customerUserId)
-  .eq('start_at', startAt)
-  .order('created_at', { ascending: false })
-  .limit(1)
-  .single()
+      .from('bookings')
+      .select('id')
+      .eq('business_id', businessId)
+      .eq('customer_user_id', customerUserId)
+      .eq('start_at', startAt)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
 
-if (latestBooking?.id) {
-  router.push(`/booking-confirmation?id=${latestBooking.id}`)
-} else {
-  router.push('/my-bookings')
-}
+    if (latestBooking?.id) {
+      router.push(`/booking-confirmation?id=${latestBooking.id}`)
+    } else {
+      router.push('/my-bookings')
+    }
   }
 
   if (pageLoading) {
@@ -390,6 +456,7 @@ if (latestBooking?.id) {
                     type="button"
                     onClick={() => {
                       setSelectedService(service)
+                      setSelectedStaffId('any')
                       setSelectedTime('')
                     }}
                     style={{
@@ -437,7 +504,7 @@ if (latestBooking?.id) {
             </h2>
 
             <p className="small muted" style={{ marginBottom: '1rem' }}>
-              Select a service, choose a date, then pick one of the available times.
+              Select a service, choose staff, choose a date, then pick one of the available times.
             </p>
 
             {!customerUserId && (
@@ -491,6 +558,34 @@ if (latestBooking?.id) {
                     <p className="muted small">Choose a service from the list.</p>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label className="small muted">Choose staff member</label>
+
+                <select
+                  value={selectedStaffId}
+                  onChange={(e) => {
+                    setSelectedStaffId(e.target.value)
+                    setSelectedTime('')
+                  }}
+                  disabled={!selectedService}
+                  style={{ width: '100%', marginTop: '0.4rem' }}
+                >
+                  <option value="any">Any available staff member</option>
+
+                  {staffThatCanDoSelectedService().map((staff) => (
+                    <option key={staff.id} value={staff.id}>
+                      {staff.name}{staff.role_title ? ` — ${staff.role_title}` : ''}
+                    </option>
+                  ))}
+                </select>
+
+                {selectedService && staffMembers.length > 0 && staffThatCanDoSelectedService().length === 0 && (
+                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    No staff members are assigned to this service yet. The business can assign staff from the dashboard.
+                  </p>
+                )}
               </div>
 
               <input

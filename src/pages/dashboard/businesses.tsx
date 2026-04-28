@@ -158,6 +158,13 @@ export default function Businesses() {
     <DashboardLayout
       title="Business profile"
       subtitle="Edit your business details, publish your profile, and manage services, working hours and bookings."
+
+<Link
+  href={`/dashboard/staff?businessId=${business.id}`}
+  className="btn btn-ghost"
+>
+  Staff
+</Link>
     >
       <form
         onSubmit={createBusiness}

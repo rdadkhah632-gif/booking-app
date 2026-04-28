@@ -22,6 +22,10 @@ type Booking = {
     name: string
     price: number
   } | null
+  staff_members?: {
+    name: string
+    role_title?: string | null
+  } | null
 }
 
 export default function Bookings() {
@@ -105,6 +109,10 @@ export default function Bookings() {
           services (
             name,
             price
+          ),
+          staff_members (
+            name,
+            role_title
           )
         `)
         .eq('business_id', selectedBusiness.id)
@@ -221,6 +229,10 @@ export default function Bookings() {
                   <p className="small muted">
                     Service: {booking.services?.name || 'No service recorded'}
                   </p>
+                  <p className="small muted">
+                    Staff: {booking.staff_members?.name || 'Any available staff'}
+                    {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+                  </p>
 
                   <p className="small muted">
                     Price: £{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}
@@ -253,17 +265,21 @@ export default function Bookings() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  {booking.status !== 'cancelled' && (
-  <>
-    <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
-      Reschedule
-    </Link>
+                  {booking.status !== 'cancelled' ? (
+                    <>
+                      <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
+                        Reschedule
+                      </Link>
 
-    <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger">
-      Cancel booking
-    </button>
-  </>
-)}
+                      <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger">
+                        Cancel booking
+                      </button>
+                    </>
+                  ) : (
+                    <span className="small muted">
+                      Cancelled booking
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
