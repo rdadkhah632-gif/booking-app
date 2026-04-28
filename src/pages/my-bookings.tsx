@@ -179,9 +179,15 @@ export default function MyBookings() {
                       <p className="small" style={{ color: 'var(--success)' }}>Status: {booking.status}</p>
                     </div>
 
-                    <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger">
-                      Cancel booking
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+  <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
+    Reschedule
+  </Link>
+
+  <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger">
+    Cancel booking
+  </button>
+</div>
                   </div>
                 </div>
               ))}

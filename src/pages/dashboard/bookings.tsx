@@ -254,10 +254,16 @@ export default function Bookings() {
 
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                   {booking.status !== 'cancelled' && (
-                    <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger">
-                      Cancel booking
-                    </button>
-                  )}
+  <>
+    <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
+      Reschedule
+    </Link>
+
+    <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger">
+      Cancel booking
+    </button>
+  </>
+)}
                 </div>
               </div>
             </div>
