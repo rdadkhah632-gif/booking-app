@@ -28,7 +28,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     <main className="dashboard-layout">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <Link href="/" className="logo">
+          <Link href="/dashboard" className="logo">
             Slot<span>ly</span>
           </Link>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>

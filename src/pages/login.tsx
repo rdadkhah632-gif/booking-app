@@ -1,3 +1,4 @@
+import AuthNav from '@/components/AuthNav'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -79,18 +80,7 @@ export default function LoginPage() {
 
   return (
     <main>
-      <nav className="nav-simple">
-        <div className="nav-simple-inner">
-          <Link href="/" className="logo">
-            Slot<span>ly</span>
-          </Link>
-
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <Link href="/explore" className="muted">Browse</Link>
-            <Link href="/register" className="btn btn-accent">Create account</Link>
-          </div>
-        </div>
-      </nav>
+      <AuthNav />
 
       <section className="auth-wrap">
         <div style={{

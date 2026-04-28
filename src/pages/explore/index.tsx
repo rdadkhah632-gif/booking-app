@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
-
+import AuthNav from '@/components/AuthNav'
 type Business = {
   id: string
   name: string
@@ -129,30 +129,7 @@ export default function Explore() {
 
   return (
     <main>
-      <nav className="nav-simple">
-        <div className="nav-simple-inner">
-          <Link href="/" className="logo">
-            Slot<span>ly</span>
-          </Link>
-
-          <div style={{
-            display: 'flex',
-            gap: '0.75rem',
-            alignItems: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <Link href="/my-bookings" className="muted">
-              My bookings
-            </Link>
-            <Link href="/login" className="muted">
-              Login
-            </Link>
-            <Link href="/register" className="btn btn-accent">
-              Join
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <AuthNav />
 
       <section className="container" style={{ padding: '32px 24px' }}>
         <div style={{ marginBottom: '28px' }}>

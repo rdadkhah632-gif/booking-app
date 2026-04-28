@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
+import AuthNav from '@/components/AuthNav'
 
 type Booking = {
   id: string
@@ -105,20 +106,7 @@ export default function MyBookings() {
 
   return (
     <main>
-      <nav className="nav-simple">
-        <div className="nav-simple-inner">
-          <Link href="/" className="logo">
-            Slot<span>ly</span>
-          </Link>
-
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Link href="/explore" className="muted">Browse</Link>
-            <button onClick={logout} className="btn btn-ghost">
-              Log out
-            </button>
-          </div>
-        </div>
-      </nav>
+      <AuthNav />
 
       <section className="container" style={{ padding: '36px 24px 70px' }}>
         <div style={{ marginBottom: '1.5rem' }}>
