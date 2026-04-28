@@ -17,16 +17,25 @@ export default function Explore() {
   const [search, setSearch] = useState('')
   const [city, setCity] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadBusinesses() {
       setLoading(true)
+      setError(null)
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('businesses')
-        .select('*')
+        .select('id, name, description, city, country, phone, address, published, created_at')
         .eq('published', true)
         .order('created_at', { ascending: false })
+
+      if (error) {
+        setError(error.message)
+        setBusinesses([])
+        setLoading(false)
+        return
+      }
 
       setBusinesses(data || [])
       setLoading(false)
@@ -48,7 +57,6 @@ export default function Explore() {
   const filteredBusinesses = useMemo(() => {
     return businesses.filter((business) => {
       const searchText = `${business.name || ''} ${business.description || ''} ${business.city || ''}`.toLowerCase()
-
       const matchesSearch = searchText.includes(search.toLowerCase())
       const matchesCity = city ? business.city === city : true
 
@@ -97,6 +105,22 @@ export default function Explore() {
             Browse published businesses, compare services and book available slots instantly.
           </p>
         </div>
+
+        {error && (
+          <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,77,109,0.35)' }}>
+            <h3 style={{ color: 'var(--danger)' }}>Could not load businesses</h3>
+            <p className="muted small" style={{ marginTop: '0.5rem' }}>
+              Supabase returned this error:
+            </p>
+            <pre style={{
+              whiteSpace: 'pre-wrap',
+              marginTop: '0.75rem',
+              color: 'var(--danger)'
+            }}>
+              {error}
+            </pre>
+          </div>
+        )}
 
         <div style={{
           display: 'grid',
@@ -172,13 +196,25 @@ export default function Explore() {
 
             {loading && (
               <div className="card">
-                <p className="muted">Loading...</p>
+                <p className="muted">Loading businesses from Supabase...</p>
               </div>
             )}
 
-            {!loading && filteredBusinesses.length === 0 && (
+            {!loading && !error && businesses.length === 0 && (
               <div className="card">
-                <h3>No businesses found</h3>
+                <h3>No published businesses yet</h3>
+                <p className="muted" style={{ marginTop: '0.5rem' }}>
+                  This means your site is connected, but there are no businesses with published set to true.
+                </p>
+                <p className="muted small" style={{ marginTop: '0.75rem' }}>
+                  Log in as a business, go to Business Profile, and click Publish Business.
+                </p>
+              </div>
+            )}
+
+            {!loading && !error && businesses.length > 0 && filteredBusinesses.length === 0 && (
+              <div className="card">
+                <h3>No businesses match your filters</h3>
                 <p className="muted">
                   Try changing your search or city filter.
                 </p>
@@ -186,7 +222,7 @@ export default function Explore() {
             )}
 
             <div style={{ display: 'grid', gap: '1rem' }}>
-              {filteredBusinesses.map((business) => (
+              {!loading && !error && filteredBusinesses.map((business) => (
                 <div
                   key={business.id}
                   className="card"
