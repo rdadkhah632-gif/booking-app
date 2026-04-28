@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
+import AuthNav from '@/components/AuthNav'
 
 export default function DashboardHome() {
   const router = useRouter()
