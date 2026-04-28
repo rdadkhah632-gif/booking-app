@@ -24,11 +24,17 @@ export default function Explore() {
       setLoading(true)
       setError(null)
 
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('id, name, description, city, country, phone, address, published, created_at')
-        .eq('published', true)
-        .order('created_at', { ascending: false })
+      const timeout = new Promise<never>((_, reject) =>
+  setTimeout(() => reject(new Error('Supabase request timed out after 8 seconds')), 8000)
+)
+
+const query = supabase
+  .from('businesses')
+  .select('id, name, description, city, country, phone, address, published, created_at')
+  .eq('published', true)
+  .order('created_at', { ascending: false })
+
+const { data, error } = await Promise.race([query, timeout])
 
       if (error) {
         setError(error.message)
