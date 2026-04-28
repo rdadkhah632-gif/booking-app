@@ -4,10 +4,12 @@ import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
 
+type Role = 'customer' | 'business'
+
 type Profile = {
   id: string
   email: string
-  role: 'customer' | 'business'
+  role: Role
   full_name?: string | null
   phone?: string | null
 }
@@ -16,10 +18,12 @@ export default function AccountPage() {
   const router = useRouter()
 
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [actualRole, setActualRole] = useState<Role>('customer')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [fixingRole, setFixingRole] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -34,21 +38,39 @@ export default function AccountPage() {
       return
     }
 
-    const { data, error } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('id, email, role, full_name, phone')
       .eq('id', session.user.id)
       .single()
 
-    if (error || !data) {
-      setError(error?.message || 'Could not load account profile.')
+    if (profileError || !profileData) {
+      setError(profileError?.message || 'Could not load account profile.')
       setLoading(false)
       return
     }
 
-    setProfile(data)
-    setFullName(data.full_name || '')
-    setPhone(data.phone || '')
+    const { data: ownedBusinesses } = await supabase
+      .from('businesses')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .limit(1)
+
+    const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
+
+    const resolvedRole: Role =
+      profileData.role === 'business' || ownsBusiness
+        ? 'business'
+        : 'customer'
+
+    setActualRole(resolvedRole)
+    setProfile({
+      ...profileData,
+      role: resolvedRole
+    })
+
+    setFullName(profileData.full_name || '')
+    setPhone(profileData.phone || '')
     setLoading(false)
   }
 
@@ -84,6 +106,29 @@ export default function AccountPage() {
     await loadProfile()
   }
 
+  async function fixBusinessRole() {
+    if (!profile) return
+
+    setFixingRole(true)
+    setError(null)
+    setMessage(null)
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: 'business' })
+      .eq('id', profile.id)
+
+    setFixingRole(false)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    setMessage('Account role fixed to business.')
+    await loadProfile()
+  }
+
   async function logout() {
     await supabase.auth.signOut()
     router.push('/')
@@ -101,14 +146,14 @@ export default function AccountPage() {
         )}
 
         {error && (
-          <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)' }}>
+          <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
             <p style={{ color: 'var(--danger)' }}>{error}</p>
           </div>
         )}
 
         {!loading && profile && (
           <div style={{
-            maxWidth: 840,
+            maxWidth: 900,
             margin: '0 auto',
             display: 'grid',
             gap: '1rem'
@@ -121,7 +166,7 @@ export default function AccountPage() {
               </h1>
 
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Manage your account details and quickly jump back into your {profile.role === 'business' ? 'business dashboard' : 'customer bookings'}.
+                Manage your account details and jump back into your {actualRole === 'business' ? 'business dashboard' : 'customer bookings'}.
               </p>
             </div>
 
@@ -134,8 +179,25 @@ export default function AccountPage() {
               <div className="card">
                 <p className="small muted">Account type</p>
                 <strong style={{ textTransform: 'capitalize' }}>
-                  {profile.role}
+                  {actualRole}
                 </strong>
+
+                {actualRole === 'business' && profile.role !== 'business' && (
+                  <>
+                    <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                      This account owns a business, but its profile role is still marked as customer.
+                    </p>
+
+                    <button
+                      onClick={fixBusinessRole}
+                      disabled={fixingRole}
+                      className="btn btn-accent"
+                      style={{ marginTop: '0.75rem' }}
+                    >
+                      {fixingRole ? 'Fixing...' : 'Fix role to business'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -179,7 +241,7 @@ export default function AccountPage() {
               </h2>
 
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                {profile.role === 'business' ? (
+                {actualRole === 'business' ? (
                   <>
                     <Link href="/dashboard" className="btn btn-accent">
                       Business dashboard
@@ -187,6 +249,18 @@ export default function AccountPage() {
 
                     <Link href="/dashboard/businesses" className="btn btn-ghost">
                       Manage businesses
+                    </Link>
+
+                    <Link href="/dashboard/services" className="btn btn-ghost">
+                      Services
+                    </Link>
+
+                    <Link href="/dashboard/availability" className="btn btn-ghost">
+                      Working hours
+                    </Link>
+
+                    <Link href="/dashboard/bookings" className="btn btn-ghost">
+                      Bookings
                     </Link>
 
                     <Link href="/explore" className="btn btn-ghost">

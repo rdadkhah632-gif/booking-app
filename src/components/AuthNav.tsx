@@ -27,7 +27,15 @@ export default function AuthNav() {
         .eq('id', session.user.id)
         .single()
 
-      if (profile?.role === 'business') {
+      const { data: ownedBusinesses } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .limit(1)
+
+      const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
+
+      if (profile?.role === 'business' || ownsBusiness) {
         setRole('business')
       } else {
         setRole('customer')
@@ -109,6 +117,10 @@ export default function AuthNav() {
             <>
               <Link href="/dashboard" className="muted">
                 Dashboard
+              </Link>
+
+              <Link href="/dashboard/businesses" className="muted">
+                Business profile
               </Link>
 
               <Link href="/explore" className="muted">
