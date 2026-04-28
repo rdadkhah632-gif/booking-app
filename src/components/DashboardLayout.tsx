@@ -21,7 +21,8 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     { href: '/dashboard/businesses', label: 'Business profile' },
     { href: '/dashboard/services', label: 'Services' },
     { href: '/dashboard/availability', label: 'Working hours' },
-    { href: '/dashboard/bookings', label: 'Bookings' }
+    { href: '/dashboard/bookings', label: 'Bookings' },
+    { href: '/account', label: 'Account' }
   ]
 
   return (

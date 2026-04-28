@@ -50,14 +50,22 @@ export default function BusinessBookingPage() {
         return
       }
 
-      setCustomerUserId(session.user.id)
+            setCustomerUserId(session.user.id)
       setCustomerEmail(session.user.email || '')
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, full_name, phone')
         .eq('id', session.user.id)
         .single()
+
+      if (profile?.full_name) {
+        setCustomerName(profile.full_name)
+      }
+
+      if (profile?.phone) {
+        setCustomerPhone(profile.phone)
+      }
 
       if (profile?.role === 'business') {
         setUserRole('business')

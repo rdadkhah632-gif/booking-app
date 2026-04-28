@@ -117,8 +117,18 @@ export default function MyBookings() {
           </h1>
 
           <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-            {email ? `Signed in as ${email}` : 'View and manage your appointments.'}
-          </p>
+  {email ? `Signed in as ${email}` : 'View and manage your appointments.'}
+</p>
+
+<div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+  <Link href="/account" className="btn btn-ghost">
+    Account settings
+  </Link>
+
+  <Link href="/explore" className="btn btn-accent">
+    Browse businesses
+  </Link>
+</div>
         </div>
 
         <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
