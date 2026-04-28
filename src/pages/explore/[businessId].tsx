@@ -225,7 +225,21 @@ export default function BusinessBookingPage() {
       return
     }
 
-    router.push('/my-bookings')
+    const { data: latestBooking } = await supabase
+  .from('bookings')
+  .select('id')
+  .eq('business_id', businessId)
+  .eq('customer_user_id', customerUserId)
+  .eq('start_at', startAt)
+  .order('created_at', { ascending: false })
+  .limit(1)
+  .single()
+
+if (latestBooking?.id) {
+  router.push(`/booking-confirmation?id=${latestBooking.id}`)
+} else {
+  router.push('/my-bookings')
+}
   }
 
   if (pageLoading) {
