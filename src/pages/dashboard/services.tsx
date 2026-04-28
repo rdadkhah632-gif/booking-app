@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
+import DashboardLayout from '@/components/DashboardLayout'
 
 type Business = {
   id: string
@@ -18,6 +19,7 @@ type Service = {
 
 export default function Services() {
   const router = useRouter()
+  const { businessId } = router.query
 
   const [business, setBusiness] = useState<Business | null>(null)
   const [services, setServices] = useState<Service[]>([])
@@ -27,10 +29,12 @@ export default function Services() {
   const [price, setPrice] = useState(0)
 
   const [loading, setLoading] = useState(false)
+  const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   async function loadData() {
     setError(null)
+    setPageLoading(true)
 
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -39,48 +43,67 @@ export default function Services() {
       return
     }
 
-    const { data: businesses, error: businessError } = await supabase
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single()
+
+    if (!profile || profile.role !== 'business') {
+      router.replace('/explore')
+      return
+    }
+
+    if (!businessId || Array.isArray(businessId)) {
+      setBusiness(null)
+      setServices([])
+      setPageLoading(false)
+      return
+    }
+
+    const { data: businessData, error: businessError } = await supabase
       .from('businesses')
       .select('id, name')
+      .eq('id', businessId)
       .eq('user_id', session.user.id)
-      .limit(1)
+      .single()
 
-    if (businessError) {
-      setError(businessError.message)
-      return
-    }
-
-    if (!businesses || businesses.length === 0) {
+    if (businessError || !businessData) {
+      setError(businessError?.message || 'Business not found.')
       setBusiness(null)
+      setServices([])
+      setPageLoading(false)
       return
     }
 
-    const selectedBusiness = businesses[0]
-    setBusiness(selectedBusiness)
+    setBusiness(businessData)
 
     const { data: serviceData, error: serviceError } = await supabase
       .from('services')
       .select('*')
-      .eq('business_id', selectedBusiness.id)
+      .eq('business_id', businessData.id)
       .order('created_at', { ascending: false })
 
     if (serviceError) {
       setError(serviceError.message)
+      setPageLoading(false)
       return
     }
 
     setServices(serviceData || [])
+    setPageLoading(false)
   }
 
   useEffect(() => {
+    if (!router.isReady) return
     loadData()
-  }, [])
+  }, [router.isReady, businessId])
 
   async function addService(e: React.FormEvent) {
     e.preventDefault()
 
     if (!business) {
-      setError('Create a business profile first.')
+      setError('Select a business first from Business Profile.')
       return
     }
 
@@ -131,26 +154,48 @@ export default function Services() {
   }
 
   return (
-    <main style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
-      <h1>Manage services</h1>
-
-      {!business && (
-        <p>
-          You need to create a business first. Go to /dashboard/businesses.
-        </p>
+    <DashboardLayout
+      title="Manage services"
+      subtitle={business ? `Editing services for ${business.name}` : 'Choose a business from Business Profile first.'}
+    >
+      {!businessId && (
+        <div className="card">
+          <h3>No business selected</h3>
+          <p className="muted" style={{ marginTop: '0.5rem' }}>
+            Go to Business Profile and choose Manage services under the business you want to edit.
+          </p>
+          <button
+            className="btn btn-accent"
+            style={{ marginTop: '1rem' }}
+            onClick={() => router.push('/dashboard/businesses')}
+          >
+            Go to Business Profile
+          </button>
+        </div>
       )}
 
-      {business && (
-        <>
-          <p>Business: <strong>{business.name}</strong></p>
+      {pageLoading && (
+        <div className="card">
+          <p className="muted">Loading services...</p>
+        </div>
+      )}
 
-          <form onSubmit={addService} style={{ display: 'grid', gap: '0.75rem', marginBottom: '2rem' }}>
+      {error && (
+        <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--danger)' }}>{error}</p>
+        </div>
+      )}
+
+      {!pageLoading && business && (
+        <>
+          <form onSubmit={addService} className="card" style={{ display: 'grid', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <h3>Add service</h3>
+
             <input
               placeholder="Service name e.g. Haircut, Dental Checkup"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              style={{ padding: '0.75rem' }}
             />
 
             <input
@@ -160,7 +205,6 @@ export default function Services() {
               onChange={(e) => setDuration(Number(e.target.value))}
               min={5}
               required
-              style={{ padding: '0.75rem' }}
             />
 
             <input
@@ -171,42 +215,41 @@ export default function Services() {
               min={0}
               step="0.01"
               required
-              style={{ padding: '0.75rem' }}
             />
 
-            <button type="submit" disabled={loading} style={{ padding: '0.75rem' }}>
+            <button type="submit" disabled={loading} className="btn btn-accent">
               {loading ? 'Adding...' : 'Add service'}
             </button>
           </form>
 
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            {services.length === 0 && (
+              <div className="card">
+                <p className="muted">No services yet for this business.</p>
+              </div>
+            )}
 
-          <h2>Your services</h2>
+            {services.map((service) => (
+              <div key={service.id} className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <strong>{service.name}</strong>
+                    <p className="small muted">{service.duration_minutes} minutes</p>
+                    <p className="small muted">£{Number(service.price).toFixed(2)}</p>
+                    <p className="small" style={{ color: service.active ? 'var(--success)' : 'var(--warning)' }}>
+                      {service.active ? 'Active' : 'Hidden'}
+                    </p>
+                  </div>
 
-          {services.length === 0 && <p>No services yet.</p>}
-
-          {services.map((service) => (
-            <div
-              key={service.id}
-              style={{
-                border: '1px solid #ddd',
-                padding: '1rem',
-                marginBottom: '1rem',
-                borderRadius: '8px'
-              }}
-            >
-              <strong>{service.name}</strong>
-              <p>{service.duration_minutes} minutes</p>
-              <p>£{Number(service.price).toFixed(2)}</p>
-              <p>Status: {service.active ? 'Active' : 'Hidden'}</p>
-
-              <button onClick={() => toggleService(service)}>
-                {service.active ? 'Hide service' : 'Show service'}
-              </button>
-            </div>
-          ))}
+                  <button onClick={() => toggleService(service)} className="btn btn-ghost">
+                    {service.active ? 'Hide service' : 'Show service'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </>
       )}
-    </main>
+    </DashboardLayout>
   )
 }
