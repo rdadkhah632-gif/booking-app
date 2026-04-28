@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -21,6 +22,7 @@ export default function Services() {
   const router = useRouter()
   const { businessId } = router.query
 
+  const [businesses, setBusinesses] = useState<Business[]>([])
   const [business, setBusiness] = useState<Business | null>(null)
   const [services, setServices] = useState<Service[]>([])
 
@@ -32,66 +34,87 @@ export default function Services() {
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  async function getBusinessContext(sessionUserId: string) {
+    const { data: ownedBusinesses, error: businessesError } = await supabase
+      .from('businesses')
+      .select('id, name')
+      .eq('user_id', sessionUserId)
+      .order('created_at', { ascending: false })
+
+    if (businessesError) throw businessesError
+
+    const owned = ownedBusinesses || []
+    setBusinesses(owned)
+
+    if (owned.length === 0) {
+      return null
+    }
+
+    if (businessId && !Array.isArray(businessId)) {
+      const selected = owned.find((b) => b.id === businessId)
+
+      if (!selected) {
+        throw new Error('You do not have access to this business.')
+      }
+
+      return selected
+    }
+
+    if (owned.length === 1) {
+      return owned[0]
+    }
+
+    return null
+  }
+
   async function loadData() {
     setError(null)
     setPageLoading(true)
 
-    const { data: { session } } = await supabase.auth.getSession()
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
 
-    if (!session) {
-      router.replace('/login')
-      return
-    }
+      if (!session) {
+        router.replace('/login')
+        return
+      }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
 
-    if (!profile || profile.role !== 'business') {
-      router.replace('/explore')
-      return
-    }
+      if (!profile || profile.role !== 'business') {
+        router.replace('/explore')
+        return
+      }
 
-    if (!businessId || Array.isArray(businessId)) {
-      setBusiness(null)
-      setServices([])
+      const selectedBusiness = await getBusinessContext(session.user.id)
+
+      if (!selectedBusiness) {
+        setBusiness(null)
+        setServices([])
+        setPageLoading(false)
+        return
+      }
+
+      setBusiness(selectedBusiness)
+
+      const { data: serviceData, error: serviceError } = await supabase
+        .from('services')
+        .select('*')
+        .eq('business_id', selectedBusiness.id)
+        .order('created_at', { ascending: false })
+
+      if (serviceError) throw serviceError
+
+      setServices(serviceData || [])
       setPageLoading(false)
-      return
-    }
-
-    const { data: businessData, error: businessError } = await supabase
-      .from('businesses')
-      .select('id, name')
-      .eq('id', businessId)
-      .eq('user_id', session.user.id)
-      .single()
-
-    if (businessError || !businessData) {
-      setError(businessError?.message || 'Business not found.')
-      setBusiness(null)
-      setServices([])
+    } catch (err: any) {
+      setError(err.message || 'Could not load services.')
       setPageLoading(false)
-      return
     }
-
-    setBusiness(businessData)
-
-    const { data: serviceData, error: serviceError } = await supabase
-      .from('services')
-      .select('*')
-      .eq('business_id', businessData.id)
-      .order('created_at', { ascending: false })
-
-    if (serviceError) {
-      setError(serviceError.message)
-      setPageLoading(false)
-      return
-    }
-
-    setServices(serviceData || [])
-    setPageLoading(false)
   }
 
   useEffect(() => {
@@ -103,7 +126,7 @@ export default function Services() {
     e.preventDefault()
 
     if (!business) {
-      setError('Select a business first from Business Profile.')
+      setError('Choose a business first.')
       return
     }
 
@@ -156,24 +179,8 @@ export default function Services() {
   return (
     <DashboardLayout
       title="Manage services"
-      subtitle={business ? `Editing services for ${business.name}` : 'Choose a business from Business Profile first.'}
+      subtitle={business ? `Editing services for ${business.name}` : 'Choose which business services to manage.'}
     >
-      {!businessId && (
-        <div className="card">
-          <h3>No business selected</h3>
-          <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Go to Business Profile and choose Manage services under the business you want to edit.
-          </p>
-          <button
-            className="btn btn-accent"
-            style={{ marginTop: '1rem' }}
-            onClick={() => router.push('/dashboard/businesses')}
-          >
-            Go to Business Profile
-          </button>
-        </div>
-      )}
-
       {pageLoading && (
         <div className="card">
           <p className="muted">Loading services...</p>
@@ -183,6 +190,42 @@ export default function Services() {
       {error && (
         <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
           <p style={{ color: 'var(--danger)' }}>{error}</p>
+        </div>
+      )}
+
+      {!pageLoading && businesses.length === 0 && (
+        <div className="card">
+          <h3>No business found</h3>
+          <p className="muted" style={{ marginTop: '0.5rem' }}>
+            Create a business profile first, then add services.
+          </p>
+          <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
+            Create business
+          </Link>
+        </div>
+      )}
+
+      {!pageLoading && !business && businesses.length > 1 && (
+        <div style={{ display: 'grid', gap: '1rem' }}>
+          <div className="card">
+            <h3>Choose a business</h3>
+            <p className="muted" style={{ marginTop: '0.5rem' }}>
+              Select which business you want to manage services for.
+            </p>
+          </div>
+
+          {businesses.map((b) => (
+            <Link
+              key={b.id}
+              href={`/dashboard/services?businessId=${b.id}`}
+              className="card"
+            >
+              <strong>{b.name}</strong>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                Manage services for this business.
+              </p>
+            </Link>
+          ))}
         </div>
       )}
 

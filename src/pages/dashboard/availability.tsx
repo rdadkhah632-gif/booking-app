@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -14,83 +15,102 @@ export default function Availability() {
   const router = useRouter()
   const { businessId } = router.query
 
+  const [businesses, setBusinesses] = useState<Business[]>([])
   const [business, setBusiness] = useState<Business | null>(null)
   const [rows, setRows] = useState<any[]>([])
+
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  async function getBusinessContext(sessionUserId: string) {
+    const { data: ownedBusinesses, error: businessesError } = await supabase
+      .from('businesses')
+      .select('id, name')
+      .eq('user_id', sessionUserId)
+      .order('created_at', { ascending: false })
+
+    if (businessesError) throw businessesError
+
+    const owned = ownedBusinesses || []
+    setBusinesses(owned)
+
+    if (owned.length === 0) return null
+
+    if (businessId && !Array.isArray(businessId)) {
+      const selected = owned.find((b) => b.id === businessId)
+
+      if (!selected) {
+        throw new Error('You do not have access to this business.')
+      }
+
+      return selected
+    }
+
+    if (owned.length === 1) return owned[0]
+
+    return null
+  }
 
   async function init() {
     setError(null)
     setPageLoading(true)
 
-    const { data: { session } } = await supabase.auth.getSession()
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
 
-    if (!session) {
-      router.replace('/login')
-      return
-    }
+      if (!session) {
+        router.replace('/login')
+        return
+      }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
 
-    if (!profile || profile.role !== 'business') {
-      router.replace('/explore')
-      return
-    }
+      if (!profile || profile.role !== 'business') {
+        router.replace('/explore')
+        return
+      }
 
-    if (!businessId || Array.isArray(businessId)) {
-      setBusiness(null)
-      setRows([])
+      const selectedBusiness = await getBusinessContext(session.user.id)
+
+      if (!selectedBusiness) {
+        setBusiness(null)
+        setRows([])
+        setPageLoading(false)
+        return
+      }
+
+      setBusiness(selectedBusiness)
+
+      const { data: existing, error: availabilityError } = await supabase
+        .from('availability')
+        .select('*')
+        .eq('business_id', selectedBusiness.id)
+        .order('day_of_week')
+
+      if (availabilityError) throw availabilityError
+
+      if (existing && existing.length > 0) {
+        setRows(existing)
+      } else {
+        setRows(days.map((_, i) => ({
+          business_id: selectedBusiness.id,
+          day_of_week: i,
+          start_time: '09:00',
+          end_time: '17:00',
+          is_closed: i === 0
+        })))
+      }
+
       setPageLoading(false)
-      return
-    }
-
-    const { data: businessData, error: businessError } = await supabase
-      .from('businesses')
-      .select('id, name')
-      .eq('id', businessId)
-      .eq('user_id', session.user.id)
-      .single()
-
-    if (businessError || !businessData) {
-      setError(businessError?.message || 'Business not found.')
-      setBusiness(null)
-      setRows([])
+    } catch (err: any) {
+      setError(err.message || 'Could not load working hours.')
       setPageLoading(false)
-      return
     }
-
-    setBusiness(businessData)
-
-    const { data: existing, error: availabilityError } = await supabase
-      .from('availability')
-      .select('*')
-      .eq('business_id', businessData.id)
-      .order('day_of_week')
-
-    if (availabilityError) {
-      setError(availabilityError.message)
-      setPageLoading(false)
-      return
-    }
-
-    if (existing && existing.length > 0) {
-      setRows(existing)
-    } else {
-      setRows(days.map((_, i) => ({
-        business_id: businessData.id,
-        day_of_week: i,
-        start_time: '09:00',
-        end_time: '17:00',
-        is_closed: i === 0
-      })))
-    }
-
-    setPageLoading(false)
   }
 
   useEffect(() => {
@@ -108,7 +128,16 @@ export default function Availability() {
     setLoading(true)
     setError(null)
 
-    await supabase.from('availability').delete().eq('business_id', business.id)
+    const { error: deleteError } = await supabase
+      .from('availability')
+      .delete()
+      .eq('business_id', business.id)
+
+    if (deleteError) {
+      setError(deleteError.message)
+      setLoading(false)
+      return
+    }
 
     const cleanRows = rows.map(r => ({
       business_id: business.id,
@@ -128,29 +157,14 @@ export default function Availability() {
     }
 
     alert('Working hours saved')
+    await init()
   }
 
   return (
     <DashboardLayout
       title="Working hours"
-      subtitle={business ? `Editing availability for ${business.name}` : 'Choose a business from Business Profile first.'}
+      subtitle={business ? `Editing availability for ${business.name}` : 'Choose which business working hours to manage.'}
     >
-      {!businessId && (
-        <div className="card">
-          <h3>No business selected</h3>
-          <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Go to Business Profile and choose Working hours under the business you want to edit.
-          </p>
-          <button
-            className="btn btn-accent"
-            style={{ marginTop: '1rem' }}
-            onClick={() => router.push('/dashboard/businesses')}
-          >
-            Go to Business Profile
-          </button>
-        </div>
-      )}
-
       {pageLoading && (
         <div className="card">
           <p className="muted">Loading working hours...</p>
@@ -160,6 +174,42 @@ export default function Availability() {
       {error && (
         <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
           <p style={{ color: 'var(--danger)' }}>{error}</p>
+        </div>
+      )}
+
+      {!pageLoading && businesses.length === 0 && (
+        <div className="card">
+          <h3>No business found</h3>
+          <p className="muted" style={{ marginTop: '0.5rem' }}>
+            Create a business profile first, then set working hours.
+          </p>
+          <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
+            Create business
+          </Link>
+        </div>
+      )}
+
+      {!pageLoading && !business && businesses.length > 1 && (
+        <div style={{ display: 'grid', gap: '1rem' }}>
+          <div className="card">
+            <h3>Choose a business</h3>
+            <p className="muted" style={{ marginTop: '0.5rem' }}>
+              Select which business you want to manage working hours for.
+            </p>
+          </div>
+
+          {businesses.map((b) => (
+            <Link
+              key={b.id}
+              href={`/dashboard/availability?businessId=${b.id}`}
+              className="card"
+            >
+              <strong>{b.name}</strong>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                Manage working hours for this business.
+              </p>
+            </Link>
+          ))}
         </div>
       )}
 
