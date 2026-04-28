@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 
 type Business = {
@@ -13,6 +14,8 @@ type Business = {
 }
 
 export default function Explore() {
+  const router = useRouter()
+
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [search, setSearch] = useState('')
   const [city, setCity] = useState('')
@@ -20,31 +23,47 @@ export default function Explore() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!router.isReady) return
+
+    const queryParam = typeof router.query.query === 'string' ? router.query.query : ''
+    const cityParam = typeof router.query.city === 'string' ? router.query.city : ''
+
+    setSearch(queryParam)
+    setCity(cityParam)
+  }, [router.isReady, router.query.query, router.query.city])
+
+  useEffect(() => {
     async function loadBusinesses() {
       setLoading(true)
       setError(null)
 
-      const timeout = new Promise<never>((_, reject) =>
-  setTimeout(() => reject(new Error('Supabase request timed out after 8 seconds')), 8000)
-)
+      try {
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Supabase request timed out after 8 seconds')), 8000)
+        )
 
-const query = supabase
-  .from('businesses')
-  .select('id, name, description, city, country, phone, address, published, created_at')
-  .eq('published', true)
-  .order('created_at', { ascending: false })
+        const query = supabase
+          .from('businesses')
+          .select('id, name, description, city, country, phone, address, published, created_at')
+          .eq('published', true)
+          .order('created_at', { ascending: false })
 
-const { data, error } = await Promise.race([query, timeout])
+        const { data, error } = await Promise.race([query, timeout])
 
-      if (error) {
-        setError(error.message)
+        if (error) {
+          setError(error.message)
+          setBusinesses([])
+          setLoading(false)
+          return
+        }
+
+        setBusinesses(data || [])
+        setLoading(false)
+      } catch (err: any) {
+        setError(err.message || 'Something went wrong while loading businesses.')
         setBusinesses([])
         setLoading(false)
-        return
       }
-
-      setBusinesses(data || [])
-      setLoading(false)
     }
 
     loadBusinesses()
@@ -62,13 +81,32 @@ const { data, error } = await Promise.race([query, timeout])
 
   const filteredBusinesses = useMemo(() => {
     return businesses.filter((business) => {
-      const searchText = `${business.name || ''} ${business.description || ''} ${business.city || ''}`.toLowerCase()
+      const searchText = `${business.name || ''} ${business.description || ''} ${business.city || ''} ${business.country || ''} ${business.address || ''}`.toLowerCase()
+
       const matchesSearch = searchText.includes(search.toLowerCase())
-      const matchesCity = city ? business.city === city : true
+      const matchesCity = city
+        ? (business.city || '').toLowerCase().includes(city.toLowerCase())
+        : true
 
       return matchesSearch && matchesCity
     })
   }, [businesses, search, city])
+
+  function applyFiltersToUrl() {
+    router.push({
+      pathname: '/explore',
+      query: {
+        ...(search.trim() ? { query: search.trim() } : {}),
+        ...(city.trim() ? { city: city.trim() } : {})
+      }
+    })
+  }
+
+  function clearFilters() {
+    setSearch('')
+    setCity('')
+    router.push('/explore')
+  }
 
   return (
     <main>
@@ -159,27 +197,26 @@ const { data, error } = await Promise.race([query, timeout])
                 <label className="small muted">
                   City
                 </label>
-                <select
+                <input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
+                  placeholder="Coventry, Tirana..."
+                  list="city-options"
                   style={{ width: '100%', marginTop: '0.4rem' }}
-                >
-                  <option value="">All cities</option>
+                />
+
+                <datalist id="city-options">
                   {cities.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                    <option key={c} value={c} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setSearch('')
-                  setCity('')
-                }}
-              >
+              <button className="btn btn-accent" onClick={applyFiltersToUrl}>
+                Search
+              </button>
+
+              <button className="btn btn-ghost" onClick={clearFilters}>
                 Clear filters
               </button>
             </div>

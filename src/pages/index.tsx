@@ -1,6 +1,24 @@
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 export default function Home() {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [city, setCity] = useState('')
+
+  function searchBusinesses(e: React.FormEvent) {
+    e.preventDefault()
+
+    router.push({
+      pathname: '/explore',
+      query: {
+        ...(query.trim() ? { query: query.trim() } : {}),
+        ...(city.trim() ? { city: city.trim() } : {})
+      }
+    })
+  }
+
   return (
     <main>
       <nav className="nav-simple">
@@ -96,44 +114,47 @@ export default function Home() {
               Choose a service, pick a real available slot, and book instantly.
             </p>
 
-            <div style={{
-              display: 'flex',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              overflow: 'hidden',
-              maxWidth: 620,
-              marginBottom: 24
-            }}>
-              <div style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '13px 16px',
-                borderRight: '1px solid var(--border)'
-              }}>
-                <span className="small muted">What are you looking for?</span>
-                <span>Haircut, dental checkup, massage...</span>
-              </div>
+            <form
+              onSubmit={searchBusinesses}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr auto',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                overflow: 'hidden',
+                maxWidth: 720,
+                marginBottom: 24
+              }}
+            >
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Haircut, dental checkup, massage..."
+                style={{
+                  borderRadius: 0,
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderLeft: 'none'
+                }}
+              />
 
-              <div style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '13px 16px',
-                borderRight: '1px solid var(--border)'
-              }}>
-                <span className="small muted">Location</span>
-                <span>Coventry, Tirana, London...</span>
-              </div>
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Coventry, Tirana, London..."
+                style={{
+                  borderRadius: 0,
+                  borderTop: 'none',
+                  borderBottom: 'none',
+                  borderLeft: 'none'
+                }}
+              />
 
-              <Link href="/explore" className="btn btn-accent" style={{
-                borderRadius: 0,
-                padding: '0 28px'
-              }}>
+              <button className="btn btn-accent" style={{ borderRadius: 0, padding: '0 28px' }}>
                 Search
-              </Link>
-            </div>
+              </button>
+            </form>
 
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
               <span className="small muted">✓ Instant bookings</span>
@@ -160,20 +181,20 @@ export default function Home() {
             </p>
 
             <div style={{ display: 'grid', gap: 12, marginBottom: 24 }}>
-              <div className="card" style={{ background: 'var(--surface-2)' }}>
+              <Link href="/dashboard/businesses" className="card" style={{ background: 'var(--surface-2)' }}>
                 <strong>Manage services</strong>
                 <p className="small muted">Duration, price and active status.</p>
-              </div>
+              </Link>
 
-              <div className="card" style={{ background: 'var(--surface-2)' }}>
+              <Link href="/dashboard/businesses" className="card" style={{ background: 'var(--surface-2)' }}>
                 <strong>Control availability</strong>
                 <p className="small muted">Set opening hours and prevent overlaps.</p>
-              </div>
+              </Link>
 
-              <div className="card" style={{ background: 'var(--surface-2)' }}>
+              <Link href="/dashboard/businesses" className="card" style={{ background: 'var(--surface-2)' }}>
                 <strong>View bookings</strong>
                 <p className="small muted">See customer details and cancel bookings.</p>
-              </div>
+              </Link>
             </div>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
