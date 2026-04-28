@@ -10,7 +10,6 @@ export default function AuthNav() {
 
   const [loading, setLoading] = useState(true)
   const [role, setRole] = useState<Role>(null)
-  const [email, setEmail] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadUser() {
@@ -18,12 +17,9 @@ export default function AuthNav() {
 
       if (!session) {
         setRole(null)
-        setEmail(null)
         setLoading(false)
         return
       }
-
-      setEmail(session.user.email || null)
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -46,7 +42,6 @@ export default function AuthNav() {
   async function logout() {
     await supabase.auth.signOut()
     setRole(null)
-    setEmail(null)
     router.push('/')
   }
 
@@ -100,11 +95,9 @@ export default function AuthNav() {
                 My bookings
               </Link>
 
-              {email && (
-                <span className="small muted">
-                  {email}
-                </span>
-              )}
+              <Link href="/account" className="muted">
+                Account
+              </Link>
 
               <button onClick={logout} className="btn btn-ghost">
                 Log out
@@ -122,11 +115,9 @@ export default function AuthNav() {
                 View marketplace
               </Link>
 
-              {email && (
-                <span className="small muted">
-                  {email}
-                </span>
-              )}
+              <Link href="/account" className="muted">
+                Account
+              </Link>
 
               <button onClick={logout} className="btn btn-ghost">
                 Log out
