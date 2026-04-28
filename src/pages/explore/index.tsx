@@ -7,6 +7,7 @@ type Business = {
   id: string
   name: string
   description?: string | null
+  category?: string | null
   city?: string | null
   country?: string | null
   phone?: string | null
@@ -19,6 +20,7 @@ export default function Explore() {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [search, setSearch] = useState('')
   const [city, setCity] = useState('')
+  const [category, setCategory] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,10 +29,12 @@ export default function Explore() {
 
     const queryParam = typeof router.query.query === 'string' ? router.query.query : ''
     const cityParam = typeof router.query.city === 'string' ? router.query.city : ''
+    const categoryParam = typeof router.query.category === 'string' ? router.query.category : ''
 
     setSearch(queryParam)
     setCity(cityParam)
-  }, [router.isReady, router.query.query, router.query.city])
+    setCategory(categoryParam)
+  }, [router.isReady, router.query.query, router.query.city, router.query.category])
 
   useEffect(() => {
     async function loadBusinesses() {
@@ -44,7 +48,7 @@ export default function Explore() {
 
         const query = supabase
           .from('businesses')
-          .select('id, name, description, city, country, phone, address, published, created_at')
+          .select('id, name, description, category, city, country, phone, address, published, created_at')
           .eq('published', true)
           .order('created_at', { ascending: false })
 
@@ -79,25 +83,39 @@ export default function Explore() {
     return Array.from(unique)
   }, [businesses])
 
+  const categories = useMemo(() => {
+    const unique = new Set(
+      businesses
+        .map((b) => b.category?.trim())
+        .filter(Boolean) as string[]
+    )
+
+    return Array.from(unique)
+  }, [businesses])
+
   const filteredBusinesses = useMemo(() => {
     return businesses.filter((business) => {
-      const searchText = `${business.name || ''} ${business.description || ''} ${business.city || ''} ${business.country || ''} ${business.address || ''}`.toLowerCase()
+      const searchText = `${business.name || ''} ${business.description || ''} ${business.category || ''} ${business.city || ''} ${business.country || ''} ${business.address || ''}`.toLowerCase()
 
       const matchesSearch = searchText.includes(search.toLowerCase())
       const matchesCity = city
         ? (business.city || '').toLowerCase().includes(city.toLowerCase())
         : true
+      const matchesCategory = category
+        ? (business.category || '').toLowerCase().includes(category.toLowerCase())
+        : true
 
-      return matchesSearch && matchesCity
+      return matchesSearch && matchesCity && matchesCategory
     })
-  }, [businesses, search, city])
+  }, [businesses, search, city, category])
 
   function applyFiltersToUrl() {
     router.push({
       pathname: '/explore',
       query: {
         ...(search.trim() ? { query: search.trim() } : {}),
-        ...(city.trim() ? { city: city.trim() } : {})
+        ...(city.trim() ? { city: city.trim() } : {}),
+        ...(category.trim() ? { category: category.trim() } : {})
       }
     })
   }
@@ -105,6 +123,7 @@ export default function Explore() {
   function clearFilters() {
     setSearch('')
     setCity('')
+    setCategory('')
     router.push('/explore')
   }
 
@@ -195,6 +214,25 @@ export default function Explore() {
 
               <div>
                 <label className="small muted">
+                  Category
+                </label>
+                <input
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="Barber, Dentist..."
+                  list="category-options"
+                  style={{ width: '100%', marginTop: '0.4rem' }}
+                />
+
+                <datalist id="category-options">
+                  {categories.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div>
+                <label className="small muted">
                   City
                 </label>
                 <input
@@ -259,7 +297,7 @@ export default function Explore() {
               <div className="card">
                 <h3>No businesses match your filters</h3>
                 <p className="muted">
-                  Try changing your search or city filter.
+                  Try changing your search, category or city filter.
                 </p>
               </div>
             )}
@@ -287,13 +325,32 @@ export default function Explore() {
                     justifyContent: 'center',
                     fontSize: '2rem'
                   }}>
-                    ✂️
+                    {business.category?.toLowerCase().includes('dent') ? '🦷' :
+                      business.category?.toLowerCase().includes('barber') ? '💈' :
+                      business.category?.toLowerCase().includes('salon') ? '✂️' :
+                      '✨'}
                   </div>
 
                   <div>
-                    <h3 style={{ marginBottom: '0.25rem' }}>
-                      {business.name}
-                    </h3>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <h3 style={{ marginBottom: '0.25rem' }}>
+                        {business.name}
+                      </h3>
+
+                      {business.category && (
+                        <span
+                          className="small"
+                          style={{
+                            background: 'var(--accent-dim)',
+                            color: 'var(--accent)',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: 999
+                          }}
+                        >
+                          {business.category}
+                        </span>
+                      )}
+                    </div>
 
                     <p className="muted small" style={{ marginBottom: '0.4rem' }}>
                       {business.description || 'Service business'}

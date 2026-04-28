@@ -8,6 +8,7 @@ type Business = {
   id: string
   name: string
   description?: string | null
+  category?: string | null
   city?: string | null
   country?: string | null
   phone?: string | null
@@ -20,9 +21,10 @@ export default function Businesses() {
   const router = useRouter()
 
   const [businesses, setBusinesses] = useState<Business[]>([])
-  const [name, setName] = useState('')
+  const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
+  const [savingBusinessId, setSavingBusinessId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function loadBusinesses() {
@@ -70,7 +72,7 @@ export default function Businesses() {
   async function createBusiness(e: React.FormEvent) {
     e.preventDefault()
 
-    if (!name.trim()) return
+    if (!newName.trim()) return
 
     setLoading(true)
     setError(null)
@@ -85,7 +87,7 @@ export default function Businesses() {
     const { error } = await supabase
       .from('businesses')
       .insert({
-        name: name.trim(),
+        name: newName.trim(),
         user_id: session.user.id,
         published: false
       })
@@ -96,9 +98,44 @@ export default function Businesses() {
       return
     }
 
-    setName('')
+    setNewName('')
     await loadBusinesses()
     setLoading(false)
+  }
+
+  function updateLocalBusiness(id: string, field: keyof Business, value: string | boolean) {
+    setBusinesses((prev) =>
+      prev.map((business) =>
+        business.id === id ? { ...business, [field]: value } : business
+      )
+    )
+  }
+
+  async function saveBusiness(business: Business) {
+    setSavingBusinessId(business.id)
+    setError(null)
+
+    const { error } = await supabase
+      .from('businesses')
+      .update({
+        name: business.name,
+        description: business.description || null,
+        category: business.category || null,
+        city: business.city || null,
+        country: business.country || null,
+        address: business.address || null,
+        phone: business.phone || null
+      })
+      .eq('id', business.id)
+
+    if (error) {
+      setError(error.message)
+      setSavingBusinessId(null)
+      return
+    }
+
+    setSavingBusinessId(null)
+    await loadBusinesses()
   }
 
   async function togglePublished(business: Business) {
@@ -120,7 +157,7 @@ export default function Businesses() {
   return (
     <DashboardLayout
       title="Business profile"
-      subtitle="Choose which business you want to manage, publish your profile, and access its services, hours and bookings."
+      subtitle="Edit your business details, publish your profile, and manage services, working hours and bookings."
     >
       <form
         onSubmit={createBusiness}
@@ -140,8 +177,8 @@ export default function Businesses() {
         }}>
           <input
             placeholder="Business name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
           />
 
           <button className="btn btn-accent" disabled={loading} type="submit">
@@ -190,17 +227,12 @@ export default function Businesses() {
             }}>
               <div>
                 <h3 style={{ marginBottom: '0.25rem' }}>
-                  {business.name}
+                  {business.name || 'Untitled business'}
                 </h3>
-
-                <p className="small muted">
-                  {[business.address, business.city, business.country].filter(Boolean).join(', ') || 'Location not added yet'}
-                </p>
 
                 <p
                   className="small"
                   style={{
-                    marginTop: '0.5rem',
                     color: business.published ? 'var(--success)' : 'var(--warning)'
                   }}
                 >
@@ -216,49 +248,90 @@ export default function Businesses() {
               </button>
             </div>
 
-            <div className="grid-2">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '0.75rem'
+            }}>
+              <input
+                placeholder="Business name"
+                value={business.name || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'name', e.target.value)}
+              />
+
+              <input
+                placeholder="Category e.g. Barber, Dentist, Salon"
+                value={business.category || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'category', e.target.value)}
+              />
+
+              <input
+                placeholder="City"
+                value={business.city || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'city', e.target.value)}
+              />
+
+              <input
+                placeholder="Country"
+                value={business.country || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'country', e.target.value)}
+              />
+
+              <input
+                placeholder="Address"
+                value={business.address || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'address', e.target.value)}
+              />
+
+              <input
+                placeholder="Phone"
+                value={business.phone || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'phone', e.target.value)}
+              />
+            </div>
+
+            <textarea
+              placeholder="Description shown to customers"
+              value={business.description || ''}
+              onChange={(e) => updateLocalBusiness(business.id, 'description', e.target.value)}
+              rows={3}
+            />
+
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => saveBusiness(business)}
+                className="btn btn-accent"
+                disabled={savingBusinessId === business.id}
+              >
+                {savingBusinessId === business.id ? 'Saving...' : 'Save profile'}
+              </button>
+
               <Link
                 href={`/dashboard/services?businessId=${business.id}`}
-                className="card"
-                style={{ background: 'var(--surface-2)' }}
+                className="btn btn-ghost"
               >
-                <strong>Manage services</strong>
-                <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Add prices, durations and active services for this business.
-                </p>
+                Manage services
               </Link>
 
               <Link
                 href={`/dashboard/availability?businessId=${business.id}`}
-                className="card"
-                style={{ background: 'var(--surface-2)' }}
+                className="btn btn-ghost"
               >
-                <strong>Working hours</strong>
-                <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Set the available days and opening times for this business.
-                </p>
+                Working hours
               </Link>
 
               <Link
                 href={`/dashboard/bookings?businessId=${business.id}`}
-                className="card"
-                style={{ background: 'var(--surface-2)' }}
+                className="btn btn-ghost"
               >
-                <strong>View bookings</strong>
-                <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  See customer bookings and cancel appointments.
-                </p>
+                View bookings
               </Link>
 
               <Link
                 href={`/explore/${business.id}`}
-                className="card"
-                style={{ background: 'var(--surface-2)' }}
+                className="btn btn-ghost"
               >
-                <strong>Public booking page</strong>
-                <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Preview what customers see when booking this business.
-                </p>
+                Public page
               </Link>
             </div>
           </div>
