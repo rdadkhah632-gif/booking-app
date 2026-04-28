@@ -10,16 +10,25 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'customer' | 'business'>('customer')
   const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setMessage(null)
+
+    const cleanEmail = email.trim().toLowerCase()
 
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password
+      email: cleanEmail,
+      password,
+      options: {
+        data: {
+          role
+        }
+      }
     })
 
     if (error) {
@@ -29,15 +38,35 @@ export default function RegisterPage() {
     }
 
     if (data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        email: email.trim().toLowerCase(),
-        role
-      })
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: data.user.id,
+            email: cleanEmail,
+            role
+          },
+          { onConflict: 'id' }
+        )
+
+      if (profileError) {
+        setError(profileError.message)
+        setLoading(false)
+        return
+      }
     }
 
     setLoading(false)
-    router.replace('/login')
+
+    setMessage(
+      role === 'business'
+        ? 'Business account created. You can now log in and set up your business profile.'
+        : 'Customer account created. You can now log in and book appointments.'
+    )
+
+    setTimeout(() => {
+      router.replace('/login')
+    }, 900)
   }
 
   return (
@@ -137,6 +166,12 @@ export default function RegisterPage() {
           {error && (
             <p style={{ color: 'var(--danger)', marginTop: '1rem' }}>
               {error}
+            </p>
+          )}
+
+          {message && (
+            <p style={{ color: 'var(--success)', marginTop: '1rem' }}>
+              {message}
             </p>
           )}
 

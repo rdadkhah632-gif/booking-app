@@ -16,8 +16,10 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
+    const cleanEmail = email.trim().toLowerCase()
+
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: cleanEmail,
       password
     })
 
@@ -35,16 +37,35 @@ export default function LoginPage() {
       return
     }
 
-    const { data: profile, error: profileError } = await supabase
+    let { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
     if (profileError || !profile) {
-      setError('Could not load user profile')
-      setLoading(false)
-      return
+      const metadataRole = user.user_metadata?.role === 'business' ? 'business' : 'customer'
+
+      const { data: createdProfile, error: createProfileError } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: user.id,
+            email: cleanEmail,
+            role: metadataRole
+          },
+          { onConflict: 'id' }
+        )
+        .select('role')
+        .single()
+
+      if (createProfileError || !createdProfile) {
+        setError('Could not load or create user profile')
+        setLoading(false)
+        return
+      }
+
+      profile = createdProfile
     }
 
     setLoading(false)
