@@ -157,14 +157,7 @@ export default function Businesses() {
   return (
     <DashboardLayout
       title="Business profile"
-      subtitle="Edit your business details, publish your profile, and manage services, working hours and bookings."
-
-<Link
-  href={`/dashboard/staff?businessId=${business.id}`}
-  className="btn btn-ghost"
->
-  Staff
-</Link>
+      subtitle="Edit your business details, publish your profile, and manage services, staff, working hours and bookings."
     >
       <form
         onSubmit={createBusiness}
@@ -210,7 +203,7 @@ export default function Businesses() {
         <div className="card">
           <h3>No businesses yet</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Create your first business above. Then add services, working hours and publish it to the marketplace.
+            Create your first business above. Then add services, staff, working hours and publish it to the marketplace.
           </p>
         </div>
       )}
@@ -318,6 +311,13 @@ export default function Businesses() {
                 className="btn btn-ghost"
               >
                 Manage services
+              </Link>
+
+              <Link
+                href={`/dashboard/staff?businessId=${business.id}`}
+                className="btn btn-ghost"
+              >
+                Staff
               </Link>
 
               <Link
