@@ -22,6 +22,13 @@ type StaffService = {
   staff_member_id: string
   service_id: string
 }
+type StaffAvailability = {
+  staff_member_id: string
+  day_of_week: number
+  start_time: string
+  end_time: string
+  is_closed: boolean
+}
 
 type UserRole = 'customer' | 'business' | null
 
@@ -36,6 +43,7 @@ export default function BusinessBookingPage() {
 
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
   const [staffServices, setStaffServices] = useState<StaffService[]>([])
+  const [staffAvailability, setStaffAvailability] = useState<StaffAvailability[]>([])
   const [selectedStaffId, setSelectedStaffId] = useState<string>('any')
 
   const [customerUserId, setCustomerUserId] = useState<string | null>(null)
@@ -161,8 +169,22 @@ export default function BusinessBookingPage() {
         }
 
         setStaffServices(staffServiceData || [])
+
+        const { data: staffAvailabilityData, error: staffAvailabilityError } = await supabase
+          .from('staff_availability')
+          .select('staff_member_id, day_of_week, start_time, end_time, is_closed')
+          .in('staff_member_id', staffIds)
+
+        if (staffAvailabilityError) {
+          setError(staffAvailabilityError.message)
+          setPageLoading(false)
+          return
+        }
+
+        setStaffAvailability(staffAvailabilityData || [])
       } else {
         setStaffServices([])
+        setStaffAvailability([])
       }
 
       const { data: availabilityData, error: availabilityError } = await supabase
@@ -212,7 +234,14 @@ export default function BusinessBookingPage() {
     const selectedDate = new Date(date)
     const day = selectedDate.getDay()
 
-    const dayAvailability = availability.find(a => a.day_of_week === day)
+    const dayAvailability =
+      selectedStaffId !== 'any'
+        ? staffAvailability.find(
+            (row) =>
+              row.staff_member_id === selectedStaffId &&
+              row.day_of_week === day
+          )
+        : availability.find((row) => row.day_of_week === day)
 
     if (!dayAvailability || dayAvailability.is_closed) {
       setTimeSlots([])
@@ -254,7 +283,7 @@ export default function BusinessBookingPage() {
 
   useEffect(() => {
     generateTimeSlots()
-  }, [date, selectedService, selectedStaffId, availability, bookings])
+  }, [date, selectedService, selectedStaffId, availability, staffAvailability, bookings])
 
   async function createBooking(e: React.FormEvent) {
     e.preventDefault()

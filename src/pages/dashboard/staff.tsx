@@ -411,9 +411,15 @@ export default function StaffPage() {
                     {member.phone && <p className="small muted">{member.phone}</p>}
                   </div>
 
-                  <button onClick={() => toggleStaffActive(member)} className={member.active ? 'btn btn-ghost' : 'btn btn-accent'}>
-                    {member.active ? 'Hide from booking page' : 'Show on booking page'}
-                  </button>
+                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+  <Link href={`/dashboard/staff-availability?staffId=${member.id}`} className="btn btn-accent">
+    Staff hours
+  </Link>
+
+  <button onClick={() => toggleStaffActive(member)} className={member.active ? 'btn btn-ghost' : 'btn btn-accent'}>
+    {member.active ? 'Hide from booking page' : 'Show on booking page'}
+  </button>
+</div>
                 </div>
 
                 <div style={{
