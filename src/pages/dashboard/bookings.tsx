@@ -181,10 +181,15 @@ export default function Bookings() {
 
       {!pageLoading && !business && businesses.length > 1 && (
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <div className="card">
-            <h3>Choose a business</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Select which business you want to view bookings for.
+          <div style={{ padding: '0.25rem 0 0.5rem' }}>
+            <p className="small muted" style={{ marginBottom: '0.35rem' }}>
+              Multiple businesses found
+            </p>
+            <h3 style={{ marginBottom: '0.35rem' }}>
+              Choose a business to continue
+            </h3>
+            <p className="muted">
+              Select one of the business cards below. The next page will show bookings for that specific business.
             </p>
           </div>
 
@@ -193,11 +198,23 @@ export default function Bookings() {
               key={b.id}
               href={`/dashboard/bookings?businessId=${b.id}`}
               className="card"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '1rem'
+              }}
             >
-              <strong>{b.name}</strong>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                View bookings for this business.
-              </p>
+              <div>
+                <strong>{b.name}</strong>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  View bookings for this business.
+                </p>
+              </div>
+
+              <span className="btn btn-accent">
+                View bookings
+              </span>
             </Link>
           ))}
         </div>
@@ -229,6 +246,7 @@ export default function Bookings() {
                   <p className="small muted">
                     Service: {booking.services?.name || 'No service recorded'}
                   </p>
+
                   <p className="small muted">
                     Staff: {booking.staff_members?.name || 'Any available staff'}
                     {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
