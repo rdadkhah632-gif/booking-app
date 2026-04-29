@@ -225,6 +225,44 @@ export default function BusinessBookingPage() {
     )
   }
 
+  function findAvailableStaffForSlot(slotStart: Date, durationMinutes: number) {
+    if (!selectedService) return null
+
+    const possibleStaff = staffThatCanDoSelectedService().filter((staff) => {
+      const selectedDate = new Date(date)
+      const day = selectedDate.getDay()
+
+      const staffDay = staffAvailability.find(
+        (row) =>
+          row.staff_member_id === staff.id &&
+          row.day_of_week === day
+      )
+
+      if (!staffDay || staffDay.is_closed) return false
+
+      const staffStart = new Date(`${date}T${staffDay.start_time}`)
+      const staffEnd = new Date(`${date}T${staffDay.end_time}`)
+      const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60000)
+
+      if (slotStart < staffStart || slotEnd > staffEnd) return false
+
+      const overlaps = bookings.some((booking) => {
+        if (booking.staff_member_id !== staff.id) return false
+
+        const bookingStart = new Date(booking.start_at)
+        const bookingEnd = booking.end_at
+          ? new Date(booking.end_at)
+          : new Date(bookingStart.getTime() + booking.duration_minutes * 60000)
+
+        return slotStart < bookingEnd && slotEnd > bookingStart
+      })
+
+      return !overlaps
+    })
+
+    return possibleStaff[0] || null
+  }
+
   function generateTimeSlots() {
     if (!date || !selectedService) {
       setTimeSlots([])
@@ -258,20 +296,37 @@ export default function BusinessBookingPage() {
       const slotEnd = new Date(start.getTime() + selectedService.duration_minutes * 60000)
       const timeString = slotStart.toTimeString().slice(0, 5)
 
-      const overlapsBooking = bookings.some(b => {
-        if (selectedStaffId !== 'any' && b.staff_member_id && b.staff_member_id !== selectedStaffId) {
-          return false
-        }
+      let slotAvailable = true
 
-        const bookingStart = new Date(b.start_at)
-        const bookingEnd = b.end_at
-          ? new Date(b.end_at)
-          : new Date(bookingStart.getTime() + b.duration_minutes * 60000)
+      if (selectedStaffId !== 'any') {
+        const overlapsBooking = bookings.some((booking) => {
+          if (booking.staff_member_id !== selectedStaffId) return false
 
-        return slotStart < bookingEnd && slotEnd > bookingStart
-      })
+          const bookingStart = new Date(booking.start_at)
+          const bookingEnd = booking.end_at
+            ? new Date(booking.end_at)
+            : new Date(bookingStart.getTime() + booking.duration_minutes * 60000)
 
-      if (!overlapsBooking) {
+          return slotStart < bookingEnd && slotEnd > bookingStart
+        })
+
+        slotAvailable = !overlapsBooking
+      } else if (staffMembers.length > 0 && staffThatCanDoSelectedService().length > 0) {
+        slotAvailable = !!findAvailableStaffForSlot(slotStart, selectedService.duration_minutes)
+      } else {
+        const overlapsBooking = bookings.some((booking) => {
+          const bookingStart = new Date(booking.start_at)
+          const bookingEnd = booking.end_at
+            ? new Date(booking.end_at)
+            : new Date(bookingStart.getTime() + booking.duration_minutes * 60000)
+
+          return slotStart < bookingEnd && slotEnd > bookingStart
+        })
+
+        slotAvailable = !overlapsBooking
+      }
+
+      if (slotAvailable) {
         slots.push(timeString)
       }
 
@@ -300,14 +355,33 @@ export default function BusinessBookingPage() {
     setLoading(true)
     setError(null)
 
-    const startAt = new Date(`${date}T${selectedTime}:00`).toISOString()
+    const slotStartDate = new Date(`${date}T${selectedTime}:00`)
+    const startAt = slotStartDate.toISOString()
+
+    let staffMemberIdToSave: string | null =
+      selectedStaffId === 'any' ? null : selectedStaffId
+
+    if (selectedStaffId === 'any' && staffMembers.length > 0) {
+      const availableStaff = findAvailableStaffForSlot(
+        slotStartDate,
+        selectedService.duration_minutes
+      )
+
+      if (!availableStaff) {
+        setLoading(false)
+        setError('No assigned staff member is available for that time. Please choose another slot or select a specific staff member.')
+        return
+      }
+
+      staffMemberIdToSave = availableStaff.id
+    }
 
     const { error } = await supabase
       .from('bookings')
       .insert({
         business_id: businessId,
         service_id: selectedService.id,
-        staff_member_id: selectedStaffId === 'any' ? null : selectedStaffId,
+        staff_member_id: staffMemberIdToSave,
         customer_user_id: customerUserId,
         customer_name: customerName,
         customer_email: customerEmail.trim().toLowerCase(),
