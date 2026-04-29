@@ -26,6 +26,10 @@ type Booking = {
     duration_minutes: number
     price: number
   } | null
+  staff_members?: {
+    name: string
+    role_title?: string | null
+  } | null
 }
 
 type Role = 'customer' | 'business' | null
@@ -82,11 +86,15 @@ export default function RescheduleBooking() {
           name,
           user_id
         ),
-        services (
+                services (
           id,
           name,
           duration_minutes,
           price
+        ),
+        staff_members (
+          name,
+          role_title
         )
       `)
       .eq('id', id)
@@ -288,6 +296,13 @@ export default function RescheduleBooking() {
                 <div>
                   <p className="small muted">Service</p>
                   <strong>{booking.services?.name || 'Service'}</strong>
+                </div>
+                <div>
+                  <p className="small muted">Staff member</p>
+                  <strong>
+                    {booking.staff_members?.name || 'Any available staff'}
+                    {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+                  </strong>
                 </div>
 
                 <div>

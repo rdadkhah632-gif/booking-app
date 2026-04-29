@@ -23,6 +23,10 @@ type Booking = {
     name: string
     price: number
   } | null
+  staff_members?: {
+    name: string
+    role_title?: string | null
+  } | null
 }
 
 export default function BookingConfirmation() {
@@ -55,7 +59,7 @@ export default function BookingConfirmation() {
 
       const { data, error } = await supabase
         .from('bookings')
-        .select(`
+               .select(`
           *,
           businesses (
             name,
@@ -67,6 +71,10 @@ export default function BookingConfirmation() {
           services (
             name,
             price
+          ),
+          staff_members (
+            name,
+            role_title
           )
         `)
         .eq('id', id)
@@ -162,6 +170,13 @@ export default function BookingConfirmation() {
                 <div>
                   <p className="small muted">Service</p>
                   <strong>{booking.services?.name || 'Service'}</strong>
+                </div>
+                <div>
+                  <p className="small muted">Staff member</p>
+                  <strong>
+                    {booking.staff_members?.name || 'Any available staff'}
+                    {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+                  </strong>
                 </div>
 
                 <div>

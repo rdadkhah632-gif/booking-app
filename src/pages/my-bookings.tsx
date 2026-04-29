@@ -12,6 +12,7 @@ type Booking = {
   status: string
   businesses?: { name: string } | null
   services?: { name: string; price: number } | null
+  staff_members?: { name: string; role_title?: string | null } | null
 }
 
 export default function MyBookings() {
@@ -48,10 +49,11 @@ export default function MyBookings() {
 
     const { data, error } = await supabase
       .from('bookings')
-      .select(`
+            .select(`
         *,
         businesses ( name ),
-        services ( name, price )
+        services ( name, price ),
+        staff_members ( name, role_title )
       `)
       .eq('customer_user_id', session.user.id)
       .order('start_at', { ascending: true })
@@ -181,6 +183,10 @@ export default function MyBookings() {
                     <div>
                       <strong>{booking.businesses?.name || 'Business'}</strong>
                       <p className="small muted">Service: {booking.services?.name || 'Service not recorded'}</p>
+<p className="small muted">
+  Staff: {booking.staff_members?.name || 'Any available staff'}
+  {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+</p>
                       <p className="small muted">
                         Price: £{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}
                       </p>
@@ -216,6 +222,10 @@ export default function MyBookings() {
                 <div key={booking.id} className="card" style={{ opacity: 0.65 }}>
                   <strong>{booking.businesses?.name || 'Business'}</strong>
                   <p className="small muted">Service: {booking.services?.name || 'Service not recorded'}</p>
+<p className="small muted">
+  Staff: {booking.staff_members?.name || 'Any available staff'}
+  {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+</p>
                   <p className="small muted">Time: {new Date(booking.start_at).toLocaleString()}</p>
                   <p className="small muted">Duration: {booking.duration_minutes} minutes</p>
                   <p className="small muted">Status: {booking.status}</p>
