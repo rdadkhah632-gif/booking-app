@@ -67,13 +67,20 @@ export default function StaffAvailabilityPage() {
       return
     }
 
-    if (staffData.businesses?.user_id !== session.user.id) {
+    const linkedBusiness = Array.isArray(staffData.businesses)
+  ? staffData.businesses[0]
+  : staffData.businesses
+
+if (linkedBusiness?.user_id !== session.user.id) {
       setError('You do not have access to manage this staff member.')
       setLoading(false)
       return
     }
 
-    setStaff(staffData)
+    setStaff({
+  ...staffData,
+  businesses: linkedBusiness
+})
 
     const { data: existing, error: availabilityError } = await supabase
       .from('staff_availability')
