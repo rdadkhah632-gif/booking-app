@@ -283,10 +283,15 @@ export default function StaffPage() {
 
       {!pageLoading && !business && businesses.length > 1 && (
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <div className="card">
-            <h3>Choose a business</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Select which business you want to manage staff for.
+          <div style={{ padding: '0.25rem 0 0.5rem' }}>
+            <p className="small muted" style={{ marginBottom: '0.35rem' }}>
+              Multiple businesses found
+            </p>
+            <h3 style={{ marginBottom: '0.35rem' }}>
+              Choose a business to continue
+            </h3>
+            <p className="muted">
+              Select one of the business cards below. The next page will show the staff for that specific business.
             </p>
           </div>
 
@@ -295,11 +300,23 @@ export default function StaffPage() {
               key={b.id}
               href={`/dashboard/staff?businessId=${b.id}`}
               className="card"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '1rem'
+              }}
             >
-              <strong>{b.name}</strong>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                Manage staff for this business.
-              </p>
+              <div>
+                <strong>{b.name}</strong>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  Manage staff for this business.
+                </p>
+              </div>
+
+              <span className="btn btn-accent">
+                Manage staff
+              </span>
             </Link>
           ))}
         </div>
@@ -365,26 +382,44 @@ export default function StaffPage() {
 
             {staff.map((member) => (
               <div key={member.id} className="card" style={{ display: 'grid', gap: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  alignItems: 'flex-start',
+                  flexWrap: 'wrap'
+                }}>
                   <div>
-                    <h3>{member.name}</h3>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <h3>{member.name}</h3>
+
+                      <span
+                        className="small"
+                        style={{
+                          background: member.active ? 'rgba(45, 212, 191, 0.12)' : 'rgba(255, 190, 11, 0.12)',
+                          color: member.active ? 'var(--success)' : 'var(--warning)',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: 999
+                        }}
+                      >
+                        {member.active ? 'Visible to customers' : 'Hidden from customers'}
+                      </span>
+                    </div>
+
                     <p className="small muted">{member.role_title || 'Staff member'}</p>
                     {member.email && <p className="small muted">{member.email}</p>}
                     {member.phone && <p className="small muted">{member.phone}</p>}
-                    <p
-                      className="small"
-                      style={{ color: member.active ? 'var(--success)' : 'var(--warning)', marginTop: '0.35rem' }}
-                    >
-                      {member.active ? 'Active' : 'Hidden'}
-                    </p>
                   </div>
 
-                  <button onClick={() => toggleStaffActive(member)} className="btn btn-ghost">
-                    {member.active ? 'Hide staff' : 'Show staff'}
+                  <button onClick={() => toggleStaffActive(member)} className={member.active ? 'btn btn-ghost' : 'btn btn-accent'}>
+                    {member.active ? 'Hide from booking page' : 'Show on booking page'}
                   </button>
                 </div>
 
-                <div>
+                <div style={{
+                  borderTop: '1px solid var(--border)',
+                  paddingTop: '1rem'
+                }}>
                   <p className="small muted" style={{ marginBottom: '0.5rem' }}>
                     Services this staff member can perform
                   </p>
@@ -394,17 +429,27 @@ export default function StaffPage() {
                   )}
 
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    {services.map((service) => (
-                      <button
-                        key={service.id}
-                        type="button"
-                        onClick={() => toggleStaffService(member.id, service.id)}
-                        className={staffCanDoService(member.id, service.id) ? 'btn btn-accent' : 'btn btn-ghost'}
-                      >
-                        {service.name}
-                      </button>
-                    ))}
+                    {services.map((service) => {
+                      const assigned = staffCanDoService(member.id, service.id)
+
+                      return (
+                        <button
+                          key={service.id}
+                          type="button"
+                          onClick={() => toggleStaffService(member.id, service.id)}
+                          className={assigned ? 'btn btn-accent' : 'btn btn-ghost'}
+                          title={assigned ? 'Click to remove this service from staff member' : 'Click to assign this service to staff member'}
+                        >
+                          {assigned ? '✓ ' : '+ '}
+                          {service.name}
+                        </button>
+                      )
+                    })}
                   </div>
+
+                  <p className="small muted" style={{ marginTop: '0.75rem' }}>
+                    Orange means assigned. Grey means not assigned.
+                  </p>
                 </div>
               </div>
             ))}

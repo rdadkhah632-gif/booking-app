@@ -207,10 +207,15 @@ export default function Services() {
 
       {!pageLoading && !business && businesses.length > 1 && (
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <div className="card">
-            <h3>Choose a business</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Select which business you want to manage services for.
+          <div style={{ padding: '0.25rem 0 0.5rem' }}>
+            <p className="small muted" style={{ marginBottom: '0.35rem' }}>
+              Multiple businesses found
+            </p>
+            <h3 style={{ marginBottom: '0.35rem' }}>
+              Choose a business to continue
+            </h3>
+            <p className="muted">
+              Select one of the business cards below. The next page will show the services for that specific business.
             </p>
           </div>
 
@@ -219,11 +224,23 @@ export default function Services() {
               key={b.id}
               href={`/dashboard/services?businessId=${b.id}`}
               className="card"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '1rem'
+              }}
             >
-              <strong>{b.name}</strong>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                Manage services for this business.
-              </p>
+              <div>
+                <strong>{b.name}</strong>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  Manage services for this business.
+                </p>
+              </div>
+
+              <span className="btn btn-accent">
+                Manage services
+              </span>
             </Link>
           ))}
         </div>
@@ -280,11 +297,11 @@ export default function Services() {
                     <p className="small muted">{service.duration_minutes} minutes</p>
                     <p className="small muted">£{Number(service.price).toFixed(2)}</p>
                     <p className="small" style={{ color: service.active ? 'var(--success)' : 'var(--warning)' }}>
-                      {service.active ? 'Active' : 'Hidden'}
+                      {service.active ? 'Visible to customers' : 'Hidden from customers'}
                     </p>
                   </div>
 
-                  <button onClick={() => toggleService(service)} className="btn btn-ghost">
+                  <button onClick={() => toggleService(service)} className={service.active ? 'btn btn-ghost' : 'btn btn-accent'}>
                     {service.active ? 'Hide service' : 'Show service'}
                   </button>
                 </div>
