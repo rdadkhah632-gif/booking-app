@@ -103,6 +103,10 @@ export default function AuthNav() {
                 My bookings
               </Link>
 
+              <Link href="/notifications" className="muted">
+                Notifications
+              </Link>
+
               <Link href="/account" className="muted">
                 Account
               </Link>
@@ -121,6 +125,10 @@ export default function AuthNav() {
 
               <Link href="/dashboard/businesses" className="muted">
                 Business profile
+              </Link>
+
+              <Link href="/dashboard/notifications" className="muted">
+                Notifications
               </Link>
 
               <Link href="/explore" className="muted">
