@@ -370,20 +370,35 @@ export default function RescheduleBooking() {
     let error = null
 
     if (role === 'customer') {
-      const { error: cancelOldRequestsError } = await supabase
+      const { data: existingPendingRequest, error: existingRequestError } = await supabase
         .from('booking_requests')
-        .update({
-          status: 'cancelled',
-          response_message: 'Cancelled automatically because a newer request was submitted.',
-          updated_at: new Date().toISOString()
-        })
+        .select('id')
         .eq('booking_id', booking.id)
         .eq('requested_by', 'customer')
         .eq('request_type', 'reschedule')
         .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
 
-      if (cancelOldRequestsError) {
-        error = cancelOldRequestsError
+      if (existingRequestError) {
+        error = existingRequestError
+      } else if (existingPendingRequest?.id) {
+        const result = await supabase
+          .from('booking_requests')
+          .update({
+            current_start_at: booking.start_at,
+            requested_start_at: newStartAt,
+            current_staff_member_id: booking.staff_member_id || null,
+            requested_staff_member_id: selectedStaffId,
+            requested_duration_minutes: newDuration,
+            message: 'Customer updated their requested appointment time.',
+            response_message: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingPendingRequest.id)
+
+        error = result.error
       } else {
         const result = await supabase
           .from('booking_requests')
