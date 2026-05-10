@@ -59,7 +59,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     { href: '/dashboard/staff', label: 'Staff' },
     { href: '/dashboard/availability', label: 'Working hours' },
     { href: '/dashboard/bookings', label: 'Bookings' },
-    { href: '/dashboard/notifications', label: 'Notifications' },
     { href: '/account', label: 'Account settings' }
   ]
 
@@ -83,31 +82,11 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               className={`sidebar-link ${router.pathname === link.href ? 'active' : ''}`}
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
                 gap: '0.75rem'
               }}
             >
               <span>{link.label}</span>
-
-              {link.href === '/dashboard/notifications' && pendingCount > 0 && (
-                <span
-                  style={{
-                    minWidth: 22,
-                    height: 22,
-                    borderRadius: 999,
-                    background: 'var(--accent)',
-                    color: 'var(--bg)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    fontWeight: 700
-                  }}
-                >
-                  {pendingCount > 9 ? '9+' : pendingCount}
-                </span>
-              )}
             </Link>
           ))}
         </nav>
@@ -139,8 +118,17 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
       </aside>
 
       <section className="dashboard-main">
-        {(title || subtitle) && (
-          <div style={{ marginBottom: '1.5rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            alignItems: 'flex-start',
+            marginBottom: '1.5rem',
+            flexWrap: 'wrap'
+          }}
+        >
+          <div>
             {title && (
               <h1
                 style={{
@@ -155,7 +143,41 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
             {subtitle && <p className="muted">{subtitle}</p>}
           </div>
-        )}
+
+          <Link
+            href="/dashboard/notifications"
+            className="btn btn-ghost"
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <span aria-hidden="true">🔔</span>
+            <span>Notifications</span>
+
+            {pendingCount > 0 && (
+              <span
+                style={{
+                  minWidth: 22,
+                  height: 22,
+                  borderRadius: 999,
+                  background: 'var(--accent)',
+                  color: 'var(--bg)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  marginLeft: '0.15rem'
+                }}
+              >
+                {pendingCount > 9 ? '9+' : pendingCount}
+              </span>
+            )}
+          </Link>
+        </div>
 
         {children}
       </section>
