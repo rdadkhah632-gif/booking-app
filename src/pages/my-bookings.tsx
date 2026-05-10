@@ -105,7 +105,14 @@ export default function MyBookings() {
       return
     }
 
-    setRequests(requestData || [])
+    const normalisedRequests = (requestData || []).map((request: any) => ({
+  ...request,
+  requested_staff: Array.isArray(request.requested_staff)
+    ? request.requested_staff[0] || null
+    : request.requested_staff
+}))
+
+setRequests(normalisedRequests)
     setLoading(false)
   }
 
