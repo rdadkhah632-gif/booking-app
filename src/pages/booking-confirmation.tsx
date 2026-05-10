@@ -94,6 +94,20 @@ export default function BookingConfirmation() {
     loadBooking()
   }, [router.isReady, id])
 
+  function statusLabel(status: string) {
+    if (status === 'confirmed') return 'Confirmed appointment'
+    if (status === 'completed') return 'Completed appointment'
+    if (status === 'cancelled') return 'Cancelled booking'
+    return status
+  }
+
+  function statusColor(status: string) {
+    if (status === 'confirmed') return 'var(--success)'
+    if (status === 'completed') return 'var(--accent)'
+    if (status === 'cancelled') return 'var(--warning)'
+    return 'var(--text-muted)'
+  }
+
   return (
     <main>
       <AuthNav />
@@ -141,25 +155,73 @@ export default function BookingConfirmation() {
                 ✓
               </div>
 
-              <p className="small muted">Booking confirmed</p>
+              <p className="small" style={{ color: 'var(--success)' }}>Booking confirmed</p>
 
               <h1 style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: '2.4rem',
                 marginTop: '0.35rem'
               }}>
-                You're booked in.
+                Your appointment is confirmed.
               </h1>
 
               <p className="muted" style={{ marginTop: '0.75rem' }}>
-                Your appointment has been confirmed and added to your bookings.
+                Your booking is confirmed with {booking.businesses?.name || 'this business'}. You can view, cancel or request a reschedule from My Bookings.
               </p>
             </div>
 
+            <div
+              className="card"
+              style={{
+                borderColor: 'rgba(45,212,191,0.28)',
+                background: 'rgba(45,212,191,0.06)'
+              }}
+            >
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 999,
+                    background: 'rgba(45,212,191,0.12)',
+                    color: 'var(--success)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 800,
+                    flexShrink: 0
+                  }}
+                >
+                  ✓
+                </div>
+
+                <div>
+                  <strong>What happens next?</strong>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="card">
-              <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>
-                Appointment details
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-display)' }}>
+                  Appointment details
+                </h2>
+
+                <span
+                  className="small"
+                  style={{
+                    background: 'rgba(45,212,191,0.12)',
+                    color: statusColor(booking.status),
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: 999
+                  }}
+                >
+                  {statusLabel(booking.status)}
+                </span>
+              </div>
 
               <div style={{ display: 'grid', gap: '0.85rem' }}>
                 <div>
@@ -179,8 +241,15 @@ export default function BookingConfirmation() {
                   </strong>
                 </div>
 
-                <div>
-                  <p className="small muted">Date and time</p>
+                <div
+                  style={{
+                    padding: '0.9rem',
+                    borderRadius: 'var(--radius)',
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)'
+                  }}
+                >
+                  <p className="small muted">Confirmed date and time</p>
                   <strong>{new Date(booking.start_at).toLocaleString()}</strong>
                 </div>
 
@@ -221,10 +290,8 @@ export default function BookingConfirmation() {
 
                 <div>
                   <p className="small muted">Status</p>
-                  <strong style={{
-                    color: booking.status === 'cancelled' ? 'var(--warning)' : 'var(--success)'
-                  }}>
-                    {booking.status}
+                  <strong style={{ color: statusColor(booking.status) }}>
+                    {statusLabel(booking.status)}
                   </strong>
                 </div>
               </div>
@@ -237,7 +304,7 @@ export default function BookingConfirmation() {
               flexWrap: 'wrap'
             }}>
               <Link href="/my-bookings" className="btn btn-accent">
-                View my bookings
+                View or manage this booking
               </Link>
 
               <Link href="/explore" className="btn btn-ghost">
