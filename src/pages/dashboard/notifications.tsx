@@ -154,10 +154,29 @@ export default function BusinessNotifications() {
       })
       .eq('id', request.id)
 
-    setActionLoadingId(null)
-
     if (requestError) {
       setError(requestError.message)
+      setActionLoadingId(null)
+      return
+    }
+
+    const { error: cancelOtherRequestsError } = await supabase
+      .from('booking_requests')
+      .update({
+        status: 'cancelled',
+        response_message: 'Cancelled automatically because another reschedule request was accepted.',
+        updated_at: new Date().toISOString()
+      })
+      .eq('booking_id', request.booking_id)
+      .eq('requested_by', 'customer')
+      .eq('request_type', 'reschedule')
+      .eq('status', 'pending')
+      .neq('id', request.id)
+
+    setActionLoadingId(null)
+
+    if (cancelOtherRequestsError) {
+      setError(cancelOtherRequestsError.message)
       return
     }
 
@@ -190,8 +209,24 @@ export default function BusinessNotifications() {
     await loadRequests()
   }
 
-  const pendingRequests = requests.filter((request) => request.status === 'pending')
-  const pastRequests = requests.filter((request) => request.status !== 'pending')
+  const pendingRequests = Object.values(
+    requests
+      .filter((request) => request.status === 'pending')
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .reduce<Record<string, BookingRequest>>((latestByBooking, request) => {
+        if (!latestByBooking[request.booking_id]) {
+          latestByBooking[request.booking_id] = request
+        }
+
+        return latestByBooking
+      }, {})
+  )
+
+  const latestPendingIds = new Set(pendingRequests.map((request) => request.id))
+
+  const pastRequests = requests.filter(
+    (request) => request.status !== 'pending' || !latestPendingIds.has(request.id)
+  )
 
   return (
     <DashboardLayout
@@ -230,7 +265,7 @@ export default function BusinessNotifications() {
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                 <div>
                   <p className="small" style={{ color: 'var(--accent)' }}>
-                    Reschedule request
+                    Latest pending reschedule request
                   </p>
 
                   <h3 style={{ marginTop: '0.25rem' }}>
@@ -263,6 +298,10 @@ export default function BusinessNotifications() {
                       Message: {request.message}
                     </p>
                   )}
+
+                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    Requested: {new Date(request.created_at).toLocaleString()}
+                  </p>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -313,6 +352,10 @@ export default function BusinessNotifications() {
 
                   <p className="small muted">
                     Requested time: {new Date(request.requested_start_at).toLocaleString()}
+                  </p>
+
+                  <p className="small muted">
+                    Requested: {new Date(request.created_at).toLocaleString()}
                   </p>
 
                   <p className="small muted">

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
@@ -10,6 +11,41 @@ type Props = {
 
 export default function DashboardLayout({ children, title, subtitle }: Props) {
   const router = useRouter()
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    async function loadPendingNotifications() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) return
+
+      const { data: businesses } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('user_id', session.user.id)
+
+      const businessIds = (businesses || []).map((business) => business.id)
+
+      if (businessIds.length === 0) {
+        setPendingCount(0)
+        return
+      }
+
+      const { data: pendingRequests } = await supabase
+        .from('booking_requests')
+        .select('booking_id')
+        .in('business_id', businessIds)
+        .eq('status', 'pending')
+
+      const uniquePendingBookings = new Set(
+        (pendingRequests || []).map((request) => request.booking_id)
+      )
+
+      setPendingCount(uniquePendingBookings.size)
+    }
+
+    loadPendingNotifications()
+  }, [router.pathname])
 
   async function logout() {
     await supabase.auth.signOut()
@@ -45,8 +81,33 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               key={link.href}
               href={link.href}
               className={`sidebar-link ${router.pathname === link.href ? 'active' : ''}`}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}
             >
-              {link.label}
+              <span>{link.label}</span>
+
+              {link.href === '/dashboard/notifications' && pendingCount > 0 && (
+                <span
+                  style={{
+                    minWidth: 22,
+                    height: 22,
+                    borderRadius: 999,
+                    background: 'var(--accent)',
+                    color: 'var(--bg)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem',
+                    fontWeight: 700
+                  }}
+                >
+                  {pendingCount > 9 ? '9+' : pendingCount}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

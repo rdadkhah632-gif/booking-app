@@ -369,38 +369,54 @@ export default function RescheduleBooking() {
 
     let error = null
 
-if (role === 'customer') {
-  const result = await supabase
-    .from('booking_requests')
-    .insert({
-      booking_id: booking.id,
-      business_id: booking.business_id,
-      customer_user_id: booking.customer_user_id,
-      requested_by: 'customer',
-      request_type: 'reschedule',
-      status: 'pending',
-      current_start_at: booking.start_at,
-      requested_start_at: newStartAt,
-      current_staff_member_id: booking.staff_member_id || null,
-      requested_staff_member_id: selectedStaffId,
-      requested_duration_minutes: newDuration,
-      message: 'Customer requested a new appointment time.'
-    })
+    if (role === 'customer') {
+      const { error: cancelOldRequestsError } = await supabase
+        .from('booking_requests')
+        .update({
+          status: 'cancelled',
+          response_message: 'Cancelled automatically because a newer request was submitted.',
+          updated_at: new Date().toISOString()
+        })
+        .eq('booking_id', booking.id)
+        .eq('requested_by', 'customer')
+        .eq('request_type', 'reschedule')
+        .eq('status', 'pending')
 
-  error = result.error
-} else {
-  const result = await supabase
-    .from('bookings')
-    .update({
-      start_at: newStartAt,
-      duration_minutes: newDuration,
-      staff_member_id: selectedStaffId,
-      status: 'confirmed'
-    })
-    .eq('id', booking.id)
+      if (cancelOldRequestsError) {
+        error = cancelOldRequestsError
+      } else {
+        const result = await supabase
+          .from('booking_requests')
+          .insert({
+            booking_id: booking.id,
+            business_id: booking.business_id,
+            customer_user_id: booking.customer_user_id,
+            requested_by: 'customer',
+            request_type: 'reschedule',
+            status: 'pending',
+            current_start_at: booking.start_at,
+            requested_start_at: newStartAt,
+            current_staff_member_id: booking.staff_member_id || null,
+            requested_staff_member_id: selectedStaffId,
+            requested_duration_minutes: newDuration,
+            message: 'Customer requested a new appointment time.'
+          })
 
-  error = result.error
-}
+        error = result.error
+      }
+    } else {
+      const result = await supabase
+        .from('bookings')
+        .update({
+          start_at: newStartAt,
+          duration_minutes: newDuration,
+          staff_member_id: selectedStaffId,
+          status: 'confirmed'
+        })
+        .eq('id', booking.id)
+
+      error = result.error
+    }
 
     setSaving(false)
 
@@ -410,11 +426,11 @@ if (role === 'customer') {
     }
 
     if (role === 'business') {
-  router.push(`/dashboard/bookings?businessId=${booking.business_id}`)
-} else {
-  router.push('/my-bookings?requestSent=1')
-}
-}
+      router.push(`/dashboard/bookings?businessId=${booking.business_id}`)
+    } else {
+      router.push('/my-bookings?requestSent=1')
+    }
+  }
   const selectableStaff = staffThatCanDoBookingService()
 
   return (

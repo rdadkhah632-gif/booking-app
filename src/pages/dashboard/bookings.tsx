@@ -150,6 +150,23 @@ export default function Bookings() {
     await loadBookings()
   }
 
+  async function completeBooking(id: string) {
+    const confirmed = confirm('Mark this appointment as completed?')
+    if (!confirmed) return
+
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'completed' })
+      .eq('id', id)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    await loadBookings()
+  }
+
   return (
     <DashboardLayout
       title="Bookings"
@@ -236,7 +253,7 @@ export default function Bookings() {
               key={booking.id}
               className="card"
               style={{
-                opacity: booking.status === 'cancelled' ? 0.55 : 1
+                opacity: booking.status === 'cancelled' || booking.status === 'completed' ? 0.65 : 1
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
@@ -275,7 +292,11 @@ export default function Bookings() {
                   <p
                     className="small"
                     style={{
-                      color: booking.status === 'cancelled' ? 'var(--warning)' : 'var(--success)'
+                      color: booking.status === 'cancelled'
+                        ? 'var(--warning)'
+                        : booking.status === 'completed'
+                          ? 'var(--accent)'
+                          : 'var(--success)'
                     }}
                   >
                     Status: {booking.status}
@@ -283,8 +304,12 @@ export default function Bookings() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  {booking.status !== 'cancelled' ? (
+                  {booking.status === 'confirmed' ? (
                     <>
+                      <button onClick={() => completeBooking(booking.id)} className="btn btn-accent">
+                        Mark completed
+                      </button>
+
                       <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
                         Reschedule
                       </Link>
@@ -295,7 +320,7 @@ export default function Bookings() {
                     </>
                   ) : (
                     <span className="small muted">
-                      Cancelled booking
+                      {booking.status === 'completed' ? 'Completed appointment' : 'Cancelled booking'}
                     </span>
                   )}
                 </div>
