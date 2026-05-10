@@ -133,6 +133,24 @@ export default function Bookings() {
     loadBookings()
   }, [router.isReady, businessId])
 
+  useEffect(() => {
+    if (!router.isReady) return
+
+    function refreshWhenActive() {
+      if (document.visibilityState === 'visible') {
+        loadBookings()
+      }
+    }
+
+    window.addEventListener('focus', loadBookings)
+    document.addEventListener('visibilitychange', refreshWhenActive)
+
+    return () => {
+      window.removeEventListener('focus', loadBookings)
+      document.removeEventListener('visibilitychange', refreshWhenActive)
+    }
+  }, [router.isReady, businessId])
+
   async function cancelBooking(id: string) {
     const confirmed = confirm('Cancel this booking? This will also show as cancelled to the customer.')
     if (!confirmed) return
@@ -186,6 +204,15 @@ export default function Bookings() {
       title="Bookings"
       subtitle={business ? `Viewing bookings for ${business.name}` : 'Choose which business bookings to view.'}
     >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <p className="small muted">
+          Bookings refresh when you return to this tab. Use refresh if a new booking does not appear straight away.
+        </p>
+
+        <button onClick={loadBookings} className="btn btn-ghost" disabled={pageLoading}>
+          {pageLoading ? 'Refreshing...' : 'Refresh bookings'}
+        </button>
+      </div>
       {pageLoading && (
         <div className="card">
           <p className="muted">Loading bookings...</p>

@@ -120,6 +120,22 @@ export default function MyBookings() {
     loadBookings()
   }, [])
 
+  useEffect(() => {
+    function refreshWhenActive() {
+      if (document.visibilityState === 'visible') {
+        loadBookings()
+      }
+    }
+
+    window.addEventListener('focus', loadBookings)
+    document.addEventListener('visibilitychange', refreshWhenActive)
+
+    return () => {
+      window.removeEventListener('focus', loadBookings)
+      document.removeEventListener('visibilitychange', refreshWhenActive)
+    }
+  }, [])
+
   async function cancelBooking(id: string) {
     const confirmed = confirm('Cancel this booking?')
     if (!confirmed) return
@@ -208,10 +224,22 @@ export default function MyBookings() {
               Account settings
             </Link>
 
+            <Link href="/notifications" className="btn btn-ghost">
+              Notifications
+            </Link>
+
+            <button onClick={loadBookings} className="btn btn-ghost" disabled={loading}>
+              {loading ? 'Refreshing...' : 'Refresh bookings'}
+            </button>
+
             <Link href="/explore" className="btn btn-accent">
               Browse businesses
             </Link>
           </div>
+
+          <p className="small muted" style={{ marginTop: '0.75rem' }}>
+            Your bookings and pending requests refresh when you return to this tab. Use refresh if a recent change does not appear straight away.
+          </p>
         </div>
 
         <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
@@ -340,7 +368,7 @@ export default function MyBookings() {
                             </p>
 
                             <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                              The business can accept or decline this request. Until then, your current confirmed appointment above is still active.
+                              The business can accept or decline this request. Until then, your current confirmed appointment above is still active. You can also track updates from Notifications.
                             </p>
                           </div>
                         )}
@@ -348,9 +376,9 @@ export default function MyBookings() {
 
                       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                         {pendingRequest ? (
-                          <span className="btn btn-ghost" title="The business needs to approve your latest requested time before you can request another change.">
-                            Reschedule pending
-                          </span>
+                          <Link href="/notifications" className="btn btn-ghost" title="The business needs to approve your latest requested time before you can request another change.">
+                            View pending request
+                          </Link>
                         ) : (
                           <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
                             Reschedule

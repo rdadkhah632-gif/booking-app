@@ -110,7 +110,14 @@ export default function BusinessNotifications() {
 
       if (error) throw error
 
-      setRequests(data || [])
+      const normalisedRequests = (data || []).map((request: any) => ({
+        ...request,
+        bookings: Array.isArray(request.bookings) ? request.bookings[0] || null : request.bookings,
+        businesses: Array.isArray(request.businesses) ? request.businesses[0] || null : request.businesses,
+        requested_staff: Array.isArray(request.requested_staff) ? request.requested_staff[0] || null : request.requested_staff
+      }))
+
+      setRequests(normalisedRequests)
       setLoading(false)
     } catch (err: any) {
       setError(err.message || 'Could not load notifications.')
@@ -120,6 +127,22 @@ export default function BusinessNotifications() {
 
   useEffect(() => {
     loadRequests()
+  }, [])
+
+  useEffect(() => {
+    function refreshWhenActive() {
+      if (document.visibilityState === 'visible') {
+        loadRequests()
+      }
+    }
+
+    window.addEventListener('focus', loadRequests)
+    document.addEventListener('visibilitychange', refreshWhenActive)
+
+    return () => {
+      window.removeEventListener('focus', loadRequests)
+      document.removeEventListener('visibilitychange', refreshWhenActive)
+    }
   }, [])
 
   async function acceptRequest(request: BookingRequest) {
@@ -181,6 +204,7 @@ export default function BusinessNotifications() {
     }
 
     await loadRequests()
+    router.replace('/dashboard/notifications?action=accepted', undefined, { shallow: true })
   }
 
   async function declineRequest(request: BookingRequest) {
@@ -207,6 +231,7 @@ export default function BusinessNotifications() {
     }
 
     await loadRequests()
+    router.replace('/dashboard/notifications?action=declined', undefined, { shallow: true })
   }
 
   const pendingRequests = Object.values(
@@ -247,6 +272,50 @@ export default function BusinessNotifications() {
       title="Notifications"
       subtitle="Review customer reschedule requests and booking updates that need your attention."
     >
+      {router.query.action === 'accepted' && (
+        <div
+          className="card"
+          style={{
+            borderColor: 'rgba(45,212,191,0.28)',
+            background: 'rgba(45,212,191,0.06)',
+            marginBottom: '1rem'
+          }}
+        >
+          <p className="small" style={{ color: 'var(--success)' }}>Request accepted</p>
+          <strong>The booking has been updated to the customer’s requested time.</strong>
+          <p className="small muted" style={{ marginTop: '0.35rem' }}>
+            The request has moved into history and any older pending requests for the same booking have been cancelled.
+          </p>
+        </div>
+      )}
+
+      {router.query.action === 'declined' && (
+        <div
+          className="card"
+          style={{
+            borderColor: 'rgba(255,190,11,0.28)',
+            background: 'rgba(255,190,11,0.06)',
+            marginBottom: '1rem'
+          }}
+        >
+          <p className="small" style={{ color: 'var(--warning)' }}>Request declined</p>
+          <strong>The customer’s requested time was declined.</strong>
+          <p className="small muted" style={{ marginTop: '0.35rem' }}>
+            The original booking remains unchanged.
+          </p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <p className="small muted">
+          Notifications refresh when you return to this tab. Use refresh if a new request does not appear straight away.
+        </p>
+
+        <button onClick={loadRequests} className="btn btn-ghost" disabled={loading}>
+          {loading ? 'Refreshing...' : 'Refresh notifications'}
+        </button>
+      </div>
+
       {loading && (
         <div className="card">
           <p className="muted">Loading notifications...</p>
@@ -263,7 +332,7 @@ export default function BusinessNotifications() {
         <div className="card" style={{ marginBottom: '1.5rem' }}>
           <h3>No pending requests</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Customer reschedule requests will appear here.
+            Customer reschedule requests will appear here when they need approval. If a customer has just sent a request, use refresh or return to this tab to update the list.
           </p>
         </div>
       )}
@@ -407,28 +476,30 @@ export default function BusinessNotifications() {
               className="card"
               style={{ opacity: 0.75 }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                <div>
-                  <strong>{request.bookings?.customer_name || 'Customer'}</strong>
+              <div style={{ flex: 1, minWidth: 260 }}>
+                <strong>{request.bookings?.customer_name || 'Customer'}</strong>
 
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  Service: {request.bookings?.services?.name || 'Service'}
+                </p>
+
+                <p className="small muted">
+                  Requested time: {new Date(request.requested_start_at).toLocaleString()}
+                </p>
+
+                <p className="small muted">
+                  Requested: {new Date(request.created_at).toLocaleString()}
+                </p>
+
+                <p className="small" style={{ color: statusColor(request.status) }}>
+                  Status: {statusLabel(request.status)}
+                </p>
+
+                {request.response_message && (
                   <p className="small muted">
-                    Requested time: {new Date(request.requested_start_at).toLocaleString()}
+                    Response: {request.response_message}
                   </p>
-
-                  <p className="small muted">
-                    Requested: {new Date(request.created_at).toLocaleString()}
-                  </p>
-
-                  <p className="small" style={{ color: statusColor(request.status) }}>
-                    Status: {statusLabel(request.status)}
-                  </p>
-
-                  {request.response_message && (
-                    <p className="small muted">
-                      Response: {request.response_message}
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           ))}
