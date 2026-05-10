@@ -14,6 +14,7 @@ type Business = {
   phone?: string | null
   address?: string | null
   published: boolean
+  auto_accept_bookings?: boolean
   created_at?: string
 }
 
@@ -103,7 +104,7 @@ export default function Businesses() {
     setLoading(false)
   }
 
-  function updateLocalBusiness(id: string, field: keyof Business, value: string | boolean) {
+  function updateLocalBusiness(id: string, field: keyof Business, value: string | boolean | boolean) {
     setBusinesses((prev) =>
       prev.map((business) =>
         business.id === id ? { ...business, [field]: value } : business
@@ -124,7 +125,8 @@ export default function Businesses() {
         city: business.city || null,
         country: business.country || null,
         address: business.address || null,
-        phone: business.phone || null
+        phone: business.phone || null,
+        auto_accept_bookings: business.auto_accept_bookings ?? true
       })
       .eq('id', business.id)
 
@@ -230,14 +232,31 @@ export default function Businesses() {
                   {business.name || 'Untitled business'}
                 </h3>
 
-                <p
-                  className="small"
-                  style={{
-                    color: business.published ? 'var(--success)' : 'var(--warning)'
-                  }}
-                >
-                  {business.published ? 'Live / visible to customers' : 'Hidden / not visible'}
-                </p>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                  <span
+                    className="small"
+                    style={{
+                      background: business.published ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+                      color: business.published ? 'var(--success)' : 'var(--warning)',
+                      padding: '0.2rem 0.55rem',
+                      borderRadius: 999
+                    }}
+                  >
+                    {business.published ? 'Live / visible to customers' : 'Hidden / not visible'}
+                  </span>
+
+                  <span
+                    className="small"
+                    style={{
+                      background: business.auto_accept_bookings ?? true ? 'rgba(45,212,191,0.12)' : 'rgba(255,107,53,0.12)',
+                      color: business.auto_accept_bookings ?? true ? 'var(--success)' : 'var(--accent)',
+                      padding: '0.2rem 0.55rem',
+                      borderRadius: 999
+                    }}
+                  >
+                    {business.auto_accept_bookings ?? true ? 'Auto-accept bookings' : 'Manual booking approval'}
+                  </span>
+                </div>
               </div>
 
               <button
@@ -297,13 +316,46 @@ export default function Businesses() {
               rows={3}
             />
 
+            <div
+              className="card"
+              style={{
+                background: 'var(--surface-2)',
+                borderColor: 'var(--border)',
+                padding: '1rem'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 240 }}>
+                  <p className="small muted">Booking approval</p>
+                  <h3 style={{ marginTop: '0.25rem' }}>
+                    {business.auto_accept_bookings ?? true ? 'Auto-accept customer bookings' : 'Manually approve customer bookings'}
+                  </h3>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    When auto-accept is on, customers receive instant booking confirmation. When it is off, new bookings will need business approval before they are confirmed.
+                  </p>
+                </div>
+
+                <label
+                  className="btn btn-ghost"
+                  style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={business.auto_accept_bookings ?? true}
+                    onChange={(e) => updateLocalBusiness(business.id, 'auto_accept_bookings', e.target.checked)}
+                  />
+                  Auto-accept
+                </label>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => saveBusiness(business)}
                 className="btn btn-accent"
                 disabled={savingBusinessId === business.id}
               >
-                {savingBusinessId === business.id ? 'Saving...' : 'Save profile'}
+                {savingBusinessId === business.id ? 'Saving...' : 'Save profile and booking settings'}
               </button>
 
               <Link
