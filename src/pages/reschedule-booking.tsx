@@ -367,15 +367,40 @@ export default function RescheduleBooking() {
     const newStartAt = new Date(`${selectedDate}T${selectedTime}:00`).toISOString()
     const newDuration = booking.services?.duration_minutes || booking.duration_minutes
 
-    const { error } = await supabase
-      .from('bookings')
-      .update({
-        start_at: newStartAt,
-        duration_minutes: newDuration,
-        staff_member_id: selectedStaffId,
-        status: 'confirmed'
-      })
-      .eq('id', booking.id)
+    let error = null
+
+if (role === 'customer') {
+  const result = await supabase
+    .from('booking_requests')
+    .insert({
+      booking_id: booking.id,
+      business_id: booking.business_id,
+      customer_user_id: booking.customer_user_id,
+      requested_by: 'customer',
+      request_type: 'reschedule',
+      status: 'pending',
+      current_start_at: booking.start_at,
+      requested_start_at: newStartAt,
+      current_staff_member_id: booking.staff_member_id || null,
+      requested_staff_member_id: selectedStaffId,
+      requested_duration_minutes: newDuration,
+      message: 'Customer requested a new appointment time.'
+    })
+
+  error = result.error
+} else {
+  const result = await supabase
+    .from('bookings')
+    .update({
+      start_at: newStartAt,
+      duration_minutes: newDuration,
+      staff_member_id: selectedStaffId,
+      status: 'confirmed'
+    })
+    .eq('id', booking.id)
+
+  error = result.error
+}
 
     setSaving(false)
 
@@ -385,11 +410,10 @@ export default function RescheduleBooking() {
     }
 
     if (role === 'business') {
-      router.push(`/dashboard/bookings?businessId=${booking.business_id}`)
-    } else {
-      router.push('/my-bookings')
-    }
-  }
+  router.push(`/dashboard/bookings?businessId=${booking.business_id}`)
+} else {
+  router.push('/my-bookings?requestSent=1')
+}
 
   const selectableStaff = staffThatCanDoBookingService()
 
@@ -611,7 +635,7 @@ export default function RescheduleBooking() {
                 disabled={saving || !selectedDate || !selectedStaffId || !selectedTime}
                 className="btn btn-accent"
               >
-                {saving ? 'Saving...' : 'Save new time'}
+                {saving ? 'Saving...' : role === 'customer' ? 'Request new time' : 'Save new time'}
               </button>
             </form>
 
