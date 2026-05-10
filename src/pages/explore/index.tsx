@@ -12,6 +12,7 @@ type Business = {
   country?: string | null
   phone?: string | null
   address?: string | null
+  services?: { id: string; active: boolean }[] | null
 }
 
 export default function Explore() {
@@ -48,7 +49,22 @@ export default function Explore() {
 
         const query = supabase
           .from('businesses')
-          .select('id, name, description, category, city, country, phone, address, published, created_at')
+          .select(`
+            id,
+            name,
+            description,
+            category,
+            city,
+            country,
+            phone,
+            address,
+            published,
+            created_at,
+            services (
+              id,
+              active
+            )
+          `)
           .eq('published', true)
           .order('created_at', { ascending: false })
 
@@ -61,7 +77,16 @@ export default function Explore() {
           return
         }
 
-        setBusinesses(data || [])
+        const bookableBusinesses = (data || [])
+          .map((business: any) => ({
+            ...business,
+            services: business.services || []
+          }))
+          .filter((business: Business) =>
+            (business.services || []).some((service) => service.active)
+          )
+
+        setBusinesses(bookableBusinesses)
         setLoading(false)
       } catch (err: any) {
         setError(err.message || 'Something went wrong while loading businesses.')
@@ -141,8 +166,8 @@ export default function Explore() {
             Find your next appointment.
           </h1>
 
-          <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 620 }}>
-            Browse published businesses, compare services and book available slots instantly.
+          <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 680 }}>
+            Browse bookable businesses, compare local services and choose a real available slot with the staff member you want.
           </p>
         </div>
 
@@ -172,9 +197,12 @@ export default function Explore() {
             position: 'sticky',
             top: 96
           }}>
-            <h3 style={{ marginBottom: '1rem' }}>
-              Filters
+            <h3 style={{ marginBottom: '0.35rem' }}>
+              Find a service
             </h3>
+            <p className="small muted" style={{ marginBottom: '1rem' }}>
+              Filter by service type, business name or location.
+            </p>
 
             <div style={{ display: 'grid', gap: '1rem' }}>
               <div>
@@ -245,11 +273,14 @@ export default function Explore() {
               gap: '1rem',
               marginBottom: '1rem'
             }}>
-              <p className="muted">
-                {loading
-                  ? 'Loading businesses...'
-                  : `${filteredBusinesses.length} business${filteredBusinesses.length === 1 ? '' : 'es'} found`}
-              </p>
+              <div>
+                <p className="small muted">Marketplace</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
+                  {loading
+                    ? 'Loading businesses...'
+                    : `${filteredBusinesses.length} bookable business${filteredBusinesses.length === 1 ? '' : 'es'}`}
+                </h2>
+              </div>
             </div>
 
             {loading && (
@@ -260,12 +291,9 @@ export default function Explore() {
 
             {!loading && !error && businesses.length === 0 && (
               <div className="card">
-                <h3>No published businesses yet</h3>
+                <h3>No bookable businesses yet</h3>
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  This means your site is connected, but there are no businesses with published set to true.
-                </p>
-                <p className="muted small" style={{ marginTop: '0.75rem' }}>
-                  Log in as a business, go to Business Profile, and click Publish Business.
+                  Published businesses will appear here once they have at least one active service available to book.
                 </p>
               </div>
             )}
@@ -274,7 +302,7 @@ export default function Explore() {
               <div className="card">
                 <h3>No businesses match your filters</h3>
                 <p className="muted">
-                  Try changing your search, category or city filter.
+                  Try changing your search, category or city filter, or clear filters to view all bookable businesses.
                 </p>
               </div>
             )}
@@ -286,14 +314,14 @@ export default function Explore() {
                   className="card"
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '80px 1fr auto',
+                    gridTemplateColumns: '86px 1fr auto',
                     gap: '1rem',
                     alignItems: 'center'
                   }}
                 >
                   <div style={{
-                    width: 80,
-                    height: 80,
+                    width: 86,
+                    height: 86,
                     borderRadius: 18,
                     background: 'var(--accent-dim)',
                     border: '1px solid rgba(255,107,53,0.25)',
@@ -329,9 +357,36 @@ export default function Explore() {
                       )}
                     </div>
 
-                    <p className="muted small" style={{ marginBottom: '0.4rem' }}>
-                      {business.description || 'Service business'}
+                    <p className="muted small" style={{ marginBottom: '0.55rem', maxWidth: 620 }}>
+                      {business.description || 'Book available services with this business.'}
                     </p>
+
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.55rem' }}>
+                      <span
+                        className="small"
+                        style={{
+                          background: 'rgba(45,212,191,0.12)',
+                          color: 'var(--success)',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: 999
+                        }}
+                      >
+                        Accepting bookings
+                      </span>
+
+                      <span
+                        className="small"
+                        style={{
+                          background: 'var(--surface-2)',
+                          color: 'var(--text-muted)',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: 999,
+                          border: '1px solid var(--border)'
+                        }}
+                      >
+                        {(business.services || []).filter((service) => service.active).length} active service{(business.services || []).filter((service) => service.active).length === 1 ? '' : 's'}
+                      </span>
+                    </div>
 
                     <p className="small muted">
                       {[business.address, business.city, business.country]
@@ -347,7 +402,7 @@ export default function Explore() {
                     alignItems: 'flex-end'
                   }}>
                     <Link href={`/explore/${business.id}`} className="btn btn-accent">
-                      View & Book
+                      View & book
                     </Link>
 
                     {business.phone && (
@@ -355,6 +410,10 @@ export default function Explore() {
                         {business.phone}
                       </span>
                     )}
+
+                    <span className="small muted">
+                      Real-time slots
+                    </span>
                   </div>
                 </div>
               ))}
