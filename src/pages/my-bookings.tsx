@@ -106,13 +106,13 @@ export default function MyBookings() {
     }
 
     const normalisedRequests = (requestData || []).map((request: any) => ({
-  ...request,
-  requested_staff: Array.isArray(request.requested_staff)
-    ? request.requested_staff[0] || null
-    : request.requested_staff
-}))
+      ...request,
+      requested_staff: Array.isArray(request.requested_staff)
+        ? request.requested_staff[0] || null
+        : request.requested_staff
+    }))
 
-setRequests(normalisedRequests)
+    setRequests(normalisedRequests)
     setLoading(false)
   }
 
@@ -185,10 +185,20 @@ setRequests(normalisedRequests)
           </p>
 
           {router.query.requestSent && (
-            <div className="card" style={{ marginTop: '1rem', borderColor: 'rgba(255,107,53,0.35)' }}>
-              <strong>Reschedule request sent</strong>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                Your original appointment is still confirmed until the business accepts your new requested time.
+            <div
+              className="card"
+              style={{
+                marginTop: '1rem',
+                borderColor: 'rgba(255,107,53,0.45)',
+                background: 'var(--accent-dim)'
+              }}
+            >
+              <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
+                Request sent
+              </p>
+              <strong>Your reschedule request is waiting for business approval.</strong>
+              <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                Your original appointment is still confirmed. If the business accepts your request, your booking will update to the requested time.
               </p>
             </div>
           )}
@@ -254,8 +264,22 @@ setRequests(normalisedRequests)
                 return (
                   <div key={booking.id} className="card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                      <div>
-                        <strong>{booking.businesses?.name || 'Business'}</strong>
+                      <div style={{ flex: 1, minWidth: 260 }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                          <strong>{booking.businesses?.name || 'Business'}</strong>
+                          <span
+                            className="small"
+                            style={{
+                              background: pendingRequest ? 'rgba(255,107,53,0.12)' : 'rgba(45, 212, 191, 0.12)',
+                              color: pendingRequest ? 'var(--accent)' : 'var(--success)',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: 999
+                            }}
+                          >
+                            {pendingRequest ? 'Confirmed · Change requested' : 'Confirmed appointment'}
+                          </span>
+                        </div>
+
                         <p className="small muted">Service: {booking.services?.name || 'Service not recorded'}</p>
 
                         <p className="small muted">
@@ -267,7 +291,21 @@ setRequests(normalisedRequests)
                           Price: £{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}
                         </p>
 
-                        <p className="small muted">Current confirmed time: {new Date(booking.start_at).toLocaleString()}</p>
+                        <div
+                          style={{
+                            marginTop: '0.75rem',
+                            padding: '0.8rem',
+                            borderRadius: 'var(--radius)',
+                            background: 'var(--surface-2)',
+                            border: '1px solid var(--border)'
+                          }}
+                        >
+                          <p className="small muted">Current confirmed appointment</p>
+                          <strong>{new Date(booking.start_at).toLocaleString()}</strong>
+                          <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                            This remains your booked time unless a requested change is accepted.
+                          </p>
+                        </div>
                         <p className="small muted">Duration: {booking.duration_minutes} minutes</p>
                         <p className="small" style={{ color: 'var(--success)' }}>Status: {booking.status}</p>
 
@@ -284,8 +322,12 @@ setRequests(normalisedRequests)
                               Pending reschedule request
                             </p>
 
-                            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                              Requested time: {new Date(pendingRequest.requested_start_at).toLocaleString()}
+                            <h3 style={{ marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+                              Waiting for business approval
+                            </h3>
+
+                            <p className="small muted">
+                              Requested new time: {new Date(pendingRequest.requested_start_at).toLocaleString()}
                             </p>
 
                             <p className="small muted">
@@ -297,8 +339,8 @@ setRequests(normalisedRequests)
                               Requested duration: {pendingRequest.requested_duration_minutes} minutes
                             </p>
 
-                            <p className="small muted">
-                              Waiting for business approval. Your original booking remains confirmed until accepted.
+                            <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                              The business can accept or decline this request. Until then, your current confirmed appointment above is still active.
                             </p>
                           </div>
                         )}
@@ -307,7 +349,7 @@ setRequests(normalisedRequests)
                       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                         {pendingRequest ? (
                           <span className="btn btn-ghost" title="The business needs to approve your latest requested time before you can request another change.">
-                            Request pending
+                            Reschedule pending
                           </span>
                         ) : (
                           <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
@@ -346,7 +388,18 @@ setRequests(normalisedRequests)
 
                   <p className="small muted">Time: {new Date(booking.start_at).toLocaleString()}</p>
                   <p className="small muted">Duration: {booking.duration_minutes} minutes</p>
-                  <p className="small muted">Status: {booking.status}</p>
+                  <p
+                    className="small"
+                    style={{
+                      color: booking.status === 'completed'
+                        ? 'var(--accent)'
+                        : booking.status === 'cancelled'
+                          ? 'var(--warning)'
+                          : 'var(--text-muted)'
+                    }}
+                  >
+                    Status: {booking.status === 'completed' ? 'completed appointment' : booking.status}
+                  </p>
                 </div>
               ))}
             </div>

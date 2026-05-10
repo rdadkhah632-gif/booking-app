@@ -228,10 +228,24 @@ export default function BusinessNotifications() {
     (request) => request.status !== 'pending' || !latestPendingIds.has(request.id)
   )
 
+  function statusLabel(status: string) {
+    if (status === 'accepted') return 'Accepted'
+    if (status === 'declined') return 'Declined'
+    if (status === 'cancelled') return 'Superseded / cancelled'
+    return status
+  }
+
+  function statusColor(status: string) {
+    if (status === 'accepted') return 'var(--success)'
+    if (status === 'declined') return 'var(--warning)'
+    if (status === 'cancelled') return 'var(--text-muted)'
+    return 'var(--accent)'
+  }
+
   return (
     <DashboardLayout
       title="Notifications"
-      subtitle="Review booking updates, customer reschedule requests and recent actions."
+      subtitle="Review customer reschedule requests and booking updates that need your attention."
     >
       {loading && (
         <div className="card">
@@ -256,17 +270,34 @@ export default function BusinessNotifications() {
 
       {!loading && pendingRequests.length > 0 && (
         <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)' }}>
-            Pending requests
-          </h2>
+          <div>
+            <p className="small muted">Action required</p>
+            <h2 style={{ fontFamily: 'var(--font-display)' }}>
+              Pending reschedule requests
+            </h2>
+          </div>
 
           {pendingRequests.map((request) => (
             <div key={request.id} className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                <div>
-                  <p className="small" style={{ color: 'var(--accent)' }}>
-                    Latest pending reschedule request
-                  </p>
+                <div style={{ flex: 1, minWidth: 280 }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                    <p className="small" style={{ color: 'var(--accent)' }}>
+                      Latest pending reschedule request
+                    </p>
+
+                    <span
+                      className="small"
+                      style={{
+                        background: 'rgba(255,107,53,0.12)',
+                        color: 'var(--accent)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 999
+                      }}
+                    >
+                      Waiting approval
+                    </span>
+                  </div>
 
                   <h3 style={{ marginTop: '0.25rem' }}>
                     {request.bookings?.customer_name || 'Customer'}
@@ -280,15 +311,42 @@ export default function BusinessNotifications() {
                     Service: {request.bookings?.services?.name || 'Service'}
                   </p>
 
-                  <p className="small muted">
-                    Current time: {request.current_start_at ? new Date(request.current_start_at).toLocaleString() : 'Not recorded'}
-                  </p>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                      gap: '0.75rem',
+                      marginTop: '1rem'
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: '0.8rem',
+                        borderRadius: 'var(--radius)',
+                        background: 'var(--surface-2)',
+                        border: '1px solid var(--border)'
+                      }}
+                    >
+                      <p className="small muted">Current confirmed appointment</p>
+                      <strong>
+                        {request.current_start_at ? new Date(request.current_start_at).toLocaleString() : 'Not recorded'}
+                      </strong>
+                    </div>
 
-                  <p className="small muted">
-                    Requested time: {new Date(request.requested_start_at).toLocaleString()}
-                  </p>
+                    <div
+                      style={{
+                        padding: '0.8rem',
+                        borderRadius: 'var(--radius)',
+                        background: 'var(--accent-dim)',
+                        border: '1px solid rgba(255,107,53,0.35)'
+                      }}
+                    >
+                      <p className="small muted">Requested new appointment</p>
+                      <strong>{new Date(request.requested_start_at).toLocaleString()}</strong>
+                    </div>
+                  </div>
 
-                  <p className="small muted">
+                  <p className="small muted" style={{ marginTop: '0.75rem' }}>
                     Requested staff: {request.requested_staff?.name || 'Staff not recorded'}
                     {request.requested_staff?.role_title ? ` — ${request.requested_staff.role_title}` : ''}
                   </p>
@@ -310,7 +368,7 @@ export default function BusinessNotifications() {
                     disabled={actionLoadingId === request.id}
                     className="btn btn-accent"
                   >
-                    {actionLoadingId === request.id ? 'Working...' : 'Accept'}
+                    {actionLoadingId === request.id ? 'Working...' : 'Accept new time'}
                   </button>
 
                   <button
@@ -318,7 +376,7 @@ export default function BusinessNotifications() {
                     disabled={actionLoadingId === request.id}
                     className="btn btn-danger"
                   >
-                    Decline
+                    Decline request
                   </button>
 
                   <Link
@@ -336,9 +394,12 @@ export default function BusinessNotifications() {
 
       {!loading && pastRequests.length > 0 && (
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)' }}>
-            Previous requests
-          </h2>
+          <div>
+            <p className="small muted">History</p>
+            <h2 style={{ fontFamily: 'var(--font-display)' }}>
+              Previous requests
+            </h2>
+          </div>
 
           {pastRequests.map((request) => (
             <div
@@ -358,8 +419,8 @@ export default function BusinessNotifications() {
                     Requested: {new Date(request.created_at).toLocaleString()}
                   </p>
 
-                  <p className="small muted">
-                    Status: {request.status}
+                  <p className="small" style={{ color: statusColor(request.status) }}>
+                    Status: {statusLabel(request.status)}
                   </p>
 
                   {request.response_message && (

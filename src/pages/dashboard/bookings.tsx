@@ -167,6 +167,20 @@ export default function Bookings() {
     await loadBookings()
   }
 
+  function statusLabel(status: string) {
+    if (status === 'confirmed') return 'Confirmed appointment'
+    if (status === 'completed') return 'Completed appointment'
+    if (status === 'cancelled') return 'Cancelled booking'
+    return status
+  }
+
+  function statusColor(status: string) {
+    if (status === 'confirmed') return 'var(--success)'
+    if (status === 'completed') return 'var(--accent)'
+    if (status === 'cancelled') return 'var(--warning)'
+    return 'var(--text-muted)'
+  }
+
   return (
     <DashboardLayout
       title="Bookings"
@@ -253,12 +267,34 @@ export default function Bookings() {
               key={booking.id}
               className="card"
               style={{
-                opacity: booking.status === 'cancelled' || booking.status === 'completed' ? 0.65 : 1
+                opacity: booking.status === 'cancelled' || booking.status === 'completed' ? 0.72 : 1,
+                borderColor: booking.status === 'completed'
+                  ? 'rgba(255,107,53,0.28)'
+                  : booking.status === 'cancelled'
+                    ? 'rgba(255,190,11,0.25)'
+                    : 'var(--border)'
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                <div>
-                  <strong>{booking.customer_name}</strong>
+                <div style={{ flex: 1, minWidth: 280 }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                    <strong>{booking.customer_name}</strong>
+                    <span
+                      className="small"
+                      style={{
+                        background: booking.status === 'completed'
+                          ? 'rgba(255,107,53,0.12)'
+                          : booking.status === 'cancelled'
+                            ? 'rgba(255,190,11,0.12)'
+                            : 'rgba(45,212,191,0.12)',
+                        color: statusColor(booking.status),
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 999
+                      }}
+                    >
+                      {statusLabel(booking.status)}
+                    </span>
+                  </div>
 
                   <p className="small muted">
                     Service: {booking.services?.name || 'No service recorded'}
@@ -273,9 +309,20 @@ export default function Bookings() {
                     Price: £{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}
                   </p>
 
-                  <p className="small muted">
-                    Time: {new Date(booking.start_at).toLocaleString()}
-                  </p>
+                  <div
+                    style={{
+                      marginTop: '0.75rem',
+                      padding: '0.8rem',
+                      borderRadius: 'var(--radius)',
+                      background: 'var(--surface-2)',
+                      border: '1px solid var(--border)'
+                    }}
+                  >
+                    <p className="small muted">
+                      Appointment time
+                    </p>
+                    <strong>{new Date(booking.start_at).toLocaleString()}</strong>
+                  </div>
 
                   <p className="small muted">
                     Duration: {booking.duration_minutes} minutes
@@ -291,15 +338,9 @@ export default function Bookings() {
 
                   <p
                     className="small"
-                    style={{
-                      color: booking.status === 'cancelled'
-                        ? 'var(--warning)'
-                        : booking.status === 'completed'
-                          ? 'var(--accent)'
-                          : 'var(--success)'
-                    }}
+                    style={{ color: statusColor(booking.status), marginTop: '0.5rem' }}
                   >
-                    Status: {booking.status}
+                    Status: {statusLabel(booking.status)}
                   </p>
                 </div>
 
@@ -307,7 +348,7 @@ export default function Bookings() {
                   {booking.status === 'confirmed' ? (
                     <>
                       <button onClick={() => completeBooking(booking.id)} className="btn btn-accent">
-                        Mark completed
+                        Mark appointment completed
                       </button>
 
                       <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
@@ -319,8 +360,13 @@ export default function Bookings() {
                       </button>
                     </>
                   ) : (
-                    <span className="small muted">
-                      {booking.status === 'completed' ? 'Completed appointment' : 'Cancelled booking'}
+                    <span
+                      className="small"
+                      style={{ color: statusColor(booking.status) }}
+                    >
+                      {booking.status === 'completed'
+                        ? 'Locked: completed appointment'
+                        : 'Locked: cancelled booking'}
                     </span>
                   )}
                 </div>
