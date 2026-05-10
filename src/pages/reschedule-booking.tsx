@@ -414,7 +414,7 @@ if (role === 'customer') {
 } else {
   router.push('/my-bookings?requestSent=1')
 }
-
+}
   const selectableStaff = staffThatCanDoBookingService()
 
   return (
