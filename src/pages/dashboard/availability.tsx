@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
@@ -11,17 +11,37 @@ type Business = {
   name: string
 }
 
+type AvailabilityRow = {
+  id?: string
+  business_id: string
+  day_of_week: number
+  start_time: string
+  end_time: string
+  is_closed: boolean
+}
+
 export default function Availability() {
   const router = useRouter()
   const { businessId } = router.query
 
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [business, setBusiness] = useState<Business | null>(null)
-  const [rows, setRows] = useState<any[]>([])
+  const [rows, setRows] = useState<AvailabilityRow[]>([])
 
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  function defaultRows(currentBusinessId: string): AvailabilityRow[] {
+    return days.map((_, i) => ({
+      business_id: currentBusinessId,
+      day_of_week: i,
+      start_time: '09:00',
+      end_time: '17:00',
+      is_closed: i === 0
+    }))
+  }
 
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
@@ -54,6 +74,7 @@ export default function Availability() {
 
   async function init() {
     setError(null)
+    setSuccess(null)
     setPageLoading(true)
 
     try {
@@ -95,15 +116,22 @@ export default function Availability() {
       if (availabilityError) throw availabilityError
 
       if (existing && existing.length > 0) {
-        setRows(existing)
+        const existingByDay = new Map<number, AvailabilityRow>()
+        existing.forEach((row: AvailabilityRow) => existingByDay.set(row.day_of_week, row))
+
+        setRows(
+          days.map((_, i) =>
+            existingByDay.get(i) || {
+              business_id: selectedBusiness.id,
+              day_of_week: i,
+              start_time: '09:00',
+              end_time: '17:00',
+              is_closed: i === 0
+            }
+          )
+        )
       } else {
-        setRows(days.map((_, i) => ({
-          business_id: selectedBusiness.id,
-          day_of_week: i,
-          start_time: '09:00',
-          end_time: '17:00',
-          is_closed: i === 0
-        })))
+        setRows(defaultRows(selectedBusiness.id))
       }
 
       setPageLoading(false)
@@ -118,15 +146,70 @@ export default function Availability() {
     init()
   }, [router.isReady, businessId])
 
-  function updateRow(index: number, field: string, value: any) {
-    setRows(prev => prev.map((r, i) => i === index ? { ...r, [field]: value } : r))
+  const availabilityStats = useMemo(() => {
+    const openRows = rows.filter((row) => !row.is_closed)
+    const closedRows = rows.filter((row) => row.is_closed)
+    const invalidRows = openRows.filter((row) => row.start_time >= row.end_time)
+
+    return {
+      openDays: openRows.length,
+      closedDays: closedRows.length,
+      invalidDays: invalidRows.length,
+      ready: openRows.length > 0 && invalidRows.length === 0
+    }
+  }, [rows])
+
+  function updateRow(index: number, field: keyof AvailabilityRow, value: string | boolean) {
+    setRows((prev) => prev.map((row, i) => i === index ? { ...row, [field]: value } : row))
+  }
+
+  function applyWeekdayPreset() {
+    setRows((prev) =>
+      prev.map((row) => ({
+        ...row,
+        start_time: row.day_of_week === 0 || row.day_of_week === 6 ? row.start_time : '09:00',
+        end_time: row.day_of_week === 0 || row.day_of_week === 6 ? row.end_time : '17:00',
+        is_closed: row.day_of_week === 0 || row.day_of_week === 6
+      }))
+    )
+  }
+
+  function applyEverydayPreset() {
+    setRows((prev) =>
+      prev.map((row) => ({
+        ...row,
+        start_time: '09:00',
+        end_time: '17:00',
+        is_closed: false
+      }))
+    )
+  }
+
+  function closeAllDays() {
+    const confirmed = confirm('Close every day for this business? Customers may not see any available booking days unless staff-specific hours still allow bookings.')
+    if (!confirmed) return
+
+    setRows((prev) => prev.map((row) => ({ ...row, is_closed: true })))
   }
 
   async function saveAvailability() {
     if (!business) return
 
+    const invalidRow = rows.find((row) => !row.is_closed && row.start_time >= row.end_time)
+
+    if (invalidRow) {
+      setError(`${days[invalidRow.day_of_week]} has an invalid time range. Start time must be before end time.`)
+      return
+    }
+
+    if (availabilityStats.openDays === 0) {
+      const confirmed = confirm('This business has no open days. Customers may not be able to book unless staff-specific availability is configured. Save anyway?')
+      if (!confirmed) return
+    }
+
     setLoading(true)
     setError(null)
+    setSuccess(null)
 
     const { error: deleteError } = await supabase
       .from('availability')
@@ -139,12 +222,12 @@ export default function Availability() {
       return
     }
 
-    const cleanRows = rows.map(r => ({
+    const cleanRows = rows.map((row) => ({
       business_id: business.id,
-      day_of_week: r.day_of_week,
-      start_time: r.start_time,
-      end_time: r.end_time,
-      is_closed: r.is_closed
+      day_of_week: row.day_of_week,
+      start_time: row.start_time,
+      end_time: row.end_time,
+      is_closed: row.is_closed
     }))
 
     const { error } = await supabase.from('availability').insert(cleanRows)
@@ -156,18 +239,24 @@ export default function Availability() {
       return
     }
 
-    alert('Working hours saved')
+    setSuccess('Business working hours saved. Your setup checklist will update after refresh.')
     await init()
   }
 
   return (
     <DashboardLayout
-      title="Working hours"
-      subtitle={business ? `Editing availability for ${business.name}` : 'Choose which business working hours to manage.'}
+      title="Business working hours"
+      subtitle={business ? `Editing business-wide hours for ${business.name}` : 'Choose which business working hours to manage.'}
     >
       {pageLoading && (
         <div className="card">
           <p className="muted">Loading working hours...</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--success)' }}>{success}</p>
         </div>
       )}
 
@@ -208,12 +297,7 @@ export default function Availability() {
               key={b.id}
               href={`/dashboard/availability?businessId=${b.id}`}
               className="card"
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '1rem'
-              }}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}
             >
               <div>
                 <strong>{b.name}</strong>
@@ -232,55 +316,152 @@ export default function Availability() {
 
       {!pageLoading && business && (
         <>
-          <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {rows.map((row, index) => (
-              <div
-                key={row.day_of_week}
-                className="card"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                  gap: '0.75rem',
-                  alignItems: 'center'
-                }}
-              >
-                <strong>{days[row.day_of_week]}</strong>
-
-                <label className="small muted">
-                  <input
-                    type="checkbox"
-                    checked={row.is_closed}
-                    onChange={(e) => updateRow(index, 'is_closed', e.target.checked)}
-                    style={{ marginRight: '0.5rem' }}
-                  />
-                  Closed
-                </label>
-
-                <input
-                  type="time"
-                  value={row.start_time}
-                  disabled={row.is_closed}
-                  onChange={(e) => updateRow(index, 'start_time', e.target.value)}
-                />
-
-                <input
-                  type="time"
-                  value={row.end_time}
-                  disabled={row.is_closed}
-                  onChange={(e) => updateRow(index, 'end_time', e.target.value)}
-                />
+          <div className="card" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div>
+                <p className="small muted">Business-wide availability</p>
+                <h3>{business.name}</h3>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  These are your general business opening hours. Staff-specific hours still control exactly which staff members and time slots customers can book.
+                </p>
               </div>
-            ))}
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <Link href={`/dashboard/businesses`} className="btn btn-ghost">
+                  Business profile
+                </Link>
+
+                <Link href={`/dashboard/staff?businessId=${business.id}`} className="btn btn-ghost">
+                  Staff setup
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={saveAvailability}
-            disabled={loading}
-            className="btn btn-accent"
-            style={{ marginTop: '1.25rem' }}
-          >
-            {loading ? 'Saving...' : 'Save working hours'}
-          </button>
+          <div className="grid-2" style={{ marginBottom: '1.25rem' }}>
+            <div className="card">
+              <p className="small muted">Open days</p>
+              <h3>{availabilityStats.openDays}</h3>
+              <p className="muted small">Business days marked as open</p>
+            </div>
+
+            <div className="card">
+              <p className="small muted">Closed days</p>
+              <h3>{availabilityStats.closedDays}</h3>
+              <p className="muted small">Business days marked as closed</p>
+            </div>
+
+            <div className="card" style={{ borderColor: availabilityStats.invalidDays > 0 ? 'rgba(255,77,109,0.35)' : 'var(--border)' }}>
+              <p className="small muted">Invalid days</p>
+              <h3>{availabilityStats.invalidDays}</h3>
+              <p className="muted small">Open days where start time is not before end time</p>
+            </div>
+
+            <div className="card" style={{ borderColor: availabilityStats.ready ? 'rgba(45,212,191,0.25)' : 'rgba(255,190,11,0.35)' }}>
+              <p className="small muted">Status</p>
+              <h3>{availabilityStats.ready ? 'Ready' : 'Needs work'}</h3>
+              <p className="muted small">At least one valid open day is recommended before publishing</p>
+            </div>
+          </div>
+
+          <div className="card" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div>
+                <p className="small muted">Quick presets</p>
+                <h3>Set common business hours</h3>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  Presets update the table below. You still need to click Save working hours.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button type="button" onClick={applyWeekdayPreset} className="btn btn-ghost">
+                  Mon-Fri 9-5
+                </button>
+
+                <button type="button" onClick={applyEverydayPreset} className="btn btn-ghost">
+                  Every day 9-5
+                </button>
+
+                <button type="button" onClick={closeAllDays} className="btn btn-danger">
+                  Close all days
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            {rows.map((row, index) => {
+              const invalid = !row.is_closed && row.start_time >= row.end_time
+
+              return (
+                <div
+                  key={row.day_of_week}
+                  className="card"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.2fr 1fr 1fr 1fr',
+                    gap: '0.75rem',
+                    alignItems: 'center',
+                    borderColor: invalid ? 'rgba(255,77,109,0.35)' : row.is_closed ? 'rgba(255,190,11,0.20)' : 'var(--border)',
+                    opacity: row.is_closed ? 0.76 : 1
+                  }}
+                >
+                  <div>
+                    <strong>{days[row.day_of_week]}</strong>
+                    <p className="small" style={{ color: invalid ? 'var(--danger)' : row.is_closed ? 'var(--warning)' : 'var(--success)', marginTop: '0.25rem' }}>
+                      {invalid ? 'Invalid time range' : row.is_closed ? 'Closed' : 'Open'}
+                    </p>
+                  </div>
+
+                  <label className="small muted" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={row.is_closed}
+                      onChange={(e) => updateRow(index, 'is_closed', e.target.checked)}
+                    />
+                    Closed
+                  </label>
+
+                  <label className="small muted">
+                    Start
+                    <input
+                      type="time"
+                      value={row.start_time}
+                      disabled={row.is_closed}
+                      onChange={(e) => updateRow(index, 'start_time', e.target.value)}
+                      style={{ marginTop: '0.25rem' }}
+                    />
+                  </label>
+
+                  <label className="small muted">
+                    End
+                    <input
+                      type="time"
+                      value={row.end_time}
+                      disabled={row.is_closed}
+                      onChange={(e) => updateRow(index, 'end_time', e.target.value)}
+                      style={{ marginTop: '0.25rem' }}
+                    />
+                  </label>
+                </div>
+              )
+            })}
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+            <button
+              onClick={saveAvailability}
+              disabled={loading}
+              className="btn btn-accent"
+            >
+              {loading ? 'Saving...' : 'Save working hours'}
+            </button>
+
+            <Link href={`/dashboard/businesses`} className="btn btn-ghost">
+              Back to business profile
+            </Link>
+          </div>
         </>
       )}
     </DashboardLayout>

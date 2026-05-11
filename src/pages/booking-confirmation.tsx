@@ -95,6 +95,7 @@ export default function BookingConfirmation() {
   }, [router.isReady, id])
 
   function statusLabel(status: string) {
+    if (status === 'pending') return 'Booking request sent'
     if (status === 'confirmed') return 'Confirmed appointment'
     if (status === 'completed') return 'Completed appointment'
     if (status === 'cancelled') return 'Cancelled booking'
@@ -102,10 +103,15 @@ export default function BookingConfirmation() {
   }
 
   function statusColor(status: string) {
+    if (status === 'pending') return 'var(--accent)'
     if (status === 'confirmed') return 'var(--success)'
     if (status === 'completed') return 'var(--accent)'
     if (status === 'cancelled') return 'var(--warning)'
     return 'var(--text-muted)'
+  }
+
+  function isPendingApproval() {
+    return booking?.status === 'pending'
   }
 
   return (
@@ -145,36 +151,40 @@ export default function BookingConfirmation() {
                 height: 72,
                 borderRadius: 999,
                 background: 'var(--accent-dim)',
-                color: 'var(--accent)',
+                color: isPendingApproval() ? 'var(--accent)' : 'var(--success)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '2rem',
                 margin: '0 auto 1rem'
               }}>
-                ✓
+                {isPendingApproval() ? '…' : '✓'}
               </div>
 
-              <p className="small" style={{ color: 'var(--success)' }}>Booking confirmed</p>
+              <p className="small" style={{ color: statusColor(booking.status) }}>
+                {isPendingApproval() ? 'Booking request sent' : 'Booking confirmed'}
+              </p>
 
               <h1 style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: '2.4rem',
                 marginTop: '0.35rem'
               }}>
-                Your appointment is confirmed.
+                {isPendingApproval() ? 'Your booking request was sent.' : 'Your appointment is confirmed.'}
               </h1>
 
               <p className="muted" style={{ marginTop: '0.75rem' }}>
-                Your booking is confirmed with {booking.businesses?.name || 'this business'}. You can view, cancel or request a reschedule from My Bookings.
+                {isPendingApproval()
+                  ? `Your request has been sent to ${booking.businesses?.name || 'this business'} for approval. Your appointment is not confirmed until the business accepts it.`
+                  : `Your booking is confirmed with ${booking.businesses?.name || 'this business'}. You can view, cancel or request a reschedule from My Bookings.`}
               </p>
             </div>
 
             <div
               className="card"
               style={{
-                borderColor: 'rgba(45,212,191,0.28)',
-                background: 'rgba(45,212,191,0.06)'
+                borderColor: isPendingApproval() ? 'rgba(255,107,53,0.28)' : 'rgba(45,212,191,0.28)',
+                background: isPendingApproval() ? 'rgba(255,107,53,0.06)' : 'rgba(45,212,191,0.06)'
               }}
             >
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
@@ -183,8 +193,8 @@ export default function BookingConfirmation() {
                     width: 34,
                     height: 34,
                     borderRadius: 999,
-                    background: 'rgba(45,212,191,0.12)',
-                    color: 'var(--success)',
+                    background: isPendingApproval() ? 'rgba(255,107,53,0.12)' : 'rgba(45,212,191,0.12)',
+                    color: isPendingApproval() ? 'var(--accent)' : 'var(--success)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -192,13 +202,15 @@ export default function BookingConfirmation() {
                     flexShrink: 0
                   }}
                 >
-                  ✓
+                  {isPendingApproval() ? '!' : '✓'}
                 </div>
 
                 <div>
-                  <strong>What happens next?</strong>
+                  <strong>{isPendingApproval() ? 'Waiting for business approval' : 'What happens next?'}</strong>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.
+                    {isPendingApproval()
+                      ? 'The business needs to approve this booking request before it becomes a confirmed appointment. You can track the request from My Bookings or Notifications.'
+                      : 'This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.'}
                   </p>
                 </div>
               </div>
@@ -213,7 +225,7 @@ export default function BookingConfirmation() {
                 <span
                   className="small"
                   style={{
-                    background: 'rgba(45,212,191,0.12)',
+                    background: isPendingApproval() ? 'rgba(255,107,53,0.12)' : 'rgba(45,212,191,0.12)',
                     color: statusColor(booking.status),
                     padding: '0.2rem 0.65rem',
                     borderRadius: 999
@@ -249,7 +261,7 @@ export default function BookingConfirmation() {
                     border: '1px solid var(--border)'
                   }}
                 >
-                  <p className="small muted">Confirmed date and time</p>
+                  <p className="small muted">{isPendingApproval() ? 'Requested date and time' : 'Confirmed date and time'}</p>
                   <strong>{new Date(booking.start_at).toLocaleString()}</strong>
                 </div>
 
@@ -304,12 +316,14 @@ export default function BookingConfirmation() {
               flexWrap: 'wrap'
             }}>
               <Link href="/my-bookings" className="btn btn-accent">
-                View or manage this booking
+                {isPendingApproval() ? 'Track booking request' : 'View or manage this booking'}
               </Link>
 
-              <Link href="/explore" className="btn btn-ghost">
-                Browse more businesses
-              </Link>
+              {isPendingApproval() && (
+                <Link href="/notifications" className="btn btn-ghost">
+                  View notifications
+                </Link>
+              )}
             </div>
           </div>
         )}

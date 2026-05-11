@@ -10,6 +10,7 @@ type Service = {
   duration_minutes: number
   price: number
   description?: string | null
+  image_url?: string | null
 }
 
 type StaffMember = {
@@ -31,16 +32,38 @@ type StaffAvailability = {
   is_closed: boolean
 }
 
+type Business = {
+  id: string
+  name: string
+  description?: string | null
+  category?: string | null
+  city?: string | null
+  country?: string | null
+  phone?: string | null
+  address?: string | null
+  image_url?: string | null
+  auto_accept_bookings?: boolean
+}
+
+type Booking = {
+  id: string
+  staff_member_id: string
+  start_at: string
+  end_at?: string | null
+  duration_minutes: number
+  status: string
+}
+
 type UserRole = 'customer' | 'business' | null
 
 export default function BusinessBookingPage() {
   const router = useRouter()
   const { businessId } = router.query
 
-  const [business, setBusiness] = useState<any>(null)
+  const [business, setBusiness] = useState<Business | null>(null)
   const [services, setServices] = useState<Service[]>([])
   const [availability, setAvailability] = useState<any[]>([])
-  const [bookings, setBookings] = useState<any[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
 
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
   const [staffServices, setStaffServices] = useState<StaffService[]>([])
@@ -82,139 +105,145 @@ export default function BusinessBookingPage() {
         .eq('id', session.user.id)
         .single()
 
-      if (profile?.full_name) {
-        setCustomerName(profile.full_name)
-      }
+      if (profile?.full_name) setCustomerName(profile.full_name)
+      if (profile?.phone) setCustomerPhone(profile.phone)
 
-      if (profile?.phone) {
-        setCustomerPhone(profile.phone)
-      }
-
-      if (profile?.role === 'business') {
-        setUserRole('business')
-      } else {
-        setUserRole('customer')
-      }
-
+      setUserRole(profile?.role === 'business' ? 'business' : 'customer')
       setAuthChecked(true)
     }
 
     getCustomerSession()
   }, [])
 
-  useEffect(() => {
+  async function loadBookingPage() {
     if (!businessId || Array.isArray(businessId)) return
 
-    async function load() {
-      setPageLoading(true)
-      setError(null)
+    setPageLoading(true)
+    setError(null)
 
-      const { data: businessData, error: businessError } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('id', businessId)
-        .eq('published', true)
-        .single()
+    const { data: businessData, error: businessError } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('id', businessId)
+      .eq('published', true)
+      .single()
 
-      if (businessError) {
-        setError(businessError.message)
-        setPageLoading(false)
-        return
-      }
-
-      setBusiness(businessData)
-
-      const { data: servicesData, error: servicesError } = await supabase
-        .from('services')
-        .select('*')
-        .eq('business_id', businessId)
-        .eq('active', true)
-        .order('created_at', { ascending: false })
-
-      if (servicesError) {
-        setError(servicesError.message)
-        setPageLoading(false)
-        return
-      }
-
-      setServices(servicesData || [])
-
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff_members')
-        .select('id, name, role_title')
-        .eq('business_id', businessId)
-        .eq('active', true)
-        .order('created_at', { ascending: false })
-
-      if (staffError) {
-        setError(staffError.message)
-        setPageLoading(false)
-        return
-      }
-
-      setStaffMembers(staffData || [])
-
-      const staffIds = (staffData || []).map((staff) => staff.id)
-
-      if (staffIds.length > 0) {
-        const { data: staffServiceData, error: staffServiceError } = await supabase
-          .from('staff_services')
-          .select('staff_member_id, service_id')
-          .in('staff_member_id', staffIds)
-
-        if (staffServiceError) {
-          setError(staffServiceError.message)
-          setPageLoading(false)
-          return
-        }
-
-        setStaffServices(staffServiceData || [])
-
-        const { data: staffAvailabilityData, error: staffAvailabilityError } = await supabase
-          .from('staff_availability')
-          .select('staff_member_id, day_of_week, start_time, end_time, is_closed')
-          .in('staff_member_id', staffIds)
-
-        if (staffAvailabilityError) {
-          setError(staffAvailabilityError.message)
-          setPageLoading(false)
-          return
-        }
-
-        setStaffAvailability(staffAvailabilityData || [])
-      } else {
-        setStaffServices([])
-        setStaffAvailability([])
-      }
-
-      const { data: availabilityData, error: availabilityError } = await supabase
-        .from('availability')
-        .select('*')
-        .eq('business_id', businessId)
-
-      if (availabilityError) {
-        setError(availabilityError.message)
-        setPageLoading(false)
-        return
-      }
-
-      setAvailability(availabilityData || [])
-
-      const { data: bookingsData } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('business_id', businessId)
-        .eq('status', 'confirmed')
-
-      setBookings(bookingsData || [])
+    if (businessError) {
+      setError(businessError.message)
       setPageLoading(false)
+      return
     }
 
-    load()
+    setBusiness(businessData)
+
+    const { data: servicesData, error: servicesError } = await supabase
+      .from('services')
+      .select('*')
+      .eq('business_id', businessId)
+      .eq('active', true)
+      .order('created_at', { ascending: false })
+
+    if (servicesError) {
+      setError(servicesError.message)
+      setPageLoading(false)
+      return
+    }
+
+    setServices(servicesData || [])
+
+    const { data: staffData, error: staffError } = await supabase
+      .from('staff_members')
+      .select('id, name, role_title')
+      .eq('business_id', businessId)
+      .eq('active', true)
+      .order('created_at', { ascending: false })
+
+    if (staffError) {
+      setError(staffError.message)
+      setPageLoading(false)
+      return
+    }
+
+    setStaffMembers(staffData || [])
+
+    const staffIds = (staffData || []).map((staff) => staff.id)
+
+    if (staffIds.length > 0) {
+      const { data: staffServiceData, error: staffServiceError } = await supabase
+        .from('staff_services')
+        .select('staff_member_id, service_id')
+        .in('staff_member_id', staffIds)
+
+      if (staffServiceError) {
+        setError(staffServiceError.message)
+        setPageLoading(false)
+        return
+      }
+
+      setStaffServices(staffServiceData || [])
+
+      const { data: staffAvailabilityData, error: staffAvailabilityError } = await supabase
+        .from('staff_availability')
+        .select('staff_member_id, day_of_week, start_time, end_time, is_closed')
+        .in('staff_member_id', staffIds)
+
+      if (staffAvailabilityError) {
+        setError(staffAvailabilityError.message)
+        setPageLoading(false)
+        return
+      }
+
+      setStaffAvailability(staffAvailabilityData || [])
+    } else {
+      setStaffServices([])
+      setStaffAvailability([])
+    }
+
+    const { data: availabilityData, error: availabilityError } = await supabase
+      .from('availability')
+      .select('*')
+      .eq('business_id', businessId)
+
+    if (availabilityError) {
+      setError(availabilityError.message)
+      setPageLoading(false)
+      return
+    }
+
+    setAvailability(availabilityData || [])
+
+    const { data: bookingsData } = await supabase
+      .from('bookings')
+      .select('id, staff_member_id, start_at, end_at, duration_minutes, status')
+      .eq('business_id', businessId)
+      .in('status', ['pending', 'confirmed'])
+
+    setBookings(bookingsData || [])
+    setPageLoading(false)
+  }
+
+  useEffect(() => {
+    loadBookingPage()
+  }, [businessId])
+
+  useEffect(() => {
+    function refreshWhenActive() {
+      if (document.visibilityState === 'visible') {
+        loadBookingPage()
+      }
+    }
+
+    window.addEventListener('focus', loadBookingPage)
+    document.addEventListener('visibilitychange', refreshWhenActive)
+
+    return () => {
+      window.removeEventListener('focus', loadBookingPage)
+      document.removeEventListener('visibilitychange', refreshWhenActive)
+    }
   }, [businessId])
 
   const dateOptions = useMemo(() => {
-    const dates: { value: string; label: string; subLabel: string }[] = []
+    const dates: { value: string; label: string; subLabel: string; fullLabel: string }[] = []
 
     for (let i = 0; i < 14; i++) {
       const date = new Date()
@@ -226,15 +255,20 @@ export default function BusinessBookingPage() {
 
       dates.push({
         value: `${yyyy}-${mm}-${dd}`,
-        label: date.toLocaleDateString(undefined, { weekday: 'short' }),
-        subLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+        label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : date.toLocaleDateString(undefined, { weekday: 'short' }),
+        subLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+        fullLabel: date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
       })
     }
 
     return dates
   }, [])
 
-  function staffThatCanDoSelectedService() {
+  const selectedStaff = useMemo(() => {
+    return staffMembers.find((staff) => staff.id === selectedStaffId) || null
+  }, [staffMembers, selectedStaffId])
+
+  const selectableStaff = useMemo(() => {
     if (!selectedService) return []
 
     return staffMembers.filter((staff) =>
@@ -244,12 +278,24 @@ export default function BusinessBookingPage() {
           link.service_id === selectedService.id
       )
     )
+  }, [selectedService, staffMembers, staffServices])
+
+  const bookableServiceCount = services.filter((service) =>
+    staffServices.some((link) => link.service_id === service.id)
+  ).length
+
+  function businessIcon() {
+    if (business?.category?.toLowerCase().includes('dent')) return '🦷'
+    if (business?.category?.toLowerCase().includes('barber')) return '💈'
+    if (business?.category?.toLowerCase().includes('salon')) return '✂️'
+    if (business?.category?.toLowerCase().includes('restaurant')) return '🍽️'
+    return '✨'
   }
 
   function getStaffDayAvailability(staffId: string, dateValue: string) {
     if (!dateValue) return null
 
-    const day = new Date(dateValue).getDay()
+    const day = new Date(`${dateValue}T12:00:00`).getDay()
 
     return staffAvailability.find(
       (row) =>
@@ -258,21 +304,59 @@ export default function BusinessBookingPage() {
     ) || null
   }
 
+  function generateSlotsForStaff(staffId: string) {
+    if (!selectedDate || !selectedService) return []
+
+    const dayAvailability = getStaffDayAvailability(staffId, selectedDate)
+    if (!dayAvailability || dayAvailability.is_closed) return []
+
+    const slots: string[] = []
+    let start = new Date(`${selectedDate}T${dayAvailability.start_time}`)
+    const end = new Date(`${selectedDate}T${dayAvailability.end_time}`)
+    const now = new Date()
+
+    while (start.getTime() + selectedService.duration_minutes * 60000 <= end.getTime()) {
+      const slotStart = new Date(start)
+      const slotEnd = new Date(start.getTime() + selectedService.duration_minutes * 60000)
+      const timeString = slotStart.toTimeString().slice(0, 5)
+      const isPastSlot = slotStart < now
+
+      const overlapsBooking = bookings.some((booking) => {
+        if (booking.staff_member_id !== staffId) return false
+
+        const bookingStart = new Date(booking.start_at)
+        const bookingEnd = booking.end_at
+          ? new Date(booking.end_at)
+          : new Date(bookingStart.getTime() + booking.duration_minutes * 60000)
+
+        return slotStart < bookingEnd && slotEnd > bookingStart
+      })
+
+      if (!isPastSlot && !overlapsBooking) {
+        slots.push(timeString)
+      }
+
+      start = new Date(start.getTime() + selectedService.duration_minutes * 60000)
+    }
+
+    return slots
+  }
+
   function getStaffStatus(staff: StaffMember) {
     if (!selectedDate) {
-      return {
-        available: false,
-        label: 'Choose date first'
-      }
+      return { available: false, label: 'Choose date first' }
     }
 
     const dayAvailability = getStaffDayAvailability(staff.id, selectedDate)
 
     if (!dayAvailability || dayAvailability.is_closed) {
-      return {
-        available: false,
-        label: 'Unavailable / day off'
-      }
+      return { available: false, label: 'Unavailable / day off' }
+    }
+
+    const hasSlots = generateSlotsForStaff(staff.id).length > 0
+
+    if (!hasSlots) {
+      return { available: false, label: 'Fully booked' }
     }
 
     return {
@@ -287,42 +371,7 @@ export default function BusinessBookingPage() {
       return
     }
 
-    const dayAvailability = getStaffDayAvailability(selectedStaffId, selectedDate)
-
-    if (!dayAvailability || dayAvailability.is_closed) {
-      setTimeSlots([])
-      return
-    }
-
-    const slots: string[] = []
-
-    let start = new Date(`${selectedDate}T${dayAvailability.start_time}`)
-    const end = new Date(`${selectedDate}T${dayAvailability.end_time}`)
-
-    while (start.getTime() + selectedService.duration_minutes * 60000 <= end.getTime()) {
-      const slotStart = new Date(start)
-      const slotEnd = new Date(start.getTime() + selectedService.duration_minutes * 60000)
-      const timeString = slotStart.toTimeString().slice(0, 5)
-
-      const overlapsBooking = bookings.some((booking) => {
-        if (booking.staff_member_id !== selectedStaffId) return false
-
-        const bookingStart = new Date(booking.start_at)
-        const bookingEnd = booking.end_at
-          ? new Date(booking.end_at)
-          : new Date(bookingStart.getTime() + booking.duration_minutes * 60000)
-
-        return slotStart < bookingEnd && slotEnd > bookingStart
-      })
-
-      if (!overlapsBooking) {
-        slots.push(timeString)
-      }
-
-      start = new Date(start.getTime() + selectedService.duration_minutes * 60000)
-    }
-
-    setTimeSlots(slots)
+    setTimeSlots(generateSlotsForStaff(selectedStaffId))
   }
 
   useEffect(() => {
@@ -339,12 +388,22 @@ export default function BusinessBookingPage() {
       return
     }
 
-    if (!businessId || Array.isArray(businessId) || !selectedService || !selectedStaffId) return
+    if (!businessId || Array.isArray(businessId) || !selectedService || !selectedStaffId || !selectedTime) return
 
     setLoading(true)
     setError(null)
 
+    const freshSlots = generateSlotsForStaff(selectedStaffId)
+
+    if (!freshSlots.includes(selectedTime)) {
+      setLoading(false)
+      setError('This time is no longer available. Please choose another slot.')
+      setSelectedTime('')
+      return
+    }
+
     const startAt = new Date(`${selectedDate}T${selectedTime}:00`).toISOString()
+    const bookingStatus = business?.auto_accept_bookings === false ? 'pending' : 'confirmed'
 
     const { error } = await supabase
       .from('bookings')
@@ -353,12 +412,12 @@ export default function BusinessBookingPage() {
         service_id: selectedService.id,
         staff_member_id: selectedStaffId,
         customer_user_id: customerUserId,
-        customer_name: customerName,
+        customer_name: customerName.trim(),
         customer_email: customerEmail.trim().toLowerCase(),
-        customer_phone: customerPhone,
+        customer_phone: customerPhone.trim() || null,
         start_at: startAt,
         duration_minutes: selectedService.duration_minutes,
-        status: 'confirmed'
+        status: bookingStatus
       })
 
     setLoading(false)
@@ -369,6 +428,7 @@ export default function BusinessBookingPage() {
       } else {
         setError(error.message)
       }
+      await loadBookingPage()
       return
     }
 
@@ -385,10 +445,9 @@ export default function BusinessBookingPage() {
     if (latestBooking?.id) {
       router.push(`/booking-confirmation?id=${latestBooking.id}`)
     } else {
-      router.push('/my-bookings')
+      router.push(bookingStatus === 'pending' ? '/my-bookings?bookingRequested=1' : '/my-bookings')
     }
   }
-
   if (pageLoading) {
     return (
       <main>
@@ -409,7 +468,7 @@ export default function BusinessBookingPage() {
         <section className="page-shell">
           <div className="container">
             <h1 className="page-title">Business not found</h1>
-            <p className="page-sub">This business may be hidden or unavailable.</p>
+            <p className="page-sub">This business may be hidden, unpublished or unavailable.</p>
             <Link href="/explore" className="btn btn-accent" style={{ marginTop: '1rem' }}>
               Back to explore
             </Link>
@@ -419,7 +478,16 @@ export default function BusinessBookingPage() {
     )
   }
 
-  const selectableStaff = staffThatCanDoSelectedService()
+  const selectedDateLabel = dateOptions.find((date) => date.value === selectedDate)?.fullLabel
+
+  const canSubmit = Boolean(
+    selectedService &&
+    selectedDate &&
+    selectedStaffId &&
+    selectedTime &&
+    customerUserId &&
+    userRole === 'customer'
+  )
 
   return (
     <main>
@@ -448,140 +516,274 @@ export default function BusinessBookingPage() {
           </div>
         )}
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 430px',
-          gap: '2rem',
-          alignItems: 'start',
-          marginTop: '1.5rem'
-        }}>
-          <section>
-            <div className="card" style={{ marginBottom: '1rem' }}>
-              <div style={{
+        <div className="card" style={{ marginTop: '1.5rem', overflow: 'hidden', padding: 0 }}>
+          {business.image_url ? (
+            <div
+              style={{
+                minHeight: 210,
+                backgroundImage: `linear-gradient(rgba(11, 18, 32, 0.2), rgba(11, 18, 32, 0.75)), url(${business.image_url})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 display: 'flex',
-                gap: '1rem',
-                alignItems: 'center',
-                marginBottom: '1rem'
-              }}>
-                <div style={{
-                  width: 86,
-                  height: 86,
-                  borderRadius: 22,
-                  background: 'var(--accent-dim)',
-                  border: '1px solid rgba(255,107,53,0.25)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '2.2rem'
-                }}>
-                  {business.category?.toLowerCase().includes('dent') ? '🦷' :
-                    business.category?.toLowerCase().includes('barber') ? '💈' :
-                    business.category?.toLowerCase().includes('salon') ? '✂️' :
-                    '✨'}
+                alignItems: 'flex-end',
+                padding: '1.5rem'
+              }}
+            >
+              <div>
+                <p className="small" style={{ color: 'var(--accent)' }}>
+                  {business.category || 'Bookable business'}
+                </p>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', lineHeight: 1.05 }}>
+                  {business.name}
+                </h1>
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                minHeight: 190,
+                background: 'linear-gradient(135deg, rgba(255,107,53,0.18), rgba(45,212,191,0.10))',
+                display: 'flex',
+                alignItems: 'flex-end',
+                padding: '1.5rem'
+              }}
+            >
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div
+                  style={{
+                    width: 82,
+                    height: 82,
+                    borderRadius: 22,
+                    background: 'var(--accent-dim)',
+                    border: '1px solid rgba(255,107,53,0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '2.1rem'
+                  }}
+                >
+                  {businessIcon()}
                 </div>
 
                 <div>
-                  <h1 style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '2rem',
-                    lineHeight: 1.1
-                  }}>
+                  <p className="small" style={{ color: 'var(--accent)' }}>
+                    {business.category || 'Bookable business'}
+                  </p>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', lineHeight: 1.05 }}>
                     {business.name}
                   </h1>
-
-                  {business.category && (
-                    <p className="small" style={{ color: 'var(--accent)' }}>
-                      {business.category}
-                    </p>
-                  )}
-
-                  <p className="muted small">
-                    {[business.address, business.city, business.country].filter(Boolean).join(', ') || 'Location not added'}
-                  </p>
                 </div>
               </div>
+            </div>
+          )}
 
-              <p className="muted">
-                {business.description || 'Book available appointments with this business.'}
+          <div style={{ padding: '1.25rem 1.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
+              <span
+                className="small"
+                style={{
+                  background: business.auto_accept_bookings === false ? 'rgba(255,107,53,0.12)' : 'rgba(45,212,191,0.12)',
+                  color: business.auto_accept_bookings === false ? 'var(--accent)' : 'var(--success)',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: 999
+                }}
+              >
+                {business.auto_accept_bookings === false ? 'Manual approval' : 'Instant confirmation'}
+              </span>
+
+              <span
+                className="small"
+                style={{
+                  background: 'var(--surface-2)',
+                  color: 'var(--text-muted)',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: 999,
+                  border: '1px solid var(--border)'
+                }}
+              >
+                {bookableServiceCount} bookable service{bookableServiceCount === 1 ? '' : 's'}
+              </span>
+
+              <span
+                className="small"
+                style={{
+                  background: 'var(--surface-2)',
+                  color: 'var(--text-muted)',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: 999,
+                  border: '1px solid var(--border)'
+                }}
+              >
+                Real-time slots
+              </span>
+            </div>
+
+            <p className="muted">
+              {business.description || 'Book available appointments with this business.'}
+            </p>
+
+            <div style={{ display: 'grid', gap: '0.4rem', marginTop: '1rem' }}>
+              <p className="small muted">
+                {[business.address, business.city, business.country].filter(Boolean).join(', ') || 'Location not added'}
               </p>
 
               {business.phone && (
-                <p className="small muted" style={{ marginTop: '0.75rem' }}>
+                <p className="small muted">
                   Phone: {business.phone}
                 </p>
               )}
             </div>
+          </div>
+        </div>
 
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) 430px',
+            gap: '2rem',
+            alignItems: 'start',
+            marginTop: '1.5rem'
+          }}
+        >
+          <section>
             <div className="card">
-              <h2 style={{
-                fontFamily: 'var(--font-display)',
-                marginBottom: '1rem'
-              }}>
-                Services
-              </h2>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  flexWrap: 'wrap',
+                  alignItems: 'flex-end',
+                  marginBottom: '1rem'
+                }}
+              >
+                <div>
+                  <p className="small muted">Step 1</p>
+                  <h2 style={{ fontFamily: 'var(--font-display)' }}>
+                    Choose a service
+                  </h2>
+                </div>
 
-              {services.length === 0 && (
-                <p className="muted">No services available yet.</p>
-              )}
-
-              <div style={{ display: 'grid', gap: '0.75rem' }}>
-                {services.map(service => (
+                {selectedService && (
                   <button
-                    key={service.id}
                     type="button"
+                    className="btn btn-ghost"
                     onClick={() => {
-                      setSelectedService(service)
+                      setSelectedService(null)
                       setSelectedDate('')
                       setSelectedStaffId('')
                       setSelectedTime('')
                     }}
-                    style={{
-                      textAlign: 'left',
-                      background: selectedService?.id === service.id ? 'var(--accent-dim)' : 'var(--surface-2)',
-                      border: selectedService?.id === service.id ? '1px solid rgba(255,107,53,0.45)' : '1px solid var(--border)',
-                      borderRadius: 'var(--radius)',
-                      padding: '1rem',
-                      color: 'var(--text)'
-                    }}
                   >
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      gap: '1rem'
-                    }}>
-                      <strong>{service.name}</strong>
-                      <strong>£{Number(service.price).toFixed(2)}</strong>
-                    </div>
-
-                    <p className="small muted">
-                      {service.duration_minutes} minutes
-                    </p>
-
-                    {service.description && (
-                      <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                        {service.description}
-                      </p>
-                    )}
+                    Change service
                   </button>
-                ))}
+                )}
+              </div>
+
+              {services.length === 0 && (
+                <div className="card" style={{ background: 'var(--surface-2)' }}>
+                  <h3>No services available yet</h3>
+                  <p className="muted" style={{ marginTop: '0.35rem' }}>
+                    This business is published, but it does not have active services ready for booking yet.
+                  </p>
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                {services.map((service) => {
+                  const assignedStaffCount = staffServices.filter((link) => link.service_id === service.id).length
+                  const isSelected = selectedService?.id === service.id
+
+                  return (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedService(service)
+                        setSelectedDate('')
+                        setSelectedStaffId('')
+                        setSelectedTime('')
+                      }}
+                      style={{
+                        textAlign: 'left',
+                        background: isSelected ? 'var(--accent-dim)' : 'var(--surface-2)',
+                        border: isSelected ? '1px solid rgba(255,107,53,0.45)' : '1px solid var(--border)',
+                        borderRadius: 'var(--radius)',
+                        padding: service.image_url ? 0 : '1rem',
+                        color: 'var(--text)',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {service.image_url && (
+                        <div
+                          style={{
+                            minHeight: 120,
+                            backgroundImage: `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${service.image_url})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        />
+                      )}
+
+                      <div style={{ padding: service.image_url ? '1rem' : 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                          <strong>{service.name}</strong>
+                          <strong>£{Number(service.price).toFixed(2)}</strong>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.55rem' }}>
+                          <span className="small muted">{service.duration_minutes} minutes</span>
+                          <span className="small muted">{assignedStaffCount} staff member{assignedStaffCount === 1 ? '' : 's'}</span>
+                        </div>
+
+                        {service.description && (
+                          <p className="small muted" style={{ marginTop: '0.55rem' }}>
+                            {service.description}
+                          </p>
+                        )}
+
+                        {assignedStaffCount === 0 && (
+                          <p className="small" style={{ color: 'var(--warning)', marginTop: '0.55rem' }}>
+                            This service is not bookable yet because no staff are assigned.
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>
 
-          <aside className="card" style={{
-            position: 'sticky',
-            top: 96
-          }}>
-            <h2 style={{
-              fontFamily: 'var(--font-display)',
-              marginBottom: '0.5rem'
-            }}>
-              Book appointment
-            </h2>
+          <aside className="card" style={{ position: 'sticky', top: 96 }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <p className="small muted">Book with {business.name}</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '0.35rem' }}>
+                {business.auto_accept_bookings === false ? 'Request appointment' : 'Book appointment'}
+              </h2>
+              <p className="small muted">
+                Choose a service, date, staff member and available time.
+              </p>
+            </div>
 
-            <p className="small muted" style={{ marginBottom: '1rem' }}>
-              Choose a service, date, staff member and available time.
-            </p>
+            <div
+              className="card"
+              style={{
+                background: business.auto_accept_bookings === false ? 'rgba(255,107,53,0.08)' : 'rgba(45,212,191,0.06)',
+                borderColor: business.auto_accept_bookings === false ? 'rgba(255,107,53,0.28)' : 'rgba(45,212,191,0.22)',
+                marginBottom: '1rem',
+                padding: '0.85rem'
+              }}
+            >
+              <p className="small" style={{ color: business.auto_accept_bookings === false ? 'var(--accent)' : 'var(--success)' }}>
+                {business.auto_accept_bookings === false ? 'Booking approval required' : 'Instant confirmation'}
+              </p>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {business.auto_accept_bookings === false
+                  ? 'This business reviews new booking requests before confirming them.'
+                  : 'This business confirms new bookings instantly.'}
+              </p>
+            </div>
 
             {!customerUserId && (
               <div className="card" style={{ background: 'var(--surface-2)', marginBottom: '1rem' }}>
@@ -618,11 +820,7 @@ export default function BusinessBookingPage() {
             <form onSubmit={createBooking} className="form-grid">
               <div>
                 <label className="small muted">Selected service</label>
-                <div className="card" style={{
-                  background: 'var(--surface-2)',
-                  marginTop: '0.4rem',
-                  padding: '0.85rem'
-                }}>
+                <div className="card" style={{ background: 'var(--surface-2)', marginTop: '0.4rem', padding: '0.85rem' }}>
                   {selectedService ? (
                     <>
                       <strong>{selectedService.name}</strong>
@@ -639,12 +837,14 @@ export default function BusinessBookingPage() {
               <div>
                 <label className="small muted">Choose date</label>
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: '0.5rem',
-                  marginTop: '0.5rem'
-                }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '0.5rem',
+                    marginTop: '0.5rem'
+                  }}
+                >
                   {dateOptions.map((option) => (
                     <button
                       key={option.value}
@@ -661,7 +861,8 @@ export default function BusinessBookingPage() {
                         border: selectedDate === option.value ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
                         background: selectedDate === option.value ? 'var(--accent-dim)' : 'var(--surface-2)',
                         color: 'var(--text)',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        opacity: selectedService ? 1 : 0.45
                       }}
                     >
                       <strong>{option.label}</strong>
@@ -739,6 +940,12 @@ export default function BusinessBookingPage() {
               <div>
                 <label className="small muted">Available times</label>
 
+                {selectedDateLabel && selectedStaff && (
+                  <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                    {selectedDateLabel} with {selectedStaff.name}
+                  </p>
+                )}
+
                 {!selectedStaffId && (
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
                     Select an available staff member first.
@@ -751,13 +958,15 @@ export default function BusinessBookingPage() {
                   </p>
                 )}
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(82px, 1fr))',
-                  gap: '0.5rem',
-                  marginTop: '0.5rem'
-                }}>
-                  {timeSlots.map(slot => (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(82px, 1fr))',
+                    gap: '0.5rem',
+                    marginTop: '0.5rem'
+                  }}
+                >
+                  {timeSlots.map((slot) => (
                     <button
                       key={slot}
                       type="button"
@@ -774,6 +983,19 @@ export default function BusinessBookingPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="card" style={{ background: 'var(--surface-2)', padding: '0.85rem' }}>
+                <p className="small muted">Summary</p>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  {selectedService ? `${selectedService.name} · ${selectedService.duration_minutes} mins · £${Number(selectedService.price).toFixed(2)}` : 'No service selected'}
+                </p>
+                <p className="small muted">
+                  {selectedDateLabel || 'No date selected'}{selectedTime ? ` · ${selectedTime}` : ''}
+                </p>
+                <p className="small muted">
+                  {selectedStaff ? `Staff: ${selectedStaff.name}` : 'No staff selected'}
+                </p>
               </div>
 
               <input
@@ -804,10 +1026,12 @@ export default function BusinessBookingPage() {
 
               <button
                 type="submit"
-                disabled={loading || !selectedService || !selectedDate || !selectedStaffId || !selectedTime || !customerUserId || userRole !== 'customer'}
+                disabled={loading || !canSubmit}
                 className="btn btn-accent"
               >
-                {loading ? 'Booking...' : 'Confirm booking'}
+                {loading
+                  ? business.auto_accept_bookings === false ? 'Sending request...' : 'Booking...'
+                  : business.auto_accept_bookings === false ? 'Request booking' : 'Confirm booking'}
               </button>
             </form>
           </aside>

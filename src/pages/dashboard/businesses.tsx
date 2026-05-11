@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
@@ -13,20 +13,56 @@ type Business = {
   country?: string | null
   phone?: string | null
   address?: string | null
+  image_url?: string | null
   published: boolean
   auto_accept_bookings?: boolean
   created_at?: string
+}
+
+type Service = {
+  id: string
+  business_id: string
+  active: boolean
+}
+
+type StaffMember = {
+  id: string
+  business_id: string
+  active: boolean
+}
+
+type AvailabilityRow = {
+  id: string
+  business_id: string
+  is_closed?: boolean | null
+}
+
+type Readiness = {
+  profileComplete: boolean
+  hasActiveServices: boolean
+  hasActiveStaff: boolean
+  hasWorkingHours: boolean
+  readyToPublish: boolean
+  activeServices: number
+  activeStaff: number
+  workingDays: number
 }
 
 export default function Businesses() {
   const router = useRouter()
 
   const [businesses, setBusinesses] = useState<Business[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
+  const [availabilityRows, setAvailabilityRows] = useState<AvailabilityRow[]>([])
+
   const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [savingBusinessId, setSavingBusinessId] = useState<string | null>(null)
+  const [publishingBusinessId, setPublishingBusinessId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   async function loadBusinesses() {
     setError(null)
@@ -62,7 +98,55 @@ export default function Businesses() {
       return
     }
 
-    setBusinesses(data || [])
+    const ownedBusinesses = data || []
+    setBusinesses(ownedBusinesses)
+
+    const businessIds = ownedBusinesses.map((business) => business.id)
+
+    if (businessIds.length === 0) {
+      setServices([])
+      setStaffMembers([])
+      setAvailabilityRows([])
+      setPageLoading(false)
+      return
+    }
+
+    const { data: serviceData, error: serviceError } = await supabase
+      .from('services')
+      .select('id, business_id, active')
+      .in('business_id', businessIds)
+
+    if (serviceError) {
+      setError(serviceError.message)
+      setPageLoading(false)
+      return
+    }
+
+    const { data: staffData, error: staffError } = await supabase
+      .from('staff_members')
+      .select('id, business_id, active')
+      .in('business_id', businessIds)
+
+    if (staffError) {
+      setError(staffError.message)
+      setPageLoading(false)
+      return
+    }
+
+    const { data: availabilityData, error: availabilityError } = await supabase
+      .from('availability')
+      .select('id, business_id, is_closed')
+      .in('business_id', businessIds)
+
+    if (availabilityError) {
+      setError(availabilityError.message)
+      setPageLoading(false)
+      return
+    }
+
+    setServices(serviceData || [])
+    setStaffMembers(staffData || [])
+    setAvailabilityRows(availabilityData || [])
     setPageLoading(false)
   }
 
@@ -77,6 +161,7 @@ export default function Businesses() {
 
     setLoading(true)
     setError(null)
+    setSuccess(null)
 
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -90,7 +175,8 @@ export default function Businesses() {
       .insert({
         name: newName.trim(),
         user_id: session.user.id,
-        published: false
+        published: false,
+        auto_accept_bookings: true
       })
 
     if (error) {
@@ -100,11 +186,12 @@ export default function Businesses() {
     }
 
     setNewName('')
+    setSuccess('Business created. Add the profile details, services, staff and hours before publishing.')
     await loadBusinesses()
     setLoading(false)
   }
 
-  function updateLocalBusiness(id: string, field: keyof Business, value: string | boolean | boolean) {
+  function updateLocalBusiness(id: string, field: keyof Business, value: string | boolean) {
     setBusinesses((prev) =>
       prev.map((business) =>
         business.id === id ? { ...business, [field]: value } : business
@@ -112,9 +199,50 @@ export default function Businesses() {
     )
   }
 
+  function getReadiness(business: Business): Readiness {
+    const activeServices = services.filter((service) => service.business_id === business.id && service.active).length
+    const activeStaff = staffMembers.filter((staff) => staff.business_id === business.id && staff.active).length
+    const workingDays = availabilityRows.filter((row) => row.business_id === business.id && row.is_closed !== true).length
+
+    const profileComplete = Boolean(
+      business.name?.trim() &&
+      business.category?.trim() &&
+      business.city?.trim() &&
+      business.description?.trim()
+    )
+
+    const hasActiveServices = activeServices > 0
+    const hasActiveStaff = activeStaff > 0
+    const hasWorkingHours = workingDays > 0
+
+    return {
+      profileComplete,
+      hasActiveServices,
+      hasActiveStaff,
+      hasWorkingHours,
+      readyToPublish: profileComplete && hasActiveServices && hasActiveStaff && hasWorkingHours,
+      activeServices,
+      activeStaff,
+      workingDays
+    }
+  }
+
+  const dashboardStats = useMemo(() => {
+    const published = businesses.filter((business) => business.published).length
+    const ready = businesses.filter((business) => getReadiness(business).readyToPublish).length
+
+    return {
+      total: businesses.length,
+      published,
+      hidden: businesses.length - published,
+      ready
+    }
+  }, [businesses, services, staffMembers, availabilityRows])
+
   async function saveBusiness(business: Business) {
     setSavingBusinessId(business.id)
     setError(null)
+    setSuccess(null)
 
     const { error } = await supabase
       .from('businesses')
@@ -126,6 +254,7 @@ export default function Businesses() {
         country: business.country || null,
         address: business.address || null,
         phone: business.phone || null,
+        image_url: business.image_url || null,
         auto_accept_bookings: business.auto_accept_bookings ?? true
       })
       .eq('id', business.id)
@@ -136,31 +265,111 @@ export default function Businesses() {
       return
     }
 
+    setSuccess(`${business.name || 'Business'} profile saved.`)
     setSavingBusinessId(null)
     await loadBusinesses()
   }
 
   async function togglePublished(business: Business) {
     setError(null)
+    setSuccess(null)
+    setPublishingBusinessId(business.id)
+
+    const readiness = getReadiness(business)
+
+    if (!business.published && !readiness.readyToPublish) {
+      const confirmed = confirm(
+        'This business is missing setup details. You can publish it, but customers may not be able to book properly until services, staff and hours are complete. Publish anyway?'
+      )
+
+      if (!confirmed) {
+        setPublishingBusinessId(null)
+        return
+      }
+    }
 
     const { error } = await supabase
       .from('businesses')
       .update({ published: !business.published })
       .eq('id', business.id)
 
+    setPublishingBusinessId(null)
+
     if (error) {
       setError(error.message)
       return
     }
 
+    setSuccess(!business.published ? `${business.name} is now visible to customers.` : `${business.name} is now hidden from customers.`)
     await loadBusinesses()
+  }
+
+  function readinessRow(label: string, complete: boolean, helper: string) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          gap: '0.75rem',
+          alignItems: 'flex-start',
+          padding: '0.7rem 0',
+          borderBottom: '1px solid var(--border)'
+        }}
+      >
+        <div>
+          <strong>{label}</strong>
+          <p className="small muted" style={{ marginTop: '0.2rem' }}>
+            {helper}
+          </p>
+        </div>
+
+        <span
+          className="small"
+          style={{
+            background: complete ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+            color: complete ? 'var(--success)' : 'var(--warning)',
+            padding: '0.2rem 0.55rem',
+            borderRadius: 999,
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {complete ? 'Ready' : 'Needs work'}
+        </span>
+      </div>
+    )
   }
 
   return (
     <DashboardLayout
       title="Business profile"
-      subtitle="Edit your business details, publish your profile, and manage services, staff, working hours and bookings."
+      subtitle="Control how your business appears to customers, add images, manage booking approval and check readiness before publishing."
     >
+      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+        <div className="card">
+          <p className="small muted">Businesses</p>
+          <h3>{dashboardStats.total}</h3>
+          <p className="muted small">Total business profiles</p>
+        </div>
+
+        <div className="card" style={{ borderColor: dashboardStats.ready > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
+          <p className="small muted">Ready profiles</p>
+          <h3>{dashboardStats.ready}/{dashboardStats.total}</h3>
+          <p className="muted small">Profiles with services, staff and hours</p>
+        </div>
+
+        <div className="card">
+          <p className="small muted">Live</p>
+          <h3>{dashboardStats.published}</h3>
+          <p className="muted small">Visible to customers</p>
+        </div>
+
+        <div className="card">
+          <p className="small muted">Hidden</p>
+          <h3>{dashboardStats.hidden}</h3>
+          <p className="muted small">Not visible in marketplace</p>
+        </div>
+      </div>
+
       <form
         onSubmit={createBusiness}
         className="card"
@@ -170,7 +379,13 @@ export default function Businesses() {
           marginBottom: '1.5rem'
         }}
       >
-        <h3>Add a new business</h3>
+        <div>
+          <p className="small muted">Create profile</p>
+          <h3>Add a new business</h3>
+          <p className="muted small" style={{ marginTop: '0.35rem' }}>
+            Create the profile first, then add services, staff, working hours and publish when ready.
+          </p>
+        </div>
 
         <div style={{
           display: 'grid',
@@ -188,6 +403,12 @@ export default function Businesses() {
           </button>
         </div>
       </form>
+
+      {success && (
+        <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--success)' }}>{success}</p>
+        </div>
+      )}
 
       {error && (
         <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
@@ -210,191 +431,286 @@ export default function Businesses() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        {businesses.map((business) => (
-          <div
-            key={business.id}
-            className="card"
-            style={{
-              display: 'grid',
-              gap: '1rem'
-            }}
-          >
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: '1rem',
-              alignItems: 'flex-start',
-              flexWrap: 'wrap'
-            }}>
-              <div>
-                <h3 style={{ marginBottom: '0.25rem' }}>
-                  {business.name || 'Untitled business'}
-                </h3>
+      <div style={{ display: 'grid', gap: '1.25rem' }}>
+        {businesses.map((business) => {
+          const readiness = getReadiness(business)
 
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
-                  <span
-                    className="small"
-                    style={{
-                      background: business.published ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                      color: business.published ? 'var(--success)' : 'var(--warning)',
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: 999
-                    }}
-                  >
-                    {business.published ? 'Live / visible to customers' : 'Hidden / not visible'}
-                  </span>
-
-                  <span
-                    className="small"
-                    style={{
-                      background: business.auto_accept_bookings ?? true ? 'rgba(45,212,191,0.12)' : 'rgba(255,107,53,0.12)',
-                      color: business.auto_accept_bookings ?? true ? 'var(--success)' : 'var(--accent)',
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: 999
-                    }}
-                  >
-                    {business.auto_accept_bookings ?? true ? 'Auto-accept bookings' : 'Manual booking approval'}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => togglePublished(business)}
-                className={business.published ? 'btn btn-ghost' : 'btn btn-accent'}
-              >
-                {business.published ? 'Unpublish' : 'Publish'}
-              </button>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '0.75rem'
-            }}>
-              <input
-                placeholder="Business name"
-                value={business.name || ''}
-                onChange={(e) => updateLocalBusiness(business.id, 'name', e.target.value)}
-              />
-
-              <input
-                placeholder="Category e.g. Barber, Dentist, Salon"
-                value={business.category || ''}
-                onChange={(e) => updateLocalBusiness(business.id, 'category', e.target.value)}
-              />
-
-              <input
-                placeholder="City"
-                value={business.city || ''}
-                onChange={(e) => updateLocalBusiness(business.id, 'city', e.target.value)}
-              />
-
-              <input
-                placeholder="Country"
-                value={business.country || ''}
-                onChange={(e) => updateLocalBusiness(business.id, 'country', e.target.value)}
-              />
-
-              <input
-                placeholder="Address"
-                value={business.address || ''}
-                onChange={(e) => updateLocalBusiness(business.id, 'address', e.target.value)}
-              />
-
-              <input
-                placeholder="Phone"
-                value={business.phone || ''}
-                onChange={(e) => updateLocalBusiness(business.id, 'phone', e.target.value)}
-              />
-            </div>
-
-            <textarea
-              placeholder="Description shown to customers"
-              value={business.description || ''}
-              onChange={(e) => updateLocalBusiness(business.id, 'description', e.target.value)}
-              rows={3}
-            />
-
+          return (
             <div
+              key={business.id}
               className="card"
               style={{
-                background: 'var(--surface-2)',
-                borderColor: 'var(--border)',
-                padding: '1rem'
+                display: 'grid',
+                gap: '1rem',
+                borderColor: business.published
+                  ? 'rgba(45,212,191,0.25)'
+                  : readiness.readyToPublish
+                    ? 'rgba(255,107,53,0.25)'
+                    : 'var(--border)'
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 240 }}>
-                  <p className="small muted">Booking approval</p>
-                  <h3 style={{ marginTop: '0.25rem' }}>
-                    {business.auto_accept_bookings ?? true ? 'Auto-accept customer bookings' : 'Manually approve customer bookings'}
-                  </h3>
-                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    When auto-accept is on, customers receive instant booking confirmation. When it is off, new bookings will need business approval before they are confirmed.
-                  </p>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '150px minmax(0, 1fr) auto',
+                  gap: '1rem',
+                  alignItems: 'start'
+                }}
+              >
+                <div
+                  style={{
+                    height: 112,
+                    borderRadius: 'var(--radius)',
+                    background: business.image_url
+                      ? `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.55)), url(${business.image_url})`
+                      : 'linear-gradient(135deg, rgba(255,107,53,0.16), rgba(45,212,191,0.10))',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    border: '1px solid var(--border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '2rem'
+                  }}
+                >
+                  {!business.image_url && '✨'}
                 </div>
 
-                <label
-                  className="btn btn-ghost"
-                  style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                <div>
+                  <h3 style={{ marginBottom: '0.25rem' }}>
+                    {business.name || 'Untitled business'}
+                  </h3>
+
+                  <p className="small muted">
+                    {[business.category, business.city, business.country].filter(Boolean).join(' · ') || 'Add category and location'}
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
+                    <span
+                      className="small"
+                      style={{
+                        background: business.published ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+                        color: business.published ? 'var(--success)' : 'var(--warning)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 999
+                      }}
+                    >
+                      {business.published ? 'Live / visible' : 'Hidden'}
+                    </span>
+
+                    <span
+                      className="small"
+                      style={{
+                        background: business.auto_accept_bookings ?? true ? 'rgba(45,212,191,0.12)' : 'rgba(255,107,53,0.12)',
+                        color: business.auto_accept_bookings ?? true ? 'var(--success)' : 'var(--accent)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 999
+                      }}
+                    >
+                      {business.auto_accept_bookings ?? true ? 'Auto-accept' : 'Manual approval'}
+                    </span>
+
+                    <span
+                      className="small"
+                      style={{
+                        background: readiness.readyToPublish ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+                        color: readiness.readyToPublish ? 'var(--success)' : 'var(--warning)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 999
+                      }}
+                    >
+                      {readiness.readyToPublish ? 'Ready to book' : 'Setup incomplete'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => togglePublished(business)}
+                  className={business.published ? 'btn btn-ghost' : 'btn btn-accent'}
+                  disabled={publishingBusinessId === business.id}
                 >
+                  {publishingBusinessId === business.id
+                    ? 'Updating...'
+                    : business.published
+                      ? 'Unpublish'
+                      : 'Publish'}
+                </button>
+              </div>
+
+              <div className="grid-2">
+                <div className="card" style={{ background: 'var(--surface-2)' }}>
+                  <p className="small muted">Customer-facing profile</p>
+                  <h3 style={{ marginTop: '0.25rem' }}>Profile details</h3>
+
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                    gap: '0.75rem',
+                    marginTop: '1rem'
+                  }}>
+                    <input
+                      placeholder="Business name"
+                      value={business.name || ''}
+                      onChange={(e) => updateLocalBusiness(business.id, 'name', e.target.value)}
+                    />
+
+                    <input
+                      placeholder="Category e.g. Barber, Dentist, Salon"
+                      value={business.category || ''}
+                      onChange={(e) => updateLocalBusiness(business.id, 'category', e.target.value)}
+                    />
+
+                    <input
+                      placeholder="City"
+                      value={business.city || ''}
+                      onChange={(e) => updateLocalBusiness(business.id, 'city', e.target.value)}
+                    />
+
+                    <input
+                      placeholder="Country"
+                      value={business.country || ''}
+                      onChange={(e) => updateLocalBusiness(business.id, 'country', e.target.value)}
+                    />
+
+                    <input
+                      placeholder="Address"
+                      value={business.address || ''}
+                      onChange={(e) => updateLocalBusiness(business.id, 'address', e.target.value)}
+                    />
+
+                    <input
+                      placeholder="Phone"
+                      value={business.phone || ''}
+                      onChange={(e) => updateLocalBusiness(business.id, 'phone', e.target.value)}
+                    />
+                  </div>
+
                   <input
-                    type="checkbox"
-                    checked={business.auto_accept_bookings ?? true}
-                    onChange={(e) => updateLocalBusiness(business.id, 'auto_accept_bookings', e.target.checked)}
+                    placeholder="Business image URL optional"
+                    value={business.image_url || ''}
+                    onChange={(e) => updateLocalBusiness(business.id, 'image_url', e.target.value)}
+                    style={{ marginTop: '0.75rem' }}
                   />
-                  Auto-accept
-                </label>
+
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    Optional for now. Paste a public image URL to show a header image on your marketplace and booking pages.
+                  </p>
+
+                  <textarea
+                    placeholder="Description shown to customers"
+                    value={business.description || ''}
+                    onChange={(e) => updateLocalBusiness(business.id, 'description', e.target.value)}
+                    rows={4}
+                    style={{ marginTop: '0.75rem' }}
+                  />
+                </div>
+
+                <div className="card" style={{ background: 'var(--surface-2)' }}>
+                  <p className="small muted">Readiness checklist</p>
+                  <h3 style={{ marginTop: '0.25rem' }}>
+                    {readiness.readyToPublish ? 'Ready for customers' : 'Complete setup before launch'}
+                  </h3>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    This helps prevent customers seeing a business they cannot confidently book with.
+                  </p>
+
+                  <div style={{ marginTop: '0.8rem' }}>
+                    {readinessRow(
+                      'Profile details',
+                      readiness.profileComplete,
+                      'Name, category, city and description are filled in.'
+                    )}
+
+                    {readinessRow(
+                      'Active services',
+                      readiness.hasActiveServices,
+                      `${readiness.activeServices} active service${readiness.activeServices === 1 ? '' : 's'} found.`
+                    )}
+
+                    {readinessRow(
+                      'Active staff',
+                      readiness.hasActiveStaff,
+                      `${readiness.activeStaff} active staff member${readiness.activeStaff === 1 ? '' : 's'} found.`
+                    )}
+
+                    {readinessRow(
+                      'Working hours',
+                      readiness.hasWorkingHours,
+                      `${readiness.workingDays} open day${readiness.workingDays === 1 ? '' : 's'} configured.`
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="card"
+                style={{
+                  background: 'var(--surface-2)',
+                  borderColor: 'var(--border)',
+                  padding: '1rem'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 240 }}>
+                    <p className="small muted">Booking approval</p>
+                    <h3 style={{ marginTop: '0.25rem' }}>
+                      {business.auto_accept_bookings ?? true ? 'Auto-accept customer bookings' : 'Manually approve customer bookings'}
+                    </h3>
+                    <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                      This applies to new bookings. Auto-accept confirms future customer bookings instantly. Manual approval sends new bookings to Notifications for review.
+                    </p>
+                  </div>
+
+                  <label
+                    className="btn btn-ghost"
+                    style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={business.auto_accept_bookings ?? true}
+                      onChange={(e) => updateLocalBusiness(business.id, 'auto_accept_bookings', e.target.checked)}
+                    />
+                    Auto-accept new bookings
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => saveBusiness(business)}
+                  className="btn btn-accent"
+                  disabled={savingBusinessId === business.id}
+                >
+                  {savingBusinessId === business.id ? 'Saving...' : 'Save profile and booking settings'}
+                </button>
+
+                <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
+                  Services
+                </Link>
+
+                <Link href={`/dashboard/staff?businessId=${business.id}`} className="btn btn-ghost">
+                  Staff
+                </Link>
+
+                <Link href={`/dashboard/availability?businessId=${business.id}`} className="btn btn-ghost">
+                  Working hours
+                </Link>
+
+                <Link href={`/dashboard/bookings?businessId=${business.id}`} className="btn btn-ghost">
+                  Bookings
+                </Link>
+
+                <Link href={`/dashboard/notifications`} className="btn btn-ghost">
+                  Notifications
+                </Link>
+
+                <Link href={`/explore/${business.id}`} className="btn btn-ghost">
+                  Public page
+                </Link>
               </div>
             </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => saveBusiness(business)}
-                className="btn btn-accent"
-                disabled={savingBusinessId === business.id}
-              >
-                {savingBusinessId === business.id ? 'Saving...' : 'Save profile and booking settings'}
-              </button>
-
-              <Link
-                href={`/dashboard/services?businessId=${business.id}`}
-                className="btn btn-ghost"
-              >
-                Manage services
-              </Link>
-
-              <Link
-                href={`/dashboard/staff?businessId=${business.id}`}
-                className="btn btn-ghost"
-              >
-                Staff
-              </Link>
-
-              <Link
-                href={`/dashboard/availability?businessId=${business.id}`}
-                className="btn btn-ghost"
-              >
-                Working hours
-              </Link>
-
-              <Link
-                href={`/dashboard/bookings?businessId=${business.id}`}
-                className="btn btn-ghost"
-              >
-                View bookings
-              </Link>
-
-              <Link
-                href={`/explore/${business.id}`}
-                className="btn btn-ghost"
-              >
-                Public page
-              </Link>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </DashboardLayout>
   )

@@ -8,6 +8,8 @@ type Business = {
   id: string
   name: string
   published: boolean
+  category?: string | null
+  city?: string | null
 }
 
 type Booking = {
@@ -37,12 +39,33 @@ type BookingRequest = {
   created_at: string
 }
 
+type Service = {
+  id: string
+  business_id: string
+  active: boolean
+}
+
+type StaffMember = {
+  id: string
+  business_id: string
+  active: boolean
+}
+
+type AvailabilityRow = {
+  id: string
+  business_id: string
+  is_closed?: boolean | null
+}
+
 export default function DashboardHome() {
   const router = useRouter()
 
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
   const [requests, setRequests] = useState<BookingRequest[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
+  const [availabilityRows, setAvailabilityRows] = useState<AvailabilityRow[]>([])
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -71,7 +94,7 @@ export default function DashboardHome() {
 
     const { data: businessData, error: businessError } = await supabase
       .from('businesses')
-      .select('id, name, published')
+      .select('id, name, published, category, city')
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false })
 
@@ -89,6 +112,9 @@ export default function DashboardHome() {
     if (businessIds.length === 0) {
       setBookings([])
       setRequests([])
+      setServices([])
+      setStaffMembers([])
+      setAvailabilityRows([])
       setLoading(false)
       return
     }
@@ -137,6 +163,45 @@ export default function DashboardHome() {
     }
 
     setRequests(requestData || [])
+
+    const { data: serviceData, error: serviceError } = await supabase
+      .from('services')
+      .select('id, business_id, active')
+      .in('business_id', businessIds)
+
+    if (serviceError) {
+      setError(serviceError.message)
+      setLoading(false)
+      return
+    }
+
+    setServices(serviceData || [])
+
+    const { data: staffData, error: staffError } = await supabase
+      .from('staff_members')
+      .select('id, business_id, active')
+      .in('business_id', businessIds)
+
+    if (staffError) {
+      setError(staffError.message)
+      setLoading(false)
+      return
+    }
+
+    setStaffMembers(staffData || [])
+
+    const { data: availabilityData, error: availabilityError } = await supabase
+      .from('availability')
+      .select('id, business_id, is_closed')
+      .in('business_id', businessIds)
+
+    if (availabilityError) {
+      setError(availabilityError.message)
+      setLoading(false)
+      return
+    }
+
+    setAvailabilityRows(availabilityData || [])
     setLoading(false)
   }
 
@@ -144,7 +209,27 @@ export default function DashboardHome() {
     loadDashboard()
   }, [])
 
+  useEffect(() => {
+    function refreshWhenActive() {
+      if (document.visibilityState === 'visible') {
+        loadDashboard()
+      }
+    }
+
+    window.addEventListener('focus', loadDashboard)
+    document.addEventListener('visibilitychange', refreshWhenActive)
+
+    return () => {
+      window.removeEventListener('focus', loadDashboard)
+      document.removeEventListener('visibilitychange', refreshWhenActive)
+    }
+  }, [])
+
   const now = new Date()
+
+  const pendingBookings = useMemo(() => {
+    return bookings.filter((booking) => booking.status === 'pending')
+  }, [bookings])
 
   const todayBookings = useMemo(() => {
     const today = new Date()
@@ -180,7 +265,7 @@ export default function DashboardHome() {
     return bookings.filter((booking) => booking.status === 'cancelled')
   }, [bookings])
 
-  const pendingRequestCount = useMemo(() => {
+  const pendingRescheduleCount = useMemo(() => {
     const uniqueBookings = new Set(
       requests
         .filter((request) => request.status === 'pending')
@@ -190,8 +275,74 @@ export default function DashboardHome() {
     return uniqueBookings.size
   }, [requests])
 
+  const pendingActionCount = pendingBookings.length + pendingRescheduleCount
   const publishedCount = businesses.filter((business) => business.published).length
   const hiddenCount = businesses.length - publishedCount
+  const activeServices = services.filter((service) => service.active).length
+  const activeStaff = staffMembers.filter((staff) => staff.active).length
+  const openWorkingDays = availabilityRows.filter((row) => row.is_closed !== true).length
+
+  const setupReadyBusinesses = useMemo(() => {
+    return businesses.filter((business) => {
+      const hasServices = services.some((service) => service.business_id === business.id && service.active)
+      const hasStaff = staffMembers.some((staff) => staff.business_id === business.id && staff.active)
+      const hasHours = availabilityRows.some((row) => row.business_id === business.id && row.is_closed !== true)
+
+      return hasServices && hasStaff && hasHours
+    }).length
+  }, [businesses, services, staffMembers, availabilityRows])
+
+  const setupWarnings = useMemo(() => {
+    const warnings: { title: string; body: string; href: string; cta: string }[] = []
+
+    if (businesses.length === 0) {
+      warnings.push({
+        title: 'Create your business profile',
+        body: 'You need a business profile before customers can book anything.',
+        href: '/dashboard/businesses',
+        cta: 'Create profile'
+      })
+      return warnings
+    }
+
+    if (activeServices === 0) {
+      warnings.push({
+        title: 'Add customer-facing services',
+        body: 'Customers need at least one active service before they can book.',
+        href: '/dashboard/services',
+        cta: 'Add services'
+      })
+    }
+
+    if (activeStaff === 0) {
+      warnings.push({
+        title: 'Add active staff',
+        body: 'Bookings need staff members assigned to services and working hours.',
+        href: '/dashboard/staff',
+        cta: 'Add staff'
+      })
+    }
+
+    if (openWorkingDays === 0) {
+      warnings.push({
+        title: 'Set working hours',
+        body: 'At least one open business day is recommended before publishing.',
+        href: '/dashboard/availability',
+        cta: 'Set hours'
+      })
+    }
+
+    if (publishedCount === 0 && businesses.length > 0) {
+      warnings.push({
+        title: 'Publish when ready',
+        body: 'Hidden businesses do not appear in the marketplace.',
+        href: '/dashboard/businesses',
+        cta: 'Review profile'
+      })
+    }
+
+    return warnings
+  }, [businesses.length, activeServices, activeStaff, openWorkingDays, publishedCount])
 
   if (loading) {
     return (
@@ -206,6 +357,16 @@ export default function DashboardHome() {
       title="Business overview"
       subtitle="See what needs attention today, then jump into bookings, setup and customer requests."
     >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <p className="small muted">
+          Dashboard refreshes when you return to this tab. Use refresh if a customer action does not appear straight away.
+        </p>
+
+        <button onClick={loadDashboard} className="btn btn-ghost" disabled={loading}>
+          {loading ? 'Refreshing...' : 'Refresh dashboard'}
+        </button>
+      </div>
+
       {error && (
         <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
           <p style={{ color: 'var(--danger)' }}>{error}</p>
@@ -231,13 +392,38 @@ export default function DashboardHome() {
           <p className="muted small">Confirmed bookings today</p>
         </div>
 
-        <div className="card" style={{ borderColor: pendingRequestCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
+        <div className="card" style={{ borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
           <p className="small muted">Action required</p>
-          <h3>{pendingRequestCount}</h3>
-          <p className="muted small">Pending customer requests</p>
-          <Link href="/dashboard/notifications" className={pendingRequestCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'} style={{ marginTop: '1rem' }}>
+          <h3>{pendingActionCount}</h3>
+          <p className="muted small">
+            {pendingBookings.length} booking approval{pendingBookings.length === 1 ? '' : 's'} · {pendingRescheduleCount} reschedule request{pendingRescheduleCount === 1 ? '' : 's'}
+          </p>
+          <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'} style={{ marginTop: '1rem' }}>
             Open notifications
           </Link>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: '1.5rem', borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <p className="small muted">Priority queue</p>
+            <h3 style={{ marginTop: '0.25rem' }}>
+              {pendingActionCount > 0 ? 'You have customer actions to review' : 'No pending customer actions'}
+            </h3>
+            <p className="small muted" style={{ marginTop: '0.5rem' }}>
+              Pending booking approvals and reschedule requests should be handled quickly so customers know where they stand.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}>
+              Review notifications
+            </Link>
+            <Link href="/dashboard/bookings" className="btn btn-ghost">
+              Appointment manager
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -300,6 +486,56 @@ export default function DashboardHome() {
         </div>
       </div>
 
+      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+        <div className="card" style={{ borderColor: setupReadyBusinesses === businesses.length && businesses.length > 0 ? 'rgba(45,212,191,0.25)' : 'rgba(255,190,11,0.25)' }}>
+          <p className="small muted">Setup readiness</p>
+          <h3>{setupReadyBusinesses}/{businesses.length}</h3>
+          <p className="muted small">Businesses with active services, staff and working hours</p>
+        </div>
+
+        <div className="card">
+          <p className="small muted">Services</p>
+          <h3>{activeServices}</h3>
+          <p className="muted small">Active customer-facing services</p>
+        </div>
+
+        <div className="card">
+          <p className="small muted">Staff</p>
+          <h3>{activeStaff}</h3>
+          <p className="muted small">Active staff members</p>
+        </div>
+
+        <div className="card">
+          <p className="small muted">Open days</p>
+          <h3>{openWorkingDays}</h3>
+          <p className="muted small">Business working days configured</p>
+        </div>
+      </div>
+
+      {setupWarnings.length > 0 && (
+        <div style={{ display: 'grid', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <p className="small muted">Setup guidance</p>
+            <h2 style={{ fontFamily: 'var(--font-display)' }}>Recommended next steps</h2>
+          </div>
+
+          {setupWarnings.map((warning) => (
+            <div key={warning.title} className="card" style={{ borderColor: 'rgba(255,190,11,0.25)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  <strong>{warning.title}</strong>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>{warning.body}</p>
+                </div>
+
+                <Link href={warning.href} className="btn btn-accent">
+                  {warning.cta}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="card">
         <p className="small muted">Setup shortcuts</p>
         <h3 style={{ marginTop: '0.25rem' }}>Manage your business setup</h3>
@@ -322,6 +558,10 @@ export default function DashboardHome() {
 
           <Link href="/dashboard/availability" className="btn btn-ghost">
             Working hours
+          </Link>
+
+          <Link href="/dashboard/notifications" className="btn btn-ghost">
+            Notifications
           </Link>
 
           <Link href="/explore" className="btn btn-ghost">
