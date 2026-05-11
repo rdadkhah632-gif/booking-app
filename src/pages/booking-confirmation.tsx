@@ -6,6 +6,7 @@ import AuthNav from '@/components/AuthNav'
 
 type Booking = {
   id: string
+  business_id?: string
   customer_name: string
   customer_email?: string
   customer_phone?: string
@@ -13,6 +14,8 @@ type Booking = {
   duration_minutes: number
   status: string
   businesses?: {
+    id?: string
+    user_id?: string
     name: string
     address?: string | null
     city?: string | null
@@ -36,6 +39,7 @@ export default function BookingConfirmation() {
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [role, setRole] = useState<'customer' | 'business' | null>(null)
 
   useEffect(() => {
     if (!router.isReady) return
@@ -51,18 +55,22 @@ export default function BookingConfirmation() {
         return
       }
 
-      if (!id || Array.isArray(id)) {
-        setError('Missing booking reference.')
-        setLoading(false)
-        return
-      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+
+      setRole(profile?.role === 'business' ? 'business' : 'customer')
 
       const { data, error } = await supabase
         .from('bookings')
-               .select(`
+        .select(`
           *,
           businesses (
+            id,
             name,
+            user_id,
             address,
             city,
             country,
@@ -78,7 +86,6 @@ export default function BookingConfirmation() {
           )
         `)
         .eq('id', id)
-        .eq('customer_user_id', session.user.id)
         .single()
 
       if (error) {
@@ -87,7 +94,23 @@ export default function BookingConfirmation() {
         return
       }
 
-      setBooking(data)
+      const normalisedBooking = {
+        ...data,
+        businesses: Array.isArray(data.businesses) ? data.businesses[0] || null : data.businesses,
+        services: Array.isArray(data.services) ? data.services[0] || null : data.services,
+        staff_members: Array.isArray(data.staff_members) ? data.staff_members[0] || null : data.staff_members
+      }
+
+      const isCustomerOwner = normalisedBooking.customer_user_id === session.user.id
+      const isBusinessOwner = normalisedBooking.businesses?.user_id === session.user.id
+
+      if (!isCustomerOwner && !isBusinessOwner) {
+        setError('You do not have permission to view this booking.')
+        setLoading(false)
+        return
+      }
+
+      setBooking(normalisedBooking)
       setLoading(false)
     }
 
@@ -108,6 +131,42 @@ export default function BookingConfirmation() {
     if (status === 'completed') return 'var(--accent)'
     if (status === 'cancelled') return 'var(--warning)'
     return 'var(--text-muted)'
+  }
+
+  function statusBackground(status: string) {
+    if (status === 'pending') return 'rgba(255,107,53,0.12)'
+    if (status === 'confirmed') return 'rgba(45,212,191,0.12)'
+    if (status === 'completed') return 'rgba(255,107,53,0.12)'
+    if (status === 'cancelled') return 'rgba(255,190,11,0.12)'
+    return 'var(--surface-2)'
+  }
+
+  function primaryHeading() {
+    if (booking?.status === 'pending') return 'Your booking request was sent.'
+    if (booking?.status === 'confirmed') return 'Your appointment is confirmed.'
+    if (booking?.status === 'completed') return 'This appointment is completed.'
+    if (booking?.status === 'cancelled') return 'This booking is cancelled.'
+    return 'Booking received.'
+  }
+
+  function leadCopy() {
+    if (booking?.status === 'pending') {
+      return `Your request has been sent to ${booking.businesses?.name || 'this business'} for approval. Your appointment is not confirmed until the business accepts it.`
+    }
+
+    if (booking?.status === 'confirmed') {
+      return `Your booking is confirmed with ${booking?.businesses?.name || 'this business'}. You can view, cancel or request a reschedule from My Bookings.`
+    }
+
+    if (booking?.status === 'completed') {
+      return 'This appointment has been marked as completed. You can still view it in your booking history.'
+    }
+
+    if (booking?.status === 'cancelled') {
+      return 'This booking is no longer active. You can browse other available services from Explore.'
+    }
+
+    return 'Your booking details are below.'
   }
 
   function isPendingApproval() {
@@ -150,19 +209,19 @@ export default function BookingConfirmation() {
                 width: 72,
                 height: 72,
                 borderRadius: 999,
-                background: 'var(--accent-dim)',
-                color: isPendingApproval() ? 'var(--accent)' : 'var(--success)',
+                background: statusBackground(booking.status),
+                color: statusColor(booking.status),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '2rem',
                 margin: '0 auto 1rem'
               }}>
-                {isPendingApproval() ? '…' : '✓'}
+                {booking.status === 'pending' ? '…' : booking.status === 'cancelled' ? '!' : '✓'}
               </div>
 
               <p className="small" style={{ color: statusColor(booking.status) }}>
-                {isPendingApproval() ? 'Booking request sent' : 'Booking confirmed'}
+                {statusLabel(booking.status)}
               </p>
 
               <h1 style={{
@@ -170,13 +229,11 @@ export default function BookingConfirmation() {
                 fontSize: '2.4rem',
                 marginTop: '0.35rem'
               }}>
-                {isPendingApproval() ? 'Your booking request was sent.' : 'Your appointment is confirmed.'}
+                {primaryHeading()}
               </h1>
 
               <p className="muted" style={{ marginTop: '0.75rem' }}>
-                {isPendingApproval()
-                  ? `Your request has been sent to ${booking.businesses?.name || 'this business'} for approval. Your appointment is not confirmed until the business accepts it.`
-                  : `Your booking is confirmed with ${booking.businesses?.name || 'this business'}. You can view, cancel or request a reschedule from My Bookings.`}
+                {leadCopy()}
               </p>
             </div>
 
@@ -206,11 +263,23 @@ export default function BookingConfirmation() {
                 </div>
 
                 <div>
-                  <strong>{isPendingApproval() ? 'Waiting for business approval' : 'What happens next?'}</strong>
+                  <strong>
+                    {booking.status === 'pending'
+                      ? 'Waiting for business approval'
+                      : booking.status === 'confirmed'
+                        ? 'What happens next?'
+                        : booking.status === 'completed'
+                          ? 'Appointment completed'
+                          : 'Booking no longer active'}
+                  </strong>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    {isPendingApproval()
+                    {booking.status === 'pending'
                       ? 'The business needs to approve this booking request before it becomes a confirmed appointment. You can track the request from My Bookings or Notifications.'
-                      : 'This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.'}
+                      : booking.status === 'confirmed'
+                        ? 'This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.'
+                        : booking.status === 'completed'
+                          ? 'This appointment is locked as completed and will stay in your booking history.'
+                          : 'This booking is cancelled and cannot be changed. You can browse the marketplace to book another appointment.'}
                   </p>
                 </div>
               </div>
@@ -225,7 +294,7 @@ export default function BookingConfirmation() {
                 <span
                   className="small"
                   style={{
-                    background: isPendingApproval() ? 'rgba(255,107,53,0.12)' : 'rgba(45,212,191,0.12)',
+                    background: statusBackground(booking.status),
                     color: statusColor(booking.status),
                     padding: '0.2rem 0.65rem',
                     borderRadius: 999
@@ -319,9 +388,17 @@ export default function BookingConfirmation() {
                 {isPendingApproval() ? 'Track booking request' : 'View or manage this booking'}
               </Link>
 
-              {isPendingApproval() && (
-                <Link href="/notifications" className="btn btn-ghost">
-                  View notifications
+              <Link href="/notifications" className="btn btn-ghost">
+                Notifications
+              </Link>
+
+              <Link href="/explore" className="btn btn-ghost">
+                Explore more businesses
+              </Link>
+
+              {role === 'business' && booking.business_id && (
+                <Link href={`/dashboard/bookings?businessId=${booking.business_id}`} className="btn btn-ghost">
+                  Business bookings
                 </Link>
               )}
             </div>

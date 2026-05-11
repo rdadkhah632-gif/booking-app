@@ -13,6 +13,7 @@ type Booking = {
   businesses?: { name: string } | null
   services?: { name: string; price: number } | null
   staff_members?: { name: string; role_title?: string | null } | null
+  completed_at?: string | null
 }
 
 type BookingRequest = {
@@ -190,6 +191,81 @@ export default function MyBookings() {
     return 'var(--surface-2)'
   }
 
+  function cardTone(status: string, hasPendingRequest: boolean, mode: 'pending' | 'confirmed' | 'history') {
+    if (status === 'pending') {
+      return {
+        border: 'rgba(255,107,53,0.45)',
+        background: 'linear-gradient(135deg, rgba(255,107,53,0.12), rgba(255,107,53,0.04))'
+      }
+    }
+
+    if (hasPendingRequest && status === 'confirmed') {
+      return {
+        border: 'rgba(255,107,53,0.45)',
+        background: 'linear-gradient(135deg, rgba(255,107,53,0.10), rgba(31,28,44,0.85))'
+      }
+    }
+
+    if (status === 'completed') {
+      return {
+        border: 'rgba(45,212,191,0.22)',
+        background: 'linear-gradient(135deg, rgba(45,212,191,0.08), rgba(31,28,44,0.72))'
+      }
+    }
+
+    if (status === 'cancelled') {
+      return {
+        border: 'rgba(255,190,11,0.22)',
+        background: 'linear-gradient(135deg, rgba(255,190,11,0.07), rgba(31,28,44,0.66))'
+      }
+    }
+
+    if (mode === 'history') {
+      return {
+        border: 'rgba(255,255,255,0.08)',
+        background: 'rgba(31,28,44,0.62)'
+      }
+    }
+
+    return {
+      border: 'var(--border)',
+      background: 'var(--surface)'
+    }
+  }
+
+  function lifecycleTitle(booking: Booking, pendingRequest?: BookingRequest) {
+    if (booking.status === 'pending') return 'Waiting for business approval'
+    if (pendingRequest && booking.status === 'confirmed') return 'Confirmed appointment with a pending change request'
+    if (booking.status === 'confirmed') return 'Confirmed appointment'
+    if (booking.status === 'completed') return 'Completed appointment'
+    if (booking.status === 'cancelled') return 'Cancelled booking'
+    return statusLabel(booking.status)
+  }
+
+  function lifecycleCopy(booking: Booking, pendingRequest?: BookingRequest) {
+    if (booking.status === 'pending') {
+      return 'This booking is not confirmed yet. The business needs to accept it before it becomes an appointment.'
+    }
+
+    if (pendingRequest && booking.status === 'confirmed') {
+      return 'Your original appointment is still confirmed. The new requested time will only replace it if the business accepts your request.'
+    }
+
+    if (booking.status === 'confirmed') {
+      return 'This is your active appointment. You can request a new time or cancel it before it is completed.'
+    }
+
+    if (booking.status === 'completed') {
+      return 'This appointment is complete and locked. It stays here as part of your booking history.'
+    }
+
+    if (booking.status === 'cancelled') {
+      return 'This booking is cancelled and no longer active.'
+    }
+
+    return 'Booking details are shown below.'
+  }
+
   const pendingRequestByBookingId = useMemo(() => {
     const map: Record<string, BookingRequest> = {}
 
@@ -229,22 +305,16 @@ export default function MyBookings() {
     const pendingRequest = pendingRequestByBookingId[booking.id]
     const isWorking = actionLoadingId === booking.id
     const isLocked = booking.status === 'cancelled' || booking.status === 'completed' || mode === 'history'
+    const tone = cardTone(booking.status, Boolean(pendingRequest), mode)
 
     return (
       <div
         key={booking.id}
         className="card"
         style={{
-          opacity: isLocked ? 0.72 : 1,
-          borderColor: booking.status === 'pending'
-            ? 'rgba(255,107,53,0.35)'
-            : pendingRequest
-              ? 'rgba(255,107,53,0.35)'
-              : booking.status === 'completed'
-                ? 'rgba(255,107,53,0.28)'
-                : booking.status === 'cancelled'
-                  ? 'rgba(255,190,11,0.25)'
-                  : 'var(--border)'
+          opacity: isLocked ? 0.78 : 1,
+          borderColor: tone.border,
+          background: tone.background
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
@@ -265,10 +335,46 @@ export default function MyBookings() {
                 }}
               >
                 {pendingRequest && booking.status === 'confirmed'
-                  ? 'Confirmed · Change requested'
+                  ? 'Change request pending'
                   : statusLabel(booking.status)}
               </span>
+
+              {pendingRequest && booking.status === 'confirmed' && (
+                <span
+                  className="small"
+                  style={{
+                    background: 'rgba(45,212,191,0.12)',
+                    color: 'var(--success)',
+                    padding: '0.2rem 0.55rem',
+                    borderRadius: 999
+                  }}
+                >
+                  Original time still confirmed
+                </span>
+              )}
+
+              {booking.status === 'completed' && (
+                <span
+                  className="small"
+                  style={{
+                    background: 'rgba(45,212,191,0.12)',
+                    color: 'var(--success)',
+                    padding: '0.2rem 0.55rem',
+                    borderRadius: 999
+                  }}
+                >
+                  Locked
+                </span>
+              )}
             </div>
+
+            <h3 style={{ marginBottom: '0.35rem' }}>
+              {lifecycleTitle(booking, pendingRequest)}
+            </h3>
+
+            <p className="small muted" style={{ marginBottom: '0.65rem' }}>
+              {lifecycleCopy(booking, pendingRequest)}
+            </p>
 
             <p className="small muted">Service: {booking.services?.name || 'Service not recorded'}</p>
 
@@ -286,20 +392,32 @@ export default function MyBookings() {
                 marginTop: '0.75rem',
                 padding: '0.8rem',
                 borderRadius: 'var(--radius)',
-                background: booking.status === 'pending' ? 'rgba(255,107,53,0.08)' : 'var(--surface-2)',
-                border: booking.status === 'pending' ? '1px solid rgba(255,107,53,0.28)' : '1px solid var(--border)'
+                background: booking.status === 'pending' || pendingRequest ? 'rgba(255,107,53,0.08)' : 'var(--surface-2)',
+                border: booking.status === 'pending' || pendingRequest ? '1px solid rgba(255,107,53,0.28)' : '1px solid var(--border)'
               }}
             >
               <p className="small muted">
-                {booking.status === 'pending' ? 'Requested appointment time' : 'Current confirmed appointment'}
+                {booking.status === 'pending'
+                  ? 'Requested appointment time'
+                  : pendingRequest && booking.status === 'confirmed'
+                    ? 'Original confirmed appointment time'
+                    : booking.status === 'completed'
+                      ? 'Completed appointment time'
+                      : booking.status === 'cancelled'
+                        ? 'Cancelled appointment time'
+                        : 'Current confirmed appointment'}
               </p>
               <strong>{new Date(booking.start_at).toLocaleString()}</strong>
               <p className="small muted" style={{ marginTop: '0.25rem' }}>
                 {booking.status === 'pending'
                   ? 'This booking is not confirmed until the business accepts it.'
-                  : booking.status === 'confirmed'
-                    ? 'This remains your booked time unless a requested change is accepted.'
-                    : 'This appointment is no longer active.'}
+                  : pendingRequest && booking.status === 'confirmed'
+                    ? 'This remains your active appointment until the business accepts your new requested time.'
+                    : booking.status === 'confirmed'
+                      ? 'This is your active booked time.'
+                      : booking.status === 'completed'
+                        ? 'Completed bookings cannot be rescheduled or cancelled.'
+                        : 'This appointment is no longer active.'}
               </p>
             </div>
 
@@ -315,40 +433,65 @@ export default function MyBookings() {
               <div
                 className="card"
                 style={{
-                  background: 'var(--surface-2)',
+                  background: 'linear-gradient(135deg, rgba(255,107,53,0.14), rgba(255,107,53,0.05))',
                   marginTop: '1rem',
-                  borderColor: 'rgba(255,107,53,0.35)'
+                  borderColor: 'rgba(255,107,53,0.45)'
                 }}
               >
-                <p className="small" style={{ color: 'var(--accent)' }}>
-                  Pending reschedule request
-                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                  <div>
+                    <p className="small" style={{ color: 'var(--accent)' }}>
+                      Requested change awaiting approval
+                    </p>
 
-                <h3 style={{ marginTop: '0.25rem', marginBottom: '0.5rem' }}>
-                  Waiting for business approval
-                </h3>
+                    <h3 style={{ marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+                      New requested appointment time
+                    </h3>
+                  </div>
 
-                <p className="small muted">
-                  Requested new time: {new Date(pendingRequest.requested_start_at).toLocaleString()}
-                </p>
+                  <span
+                    className="small"
+                    style={{
+                      background: 'rgba(255,107,53,0.14)',
+                      color: 'var(--accent)',
+                      padding: '0.2rem 0.55rem',
+                      borderRadius: 999
+                    }}
+                  >
+                    Business approval needed
+                  </span>
+                </div>
 
-                <p className="small muted">
-                  Requested staff: {pendingRequest.requested_staff?.name || 'Staff not recorded'}
-                  {pendingRequest.requested_staff?.role_title ? ` — ${pendingRequest.requested_staff.role_title}` : ''}
-                </p>
+                <div
+                  style={{
+                    marginTop: '0.75rem',
+                    padding: '0.85rem',
+                    borderRadius: 'var(--radius)',
+                    background: 'rgba(11,18,32,0.28)',
+                    border: '1px solid rgba(255,107,53,0.28)'
+                  }}
+                >
+                  <p className="small muted">Requested new time</p>
+                  <strong>{new Date(pendingRequest.requested_start_at).toLocaleString()}</strong>
 
-                <p className="small muted">
-                  Requested duration: {pendingRequest.requested_duration_minutes} minutes
-                </p>
+                  <p className="small muted" style={{ marginTop: '0.55rem' }}>
+                    Requested staff: {pendingRequest.requested_staff?.name || 'Staff not recorded'}
+                    {pendingRequest.requested_staff?.role_title ? ` — ${pendingRequest.requested_staff.role_title}` : ''}
+                  </p>
 
-                <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                  The business can accept or decline this request. Until then, your current confirmed appointment above is still active. You can also track updates from Notifications.
+                  <p className="small muted">
+                    Requested duration: {pendingRequest.requested_duration_minutes} minutes
+                  </p>
+                </div>
+
+                <p className="small muted" style={{ marginTop: '0.75rem' }}>
+                  The business can accept or decline this request. Until then, the original confirmed appointment time above remains active.
                 </p>
               </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
             {booking.status === 'pending' && (
               <>
                 <Link href="/notifications" className="btn btn-ghost">
@@ -380,13 +523,26 @@ export default function MyBookings() {
             )}
 
             {(booking.status === 'completed' || booking.status === 'cancelled' || mode === 'history') && booking.status !== 'pending' && (
-              <span className="small" style={{ color: statusColor(booking.status) }}>
-                {booking.status === 'completed'
-                  ? 'Locked: completed appointment'
-                  : booking.status === 'cancelled'
-                    ? 'Locked: cancelled booking'
-                    : 'Past confirmed appointment'}
-              </span>
+              <div
+                className="card"
+                style={{
+                  background: 'var(--surface-2)',
+                  borderColor: booking.status === 'completed' ? 'rgba(45,212,191,0.22)' : 'rgba(255,190,11,0.22)',
+                  padding: '0.85rem',
+                  maxWidth: 240
+                }}
+              >
+                <p className="small" style={{ color: statusColor(booking.status) }}>
+                  {booking.status === 'completed'
+                    ? 'Locked completed record'
+                    : booking.status === 'cancelled'
+                      ? 'Locked cancelled record'
+                      : 'Past appointment record'}
+                </p>
+                <p className="small muted" style={{ marginTop: '0.3rem' }}>
+                  This booking can no longer be rescheduled or cancelled.
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -539,10 +695,13 @@ export default function MyBookings() {
             )}
 
             {confirmedUpcomingBookings.length > 0 && (
-              <section style={{ display: 'grid', gap: '1rem' }}>
+            <section style={{ display: 'grid', gap: '1rem' }}>
                 <div>
                   <p className="small muted">Schedule</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Confirmed upcoming appointments</h2>
+                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Active confirmed appointments</h2>
+                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                    These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time.
+                  </p>
                 </div>
 
                 {confirmedUpcomingBookings.map((booking) => renderBookingCard(booking, 'confirmed'))}
@@ -550,10 +709,13 @@ export default function MyBookings() {
             )}
 
             {historyBookings.length > 0 && (
-              <section style={{ display: 'grid', gap: '1rem' }}>
+            <section style={{ display: 'grid', gap: '1rem' }}>
                 <div>
                   <p className="small muted">History</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Completed / cancelled / past bookings</h2>
+                  <h2 style={{ fontFamily: 'var(--font-display)' }}>History and locked bookings</h2>
+                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                    Completed, cancelled and past bookings are shown for your records only.
+                  </p>
                 </div>
 
                 {historyBookings.map((booking) => renderBookingCard(booking, 'history'))}
