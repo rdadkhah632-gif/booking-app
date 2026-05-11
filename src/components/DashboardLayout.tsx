@@ -31,6 +31,12 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         return
       }
 
+      const { count: pendingBookingsCount } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .in('business_id', businessIds)
+        .eq('status', 'pending')
+
       const { data: pendingRequests } = await supabase
         .from('booking_requests')
         .select('booking_id')
@@ -41,7 +47,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         (pendingRequests || []).map((request) => request.booking_id)
       )
 
-      setPendingCount(uniquePendingBookings.size)
+      setPendingCount((pendingBookingsCount || 0) + uniquePendingBookings.size)
     }
 
     loadPendingNotifications()
@@ -49,16 +55,17 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
   async function logout() {
     await supabase.auth.signOut()
-    router.push('/')
+    router.replace('/')
   }
 
   const links = [
     { href: '/dashboard', label: 'Overview' },
+    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Notifications (${pendingCount})` : 'Notifications', highlight: pendingCount > 0 },
+    { href: '/dashboard/bookings', label: 'Bookings' },
     { href: '/dashboard/businesses', label: 'Business profile' },
     { href: '/dashboard/services', label: 'Services' },
     { href: '/dashboard/staff', label: 'Staff' },
     { href: '/dashboard/availability', label: 'Working hours' },
-    { href: '/dashboard/bookings', label: 'Bookings' },
     { href: '/account', label: 'Account settings' }
   ]
 
@@ -70,7 +77,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             Slot<span>ly</span>
           </Link>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            Business control panel
+            Business workspace
           </p>
         </div>
 
@@ -79,7 +86,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             <Link
               key={link.href}
               href={link.href}
-              className={`sidebar-link ${router.pathname === link.href ? 'active' : ''}`}
+              className={`sidebar-link ${router.pathname === link.href ? 'active' : ''} ${link.highlight ? 'active' : ''}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -93,11 +100,11 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
         <div style={{ marginTop: 'auto', padding: '1rem 0.5rem' }}>
           <p className="small muted" style={{ marginBottom: '0.5rem', paddingLeft: '0.5rem' }}>
-            Preview
+            Customer side
           </p>
 
           <Link href="/explore" className="sidebar-link">
-            Customer marketplace
+            Preview marketplace
           </Link>
 
           <button
@@ -142,11 +149,16 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             )}
 
             {subtitle && <p className="muted">{subtitle}</p>}
+            <p className="small muted" style={{ marginTop: '0.45rem' }}>
+              {pendingCount > 0
+                ? `${pendingCount} item${pendingCount === 1 ? '' : 's'} need your attention.`
+                : 'No pending customer actions right now.'}
+            </p>
           </div>
 
           <Link
             href="/dashboard/notifications"
-            className="btn btn-ghost"
+            className={pendingCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}
             style={{
               position: 'relative',
               display: 'inline-flex',
@@ -155,7 +167,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             }}
           >
             <span aria-hidden="true">🔔</span>
-            <span>Notifications</span>
+            <span>{pendingCount > 0 ? 'Action required' : 'Notifications'}</span>
 
             {pendingCount > 0 && (
               <span

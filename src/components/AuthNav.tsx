@@ -10,6 +10,7 @@ export default function AuthNav() {
 
   const [loading, setLoading] = useState(true)
   const [role, setRole] = useState<Role>(null)
+  const [notificationCount, setNotificationCount] = useState(0)
 
   useEffect(() => {
     async function loadUser() {
@@ -17,6 +18,7 @@ export default function AuthNav() {
 
       if (!session) {
         setRole(null)
+        setNotificationCount(0)
         setLoading(false)
         return
       }
@@ -41,6 +43,44 @@ export default function AuthNav() {
         setRole('customer')
       }
 
+      if (profile?.role === 'business' || ownsBusiness) {
+        const businessIds = (ownedBusinesses || []).map((business) => business.id)
+
+        if (businessIds.length > 0) {
+          const { count: pendingBookingsCount } = await supabase
+            .from('bookings')
+            .select('id', { count: 'exact', head: true })
+            .in('business_id', businessIds)
+            .eq('status', 'pending')
+
+          const { data: pendingRequests } = await supabase
+            .from('booking_requests')
+            .select('booking_id')
+            .in('business_id', businessIds)
+            .eq('status', 'pending')
+
+          const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
+          setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules)
+        } else {
+          setNotificationCount(0)
+        }
+      } else {
+        const { count: pendingBookingsCount } = await supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('customer_user_id', session.user.id)
+          .eq('status', 'pending')
+
+        const { data: pendingRequests } = await supabase
+          .from('booking_requests')
+          .select('booking_id')
+          .eq('customer_user_id', session.user.id)
+          .eq('status', 'pending')
+
+        const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
+        setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules)
+      }
+
       setLoading(false)
     }
 
@@ -50,7 +90,8 @@ export default function AuthNav() {
   async function logout() {
     await supabase.auth.signOut()
     setRole(null)
-    router.push('/')
+    setNotificationCount(0)
+    router.replace('/')
   }
 
   const logoHref =
@@ -59,6 +100,11 @@ export default function AuthNav() {
       : role === 'customer'
         ? '/explore'
         : '/'
+
+  function notificationLabel() {
+    if (notificationCount <= 0) return 'Notifications'
+    return `Notifications (${notificationCount})`
+  }
 
   return (
     <nav className="nav-simple">
@@ -80,7 +126,7 @@ export default function AuthNav() {
           {!loading && !role && (
             <>
               <Link href="/explore" className="muted">
-                Browse
+                Explore
               </Link>
 
               <Link href="/login" className="muted">
@@ -96,15 +142,18 @@ export default function AuthNav() {
           {!loading && role === 'customer' && (
             <>
               <Link href="/explore" className="muted">
-                Browse
+                Explore
               </Link>
 
               <Link href="/my-bookings" className="muted">
                 My bookings
               </Link>
 
-              <Link href="/notifications" className="muted">
-                Notifications
+              <Link
+                href="/notifications"
+                className={notificationCount > 0 ? 'btn btn-accent' : 'muted'}
+              >
+                {notificationLabel()}
               </Link>
 
               <Link href="/account" className="muted">
@@ -123,16 +172,23 @@ export default function AuthNav() {
                 Dashboard
               </Link>
 
+              <Link href="/dashboard/bookings" className="muted">
+                Bookings
+              </Link>
+
               <Link href="/dashboard/businesses" className="muted">
                 Business profile
               </Link>
 
-              <Link href="/dashboard/notifications" className="muted">
-                Notifications
+              <Link
+                href="/dashboard/notifications"
+                className={notificationCount > 0 ? 'btn btn-accent' : 'muted'}
+              >
+                {notificationLabel()}
               </Link>
 
               <Link href="/explore" className="muted">
-                View marketplace
+                Marketplace
               </Link>
 
               <Link href="/account" className="muted">

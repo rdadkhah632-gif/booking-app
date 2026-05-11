@@ -1,5 +1,5 @@
 import AuthNav from '@/components/AuthNav'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
@@ -13,6 +13,37 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
+
+  async function redirectByRole(userId: string) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single()
+
+    if (profile?.role === 'business') {
+      router.replace('/dashboard')
+    } else {
+      router.replace('/my-bookings')
+    }
+  }
+
+  useEffect(() => {
+    async function checkExistingSession() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (session?.user) {
+        await redirectByRole(session.user.id)
+        return
+      }
+
+      setCheckingSession(false)
+    }
+
+    if (!router.isReady) return
+    checkExistingSession()
+  }, [router.isReady])
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault()
@@ -21,6 +52,12 @@ export default function RegisterPage() {
     setMessage(null)
 
     const cleanEmail = email.trim().toLowerCase()
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      setLoading(false)
+      return
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
@@ -61,13 +98,26 @@ export default function RegisterPage() {
 
     setMessage(
       role === 'business'
-        ? 'Business account created. You can now log in and set up your business profile.'
-        : 'Customer account created. You can now log in and book appointments.'
+        ? 'Business account created. Taking you to your dashboard setup.'
+        : 'Customer account created. Taking you to your bookings.'
     )
 
     setTimeout(() => {
-      router.replace('/login')
+      router.replace(role === 'business' ? '/dashboard' : '/my-bookings')
     }, 900)
+  }
+
+  if (checkingSession) {
+    return (
+      <main>
+        <AuthNav />
+        <section className="auth-wrap">
+          <div className="card">
+            <p className="muted">Checking your session...</p>
+          </div>
+        </section>
+      </main>
+    )
   }
 
   return (
@@ -89,7 +139,7 @@ export default function RegisterPage() {
           </h1>
 
           <p className="muted" style={{ marginBottom: '1.5rem' }}>
-            Register as a customer to book appointments, or as a business to manage services and bookings.
+            Register as a customer to book appointments, or as a business to manage services, staff, availability and booking approvals.
           </p>
 
           <div style={{
@@ -111,7 +161,7 @@ export default function RegisterPage() {
               }}
             >
               <strong>Customer</strong>
-              <p className="small muted">Book and manage appointments.</p>
+              <p className="small muted">Book, reschedule and track appointments.</p>
             </button>
 
             <button
@@ -127,7 +177,7 @@ export default function RegisterPage() {
               }}
             >
               <strong>Business</strong>
-              <p className="small muted">Create services and receive bookings.</p>
+              <p className="small muted">Manage services, staff and booking requests.</p>
             </button>
           </div>
 
@@ -149,7 +199,7 @@ export default function RegisterPage() {
             />
 
             <button type="submit" disabled={loading} className="btn btn-accent">
-              {loading ? 'Creating account...' : `Register as ${role}`}
+              {loading ? 'Creating account...' : role === 'business' ? 'Create business account' : 'Create customer account'}
             </button>
           </form>
 
@@ -166,7 +216,7 @@ export default function RegisterPage() {
           )}
 
           <p className="small muted" style={{ marginTop: '1.5rem' }}>
-            Already have an account? <Link href="/login" style={{ color: 'var(--accent)' }}>Login</Link>
+            Already have an account? <Link href="/login" style={{ color: 'var(--accent)' }}>Login and continue</Link>
           </p>
         </div>
       </section>

@@ -21,6 +21,7 @@ export default function AccountPage() {
   const [actualRole, setActualRole] = useState<Role>('customer')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
+  const [businessCount, setBusinessCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [fixingRole, setFixingRole] = useState(false)
@@ -57,6 +58,7 @@ export default function AccountPage() {
       .limit(1)
 
     const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
+    setBusinessCount(ownedBusinesses?.length || 0)
 
     const resolvedRole: Role =
       profileData.role === 'business' || ownsBusiness
@@ -125,13 +127,13 @@ export default function AccountPage() {
       return
     }
 
-    setMessage('Account role fixed to business.')
+    setMessage('Account role fixed to business. Your dashboard and navigation will now use business mode.')
     await loadProfile()
   }
 
   async function logout() {
     await supabase.auth.signOut()
-    router.push('/')
+    router.replace('/')
   }
 
   return (
@@ -166,7 +168,7 @@ export default function AccountPage() {
               </h1>
 
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Manage your account details and jump back into your {actualRole === 'business' ? 'business dashboard' : 'customer bookings'}.
+                Manage your account details, role and shortcuts for your {actualRole === 'business' ? 'business workspace' : 'customer bookings'}.
               </p>
             </div>
 
@@ -174,17 +176,25 @@ export default function AccountPage() {
               <div className="card">
                 <p className="small muted">Email</p>
                 <strong>{profile.email}</strong>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  This is the email used for login and future booking notifications.
+                </p>
               </div>
 
-              <div className="card">
+              <div className="card" style={{ borderColor: actualRole === 'business' ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
                 <p className="small muted">Account type</p>
                 <strong style={{ textTransform: 'capitalize' }}>
                   {actualRole}
                 </strong>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  {actualRole === 'business'
+                    ? `${businessCount} business profile${businessCount === 1 ? '' : 's'} connected to this account.`
+                    : 'Customer accounts can book, reschedule and track appointments.'}
+                </p>
 
                 {actualRole === 'business' && profile.role !== 'business' && (
                   <>
-                    <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    <p className="small" style={{ color: 'var(--warning)', marginTop: '0.5rem' }}>
                       This account owns a business, but its profile role is still marked as customer.
                     </p>
 
@@ -203,8 +213,11 @@ export default function AccountPage() {
 
             <form onSubmit={saveProfile} className="card" style={{ display: 'grid', gap: '1rem' }}>
               <h2 style={{ fontFamily: 'var(--font-display)' }}>
-                Personal details
+                Contact details
               </h2>
+              <p className="small muted">
+                These details help pre-fill booking forms and will later support customer/business notification emails.
+              </p>
 
               <div>
                 <label className="small muted">Full name</label>
@@ -231,15 +244,19 @@ export default function AccountPage() {
               </button>
 
               {message && (
-                <p style={{ color: 'var(--success)' }}>{message}</p>
+                <p className="small" style={{ color: 'var(--success)' }}>{message}</p>
               )}
             </form>
 
             <div className="card">
               <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>
-                Quick actions
+                {actualRole === 'business' ? 'Business shortcuts' : 'Customer shortcuts'}
               </h2>
-
+              <p className="small muted" style={{ marginBottom: '1rem' }}>
+                {actualRole === 'business'
+                  ? 'Jump into the operational areas of your business workspace.'
+                  : 'Jump back into browsing, bookings and customer notifications.'}
+              </p>
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 {actualRole === 'business' ? (
                   <>
@@ -263,6 +280,14 @@ export default function AccountPage() {
                       Bookings
                     </Link>
 
+                    <Link href="/dashboard/notifications" className="btn btn-ghost">
+                      Notifications
+                    </Link>
+
+                    <Link href="/dashboard/staff" className="btn btn-ghost">
+                      Staff
+                    </Link>
+
                     <Link href="/explore" className="btn btn-ghost">
                       View marketplace
                     </Link>
@@ -273,8 +298,16 @@ export default function AccountPage() {
                       My bookings
                     </Link>
 
+                    <Link href="/notifications" className="btn btn-ghost">
+                      Notifications
+                    </Link>
+
                     <Link href="/explore" className="btn btn-ghost">
                       Browse businesses
+                    </Link>
+
+                    <Link href="/register" className="btn btn-ghost">
+                      Create another account
                     </Link>
                   </>
                 )}
@@ -283,6 +316,16 @@ export default function AccountPage() {
                   Log out
                 </button>
               </div>
+            </div>
+
+            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.22)' }}>
+              <p className="small muted">Role note</p>
+              <h3 style={{ marginTop: '0.25rem' }}>
+                Need to change account type?
+              </h3>
+              <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                For now, roles are controlled by registration and business ownership. If a business account shows as customer, use the fix role button above. Later this can become an admin-controlled support flow.
+              </p>
             </div>
           </div>
         )}

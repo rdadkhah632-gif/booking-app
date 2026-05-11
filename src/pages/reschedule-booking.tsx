@@ -74,6 +74,7 @@ export default function RescheduleBooking() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   const dateOptions = useMemo(() => {
     const dates: { value: string; label: string; subLabel: string }[] = []
@@ -88,7 +89,7 @@ export default function RescheduleBooking() {
 
       dates.push({
         value: `${yyyy}-${mm}-${dd}`,
-        label: date.toLocaleDateString(undefined, { weekday: 'short' }),
+        label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : date.toLocaleDateString(undefined, { weekday: 'short' }),
         subLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
       })
     }
@@ -99,6 +100,7 @@ export default function RescheduleBooking() {
   async function loadPage() {
     setLoading(true)
     setError(null)
+    setSuccess(null)
 
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -186,6 +188,18 @@ export default function RescheduleBooking() {
       return
     }
 
+    if (normalisedBooking.status === 'completed') {
+      setError('Completed bookings cannot be rescheduled.')
+      setLoading(false)
+      return
+    }
+
+    if (normalisedBooking.status === 'pending') {
+      setError('This booking is still waiting for business approval. It can be changed after it is confirmed.')
+      setLoading(false)
+      return
+    }
+
     setBooking(normalisedBooking)
 
     const originalDate = new Date(normalisedBooking.start_at)
@@ -248,7 +262,7 @@ export default function RescheduleBooking() {
       .from('bookings')
       .select('*')
       .eq('business_id', normalisedBooking.business_id)
-      .eq('status', 'confirmed')
+      .in('status', ['pending', 'confirmed'])
 
     setExistingBookings(bookingsData || [])
     setLoading(false)
@@ -274,13 +288,55 @@ export default function RescheduleBooking() {
   function getStaffDayAvailability(staffId: string, dateValue: string) {
     if (!dateValue) return null
 
-    const day = new Date(dateValue).getDay()
+    const day = new Date(`${dateValue}T12:00:00`).getDay()
 
     return staffAvailability.find(
       (row) =>
         row.staff_member_id === staffId &&
         row.day_of_week === day
     ) || null
+  }
+
+  function generateSlotsForStaff(staffId: string) {
+    if (!booking || !booking.services || !selectedDate || !staffId) return []
+
+    const dayAvailability = getStaffDayAvailability(staffId, selectedDate)
+
+    if (!dayAvailability || dayAvailability.is_closed) return []
+
+    const slots: string[] = []
+
+    let start = new Date(`${selectedDate}T${dayAvailability.start_time}`)
+    const end = new Date(`${selectedDate}T${dayAvailability.end_time}`)
+    const duration = booking.services.duration_minutes || booking.duration_minutes
+    const now = new Date()
+
+    while (start.getTime() + duration * 60000 <= end.getTime()) {
+      const slotStart = new Date(start)
+      const slotEnd = new Date(start.getTime() + duration * 60000)
+      const timeString = slotStart.toTimeString().slice(0, 5)
+      const isPastSlot = slotStart < now
+
+      const overlapsBooking = existingBookings.some((existing) => {
+        if (existing.id === booking.id) return false
+        if (existing.staff_member_id !== staffId) return false
+
+        const bookingStart = new Date(existing.start_at)
+        const bookingEnd = existing.end_at
+          ? new Date(existing.end_at)
+          : new Date(bookingStart.getTime() + existing.duration_minutes * 60000)
+
+        return slotStart < bookingEnd && slotEnd > bookingStart
+      })
+
+      if (!isPastSlot && !overlapsBooking) {
+        slots.push(timeString)
+      }
+
+      start = new Date(start.getTime() + duration * 60000)
+    }
+
+    return slots
   }
 
   function getStaffStatus(staff: StaffMember) {
@@ -300,6 +356,15 @@ export default function RescheduleBooking() {
       }
     }
 
+    const slots = generateSlotsForStaff(staff.id)
+
+    if (slots.length === 0) {
+      return {
+        available: false,
+        label: 'Fully booked'
+      }
+    }
+
     return {
       available: true,
       label: `${dayAvailability.start_time.slice(0, 5)} - ${dayAvailability.end_time.slice(0, 5)}`
@@ -312,44 +377,7 @@ export default function RescheduleBooking() {
       return
     }
 
-    const dayAvailability = getStaffDayAvailability(selectedStaffId, selectedDate)
-
-    if (!dayAvailability || dayAvailability.is_closed) {
-      setTimeSlots([])
-      return
-    }
-
-    const slots: string[] = []
-
-    let start = new Date(`${selectedDate}T${dayAvailability.start_time}`)
-    const end = new Date(`${selectedDate}T${dayAvailability.end_time}`)
-    const duration = booking.services.duration_minutes || booking.duration_minutes
-
-    while (start.getTime() + duration * 60000 <= end.getTime()) {
-      const slotStart = new Date(start)
-      const slotEnd = new Date(start.getTime() + duration * 60000)
-      const timeString = slotStart.toTimeString().slice(0, 5)
-
-      const overlapsBooking = existingBookings.some((existing) => {
-        if (existing.id === booking.id) return false
-        if (existing.staff_member_id !== selectedStaffId) return false
-
-        const bookingStart = new Date(existing.start_at)
-        const bookingEnd = existing.end_at
-          ? new Date(existing.end_at)
-          : new Date(bookingStart.getTime() + existing.duration_minutes * 60000)
-
-        return slotStart < bookingEnd && slotEnd > bookingStart
-      })
-
-      if (!overlapsBooking) {
-        slots.push(timeString)
-      }
-
-      start = new Date(start.getTime() + duration * 60000)
-    }
-
-    setTimeSlots(slots)
+    setTimeSlots(generateSlotsForStaff(selectedStaffId))
   }
 
   useEffect(() => {
@@ -363,9 +391,25 @@ export default function RescheduleBooking() {
 
     setSaving(true)
     setError(null)
+    setSuccess(null)
 
     const newStartAt = new Date(`${selectedDate}T${selectedTime}:00`).toISOString()
     const newDuration = booking.services?.duration_minutes || booking.duration_minutes
+
+    const freshSlots = generateSlotsForStaff(selectedStaffId)
+
+    if (!freshSlots.includes(selectedTime)) {
+      setSaving(false)
+      setError('This time is no longer available. Please choose another slot.')
+      setSelectedTime('')
+      return
+    }
+
+    if (newStartAt === booking.start_at && selectedStaffId === booking.staff_member_id) {
+      setSaving(false)
+      setError('Choose a different date, time or staff member before submitting a reschedule.')
+      return
+    }
 
     let error = null
 
@@ -431,6 +475,20 @@ export default function RescheduleBooking() {
         .eq('id', booking.id)
 
       error = result.error
+
+      if (!error) {
+        const { error: cancelOtherRequestsError } = await supabase
+          .from('booking_requests')
+          .update({
+            status: 'cancelled',
+            response_message: 'Cancelled automatically because the business rescheduled this booking directly.',
+            updated_at: new Date().toISOString()
+          })
+          .eq('booking_id', booking.id)
+          .eq('status', 'pending')
+
+        error = cancelOtherRequestsError
+      }
     }
 
     setSaving(false)
@@ -440,14 +498,21 @@ export default function RescheduleBooking() {
       return
     }
 
+    setSuccess(role === 'business' ? 'Booking rescheduled successfully.' : 'Reschedule request sent to the business for approval.')
+
     if (role === 'business') {
-      router.push(`/dashboard/bookings?businessId=${booking.business_id}`)
+      router.replace(`/dashboard/bookings?businessId=${booking.business_id}`)
     } else {
-      router.push('/my-bookings?requestSent=1')
+      router.replace('/my-bookings?requestSent=1')
     }
   }
-  const selectableStaff = staffThatCanDoBookingService()
 
+  const selectableStaff = staffThatCanDoBookingService()
+  const selectedStaff = staffMembers.find((staff) => staff.id === selectedStaffId) || null
+  const selectedDateLabel = dateOptions.find((date) => date.value === selectedDate)
+  const newDuration = booking?.services?.duration_minutes || booking?.duration_minutes || 0
+  const requestedStart = selectedDate && selectedTime ? new Date(`${selectedDate}T${selectedTime}:00`) : null
+  const requestedEnd = requestedStart ? new Date(requestedStart.getTime() + newDuration * 60000) : null
   return (
     <main>
       <AuthNav />
@@ -469,8 +534,8 @@ export default function RescheduleBooking() {
                 My bookings
               </Link>
 
-              <Link href="/dashboard" className="btn btn-ghost">
-                Dashboard
+              <Link href="/dashboard/bookings" className="btn btn-ghost">
+                Business bookings
               </Link>
             </div>
           </div>
@@ -479,12 +544,39 @@ export default function RescheduleBooking() {
         {!loading && !error && booking && (
           <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gap: '1rem' }}>
             <div>
-              <p className="small muted">Modify appointment</p>
+              <p className="small muted">
+                {role === 'business' ? 'Business reschedule' : 'Customer reschedule request'}
+              </p>
               <h1 className="page-title">Reschedule booking</h1>
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Choose a new date, staff member and available time.
+                {role === 'business'
+                  ? 'Choose a new date, staff member and available time. This will update the booking immediately.'
+                  : 'Choose your preferred new date, staff member and time. The business must approve it before your appointment changes.'}
               </p>
             </div>
+
+            <div
+              className="card"
+              style={{
+                borderColor: role === 'business' ? 'rgba(45,212,191,0.28)' : 'rgba(255,107,53,0.28)',
+                background: role === 'business' ? 'rgba(45,212,191,0.06)' : 'var(--accent-dim)'
+              }}
+            >
+              <p className="small" style={{ color: role === 'business' ? 'var(--success)' : 'var(--accent)' }}>
+                {role === 'business' ? 'Direct reschedule' : 'Approval required'}
+              </p>
+              <strong>
+                {role === 'business'
+                  ? 'Saving here immediately changes the customer booking.'
+                  : 'Your original appointment stays confirmed until the business accepts your new requested time.'}
+              </strong>
+            </div>
+
+            {success && (
+              <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)' }}>
+                <p className="small" style={{ color: 'var(--success)' }}>{success}</p>
+              </div>
+            )}
 
             <div className="card">
               <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>
@@ -516,11 +608,31 @@ export default function RescheduleBooking() {
                 </div>
 
                 <div>
+                  <p className="small muted">Status</p>
+                  <strong style={{ textTransform: 'capitalize' }}>{booking.status}</strong>
+                </div>
+
+                <div>
                   <p className="small muted">Customer</p>
                   <strong>{booking.customer_name}</strong>
                   <p className="small muted">{booking.customer_email}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="card" style={{ background: 'var(--surface-2)' }}>
+              <p className="small muted">New requested appointment</p>
+              <h3 style={{ marginTop: '0.25rem' }}>
+                {requestedStart
+                  ? `${requestedStart.toLocaleString()}${requestedEnd ? ` - ${requestedEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`
+                  : 'Choose a new date and time'}
+              </h3>
+              <p className="small muted" style={{ marginTop: '0.45rem' }}>
+                {selectedStaff ? `Staff: ${selectedStaff.name}${selectedStaff.role_title ? ` — ${selectedStaff.role_title}` : ''}` : 'Select a staff member to continue.'}
+              </p>
+              <p className="small muted">
+                {booking.services?.name || 'Service'} · {newDuration} minutes
+              </p>
             </div>
 
             <form onSubmit={saveReschedule} className="card" style={{ display: 'grid', gap: '1rem' }}>
@@ -531,12 +643,14 @@ export default function RescheduleBooking() {
               <div>
                 <label className="small muted">Choose date</label>
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '0.5rem',
-                  marginTop: '0.5rem'
-                }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))',
+                    gap: '0.5rem',
+                    marginTop: '0.5rem'
+                  }}
+                >
                   {dateOptions.map((option) => (
                     <button
                       key={option.value}
@@ -624,6 +738,12 @@ export default function RescheduleBooking() {
               <div>
                 <label className="small muted">Available times</label>
 
+                {selectedDateLabel && selectedStaff && (
+                  <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                    {selectedDateLabel.label} {selectedDateLabel.subLabel} with {selectedStaff.name}
+                  </p>
+                )}
+
                 {!selectedStaffId && (
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
                     Select an available staff member first.
@@ -636,12 +756,14 @@ export default function RescheduleBooking() {
                   </p>
                 )}
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(82px, 1fr))',
-                  gap: '0.5rem',
-                  marginTop: '0.75rem'
-                }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(82px, 1fr))',
+                    gap: '0.5rem',
+                    marginTop: '0.75rem'
+                  }}
+                >
                   {timeSlots.map((slot) => (
                     <button
                       key={slot}
@@ -666,7 +788,9 @@ export default function RescheduleBooking() {
                 disabled={saving || !selectedDate || !selectedStaffId || !selectedTime}
                 className="btn btn-accent"
               >
-                {saving ? 'Saving...' : role === 'customer' ? 'Request new time' : 'Save new time'}
+                {saving
+                  ? role === 'customer' ? 'Sending request...' : 'Saving new time...'
+                  : role === 'customer' ? 'Send reschedule request' : 'Save new appointment time'}
               </button>
             </form>
 
