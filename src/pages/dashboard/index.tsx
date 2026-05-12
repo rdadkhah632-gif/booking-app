@@ -18,12 +18,15 @@ type Booking = {
   customer_name: string
   start_at: string
   duration_minutes: number
+  service_id?: string | null
   status: string
   businesses?: {
     name: string
   } | null
   services?: {
+    id?: string
     name: string
+    price?: number | null
   } | null
   staff_members?: {
     name: string
@@ -127,9 +130,10 @@ export default function DashboardHome() {
         customer_name,
         start_at,
         duration_minutes,
+        service_id,
         status,
         businesses ( name ),
-        services ( name ),
+        services ( id, name, price ),
         staff_members ( name, role_title )
       `)
       .in('business_id', businessIds)
@@ -265,6 +269,60 @@ export default function DashboardHome() {
     return bookings.filter((booking) => booking.status === 'cancelled')
   }, [bookings])
 
+  const dashboardAnalytics = useMemo(() => {
+    const last30Days = new Date()
+    last30Days.setDate(last30Days.getDate() - 30)
+
+    const recentBookings = bookings.filter((booking) => new Date(booking.start_at) >= last30Days)
+    const recentCompleted = recentBookings.filter((booking) => booking.status === 'completed')
+    const recentConfirmed = recentBookings.filter((booking) => booking.status === 'confirmed')
+    const recentCancelled = recentBookings.filter((booking) => booking.status === 'cancelled')
+
+    const estimatedRevenue = recentCompleted.reduce((total, booking) => {
+      return total + Number(booking.services?.price || 0)
+    }, 0)
+
+    const estimatedUpcomingValue = recentConfirmed.reduce((total, booking) => {
+      return total + Number(booking.services?.price || 0)
+    }, 0)
+
+    const serviceCounts = recentBookings.reduce<Record<string, { name: string; count: number; value: number }>>((acc, booking) => {
+      const serviceName = booking.services?.name || 'Unknown service'
+      const serviceKey = booking.services?.id || booking.service_id || serviceName
+
+      if (!acc[serviceKey]) {
+        acc[serviceKey] = {
+          name: serviceName,
+          count: 0,
+          value: 0
+        }
+      }
+
+      acc[serviceKey].count += 1
+      acc[serviceKey].value += Number(booking.services?.price || 0)
+      return acc
+    }, {})
+
+    const topServices = Object.values(serviceCounts)
+      .sort((a, b) => b.count - a.count || b.value - a.value)
+      .slice(0, 3)
+
+    const averageBookingValue = recentBookings.length > 0
+      ? recentBookings.reduce((total, booking) => total + Number(booking.services?.price || 0), 0) / recentBookings.length
+      : 0
+
+    return {
+      recentBookings,
+      recentCompleted,
+      recentConfirmed,
+      recentCancelled,
+      estimatedRevenue,
+      estimatedUpcomingValue,
+      topServices,
+      averageBookingValue
+    }
+  }, [bookings])
+
   const pendingRescheduleCount = useMemo(() => {
     const uniqueBookings = new Set(
       requests
@@ -281,6 +339,10 @@ export default function DashboardHome() {
   const activeServices = services.filter((service) => service.active).length
   const activeStaff = staffMembers.filter((staff) => staff.active).length
   const openWorkingDays = availabilityRows.filter((row) => row.is_closed !== true).length
+
+  const completionRate = dashboardAnalytics.recentBookings.length > 0
+    ? Math.round((dashboardAnalytics.recentCompleted.length / dashboardAnalytics.recentBookings.length) * 100)
+    : 0
 
   const setupReadyBusinesses = useMemo(() => {
     return businesses.filter((business) => {
@@ -365,6 +427,10 @@ export default function DashboardHome() {
         <button onClick={loadDashboard} className="btn btn-ghost" disabled={loading}>
           {loading ? 'Refreshing...' : 'Refresh dashboard'}
         </button>
+
+        <Link href="/dashboard/analytics" className="btn btn-accent">
+          View analytics
+        </Link>
       </div>
 
       {error && (
@@ -402,6 +468,18 @@ export default function DashboardHome() {
             Open notifications
           </Link>
         </div>
+
+        <div className="card">
+          <p className="small muted">Last 30 days</p>
+          <h3>{dashboardAnalytics.recentBookings.length}</h3>
+          <p className="muted small">Total booking activity</p>
+        </div>
+
+        <div className="card" style={{ borderColor: 'rgba(45,212,191,0.25)' }}>
+          <p className="small muted">Estimated completed value</p>
+          <h3>£{dashboardAnalytics.estimatedRevenue.toFixed(2)}</h3>
+          <p className="muted small">Based on completed appointments in the last 30 days</p>
+        </div>
       </div>
 
       <div className="card" style={{ marginBottom: '1.5rem', borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
@@ -423,6 +501,52 @@ export default function DashboardHome() {
             <Link href="/dashboard/bookings" className="btn btn-ghost">
               Appointment manager
             </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
+          <div>
+            <p className="small muted">Analytics preview</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Business performance snapshot</h3>
+            <p className="small muted" style={{ marginTop: '0.45rem' }}>
+              These figures are estimated from bookings and service prices. Payment revenue can replace this later when deposits/payments are added.
+            </p>
+          </div>
+
+          <Link href="/dashboard/analytics" className="btn btn-accent">
+            Open full analytics
+          </Link>
+        </div>
+
+        <div className="grid-2">
+          <div className="card" style={{ background: 'var(--surface-2)' }}>
+            <p className="small muted">Completed rate</p>
+            <h3>{completionRate}%</h3>
+            <p className="small muted">Completed bookings / last 30 days activity</p>
+          </div>
+
+          <div className="card" style={{ background: 'var(--surface-2)' }}>
+            <p className="small muted">Upcoming value</p>
+            <h3>£{dashboardAnalytics.estimatedUpcomingValue.toFixed(2)}</h3>
+            <p className="small muted">Estimated value of confirmed upcoming appointments</p>
+          </div>
+
+          <div className="card" style={{ background: 'var(--surface-2)' }}>
+            <p className="small muted">Average booking value</p>
+            <h3>£{dashboardAnalytics.averageBookingValue.toFixed(2)}</h3>
+            <p className="small muted">Average listed service price in recent booking activity</p>
+          </div>
+
+          <div className="card" style={{ background: 'var(--surface-2)' }}>
+            <p className="small muted">Top service</p>
+            <h3>{dashboardAnalytics.topServices[0]?.name || 'No data yet'}</h3>
+            <p className="small muted">
+              {dashboardAnalytics.topServices[0]
+                ? `${dashboardAnalytics.topServices[0].count} booking${dashboardAnalytics.topServices[0].count === 1 ? '' : 's'} in recent activity`
+                : 'Add bookings to see your most popular service'}
+            </p>
           </div>
         </div>
       </div>
@@ -546,6 +670,10 @@ export default function DashboardHome() {
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
           <Link href="/dashboard/businesses" className="btn btn-accent">
             Business profile
+          </Link>
+
+          <Link href="/dashboard/analytics" className="btn btn-ghost">
+            Analytics
           </Link>
 
           <Link href="/dashboard/services" className="btn btn-ghost">

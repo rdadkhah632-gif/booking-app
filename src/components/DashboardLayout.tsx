@@ -60,8 +60,9 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
   const links = [
     { href: '/dashboard', label: 'Overview' },
-    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Notifications (${pendingCount})` : 'Notifications', highlight: pendingCount > 0 },
+    { href: '/dashboard/analytics', label: 'Analytics' },
     { href: '/dashboard/bookings', label: 'Bookings' },
+    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Notifications (${pendingCount})` : 'Notifications', highlight: pendingCount > 0 },
     { href: '/dashboard/businesses', label: 'Business profile' },
     { href: '/dashboard/services', label: 'Services' },
     { href: '/dashboard/staff', label: 'Staff' },
@@ -86,7 +87,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             <Link
               key={link.href}
               href={link.href}
-              className={`sidebar-link ${router.pathname === link.href ? 'active' : ''} ${link.highlight ? 'active' : ''}`}
+              className={`sidebar-link ${router.pathname === link.href || router.pathname.startsWith(`${link.href}/`) ? 'active' : ''} ${link.highlight ? 'active' : ''}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -105,6 +106,10 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
           <Link href="/explore" className="sidebar-link">
             Preview marketplace
+          </Link>
+
+          <Link href="/dashboard/analytics" className="sidebar-link" style={{ marginTop: '0.5rem' }}>
+            View analytics
           </Link>
 
           <button
@@ -156,39 +161,45 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             </p>
           </div>
 
-          <Link
-            href="/dashboard/notifications"
-            className={pendingCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}
-            style={{
-              position: 'relative',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <span aria-hidden="true">🔔</span>
-            <span>{pendingCount > 0 ? 'Action required' : 'Notifications'}</span>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <Link href="/dashboard/analytics" className="btn btn-ghost">
+              Analytics
+            </Link>
 
-            {pendingCount > 0 && (
-              <span
-                style={{
-                  minWidth: 22,
-                  height: 22,
-                  borderRadius: 999,
-                  background: 'var(--accent)',
-                  color: 'var(--bg)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  marginLeft: '0.15rem'
-                }}
-              >
-                {pendingCount > 9 ? '9+' : pendingCount}
-              </span>
-            )}
-          </Link>
+            <Link
+              href="/dashboard/notifications"
+              className={pendingCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <span aria-hidden="true">🔔</span>
+              <span>{pendingCount > 0 ? 'Action required' : 'Notifications'}</span>
+
+              {pendingCount > 0 && (
+                <span
+                  style={{
+                    minWidth: 22,
+                    height: 22,
+                    borderRadius: 999,
+                    background: 'var(--accent)',
+                    color: 'var(--bg)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    marginLeft: '0.15rem'
+                  }}
+                >
+                  {pendingCount > 9 ? '9+' : pendingCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
 
         {children}
