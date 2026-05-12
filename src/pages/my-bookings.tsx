@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
@@ -39,6 +39,11 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const pendingSectionRef = useRef<HTMLElement | null>(null)
+  const upcomingSectionRef = useRef<HTMLElement | null>(null)
+  const changeRequestsSectionRef = useRef<HTMLElement | null>(null)
+  const historySectionRef = useRef<HTMLElement | null>(null)
 
   async function loadBookings() {
     setLoading(true)
@@ -300,6 +305,35 @@ export default function MyBookings() {
   }, [bookings])
 
   const pendingRescheduleCount = Object.keys(pendingRequestByBookingId).length
+
+  function scrollToSection(section: 'pending' | 'upcoming' | 'changes' | 'history') {
+    const sectionMap = {
+      pending: pendingSectionRef,
+      upcoming: upcomingSectionRef,
+      changes: changeRequestsSectionRef,
+      history: historySectionRef
+    }
+
+    const target = sectionMap[section].current
+
+    if (!target) return
+
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    })
+  }
+
+  function statCardStyle(isActive: boolean) {
+    return {
+      width: '100%',
+      textAlign: 'left' as const,
+      cursor: isActive ? 'pointer' : 'default',
+      borderColor: isActive ? 'rgba(255,107,53,0.35)' : 'var(--border)',
+      background: isActive ? 'linear-gradient(135deg, rgba(255,107,53,0.10), rgba(31,28,44,0.72))' : 'var(--surface)',
+      color: 'var(--text)'
+    }
+  }
 
   function renderBookingCard(booking: Booking, mode: 'pending' | 'confirmed' | 'history') {
     const pendingRequest = pendingRequestByBookingId[booking.id]
@@ -628,29 +662,65 @@ export default function MyBookings() {
         </div>
 
         <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-          <div className="card" style={{ borderColor: pendingBookings.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
+          <button
+            type="button"
+            className="card"
+            onClick={() => scrollToSection('pending')}
+            disabled={pendingBookings.length === 0}
+            style={statCardStyle(pendingBookings.length > 0)}
+          >
             <p className="small muted">Waiting approval</p>
             <h3>{pendingBookings.length}</h3>
             <p className="muted small">Booking requests not confirmed yet</p>
-          </div>
+            <p className="small" style={{ color: pendingBookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
+              {pendingBookings.length > 0 ? 'Tap to view requests ↓' : 'No waiting approvals'}
+            </p>
+          </button>
 
-          <div className="card">
+          <button
+            type="button"
+            className="card"
+            onClick={() => scrollToSection('upcoming')}
+            disabled={confirmedUpcomingBookings.length === 0}
+            style={statCardStyle(confirmedUpcomingBookings.length > 0)}
+          >
             <p className="small muted">Upcoming</p>
             <h3>{confirmedUpcomingBookings.length}</h3>
             <p className="muted small">Confirmed future appointments</p>
-          </div>
+            <p className="small" style={{ color: confirmedUpcomingBookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
+              {confirmedUpcomingBookings.length > 0 ? 'Tap to view schedule ↓' : 'No upcoming appointments'}
+            </p>
+          </button>
 
-          <div className="card">
+          <button
+            type="button"
+            className="card"
+            onClick={() => scrollToSection('changes')}
+            disabled={pendingRescheduleCount === 0}
+            style={statCardStyle(pendingRescheduleCount > 0)}
+          >
             <p className="small muted">Change requests</p>
             <h3>{pendingRescheduleCount}</h3>
             <p className="muted small">Pending reschedule requests</p>
-          </div>
+            <p className="small" style={{ color: pendingRescheduleCount > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
+              {pendingRescheduleCount > 0 ? 'Tap to view requested changes ↓' : 'No pending changes'}
+            </p>
+          </button>
 
-          <div className="card">
+          <button
+            type="button"
+            className="card"
+            onClick={() => scrollToSection('history')}
+            disabled={historyBookings.length === 0}
+            style={statCardStyle(historyBookings.length > 0)}
+          >
             <p className="small muted">History</p>
             <h3>{historyBookings.length}</h3>
             <p className="muted small">Completed, cancelled or past bookings</p>
-          </div>
+            <p className="small" style={{ color: historyBookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
+              {historyBookings.length > 0 ? 'Tap to view history ↓' : 'No history yet'}
+            </p>
+          </button>
         </div>
 
         {error && (
@@ -681,7 +751,7 @@ export default function MyBookings() {
         {!loading && bookings.length > 0 && (
           <div style={{ display: 'grid', gap: '1.5rem' }}>
             {pendingBookings.length > 0 && (
-              <section style={{ display: 'grid', gap: '1rem' }}>
+              <section ref={pendingSectionRef} id="waiting-approval" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
                 <div>
                   <p className="small muted">Action status</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>Waiting for business approval</h2>
@@ -694,22 +764,44 @@ export default function MyBookings() {
               </section>
             )}
 
+            {pendingRescheduleCount > 0 && (
+              <section ref={changeRequestsSectionRef} id="change-requests" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
+                <div>
+                  <p className="small muted">Requested changes</p>
+                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Pending reschedule requests</h2>
+                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                    These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time.
+                  </p>
+                </div>
+
+                {confirmedUpcomingBookings
+                  .filter((booking) => pendingRequestByBookingId[booking.id])
+                  .map((booking) => renderBookingCard(booking, 'confirmed'))}
+              </section>
+            )}
+
             {confirmedUpcomingBookings.length > 0 && (
-            <section style={{ display: 'grid', gap: '1rem' }}>
+            <section ref={upcomingSectionRef} id="upcoming-bookings" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
                 <div>
                   <p className="small muted">Schedule</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>Active confirmed appointments</h2>
                   <p className="muted small" style={{ marginTop: '0.35rem' }}>
                     These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time.
                   </p>
+                  {pendingRescheduleCount > 0 && (
+                    <button type="button" onClick={() => scrollToSection('changes')} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                      View pending change requests
+                    </button>
+                  )}
                 </div>
-
-                {confirmedUpcomingBookings.map((booking) => renderBookingCard(booking, 'confirmed'))}
+                {confirmedUpcomingBookings
+                  .filter((booking) => !pendingRequestByBookingId[booking.id])
+                  .map((booking) => renderBookingCard(booking, 'confirmed'))}
               </section>
             )}
 
             {historyBookings.length > 0 && (
-            <section style={{ display: 'grid', gap: '1rem' }}>
+            <section ref={historySectionRef} id="booking-history" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
                 <div>
                   <p className="small muted">History</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>History and locked bookings</h2>
