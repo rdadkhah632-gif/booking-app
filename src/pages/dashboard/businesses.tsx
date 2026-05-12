@@ -186,7 +186,7 @@ export default function Businesses() {
     }
 
     setNewName('')
-    setSuccess('Business created. Add the profile details, services, staff and hours before publishing.')
+    setSuccess('Business created. Complete the setup hub, then publish it to Mirëbook.')
     await loadBusinesses()
     setLoading(false)
   }
@@ -265,7 +265,7 @@ export default function Businesses() {
       return
     }
 
-    setSuccess(`${business.name || 'Business'} profile saved.`)
+    setSuccess(`${business.name || 'Business'} setup saved.`)
     setSavingBusinessId(null)
     await loadBusinesses()
   }
@@ -300,7 +300,7 @@ export default function Businesses() {
       return
     }
 
-    setSuccess(!business.published ? `${business.name} is now visible to customers.` : `${business.name} is now hidden from customers.`)
+    setSuccess(!business.published ? `${business.name} is now visible on Mirëbook.` : `${business.name} is now hidden from customers.`)
     await loadBusinesses()
   }
 
@@ -339,11 +339,93 @@ export default function Businesses() {
     )
   }
 
+  function setupCard(
+    title: string,
+    value: string,
+    helper: string,
+    ready: boolean,
+    href: string,
+    cta: string
+  ) {
+    return (
+      <Link
+        href={href}
+        className="card"
+        style={{
+          background: ready
+            ? 'linear-gradient(135deg, rgba(45,212,191,0.10), rgba(31,28,44,0.75))'
+            : 'linear-gradient(135deg, rgba(255,190,11,0.10), rgba(31,28,44,0.75))',
+          borderColor: ready ? 'rgba(45,212,191,0.25)' : 'rgba(255,190,11,0.25)',
+          display: 'grid',
+          gap: '0.55rem'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'flex-start' }}>
+          <div>
+            <p className="small muted">{title}</p>
+            <h3 style={{ marginTop: '0.2rem' }}>{value}</h3>
+          </div>
+
+          <span
+            className="small"
+            style={{
+              background: ready ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+              color: ready ? 'var(--success)' : 'var(--warning)',
+              padding: '0.2rem 0.55rem',
+              borderRadius: 999,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {ready ? 'Ready' : 'Setup needed'}
+          </span>
+        </div>
+
+        <p className="small muted">{helper}</p>
+
+        <span className="small" style={{ color: 'var(--accent)', fontWeight: 700 }}>
+          {cta} →
+        </span>
+      </Link>
+    )
+  }
   return (
     <DashboardLayout
-      title="Business profile"
-      subtitle="Control how your business appears to customers, add images, manage booking approval and check readiness before publishing."
+      title="Business setup hub"
+      subtitle="Control your customer-facing profile, booking settings, services, staff and working hours from one place."
     >
+      <div
+        className="card"
+        style={{
+          marginBottom: '1.5rem',
+          background: 'linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08))',
+          borderColor: 'rgba(255,107,53,0.25)'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook setup</p>
+            <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+              Set up your business before customers book.
+            </h2>
+            <p className="muted" style={{ marginTop: '0.6rem' }}>
+              Most businesses only need one shop profile. This hub keeps your profile, services, staff, hours and publishing controls together so the sidebar stays focused on daily operations.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link href="/dashboard/services" className="btn btn-ghost">
+              Manage services
+            </Link>
+            <Link href="/dashboard/staff" className="btn btn-ghost">
+              Manage staff
+            </Link>
+            <Link href="/dashboard/availability" className="btn btn-ghost">
+              Working hours
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
         <div className="card">
           <p className="small muted">Businesses</p>
@@ -383,15 +465,17 @@ export default function Businesses() {
           <p className="small muted">Create profile</p>
           <h3>Add a new business</h3>
           <p className="muted small" style={{ marginTop: '0.35rem' }}>
-            Create the profile first, then add services, staff, working hours and publish when ready.
+            Create the business first, then add profile details, services, staff, working hours and publish when ready.
           </p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto',
-          gap: '0.75rem'
-        }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) auto',
+            gap: '0.75rem'
+          }}
+        >
           <input
             placeholder="Business name"
             value={newName}
@@ -426,7 +510,7 @@ export default function Businesses() {
         <div className="card">
           <h3>No businesses yet</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Create your first business above. Then add services, staff, working hours and publish it to the marketplace.
+            Create your first business above. Then add services, staff, working hours and publish it to Mirëbook.
           </p>
         </div>
       )}
@@ -495,7 +579,7 @@ export default function Businesses() {
                         borderRadius: 999
                       }}
                     >
-                      {business.published ? 'Live / visible' : 'Hidden'}
+                      {business.published ? 'Live on Mirëbook' : 'Hidden'}
                     </span>
 
                     <span
@@ -538,16 +622,61 @@ export default function Businesses() {
               </div>
 
               <div className="grid-2">
+                {setupCard(
+                  'Services',
+                  `${readiness.activeServices} active`,
+                  'Create bookable services with prices, durations, descriptions and optional images.',
+                  readiness.hasActiveServices,
+                  `/dashboard/services?businessId=${business.id}`,
+                  'Manage services'
+                )}
+
+                {setupCard(
+                  'Staff',
+                  `${readiness.activeStaff} active`,
+                  'Add staff, assign services and control who customers can book with.',
+                  readiness.hasActiveStaff,
+                  `/dashboard/staff?businessId=${business.id}`,
+                  'Manage staff'
+                )}
+
+                {setupCard(
+                  'Working hours',
+                  `${readiness.workingDays} open day${readiness.workingDays === 1 ? '' : 's'}`,
+                  'Set general shop availability. Staff-specific hours control exact bookable slots.',
+                  readiness.hasWorkingHours,
+                  `/dashboard/availability?businessId=${business.id}`,
+                  'Set hours'
+                )}
+
+                {setupCard(
+                  'Marketplace preview',
+                  business.published ? 'Live' : 'Hidden',
+                  business.published
+                    ? 'Preview how customers see this business on Mirëbook.'
+                    : 'Preview and publish when setup is complete.',
+                  business.published,
+                  `/explore/${business.id}`,
+                  'Open public page'
+                )}
+              </div>
+
+              <div className="grid-2">
                 <div className="card" style={{ background: 'var(--surface-2)' }}>
                   <p className="small muted">Customer-facing profile</p>
                   <h3 style={{ marginTop: '0.25rem' }}>Profile details</h3>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    These details appear on the public Mirëbook marketplace and booking page.
+                  </p>
 
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                    gap: '0.75rem',
-                    marginTop: '1rem'
-                  }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                      gap: '0.75rem',
+                      marginTop: '1rem'
+                    }}
+                  >
                     <input
                       placeholder="Business name"
                       value={business.name || ''}
@@ -611,7 +740,7 @@ export default function Businesses() {
                     {readiness.readyToPublish ? 'Ready for customers' : 'Complete setup before launch'}
                   </h3>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    This helps prevent customers seeing a business they cannot confidently book with.
+                    This keeps the marketplace clean and stops customers seeing a business they cannot confidently book with.
                   </p>
 
                   <div style={{ marginTop: '0.8rem' }}>
@@ -657,7 +786,7 @@ export default function Businesses() {
                       {business.auto_accept_bookings ?? true ? 'Auto-accept customer bookings' : 'Manually approve customer bookings'}
                     </h3>
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      This applies to new bookings. Auto-accept confirms future customer bookings instantly. Manual approval sends new bookings to Notifications for review.
+                      Auto-accept confirms future customer bookings instantly. Manual approval sends new bookings to Notifications for review.
                     </p>
                   </div>
 
@@ -681,7 +810,7 @@ export default function Businesses() {
                   className="btn btn-accent"
                   disabled={savingBusinessId === business.id}
                 >
-                  {savingBusinessId === business.id ? 'Saving...' : 'Save profile and booking settings'}
+                  {savingBusinessId === business.id ? 'Saving...' : 'Save setup'}
                 </button>
 
                 <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
@@ -700,7 +829,7 @@ export default function Businesses() {
                   Bookings
                 </Link>
 
-                <Link href={`/dashboard/notifications`} className="btn btn-ghost">
+                <Link href="/dashboard/notifications" className="btn btn-ghost">
                   Notifications
                 </Link>
 

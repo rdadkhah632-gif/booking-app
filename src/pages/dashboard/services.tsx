@@ -48,6 +48,7 @@ export default function Services() {
   const [imageUrl, setImageUrl] = useState('')
   const [duration, setDuration] = useState(30)
   const [price, setPrice] = useState(0)
+  const [formExpanded, setFormExpanded] = useState(true)
 
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
   const [savingServiceId, setSavingServiceId] = useState<string | null>(null)
@@ -173,13 +174,21 @@ export default function Services() {
     const inactive = services.length - active
     const assigned = services.filter((service) => staffServices.some((link) => link.service_id === service.id)).length
     const unassigned = services.length - assigned
+    const averagePrice = services.length > 0
+      ? services.reduce((total, service) => total + Number(service.price || 0), 0) / services.length
+      : 0
+    const averageDuration = services.length > 0
+      ? services.reduce((total, service) => total + Number(service.duration_minutes || 0), 0) / services.length
+      : 0
 
     return {
       total: services.length,
       active,
       inactive,
       assigned,
-      unassigned
+      unassigned,
+      averagePrice,
+      averageDuration
     }
   }, [services, staffServices])
 
@@ -187,6 +196,14 @@ export default function Services() {
     return staffMembers.filter((staff) =>
       staffServices.some((link) => link.service_id === serviceId && link.staff_member_id === staff.id)
     )
+  }
+
+  function resetForm() {
+    setName('')
+    setDescription('')
+    setImageUrl('')
+    setDuration(30)
+    setPrice(0)
   }
 
   async function addService(e: React.FormEvent) {
@@ -229,12 +246,9 @@ export default function Services() {
       return
     }
 
-    setName('')
-    setDescription('')
-    setImageUrl('')
-    setDuration(30)
-    setPrice(0)
-    setSuccess('Service added. Assign staff to this service so customers can book it.')
+    resetForm()
+    setFormExpanded(false)
+    setSuccess('Service added. Assign staff to this service so customers can book it on Mirëbook.')
 
     await loadData()
     setLoading(false)
@@ -293,7 +307,7 @@ export default function Services() {
 
     const assignedStaff = assignedStaffForService(service.id)
 
-    if (!service.active === true && assignedStaff.length === 0) {
+    if (!service.active && assignedStaff.length === 0) {
       const confirmed = confirm('This service has no staff assigned yet. Customers will not be able to book it properly until staff are assigned. Show it anyway?')
       if (!confirmed) return
     }
@@ -312,10 +326,37 @@ export default function Services() {
     await loadData()
   }
 
+  function serviceBookable(service: Service) {
+    return service.active && assignedStaffForService(service.id).length > 0
+  }
+
+  function statusBadge(label: string, tone: 'success' | 'warning' | 'accent' | 'muted') {
+    const styles = {
+      success: { background: 'rgba(45,212,191,0.12)', color: 'var(--success)' },
+      warning: { background: 'rgba(255,190,11,0.12)', color: 'var(--warning)' },
+      accent: { background: 'rgba(255,107,53,0.12)', color: 'var(--accent)' },
+      muted: { background: 'var(--surface-2)', color: 'var(--text-muted)' }
+    }
+
+    return (
+      <span
+        className="small"
+        style={{
+          ...styles[tone],
+          padding: '0.2rem 0.55rem',
+          borderRadius: 999,
+          whiteSpace: 'nowrap'
+        }}
+      >
+        {label}
+      </span>
+    )
+  }
+
   return (
     <DashboardLayout
-      title="Manage services"
-      subtitle={business ? `Editing services for ${business.name}` : 'Choose which business services to manage.'}
+      title="Services setup"
+      subtitle={business ? `Create and manage customer-facing services for ${business.name}.` : 'Choose which business services to manage.'}
     >
       {pageLoading && (
         <div className="card">
@@ -349,15 +390,11 @@ export default function Services() {
 
       {!pageLoading && !business && businesses.length > 1 && (
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ padding: '0.25rem 0 0.5rem' }}>
-            <p className="small muted" style={{ marginBottom: '0.35rem' }}>
-              Multiple businesses found
-            </p>
-            <h3 style={{ marginBottom: '0.35rem' }}>
-              Choose a business to continue
-            </h3>
-            <p className="muted">
-              Select one of the business cards below. The next page will show the services for that specific business.
+          <div className="card" style={{ background: 'linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08))' }}>
+            <p className="small muted">Multiple businesses found</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Choose a business to continue</h3>
+            <p className="muted" style={{ marginTop: '0.35rem' }}>
+              Pick the business you want to configure. Services are managed per business because prices, staff and availability can differ.
             </p>
           </div>
 
@@ -385,6 +422,39 @@ export default function Services() {
 
       {!pageLoading && business && (
         <>
+          <div
+            className="card"
+            style={{
+              marginBottom: '1.5rem',
+              background: 'linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.07))',
+              borderColor: 'rgba(255,107,53,0.22)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, minWidth: 260 }}>
+                <p className="small" style={{ color: 'var(--accent)' }}>Setup sub-page</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+                  Services customers can book on Mirëbook.
+                </h2>
+                <p className="muted" style={{ marginTop: '0.55rem' }}>
+                  Add services with prices, durations, descriptions and optional images. A service becomes properly bookable once active staff are assigned to it.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <Link href="/dashboard/businesses" className="btn btn-ghost">
+                  Back to setup hub
+                </Link>
+                <Link href={`/dashboard/staff?businessId=${business.id}`} className="btn btn-ghost">
+                  Assign staff
+                </Link>
+                <Link href={`/explore/${business.id}`} className="btn btn-ghost">
+                  Preview public page
+                </Link>
+              </div>
+            </div>
+          </div>
+
           <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
             <div className="card">
               <p className="small muted">Services</p>
@@ -392,7 +462,7 @@ export default function Services() {
               <p className="muted small">Total services</p>
             </div>
 
-            <div className="card">
+            <div className="card" style={{ borderColor: serviceStats.active > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
               <p className="small muted">Visible</p>
               <h3>{serviceStats.active}</h3>
               <p className="muted small">Active customer-facing services</p>
@@ -405,66 +475,125 @@ export default function Services() {
             </div>
 
             <div className="card">
-              <p className="small muted">Staff</p>
-              <h3>{staffMembers.filter((staff) => staff.active).length}</h3>
-              <p className="muted small">Active staff members</p>
+              <p className="small muted">Average service</p>
+              <h3>£{serviceStats.averagePrice.toFixed(2)}</h3>
+              <p className="muted small">Avg. {Math.round(serviceStats.averageDuration)} minutes</p>
             </div>
           </div>
 
-          <form onSubmit={addService} className="card" style={{ display: 'grid', gap: '0.9rem', marginBottom: '1.5rem' }}>
-            <div>
-              <p className="small muted">Create service</p>
-              <h3>Add service</h3>
-              <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                Services are what customers select before choosing staff, date and time. Add an optional image to make the booking page feel more polished.
-              </p>
+          <div className="card" style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: formExpanded ? '1rem' : 0 }}>
+              <div>
+                <p className="small muted">Create service</p>
+                <h3 style={{ marginTop: '0.25rem' }}>Add a new service</h3>
+                <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                  Keep service names simple. Customers should understand what they are booking without needing to ask.
+                </p>
+              </div>
+
+              <button type="button" onClick={() => setFormExpanded((prev) => !prev)} className="btn btn-ghost">
+                {formExpanded ? 'Collapse form' : 'Add service'}
+              </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-              <input
-                placeholder="Service name e.g. Haircut, Dental Checkup"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+            {formExpanded && (
+              <form onSubmit={addService} style={{ display: 'grid', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(240px, 0.8fr)', gap: '1rem', alignItems: 'start' }}>
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+                    <input
+                      placeholder="Service name e.g. Haircut, Dental Checkup"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
 
-              <input
-                type="number"
-                placeholder="Duration in minutes"
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-                min={5}
-                required
-              />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                      <label className="small muted">
+                        Duration
+                        <input
+                          type="number"
+                          placeholder="Duration in minutes"
+                          value={duration}
+                          onChange={(e) => setDuration(Number(e.target.value))}
+                          min={5}
+                          required
+                          style={{ marginTop: '0.35rem' }}
+                        />
+                      </label>
 
-              <input
-                type="number"
-                placeholder="Price"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-                min={0}
-                step="0.01"
-                required
-              />
-            </div>
+                      <label className="small muted">
+                        Price
+                        <input
+                          type="number"
+                          placeholder="Price"
+                          value={price}
+                          onChange={(e) => setPrice(Number(e.target.value))}
+                          min={0}
+                          step="0.01"
+                          required
+                          style={{ marginTop: '0.35rem' }}
+                        />
+                      </label>
+                    </div>
 
-            <input
-              placeholder="Service image URL optional"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
+                    <input
+                      placeholder="Service image URL optional"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                    />
 
-            <textarea
-              placeholder="Short description shown to customers optional"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
+                    <textarea
+                      placeholder="Short description shown to customers optional"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={4}
+                    />
+                  </div>
 
-            <button type="submit" disabled={loading} className="btn btn-accent">
-              {loading ? 'Adding...' : 'Add service'}
-            </button>
-          </form>
+                  <div className="card" style={{ background: 'var(--surface-2)' }}>
+                    <p className="small muted">Customer preview</p>
+                    <div
+                      style={{
+                        minHeight: 130,
+                        borderRadius: 'var(--radius)',
+                        margin: '0.75rem 0',
+                        border: '1px solid var(--border)',
+                        background: imageUrl
+                          ? `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${imageUrl})`
+                          : 'linear-gradient(135deg, rgba(255,107,53,0.16), rgba(45,212,191,0.10))',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem'
+                      }}
+                    >
+                      {!imageUrl && '✨'}
+                    </div>
+
+                    <h3>{name || 'Service name'}</h3>
+                    <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                      {duration || 0} minutes · £{Number(price || 0).toFixed(2)}
+                    </p>
+                    <p className="small muted" style={{ marginTop: '0.45rem' }}>
+                      {description || 'Add a short description to help customers understand this service.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button type="submit" disabled={loading} className="btn btn-accent">
+                    {loading ? 'Adding...' : 'Add service'}
+                  </button>
+
+                  <button type="button" onClick={resetForm} className="btn btn-ghost">
+                    Clear form
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
 
           <div style={{ display: 'grid', gap: '1rem' }}>
             {services.length === 0 && (
@@ -479,6 +608,7 @@ export default function Services() {
             {services.map((service) => {
               const assignedStaff = assignedStaffForService(service.id)
               const isEditing = editingServiceId === service.id
+              const isBookable = serviceBookable(service)
 
               return (
                 <div
@@ -489,158 +619,158 @@ export default function Services() {
                       ? 'rgba(255,190,11,0.25)'
                       : assignedStaff.length === 0
                         ? 'rgba(255,190,11,0.35)'
-                        : 'var(--border)',
+                        : 'rgba(45,212,191,0.16)',
                     overflow: 'hidden',
                     padding: 0
                   }}
                 >
-                  {service.image_url && (
-                    <div
-                      style={{
-                        minHeight: 140,
-                        backgroundImage: `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${service.image_url})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                      }}
-                    />
-                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: service.image_url ? '180px minmax(0, 1fr)' : '1fr', gap: 0 }}>
+                    {service.image_url && (
+                      <div
+                        style={{
+                          minHeight: 180,
+                          backgroundImage: `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${service.image_url})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          borderRight: '1px solid var(--border)'
+                        }}
+                      />
+                    )}
 
-                  <div style={{ padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                      <div style={{ flex: 1, minWidth: 260 }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.55rem' }}>
-                          <strong>{service.name || 'Untitled service'}</strong>
+                    <div style={{ padding: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1, minWidth: 260 }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.55rem' }}>
+                            <strong>{service.name || 'Untitled service'}</strong>
+                            {statusBadge(service.active ? 'Visible' : 'Hidden', service.active ? 'success' : 'warning')}
+                            {statusBadge(isBookable ? 'Bookable' : 'Not bookable yet', isBookable ? 'success' : 'warning')}
+                            {assignedStaff.length > 0
+                              ? statusBadge(`${assignedStaff.length} staff assigned`, 'success')
+                              : statusBadge('No staff assigned', 'warning')}
+                          </div>
 
-                          <span
-                            className="small"
-                            style={{
-                              background: service.active ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                              color: service.active ? 'var(--success)' : 'var(--warning)',
-                              padding: '0.2rem 0.55rem',
-                              borderRadius: 999
-                            }}
-                          >
-                            {service.active ? 'Visible' : 'Hidden'}
-                          </span>
+                          {!isEditing && (
+                            <>
+                              <p className="small muted">
+                                {service.duration_minutes} minutes · £{Number(service.price).toFixed(2)}
+                              </p>
 
-                          <span
-                            className="small"
-                            style={{
-                              background: assignedStaff.length > 0 ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                              color: assignedStaff.length > 0 ? 'var(--success)' : 'var(--warning)',
-                              padding: '0.2rem 0.55rem',
-                              borderRadius: 999
-                            }}
-                          >
-                            {assignedStaff.length > 0 ? `${assignedStaff.length} staff assigned` : 'No staff assigned'}
-                          </span>
+                              {service.description ? (
+                                <p className="small muted" style={{ marginTop: '0.45rem' }}>
+                                  {service.description}
+                                </p>
+                              ) : (
+                                <p className="small muted" style={{ marginTop: '0.45rem' }}>
+                                  No description added yet.
+                                </p>
+                              )}
+
+                              <div className="card" style={{ background: 'var(--surface-2)', padding: '0.85rem', marginTop: '0.85rem' }}>
+                                <p className="small muted">Bookability</p>
+                                <strong>{isBookable ? 'Customers can book this service' : 'Complete setup before customers can book this service'}</strong>
+                                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                                  Staff: {assignedStaff.length > 0
+                                    ? assignedStaff.map((staff) => `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`).join(', ')
+                                    : 'Assign active staff to make this service bookable.'}
+                                </p>
+                              </div>
+                            </>
+                          )}
+
+                          {isEditing && (
+                            <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
+                              <input
+                                placeholder="Service name"
+                                value={service.name || ''}
+                                onChange={(e) => updateLocalService(service.id, 'name', e.target.value)}
+                              />
+
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                                <input
+                                  type="number"
+                                  placeholder="Duration"
+                                  value={service.duration_minutes}
+                                  onChange={(e) => updateLocalService(service.id, 'duration_minutes', Number(e.target.value))}
+                                  min={5}
+                                />
+
+                                <input
+                                  type="number"
+                                  placeholder="Price"
+                                  value={service.price}
+                                  onChange={(e) => updateLocalService(service.id, 'price', Number(e.target.value))}
+                                  min={0}
+                                  step="0.01"
+                                />
+                              </div>
+
+                              <input
+                                placeholder="Service image URL optional"
+                                value={service.image_url || ''}
+                                onChange={(e) => updateLocalService(service.id, 'image_url', e.target.value)}
+                              />
+
+                              <textarea
+                                placeholder="Service description optional"
+                                value={service.description || ''}
+                                onChange={(e) => updateLocalService(service.id, 'description', e.target.value)}
+                                rows={3}
+                              />
+
+                              <label className="card" style={{ background: 'var(--surface-2)', cursor: 'pointer' }}>
+                                <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={service.active}
+                                    onChange={(e) => updateLocalService(service.id, 'active', e.target.checked)}
+                                  />
+                                  <div>
+                                    <strong>Visible to customers</strong>
+                                    <p className="small muted">Hidden services stay saved but will not be offered for booking.</p>
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                          )}
                         </div>
 
-                        {!isEditing && (
-                          <>
-                            <p className="small muted">
-                              {service.duration_minutes} minutes · £{Number(service.price).toFixed(2)}
-                            </p>
+                        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                          {isEditing ? (
+                            <>
+                              <button
+                                onClick={() => saveService(service)}
+                                className="btn btn-accent"
+                                disabled={savingServiceId === service.id}
+                              >
+                                {savingServiceId === service.id ? 'Saving...' : 'Save service'}
+                              </button>
 
-                            {service.description && (
-                              <p className="small muted" style={{ marginTop: '0.45rem' }}>
-                                {service.description}
-                              </p>
-                            )}
+                              <button
+                                onClick={() => {
+                                  setEditingServiceId(null)
+                                  loadData()
+                                }}
+                                className="btn btn-ghost"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => setEditingServiceId(service.id)} className="btn btn-ghost">
+                                Edit
+                              </button>
 
-                            <p className="small muted" style={{ marginTop: '0.55rem' }}>
-                              Staff: {assignedStaff.length > 0
-                                ? assignedStaff.map((staff) => staff.name).join(', ')
-                                : 'Assign staff before customers can book this service.'}
-                            </p>
+                              <button onClick={() => toggleService(service)} className={service.active ? 'btn btn-ghost' : 'btn btn-accent'}>
+                                {service.active ? 'Hide service' : 'Show service'}
+                              </button>
 
-                            {assignedStaff.length === 0 && (
-                              <p className="small" style={{ color: 'var(--warning)', marginTop: '0.45rem' }}>
-                                This service may show as unavailable because no staff are assigned to provide it.
-                              </p>
-                            )}
-                          </>
-                        )}
-
-                        {isEditing && (
-                          <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
-                            <input
-                              placeholder="Service name"
-                              value={service.name || ''}
-                              onChange={(e) => updateLocalService(service.id, 'name', e.target.value)}
-                            />
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
-                              <input
-                                type="number"
-                                placeholder="Duration"
-                                value={service.duration_minutes}
-                                onChange={(e) => updateLocalService(service.id, 'duration_minutes', Number(e.target.value))}
-                                min={5}
-                              />
-
-                              <input
-                                type="number"
-                                placeholder="Price"
-                                value={service.price}
-                                onChange={(e) => updateLocalService(service.id, 'price', Number(e.target.value))}
-                                min={0}
-                                step="0.01"
-                              />
-                            </div>
-
-                            <input
-                              placeholder="Service image URL optional"
-                              value={service.image_url || ''}
-                              onChange={(e) => updateLocalService(service.id, 'image_url', e.target.value)}
-                            />
-
-                            <textarea
-                              placeholder="Service description optional"
-                              value={service.description || ''}
-                              onChange={(e) => updateLocalService(service.id, 'description', e.target.value)}
-                              rows={3}
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                        {isEditing ? (
-                          <>
-                            <button
-                              onClick={() => saveService(service)}
-                              className="btn btn-accent"
-                              disabled={savingServiceId === service.id}
-                            >
-                              {savingServiceId === service.id ? 'Saving...' : 'Save service'}
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                setEditingServiceId(null)
-                                loadData()
-                              }}
-                              className="btn btn-ghost"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button onClick={() => setEditingServiceId(service.id)} className="btn btn-ghost">
-                              Edit
-                            </button>
-
-                            <button onClick={() => toggleService(service)} className={service.active ? 'btn btn-ghost' : 'btn btn-accent'}>
-                              {service.active ? 'Hide service' : 'Show service'}
-                            </button>
-
-                            <Link href={`/dashboard/staff?businessId=${business.id}`} className="btn btn-ghost">
-                              Assign staff
-                            </Link>
-                          </>
-                        )}
+                              <Link href={`/dashboard/staff?businessId=${business.id}`} className="btn btn-ghost">
+                                Assign staff
+                              </Link>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

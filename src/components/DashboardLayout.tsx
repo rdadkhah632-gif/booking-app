@@ -64,9 +64,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     { href: '/dashboard/bookings', label: 'Bookings' },
     { href: '/dashboard/notifications', label: pendingCount > 0 ? `Notifications (${pendingCount})` : 'Notifications', highlight: pendingCount > 0 },
     { href: '/dashboard/businesses', label: 'Business profile' },
-    { href: '/dashboard/services', label: 'Services' },
-    { href: '/dashboard/staff', label: 'Staff' },
-    { href: '/dashboard/availability', label: 'Working hours' },
     { href: '/account', label: 'Account settings' }
   ]
 
@@ -108,8 +105,8 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             Preview marketplace
           </Link>
 
-          <Link href="/dashboard/analytics" className="sidebar-link" style={{ marginTop: '0.5rem' }}>
-            View analytics
+          <Link href="/dashboard/businesses" className="sidebar-link" style={{ marginTop: '0.5rem' }}>
+            Setup hub
           </Link>
 
           <button
@@ -162,6 +159,10 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <Link href="/dashboard/businesses" className="btn btn-ghost">
+              Setup hub
+            </Link>
+
             <Link href="/dashboard/analytics" className="btn btn-ghost">
               Analytics
             </Link>
