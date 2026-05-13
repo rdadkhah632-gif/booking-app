@@ -56,6 +56,13 @@ type Booking = {
 
 type UserRole = 'customer' | 'business' | null
 
+type StaffPreference = 'any' | 'specific'
+
+type SlotOption = {
+  time: string
+  staffIds: string[]
+}
+
 export default function BusinessBookingPage() {
   const router = useRouter()
   const { businessId } = router.query
@@ -75,8 +82,9 @@ export default function BusinessBookingPage() {
 
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
+  const [staffPreference, setStaffPreference] = useState<StaffPreference>('any')
   const [selectedStaffId, setSelectedStaffId] = useState('')
-  const [timeSlots, setTimeSlots] = useState<string[]>([])
+  const [timeSlots, setTimeSlots] = useState<SlotOption[]>([])
   const [selectedTime, setSelectedTime] = useState('')
 
   const [customerName, setCustomerName] = useState('')
@@ -279,6 +287,17 @@ export default function BusinessBookingPage() {
       )
     )
   }, [selectedService, staffMembers, staffServices])
+  const availableStaffForSelectedDate = useMemo(() => {
+    if (!selectedService || !selectedDate) return []
+
+    return selectableStaff
+      .map((staff) => ({
+        staff,
+        status: getStaffStatus(staff),
+        slots: generateSlotsForStaff(staff.id)
+      }))
+      .filter((item) => item.status.available && item.slots.length > 0)
+  }, [selectedService, selectedDate, selectableStaff, staffAvailability, bookings])
 
   const bookableServiceCount = services.filter((service) =>
     staffServices.some((link) => link.service_id === service.id)
@@ -366,17 +385,74 @@ export default function BusinessBookingPage() {
   }
 
   function generateTimeSlots() {
-    if (!selectedDate || !selectedService || !selectedStaffId) {
+    if (!selectedDate || !selectedService) {
       setTimeSlots([])
       return
     }
 
-    setTimeSlots(generateSlotsForStaff(selectedStaffId))
+    if (staffPreference === 'specific') {
+      if (!selectedStaffId) {
+        setTimeSlots([])
+        return
+      }
+
+      setTimeSlots(generateSlotsForStaff(selectedStaffId).map((slot) => ({
+        time: slot,
+        staffIds: [selectedStaffId]
+      })))
+      return
+    }
+
+    const mergedSlots = selectableStaff.reduce<Record<string, string[]>>((acc, staff) => {
+      const slots = generateSlotsForStaff(staff.id)
+
+      slots.forEach((slot) => {
+        if (!acc[slot]) acc[slot] = []
+        acc[slot].push(staff.id)
+      })
+
+      return acc
+    }, {})
+
+    setTimeSlots(
+      Object.entries(mergedSlots)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([time, staffIds]) => ({ time, staffIds }))
+    )
   }
 
   useEffect(() => {
     generateTimeSlots()
-  }, [selectedDate, selectedService, selectedStaffId, staffAvailability, bookings])
+  }, [selectedDate, selectedService, selectedStaffId, staffPreference, staffAvailability, bookings, selectableStaff])
+
+  function staffForSlot(slotTime: string) {
+    const slot = timeSlots.find((item) => item.time === slotTime)
+    if (!slot) return []
+
+    return selectableStaff.filter((staff) => slot.staffIds.includes(staff.id))
+  }
+
+  function resolveStaffForBooking() {
+    if (staffPreference === 'specific') return selectedStaffId
+
+    const slot = timeSlots.find((item) => item.time === selectedTime)
+    return slot?.staffIds[0] || ''
+  }
+
+  function selectedStaffSummary() {
+    if (staffPreference === 'any') {
+      if (!selectedTime) return 'Any available staff'
+
+      const staffForSelectedSlot = staffForSlot(selectedTime)
+      if (staffForSelectedSlot.length === 0) return 'Any available staff'
+
+      return staffForSelectedSlot.length === 1
+        ? `Assigned automatically: ${staffForSelectedSlot[0].name}`
+        : `${staffForSelectedSlot.length} staff available for this time`
+    }
+
+    return selectedStaff ? `Staff: ${selectedStaff.name}` : 'No staff selected'
+  }
 
   async function createBooking(e: React.FormEvent) {
     e.preventDefault()
@@ -388,12 +464,19 @@ export default function BusinessBookingPage() {
       return
     }
 
-    if (!businessId || Array.isArray(businessId) || !selectedService || !selectedStaffId || !selectedTime) return
+    if (!businessId || Array.isArray(businessId) || !selectedService || !selectedTime) return
+
+    const staffMemberIdForBooking = resolveStaffForBooking()
+
+    if (!staffMemberIdForBooking) {
+      setError('Please choose an available staff member or select an available time with Any staff.')
+      return
+    }
 
     setLoading(true)
     setError(null)
 
-    const freshSlots = generateSlotsForStaff(selectedStaffId)
+    const freshSlots = generateSlotsForStaff(staffMemberIdForBooking)
 
     if (!freshSlots.includes(selectedTime)) {
       setLoading(false)
@@ -410,7 +493,7 @@ export default function BusinessBookingPage() {
       .insert({
         business_id: businessId,
         service_id: selectedService.id,
-        staff_member_id: selectedStaffId,
+        staff_member_id: staffMemberIdForBooking,
         customer_user_id: customerUserId,
         customer_name: customerName.trim(),
         customer_email: customerEmail.trim().toLowerCase(),
@@ -483,7 +566,7 @@ export default function BusinessBookingPage() {
   const canSubmit = Boolean(
     selectedService &&
     selectedDate &&
-    selectedStaffId &&
+    (staffPreference === 'any' || selectedStaffId) &&
     selectedTime &&
     customerUserId &&
     userRole === 'customer'
@@ -671,6 +754,7 @@ export default function BusinessBookingPage() {
                     onClick={() => {
                       setSelectedService(null)
                       setSelectedDate('')
+                      setStaffPreference('any')
                       setSelectedStaffId('')
                       setSelectedTime('')
                     }}
@@ -701,6 +785,7 @@ export default function BusinessBookingPage() {
                       onClick={() => {
                         setSelectedService(service)
                         setSelectedDate('')
+                        setStaffPreference('any')
                         setSelectedStaffId('')
                         setSelectedTime('')
                       }}
@@ -762,7 +847,7 @@ export default function BusinessBookingPage() {
                 {business.auto_accept_bookings === false ? 'Request appointment' : 'Book appointment'}
               </h2>
               <p className="small muted">
-                Choose a service, date, staff member and available time.
+                                Choose a service, staff preference, date and available time.
               </p>
             </div>
 
@@ -873,7 +958,7 @@ export default function BusinessBookingPage() {
               </div>
 
               <div>
-                <label className="small muted">Available staff</label>
+                <label className="small muted">Staff preference</label>
 
                 {!selectedService && (
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
@@ -883,7 +968,7 @@ export default function BusinessBookingPage() {
 
                 {selectedService && !selectedDate && (
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                    Select a date to see available staff.
+                    Select a date to see staff options.
                   </p>
                 )}
 
@@ -894,45 +979,107 @@ export default function BusinessBookingPage() {
                 )}
 
                 {selectedService && selectedDate && selectableStaff.length > 0 && (
-                  <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    {selectableStaff.map((staff) => {
-                      const status = getStaffStatus(staff)
-                      const isSelected = selectedStaffId === staff.id
+                  <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStaffPreference('any')
+                          setSelectedStaffId('')
+                          setSelectedTime('')
+                        }}
+                        style={{
+                          textAlign: 'left',
+                          padding: '0.85rem',
+                          borderRadius: 'var(--radius)',
+                          border: staffPreference === 'any' ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
+                          background: staffPreference === 'any' ? 'var(--accent-dim)' : 'var(--surface-2)',
+                          color: 'var(--text)'
+                        }}
+                      >
+                        <strong>Any staff</strong>
+                        <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                          Show the earliest available slots across all staff.
+                        </p>
+                      </button>
 
-                      return (
-                        <button
-                          key={staff.id}
-                          type="button"
-                          disabled={!status.available}
-                          onClick={() => {
-                            setSelectedStaffId(staff.id)
-                            setSelectedTime('')
-                          }}
-                          style={{
-                            opacity: status.available ? 1 : 0.45,
-                            textAlign: 'left',
-                            padding: '0.85rem',
-                            borderRadius: 'var(--radius)',
-                            border: isSelected ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
-                            background: isSelected ? 'var(--accent-dim)' : 'var(--surface-2)',
-                            color: 'var(--text)'
-                          }}
-                        >
-                          <strong>{staff.name}</strong>
-                          <p className="small muted">
-                            {staff.role_title || 'Staff member'}
-                          </p>
-                          <p
-                            className="small"
-                            style={{
-                              color: status.available ? 'var(--success)' : 'var(--warning)'
-                            }}
-                          >
-                            {status.label}
-                          </p>
-                        </button>
-                      )
-                    })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStaffPreference('specific')
+                          setSelectedStaffId('')
+                          setSelectedTime('')
+                        }}
+                        style={{
+                          textAlign: 'left',
+                          padding: '0.85rem',
+                          borderRadius: 'var(--radius)',
+                          border: staffPreference === 'specific' ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
+                          background: staffPreference === 'specific' ? 'var(--accent-dim)' : 'var(--surface-2)',
+                          color: 'var(--text)'
+                        }}
+                      >
+                        <strong>Choose staff</strong>
+                        <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                          Pick a specific person for this booking.
+                        </p>
+                      </button>
+                    </div>
+
+                    {staffPreference === 'any' && (
+                      <div className="card" style={{ background: 'var(--surface-2)', padding: '0.85rem' }}>
+                        <p className="small muted">Any staff availability</p>
+                        <strong>{availableStaffForSelectedDate.length} staff available</strong>
+                        <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                          {availableStaffForSelectedDate.length > 0
+                            ? availableStaffForSelectedDate.map((item) => item.staff.name).join(', ')
+                            : 'No available staff for this service/date.'}
+                        </p>
+                      </div>
+                    )}
+
+                    {staffPreference === 'specific' && (
+                      <div style={{ display: 'grid', gap: '0.5rem' }}>
+                        {selectableStaff.map((staff) => {
+                          const status = getStaffStatus(staff)
+                          const isSelected = selectedStaffId === staff.id
+
+                          return (
+                            <button
+                              key={staff.id}
+                              type="button"
+                              disabled={!status.available}
+                              onClick={() => {
+                                setSelectedStaffId(staff.id)
+                                setSelectedTime('')
+                              }}
+                              style={{
+                                opacity: status.available ? 1 : 0.45,
+                                textAlign: 'left',
+                                padding: '0.85rem',
+                                borderRadius: 'var(--radius)',
+                                border: isSelected ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
+                                background: isSelected ? 'var(--accent-dim)' : 'var(--surface-2)',
+                                color: 'var(--text)'
+                              }}
+                            >
+                              <strong>{staff.name}</strong>
+                              <p className="small muted">
+                                {staff.role_title || 'Staff member'}
+                              </p>
+                              <p
+                                className="small"
+                                style={{
+                                  color: status.available ? 'var(--success)' : 'var(--warning)'
+                                }}
+                              >
+                                {status.label}
+                              </p>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -940,21 +1087,21 @@ export default function BusinessBookingPage() {
               <div>
                 <label className="small muted">Available times</label>
 
-                {selectedDateLabel && selectedStaff && (
+                {selectedDateLabel && selectedService && (
                   <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                    {selectedDateLabel} with {selectedStaff.name}
+                    {selectedDateLabel} · {staffPreference === 'any' ? 'Any available staff' : selectedStaff ? `with ${selectedStaff.name}` : 'Choose staff'}
                   </p>
                 )}
 
-                {!selectedStaffId && (
+                {staffPreference === 'specific' && !selectedStaffId && (
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                    Select an available staff member first.
+                    Select an available staff member first, or use Any staff.
                   </p>
                 )}
 
-                {selectedStaffId && timeSlots.length === 0 && (
+                {selectedService && selectedDate && timeSlots.length === 0 && (
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                    No free slots for this staff member on this date.
+                    No free slots for this selection on this date.
                   </p>
                 )}
 
@@ -968,18 +1115,23 @@ export default function BusinessBookingPage() {
                 >
                   {timeSlots.map((slot) => (
                     <button
-                      key={slot}
+                      key={slot.time}
                       type="button"
-                      onClick={() => setSelectedTime(slot)}
+                      onClick={() => setSelectedTime(slot.time)}
                       style={{
                         padding: '0.65rem',
                         borderRadius: 999,
-                        border: selectedTime === slot ? '1px solid rgba(255,107,53,0.5)' : '1px solid var(--border)',
-                        background: selectedTime === slot ? 'var(--accent)' : 'var(--surface-2)',
-                        color: selectedTime === slot ? 'var(--bg)' : 'var(--text)'
+                        border: selectedTime === slot.time ? '1px solid rgba(255,107,53,0.5)' : '1px solid var(--border)',
+                        background: selectedTime === slot.time ? 'var(--accent)' : 'var(--surface-2)',
+                        color: selectedTime === slot.time ? 'var(--bg)' : 'var(--text)'
                       }}
                     >
-                      {slot}
+                      <span>{slot.time}</span>
+                      {staffPreference === 'any' && slot.staffIds.length > 1 && (
+                        <span style={{ display: 'block', fontSize: '0.68rem', opacity: 0.8 }}>
+                          {slot.staffIds.length} staff
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -994,7 +1146,7 @@ export default function BusinessBookingPage() {
                   {selectedDateLabel || 'No date selected'}{selectedTime ? ` · ${selectedTime}` : ''}
                 </p>
                 <p className="small muted">
-                  {selectedStaff ? `Staff: ${selectedStaff.name}` : 'No staff selected'}
+                  {selectedStaffSummary()}
                 </p>
               </div>
 

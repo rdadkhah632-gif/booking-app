@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 
+type RangeFilter = 'today' | 'tomorrow' | 'week' | 'upcoming' | 'history' | 'custom'
+
 type Business = {
   id: string
   name: string
@@ -11,6 +13,8 @@ type Business = {
 
 type Booking = {
   id: string
+  business_id: string
+  customer_user_id?: string | null
   customer_name: string
   customer_email?: string
   customer_phone?: string
@@ -36,9 +40,39 @@ export default function Bookings() {
   const [business, setBusiness] = useState<Business | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
 
+  const [rangeFilter, setRangeFilter] = useState<RangeFilter>('today')
+  const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()))
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+
   const [pageLoading, setPageLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  function toDateInputValue(date: Date) {
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, '0')
+    const dd = String(date.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
+  }
+
+  function startOfDay(date: Date) {
+    const result = new Date(date)
+    result.setHours(0, 0, 0, 0)
+    return result
+  }
+
+  function endOfDay(date: Date) {
+    const result = new Date(date)
+    result.setHours(23, 59, 59, 999)
+    return result
+  }
+
+  function addDays(date: Date, days: number) {
+    const result = new Date(date)
+    result.setDate(result.getDate() + days)
+    return result
+  }
 
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
@@ -267,7 +301,7 @@ export default function Bookings() {
   function statusColor(status: string) {
     if (status === 'pending') return 'var(--accent)'
     if (status === 'confirmed') return 'var(--success)'
-    if (status === 'completed') return 'var(--accent)'
+    if (status === 'completed') return 'var(--success)'
     if (status === 'cancelled') return 'var(--warning)'
     return 'var(--text-muted)'
   }
@@ -275,9 +309,33 @@ export default function Bookings() {
   function statusBackground(status: string) {
     if (status === 'pending') return 'rgba(255,107,53,0.12)'
     if (status === 'confirmed') return 'rgba(45,212,191,0.12)'
-    if (status === 'completed') return 'rgba(255,107,53,0.12)'
+    if (status === 'completed') return 'rgba(45,212,191,0.12)'
     if (status === 'cancelled') return 'rgba(255,190,11,0.12)'
     return 'var(--surface-2)'
+  }
+
+  function dateRangeForFilter(filter: RangeFilter) {
+    const today = startOfDay(new Date())
+
+    if (filter === 'today') {
+      return { start: today, end: endOfDay(today), label: 'Today' }
+    }
+
+    if (filter === 'tomorrow') {
+      const tomorrow = addDays(today, 1)
+      return { start: tomorrow, end: endOfDay(tomorrow), label: 'Tomorrow' }
+    }
+
+    if (filter === 'week') {
+      return { start: today, end: endOfDay(addDays(today, 6)), label: 'Next 7 days' }
+    }
+
+    if (filter === 'custom') {
+      const selected = new Date(`${selectedDate}T12:00:00`)
+      return { start: startOfDay(selected), end: endOfDay(selected), label: selected.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' }) }
+    }
+
+    return { start: null, end: null, label: filter === 'history' ? 'History' : 'All upcoming' }
   }
 
   const now = new Date()
@@ -300,20 +358,88 @@ export default function Bookings() {
     )
   }, [bookings])
 
-  function renderBookingCard(booking: Booking, mode: 'pending' | 'confirmed' | 'history') {
+  const filteredBookings = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase()
+    const range = dateRangeForFilter(rangeFilter)
+
+    return bookings.filter((booking) => {
+      const bookingDate = new Date(booking.start_at)
+
+      const matchesStatus = statusFilter === 'all' ? true : booking.status === statusFilter
+      const matchesSearch = !search
+        ? true
+        : [
+            booking.customer_name,
+            booking.customer_email,
+            booking.customer_phone,
+            booking.services?.name,
+            booking.staff_members?.name
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(search)
+
+      let matchesRange = true
+
+      if (rangeFilter === 'history') {
+        matchesRange = booking.status === 'cancelled' || booking.status === 'completed' || (booking.status === 'confirmed' && bookingDate < now)
+      } else if (rangeFilter === 'upcoming') {
+        matchesRange = booking.status === 'pending' || (booking.status === 'confirmed' && bookingDate >= now)
+      } else if (range.start && range.end) {
+        matchesRange = bookingDate >= range.start && bookingDate <= range.end
+      }
+
+      return matchesStatus && matchesSearch && matchesRange
+    })
+  }, [bookings, rangeFilter, selectedDate, statusFilter, searchTerm])
+
+  const groupedFilteredBookings = useMemo(() => {
+    const groups = filteredBookings.reduce<Record<string, Booking[]>>((acc, booking) => {
+      const key = new Date(booking.start_at).toISOString().slice(0, 10)
+      if (!acc[key]) acc[key] = []
+      acc[key].push(booking)
+      return acc
+    }, {})
+
+    return Object.entries(groups)
+      .sort(([a], [b]) => {
+        if (rangeFilter === 'history') return b.localeCompare(a)
+        return a.localeCompare(b)
+      })
+      .map(([dateKey, rows]) => ({
+        dateKey,
+        label: new Date(`${dateKey}T12:00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }),
+        bookings: rows.sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+      }))
+  }, [filteredBookings, rangeFilter])
+
+  const selectedRange = dateRangeForFilter(rangeFilter)
+
+  function customerHistoryLink(booking: Booking) {
+    if (booking.customer_user_id) {
+      return `/dashboard/customers/${booking.customer_user_id}?businessId=${business?.id || booking.business_id}`
+    }
+
+    return `/dashboard/customers/by-email?email=${encodeURIComponent(booking.customer_email || '')}&businessId=${business?.id || booking.business_id}`
+  }
+
+  function renderBookingCard(booking: Booking, mode: 'pending' | 'confirmed' | 'history' | 'filtered') {
     const isLocked = booking.status === 'cancelled' || booking.status === 'completed' || mode === 'history'
     const isWorking = actionLoadingId === booking.id
+    const start = new Date(booking.start_at)
+    const end = booking.end_at ? new Date(booking.end_at) : new Date(start.getTime() + booking.duration_minutes * 60000)
 
     return (
       <div
         key={booking.id}
         className="card"
         style={{
-          opacity: isLocked ? 0.76 : 1,
+          opacity: isLocked ? 0.78 : 1,
           borderColor: booking.status === 'pending'
             ? 'rgba(255,107,53,0.35)'
             : booking.status === 'completed'
-              ? 'rgba(255,107,53,0.28)'
+              ? 'rgba(45,212,191,0.22)'
               : booking.status === 'cancelled'
                 ? 'rgba(255,190,11,0.25)'
                 : 'var(--border)'
@@ -322,7 +448,10 @@ export default function Bookings() {
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 280 }}>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
-              <strong>{booking.customer_name || 'Customer'}</strong>
+              <Link href={customerHistoryLink(booking)} style={{ color: 'var(--text)', fontWeight: 800 }}>
+                {booking.customer_name || 'Customer'}
+              </Link>
+
               <span
                 className="small"
                 style={{
@@ -337,16 +466,16 @@ export default function Bookings() {
             </div>
 
             <p className="small muted">
-              Service: {booking.services?.name || 'No service recorded'}
+              {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {booking.duration_minutes} minutes
+            </p>
+
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              Service: {booking.services?.name || 'No service recorded'} · £{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}
             </p>
 
             <p className="small muted">
               Staff: {booking.staff_members?.name || 'Staff not recorded'}
               {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
-            </p>
-
-            <p className="small muted">
-              Price: £{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}
             </p>
 
             <div
@@ -361,7 +490,7 @@ export default function Bookings() {
               <p className="small muted">
                 {booking.status === 'pending' ? 'Requested appointment time' : 'Appointment time'}
               </p>
-              <strong>{new Date(booking.start_at).toLocaleString()}</strong>
+              <strong>{start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} at {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>
               {booking.status === 'pending' && (
                 <p className="small muted" style={{ marginTop: '0.3rem' }}>
                   This time is reserved while waiting for your approval.
@@ -369,27 +498,26 @@ export default function Bookings() {
               )}
             </div>
 
-            <p className="small muted" style={{ marginTop: '0.6rem' }}>
-              Duration: {booking.duration_minutes} minutes
-            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
+              <Link href={customerHistoryLink(booking)} className="btn btn-ghost">
+                Customer details
+              </Link>
 
-            <p className="small muted">
-              Email: {booking.customer_email || 'Not provided'}
-            </p>
+              {booking.customer_email && (
+                <a href={`mailto:${booking.customer_email}`} className="btn btn-ghost">
+                  Email
+                </a>
+              )}
 
-            <p className="small muted">
-              Phone: {booking.customer_phone || 'Not provided'}
-            </p>
-
-            <p
-              className="small"
-              style={{ color: statusColor(booking.status), marginTop: '0.5rem' }}
-            >
-              Status: {statusLabel(booking.status)}
-            </p>
+              {booking.customer_phone && (
+                <a href={`tel:${booking.customer_phone}`} className="btn btn-ghost">
+                  Call
+                </a>
+              )}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {booking.status === 'pending' && (
               <>
                 <button onClick={() => acceptPendingBooking(booking.id)} className="btn btn-accent" disabled={isWorking}>
@@ -402,10 +530,10 @@ export default function Bookings() {
               </>
             )}
 
-            {booking.status === 'confirmed' && mode !== 'history' && (
+            {booking.status === 'confirmed' && !isLocked && (
               <>
                 <button onClick={() => completeBooking(booking.id)} className="btn btn-accent" disabled={isWorking}>
-                  {isWorking ? 'Working...' : 'Mark appointment completed'}
+                  {isWorking ? 'Working...' : 'Mark completed'}
                 </button>
 
                 <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
@@ -413,19 +541,32 @@ export default function Bookings() {
                 </Link>
 
                 <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger" disabled={isWorking}>
-                  Cancel booking
+                  Cancel
                 </button>
               </>
             )}
 
-            {(booking.status === 'completed' || booking.status === 'cancelled' || mode === 'history') && booking.status !== 'pending' && (
-              <span className="small" style={{ color: statusColor(booking.status) }}>
-                {booking.status === 'completed'
-                  ? 'Locked: completed appointment'
-                  : booking.status === 'cancelled'
-                    ? 'Locked: cancelled booking'
-                    : 'Past confirmed appointment'}
-              </span>
+            {(booking.status === 'completed' || booking.status === 'cancelled' || isLocked) && booking.status !== 'pending' && (
+              <div
+                className="card"
+                style={{
+                  background: 'var(--surface-2)',
+                  borderColor: booking.status === 'completed' ? 'rgba(45,212,191,0.22)' : 'rgba(255,190,11,0.22)',
+                  padding: '0.85rem',
+                  maxWidth: 240
+                }}
+              >
+                <p className="small" style={{ color: statusColor(booking.status) }}>
+                  {booking.status === 'completed'
+                    ? 'Locked completed record'
+                    : booking.status === 'cancelled'
+                      ? 'Locked cancelled record'
+                      : 'Past appointment'}
+                </p>
+                <p className="small muted" style={{ marginTop: '0.3rem' }}>
+                  This booking can no longer be changed.
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -440,7 +581,7 @@ export default function Bookings() {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <p className="small muted">
-          Bookings refresh when you return to this tab. Use refresh if a new booking does not appear straight away.
+          Use the date and status filters to keep this page manageable as bookings grow.
         </p>
 
         <button onClick={loadBookings} className="btn btn-ghost" disabled={pageLoading}>
@@ -494,15 +635,11 @@ export default function Bookings() {
 
       {!pageLoading && !business && businesses.length > 1 && (
         <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ padding: '0.25rem 0 0.5rem' }}>
-            <p className="small muted" style={{ marginBottom: '0.35rem' }}>
-              Multiple businesses found
-            </p>
-            <h3 style={{ marginBottom: '0.35rem' }}>
-              Choose a business to continue
-            </h3>
-            <p className="muted">
-              Select one of the business cards below. The next page will show bookings for that specific business.
+          <div className="card">
+            <p className="small muted">Multiple businesses found</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Choose a business to continue</h3>
+            <p className="muted" style={{ marginTop: '0.35rem' }}>
+              Select one business to view its bookings.
             </p>
           </div>
 
@@ -556,43 +693,117 @@ export default function Bookings() {
               <h3>{confirmedUpcomingBookings.length}</h3>
               <p className="muted small">Confirmed future appointments</p>
             </div>
+
+            <div className="card">
+              <p className="small muted">History</p>
+              <h3>{historicalBookings.length}</h3>
+              <p className="muted small">Completed, cancelled or past appointments</p>
+            </div>
+
+            <div className="card" style={{ borderColor: filteredBookings.length > 0 ? 'rgba(45,212,191,0.22)' : 'var(--border)' }}>
+              <p className="small muted">Current view</p>
+              <h3>{filteredBookings.length}</h3>
+              <p className="muted small">Bookings matching the filters</p>
+            </div>
           </div>
 
-          {pendingBookings.length > 0 && (
-            <section style={{ display: 'grid', gap: '1rem' }}>
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
               <div>
-                <p className="small muted">Action required</p>
-                <h2 style={{ fontFamily: 'var(--font-display)' }}>Pending booking approvals</h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  These customers requested a booking while manual approval is enabled. Accepting confirms the appointment.
+                <p className="small muted">Calendar view</p>
+                <h3>{selectedRange.label}</h3>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  Start with today, then jump to another day or review upcoming/history without the page becoming one long list.
                 </p>
               </div>
 
-              {pendingBookings.map((booking) => renderBookingCard(booking, 'pending'))}
-            </section>
+              <Link href="/dashboard/analytics" className="btn btn-ghost">
+                View analytics
+              </Link>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              {[
+                { key: 'today', label: 'Today' },
+                { key: 'tomorrow', label: 'Tomorrow' },
+                { key: 'week', label: 'Next 7 days' },
+                { key: 'upcoming', label: 'All upcoming' },
+                { key: 'history', label: 'History' }
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setRangeFilter(item.key as RangeFilter)}
+                  className={rangeFilter === item.key ? 'btn btn-accent' : 'btn btn-ghost'}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+              <label className="small muted">
+                Jump to date
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value)
+                    setRangeFilter('custom')
+                  }}
+                  style={{ marginTop: '0.35rem' }}
+                />
+              </label>
+
+              <label className="small muted">
+                Status
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ marginTop: '0.35rem', width: '100%' }}>
+                  <option value="all">All statuses</option>
+                  <option value="pending">Pending approval</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </label>
+
+              <label className="small muted">
+                Search customer/service/staff
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search bookings"
+                  style={{ marginTop: '0.35rem' }}
+                />
+              </label>
+            </div>
+          </div>
+
+          {filteredBookings.length === 0 && (
+            <div className="card">
+              <h3>No bookings in this view</h3>
+              <p className="muted" style={{ marginTop: '0.5rem' }}>
+                Try another date, status or search term.
+              </p>
+            </div>
           )}
 
-          {confirmedUpcomingBookings.length > 0 && (
-            <section style={{ display: 'grid', gap: '1rem' }}>
+          {groupedFilteredBookings.map((group) => (
+            <section key={group.dateKey} style={{ display: 'grid', gap: '1rem' }}>
               <div>
-                <p className="small muted">Schedule</p>
-                <h2 style={{ fontFamily: 'var(--font-display)' }}>Upcoming confirmed appointments</h2>
+                <p className="small muted">{group.bookings.length} booking{group.bookings.length === 1 ? '' : 's'}</p>
+                <h2 style={{ fontFamily: 'var(--font-display)' }}>{group.label}</h2>
               </div>
 
-              {confirmedUpcomingBookings.map((booking) => renderBookingCard(booking, 'confirmed'))}
+              {group.bookings.map((booking) => renderBookingCard(
+                booking,
+                booking.status === 'pending'
+                  ? 'pending'
+                  : booking.status === 'confirmed' && new Date(booking.start_at) >= now
+                    ? 'confirmed'
+                    : 'history'
+              ))}
             </section>
-          )}
-
-          {historicalBookings.length > 0 && (
-            <section style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <p className="small muted">History</p>
-                <h2 style={{ fontFamily: 'var(--font-display)' }}>Completed / cancelled / past appointments</h2>
-              </div>
-
-              {historicalBookings.map((booking) => renderBookingCard(booking, 'history'))}
-            </section>
-          )}
+          ))}
         </div>
       )}
     </DashboardLayout>
