@@ -60,6 +60,14 @@ type AvailabilityRow = {
   is_closed?: boolean | null
 }
 
+type ScheduleDay = {
+  date: Date
+  dateString: string
+  label: string
+  shortLabel: string
+  bookings: Booking[]
+}
+
 export default function DashboardHome() {
   const router = useRouter()
 
@@ -72,6 +80,32 @@ export default function DashboardHome() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedScheduleDate, setSelectedScheduleDate] = useState(() => formatDateValue(new Date()))
+
+  function formatDateValue(date: Date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  function startOfDay(date: Date) {
+    const result = new Date(date)
+    result.setHours(0, 0, 0, 0)
+    return result
+  }
+
+  function endOfDay(date: Date) {
+    const result = new Date(date)
+    result.setHours(23, 59, 59, 999)
+    return result
+  }
+
+  function addDays(date: Date, days: number) {
+    const result = new Date(date)
+    result.setDate(result.getDate() + days)
+    return result
+  }
 
   async function loadDashboard() {
     setLoading(true)
@@ -360,7 +394,7 @@ export default function DashboardHome() {
     if (businesses.length === 0) {
       warnings.push({
         title: 'Create your business profile',
-        body: 'You need a business profile before customers can book anything.',
+        body: 'You need a business profile before customers can book through Mirëbook.',
         href: '/dashboard/businesses',
         cta: 'Create profile'
       })
@@ -406,6 +440,67 @@ export default function DashboardHome() {
     return warnings
   }, [businesses.length, activeServices, activeStaff, openWorkingDays, publishedCount])
 
+  const scheduleDays = useMemo<ScheduleDay[]>(() => {
+    const today = startOfDay(new Date())
+
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = addDays(today, index)
+      const dateString = formatDateValue(date)
+
+      const dayBookings = bookings
+        .filter((booking) => {
+          const bookingDate = new Date(booking.start_at)
+          return booking.status === 'confirmed' && bookingDate >= startOfDay(date) && bookingDate <= endOfDay(date)
+        })
+        .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+
+      return {
+        date,
+        dateString,
+        label: index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : date.toLocaleDateString(undefined, { weekday: 'short' }),
+        shortLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+        bookings: dayBookings
+      }
+    })
+  }, [bookings])
+
+  const selectedScheduleDay = useMemo(() => {
+    const existing = scheduleDays.find((day) => day.dateString === selectedScheduleDate)
+
+    if (existing) return existing
+
+    const selected = new Date(`${selectedScheduleDate}T12:00:00`)
+
+    const dayBookings = bookings
+      .filter((booking) => {
+        const bookingDate = new Date(booking.start_at)
+        return booking.status === 'confirmed' && bookingDate >= startOfDay(selected) && bookingDate <= endOfDay(selected)
+      })
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+
+    return {
+      date: selected,
+      dateString: selectedScheduleDate,
+      label: selected.toLocaleDateString(undefined, { weekday: 'long' }),
+      shortLabel: selected.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+      bookings: dayBookings
+    }
+  }, [scheduleDays, selectedScheduleDate, bookings])
+
+  function bookingsLinkForDate(dateString: string, businessId?: string) {
+    return `/dashboard/bookings?${new URLSearchParams({
+      ...(businessId ? { businessId } : {}),
+      date: dateString
+    }).toString()}`
+  }
+
+  function bookingTimeLabel(booking: Booking) {
+    const start = new Date(booking.start_at)
+    const end = new Date(start.getTime() + booking.duration_minutes * 60000)
+
+    return `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+  }
+
   if (loading) {
     return (
       <DashboardLayout title="Loading...">
@@ -443,7 +538,7 @@ export default function DashboardHome() {
         <div className="card" style={{ marginBottom: '1.5rem' }}>
           <h3>Create your first business</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Add a business profile, then create services, staff and working hours before publishing it to customers.
+            Add a business profile, then create services, staff and working hours before publishing it to Mirëbook customers.
           </p>
           <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
             Create business profile
@@ -552,33 +647,106 @@ export default function DashboardHome() {
       </div>
 
       <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
           <div>
-            <p className="small muted">Next appointment</p>
-            {nextBooking ? (
-              <>
-                <h3 style={{ marginTop: '0.25rem' }}>{nextBooking.customer_name}</h3>
-                <p className="small muted">
-                  {new Date(nextBooking.start_at).toLocaleString()}
-                </p>
-                <p className="small muted">
-                  {nextBooking.businesses?.name || 'Business'} · {nextBooking.services?.name || 'Service'}
-                </p>
-                <p className="small muted">
-                  Staff: {nextBooking.staff_members?.name || 'Staff not recorded'}
-                  {nextBooking.staff_members?.role_title ? ` — ${nextBooking.staff_members.role_title}` : ''}
-                </p>
-              </>
-            ) : (
-              <p className="muted" style={{ marginTop: '0.5rem' }}>
-                No upcoming confirmed appointments found.
-              </p>
-            )}
+            <p className="small muted">Schedule preview</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Upcoming calendar</h3>
+            <p className="small muted" style={{ marginTop: '0.45rem' }}>
+              Pick a day to preview confirmed appointments, then open the booking manager already filtered to that date.
+            </p>
           </div>
 
-          <Link href="/dashboard/bookings" className="btn btn-accent">
-            View bookings
-          </Link>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <input
+              type="date"
+              value={selectedScheduleDate}
+              onChange={(e) => setSelectedScheduleDate(e.target.value)}
+              style={{ minWidth: 180 }}
+            />
+
+            <Link href={bookingsLinkForDate(selectedScheduleDate)} className="btn btn-accent">
+              Open selected day
+            </Link>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+          {scheduleDays.map((day) => {
+            const isSelected = selectedScheduleDate === day.dateString
+
+            return (
+              <button
+                key={day.dateString}
+                type="button"
+                onClick={() => setSelectedScheduleDate(day.dateString)}
+                style={{
+                  textAlign: 'left',
+                  padding: '0.85rem',
+                  borderRadius: 'var(--radius)',
+                  border: isSelected ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
+                  background: isSelected ? 'var(--accent-dim)' : 'var(--surface-2)',
+                  color: 'var(--text)'
+                }}
+              >
+                <strong>{day.label}</strong>
+                <p className="small muted" style={{ marginTop: '0.2rem' }}>{day.shortLabel}</p>
+                <p className="small" style={{ color: day.bookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.45rem' }}>
+                  {day.bookings.length} booking{day.bookings.length === 1 ? '' : 's'}
+                </p>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="card" style={{ background: 'var(--surface-2)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: selectedScheduleDay.bookings.length > 0 ? '1rem' : 0 }}>
+            <div>
+              <p className="small muted">Selected day</p>
+              <h3 style={{ marginTop: '0.25rem' }}>
+                {selectedScheduleDay.date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+              </h3>
+            </div>
+
+            <Link href={bookingsLinkForDate(selectedScheduleDay.dateString, selectedScheduleDay.bookings[0]?.business_id)} className="btn btn-ghost">
+              View day in bookings
+            </Link>
+          </div>
+
+          {selectedScheduleDay.bookings.length === 0 && (
+            <p className="muted">No confirmed appointments found for this day.</p>
+          )}
+
+          {selectedScheduleDay.bookings.length > 0 && (
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {selectedScheduleDay.bookings.slice(0, 5).map((booking) => (
+                <Link
+                  key={booking.id}
+                  href={bookingsLinkForDate(selectedScheduleDay.dateString, booking.business_id)}
+                  className="card"
+                  style={{ background: 'var(--surface)', padding: '0.9rem' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div>
+                      <strong>{bookingTimeLabel(booking)} · {booking.customer_name}</strong>
+                      <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                        {booking.businesses?.name || 'Business'} · {booking.services?.name || 'Service'}
+                      </p>
+                    </div>
+
+                    <p className="small muted">
+                      {booking.staff_members?.name || 'Staff not recorded'}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+
+              {selectedScheduleDay.bookings.length > 5 && (
+                <Link href={bookingsLinkForDate(selectedScheduleDay.dateString, selectedScheduleDay.bookings[0]?.business_id)} className="btn btn-ghost">
+                  View all {selectedScheduleDay.bookings.length} bookings
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -676,24 +844,13 @@ export default function DashboardHome() {
             Analytics
           </Link>
 
-          <Link href="/dashboard/services" className="btn btn-ghost">
-            Services
-          </Link>
-
-          <Link href="/dashboard/staff" className="btn btn-ghost">
-            Staff
-          </Link>
-
-          <Link href="/dashboard/availability" className="btn btn-ghost">
-            Working hours
-          </Link>
 
           <Link href="/dashboard/notifications" className="btn btn-ghost">
             Notifications
           </Link>
 
           <Link href="/explore" className="btn btn-ghost">
-            Preview marketplace
+            Preview Mirëbook
           </Link>
         </div>
       </div>

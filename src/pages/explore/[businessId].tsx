@@ -62,6 +62,15 @@ type SlotOption = {
   time: string
   staffIds: string[]
 }
+type CalendarDay = {
+  date: Date
+  dateString: string
+  isCurrentMonth: boolean
+  isToday: boolean
+  isPast: boolean
+  label: string
+  shortLabel: string
+}
 
 export default function BusinessBookingPage() {
   const router = useRouter()
@@ -86,6 +95,11 @@ export default function BusinessBookingPage() {
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [timeSlots, setTimeSlots] = useState<SlotOption[]>([])
   const [selectedTime, setSelectedTime] = useState('')
+  
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const today = new Date()
+    return new Date(today.getFullYear(), today.getMonth(), 1)
+  })
 
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
@@ -250,27 +264,61 @@ export default function BusinessBookingPage() {
     }
   }, [businessId])
 
-  const dateOptions = useMemo(() => {
-    const dates: { value: string; label: string; subLabel: string; fullLabel: string }[] = []
+    function formatDateInputValue(date: Date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
 
-    for (let i = 0; i < 14; i++) {
-      const date = new Date()
-      date.setDate(date.getDate() + i)
+  function sameDate(a: Date, b: Date) {
+    return a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+  }
 
-      const yyyy = date.getFullYear()
-      const mm = String(date.getMonth() + 1).padStart(2, '0')
-      const dd = String(date.getDate()).padStart(2, '0')
+  function monthLabel(date: Date) {
+    return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+  }
 
-      dates.push({
-        value: `${yyyy}-${mm}-${dd}`,
-        label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : date.toLocaleDateString(undefined, { weekday: 'short' }),
-        subLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
-        fullLabel: date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
-      })
-    }
+  function moveCalendarMonth(offset: number) {
+    setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1))
+  }
 
-    return dates
-  }, [])
+  function resetCalendarToToday() {
+    const today = new Date()
+    setCalendarMonth(new Date(today.getFullYear(), today.getMonth(), 1))
+  }
+
+  const calendarDays = useMemo<CalendarDay[]>(() => {
+    const firstOfMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1)
+    const gridStart = new Date(firstOfMonth)
+    gridStart.setDate(firstOfMonth.getDate() - firstOfMonth.getDay())
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(gridStart)
+      date.setDate(gridStart.getDate() + index)
+      date.setHours(0, 0, 0, 0)
+
+      const dateString = formatDateInputValue(date)
+      const isCurrentMonth = date.getMonth() === calendarMonth.getMonth()
+      const isToday = sameDate(date, today)
+      const isPast = date < today
+
+      return {
+        date,
+        dateString,
+        isCurrentMonth,
+        isToday,
+        isPast,
+        label: date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }),
+        shortLabel: String(date.getDate())
+      }
+    })
+  }, [calendarMonth])
 
   const selectedStaff = useMemo(() => {
     return staffMembers.find((staff) => staff.id === selectedStaffId) || null
@@ -561,7 +609,9 @@ export default function BusinessBookingPage() {
     )
   }
 
-  const selectedDateLabel = dateOptions.find((date) => date.value === selectedDate)?.fullLabel
+  const selectedDateLabel = selectedDate
+    ? new Date(`${selectedDate}T12:00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+    : ''
 
   const canSubmit = Boolean(
     selectedService &&
@@ -922,39 +972,82 @@ export default function BusinessBookingPage() {
               <div>
                 <label className="small muted">Choose date</label>
 
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: '0.5rem',
-                    marginTop: '0.5rem'
-                  }}
-                >
-                  {dateOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      disabled={!selectedService}
-                      onClick={() => {
-                        setSelectedDate(option.value)
-                        setSelectedStaffId('')
-                        setSelectedTime('')
-                      }}
-                      style={{
-                        padding: '0.65rem',
-                        borderRadius: 14,
-                        border: selectedDate === option.value ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
-                        background: selectedDate === option.value ? 'var(--accent-dim)' : 'var(--surface-2)',
-                        color: 'var(--text)',
-                        textAlign: 'center',
-                        opacity: selectedService ? 1 : 0.45
-                      }}
-                    >
-                      <strong>{option.label}</strong>
-                      <p className="small muted">{option.subLabel}</p>
-                    </button>
-                  ))}
-                </div>
+                {!selectedService && (
+                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    Select a service first to choose a booking date.
+                  </p>
+                )}
+
+                {selectedService && (
+                  <div className="card" style={{ background: 'var(--surface-2)', padding: '0.9rem', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', marginBottom: '0.75rem' }}>
+                      <button type="button" onClick={() => moveCalendarMonth(-1)} className="btn btn-ghost" style={{ padding: '0.5rem 0.7rem' }}>
+                        ←
+                      </button>
+
+                      <div style={{ textAlign: 'center' }}>
+                        <strong>{monthLabel(calendarMonth)}</strong>
+                        <p className="small muted">Scroll through months and pick a day</p>
+                      </div>
+
+                      <button type="button" onClick={() => moveCalendarMonth(1)} className="btn btn-ghost" style={{ padding: '0.5rem 0.7rem' }}>
+                        →
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                      <button type="button" onClick={resetCalendarToToday} className="btn btn-ghost" style={{ padding: '0.45rem 0.75rem' }}>
+                        Back to this month
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.35rem', marginBottom: '0.35rem' }}>
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                        <p key={day} className="small muted" style={{ textAlign: 'center', fontWeight: 700 }}>
+                          {day}
+                        </p>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '0.35rem' }}>
+                      {calendarDays.map((day) => {
+                        const isSelected = selectedDate === day.dateString
+
+                        return (
+                          <button
+                            key={day.dateString}
+                            type="button"
+                            disabled={day.isPast}
+                            onClick={() => {
+                              setSelectedDate(day.dateString)
+                              setSelectedStaffId('')
+                              setSelectedTime('')
+                            }}
+                            title={day.label}
+                            style={{
+                              minHeight: 42,
+                              borderRadius: 12,
+                              border: isSelected ? '1px solid rgba(255,107,53,0.65)' : day.isToday ? '1px solid rgba(45,212,191,0.45)' : '1px solid var(--border)',
+                              background: isSelected ? 'var(--accent)' : day.isToday ? 'rgba(45,212,191,0.10)' : 'var(--surface)',
+                              color: isSelected ? 'var(--bg)' : day.isCurrentMonth ? 'var(--text)' : 'var(--text-muted)',
+                              opacity: day.isPast ? 0.32 : day.isCurrentMonth ? 1 : 0.55,
+                              cursor: day.isPast ? 'not-allowed' : 'pointer',
+                              fontWeight: isSelected || day.isToday ? 800 : 500
+                            }}
+                          >
+                            {day.shortLabel}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {selectedDateLabel && (
+                      <p className="small muted" style={{ marginTop: '0.75rem' }}>
+                        Selected: <strong style={{ color: 'var(--text)' }}>{selectedDateLabel}</strong>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>

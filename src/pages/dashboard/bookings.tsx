@@ -34,8 +34,7 @@ type Booking = {
 
 export default function Bookings() {
   const router = useRouter()
-  const { businessId } = router.query
-
+  const { businessId, date, status, view } = router.query
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [business, setBusiness] = useState<Business | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -72,6 +71,19 @@ export default function Bookings() {
     const result = new Date(date)
     result.setDate(result.getDate() + days)
     return result
+  }
+  function updateBookingView(nextFilter: RangeFilter, nextDate?: string) {
+    if (nextDate) setSelectedDate(nextDate)
+    setRangeFilter(nextFilter)
+
+    const query: Record<string, string> = {}
+
+    if (business?.id) query.businessId = business.id
+    if (nextFilter === 'custom' && nextDate) query.date = nextDate
+    if (nextFilter !== 'custom') query.view = nextFilter
+    if (statusFilter !== 'all') query.status = statusFilter
+
+    router.replace({ pathname: '/dashboard/bookings', query }, undefined, { shallow: true })
   }
 
   async function getBusinessContext(sessionUserId: string) {
@@ -191,6 +203,22 @@ export default function Bookings() {
       document.removeEventListener('visibilitychange', refreshWhenActive)
     }
   }, [router.isReady, businessId])
+  useEffect(() => {
+    if (!router.isReady) return
+
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      setSelectedDate(date)
+      setRangeFilter('custom')
+    }
+
+    if (typeof status === 'string' && ['all', 'pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
+      setStatusFilter(status)
+    }
+
+    if (typeof view === 'string' && ['today', 'tomorrow', 'week', 'upcoming', 'history', 'custom'].includes(view)) {
+      setRangeFilter(view as RangeFilter)
+    }
+  }, [router.isReady, date, status, view])
 
   async function acceptPendingBooking(id: string) {
     const confirmed = confirm('Accept this booking request and confirm the appointment?')
@@ -213,7 +241,15 @@ export default function Bookings() {
 
     await loadBookings()
     router.replace(
-      business ? `/dashboard/bookings?businessId=${business.id}&action=accepted` : '/dashboard/bookings?action=accepted',
+      {
+        pathname: '/dashboard/bookings',
+        query: {
+          ...(business?.id ? { businessId: business.id } : {}),
+          action: 'accepted',
+          ...(rangeFilter === 'custom' ? { date: selectedDate } : { view: rangeFilter }),
+          ...(statusFilter !== 'all' ? { status: statusFilter } : {})
+        }
+      },
       undefined,
       { shallow: true }
     )
@@ -240,7 +276,15 @@ export default function Bookings() {
 
     await loadBookings()
     router.replace(
-      business ? `/dashboard/bookings?businessId=${business.id}&action=declined` : '/dashboard/bookings?action=declined',
+      {
+        pathname: '/dashboard/bookings',
+        query: {
+          ...(business?.id ? { businessId: business.id } : {}),
+          action: 'declined',
+          ...(rangeFilter === 'custom' ? { date: selectedDate } : { view: rangeFilter }),
+          ...(statusFilter !== 'all' ? { status: statusFilter } : {})
+        }
+      },
       undefined,
       { shallow: true }
     )
@@ -581,8 +625,7 @@ export default function Bookings() {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <p className="small muted">
-          Use the date and status filters to keep this page manageable as bookings grow.
-        </p>
+          Use the date, status and search filters to keep this page manageable as bookings grow.        </p>
 
         <button onClick={loadBookings} className="btn btn-ghost" disabled={pageLoading}>
           {pageLoading ? 'Refreshing...' : 'Refresh bookings'}
@@ -713,8 +756,7 @@ export default function Bookings() {
                 <p className="small muted">Calendar view</p>
                 <h3>{selectedRange.label}</h3>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Start with today, then jump to another day or review upcoming/history without the page becoming one long list.
-                </p>
+                  Start with today, jump to a specific date, or open a filtered booking view from the dashboard calendar.                </p>
               </div>
 
               <Link href="/dashboard/analytics" className="btn btn-ghost">
@@ -733,7 +775,7 @@ export default function Bookings() {
                 <button
                   key={item.key}
                   type="button"
-                  onClick={() => setRangeFilter(item.key as RangeFilter)}
+                                    onClick={() => updateBookingView(item.key as RangeFilter)}
                   className={rangeFilter === item.key ? 'btn btn-accent' : 'btn btn-ghost'}
                 >
                   {item.label}
@@ -748,8 +790,7 @@ export default function Bookings() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => {
-                    setSelectedDate(e.target.value)
-                    setRangeFilter('custom')
+                                        updateBookingView('custom', e.target.value)
                   }}
                   style={{ marginTop: '0.35rem' }}
                 />
@@ -757,7 +798,22 @@ export default function Bookings() {
 
               <label className="small muted">
                 Status
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ marginTop: '0.35rem', width: '100%' }}>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    const nextStatus = e.target.value
+                    setStatusFilter(nextStatus)
+
+                    const query: Record<string, string> = {}
+                    if (business?.id) query.businessId = business.id
+                    if (rangeFilter === 'custom') query.date = selectedDate
+                    if (rangeFilter !== 'custom') query.view = rangeFilter
+                    if (nextStatus !== 'all') query.status = nextStatus
+
+                    router.replace({ pathname: '/dashboard/bookings', query }, undefined, { shallow: true })
+                  }}
+                  style={{ marginTop: '0.35rem', width: '100%' }}
+                >
                   <option value="all">All statuses</option>
                   <option value="pending">Pending approval</option>
                   <option value="confirmed">Confirmed</option>
