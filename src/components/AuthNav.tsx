@@ -5,11 +5,14 @@ import { supabase } from '@/lib/supabaseClient'
 
 type Role = 'customer' | 'business' | null
 
+type AccountMode = 'customer' | 'business'
+
 export default function AuthNav() {
   const router = useRouter()
 
   const [loading, setLoading] = useState(true)
   const [role, setRole] = useState<Role>(null)
+  const [availableModes, setAvailableModes] = useState<AccountMode[]>([])
   const [notificationCount, setNotificationCount] = useState(0)
 
   useEffect(() => {
@@ -18,6 +21,7 @@ export default function AuthNav() {
 
       if (!session) {
         setRole(null)
+        setAvailableModes([])
         setNotificationCount(0)
         setLoading(false)
         return
@@ -36,6 +40,11 @@ export default function AuthNav() {
         .limit(1)
 
       const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
+      const modes: AccountMode[] = ownsBusiness || profile?.role === 'business'
+        ? ['business', 'customer']
+        : ['customer']
+
+      setAvailableModes(modes)
 
       if (profile?.role === 'business' || ownsBusiness) {
         setRole('business')
@@ -90,8 +99,25 @@ export default function AuthNav() {
   async function logout() {
     await supabase.auth.signOut()
     setRole(null)
+    setAvailableModes([])
     setNotificationCount(0)
     router.replace('/')
+  }
+
+  function switchMode(nextMode: AccountMode) {
+    setRole(nextMode)
+
+    if (nextMode === 'business') {
+      router.push('/dashboard')
+      return
+    }
+
+    router.push('/explore')
+  }
+
+  function notificationLabel() {
+    if (notificationCount <= 0) return 'Notifications'
+    return `Needs action (${notificationCount})`
   }
 
   const logoHref =
@@ -101,24 +127,14 @@ export default function AuthNav() {
         ? '/explore'
         : '/'
 
-  function notificationLabel() {
-    if (notificationCount <= 0) return 'Notifications'
-    return `Notifications (${notificationCount})`
-  }
-
   return (
     <nav className="nav-simple">
       <div className="nav-simple-inner">
         <Link href={logoHref} className="logo">
-          Slot<span>ly</span>
+          Mirë<span>book</span>
         </Link>
 
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          alignItems: 'center',
-          flexWrap: 'wrap'
-        }}>
+        <div className="auth-nav-links">
           {loading && (
             <span className="muted small">Checking account...</span>
           )}
@@ -126,7 +142,7 @@ export default function AuthNav() {
           {!loading && !role && (
             <>
               <Link href="/explore" className="muted">
-                Explore
+                Explore Mirëbook
               </Link>
 
               <Link href="/login" className="muted">
@@ -134,7 +150,7 @@ export default function AuthNav() {
               </Link>
 
               <Link href="/register" className="btn btn-accent">
-                Join
+                Join Mirëbook
               </Link>
             </>
           )}
@@ -156,6 +172,25 @@ export default function AuthNav() {
                 {notificationLabel()}
               </Link>
 
+              {availableModes.length > 1 && (
+                <div className="auth-mode-switcher" aria-label="Account mode switcher">
+                  <button
+                    type="button"
+                    onClick={() => switchMode('customer')}
+                    className="auth-mode-active"
+                  >
+                    Customer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchMode('business')}
+                    className=""
+                  >
+                    Business
+                  </button>
+                </div>
+              )}
+
               <Link href="/account" className="muted">
                 Account
               </Link>
@@ -170,6 +205,10 @@ export default function AuthNav() {
             <>
               <Link href="/dashboard" className="muted">
                 Dashboard
+              </Link>
+
+              <Link href="/dashboard/analytics" className="muted">
+                Analytics
               </Link>
 
               <Link href="/dashboard/bookings" className="muted">
@@ -188,8 +227,27 @@ export default function AuthNav() {
               </Link>
 
               <Link href="/explore" className="muted">
-                Marketplace
+                Marketplace preview
               </Link>
+
+              {availableModes.length > 1 && (
+                <div className="auth-mode-switcher" aria-label="Account mode switcher">
+                  <button
+                    type="button"
+                    onClick={() => switchMode('customer')}
+                    className=""
+                  >
+                    Customer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchMode('business')}
+                    className="auth-mode-active"
+                  >
+                    Business
+                  </button>
+                </div>
+              )}
 
               <Link href="/account" className="muted">
                 Account
@@ -202,6 +260,49 @@ export default function AuthNav() {
           )}
         </div>
       </div>
+      <style jsx>{`
+        .auth-nav-links {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .auth-mode-switcher {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.2rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface-2);
+        }
+
+        .auth-mode-switcher button {
+          border: 0;
+          background: transparent;
+          color: var(--text-muted);
+          border-radius: 999px;
+          padding: 0.35rem 0.65rem;
+          cursor: pointer;
+          font: inherit;
+          font-size: 0.85rem;
+        }
+
+        .auth-mode-switcher button.auth-mode-active {
+          background: var(--accent-dim);
+          color: var(--accent);
+        }
+
+        @media (max-width: 760px) {
+          .auth-nav-links {
+            width: 100%;
+            justify-content: flex-start;
+            gap: 0.7rem;
+          }
+        }
+      `}</style>
     </nav>
   )
 }

@@ -22,6 +22,7 @@ type Booking = {
   end_at?: string
   duration_minutes: number
   status: string
+  created_at?: string
   services?: {
     name: string
     price: number
@@ -72,18 +73,61 @@ export default function Bookings() {
     result.setDate(result.getDate() + days)
     return result
   }
+
+  function buildBookingsQuery(next?: {
+    nextBusinessId?: string
+    nextFilter?: RangeFilter
+    nextDate?: string
+    nextStatus?: string
+    nextAction?: string | null
+  }) {
+    const query: Record<string, string> = {}
+    const effectiveBusinessId = next?.nextBusinessId || business?.id || (typeof businessId === 'string' ? businessId : '')
+    const effectiveFilter = next?.nextFilter || rangeFilter
+    const effectiveDate = next?.nextDate || selectedDate
+    const effectiveStatus = next?.nextStatus ?? statusFilter
+    const effectiveAction = next?.nextAction === null ? '' : next?.nextAction || (typeof router.query.action === 'string' ? router.query.action : '')
+
+    if (effectiveBusinessId) query.businessId = effectiveBusinessId
+
+    if (effectiveFilter === 'custom') {
+      query.date = effectiveDate
+    } else {
+      query.view = effectiveFilter
+    }
+
+    if (effectiveStatus !== 'all') query.status = effectiveStatus
+    if (effectiveAction) query.action = effectiveAction
+
+    return query
+  }
+
+  function replaceBookingsQuery(next?: {
+    nextBusinessId?: string
+    nextFilter?: RangeFilter
+    nextDate?: string
+    nextStatus?: string
+    nextAction?: string | null
+  }) {
+    router.replace(
+      {
+        pathname: '/dashboard/bookings',
+        query: buildBookingsQuery(next)
+      },
+      undefined,
+      { shallow: true }
+    )
+  }
+
   function updateBookingView(nextFilter: RangeFilter, nextDate?: string) {
-    if (nextDate) setSelectedDate(nextDate)
+    const effectiveDate = nextDate || selectedDate
+    setSelectedDate(effectiveDate)
     setRangeFilter(nextFilter)
 
-    const query: Record<string, string> = {}
-
-    if (business?.id) query.businessId = business.id
-    if (nextFilter === 'custom' && nextDate) query.date = nextDate
-    if (nextFilter !== 'custom') query.view = nextFilter
-    if (statusFilter !== 'all') query.status = statusFilter
-
-    router.replace({ pathname: '/dashboard/bookings', query }, undefined, { shallow: true })
+    replaceBookingsQuery({
+      nextFilter,
+      nextDate: effectiveDate
+    })
   }
 
   async function getBusinessContext(sessionUserId: string) {
@@ -152,7 +196,17 @@ export default function Bookings() {
       const { data, error } = await supabase
         .from('bookings')
         .select(`
-          *,
+          id,
+          business_id,
+          customer_user_id,
+          customer_name,
+          customer_email,
+          customer_phone,
+          start_at,
+          end_at,
+          duration_minutes,
+          status,
+          created_at,
           services (
             name,
             price
@@ -206,17 +260,23 @@ export default function Bookings() {
   useEffect(() => {
     if (!router.isReady) return
 
+    const validViews: RangeFilter[] = ['today', 'tomorrow', 'week', 'upcoming', 'history', 'custom']
+    const validStatuses = ['all', 'pending', 'confirmed', 'completed', 'cancelled']
+
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       setSelectedDate(date)
       setRangeFilter('custom')
+      return
     }
 
-    if (typeof status === 'string' && ['all', 'pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
-      setStatusFilter(status)
-    }
-
-    if (typeof view === 'string' && ['today', 'tomorrow', 'week', 'upcoming', 'history', 'custom'].includes(view)) {
+    if (typeof view === 'string' && validViews.includes(view as RangeFilter)) {
       setRangeFilter(view as RangeFilter)
+    }
+
+    if (typeof status === 'string' && validStatuses.includes(status)) {
+      setStatusFilter(status)
+    } else if (typeof status === 'undefined') {
+      setStatusFilter('all')
     }
   }, [router.isReady, date, status, view])
 
@@ -240,19 +300,7 @@ export default function Bookings() {
     }
 
     await loadBookings()
-    router.replace(
-      {
-        pathname: '/dashboard/bookings',
-        query: {
-          ...(business?.id ? { businessId: business.id } : {}),
-          action: 'accepted',
-          ...(rangeFilter === 'custom' ? { date: selectedDate } : { view: rangeFilter }),
-          ...(statusFilter !== 'all' ? { status: statusFilter } : {})
-        }
-      },
-      undefined,
-      { shallow: true }
-    )
+    replaceBookingsQuery({ nextAction: 'accepted' })
   }
 
   async function declinePendingBooking(id: string) {
@@ -275,19 +323,7 @@ export default function Bookings() {
     }
 
     await loadBookings()
-    router.replace(
-      {
-        pathname: '/dashboard/bookings',
-        query: {
-          ...(business?.id ? { businessId: business.id } : {}),
-          action: 'declined',
-          ...(rangeFilter === 'custom' ? { date: selectedDate } : { view: rangeFilter }),
-          ...(statusFilter !== 'all' ? { status: statusFilter } : {})
-        }
-      },
-      undefined,
-      { shallow: true }
-    )
+    replaceBookingsQuery({ nextAction: 'declined' })
   }
 
   async function cancelBooking(id: string) {
@@ -310,6 +346,7 @@ export default function Bookings() {
     }
 
     await loadBookings()
+    replaceBookingsQuery({ nextAction: 'cancelled' })
   }
 
   async function completeBooking(id: string) {
@@ -332,6 +369,7 @@ export default function Bookings() {
     }
 
     await loadBookings()
+    replaceBookingsQuery({ nextAction: 'completed' })
   }
 
   function statusLabel(status: string) {
@@ -356,6 +394,46 @@ export default function Bookings() {
     if (status === 'completed') return 'rgba(45,212,191,0.12)'
     if (status === 'cancelled') return 'rgba(255,190,11,0.12)'
     return 'var(--surface-2)'
+  }
+
+  function actionFeedbackCopy(action: string) {
+    if (action === 'accepted') {
+      return {
+        tone: 'success',
+        label: 'Booking accepted',
+        title: 'The booking request has been confirmed.',
+        body: 'The appointment now appears as a confirmed booking for the customer.'
+      }
+    }
+
+    if (action === 'declined') {
+      return {
+        tone: 'warning',
+        label: 'Booking declined',
+        title: 'The booking request has been declined.',
+        body: 'The customer will see this request as cancelled/not accepted.'
+      }
+    }
+
+    if (action === 'cancelled') {
+      return {
+        tone: 'warning',
+        label: 'Booking cancelled',
+        title: 'The booking has been cancelled.',
+        body: 'The customer will see this appointment as cancelled.'
+      }
+    }
+
+    if (action === 'completed') {
+      return {
+        tone: 'success',
+        label: 'Booking completed',
+        title: 'The appointment has been marked as completed.',
+        body: 'This record is now locked in the booking history.'
+      }
+    }
+
+    return null
   }
 
   function dateRangeForFilter(filter: RangeFilter) {
@@ -388,11 +466,21 @@ export default function Bookings() {
     return bookings.filter((booking) => booking.status === 'pending')
   }, [bookings])
 
+  const todayBookings = useMemo(() => {
+    const range = dateRangeForFilter('today')
+    if (!range.start || !range.end) return []
+
+    return bookings.filter((booking) => {
+      const bookingDate = new Date(booking.start_at)
+      return bookingDate >= range.start! && bookingDate <= range.end!
+    })
+  }, [bookings])
+
   const confirmedUpcomingBookings = useMemo(() => {
     return bookings.filter((booking) =>
       booking.status === 'confirmed' && new Date(booking.start_at) >= now
     )
-  }, [bookings])
+  }, [bookings, now])
 
   const historicalBookings = useMemo(() => {
     return bookings.filter((booking) =>
@@ -400,7 +488,7 @@ export default function Bookings() {
       booking.status === 'completed' ||
       (booking.status === 'confirmed' && new Date(booking.start_at) < now)
     )
-  }, [bookings])
+  }, [bookings, now])
 
   const filteredBookings = useMemo(() => {
     const search = searchTerm.trim().toLowerCase()
@@ -436,7 +524,7 @@ export default function Bookings() {
 
       return matchesStatus && matchesSearch && matchesRange
     })
-  }, [bookings, rangeFilter, selectedDate, statusFilter, searchTerm])
+  }, [bookings, rangeFilter, selectedDate, statusFilter, searchTerm, now])
 
   const groupedFilteredBookings = useMemo(() => {
     const groups = filteredBookings.reduce<Record<string, Booking[]>>((acc, booking) => {
@@ -459,6 +547,15 @@ export default function Bookings() {
   }, [filteredBookings, rangeFilter])
 
   const selectedRange = dateRangeForFilter(rangeFilter)
+  const activeActionFeedback = typeof router.query.action === 'string'
+    ? actionFeedbackCopy(router.query.action)
+    : null
+
+  const activeFilterSummary = [
+    selectedRange.label,
+    statusFilter === 'all' ? 'All statuses' : statusLabel(statusFilter),
+    searchTerm.trim() ? `Search: ${searchTerm.trim()}` : ''
+  ].filter(Boolean).join(' · ')
 
   function customerHistoryLink(booking: Booking) {
     if (booking.customer_user_id) {
@@ -477,7 +574,7 @@ export default function Bookings() {
     return (
       <div
         key={booking.id}
-        className="card"
+        className="card booking-manager-card"
         style={{
           opacity: isLocked ? 0.78 : 1,
           borderColor: booking.status === 'pending'
@@ -489,7 +586,7 @@ export default function Bookings() {
                 : 'var(--border)'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className="booking-manager-card-inner">
           <div style={{ flex: 1, minWidth: 280 }}>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
               <Link href={customerHistoryLink(booking)} style={{ color: 'var(--text)', fontWeight: 800 }}>
@@ -561,7 +658,7 @@ export default function Bookings() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div className="booking-manager-actions">
             {booking.status === 'pending' && (
               <>
                 <button onClick={() => acceptPendingBooking(booking.id)} className="btn btn-accent" disabled={isWorking}>
@@ -621,34 +718,42 @@ export default function Bookings() {
   return (
     <DashboardLayout
       title="Bookings"
-      subtitle={business ? `Viewing bookings for ${business.name}` : 'Choose which business bookings to view.'}
+      subtitle={business ? `Manage Mirëbook bookings for ${business.name}` : 'Choose which business bookings to view.'}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <p className="small muted">
-          Use the date, status and search filters to keep this page manageable as bookings grow.        </p>
+          Use the date, status and search filters to manage appointments, approvals and booking history as the business grows.
+        </p>
 
         <button onClick={loadBookings} className="btn btn-ghost" disabled={pageLoading}>
           {pageLoading ? 'Refreshing...' : 'Refresh bookings'}
         </button>
       </div>
 
-      {router.query.action === 'accepted' && (
-        <div className="card" style={{ borderColor: 'rgba(45,212,191,0.28)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
-          <p className="small" style={{ color: 'var(--success)' }}>Booking accepted</p>
-          <strong>The booking request has been confirmed.</strong>
-          <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            The appointment now appears as a confirmed booking for the customer.
-          </p>
-        </div>
-      )}
+      {activeActionFeedback && (
+        <div
+          className="card"
+          style={{
+            borderColor: activeActionFeedback.tone === 'success' ? 'rgba(45,212,191,0.28)' : 'rgba(255,190,11,0.28)',
+            background: activeActionFeedback.tone === 'success' ? 'rgba(45,212,191,0.06)' : 'rgba(255,190,11,0.06)',
+            marginBottom: '1rem'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div>
+              <p className="small" style={{ color: activeActionFeedback.tone === 'success' ? 'var(--success)' : 'var(--warning)' }}>
+                {activeActionFeedback.label}
+              </p>
+              <strong>{activeActionFeedback.title}</strong>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {activeActionFeedback.body}
+              </p>
+            </div>
 
-      {router.query.action === 'declined' && (
-        <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', background: 'rgba(255,190,11,0.06)', marginBottom: '1rem' }}>
-          <p className="small" style={{ color: 'var(--warning)' }}>Booking declined</p>
-          <strong>The booking request has been declined.</strong>
-          <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            The customer will see this request as cancelled/not accepted.
-          </p>
+            <button type="button" className="btn btn-ghost" onClick={() => replaceBookingsQuery({ nextAction: null })}>
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -689,7 +794,7 @@ export default function Bookings() {
           {businesses.map((b) => (
             <Link
               key={b.id}
-              href={`/dashboard/bookings?businessId=${b.id}`}
+              href={`/dashboard/bookings?businessId=${b.id}&view=today`}
               className="card"
               style={{
                 display: 'flex',
@@ -725,23 +830,37 @@ export default function Bookings() {
       {!pageLoading && business && bookings.length > 0 && (
         <div style={{ display: 'grid', gap: '1.5rem' }}>
           <div className="grid-2">
-            <div className="card" style={{ borderColor: pendingBookings.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
+            <button type="button" className="card booking-summary-button" onClick={() => {
+              setStatusFilter('pending')
+              updateBookingView('upcoming')
+              replaceBookingsQuery({ nextFilter: 'upcoming', nextStatus: 'pending' })
+            }} style={{ borderColor: pendingBookings.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
               <p className="small muted">Needs approval</p>
               <h3>{pendingBookings.length}</h3>
               <p className="muted small">Pending booking requests</p>
-            </div>
+            </button>
 
-            <div className="card">
+            <button type="button" className="card booking-summary-button" onClick={() => updateBookingView('today')}>
+              <p className="small muted">Today</p>
+              <h3>{todayBookings.length}</h3>
+              <p className="muted small">Appointments and requests today</p>
+            </button>
+
+            <button type="button" className="card booking-summary-button" onClick={() => {
+              setStatusFilter('confirmed')
+              updateBookingView('upcoming')
+              replaceBookingsQuery({ nextFilter: 'upcoming', nextStatus: 'confirmed' })
+            }}>
               <p className="small muted">Upcoming confirmed</p>
               <h3>{confirmedUpcomingBookings.length}</h3>
               <p className="muted small">Confirmed future appointments</p>
-            </div>
+            </button>
 
-            <div className="card">
+            <button type="button" className="card booking-summary-button" onClick={() => updateBookingView('history')}>
               <p className="small muted">History</p>
               <h3>{historicalBookings.length}</h3>
               <p className="muted small">Completed, cancelled or past appointments</p>
-            </div>
+            </button>
 
             <div className="card" style={{ borderColor: filteredBookings.length > 0 ? 'rgba(45,212,191,0.22)' : 'var(--border)' }}>
               <p className="small muted">Current view</p>
@@ -756,7 +875,8 @@ export default function Bookings() {
                 <p className="small muted">Calendar view</p>
                 <h3>{selectedRange.label}</h3>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Start with today, jump to a specific date, or open a filtered booking view from the dashboard calendar.                </p>
+                  Start with today, jump to a specific date, or open a filtered Mirëbook view from the dashboard calendar.
+                </p>
               </div>
 
               <Link href="/dashboard/analytics" className="btn btn-ghost">
@@ -775,7 +895,7 @@ export default function Bookings() {
                 <button
                   key={item.key}
                   type="button"
-                                    onClick={() => updateBookingView(item.key as RangeFilter)}
+                  onClick={() => updateBookingView(item.key as RangeFilter)}
                   className={rangeFilter === item.key ? 'btn btn-accent' : 'btn btn-ghost'}
                 >
                   {item.label}
@@ -790,7 +910,7 @@ export default function Bookings() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => {
-                                        updateBookingView('custom', e.target.value)
+                    updateBookingView('custom', e.target.value)
                   }}
                   style={{ marginTop: '0.35rem' }}
                 />
@@ -803,14 +923,7 @@ export default function Bookings() {
                   onChange={(e) => {
                     const nextStatus = e.target.value
                     setStatusFilter(nextStatus)
-
-                    const query: Record<string, string> = {}
-                    if (business?.id) query.businessId = business.id
-                    if (rangeFilter === 'custom') query.date = selectedDate
-                    if (rangeFilter !== 'custom') query.view = rangeFilter
-                    if (nextStatus !== 'all') query.status = nextStatus
-
-                    router.replace({ pathname: '/dashboard/bookings', query }, undefined, { shallow: true })
+                    replaceBookingsQuery({ nextStatus })
                   }}
                   style={{ marginTop: '0.35rem', width: '100%' }}
                 >
@@ -832,13 +945,32 @@ export default function Bookings() {
                 />
               </label>
             </div>
+
+            <div className="booking-active-filter-bar">
+              <p className="small muted">Active view</p>
+              <strong>{activeFilterSummary}</strong>
+              {(statusFilter !== 'all' || searchTerm.trim() || rangeFilter !== 'today') && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setSearchTerm('')
+                    setStatusFilter('all')
+                    updateBookingView('today')
+                    replaceBookingsQuery({ nextFilter: 'today', nextStatus: 'all', nextAction: null })
+                  }}
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
           </div>
 
           {filteredBookings.length === 0 && (
             <div className="card">
               <h3>No bookings in this view</h3>
               <p className="muted" style={{ marginTop: '0.5rem' }}>
-                Try another date, status or search term.
+                Try another date, status or search term. If this came from the dashboard schedule preview, the selected date is already applied through the URL.
               </p>
             </div>
           )}
@@ -862,6 +994,64 @@ export default function Bookings() {
           ))}
         </div>
       )}
+      <style jsx>{`
+        .booking-summary-button {
+          width: 100%;
+          text-align: left;
+          color: var(--text);
+          cursor: pointer;
+        }
+
+        .booking-summary-button:hover {
+          border-color: rgba(255,107,53,0.35);
+          transform: translateY(-1px);
+        }
+
+        .booking-active-filter-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
+          padding: 0.9rem;
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+        }
+
+        .booking-manager-card-inner {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .booking-manager-actions {
+          display: flex;
+          gap: 0.75rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 700px) {
+          .booking-manager-card-inner {
+            display: grid;
+          }
+
+          .booking-manager-actions {
+            justify-content: stretch;
+          }
+
+          .booking-manager-actions :global(.btn),
+          .booking-manager-actions button,
+          .booking-manager-actions a {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }

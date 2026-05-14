@@ -9,6 +9,7 @@ const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 type Business = {
   id: string
   name: string
+  published?: boolean | null
 }
 
 type AvailabilityRow = {
@@ -46,7 +47,7 @@ export default function Availability() {
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
       .from('businesses')
-      .select('id, name')
+      .select('id, name, published')
       .eq('user_id', sessionUserId)
       .order('created_at', { ascending: false })
 
@@ -85,18 +86,7 @@ export default function Availability() {
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single()
-
-      if (!profile || profile.role !== 'business') {
-        router.replace('/explore')
-        return
-      }
-
-      const selectedBusiness = await getBusinessContext(session.user.id)
+     const selectedBusiness = await getBusinessContext(session.user.id)
 
       if (!selectedBusiness) {
         setBusiness(null)
@@ -150,12 +140,21 @@ export default function Availability() {
     const openRows = rows.filter((row) => !row.is_closed)
     const closedRows = rows.filter((row) => row.is_closed)
     const invalidRows = openRows.filter((row) => row.start_time >= row.end_time)
+const totalHours = openRows.reduce((total, row) => {
+  if (row.start_time >= row.end_time) return total
+
+  const start = new Date(`2026-01-01T${row.start_time}`)
+  const end = new Date(`2026-01-01T${row.end_time}`)
+
+  return total + ((end.getTime() - start.getTime()) / 3600000)
+}, 0)
 
     return {
       openDays: openRows.length,
       closedDays: closedRows.length,
       invalidDays: invalidRows.length,
-      ready: openRows.length > 0 && invalidRows.length === 0
+totalHours,
+ready: openRows.length > 0 && invalidRows.length === 0
     }
   }, [rows])
 
@@ -174,17 +173,16 @@ export default function Availability() {
     )
   }
 
-  function applyEverydayPreset() {
-    setRows((prev) =>
-      prev.map((row) => ({
-        ...row,
-        start_time: '09:00',
-        end_time: '17:00',
-        is_closed: false
-      }))
-    )
-  }
-
+function applyExtendedPreset() {
+  setRows((prev) =>
+    prev.map((row) => ({
+      ...row,
+      start_time: row.day_of_week === 0 ? row.start_time : '09:00',
+      end_time: row.day_of_week === 0 ? row.end_time : '19:00',
+      is_closed: row.day_of_week === 0
+    }))
+  )
+}
   function closeAllDays() {
     const confirmed = confirm('Close every day for this business? Customers may not see any available booking days unless staff-specific hours still allow bookings.')
     if (!confirmed) return
@@ -239,18 +237,18 @@ export default function Availability() {
       return
     }
 
-    setSuccess('Business working hours saved. Your setup checklist will update after refresh.')
+    setSuccess('Business-wide working hours saved. Mirëbook will use these as a fallback when staff-specific hours are not set.')
     await init()
   }
 
   return (
     <DashboardLayout
       title="Business working hours"
-      subtitle={business ? `Editing business-wide hours for ${business.name}` : 'Choose which business working hours to manage.'}
+subtitle={business ? `Set Mirëbook business-wide fallback hours for ${business.name}` : 'Choose which business working hours to manage.'}
     >
       {pageLoading && (
         <div className="card">
-          <p className="muted">Loading working hours...</p>
+          <p className="muted">Loading Mirëbook working hours...</p>
         </div>
       )}
 
@@ -270,7 +268,7 @@ export default function Availability() {
         <div className="card">
           <h3>No business found</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Create a business profile first, then set working hours.
+            Create a business profile first, then set Mirëbook working hours.
           </p>
           <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
             Create business
@@ -288,7 +286,7 @@ export default function Availability() {
               Choose a business to continue
             </h3>
             <p className="muted">
-              Select one of the business cards below. The next page will show working hours for that specific business.
+              Select one of the business cards below. Mirëbook will show working hours for that specific business.
             </p>
           </div>
 
@@ -301,6 +299,9 @@ export default function Availability() {
             >
               <div>
                 <strong>{b.name}</strong>
+                <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                  {b.published ? 'Published' : 'Hidden / draft'}
+                </p>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
                   Manage working hours for this business.
                 </p>
@@ -319,16 +320,16 @@ export default function Availability() {
           <div className="card" style={{ marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <div>
-                <p className="small muted">Business-wide availability</p>
+                <p className="small muted">Mirëbook business-wide availability</p>
                 <h3>{business.name}</h3>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  These are your general business opening hours. Staff-specific hours still control exactly which staff members and time slots customers can book.
+                  These are your general business opening hours. Staff-specific hours override these where set, and Mirëbook uses both to decide which dates and times customers can actually book.
                 </p>
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <Link href={`/dashboard/businesses`} className="btn btn-ghost">
-                  Business profile
+                  Setup hub
                 </Link>
 
                 <Link href={`/dashboard/staff?businessId=${business.id}`} className="btn btn-ghost">
@@ -338,7 +339,7 @@ export default function Availability() {
             </div>
           </div>
 
-          <div className="grid-2" style={{ marginBottom: '1.25rem' }}>
+          <div className="grid-3" style={{ marginBottom: '1.25rem' }}>
             <div className="card">
               <p className="small muted">Open days</p>
               <h3>{availabilityStats.openDays}</h3>
@@ -350,7 +351,11 @@ export default function Availability() {
               <h3>{availabilityStats.closedDays}</h3>
               <p className="muted small">Business days marked as closed</p>
             </div>
-
+<div className="card">
+  <p className="small muted">Weekly hours</p>
+  <h3>{availabilityStats.totalHours.toFixed(1)}</h3>
+  <p className="muted small">Estimated business-wide open hours</p>
+</div>
             <div className="card" style={{ borderColor: availabilityStats.invalidDays > 0 ? 'rgba(255,77,109,0.35)' : 'var(--border)' }}>
               <p className="small muted">Invalid days</p>
               <h3>{availabilityStats.invalidDays}</h3>
@@ -360,7 +365,7 @@ export default function Availability() {
             <div className="card" style={{ borderColor: availabilityStats.ready ? 'rgba(45,212,191,0.25)' : 'rgba(255,190,11,0.35)' }}>
               <p className="small muted">Status</p>
               <h3>{availabilityStats.ready ? 'Ready' : 'Needs work'}</h3>
-              <p className="muted small">At least one valid open day is recommended before publishing</p>
+              <p className="muted small">At least one valid open day helps Mirëbook generate customer booking dates</p>
             </div>
           </div>
 
@@ -370,7 +375,7 @@ export default function Availability() {
                 <p className="small muted">Quick presets</p>
                 <h3>Set common business hours</h3>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Presets update the table below. You still need to click Save working hours.
+                  Presets update the table below. You still need to click Save working hours before customers see the change.
                 </p>
               </div>
 
@@ -379,10 +384,12 @@ export default function Availability() {
                   Mon-Fri 9-5
                 </button>
 
-                <button type="button" onClick={applyEverydayPreset} className="btn btn-ghost">
-                  Every day 9-5
+                <button type="button" onClick={applyWeekdayPreset} className="btn btn-ghost">
+                  Mon-Fri 9-5
                 </button>
-
+<button type="button" onClick={applyExtendedPreset} className="btn btn-ghost">
+  Mon-Sat 9-7
+</button>
                 <button type="button" onClick={closeAllDays} className="btn btn-danger">
                   Close all days
                 </button>
@@ -390,22 +397,18 @@ export default function Availability() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gap: '0.75rem' }}>
+          <div className="availability-day-list">
             {rows.map((row, index) => {
               const invalid = !row.is_closed && row.start_time >= row.end_time
 
               return (
                 <div
                   key={row.day_of_week}
-                  className="card"
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1.2fr 1fr 1fr 1fr',
-                    gap: '0.75rem',
-                    alignItems: 'center',
-                    borderColor: invalid ? 'rgba(255,77,109,0.35)' : row.is_closed ? 'rgba(255,190,11,0.20)' : 'var(--border)',
-                    opacity: row.is_closed ? 0.76 : 1
-                  }}
+                  className="card availability-day-row"
+style={{
+  borderColor: invalid ? 'rgba(255,77,109,0.35)' : row.is_closed ? 'rgba(255,190,11,0.20)' : 'var(--border)',
+  opacity: row.is_closed ? 0.76 : 1
+}}
                 >
                   <div>
                     <strong>{days[row.day_of_week]}</strong>
@@ -449,7 +452,7 @@ export default function Availability() {
             })}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+          <div className="availability-save-actions">
             <button
               onClick={saveAvailability}
               disabled={loading}
@@ -459,11 +462,46 @@ export default function Availability() {
             </button>
 
             <Link href={`/dashboard/businesses`} className="btn btn-ghost">
-              Back to business profile
+              Back to setup hub
             </Link>
           </div>
         </>
       )}
+<style jsx>{`
+  .availability-day-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .availability-day-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .availability-save-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+  }
+
+  @media (max-width: 760px) {
+    .availability-day-row {
+      grid-template-columns: 1fr;
+    }
+
+    .availability-save-actions,
+    .availability-save-actions :global(.btn),
+    .availability-save-actions button,
+    .availability-save-actions a {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+`}</style>
     </DashboardLayout>
   )
 }

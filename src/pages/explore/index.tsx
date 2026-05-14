@@ -34,6 +34,7 @@ export default function Explore() {
   const [search, setSearch] = useState('')
   const [city, setCity] = useState('')
   const [category, setCategory] = useState('')
+  const [sortBy, setSortBy] = useState<'newest' | 'name' | 'city' | 'services'>('newest')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,11 +44,13 @@ export default function Explore() {
     const queryParam = typeof router.query.query === 'string' ? router.query.query : ''
     const cityParam = typeof router.query.city === 'string' ? router.query.city : ''
     const categoryParam = typeof router.query.category === 'string' ? router.query.category : ''
+    const sortParam = typeof router.query.sort === 'string' ? router.query.sort : 'newest'
 
     setSearch(queryParam)
     setCity(cityParam)
     setCategory(categoryParam)
-  }, [router.isReady, router.query.query, router.query.city, router.query.category])
+    setSortBy(['newest', 'name', 'city', 'services'].includes(sortParam) ? sortParam as 'newest' | 'name' | 'city' | 'services' : 'newest')
+  }, [router.isReady, router.query.query, router.query.city, router.query.category, router.query.sort])
 
   async function loadBusinesses() {
     setLoading(true)
@@ -145,7 +148,15 @@ export default function Explore() {
     if (categoryText.includes('restaurant')) return '🍽️'
     if (categoryText.includes('clinic')) return '🏥'
     if (categoryText.includes('spa')) return '🧖'
+    if (categoryText.includes('nail')) return '💅'
+    if (categoryText.includes('tattoo')) return '🖊️'
+    if (categoryText.includes('pet')) return '🐾'
+    if (categoryText.includes('beauty')) return '✨'
     return '✨'
+  }
+
+  function bookingModeLabel(business: Business) {
+    return business.auto_accept_bookings === false ? 'Approval required' : 'Instant confirmation'
   }
 
   const cities = useMemo(() => {
@@ -169,7 +180,7 @@ export default function Explore() {
   }, [businesses])
 
   const filteredBusinesses = useMemo(() => {
-    return businesses.filter((business) => {
+    const filtered = businesses.filter((business) => {
       const searchText = `${business.name || ''} ${business.description || ''} ${business.category || ''} ${business.city || ''} ${business.country || ''} ${business.address || ''}`.toLowerCase()
 
       const matchesSearch = search.trim()
@@ -186,7 +197,14 @@ export default function Explore() {
 
       return matchesSearch && matchesCity && matchesCategory
     })
-  }, [businesses, search, city, category])
+
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'name') return a.name.localeCompare(b.name)
+      if (sortBy === 'city') return (a.city || '').localeCompare(b.city || '') || a.name.localeCompare(b.name)
+      if (sortBy === 'services') return getBusinessStats(b).activeServices - getBusinessStats(a).activeServices
+      return 0
+    })
+  }, [businesses, search, city, category, sortBy])
 
   const marketplaceStats = useMemo(() => {
     return {
@@ -203,7 +221,8 @@ export default function Explore() {
       query: {
         ...(search.trim() ? { query: search.trim() } : {}),
         ...(city.trim() ? { city: city.trim() } : {}),
-        ...(category.trim() ? { category: category.trim() } : {})
+        ...(category.trim() ? { category: category.trim() } : {}),
+        ...(sortBy !== 'newest' ? { sort: sortBy } : {})
       }
     })
   }
@@ -212,6 +231,7 @@ export default function Explore() {
     setSearch('')
     setCity('')
     setCategory('')
+    setSortBy('newest')
     router.push('/explore')
   }
 
@@ -235,15 +255,15 @@ export default function Explore() {
             }}
           >
             <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
-              Slotly marketplace
+              Mirëbook marketplace
             </p>
 
             <h1 className="page-title">
-              Find your next appointment.
+              Find real appointments near you.
             </h1>
 
             <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 760 }}>
-              Browse real bookable businesses, compare local services and choose an available time with the staff member you want.
+              Browse published Mirëbook businesses, compare local services and choose a real available time with Any available staff or a specific staff member.
             </p>
 
             <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
@@ -282,7 +302,7 @@ export default function Explore() {
                   border: '1px solid var(--border)'
                 }}
               >
-                Real-time availability
+                Smart calendar availability
               </span>
             </div>
           </div>
@@ -304,18 +324,13 @@ export default function Explore() {
           </div>
         )}
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '280px 1fr',
-          gap: 28,
-          alignItems: 'start'
-        }}>
-          <aside className="card" style={{ position: 'sticky', top: 96 }}>
+        <div className="explore-layout-grid">
+          <aside className="card explore-filter-panel">
             <h3 style={{ marginBottom: '0.35rem' }}>
               Find a service
             </h3>
             <p className="small muted" style={{ marginBottom: '1rem' }}>
-              Filter by service type, business name or location.
+              Filter by service type, business name or location. Mirëbook only shows businesses with active services, staff and working hours.
             </p>
 
             <div style={{ display: 'grid', gap: '1rem' }}>
@@ -324,7 +339,7 @@ export default function Explore() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Barber, dentist, salon..."
+                  placeholder="Barber, nails, dentist, salon..."
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
               </div>
@@ -334,7 +349,7 @@ export default function Explore() {
                 <input
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Barber, Dentist..."
+                  placeholder="Barber, Nails, Dentist..."
                   list="category-options"
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
@@ -351,7 +366,7 @@ export default function Explore() {
                 <input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="Coventry, Tirana..."
+                  placeholder="Tirana, Coventry, London..."
                   list="city-options"
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
@@ -363,8 +378,22 @@ export default function Explore() {
                 </datalist>
               </div>
 
+              <div>
+                <label className="small muted">Sort</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'newest' | 'name' | 'city' | 'services')}
+                  style={{ width: '100%', marginTop: '0.4rem' }}
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="name">Business name</option>
+                  <option value="city">City</option>
+                  <option value="services">Most services</option>
+                </select>
+              </div>
+
               <button className="btn btn-accent" onClick={applyFiltersToUrl}>
-                Search marketplace
+                Search Mirëbook
               </button>
 
               <button className="btn btn-ghost" onClick={clearFilters}>
@@ -387,7 +416,7 @@ export default function Explore() {
               flexWrap: 'wrap'
             }}>
               <div>
-                <p className="small muted">Marketplace</p>
+                <p className="small muted">Mirëbook marketplace</p>
                 <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
                   {loading
                     ? 'Loading businesses...'
@@ -400,11 +429,14 @@ export default function Explore() {
                   Clear current filters
                 </button>
               )}
+              <Link href="/register" className="btn btn-ghost">
+                List your business
+              </Link>
             </div>
 
             {loading && (
               <div className="card">
-                <p className="muted">Loading businesses from Supabase...</p>
+                <p className="muted">Loading bookable Mirëbook businesses...</p>
               </div>
             )}
 
@@ -414,6 +446,9 @@ export default function Explore() {
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
                   Businesses appear here when they are published and have active services, active staff and working hours configured.
                 </p>
+                <Link href="/register" className="btn btn-accent" style={{ marginTop: '1rem' }}>
+                  Add the first business
+                </Link>
               </div>
             )}
 
@@ -423,10 +458,13 @@ export default function Explore() {
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
                   Try changing your search, category or city filter, or clear filters to view all bookable businesses.
                 </p>
+                <Link href="/register" className="btn btn-accent" style={{ marginTop: '1rem' }}>
+                  Add the first business
+                </Link>
               </div>
             )}
 
-            <div style={{ display: 'grid', gap: '1rem' }}>
+            <div className="explore-results-grid">
               {!loading && !error && filteredBusinesses.map((business) => {
                 const stats = getBusinessStats(business)
                 const serviceText = `${stats.activeServices} service${stats.activeServices === 1 ? '' : 's'}`
@@ -435,17 +473,10 @@ export default function Explore() {
                 return (
                   <div
                     key={business.id}
-                    className="card"
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '160px 1fr auto',
-                      gap: '1rem',
-                      alignItems: 'stretch',
-                      overflow: 'hidden',
-                      padding: 0
-                    }}
+                    className="card explore-business-card"
                   >
                     <div
+                      className="explore-business-image"
                       style={{
                         minHeight: 150,
                         background: business.image_url
@@ -463,7 +494,7 @@ export default function Explore() {
                       {!business.image_url && businessIcon(business)}
                     </div>
 
-                    <div style={{ padding: '1rem 0' }}>
+                    <div className="explore-business-content">
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <h3 style={{ marginBottom: '0.25rem' }}>
                           {business.name}
@@ -497,7 +528,7 @@ export default function Explore() {
                       </div>
 
                       <p className="muted small" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
-                        {business.description || 'Book available services with this business.'}
+                        {business.description || 'Book available services through Mirëbook.'}
                       </p>
 
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
@@ -510,7 +541,7 @@ export default function Explore() {
                             borderRadius: 999
                           }}
                         >
-                          Accepting bookings
+                          Bookable on Mirëbook
                         </span>
 
                         <span
@@ -538,6 +569,19 @@ export default function Explore() {
                         >
                           {staffText}
                         </span>
+
+                        <span
+                          className="small"
+                          style={{
+                            background: 'var(--surface-2)',
+                            color: 'var(--text-muted)',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: 999,
+                            border: '1px solid var(--border)'
+                          }}
+                        >
+                          {stats.openDays} open day{stats.openDays === 1 ? '' : 's'}
+                        </span>
                       </div>
 
                       <p className="small muted">
@@ -547,16 +591,9 @@ export default function Explore() {
                       </p>
                     </div>
 
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.5rem',
-                      alignItems: 'flex-end',
-                      justifyContent: 'center',
-                      padding: '1rem'
-                    }}>
+                    <div className="explore-business-actions">
                       <Link href={`/explore/${business.id}`} className="btn btn-accent">
-                        View & book
+                        View times
                       </Link>
 
                       {business.phone && (
@@ -566,7 +603,7 @@ export default function Explore() {
                       )}
 
                       <span className="small muted">
-                        Real-time slots
+                        {bookingModeLabel(business)}
                       </span>
                     </div>
                   </div>
@@ -576,6 +613,90 @@ export default function Explore() {
           </section>
         </div>
       </section>
+      <style jsx>{`
+        .explore-layout-grid {
+          display: grid;
+          grid-template-columns: 280px 1fr;
+          gap: 28px;
+          align-items: start;
+        }
+
+        .explore-filter-panel {
+          position: sticky;
+          top: 96px;
+        }
+
+        .explore-results-grid {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .explore-business-card {
+          display: grid;
+          grid-template-columns: 160px 1fr auto;
+          gap: 1rem;
+          align-items: stretch;
+          overflow: hidden;
+          padding: 0;
+        }
+
+        .explore-business-image {
+          border-right: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+        }
+
+        .explore-business-content {
+          padding: 1rem 0;
+        }
+
+        .explore-business-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          align-items: flex-end;
+          justify-content: center;
+          padding: 1rem;
+        }
+
+        @media (max-width: 980px) {
+          .explore-layout-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .explore-filter-panel {
+            position: static;
+          }
+        }
+
+        @media (max-width: 760px) {
+          .explore-business-card {
+            grid-template-columns: 1fr;
+          }
+
+          .explore-business-image {
+            min-height: 180px !important;
+            border-right: 0;
+            border-bottom: 1px solid var(--border);
+          }
+
+          .explore-business-content {
+            padding: 1rem;
+          }
+
+          .explore-business-actions {
+            align-items: stretch;
+            padding: 0 1rem 1rem;
+          }
+
+          .explore-business-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </main>
   )
 }

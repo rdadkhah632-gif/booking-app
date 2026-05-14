@@ -14,6 +14,21 @@ type Profile = {
   phone?: string | null
 }
 
+type StaffProfile = {
+  id: string
+  business_id: string
+  name: string
+  email?: string | null
+  role_title?: string | null
+  permission_role?: string | null
+  invite_status?: string | null
+  businesses?: {
+    name: string
+  } | {
+    name: string
+  }[] | null
+}
+
 export default function AccountPage() {
   const router = useRouter()
 
@@ -22,6 +37,9 @@ export default function AccountPage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [businessCount, setBusinessCount] = useState(0)
+  const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null)
+  const [bookingCount, setBookingCount] = useState(0)
+  const [notificationCount, setNotificationCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [fixingRole, setFixingRole] = useState(false)
@@ -59,6 +77,43 @@ export default function AccountPage() {
 
     const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
     setBusinessCount(ownedBusinesses?.length || 0)
+
+    const { data: staffData } = await supabase
+      .from('staff_members')
+      .select(`
+        id,
+        business_id,
+        name,
+        email,
+        role_title,
+        permission_role,
+        invite_status,
+        businesses (
+          name
+        )
+      `)
+      .eq('user_id', session.user.id)
+      .limit(1)
+      .maybeSingle()
+
+    setStaffProfile(staffData as unknown as StaffProfile | null)
+
+    const { data: customerBookings } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('customer_user_id', session.user.id)
+      .limit(100)
+
+    setBookingCount(customerBookings?.length || 0)
+
+    const { data: customerNotifications } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('read', false)
+      .limit(100)
+
+    setNotificationCount(customerNotifications?.length || 0)
 
     const resolvedRole: Role =
       profileData.role === 'business' || ownsBusiness
@@ -104,7 +159,7 @@ export default function AccountPage() {
       return
     }
 
-    setMessage('Account updated.')
+    setMessage('Mirëbook account updated.')
     await loadProfile()
   }
 
@@ -131,6 +186,13 @@ export default function AccountPage() {
     await loadProfile()
   }
 
+  function staffBusinessName() {
+    if (!staffProfile?.businesses) return 'Linked business'
+    return Array.isArray(staffProfile.businesses)
+      ? staffProfile.businesses[0]?.name || 'Linked business'
+      : staffProfile.businesses.name || 'Linked business'
+  }
+
   async function logout() {
     await supabase.auth.signOut()
     router.replace('/')
@@ -143,7 +205,7 @@ export default function AccountPage() {
       <section className="container" style={{ padding: '42px 24px 80px' }}>
         {loading && (
           <div className="card">
-            <p className="muted">Loading account...</p>
+            <p className="muted">Loading your Mirëbook account...</p>
           </div>
         )}
 
@@ -154,12 +216,7 @@ export default function AccountPage() {
         )}
 
         {!loading && profile && (
-          <div style={{
-            maxWidth: 900,
-            margin: '0 auto',
-            display: 'grid',
-            gap: '1rem'
-          }}>
+          <div className="account-page-shell">
             <div>
               <p className="small muted">Account settings</p>
 
@@ -168,28 +225,28 @@ export default function AccountPage() {
               </h1>
 
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Manage your account details, role and shortcuts for your {actualRole === 'business' ? 'business workspace' : 'customer bookings'}.
+                Manage your Mirëbook profile, contact details and shortcuts across customer, business and staff workspaces.
               </p>
             </div>
 
-            <div className="grid-2">
+            <div className="grid-2 account-summary-grid">
               <div className="card">
                 <p className="small muted">Email</p>
                 <strong>{profile.email}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  This is the email used for login and future booking notifications.
+                  This email is used for login, customer bookings, staff linking and future Mirëbook notifications.
                 </p>
               </div>
 
               <div className="card" style={{ borderColor: actualRole === 'business' ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
-                <p className="small muted">Account type</p>
+                <p className="small muted">Primary account type</p>
                 <strong style={{ textTransform: 'capitalize' }}>
                   {actualRole}
                 </strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
                   {actualRole === 'business'
                     ? `${businessCount} business profile${businessCount === 1 ? '' : 's'} connected to this account.`
-                    : 'Customer accounts can book, reschedule and track appointments.'}
+                    : 'Customer mode lets you book, reschedule and track appointments.'}
                 </p>
 
                 {actualRole === 'business' && profile.role !== 'business' && (
@@ -209,6 +266,33 @@ export default function AccountPage() {
                   </>
                 )}
               </div>
+
+              <div className="card" style={{ borderColor: staffProfile ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
+                <p className="small muted">Staff access</p>
+                <strong>{staffProfile ? 'Linked' : 'Not linked'}</strong>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  {staffProfile
+                    ? `${staffProfile.name} · ${staffProfile.role_title || staffProfile.permission_role || 'Staff member'} at ${staffBusinessName()}`
+                    : 'Staff access appears here when a business links your email to a staff profile.'}
+                </p>
+
+                {staffProfile && (
+                  <Link href="/staff" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                    Open staff workspace
+                  </Link>
+                )}
+              </div>
+
+              <div className="card">
+                <p className="small muted">Customer activity</p>
+                <strong>{bookingCount} booking{bookingCount === 1 ? '' : 's'}</strong>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  {notificationCount} unread notification{notificationCount === 1 ? '' : 's'} on this account.
+                </p>
+                <Link href="/my-bookings" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                  View my bookings
+                </Link>
+              </div>
             </div>
 
             <form onSubmit={saveProfile} className="card" style={{ display: 'grid', gap: '1rem' }}>
@@ -216,7 +300,7 @@ export default function AccountPage() {
                 Contact details
               </h2>
               <p className="small muted">
-                These details help pre-fill booking forms and will later support customer/business notification emails.
+                These details help pre-fill booking forms and support future customer, business and staff notification emails.
               </p>
 
               <div>
@@ -250,14 +334,12 @@ export default function AccountPage() {
 
             <div className="card">
               <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>
-                {actualRole === 'business' ? 'Business shortcuts' : 'Customer shortcuts'}
+                Workspace shortcuts
               </h2>
               <p className="small muted" style={{ marginBottom: '1rem' }}>
-                {actualRole === 'business'
-                  ? 'Jump into the operational areas of your business workspace.'
-                  : 'Jump back into browsing, bookings and customer notifications.'}
+                Jump into the Mirëbook areas connected to this account. You can use customer mode even if you also own a business or work as staff.
               </p>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div className="account-shortcut-actions">
                 {actualRole === 'business' ? (
                   <>
                     <Link href="/dashboard" className="btn btn-accent">
@@ -268,28 +350,20 @@ export default function AccountPage() {
                       Manage businesses
                     </Link>
 
-                    <Link href="/dashboard/services" className="btn btn-ghost">
-                      Services
-                    </Link>
-
-                    <Link href="/dashboard/availability" className="btn btn-ghost">
-                      Working hours
-                    </Link>
-
                     <Link href="/dashboard/bookings" className="btn btn-ghost">
                       Bookings
+                    </Link>
+
+                    <Link href="/dashboard/analytics" className="btn btn-ghost">
+                      Analytics
                     </Link>
 
                     <Link href="/dashboard/notifications" className="btn btn-ghost">
                       Notifications
                     </Link>
 
-                    <Link href="/dashboard/staff" className="btn btn-ghost">
-                      Staff
-                    </Link>
-
                     <Link href="/explore" className="btn btn-ghost">
-                      View marketplace
+                      Preview Mirëbook
                     </Link>
                   </>
                 ) : (
@@ -307,7 +381,19 @@ export default function AccountPage() {
                     </Link>
 
                     <Link href="/register" className="btn btn-ghost">
-                      Create another account
+                      Add business or staff access
+                    </Link>
+                  </>
+                )}
+
+                {staffProfile && (
+                  <>
+                    <Link href="/staff" className="btn btn-accent">
+                      Staff workspace
+                    </Link>
+
+                    <Link href="/staff/availability" className="btn btn-ghost">
+                      Staff availability
                     </Link>
                   </>
                 )}
@@ -321,15 +407,42 @@ export default function AccountPage() {
             <div className="card" style={{ borderColor: 'rgba(255,190,11,0.22)' }}>
               <p className="small muted">Role note</p>
               <h3 style={{ marginTop: '0.25rem' }}>
-                Need to change account type?
+                How roles work in Mirëbook
               </h3>
               <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                For now, roles are controlled by registration and business ownership. If a business account shows as customer, use the fix role button above. Later this can become an admin-controlled support flow.
+                Your main profile role is still simple, but Mirëbook now also checks business ownership and linked staff profiles. That means one login can book as a customer, manage a business, or open a staff schedule when linked.
               </p>
             </div>
           </div>
         )}
       </section>
+      <style jsx>{`
+        .account-page-shell {
+          max-width: 960px;
+          margin: 0 auto;
+          display: grid;
+          gap: 1rem;
+        }
+
+        .account-summary-grid {
+          align-items: stretch;
+        }
+
+        .account-shortcut-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 620px) {
+          .account-shortcut-actions :global(.btn),
+          .account-shortcut-actions button,
+          .account-shortcut-actions a {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </main>
   )
 }

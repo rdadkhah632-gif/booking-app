@@ -4,6 +4,30 @@ import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
 
+type RelatedBusiness = {
+  name: string
+}
+
+type RelatedService = {
+  name: string
+  price?: number | null
+}
+
+type RelatedStaff = {
+  name: string
+  role_title?: string | null
+}
+
+type RequestBooking = {
+  customer_name?: string | null
+  start_at?: string | null
+  duration_minutes?: number | null
+  status?: string | null
+  businesses?: RelatedBusiness | RelatedBusiness[] | null
+  services?: RelatedService | RelatedService[] | null
+  staff_members?: RelatedStaff | RelatedStaff[] | null
+}
+
 type BookingRequest = {
   id: string
   booking_id: string
@@ -13,27 +37,8 @@ type BookingRequest = {
   response_message?: string | null
   created_at: string
   updated_at?: string | null
-  bookings?: {
-    customer_name?: string | null
-    start_at?: string | null
-    duration_minutes?: number | null
-    status?: string | null
-    businesses?: {
-      name: string
-    } | null
-    services?: {
-      name: string
-      price?: number | null
-    } | null
-    staff_members?: {
-      name: string
-      role_title?: string | null
-    } | null
-  } | null
-  requested_staff?: {
-    name: string
-    role_title?: string | null
-  } | null
+  bookings?: RequestBooking | RequestBooking[] | null
+  requested_staff?: RelatedStaff | RelatedStaff[] | null
 }
 
 type Booking = {
@@ -41,17 +46,49 @@ type Booking = {
   start_at: string
   duration_minutes: number
   status: string
-  businesses?: {
-    name: string
-  } | null
-  services?: {
-    name: string
-    price?: number | null
-  } | null
-  staff_members?: {
-    name: string
-    role_title?: string | null
-  } | null
+  businesses?: RelatedBusiness | RelatedBusiness[] | null
+  services?: RelatedService | RelatedService[] | null
+  staff_members?: RelatedStaff | RelatedStaff[] | null
+}
+
+type NotificationRow = {
+  id: string
+  read: boolean
+  created_at?: string | null
+}
+
+function firstRelation<T>(value: T | T[] | null | undefined) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+function requestBooking(request: BookingRequest) {
+  return firstRelation(request.bookings)
+}
+
+function bookingBusinessName(booking?: Booking | RequestBooking | null) {
+  if (!booking) return 'Business'
+  return firstRelation(booking.businesses)?.name || 'Business'
+}
+
+function bookingServiceName(booking?: Booking | RequestBooking | null) {
+  if (!booking) return 'Service'
+  return firstRelation(booking.services)?.name || 'Service'
+}
+
+function bookingStaffName(booking?: Booking | RequestBooking | null) {
+  if (!booking) return 'Staff not recorded'
+
+  const staff = firstRelation(booking.staff_members)
+  if (!staff) return 'Staff not recorded'
+
+  return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
+}
+
+function requestedStaffName(request: BookingRequest) {
+  const staff = firstRelation(request.requested_staff)
+  if (!staff) return 'Staff not recorded'
+
+  return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
 }
 
 export default function CustomerNotifications() {
@@ -59,7 +96,9 @@ export default function CustomerNotifications() {
 
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [unreadNotifications, setUnreadNotifications] = useState<NotificationRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [markingRead, setMarkingRead] = useState(false)
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -87,6 +126,15 @@ export default function CustomerNotifications() {
         router.replace('/dashboard/notifications')
         return
       }
+
+      const { data: notificationData } = await supabase
+        .from('notifications')
+        .select('id, read, created_at')
+        .eq('user_id', session.user.id)
+        .eq('read', false)
+        .order('created_at', { ascending: false })
+
+      setUnreadNotifications((notificationData || []) as NotificationRow[])
 
       const { data: requestData, error: requestError } = await supabase
         .from('booking_requests')
@@ -136,7 +184,7 @@ export default function CustomerNotifications() {
           : request.bookings
       }))
 
-      setRequests(normalisedRequests)
+      setRequests(normalisedRequests as BookingRequest[])
 
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
@@ -175,7 +223,7 @@ export default function CustomerNotifications() {
           : booking.staff_members
       }))
 
-      setBookings(normalisedBookings)
+      setBookings(normalisedBookings as Booking[])
       setLoading(false)
     } catch (err: any) {
       setError(err.message || 'Could not load notifications.')
@@ -233,6 +281,27 @@ export default function CustomerNotifications() {
     return 'var(--surface-2)'
   }
 
+  async function markAllNotificationsRead() {
+    if (unreadNotifications.length === 0) return
+
+    setMarkingRead(true)
+    setError(null)
+
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .in('id', unreadNotifications.map((notification) => notification.id))
+
+    setMarkingRead(false)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    setUnreadNotifications([])
+  }
+
   const latestRequestsByBooking = useMemo(() => {
     const map: Record<string, BookingRequest> = {}
 
@@ -263,6 +332,7 @@ export default function CustomerNotifications() {
 
   const actionCount = pendingBookingRequests.length + pendingRescheduleRequests.length
   const historyCount = resolvedBookingUpdates.length + resolvedRescheduleRequests.length
+  const unreadCount = unreadNotifications.length
 
   return (
     <main>
@@ -270,19 +340,19 @@ export default function CustomerNotifications() {
 
       <section className="container" style={{ padding: '36px 24px 70px' }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <p className="small muted">Customer notifications</p>
+          <p className="small muted">Mirëbook customer notifications</p>
 
           <h1 className="page-title">
-            Notifications
+            Customer notifications
           </h1>
 
           <p className="page-sub" style={{ marginTop: '0.5rem' }}>
             {email
               ? `Signed in as ${email}`
-              : 'Track booking requests, reschedule decisions and appointment updates.'}
+              : 'Track booking approvals, reschedule decisions and appointment updates.'}
           </p>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <div className="customer-notification-actions">
             <Link href="/my-bookings" className="btn btn-accent">
               My bookings
             </Link>
@@ -292,16 +362,20 @@ export default function CustomerNotifications() {
             </button>
 
             <Link href="/explore" className="btn btn-ghost">
-              Browse businesses
+              Explore Mirëbook
             </Link>
+
+            <button onClick={markAllNotificationsRead} className="btn btn-ghost" disabled={markingRead || unreadCount === 0}>
+              {markingRead ? 'Marking read...' : unreadCount > 0 ? `Mark ${unreadCount} read` : 'All read'}
+            </button>
           </div>
 
           <p className="small muted" style={{ marginTop: '0.75rem' }}>
-            Notifications refresh when you return to this tab. Use refresh if a recent update does not appear straight away.
+            Mirëbook refreshes this page when you return to the tab. Use refresh if a recent booking update does not appear straight away.
           </p>
         </div>
 
-        <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+        <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
           <div className="card" style={{ borderColor: actionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
             <p className="small muted">Waiting approval</p>
             <h3>{actionCount}</h3>
@@ -313,6 +387,12 @@ export default function CustomerNotifications() {
             <h3>{historyCount}</h3>
             <p className="muted small">Resolved requests and booking updates</p>
           </div>
+
+          <div className="card" style={{ borderColor: unreadCount > 0 ? 'rgba(45,212,191,0.28)' : 'var(--border)' }}>
+            <p className="small muted">Unread</p>
+            <h3>{unreadCount}</h3>
+            <p className="muted small">Unread notification rows linked to this account</p>
+          </div>
         </div>
 
         {error && (
@@ -323,7 +403,7 @@ export default function CustomerNotifications() {
 
         {loading && (
           <div className="card">
-            <p className="muted">Loading notifications...</p>
+            <p className="muted">Loading Mirëbook notifications...</p>
           </div>
         )}
 
@@ -331,17 +411,17 @@ export default function CustomerNotifications() {
           <div className="card">
             <h3>No notifications yet</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Booking approvals, reschedule decisions and completed appointments will appear here.
+              Booking approvals, reschedule decisions and completed appointments will appear here when businesses update your appointments.
             </p>
 
             <Link href="/explore" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-              Browse businesses
+              Explore Mirëbook
             </Link>
           </div>
         )}
 
         {!loading && pendingBookingRequests.length > 0 && (
-          <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="customer-notification-section">
             <div>
               <p className="small muted">Action status</p>
               <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -361,10 +441,10 @@ export default function CustomerNotifications() {
                   background: 'var(--accent-dim)'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div className="customer-notification-card-row">
                   <div style={{ flex: 1, minWidth: 260 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                      <strong>{booking.businesses?.name || 'Business'}</strong>
+                      <strong>{bookingBusinessName(booking)}</strong>
 
                       <span
                         className="small"
@@ -380,12 +460,11 @@ export default function CustomerNotifications() {
                     </div>
 
                     <p className="small muted">
-                      Service: {booking.services?.name || 'Service'}
+                      Service: {bookingServiceName(booking)}
                     </p>
 
                     <p className="small muted">
-                      Staff: {booking.staff_members?.name || 'Staff not recorded'}
-                      {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+                      Staff: {bookingStaffName(booking)}
                     </p>
 
                     <div
@@ -405,7 +484,7 @@ export default function CustomerNotifications() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                  <div className="customer-notification-card-actions">
                     <Link href="/my-bookings" className="btn btn-accent">
                       View booking
                     </Link>
@@ -417,7 +496,7 @@ export default function CustomerNotifications() {
         )}
 
         {!loading && pendingRescheduleRequests.length > 0 && (
-          <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="customer-notification-section">
             <div>
               <p className="small muted">Action status</p>
               <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -425,101 +504,104 @@ export default function CustomerNotifications() {
               </h2>
             </div>
 
-            {pendingRescheduleRequests.map((request) => (
-              <div
-                key={request.id}
-                className="card"
-                style={{
-                  borderColor: 'rgba(255,107,53,0.35)',
-                  background: 'var(--accent-dim)'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: 260 }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                      <strong>{request.bookings?.businesses?.name || 'Business'}</strong>
+            {pendingRescheduleRequests.map((request) => {
+              const linkedBooking = requestBooking(request)
 
-                      <span
-                        className="small"
-                        style={{
-                          background: statusBackground(request.status),
-                          color: statusColor(request.status),
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: 999
-                        }}
-                      >
-                        {statusLabel(request.status, 'reschedule')}
-                      </span>
-                    </div>
+              return (
+                <div
+                  key={request.id}
+                  className="card"
+                  style={{
+                    borderColor: 'rgba(255,107,53,0.35)',
+                    background: 'var(--accent-dim)'
+                  }}
+                >
+                  <div className="customer-notification-card-row">
+                    <div style={{ flex: 1, minWidth: 260 }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                        <strong>{bookingBusinessName(linkedBooking)}</strong>
 
-                    <p className="small muted">
-                      Service: {request.bookings?.services?.name || 'Service'}
-                    </p>
-
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                        gap: '0.75rem',
-                        marginTop: '1rem'
-                      }}
-                    >
-                      <div
-                        style={{
-                          padding: '0.8rem',
-                          borderRadius: 'var(--radius)',
-                          background: 'var(--surface-2)',
-                          border: '1px solid var(--border)'
-                        }}
-                      >
-                        <p className="small muted">Current confirmed appointment</p>
-                        <strong>
-                          {request.bookings?.start_at
-                            ? new Date(request.bookings.start_at).toLocaleString()
-                            : 'Not recorded'}
-                        </strong>
+                        <span
+                          className="small"
+                          style={{
+                            background: statusBackground(request.status),
+                            color: statusColor(request.status),
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: 999
+                          }}
+                        >
+                          {statusLabel(request.status, 'reschedule')}
+                        </span>
                       </div>
+
+                      <p className="small muted">
+                        Service: {bookingServiceName(linkedBooking)}
+                      </p>
 
                       <div
                         style={{
-                          padding: '0.8rem',
-                          borderRadius: 'var(--radius)',
-                          background: 'rgba(255,107,53,0.10)',
-                          border: '1px solid rgba(255,107,53,0.35)'
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                          gap: '0.75rem',
+                          marginTop: '1rem'
                         }}
                       >
-                        <p className="small muted">Requested new appointment</p>
-                        <strong>{new Date(request.requested_start_at).toLocaleString()}</strong>
+                        <div
+                          style={{
+                            padding: '0.8rem',
+                            borderRadius: 'var(--radius)',
+                            background: 'var(--surface-2)',
+                            border: '1px solid var(--border)'
+                          }}
+                        >
+                          <p className="small muted">Current confirmed appointment</p>
+                          <strong>
+                            {linkedBooking?.start_at
+                              ? new Date(linkedBooking.start_at).toLocaleString()
+                              : 'Not recorded'}
+                          </strong>
+                        </div>
+
+                        <div
+                          style={{
+                            padding: '0.8rem',
+                            borderRadius: 'var(--radius)',
+                            background: 'rgba(255,107,53,0.10)',
+                            border: '1px solid rgba(255,107,53,0.35)'
+                          }}
+                        >
+                          <p className="small muted">Requested new appointment</p>
+                          <strong>{new Date(request.requested_start_at).toLocaleString()}</strong>
+                        </div>
                       </div>
+
+                      <p className="small muted" style={{ marginTop: '0.75rem' }}>
+                        Requested staff: {requestedStaffName(request)}
+                      </p>
+
+                      <p className="small muted">
+                        Requested duration: {request.requested_duration_minutes} minutes
+                      </p>
+
+                      <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                        Your original booking remains confirmed until the business accepts this request.
+                      </p>
                     </div>
 
-                    <p className="small muted" style={{ marginTop: '0.75rem' }}>
-                      Requested staff: {request.requested_staff?.name || 'Staff not recorded'}
-                      {request.requested_staff?.role_title ? ` — ${request.requested_staff.role_title}` : ''}
-                    </p>
-
-                    <p className="small muted">
-                      Requested duration: {request.requested_duration_minutes} minutes
-                    </p>
-
-                    <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                      Your original booking remains confirmed until the business accepts this request.
-                    </p>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                    <Link href="/my-bookings" className="btn btn-accent">
-                      View booking
-                    </Link>
+                    <div className="customer-notification-card-actions">
+                      <Link href="/my-bookings" className="btn btn-accent">
+                        View booking
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
         {!loading && resolvedRescheduleRequests.length > 0 && (
-          <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="customer-notification-section">
             <div>
               <p className="small muted">Request history</p>
               <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -527,74 +609,77 @@ export default function CustomerNotifications() {
               </h2>
             </div>
 
-            {resolvedRescheduleRequests.map((request) => (
-              <div
-                key={request.id}
-                className="card"
-                style={{
-                  opacity: request.status === 'cancelled' ? 0.65 : 1,
-                  borderColor: request.status === 'accepted'
-                    ? 'rgba(45,212,191,0.28)'
-                    : request.status === 'declined'
-                      ? 'rgba(255,190,11,0.28)'
-                      : 'var(--border)'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: 260 }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                      <strong>{request.bookings?.businesses?.name || 'Business'}</strong>
+            {resolvedRescheduleRequests.map((request) => {
+              const linkedBooking = requestBooking(request)
 
-                      <span
-                        className="small"
-                        style={{
-                          background: statusBackground(request.status),
-                          color: statusColor(request.status),
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: 999
-                        }}
-                      >
-                        {statusLabel(request.status, 'reschedule')}
-                      </span>
+              return (
+                <div
+                  key={request.id}
+                  className="card"
+                  style={{
+                    opacity: request.status === 'cancelled' ? 0.65 : 1,
+                    borderColor: request.status === 'accepted'
+                      ? 'rgba(45,212,191,0.28)'
+                      : request.status === 'declined'
+                        ? 'rgba(255,190,11,0.28)'
+                        : 'var(--border)'
+                  }}
+                >
+                  <div className="customer-notification-card-row">
+                    <div style={{ flex: 1, minWidth: 260 }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                        <strong>{bookingBusinessName(linkedBooking)}</strong>
+
+                        <span
+                          className="small"
+                          style={{
+                            background: statusBackground(request.status),
+                            color: statusColor(request.status),
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: 999
+                          }}
+                        >
+                          {statusLabel(request.status, 'reschedule')}
+                        </span>
+                      </div>
+
+                      <p className="small muted">
+                        Service: {bookingServiceName(linkedBooking)}
+                      </p>
+
+                      <p className="small muted">
+                        Requested time: {new Date(request.requested_start_at).toLocaleString()}
+                      </p>
+
+                      <p className="small muted">
+                        Requested staff: {requestedStaffName(request)}
+                      </p>
+
+                      {request.response_message && (
+                        <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                          Business response: {request.response_message}
+                        </p>
+                      )}
+
+                      <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                        Updated: {request.updated_at
+                          ? new Date(request.updated_at).toLocaleString()
+                          : new Date(request.created_at).toLocaleString()}
+                      </p>
                     </div>
 
-                    <p className="small muted">
-                      Service: {request.bookings?.services?.name || 'Service'}
-                    </p>
-
-                    <p className="small muted">
-                      Requested time: {new Date(request.requested_start_at).toLocaleString()}
-                    </p>
-
-                    <p className="small muted">
-                      Requested staff: {request.requested_staff?.name || 'Staff not recorded'}
-                      {request.requested_staff?.role_title ? ` — ${request.requested_staff.role_title}` : ''}
-                    </p>
-
-                    {request.response_message && (
-                      <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                        Business response: {request.response_message}
-                      </p>
-                    )}
-
-                    <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                      Updated: {request.updated_at
-                        ? new Date(request.updated_at).toLocaleString()
-                        : new Date(request.created_at).toLocaleString()}
-                    </p>
+                    <Link href="/my-bookings" className="btn btn-ghost">
+                      My bookings
+                    </Link>
                   </div>
-
-                  <Link href="/my-bookings" className="btn btn-ghost">
-                    My bookings
-                  </Link>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
         {!loading && resolvedBookingUpdates.length > 0 && (
-          <div style={{ display: 'grid', gap: '1rem' }}>
+          <div className="customer-notification-section">
             <div>
               <p className="small muted">Booking history</p>
               <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -617,10 +702,10 @@ export default function CustomerNotifications() {
                         : 'var(--border)'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div className="customer-notification-card-row">
                   <div style={{ flex: 1, minWidth: 260 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                      <strong>{booking.businesses?.name || 'Business'}</strong>
+                      <strong>{bookingBusinessName(booking)}</strong>
 
                       <span
                         className="small"
@@ -636,12 +721,11 @@ export default function CustomerNotifications() {
                     </div>
 
                     <p className="small muted">
-                      Service: {booking.services?.name || 'Service'}
+                      Service: {bookingServiceName(booking)}
                     </p>
 
                     <p className="small muted">
-                      Staff: {booking.staff_members?.name || 'Staff not recorded'}
-                      {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+                      Staff: {bookingStaffName(booking)}
                     </p>
 
                     <p className="small muted">
@@ -658,6 +742,47 @@ export default function CustomerNotifications() {
           </div>
         )}
       </section>
+
+      <style jsx>{`
+        .customer-notification-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
+        }
+
+        .customer-notification-section {
+          display: grid;
+          gap: 1rem;
+          margin-bottom: 2rem;
+        }
+
+        .customer-notification-card-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .customer-notification-card-actions {
+          display: flex;
+          gap: 0.75rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+          .customer-notification-actions :global(.btn),
+          .customer-notification-actions button,
+          .customer-notification-actions a,
+          .customer-notification-card-actions :global(.btn),
+          .customer-notification-card-actions button,
+          .customer-notification-card-actions a {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </main>
   )
 }

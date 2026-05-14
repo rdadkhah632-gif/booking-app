@@ -62,7 +62,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     { href: '/dashboard', label: 'Overview' },
     { href: '/dashboard/analytics', label: 'Analytics' },
     { href: '/dashboard/bookings', label: 'Bookings' },
-    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Notifications (${pendingCount})` : 'Notifications', highlight: pendingCount > 0 },
+    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Needs action (${pendingCount})` : 'Notifications', highlight: pendingCount > 0 },
     { href: '/dashboard/businesses', label: 'Business profile' },
     { href: '/account', label: 'Account settings' }
   ]
@@ -72,7 +72,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
       <aside className="sidebar">
         <div className="sidebar-logo">
           <Link href="/dashboard" className="logo">
-            Slot<span>ly</span>
+            Mirë<span>book</span>
           </Link>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
             Business workspace
@@ -98,15 +98,15 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
         <div style={{ marginTop: 'auto', padding: '1rem 0.5rem' }}>
           <p className="small muted" style={{ marginBottom: '0.5rem', paddingLeft: '0.5rem' }}>
-            Customer side
+            Public side
           </p>
 
           <Link href="/explore" className="sidebar-link">
-            Preview marketplace
+            Preview Mirëbook
           </Link>
 
           <Link href="/dashboard/businesses" className="sidebar-link" style={{ marginTop: '0.5rem' }}>
-            Setup hub
+            Business setup hub
           </Link>
 
           <button
@@ -127,16 +127,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
       </aside>
 
       <section className="dashboard-main">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            alignItems: 'flex-start',
-            marginBottom: '1.5rem',
-            flexWrap: 'wrap'
-          }}
-        >
+        <div className="dashboard-page-header">
           <div>
             {title && (
               <h1
@@ -153,12 +144,12 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             {subtitle && <p className="muted">{subtitle}</p>}
             <p className="small muted" style={{ marginTop: '0.45rem' }}>
               {pendingCount > 0
-                ? `${pendingCount} item${pendingCount === 1 ? '' : 's'} need your attention.`
+                ? `${pendingCount} Mirëbook item${pendingCount === 1 ? '' : 's'} need your attention.`
                 : 'No pending customer actions right now.'}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="dashboard-header-actions">
             <Link href="/dashboard/businesses" className="btn btn-ghost">
               Setup hub
             </Link>
@@ -178,7 +169,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               }}
             >
               <span aria-hidden="true">🔔</span>
-              <span>{pendingCount > 0 ? 'Action required' : 'Notifications'}</span>
+              <span>{pendingCount > 0 ? 'Needs action' : 'Notifications'}</span>
 
               {pendingCount > 0 && (
                 <span
@@ -205,6 +196,40 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
         {children}
       </section>
+      <style jsx>{`
+        .dashboard-page-header {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+        }
+
+        .dashboard-header-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 720px) {
+          .dashboard-page-header {
+            display: grid;
+          }
+
+          .dashboard-header-actions {
+            width: 100%;
+            justify-content: stretch;
+          }
+
+          .dashboard-header-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </main>
   )
 }

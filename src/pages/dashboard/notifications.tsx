@@ -4,6 +4,31 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 
+type RelatedBusiness = {
+  name: string
+}
+
+type RelatedService = {
+  name: string
+  price?: number | null
+}
+
+type RelatedStaff = {
+  name: string
+  role_title?: string | null
+}
+
+type RequestBooking = {
+  customer_name?: string | null
+  customer_email?: string | null
+  customer_phone?: string | null
+  start_at?: string | null
+  duration_minutes?: number | null
+  status?: string | null
+  services?: RelatedService | RelatedService[] | null
+  staff_members?: RelatedStaff | RelatedStaff[] | null
+}
+
 type BookingRequest = {
   id: string
   booking_id: string
@@ -21,29 +46,9 @@ type BookingRequest = {
   response_message?: string | null
   created_at: string
   updated_at?: string | null
-  bookings?: {
-    customer_name: string
-    customer_email?: string | null
-    customer_phone?: string | null
-    start_at?: string | null
-    duration_minutes?: number | null
-    status?: string | null
-    services?: {
-      name: string
-      price: number
-    } | null
-    staff_members?: {
-      name: string
-      role_title?: string | null
-    } | null
-  } | null
-  businesses?: {
-    name: string
-  } | null
-  requested_staff?: {
-    name: string
-    role_title?: string | null
-  } | null
+  bookings?: RequestBooking | RequestBooking[] | null
+  businesses?: RelatedBusiness | RelatedBusiness[] | null
+  requested_staff?: RelatedStaff | RelatedStaff[] | null
 }
 
 type Booking = {
@@ -55,17 +60,48 @@ type Booking = {
   start_at: string
   duration_minutes: number
   status: string
-  businesses?: {
-    name: string
-  } | null
-  services?: {
-    name: string
-    price: number
-  } | null
-  staff_members?: {
-    name: string
-    role_title?: string | null
-  } | null
+  businesses?: RelatedBusiness | RelatedBusiness[] | null
+  services?: RelatedService | RelatedService[] | null
+  staff_members?: RelatedStaff | RelatedStaff[] | null
+}
+
+function firstRelation<T>(value: T | T[] | null | undefined) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+function requestBooking(request: BookingRequest) {
+  return firstRelation(request.bookings)
+}
+
+function businessName(value?: Booking | BookingRequest | RequestBooking | null) {
+  if (!value) return 'Business'
+
+  if ('businesses' in value) {
+    return firstRelation(value.businesses)?.name || 'Business'
+  }
+
+  return 'Business'
+}
+
+function serviceName(value?: Booking | RequestBooking | null) {
+  if (!value) return 'Service'
+  return firstRelation(value.services)?.name || 'Service'
+}
+
+function staffName(value?: Booking | RequestBooking | null) {
+  if (!value) return 'Staff not recorded'
+
+  const staff = firstRelation(value.staff_members)
+  if (!staff) return 'Staff not recorded'
+
+  return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
+}
+
+function requestedStaffName(request: BookingRequest) {
+  const staff = firstRelation(request.requested_staff)
+  if (!staff) return 'Staff not recorded'
+
+  return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
 }
 
 export default function BusinessNotifications() {
@@ -86,18 +122,7 @@ export default function BusinessNotifications() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        router.replace('/login')
-        return
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single()
-
-      if (!profile || profile.role !== 'business') {
-        router.replace('/explore')
+        router.replace('/login?redirectTo=/dashboard/notifications')
         return
       }
 
@@ -153,12 +178,27 @@ export default function BusinessNotifications() {
         staff_members: Array.isArray(booking.staff_members) ? booking.staff_members[0] || null : booking.staff_members
       }))
 
-      setBookings(normalisedBookings)
+      setBookings(normalisedBookings as Booking[])
 
       const { data: requestData, error: requestError } = await supabase
         .from('booking_requests')
         .select(`
-          *,
+          id,
+          booking_id,
+          business_id,
+          customer_user_id,
+          requested_by,
+          request_type,
+          status,
+          current_start_at,
+          requested_start_at,
+          current_staff_member_id,
+          requested_staff_member_id,
+          requested_duration_minutes,
+          message,
+          response_message,
+          created_at,
+          updated_at,
           bookings (
             customer_name,
             customer_email,
@@ -195,7 +235,7 @@ export default function BusinessNotifications() {
         requested_staff: Array.isArray(request.requested_staff) ? request.requested_staff[0] || null : request.requested_staff
       }))
 
-      setRequests(normalisedRequests)
+      setRequests(normalisedRequests as BookingRequest[])
       setLoading(false)
     } catch (err: any) {
       setError(err.message || 'Could not load notifications.')
@@ -234,6 +274,7 @@ export default function BusinessNotifications() {
       .from('bookings')
       .update({ status: 'confirmed' })
       .eq('id', booking.id)
+      .in('business_id', businessIds)
 
     setActionLoadingId(null)
 
@@ -257,6 +298,7 @@ export default function BusinessNotifications() {
       .from('bookings')
       .update({ status: 'cancelled' })
       .eq('id', booking.id)
+      .in('business_id', businessIds)
 
     setActionLoadingId(null)
 
@@ -285,6 +327,7 @@ export default function BusinessNotifications() {
         status: 'confirmed'
       })
       .eq('id', request.booking_id)
+      .in('business_id', businessIds)
 
     if (bookingError) {
       setError(bookingError.message)
@@ -300,6 +343,7 @@ export default function BusinessNotifications() {
         updated_at: new Date().toISOString()
       })
       .eq('id', request.id)
+      .in('business_id', businessIds)
 
     if (requestError) {
       setError(requestError.message)
@@ -319,6 +363,7 @@ export default function BusinessNotifications() {
       .eq('request_type', 'reschedule')
       .eq('status', 'pending')
       .neq('id', request.id)
+      .in('business_id', businessIds)
 
     setActionLoadingId(null)
 
@@ -346,6 +391,7 @@ export default function BusinessNotifications() {
         updated_at: new Date().toISOString()
       })
       .eq('id', request.id)
+      .in('business_id', businessIds)
 
     setActionLoadingId(null)
 
@@ -456,8 +502,8 @@ export default function BusinessNotifications() {
 
   return (
     <DashboardLayout
-      title="Notifications"
-      subtitle="Review booking approvals, customer reschedule requests and actions that need your attention."
+      title="Needs action"
+      subtitle="Review Mirëbook booking approvals, customer reschedule requests and actions that need your attention."
     >
       {banner && (
         <div
@@ -468,24 +514,42 @@ export default function BusinessNotifications() {
             marginBottom: '1rem'
           }}
         >
-          <p className="small" style={{ color: banner.tone === 'success' ? 'var(--success)' : 'var(--warning)' }}>
-            {banner.title}
-          </p>
-          <strong>{banner.body}</strong>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div>
+              <p className="small" style={{ color: banner.tone === 'success' ? 'var(--success)' : 'var(--warning)' }}>
+                {banner.title}
+              </p>
+              <strong>{banner.body}</strong>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => router.replace('/dashboard/notifications', undefined, { shallow: true })}
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+      <div className="business-notification-toolbar">
         <p className="small muted">
-          Notifications refresh when you return to this tab. Use refresh if a new request does not appear straight away.
+          Mirëbook refreshes this page when you return to the tab. Use refresh if a new request does not appear straight away.
         </p>
 
-        <button onClick={loadNotifications} className="btn btn-ghost" disabled={loading}>
-          {loading ? 'Refreshing...' : 'Refresh notifications'}
-        </button>
+        <div className="business-notification-toolbar-actions">
+          <button onClick={loadNotifications} className="btn btn-ghost" disabled={loading}>
+            {loading ? 'Refreshing...' : 'Refresh notifications'}
+          </button>
+
+          <Link href="/dashboard/bookings?view=upcoming&status=pending" className="btn btn-accent">
+            Pending bookings
+          </Link>
+        </div>
       </div>
 
-      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+      <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
         <div className="card" style={{ borderColor: pendingBookings.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
           <p className="small muted">Booking approvals</p>
           <h3>{pendingBookings.length}</h3>
@@ -497,11 +561,17 @@ export default function BusinessNotifications() {
           <h3>{pendingRequests.length}</h3>
           <p className="muted small">Customer changes waiting for approval</p>
         </div>
+
+        <div className="card" style={{ borderColor: actionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
+          <p className="small muted">Total action required</p>
+          <h3>{actionCount}</h3>
+          <p className="muted small">Items needing business review</p>
+        </div>
       </div>
 
       {loading && (
         <div className="card">
-          <p className="muted">Loading notifications...</p>
+          <p className="muted">Loading Mirëbook notifications...</p>
         </div>
       )}
 
@@ -517,11 +587,15 @@ export default function BusinessNotifications() {
           <p className="muted" style={{ marginTop: '0.5rem' }}>
             Booking approvals and customer reschedule requests will appear here when they need your attention.
           </p>
+
+          <Link href="/dashboard/bookings?view=today" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
+            Open today’s bookings
+          </Link>
         </div>
       )}
 
       {!loading && pendingBookings.length > 0 && (
-        <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="business-notification-section">
           <div>
             <p className="small muted">Action required</p>
             <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -537,7 +611,7 @@ export default function BusinessNotifications() {
 
             return (
               <div key={booking.id} className="card" style={{ borderColor: 'rgba(255,107,53,0.35)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div className="business-notification-card-row">
                   <div style={{ flex: 1, minWidth: 280 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                       <p className="small" style={{ color: 'var(--accent)' }}>
@@ -562,16 +636,15 @@ export default function BusinessNotifications() {
                     </h3>
 
                     <p className="small muted">
-                      Business: {booking.businesses?.name || 'Business'}
+                      Business: {businessName(booking)}
                     </p>
 
                     <p className="small muted">
-                      Service: {booking.services?.name || 'Service'}
+                      Service: {serviceName(booking)}
                     </p>
 
                     <p className="small muted">
-                      Staff: {booking.staff_members?.name || 'Staff not recorded'}
-                      {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+                      Staff: {staffName(booking)}
                     </p>
 
                     <div
@@ -603,7 +676,7 @@ export default function BusinessNotifications() {
                     </p>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                  <div className="business-notification-card-actions">
                     <button
                       onClick={() => acceptBooking(booking)}
                       disabled={isWorking}
@@ -621,7 +694,7 @@ export default function BusinessNotifications() {
                     </button>
 
                     <Link
-                      href={`/dashboard/bookings?businessId=${booking.business_id}`}
+                      href={`/dashboard/bookings?businessId=${booking.business_id}&view=upcoming&status=pending`}
                       className="btn btn-ghost"
                     >
                       View bookings
@@ -635,7 +708,7 @@ export default function BusinessNotifications() {
       )}
 
       {!loading && pendingRequests.length > 0 && (
-        <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="business-notification-section">
           <div>
             <p className="small muted">Action required</p>
             <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -645,10 +718,11 @@ export default function BusinessNotifications() {
 
           {pendingRequests.map((request) => {
             const isWorking = actionLoadingId === `request-${request.id}`
+            const linkedBooking = requestBooking(request)
 
             return (
               <div key={request.id} className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div className="business-notification-card-row">
                   <div style={{ flex: 1, minWidth: 280 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                       <p className="small" style={{ color: 'var(--accent)' }}>
@@ -669,25 +743,18 @@ export default function BusinessNotifications() {
                     </div>
 
                     <h3 style={{ marginTop: '0.25rem' }}>
-                      {request.bookings?.customer_name || 'Customer'}
+                      {linkedBooking?.customer_name || 'Customer'}
                     </h3>
 
                     <p className="small muted">
-                      Business: {request.businesses?.name || 'Business'}
+                      Business: {businessName(request)}
                     </p>
 
                     <p className="small muted">
-                      Service: {request.bookings?.services?.name || 'Service'}
+                      Service: {serviceName(linkedBooking)}
                     </p>
 
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                        gap: '0.75rem',
-                        marginTop: '1rem'
-                      }}
-                    >
+                    <div className="business-notification-time-grid">
                       <div
                         style={{
                           padding: '0.8rem',
@@ -700,8 +767,8 @@ export default function BusinessNotifications() {
                         <strong>
                           {request.current_start_at
                             ? new Date(request.current_start_at).toLocaleString()
-                            : request.bookings?.start_at
-                              ? new Date(request.bookings.start_at).toLocaleString()
+                            : linkedBooking?.start_at
+                              ? new Date(linkedBooking.start_at).toLocaleString()
                               : 'Not recorded'}
                         </strong>
                       </div>
@@ -720,8 +787,7 @@ export default function BusinessNotifications() {
                     </div>
 
                     <p className="small muted" style={{ marginTop: '0.75rem' }}>
-                      Requested staff: {request.requested_staff?.name || 'Staff not recorded'}
-                      {request.requested_staff?.role_title ? ` — ${request.requested_staff.role_title}` : ''}
+                      Requested staff: {requestedStaffName(request)}
                     </p>
 
                     {request.message && (
@@ -735,7 +801,7 @@ export default function BusinessNotifications() {
                     </p>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                  <div className="business-notification-card-actions">
                     <button
                       onClick={() => acceptRequest(request)}
                       disabled={isWorking}
@@ -753,7 +819,7 @@ export default function BusinessNotifications() {
                     </button>
 
                     <Link
-                      href={`/dashboard/bookings?businessId=${request.business_id}`}
+                      href={`/dashboard/bookings?businessId=${request.business_id}&view=upcoming`}
                       className="btn btn-ghost"
                     >
                       View bookings
@@ -767,7 +833,7 @@ export default function BusinessNotifications() {
       )}
 
       {!loading && pastRequests.length > 0 && (
-        <div style={{ display: 'grid', gap: '1rem' }}>
+        <div className="business-notification-section">
           <div>
             <p className="small muted">History</p>
             <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -775,41 +841,109 @@ export default function BusinessNotifications() {
             </h2>
           </div>
 
-          {pastRequests.map((request) => (
-            <div
-              key={request.id}
-              className="card"
-              style={{ opacity: request.status === 'cancelled' ? 0.65 : 0.85 }}
-            >
-              <div style={{ flex: 1, minWidth: 260 }}>
-                <strong>{request.bookings?.customer_name || 'Customer'}</strong>
+          {pastRequests.map((request) => {
+            const linkedBooking = requestBooking(request)
 
-                <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Service: {request.bookings?.services?.name || 'Service'}
-                </p>
+            return (
+              <div
+                key={request.id}
+                className="card"
+                style={{ opacity: request.status === 'cancelled' ? 0.65 : 0.85 }}
+              >
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  <strong>{linkedBooking?.customer_name || 'Customer'}</strong>
 
-                <p className="small muted">
-                  Requested time: {new Date(request.requested_start_at).toLocaleString()}
-                </p>
-
-                <p className="small muted">
-                  Requested: {new Date(request.created_at).toLocaleString()}
-                </p>
-
-                <p className="small" style={{ color: statusColor(request.status) }}>
-                  Status: {statusLabel(request.status)}
-                </p>
-
-                {request.response_message && (
-                  <p className="small muted">
-                    Response: {request.response_message}
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    Service: {serviceName(linkedBooking)}
                   </p>
-                )}
+
+                  <p className="small muted">
+                    Requested time: {new Date(request.requested_start_at).toLocaleString()}
+                  </p>
+
+                  <p className="small muted">
+                    Requested: {new Date(request.created_at).toLocaleString()}
+                  </p>
+
+                  <p className="small" style={{ color: statusColor(request.status) }}>
+                    Status: {statusLabel(request.status)}
+                  </p>
+
+                  {request.response_message && (
+                    <p className="small muted">
+                      Response: {request.response_message}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
+
+      <style jsx>{`
+        .business-notification-toolbar {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+        }
+
+        .business-notification-toolbar-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .business-notification-section {
+          display: grid;
+          gap: 1rem;
+          margin-bottom: 2rem;
+        }
+
+        .business-notification-card-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .business-notification-card-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          align-items: flex-start;
+          justify-content: flex-end;
+        }
+
+        .business-notification-time-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 0.75rem;
+          margin-top: 1rem;
+        }
+
+        @media (max-width: 640px) {
+          .business-notification-toolbar-actions,
+          .business-notification-card-actions {
+            width: 100%;
+            justify-content: stretch;
+          }
+
+          .business-notification-toolbar-actions :global(.btn),
+          .business-notification-toolbar-actions button,
+          .business-notification-toolbar-actions a,
+          .business-notification-card-actions :global(.btn),
+          .business-notification-card-actions button,
+          .business-notification-card-actions a {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }

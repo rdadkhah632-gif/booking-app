@@ -20,6 +20,7 @@ type Booking = {
   duration_minutes: number
   service_id?: string | null
   status: string
+  created_at?: string
   businesses?: {
     name: string
   } | null
@@ -166,6 +167,7 @@ export default function DashboardHome() {
         duration_minutes,
         service_id,
         status,
+        created_at,
         businesses ( name ),
         services ( id, name, price ),
         staff_members ( name, role_title )
@@ -368,6 +370,7 @@ export default function DashboardHome() {
   }, [requests])
 
   const pendingActionCount = pendingBookings.length + pendingRescheduleCount
+  const primaryBusinessId = businesses[0]?.id
   const publishedCount = businesses.filter((business) => business.published).length
   const hiddenCount = businesses.length - publishedCount
   const activeServices = services.filter((service) => service.active).length
@@ -489,8 +492,16 @@ export default function DashboardHome() {
 
   function bookingsLinkForDate(dateString: string, businessId?: string) {
     return `/dashboard/bookings?${new URLSearchParams({
-      ...(businessId ? { businessId } : {}),
+      ...(businessId || primaryBusinessId ? { businessId: businessId || primaryBusinessId } : {}),
       date: dateString
+    }).toString()}`
+  }
+
+  function bookingsLinkForView(view: string, status?: string, businessId?: string) {
+    return `/dashboard/bookings?${new URLSearchParams({
+      ...(businessId || primaryBusinessId ? { businessId: businessId || primaryBusinessId } : {}),
+      view,
+      ...(status ? { status } : {})
     }).toString()}`
   }
 
@@ -512,11 +523,11 @@ export default function DashboardHome() {
   return (
     <DashboardLayout
       title="Business overview"
-      subtitle="See what needs attention today, then jump into bookings, setup and customer requests."
+      subtitle="See today’s Mirëbook activity, customer actions, schedule previews and business performance in one place."
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <p className="small muted">
-          Dashboard refreshes when you return to this tab. Use refresh if a customer action does not appear straight away.
+          Mirëbook refreshes this dashboard when you return to the tab. Use refresh if a customer action does not appear straight away.
         </p>
 
         <button onClick={loadDashboard} className="btn btn-ghost" disabled={loading}>
@@ -547,34 +558,39 @@ export default function DashboardHome() {
       )}
 
       <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-        <div className="card">
+        <Link href={bookingsLinkForView('today')} className="card dashboard-summary-card">
           <p className="small muted">Today</p>
           <h3>{todayBookings.length}</h3>
           <p className="muted small">Confirmed bookings today</p>
-        </div>
+        </Link>
 
-        <div className="card" style={{ borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
+        <div className="card dashboard-summary-card" style={{ borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
           <p className="small muted">Action required</p>
           <h3>{pendingActionCount}</h3>
           <p className="muted small">
             {pendingBookings.length} booking approval{pendingBookings.length === 1 ? '' : 's'} · {pendingRescheduleCount} reschedule request{pendingRescheduleCount === 1 ? '' : 's'}
           </p>
-          <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'} style={{ marginTop: '1rem' }}>
-            Open notifications
-          </Link>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+            <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}>
+              Open notifications
+            </Link>
+            <Link href={bookingsLinkForView('upcoming', 'pending')} className="btn btn-ghost">
+              Pending bookings
+            </Link>
+          </div>
         </div>
 
-        <div className="card">
+        <Link href="/dashboard/analytics" className="card dashboard-summary-card">
           <p className="small muted">Last 30 days</p>
           <h3>{dashboardAnalytics.recentBookings.length}</h3>
           <p className="muted small">Total booking activity</p>
-        </div>
+        </Link>
 
-        <div className="card" style={{ borderColor: 'rgba(45,212,191,0.25)' }}>
+        <Link href="/dashboard/analytics" className="card dashboard-summary-card" style={{ borderColor: 'rgba(45,212,191,0.25)' }}>
           <p className="small muted">Estimated completed value</p>
           <h3>£{dashboardAnalytics.estimatedRevenue.toFixed(2)}</h3>
           <p className="muted small">Based on completed appointments in the last 30 days</p>
-        </div>
+        </Link>
       </div>
 
       <div className="card" style={{ marginBottom: '1.5rem', borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
@@ -593,8 +609,8 @@ export default function DashboardHome() {
             <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}>
               Review notifications
             </Link>
-            <Link href="/dashboard/bookings" className="btn btn-ghost">
-              Appointment manager
+            <Link href={bookingsLinkForView('upcoming')} className="btn btn-ghost">
+              Booking manager
             </Link>
           </div>
         </div>
@@ -606,7 +622,7 @@ export default function DashboardHome() {
             <p className="small muted">Analytics preview</p>
             <h3 style={{ marginTop: '0.25rem' }}>Business performance snapshot</h3>
             <p className="small muted" style={{ marginTop: '0.45rem' }}>
-              These figures are estimated from bookings and service prices. Payment revenue can replace this later when deposits/payments are added.
+              These figures are estimated from Mirëbook bookings and service prices. Payment revenue can replace this later when deposits/payments are added.
             </p>
           </div>
 
@@ -652,11 +668,11 @@ export default function DashboardHome() {
             <p className="small muted">Schedule preview</p>
             <h3 style={{ marginTop: '0.25rem' }}>Upcoming calendar</h3>
             <p className="small muted" style={{ marginTop: '0.45rem' }}>
-              Pick a day to preview confirmed appointments, then open the booking manager already filtered to that date.
+              Pick a day to preview confirmed appointments, then open the booking manager already filtered to that exact date.
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="dashboard-schedule-controls">
             <input
               type="date"
               value={selectedScheduleDate}
@@ -708,12 +724,17 @@ export default function DashboardHome() {
             </div>
 
             <Link href={bookingsLinkForDate(selectedScheduleDay.dateString, selectedScheduleDay.bookings[0]?.business_id)} className="btn btn-ghost">
-              View day in bookings
+              View filtered day
             </Link>
           </div>
 
           {selectedScheduleDay.bookings.length === 0 && (
-            <p className="muted">No confirmed appointments found for this day.</p>
+            <div>
+              <p className="muted">No confirmed appointments found for this day.</p>
+              <Link href={bookingsLinkForDate(selectedScheduleDay.dateString)} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                Open this date in bookings
+              </Link>
+            </div>
           )}
 
           {selectedScheduleDay.bookings.length > 0 && (
@@ -751,31 +772,31 @@ export default function DashboardHome() {
       </div>
 
       <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-        <div className="card">
+        <Link href={bookingsLinkForView('upcoming', 'confirmed')} className="card dashboard-summary-card">
           <p className="small muted">Upcoming</p>
           <h3>{upcomingBookings.length}</h3>
           <p className="muted small">Confirmed future bookings</p>
-        </div>
+        </Link>
 
-        <div className="card">
+        <Link href={bookingsLinkForView('history', 'completed')} className="card dashboard-summary-card">
           <p className="small muted">Completed</p>
           <h3>{completedBookings.length}</h3>
           <p className="muted small">Appointments marked completed</p>
-        </div>
+        </Link>
 
-        <div className="card">
+        <Link href={bookingsLinkForView('history', 'cancelled')} className="card dashboard-summary-card">
           <p className="small muted">Cancelled</p>
           <h3>{cancelledBookings.length}</h3>
           <p className="muted small">Cancelled bookings</p>
-        </div>
+        </Link>
 
-        <div className="card">
+        <Link href="/dashboard/businesses" className="card dashboard-summary-card">
           <p className="small muted">Businesses</p>
           <h3>{publishedCount}/{businesses.length}</h3>
           <p className="muted small">
             Published businesses{hiddenCount > 0 ? ` · ${hiddenCount} hidden` : ''}
           </p>
-        </div>
+        </Link>
       </div>
 
       <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
@@ -829,24 +850,23 @@ export default function DashboardHome() {
       )}
 
       <div className="card">
-        <p className="small muted">Setup shortcuts</p>
-        <h3 style={{ marginTop: '0.25rem' }}>Manage your business setup</h3>
+        <p className="small muted">Workspace shortcuts</p>
+        <h3 style={{ marginTop: '0.25rem' }}>Keep the business moving</h3>
         <p className="muted small" style={{ marginTop: '0.5rem' }}>
-          Keep your profile, services, staff and hours up to date so customers can book confidently.
+          Setup tasks live inside Business profile. This overview keeps the main daily actions close: bookings, notifications, analytics and marketplace preview.
         </p>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-          <Link href="/dashboard/businesses" className="btn btn-accent">
-            Business profile
+          <Link href={bookingsLinkForView('today')} className="btn btn-accent">
+            Today’s bookings
+          </Link>
+
+          <Link href="/dashboard/notifications" className="btn btn-ghost">
+            Notifications
           </Link>
 
           <Link href="/dashboard/analytics" className="btn btn-ghost">
             Analytics
-          </Link>
-
-
-          <Link href="/dashboard/notifications" className="btn btn-ghost">
-            Notifications
           </Link>
 
           <Link href="/explore" className="btn btn-ghost">
@@ -854,6 +874,32 @@ export default function DashboardHome() {
           </Link>
         </div>
       </div>
+      <style jsx>{`
+        .dashboard-summary-card {
+          color: var(--text);
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .dashboard-summary-card:hover {
+          border-color: rgba(255,107,53,0.35);
+          transform: translateY(-1px);
+        }
+
+        .dashboard-schedule-controls {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 560px) {
+          .dashboard-schedule-controls,
+          .dashboard-schedule-controls :global(.btn),
+          .dashboard-schedule-controls input {
+            width: 100%;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }

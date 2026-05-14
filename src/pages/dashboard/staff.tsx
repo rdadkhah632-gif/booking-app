@@ -22,6 +22,10 @@ type StaffMember = {
   role_title?: string | null
   email?: string | null
   phone?: string | null
+  image_url?: string | null
+  user_id?: string | null
+  invite_status?: 'not_invited' | 'invited' | 'linked' | string | null
+  permission_role?: 'staff' | 'manager' | 'reception' | string | null
   active: boolean
 }
 
@@ -53,6 +57,8 @@ export default function StaffPage() {
   const [roleTitle, setRoleTitle] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [permissionRole, setPermissionRole] = useState<'staff' | 'manager' | 'reception'>('staff')
 
   const [editingStaffId, setEditingStaffId] = useState<string | null>(null)
   const [savingStaffId, setSavingStaffId] = useState<string | null>(null)
@@ -226,6 +232,9 @@ export default function StaffPage() {
         role_title: roleTitle.trim() || null,
         email: email.trim() || null,
         phone: phone.trim() || null,
+        image_url: imageUrl.trim() || null,
+        invite_status: email.trim() ? 'not_invited' : 'not_invited',
+        permission_role: permissionRole,
         active: true
       })
 
@@ -240,7 +249,9 @@ export default function StaffPage() {
     setRoleTitle('')
     setEmail('')
     setPhone('')
-    setSuccess('Staff member added. Assign services and set their working hours so customers can book with them.')
+    setImageUrl('')
+    setPermissionRole('staff')
+    setSuccess('Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.')
 
     await loadPage()
   }
@@ -270,6 +281,8 @@ export default function StaffPage() {
         role_title: member.role_title?.trim() || null,
         email: member.email?.trim() || null,
         phone: member.phone?.trim() || null,
+        image_url: member.image_url?.trim() || null,
+        permission_role: member.permission_role || 'staff',
         active: member.active
       })
       .eq('id', member.id)
@@ -283,6 +296,32 @@ export default function StaffPage() {
 
     setEditingStaffId(null)
     setSuccess(`${member.name} saved.`)
+    await loadPage()
+  }
+
+    async function markStaffInvited(member: StaffMember) {
+    if (!member.email) {
+      setError('Add an email before marking this staff member as invited.')
+      return
+    }
+
+    setActionLoadingKey(`invite-${member.id}`)
+    setError(null)
+    setSuccess(null)
+
+    const { error } = await supabase
+      .from('staff_members')
+      .update({ invite_status: 'invited' })
+      .eq('id', member.id)
+
+    setActionLoadingKey(null)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    setSuccess(`${member.name} marked as invited. When they register with ${member.email}, link their account from the staff login flow.`)
     await loadPage()
   }
 
@@ -330,6 +369,30 @@ export default function StaffPage() {
 
   function openDaysForStaff(staffId: string) {
     return staffAvailability.filter((row) => row.staff_member_id === staffId && row.is_closed !== true).length
+  }
+
+  function inviteStatusLabel(member: StaffMember) {
+    if (member.user_id) return 'Linked account'
+    if (member.invite_status === 'invited') return 'Invite sent'
+    if (member.email) return 'Ready to invite'
+    return 'No email added'
+  }
+
+  function inviteStatusTone(member: StaffMember) {
+    if (member.user_id) return 'success'
+    if (member.invite_status === 'invited') return 'accent'
+    if (member.email) return 'warning'
+    return 'muted'
+  }
+
+  function staffInitials(member: StaffMember) {
+    return member.name
+      .split(' ')
+      .map((part) => part[0])
+      .filter(Boolean)
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'MB'
   }
 
   async function toggleStaffService(staffId: string, serviceId: string) {
@@ -387,19 +450,19 @@ export default function StaffPage() {
           borderRadius: 999
         }}
       >
-        {ready ? 'Bookable' : 'Setup needed'}
+        {ready ? 'Bookable on Mirëbook' : 'Setup needed'}
       </span>
     )
   }
 
   return (
     <DashboardLayout
-      title="Staff"
-      subtitle={business ? `Manage staff for ${business.name}` : 'Choose which business staff to manage.'}
+      title="Staff setup"
+      subtitle={business ? `Manage staff, service assignments and booking readiness for ${business.name}` : 'Choose which business staff to manage.'}
     >
       {pageLoading && (
         <div className="card">
-          <p className="muted">Loading staff...</p>
+          <p className="muted">Loading Mirëbook staff setup...</p>
         </div>
       )}
 
@@ -437,7 +500,7 @@ export default function StaffPage() {
               Choose a business to continue
             </h3>
             <p className="muted">
-              Select one of the business cards below. The next page will show the staff for that specific business.
+              Select one of the business cards below. Mirëbook will show the staff setup for that specific business.
             </p>
           </div>
 
@@ -466,41 +529,41 @@ export default function StaffPage() {
       {!pageLoading && business && (
         <>
           <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-            <div className="card">
+            <div className="card staff-summary-card">
               <p className="small muted">Staff</p>
               <h3>{staffStats.total}</h3>
               <p className="muted small">Total staff members</p>
             </div>
 
-            <div className="card">
+            <div className="card staff-summary-card">
               <p className="small muted">Active</p>
               <h3>{staffStats.activeStaff}</h3>
               <p className="muted small">Visible for booking</p>
             </div>
 
-            <div className="card" style={{ borderColor: staffStats.staffWithoutServices > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
+            <div className="card staff-summary-card" style={{ borderColor: staffStats.staffWithoutServices > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
               <p className="small muted">No services</p>
               <h3>{staffStats.staffWithoutServices}</h3>
               <p className="muted small">Staff without assigned services</p>
             </div>
 
-            <div className="card" style={{ borderColor: staffStats.staffWithoutHours > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
+            <div className="card staff-summary-card" style={{ borderColor: staffStats.staffWithoutHours > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
               <p className="small muted">No hours</p>
               <h3>{staffStats.staffWithoutHours}</h3>
               <p className="muted small">Staff without working hours</p>
             </div>
           </div>
 
-          <form onSubmit={addStaff} className="card" style={{ display: 'grid', gap: '0.85rem', marginBottom: '1.5rem' }}>
+          <form onSubmit={addStaff} className="card staff-form-card">
             <div>
               <p className="small muted">Create staff</p>
               <h3>Add staff member</h3>
               <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                Staff are assigned to services and have their own working hours. Customers only see bookable staff with matching services and availability.
+                Staff are assigned to services and working hours. Mirëbook only shows customers staff who can actually perform the selected service at the selected time.
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+            <div className="staff-form-grid">
               <input
                 placeholder="Staff name e.g. Ali, Sara, Reza"
                 value={name}
@@ -526,10 +589,25 @@ export default function StaffPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
+
+              <input
+                placeholder="Image URL optional"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+              />
+
+              <select
+                value={permissionRole}
+                onChange={(e) => setPermissionRole(e.target.value as 'staff' | 'manager' | 'reception')}
+              >
+                <option value="staff">Staff</option>
+                <option value="reception">Reception</option>
+                <option value="manager">Manager</option>
+              </select>
             </div>
 
             <button type="submit" disabled={saving} className="btn btn-accent">
-              {saving ? 'Adding...' : 'Add staff'}
+              {saving ? 'Adding...' : 'Add staff to Mirëbook'}
             </button>
           </form>
 
@@ -545,7 +623,7 @@ export default function StaffPage() {
             </div>
           )}
 
-          <div style={{ display: 'grid', gap: '1rem' }}>
+          <div className="staff-card-list">
             {staff.length === 0 && (
               <div className="card">
                 <h3>No staff yet</h3>
@@ -563,10 +641,8 @@ export default function StaffPage() {
               return (
                 <div
                   key={member.id}
-                  className="card"
+                  className="card staff-member-card"
                   style={{
-                    display: 'grid',
-                    gap: '1rem',
                     borderColor: !member.active
                       ? 'rgba(255,190,11,0.25)'
                       : assignedServices.length === 0 || openDays === 0
@@ -574,84 +650,129 @@ export default function StaffPage() {
                         : 'var(--border)'
                   }}
                 >
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    gap: '1rem',
-                    alignItems: 'flex-start',
-                    flexWrap: 'wrap'
-                  }}>
-                    <div style={{ flex: 1, minWidth: 260 }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <h3>{member.name}</h3>
+                  <div className="staff-member-card-header">
+                    <div className="staff-member-main">
+                      <div className="staff-avatar-wrap">
+                        {member.image_url ? (
+                          <img src={member.image_url} alt={member.name} />
+                        ) : (
+                          <span>{staffInitials(member)}</span>
+                        )}
+                      </div>
+
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <h3>{member.name}</h3>
+
+                          <span
+                            className="small"
+                            style={{
+                              background: member.active ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+                              color: member.active ? 'var(--success)' : 'var(--warning)',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: 999
+                            }}
+                          >
+                            {member.active ? 'Active' : 'Hidden'}
+                          </span>
+
+                          {readinessBadge(member)}
 
                         <span
                           className="small"
                           style={{
-                            background: member.active ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                            color: member.active ? 'var(--success)' : 'var(--warning)',
+                            background: inviteStatusTone(member) === 'success'
+                              ? 'rgba(45,212,191,0.12)'
+                              : inviteStatusTone(member) === 'accent'
+                                ? 'rgba(255,107,53,0.12)'
+                                : inviteStatusTone(member) === 'warning'
+                                  ? 'rgba(255,190,11,0.12)'
+                                  : 'var(--surface-2)',
+                            color: inviteStatusTone(member) === 'success'
+                              ? 'var(--success)'
+                              : inviteStatusTone(member) === 'accent'
+                                ? 'var(--accent)'
+                                : inviteStatusTone(member) === 'warning'
+                                  ? 'var(--warning)'
+                                  : 'var(--text-muted)',
                             padding: '0.2rem 0.55rem',
                             borderRadius: 999
                           }}
                         >
-                          {member.active ? 'Active' : 'Hidden'}
+                          {inviteStatusLabel(member)}
                         </span>
+                        </div>
 
-                        {readinessBadge(member)}
+                        {!isEditing && (
+                          <>
+                            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                              {member.role_title || 'Staff member'}
+                            </p>
+                            {member.email && <p className="small muted">Email: {member.email}</p>}
+                            {member.phone && <p className="small muted">Phone: {member.phone}</p>}
+                            <p className="small muted">Permission: {member.permission_role || 'staff'}</p>
+                            <p className="small muted">Account: {inviteStatusLabel(member)}</p>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
+                              <span className="small muted">{assignedServices.length} service{assignedServices.length === 1 ? '' : 's'} assigned</span>
+                              <span className="small muted">{openDays} open day{openDays === 1 ? '' : 's'} set</span>
+                            </div>
+
+                            {(assignedServices.length === 0 || openDays === 0) && (
+                              <p className="small" style={{ color: 'var(--warning)', marginTop: '0.55rem' }}>
+                                This staff member will not be properly bookable until they have services assigned and working hours set.
+                              </p>
+                            )}
+                          </>
+                        )}
+
+                        {isEditing && (
+                          <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
+                            <input
+                              placeholder="Staff name"
+                              value={member.name || ''}
+                              onChange={(e) => updateLocalStaff(member.id, 'name', e.target.value)}
+                            />
+
+                            <input
+                              placeholder="Role/title"
+                              value={member.role_title || ''}
+                              onChange={(e) => updateLocalStaff(member.id, 'role_title', e.target.value)}
+                            />
+
+                            <input
+                              type="email"
+                              placeholder="Email optional"
+                              value={member.email || ''}
+                              onChange={(e) => updateLocalStaff(member.id, 'email', e.target.value)}
+                            />
+
+                            <input
+                              placeholder="Phone optional"
+                              value={member.phone || ''}
+                              onChange={(e) => updateLocalStaff(member.id, 'phone', e.target.value)}
+                            />
+
+                            <input
+                              placeholder="Image URL optional"
+                              value={member.image_url || ''}
+                              onChange={(e) => updateLocalStaff(member.id, 'image_url', e.target.value)}
+                            />
+
+                            <select
+                              value={member.permission_role || 'staff'}
+                              onChange={(e) => updateLocalStaff(member.id, 'permission_role', e.target.value)}
+                            >
+                              <option value="staff">Staff</option>
+                              <option value="reception">Reception</option>
+                              <option value="manager">Manager</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
                       </div>
 
-                      {!isEditing && (
-                        <>
-                          <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                            {member.role_title || 'Staff member'}
-                          </p>
-                          {member.email && <p className="small muted">Email: {member.email}</p>}
-                          {member.phone && <p className="small muted">Phone: {member.phone}</p>}
-
-                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
-                            <span className="small muted">{assignedServices.length} service{assignedServices.length === 1 ? '' : 's'} assigned</span>
-                            <span className="small muted">{openDays} open day{openDays === 1 ? '' : 's'} set</span>
-                          </div>
-
-                          {(assignedServices.length === 0 || openDays === 0) && (
-                            <p className="small" style={{ color: 'var(--warning)', marginTop: '0.55rem' }}>
-                              This staff member will not be properly bookable until they have services assigned and working hours set.
-                            </p>
-                          )}
-                        </>
-                      )}
-
-                      {isEditing && (
-                        <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
-                          <input
-                            placeholder="Staff name"
-                            value={member.name || ''}
-                            onChange={(e) => updateLocalStaff(member.id, 'name', e.target.value)}
-                          />
-
-                          <input
-                            placeholder="Role/title"
-                            value={member.role_title || ''}
-                            onChange={(e) => updateLocalStaff(member.id, 'role_title', e.target.value)}
-                          />
-
-                          <input
-                            type="email"
-                            placeholder="Email optional"
-                            value={member.email || ''}
-                            onChange={(e) => updateLocalStaff(member.id, 'email', e.target.value)}
-                          />
-
-                          <input
-                            placeholder="Phone optional"
-                            value={member.phone || ''}
-                            onChange={(e) => updateLocalStaff(member.id, 'phone', e.target.value)}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <div className="staff-card-actions">
                       {isEditing ? (
                         <>
                           <button
@@ -676,6 +797,20 @@ export default function StaffPage() {
                         <>
                           <button onClick={() => setEditingStaffId(member.id)} className="btn btn-ghost">
                             Edit
+                          </button>
+
+                          <button
+                            onClick={() => markStaffInvited(member)}
+                            className="btn btn-ghost"
+                            disabled={actionLoadingKey === `invite-${member.id}` || !!member.user_id || !member.email}
+                          >
+                            {actionLoadingKey === `invite-${member.id}`
+                              ? 'Updating...'
+                              : member.user_id
+                                ? 'Account linked'
+                                : member.invite_status === 'invited'
+                                  ? 'Invited'
+                                  : 'Mark invited'}
                           </button>
 
                           <Link href={`/dashboard/staff-availability?staffId=${member.id}`} className="btn btn-accent">
@@ -703,7 +838,7 @@ export default function StaffPage() {
                       <div>
                         <p className="small muted">Services this staff member can perform</p>
                         <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                          Active services are what customers can select on the booking page. Orange means assigned.
+                          Active services are what customers can select on the booking page. Orange means this staff member can perform that service.
                         </p>
                       </div>
 
@@ -743,6 +878,95 @@ export default function StaffPage() {
           </div>
         </>
       )}
+      <style jsx>{`
+        .staff-summary-card {
+          min-height: 122px;
+        }
+
+        .staff-form-card {
+          display: grid;
+          gap: 0.85rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .staff-form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 0.75rem;
+        }
+
+        .staff-card-list {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .staff-member-card {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .staff-member-card-header {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .staff-member-main {
+          flex: 1;
+          min-width: 260px;
+          display: flex;
+          gap: 0.9rem;
+          align-items: flex-start;
+        }
+
+        .staff-avatar-wrap {
+          width: 56px;
+          height: 56px;
+          border-radius: 18px;
+          overflow: hidden;
+          background: var(--accent-dim);
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--accent);
+          font-weight: 800;
+          flex: 0 0 auto;
+        }
+
+        .staff-avatar-wrap img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .staff-card-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 720px) {
+          .staff-member-card-header,
+          .staff-member-main {
+            display: grid;
+          }
+
+          .staff-card-actions {
+            justify-content: stretch;
+          }
+
+          .staff-card-actions :global(.btn),
+          .staff-card-actions button,
+          .staff-card-actions a {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }
