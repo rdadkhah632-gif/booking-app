@@ -18,6 +18,8 @@ type Booking = {
   customer_name: string
   customer_email?: string
   customer_phone?: string
+  customer_notes?: string | null
+  internal_notes?: string | null
   start_at: string
   end_at?: string
   duration_minutes: number
@@ -171,16 +173,6 @@ export default function Bookings() {
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single()
-
-      if (!profile || profile.role !== 'business') {
-        router.replace('/explore')
-        return
-      }
 
       const selectedBusiness = await getBusinessContext(session.user.id)
 
@@ -202,6 +194,8 @@ export default function Bookings() {
           customer_name,
           customer_email,
           customer_phone,
+          customer_notes,
+          internal_notes,
           start_at,
           end_at,
           duration_minutes,
@@ -279,98 +273,161 @@ export default function Bookings() {
       setStatusFilter('all')
     }
   }, [router.isReady, date, status, view])
+  async function createCustomerNotification(params: {
+    booking: Booking
+    type: string
+    title: string
+    message: string
+    actionUrl: string
+  }) {
+    if (!params.booking.customer_user_id) return
 
-  async function acceptPendingBooking(id: string) {
-    const confirmed = confirm('Accept this booking request and confirm the appointment?')
-    if (!confirmed) return
-
-    setActionLoadingId(id)
-    setError(null)
-
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'confirmed' })
-      .eq('id', id)
-
-    setActionLoadingId(null)
-
-    if (error) {
-      setError(error.message)
-      return
-    }
-
-    await loadBookings()
-    replaceBookingsQuery({ nextAction: 'accepted' })
+    await supabase.from('notifications').insert({
+      user_id: params.booking.customer_user_id,
+      business_id: params.booking.business_id,
+      booking_id: params.booking.id,
+      audience: 'customer',
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      action_url: params.actionUrl
+    })
   }
 
-  async function declinePendingBooking(id: string) {
-    const confirmed = confirm('Decline this booking request? The customer will see it as cancelled/not accepted.')
-    if (!confirmed) return
-
-    setActionLoadingId(id)
-    setError(null)
-
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'cancelled' })
-      .eq('id', id)
-
-    setActionLoadingId(null)
-
-    if (error) {
-      setError(error.message)
-      return
-    }
-
-    await loadBookings()
-    replaceBookingsQuery({ nextAction: 'declined' })
+  function serviceName(booking: Booking) {
+    return booking.services?.name || 'your appointment'
   }
 
-  async function cancelBooking(id: string) {
-    const confirmed = confirm('Cancel this booking? This will also show as cancelled to the customer.')
-    if (!confirmed) return
+  function appointmentDateTime(booking: Booking) {
+    return new Date(booking.start_at).toLocaleString()
+  }
+  async function acceptPendingBooking(booking: Booking) {
+  const confirmed = confirm('Accept this booking request and confirm the appointment?')
+  if (!confirmed) return
 
-    setActionLoadingId(id)
-    setError(null)
+  setActionLoadingId(booking.id)
+  setError(null)
 
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'cancelled' })
-      .eq('id', id)
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status: 'confirmed' })
+    .eq('id', booking.id)
+    .eq('business_id', booking.business_id)
 
-    setActionLoadingId(null)
+  setActionLoadingId(null)
 
-    if (error) {
-      setError(error.message)
-      return
-    }
-
-    await loadBookings()
-    replaceBookingsQuery({ nextAction: 'cancelled' })
+  if (error) {
+    setError(error.message)
+    return
   }
 
-  async function completeBooking(id: string) {
-    const confirmed = confirm('Mark this appointment as completed?')
-    if (!confirmed) return
+  await createCustomerNotification({
+    booking,
+    type: 'booking_confirmed',
+    title: 'Booking accepted',
+    message: `Your booking for ${serviceName(booking)} has been accepted and confirmed for ${appointmentDateTime(booking)}.`,
+    actionUrl: `/booking-confirmation?id=${booking.id}`
+  })
 
-    setActionLoadingId(id)
-    setError(null)
+  await loadBookings()
+  replaceBookingsQuery({ nextAction: 'accepted' })
+}
 
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'completed' })
-      .eq('id', id)
+  async function declinePendingBooking(booking: Booking) {
+  const confirmed = confirm('Decline this booking request? The customer will see it as cancelled/not accepted.')
+  if (!confirmed) return
 
-    setActionLoadingId(null)
+  setActionLoadingId(booking.id)
+  setError(null)
 
-    if (error) {
-      setError(error.message)
-      return
-    }
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status: 'cancelled' })
+    .eq('id', booking.id)
+    .eq('business_id', booking.business_id)
 
-    await loadBookings()
-    replaceBookingsQuery({ nextAction: 'completed' })
+  setActionLoadingId(null)
+
+  if (error) {
+    setError(error.message)
+    return
   }
+
+  await createCustomerNotification({
+    booking,
+    type: 'booking_declined',
+    title: 'Booking declined',
+    message: `Your booking request for ${serviceName(booking)} on ${appointmentDateTime(booking)} was declined.`,
+    actionUrl: '/my-bookings'
+  })
+
+  await loadBookings()
+  replaceBookingsQuery({ nextAction: 'declined' })
+}
+
+ async function cancelBooking(booking: Booking) {
+  const confirmed = confirm('Cancel this booking? This will also show as cancelled to the customer.')
+  if (!confirmed) return
+
+  setActionLoadingId(booking.id)
+  setError(null)
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status: 'cancelled' })
+    .eq('id', booking.id)
+    .eq('business_id', booking.business_id)
+
+  setActionLoadingId(null)
+
+  if (error) {
+    setError(error.message)
+    return
+  }
+
+  await createCustomerNotification({
+    booking,
+    type: 'booking_cancelled',
+    title: 'Booking cancelled',
+    message: `Your booking for ${serviceName(booking)} on ${appointmentDateTime(booking)} was cancelled by the business.`,
+    actionUrl: '/my-bookings'
+  })
+
+  await loadBookings()
+  replaceBookingsQuery({ nextAction: 'cancelled' })
+}
+
+  async function completeBooking(booking: Booking) {
+  const confirmed = confirm('Mark this appointment as completed?')
+  if (!confirmed) return
+
+  setActionLoadingId(booking.id)
+  setError(null)
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status: 'completed' })
+    .eq('id', booking.id)
+    .eq('business_id', booking.business_id)
+
+  setActionLoadingId(null)
+
+  if (error) {
+    setError(error.message)
+    return
+  }
+
+  await createCustomerNotification({
+    booking,
+    type: 'booking_completed',
+    title: 'Appointment completed',
+    message: `Your appointment for ${serviceName(booking)} on ${appointmentDateTime(booking)} has been marked as completed.`,
+    actionUrl: '/my-bookings'
+  })
+
+  await loadBookings()
+  replaceBookingsQuery({ nextAction: 'completed' })
+}
 
   function statusLabel(status: string) {
     if (status === 'pending') return 'Pending approval'
@@ -638,6 +695,31 @@ export default function Bookings() {
                 </p>
               )}
             </div>
+{(booking.customer_notes || booking.internal_notes) && (
+  <div
+    style={{
+      marginTop: '0.75rem',
+      padding: '0.8rem',
+      borderRadius: 'var(--radius)',
+      background: 'var(--surface-2)',
+      border: '1px solid var(--border)'
+    }}
+  >
+    {booking.customer_notes && (
+      <>
+        <p className="small muted">Customer note</p>
+        <p className="small" style={{ marginTop: '0.25rem' }}>{booking.customer_notes}</p>
+      </>
+    )}
+
+    {booking.internal_notes && (
+      <>
+        <p className="small muted" style={{ marginTop: booking.customer_notes ? '0.75rem' : 0 }}>Internal note</p>
+        <p className="small" style={{ marginTop: '0.25rem' }}>{booking.internal_notes}</p>
+      </>
+    )}
+  </div>
+)}
 
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
               <Link href={customerHistoryLink(booking)} className="btn btn-ghost">
@@ -661,11 +743,11 @@ export default function Bookings() {
           <div className="booking-manager-actions">
             {booking.status === 'pending' && (
               <>
-                <button onClick={() => acceptPendingBooking(booking.id)} className="btn btn-accent" disabled={isWorking}>
+                <button onClick={() => acceptPendingBooking(booking)} className="btn btn-accent" disabled={isWorking}>
                   {isWorking ? 'Working...' : 'Accept booking'}
                 </button>
 
-                <button onClick={() => declinePendingBooking(booking.id)} className="btn btn-danger" disabled={isWorking}>
+                <button onClick={() => declinePendingBooking(booking)} className="btn btn-danger" disabled={isWorking}>
                   Decline booking
                 </button>
               </>
@@ -673,7 +755,7 @@ export default function Bookings() {
 
             {booking.status === 'confirmed' && !isLocked && (
               <>
-                <button onClick={() => completeBooking(booking.id)} className="btn btn-accent" disabled={isWorking}>
+                <button onClick={() => completeBooking(booking)} className="btn btn-accent" disabled={isWorking}>
                   {isWorking ? 'Working...' : 'Mark completed'}
                 </button>
 
@@ -681,7 +763,7 @@ export default function Bookings() {
                   Reschedule
                 </Link>
 
-                <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger" disabled={isWorking}>
+                <button onClick={() => cancelBooking(booking)} className="btn btn-danger" disabled={isWorking}>
                   Cancel
                 </button>
               </>

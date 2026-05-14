@@ -60,11 +60,13 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
   const links = [
     { href: '/dashboard', label: 'Overview' },
-    { href: '/dashboard/analytics', label: 'Analytics' },
     { href: '/dashboard/bookings', label: 'Bookings' },
-    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Needs action (${pendingCount})` : 'Notifications', highlight: pendingCount > 0 },
-    { href: '/dashboard/businesses', label: 'Business profile' },
-    { href: '/account', label: 'Account settings' }
+    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Needs action (${pendingCount})` : 'Needs action', highlight: pendingCount > 0 },
+    { href: '/dashboard/analytics', label: 'Analytics' },
+    { href: '/dashboard/businesses', label: 'Setup hub' },
+    { href: '/dashboard/settings', label: 'Business settings' },
+    { href: '/dashboard/billing', label: 'Billing' },
+    { href: '/account', label: 'Account' }
   ]
 
   return (
@@ -75,7 +77,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             Mirë<span>book</span>
           </Link>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            Business workspace
+            Business control centre
           </p>
         </div>
 
@@ -102,11 +104,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           </p>
 
           <Link href="/explore" className="sidebar-link">
-            Preview Mirëbook
-          </Link>
-
-          <Link href="/dashboard/businesses" className="sidebar-link" style={{ marginTop: '0.5rem' }}>
-            Business setup hub
+            Marketplace
           </Link>
 
           <button
@@ -145,17 +143,17 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             <p className="small muted" style={{ marginTop: '0.45rem' }}>
               {pendingCount > 0
                 ? `${pendingCount} Mirëbook item${pendingCount === 1 ? '' : 's'} need your attention.`
-                : 'No pending customer actions right now.'}
+                : 'No customer actions need review right now.'}
             </p>
           </div>
 
           <div className="dashboard-header-actions">
-            <Link href="/dashboard/businesses" className="btn btn-ghost">
+            <Link href="/dashboard/businesses" className="btn btn-ghost dashboard-header-secondary">
               Setup hub
             </Link>
 
-            <Link href="/dashboard/analytics" className="btn btn-ghost">
-              Analytics
+            <Link href="/dashboard/settings" className="btn btn-ghost dashboard-header-secondary">
+              Settings
             </Link>
 
             <Link
@@ -169,7 +167,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               }}
             >
               <span aria-hidden="true">🔔</span>
-              <span>{pendingCount > 0 ? 'Needs action' : 'Notifications'}</span>
+              <span>{pendingCount > 0 ? 'Needs action' : 'No actions'}</span>
 
               {pendingCount > 0 && (
                 <span
@@ -214,6 +212,10 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           justify-content: flex-end;
         }
 
+        .dashboard-header-secondary {
+          flex-shrink: 0;
+        }
+
         @media (max-width: 720px) {
           .dashboard-page-header {
             display: grid;
@@ -227,6 +229,10 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           .dashboard-header-actions :global(.btn) {
             width: 100%;
             justify-content: center;
+          }
+
+          .dashboard-header-secondary {
+            display: none;
           }
         }
       `}</style>

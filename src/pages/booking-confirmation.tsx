@@ -7,6 +7,7 @@ import AuthNav from '@/components/AuthNav'
 type Booking = {
   id: string
   business_id?: string
+  customer_user_id?: string | null
   customer_name: string
   customer_email?: string
   customer_phone?: string
@@ -21,15 +22,29 @@ type Booking = {
     city?: string | null
     country?: string | null
     phone?: string | null
-  } | null
+  } | {
+    id?: string
+    user_id?: string
+    name: string
+    address?: string | null
+    city?: string | null
+    country?: string | null
+    phone?: string | null
+  }[] | null
   services?: {
     name: string
     price: number
-  } | null
+  } | {
+    name: string
+    price: number
+  }[] | null
   staff_members?: {
     name: string
     role_title?: string | null
-  } | null
+  } | {
+    name: string
+    role_title?: string | null
+  }[] | null
 }
 
 export default function BookingConfirmation() {
@@ -54,14 +69,6 @@ export default function BookingConfirmation() {
         router.replace('/login')
         return
       }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single()
-
-      setRole(profile?.role === 'business' ? 'business' : 'customer')
 
       const { data, error } = await supabase
         .from('bookings')
@@ -102,7 +109,9 @@ export default function BookingConfirmation() {
       }
 
       const isCustomerOwner = normalisedBooking.customer_user_id === session.user.id
-      const isBusinessOwner = normalisedBooking.businesses?.user_id === session.user.id
+      const isBusinessOwner = businessRelation(normalisedBooking)?.user_id === session.user.id
+
+      setRole(isBusinessOwner && !isCustomerOwner ? 'business' : 'customer')
 
       if (!isCustomerOwner && !isBusinessOwner) {
         setError('You do not have permission to view this booking.')
@@ -110,7 +119,7 @@ export default function BookingConfirmation() {
         return
       }
 
-      setBooking(normalisedBooking)
+      setBooking(normalisedBooking as Booking)
       setLoading(false)
     }
 
@@ -141,6 +150,50 @@ export default function BookingConfirmation() {
     return 'var(--surface-2)'
   }
 
+  function firstRelation<T>(value: T | T[] | null | undefined) {
+    return Array.isArray(value) ? value[0] : value
+  }
+
+  function businessRelation(value: Booking | null = booking) {
+    if (!value) return null
+    return firstRelation(value.businesses) || null
+  }
+
+  function serviceRelation(value: Booking | null = booking) {
+    if (!value) return null
+    return firstRelation(value.services) || null
+  }
+
+  function staffRelation(value: Booking | null = booking) {
+    if (!value) return null
+    return firstRelation(value.staff_members) || null
+  }
+
+  function businessName() {
+    return businessRelation()?.name || 'this business'
+  }
+
+  function serviceName() {
+    return serviceRelation()?.name || 'Service'
+  }
+
+  function servicePrice() {
+    return Number(serviceRelation()?.price || 0)
+  }
+
+  function staffName() {
+    const staff = staffRelation()
+    if (!staff) return 'Any available staff'
+    return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
+  }
+
+  function businessLocation() {
+    const business = businessRelation()
+    return [business?.address, business?.city, business?.country]
+      .filter(Boolean)
+      .join(', ') || 'Location not added'
+  }
+
   function primaryHeading() {
     if (booking?.status === 'pending') return 'Your booking request was sent.'
     if (booking?.status === 'confirmed') return 'Your appointment is confirmed.'
@@ -151,11 +204,11 @@ export default function BookingConfirmation() {
 
   function leadCopy() {
     if (booking?.status === 'pending') {
-      return `Your request has been sent to ${booking.businesses?.name || 'this business'} for approval. Your appointment is not confirmed until the business accepts it.`
+      return `Your request has been sent to ${businessName()} for approval. Your appointment is not confirmed until the business accepts it.`
     }
 
     if (booking?.status === 'confirmed') {
-      return `Your booking is confirmed with ${booking?.businesses?.name || 'this business'}. You can view, cancel or request a reschedule from My Bookings.`
+      return `Your booking is confirmed with ${businessName()}. You can view, cancel or request a reschedule from My Bookings.`
     }
 
     if (booking?.status === 'completed') {
@@ -163,7 +216,7 @@ export default function BookingConfirmation() {
     }
 
     if (booking?.status === 'cancelled') {
-      return 'This booking is no longer active. You can browse other available services from Explore.'
+      return 'This booking is no longer active. You can explore other available services on Mirëbook.'
     }
 
     return 'Your booking details are below.'
@@ -180,7 +233,7 @@ export default function BookingConfirmation() {
       <section className="container" style={{ padding: '42px 24px 80px' }}>
         {loading && (
           <div className="card">
-            <p className="muted">Loading booking confirmation...</p>
+            <p className="muted">Loading your Mirëbook booking confirmation...</p>
           </div>
         )}
 
@@ -195,27 +248,11 @@ export default function BookingConfirmation() {
         )}
 
         {!loading && !error && booking && (
-          <div style={{
-            maxWidth: 760,
-            margin: '0 auto',
-            display: 'grid',
-            gap: '1rem'
-          }}>
-            <div className="card" style={{
-              textAlign: 'center',
-              padding: '2.2rem'
-            }}>
-              <div style={{
-                width: 72,
-                height: 72,
-                borderRadius: 999,
+          <div className="booking-confirmation-shell">
+            <div className="card booking-confirmation-hero">
+              <div className="booking-confirmation-icon" style={{
                 background: statusBackground(booking.status),
-                color: statusColor(booking.status),
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem',
-                margin: '0 auto 1rem'
+                color: statusColor(booking.status)
               }}>
                 {booking.status === 'pending' ? '…' : booking.status === 'cancelled' ? '!' : '✓'}
               </div>
@@ -244,7 +281,7 @@ export default function BookingConfirmation() {
                 background: isPendingApproval() ? 'rgba(255,107,53,0.06)' : 'rgba(45,212,191,0.06)'
               }}
             >
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+              <div className="booking-confirmation-note-row">
                 <div
                   style={{
                     width: 34,
@@ -286,7 +323,7 @@ export default function BookingConfirmation() {
             </div>
 
             <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              <div className="booking-confirmation-details-header">
                 <h2 style={{ fontFamily: 'var(--font-display)' }}>
                   Appointment details
                 </h2>
@@ -304,22 +341,19 @@ export default function BookingConfirmation() {
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gap: '0.85rem' }}>
+              <div className="booking-confirmation-details-grid">
                 <div>
                   <p className="small muted">Business</p>
-                  <strong>{booking.businesses?.name || 'Business'}</strong>
+                  <strong>{businessName()}</strong>
                 </div>
 
                 <div>
                   <p className="small muted">Service</p>
-                  <strong>{booking.services?.name || 'Service'}</strong>
+                  <strong>{serviceName()}</strong>
                 </div>
                 <div>
                   <p className="small muted">Staff member</p>
-                  <strong>
-                    {booking.staff_members?.name || 'Any available staff'}
-                    {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
-                  </strong>
+                  <strong>{staffName()}</strong>
                 </div>
 
                 <div
@@ -341,7 +375,7 @@ export default function BookingConfirmation() {
 
                 <div>
                   <p className="small muted">Price</p>
-                  <strong>£{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}</strong>
+                  <strong>£{servicePrice().toFixed(2)}</strong>
                 </div>
 
                 <div>
@@ -355,17 +389,13 @@ export default function BookingConfirmation() {
 
                 <div>
                   <p className="small muted">Location</p>
-                  <strong>
-                    {[booking.businesses?.address, booking.businesses?.city, booking.businesses?.country]
-                      .filter(Boolean)
-                      .join(', ') || 'Location not added'}
-                  </strong>
+                  <strong>{businessLocation()}</strong>
                 </div>
 
-                {booking.businesses?.phone && (
+                {businessRelation()?.phone && (
                   <div>
                     <p className="small muted">Business phone</p>
-                    <strong>{booking.businesses.phone}</strong>
+                    <strong>{businessRelation()?.phone}</strong>
                   </div>
                 )}
 
@@ -378,12 +408,7 @@ export default function BookingConfirmation() {
               </div>
             </div>
 
-            <div style={{
-              display: 'flex',
-              gap: '0.75rem',
-              justifyContent: 'center',
-              flexWrap: 'wrap'
-            }}>
+            <div className="booking-confirmation-actions">
               <Link href="/my-bookings" className="btn btn-accent">
                 {isPendingApproval() ? 'Track booking request' : 'View or manage this booking'}
               </Link>
@@ -393,11 +418,11 @@ export default function BookingConfirmation() {
               </Link>
 
               <Link href="/explore" className="btn btn-ghost">
-                Explore more businesses
+                Explore Mirëbook
               </Link>
 
               {role === 'business' && booking.business_id && (
-                <Link href={`/dashboard/bookings?businessId=${booking.business_id}`} className="btn btn-ghost">
+                <Link href={`/dashboard/bookings?businessId=${booking.business_id}&date=${booking.start_at.slice(0, 10)}`} className="btn btn-ghost">
                   Business bookings
                 </Link>
               )}
@@ -405,6 +430,75 @@ export default function BookingConfirmation() {
           </div>
         )}
       </section>
+
+      <style jsx>{`
+        .booking-confirmation-shell {
+          max-width: 760px;
+          margin: 0 auto;
+          display: grid;
+          gap: 1rem;
+        }
+
+        .booking-confirmation-hero {
+          text-align: center;
+          padding: 2.2rem;
+        }
+
+        .booking-confirmation-icon {
+          width: 72px;
+          height: 72px;
+          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+          margin: 0 auto 1rem;
+        }
+
+        .booking-confirmation-note-row {
+          display: flex;
+          gap: 0.75rem;
+          align-items: flex-start;
+        }
+
+        .booking-confirmation-details-header {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+        }
+
+        .booking-confirmation-details-grid {
+          display: grid;
+          gap: 0.85rem;
+        }
+
+        .booking-confirmation-actions {
+          display: flex;
+          gap: 0.75rem;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+          .booking-confirmation-hero {
+            padding: 1.5rem;
+          }
+
+          .booking-confirmation-note-row {
+            display: grid;
+          }
+
+          .booking-confirmation-actions :global(.btn),
+          .booking-confirmation-actions a,
+          .booking-confirmation-actions button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </main>
   )
 }

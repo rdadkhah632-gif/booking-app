@@ -139,14 +139,7 @@ export default function RescheduleBooking() {
       return
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single()
 
-    const userRole = profile?.role === 'business' ? 'business' : 'customer'
-    setRole(userRole)
 
     const { data: bookingData, error: bookingError } = await supabase
       .from('bookings')
@@ -199,6 +192,8 @@ export default function RescheduleBooking() {
 
     const isCustomerOwner = normalisedBooking.customer_user_id === session.user.id
     const isBusinessOwner = normalisedBooking.businesses?.user_id === session.user.id
+
+    setRole(isBusinessOwner && !isCustomerOwner ? 'business' : 'customer')
 
     if (!isCustomerOwner && !isBusinessOwner) {
       setError('You do not have permission to reschedule this booking.')
@@ -561,6 +556,60 @@ export default function RescheduleBooking() {
 
     return slot.staffIds[0] || ''
   }
+  function serviceName() {
+    return booking?.services?.name || 'your appointment'
+  }
+
+  function businessName() {
+    return booking?.businesses?.name || 'the business'
+  }
+
+  function appointmentDateTime(value: string) {
+    return new Date(value).toLocaleString()
+  }
+
+  async function createCustomerNotification(params: {
+    type: string
+    title: string
+    message: string
+    actionUrl: string
+    bookingRequestId?: string | null
+  }) {
+    if (!booking?.customer_user_id) return
+
+    await supabase.from('notifications').insert({
+      user_id: booking.customer_user_id,
+      business_id: booking.business_id,
+      booking_id: booking.id,
+      booking_request_id: params.bookingRequestId || null,
+      audience: 'customer',
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      action_url: params.actionUrl
+    })
+  }
+
+  async function createBusinessNotification(params: {
+    type: string
+    title: string
+    message: string
+    actionUrl: string
+    bookingRequestId?: string | null
+  }) {
+    if (!booking) return
+
+    await supabase.from('notifications').insert({
+      business_id: booking.business_id,
+      booking_id: booking.id,
+      booking_request_id: params.bookingRequestId || null,
+      audience: 'business',
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      action_url: params.actionUrl
+    })
+  }
 
   async function saveReschedule(e: React.FormEvent) {
     e.preventDefault()
@@ -615,20 +664,45 @@ export default function RescheduleBooking() {
         error = existingRequestError
       } else if (existingPendingRequest?.id) {
         const result = await supabase
-          .from('booking_requests')
-          .update({
-            current_start_at: booking.start_at,
-            requested_start_at: newStartAt,
-            current_staff_member_id: booking.staff_member_id || null,
-            requested_staff_member_id: staffMemberIdForReschedule,
-            requested_duration_minutes: newDuration,
-            message: 'Customer updated their requested appointment time.',
-            response_message: null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingPendingRequest.id)
+  .from('booking_requests')
+  .insert({
+    booking_id: booking.id,
+    business_id: booking.business_id,
+    customer_user_id: booking.customer_user_id,
+    requested_by: 'customer',
+    request_type: 'reschedule',
+    status: 'pending',
+    current_start_at: booking.start_at,
+    requested_start_at: newStartAt,
+    current_staff_member_id: booking.staff_member_id || null,
+    requested_staff_member_id: staffMemberIdForReschedule,
+    requested_duration_minutes: newDuration,
+    message: 'Customer requested a new appointment time.'
+  })
+  .select('id')
+  .single()
 
-        error = result.error
+error = result.error
+
+if (!error) {
+  await createBusinessNotification({
+    type: 'reschedule_requested',
+    title: 'New reschedule request',
+    message: `${booking.customer_name} requested to move ${serviceName()} from ${appointmentDateTime(booking.start_at)} to ${appointmentDateTime(newStartAt)}.`,
+    actionUrl: `/dashboard/notifications?businessId=${booking.business_id}`,
+    bookingRequestId: result.data?.id || null
+  })
+}
+
+if (!error) {
+  await createBusinessNotification({
+    type: 'reschedule_request_updated',
+    title: 'Reschedule request updated',
+    message: `${booking.customer_name} updated their reschedule request for ${serviceName()} to ${appointmentDateTime(newStartAt)}.`,
+    actionUrl: `/dashboard/notifications?businessId=${booking.business_id}`,
+    bookingRequestId: result.data?.id || existingPendingRequest.id
+  })
+}
       } else {
         const result = await supabase
           .from('booking_requests')
@@ -675,6 +749,14 @@ export default function RescheduleBooking() {
 
         error = cancelOtherRequestsError
       }
+if (!error) {
+  await createCustomerNotification({
+    type: 'booking_rescheduled_by_business',
+    title: 'Booking rescheduled',
+    message: `${businessName()} moved your ${serviceName()} booking from ${appointmentDateTime(booking.start_at)} to ${appointmentDateTime(newStartAt)}.`,
+    actionUrl: `/booking-confirmation?id=${booking.id}`
+  })
+}
     }
 
     setSaving(false)
@@ -703,7 +785,7 @@ export default function RescheduleBooking() {
       <section className="container" style={{ padding: '42px 24px 80px' }}>
         {loading && (
           <div className="card">
-            <p className="muted">Loading booking...</p>
+            <p className="muted">Loading Mirëbook booking...</p>
           </div>
         )}
 
@@ -734,7 +816,7 @@ export default function RescheduleBooking() {
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
                 {role === 'business'
                   ? 'Choose a smart calendar date, available time and staff choice. This updates the booking immediately.'
-                  : 'Choose a smart calendar date, available time and staff choice. Your original appointment stays confirmed until the business approves the change.'}
+                  : 'Choose a smart calendar date, available time and staff choice. Your original appointment stays confirmed until the business approves the change. Customers do not pay Mirëbook to request a reschedule.'}
               </p>
             </div>
 
@@ -753,6 +835,11 @@ export default function RescheduleBooking() {
                   ? 'Saving here immediately changes the customer booking.'
                   : 'Your original appointment stays confirmed until the business accepts your new requested time.'}
               </strong>
+<p className="small muted" style={{ marginTop: '0.45rem' }}>
+  {role === 'business'
+    ? 'Mirëbook will notify the customer after you save the new appointment time.'
+    : 'Mirëbook will notify the business when you send or update a reschedule request.'}
+</p>
             </div>
 
             {success && (

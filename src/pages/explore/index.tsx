@@ -263,7 +263,7 @@ export default function Explore() {
             </h1>
 
             <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 760 }}>
-              Browse published Mirëbook businesses, compare local services and choose a real available time with Any available staff or a specific staff member.
+              Browse published Mirëbook businesses across Albania, the UK and future international markets. Compare local services, choose a real available time with Any available staff or a specific staff member, and book without a customer checkout step.
             </p>
 
             <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
@@ -304,6 +304,19 @@ export default function Explore() {
               >
                 Smart calendar availability
               </span>
+
+              <span
+                className="small"
+                style={{
+                  background: 'var(--surface-2)',
+                  color: 'var(--text-muted)',
+                  padding: '0.25rem 0.65rem',
+                  borderRadius: 999,
+                  border: '1px solid var(--border)'
+                }}
+              >
+                No Mirëbook customer payment required
+              </span>
             </div>
           </div>
         </div>
@@ -330,7 +343,7 @@ export default function Explore() {
               Find a service
             </h3>
             <p className="small muted" style={{ marginBottom: '1rem' }}>
-              Filter by service type, business name or location. Mirëbook only shows businesses with active services, staff and working hours.
+              Filter by service type, business name or location. Mirëbook only shows published businesses with active services, active staff and working hours.
             </p>
 
             <div style={{ display: 'grid', gap: '1rem' }}>
@@ -432,6 +445,10 @@ export default function Explore() {
               <Link href="/register" className="btn btn-ghost">
                 List your business
               </Link>
+
+              <Link href="/support" className="btn btn-ghost">
+                Support
+              </Link>
             </div>
 
             {loading && (
@@ -444,11 +461,17 @@ export default function Explore() {
               <div className="card">
                 <h3>No bookable businesses yet</h3>
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  Businesses appear here when they are published and have active services, active staff and working hours configured.
+                  Businesses appear here when they are published and have active services, active staff and working hours configured. Customers can browse and book through Mirëbook without paying Mirëbook at checkout.
                 </p>
-                <Link href="/register" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                  Add the first business
-                </Link>
+                <div className="explore-empty-actions">
+                  <Link href="/register" className="btn btn-accent">
+                    Add the first business
+                  </Link>
+
+                  <Link href="/support" className="btn btn-ghost">
+                    Learn how Mirëbook works
+                  </Link>
+                </div>
               </div>
             )}
 
@@ -456,11 +479,17 @@ export default function Explore() {
               <div className="card">
                 <h3>No businesses match your filters</h3>
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  Try changing your search, category or city filter, or clear filters to view all bookable businesses.
+                  Try changing your search, category or city filter, or clear filters to view all bookable businesses. Mirëbook is being prepared for Albania, the UK and wider international markets.
                 </p>
-                <Link href="/register" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                  Add the first business
-                </Link>
+                <div className="explore-empty-actions">
+                  <button onClick={clearFilters} className="btn btn-accent">
+                    Clear filters
+                  </button>
+
+                  <Link href="/register" className="btn btn-ghost">
+                    List your business
+                  </Link>
+                </div>
               </div>
             )}
 
@@ -528,7 +557,7 @@ export default function Explore() {
                       </div>
 
                       <p className="muted small" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
-                        {business.description || 'Book available services through Mirëbook.'}
+                        {business.description || 'Book available services through Mirëbook. Customers do not pay Mirëbook to make appointments.'}
                       </p>
 
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
@@ -542,6 +571,19 @@ export default function Explore() {
                           }}
                         >
                           Bookable on Mirëbook
+                        </span>
+
+                        <span
+                          className="small"
+                          style={{
+                            background: 'var(--surface-2)',
+                            color: 'var(--text-muted)',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: 999,
+                            border: '1px solid var(--border)'
+                          }}
+                        >
+                          Customer booking only
                         </span>
 
                         <span
@@ -593,7 +635,7 @@ export default function Explore() {
 
                     <div className="explore-business-actions">
                       <Link href={`/explore/${business.id}`} className="btn btn-accent">
-                        View times
+                        View times and book
                       </Link>
 
                       {business.phone && (
@@ -611,6 +653,41 @@ export default function Explore() {
               })}
             </div>
           </section>
+        </div>
+      </section>
+      <section className="container explore-trust-section">
+        <div className="grid-3">
+          <div className="card">
+            <p className="small muted">For customers</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Book without checkout friction</h3>
+            <p className="muted" style={{ marginTop: '0.5rem' }}>
+              Mirëbook helps customers request or confirm appointments. Appointment payment is not part of the current customer flow.
+            </p>
+          </div>
+
+          <div className="card">
+            <p className="small muted">For businesses</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Subscription billing is separate</h3>
+            <p className="muted" style={{ marginTop: '0.5rem' }}>
+              Businesses can prepare subscription billing inside the dashboard while customer booking remains focused on appointments.
+            </p>
+            <Link href="/dashboard/billing" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
+              Billing groundwork
+            </Link>
+          </div>
+
+          <div className="card">
+            <p className="small muted">Support and trust</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Clear launch foundations</h3>
+            <p className="muted" style={{ marginTop: '0.5rem' }}>
+              Support, privacy and terms pages are in place for early testing and should be reviewed before public launch.
+            </p>
+            <div className="explore-trust-actions">
+              <Link href="/support" className="btn btn-ghost">Support</Link>
+              <Link href="/privacy" className="btn btn-ghost">Privacy</Link>
+              <Link href="/terms" className="btn btn-ghost">Terms</Link>
+            </div>
+          </div>
         </div>
       </section>
       <style jsx>{`
@@ -661,6 +738,18 @@ export default function Explore() {
           padding: 1rem;
         }
 
+        .explore-empty-actions,
+        .explore-trust-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
+        }
+
+        .explore-trust-section {
+          padding-bottom: 70px;
+        }
+
         @media (max-width: 980px) {
           .explore-layout-grid {
             grid-template-columns: 1fr;
@@ -692,6 +781,20 @@ export default function Explore() {
           }
 
           .explore-business-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .explore-empty-actions,
+          .explore-trust-actions {
+            display: grid;
+          }
+
+          .explore-empty-actions :global(.btn),
+          .explore-empty-actions button,
+          .explore-empty-actions a,
+          .explore-trust-actions :global(.btn),
+          .explore-trust-actions a {
             width: 100%;
             justify-content: center;
           }

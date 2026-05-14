@@ -7,6 +7,7 @@ import DashboardLayout from '@/components/DashboardLayout'
 type Business = {
   id: string
   name: string
+  published?: boolean | null
 }
 
 type Service = {
@@ -60,7 +61,7 @@ export default function Services() {
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
       .from('businesses')
-      .select('id, name')
+      .select('id, name, published')
       .eq('user_id', sessionUserId)
       .order('created_at', { ascending: false })
 
@@ -98,16 +99,7 @@ export default function Services() {
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single()
-
-      if (!profile || profile.role !== 'business') {
-        router.replace('/explore')
-        return
-      }
+      
 
       const selectedBusiness = await getBusinessContext(session.user.id)
 
@@ -180,16 +172,22 @@ export default function Services() {
     const averageDuration = services.length > 0
       ? services.reduce((total, service) => total + Number(service.duration_minutes || 0), 0) / services.length
       : 0
+const bookable = services.filter((service) =>
+  service.active && staffServices.some((link) => link.service_id === service.id)
+).length
 
+const totalValue = services.reduce((total, service) => total + Number(service.price || 0), 0)
     return {
-      total: services.length,
-      active,
-      inactive,
-      assigned,
-      unassigned,
-      averagePrice,
-      averageDuration
-    }
+  total: services.length,
+  active,
+  inactive,
+  assigned,
+  unassigned,
+  averagePrice,
+  averageDuration,
+  bookable,
+  totalValue
+}
   }, [services, staffServices])
 
   function assignedStaffForService(serviceId: string) {
@@ -329,6 +327,27 @@ export default function Services() {
   function serviceBookable(service: Service) {
     return service.active && assignedStaffForService(service.id).length > 0
   }
+function serviceReadinessText(service: Service) {
+  const assignedStaff = assignedStaffForService(service.id)
+
+  if (!service.active && assignedStaff.length === 0) {
+    return 'Hidden and needs staff assignment before customers can book.'
+  }
+
+  if (!service.active) {
+    return 'Hidden from customers. Show it when you are ready to take bookings.'
+  }
+
+  if (assignedStaff.length === 0) {
+    return 'Visible but not bookable yet because no staff are assigned.'
+  }
+
+  return 'Ready for customers to book through Mirëbook.'
+}
+
+function durationOptions() {
+  return [15, 30, 45, 60, 75, 90, 120]
+}
 
   function statusBadge(label: string, tone: 'success' | 'warning' | 'accent' | 'muted') {
     const styles = {
@@ -356,11 +375,11 @@ export default function Services() {
   return (
     <DashboardLayout
       title="Services setup"
-      subtitle={business ? `Create and manage customer-facing services for ${business.name}.` : 'Choose which business services to manage.'}
+      subtitle={business ? `Create Mirëbook services, pricing and bookability rules for ${business.name}.` : 'Choose which business services to manage.'}
     >
       {pageLoading && (
         <div className="card">
-          <p className="muted">Loading services...</p>
+          <p className="muted">Loading Mirëbook services...</p>
         </div>
       )}
 
@@ -380,7 +399,7 @@ export default function Services() {
         <div className="card">
           <h3>No business found</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Create a business profile first, then add services.
+            Create a business profile first, then add Mirëbook services customers can book.
           </p>
           <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
             Create business
@@ -394,7 +413,7 @@ export default function Services() {
             <p className="small muted">Multiple businesses found</p>
             <h3 style={{ marginTop: '0.25rem' }}>Choose a business to continue</h3>
             <p className="muted" style={{ marginTop: '0.35rem' }}>
-              Pick the business you want to configure. Services are managed per business because prices, staff and availability can differ.
+              Pick the business you want to configure. Mirëbook services are managed per business because prices, staff and availability can differ.
             </p>
           </div>
 
@@ -407,6 +426,9 @@ export default function Services() {
             >
               <div>
                 <strong>{b.name}</strong>
+                <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                  {b.published ? 'Published' : 'Hidden / draft'}
+                </p>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
                   Manage services for this business.
                 </p>
@@ -430,18 +452,18 @@ export default function Services() {
               borderColor: 'rgba(255,107,53,0.22)'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div className="services-hero-row">
               <div style={{ flex: 1, minWidth: 260 }}>
                 <p className="small" style={{ color: 'var(--accent)' }}>Setup sub-page</p>
                 <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
                   Services customers can book on Mirëbook.
                 </h2>
                 <p className="muted" style={{ marginTop: '0.55rem' }}>
-                  Add services with prices, durations, descriptions and optional images. A service becomes properly bookable once active staff are assigned to it.
+                  Add services with prices, durations, descriptions and optional images. Mirëbook only treats a service as properly bookable when it is visible and active staff are assigned to it.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div className="services-hero-actions">
                 <Link href="/dashboard/businesses" className="btn btn-ghost">
                   Back to setup hub
                 </Link>
@@ -455,7 +477,7 @@ export default function Services() {
             </div>
           </div>
 
-          <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+          <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
             <div className="card">
               <p className="small muted">Services</p>
               <h3>{serviceStats.total}</h3>
@@ -468,6 +490,12 @@ export default function Services() {
               <p className="muted small">Active customer-facing services</p>
             </div>
 
+            <div className="card" style={{ borderColor: serviceStats.bookable > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
+              <p className="small muted">Bookable</p>
+              <h3>{serviceStats.bookable}</h3>
+              <p className="muted small">Visible services with assigned staff</p>
+            </div>
+
             <div className="card" style={{ borderColor: serviceStats.unassigned > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
               <p className="small muted">Unassigned</p>
               <h3>{serviceStats.unassigned}</h3>
@@ -477,12 +505,12 @@ export default function Services() {
             <div className="card">
               <p className="small muted">Average service</p>
               <h3>£{serviceStats.averagePrice.toFixed(2)}</h3>
-              <p className="muted small">Avg. {Math.round(serviceStats.averageDuration)} minutes</p>
+              <p className="muted small">Avg. {Math.round(serviceStats.averageDuration)} minutes · £{serviceStats.totalValue.toFixed(2)} total list value</p>
             </div>
           </div>
 
           <div className="card" style={{ marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: formExpanded ? '1rem' : 0 }}>
+            <div className="services-form-header" style={{ marginBottom: formExpanded ? '1rem' : 0 }}>
               <div>
                 <p className="small muted">Create service</p>
                 <h3 style={{ marginTop: '0.25rem' }}>Add a new service</h3>
@@ -498,7 +526,7 @@ export default function Services() {
 
             {formExpanded && (
               <form onSubmit={addService} style={{ display: 'grid', gap: '1rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(240px, 0.8fr)', gap: '1rem', alignItems: 'start' }}>
+                <div className="services-create-grid">
                   <div style={{ display: 'grid', gap: '0.75rem' }}>
                     <input
                       placeholder="Service name e.g. Haircut, Dental Checkup"
@@ -519,6 +547,15 @@ export default function Services() {
                           required
                           style={{ marginTop: '0.35rem' }}
                         />
+                        <select
+                          value={duration}
+                          onChange={(e) => setDuration(Number(e.target.value))}
+                          style={{ marginTop: '0.35rem' }}
+                        >
+                          {durationOptions().map((minutes) => (
+                            <option key={minutes} value={minutes}>{minutes} minutes</option>
+                          ))}
+                        </select>
                       </label>
 
                       <label className="small muted">
@@ -584,7 +621,7 @@ export default function Services() {
 
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <button type="submit" disabled={loading} className="btn btn-accent">
-                    {loading ? 'Adding...' : 'Add service'}
+                    {loading ? 'Adding...' : 'Add Mirëbook service'}
                   </button>
 
                   <button type="button" onClick={resetForm} className="btn btn-ghost">
@@ -595,7 +632,7 @@ export default function Services() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gap: '1rem' }}>
+          <div className="services-list-grid">
             {services.length === 0 && (
               <div className="card">
                 <h3>No services yet</h3>
@@ -624,21 +661,20 @@ export default function Services() {
                     padding: 0
                   }}
                 >
-                  <div style={{ display: 'grid', gridTemplateColumns: service.image_url ? '180px minmax(0, 1fr)' : '1fr', gap: 0 }}>
+                  <div className={service.image_url ? 'service-card-grid service-card-grid-with-image' : 'service-card-grid'}>
                     {service.image_url && (
                       <div
                         style={{
                           minHeight: 180,
                           backgroundImage: `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${service.image_url})`,
                           backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          borderRight: '1px solid var(--border)'
+                          backgroundPosition: 'center'
                         }}
                       />
                     )}
 
-                    <div style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                    <div className="service-card-content">
+                      <div className="service-card-top-row">
                         <div style={{ flex: 1, minWidth: 260 }}>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.55rem' }}>
                             <strong>{service.name || 'Untitled service'}</strong>
@@ -669,6 +705,9 @@ export default function Services() {
                                 <p className="small muted">Bookability</p>
                                 <strong>{isBookable ? 'Customers can book this service' : 'Complete setup before customers can book this service'}</strong>
                                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                                  {serviceReadinessText(service)}
+                                </p>
+                                <p className="small muted" style={{ marginTop: '0.35rem' }}>
                                   Staff: {assignedStaff.length > 0
                                     ? assignedStaff.map((staff) => `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`).join(', ')
                                     : 'Assign active staff to make this service bookable.'}
@@ -685,7 +724,7 @@ export default function Services() {
                                 onChange={(e) => updateLocalService(service.id, 'name', e.target.value)}
                               />
 
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                              <div className="service-edit-grid">
                                 <input
                                   type="number"
                                   placeholder="Duration"
@@ -693,7 +732,14 @@ export default function Services() {
                                   onChange={(e) => updateLocalService(service.id, 'duration_minutes', Number(e.target.value))}
                                   min={5}
                                 />
-
+                                <select
+                                  value={service.duration_minutes}
+                                  onChange={(e) => updateLocalService(service.id, 'duration_minutes', Number(e.target.value))}
+                                >
+                                  {durationOptions().map((minutes) => (
+                                    <option key={minutes} value={minutes}>{minutes} minutes</option>
+                                  ))}
+                                </select>
                                 <input
                                   type="number"
                                   placeholder="Price"
@@ -734,7 +780,7 @@ export default function Services() {
                           )}
                         </div>
 
-                        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <div className="service-card-actions">
                           {isEditing ? (
                             <>
                               <button
@@ -780,6 +826,91 @@ export default function Services() {
           </div>
         </>
       )}
+      <style jsx>{`
+        .services-hero-row,
+        .services-form-header,
+        .service-card-top-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+
+        .services-hero-actions,
+        .service-card-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .services-create-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
+          gap: 1rem;
+          align-items: start;
+        }
+
+        .services-list-grid {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .service-card-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+
+        .service-card-grid-with-image {
+          grid-template-columns: 180px minmax(0, 1fr);
+        }
+
+        .service-card-grid-with-image > div:first-child {
+          border-right: 1px solid var(--border);
+        }
+
+        .service-card-content {
+          padding: 1rem;
+        }
+
+        .service-edit-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 0.75rem;
+        }
+
+        @media (max-width: 860px) {
+          .services-create-grid,
+          .service-card-grid-with-image {
+            grid-template-columns: 1fr;
+          }
+
+          .service-card-grid-with-image > div:first-child {
+            border-right: 0;
+            border-bottom: 1px solid var(--border);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .services-hero-actions,
+          .service-card-actions {
+            width: 100%;
+            justify-content: stretch;
+          }
+
+          .services-hero-actions :global(.btn),
+          .services-hero-actions a,
+          .services-hero-actions button,
+          .service-card-actions :global(.btn),
+          .service-card-actions a,
+          .service-card-actions button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }

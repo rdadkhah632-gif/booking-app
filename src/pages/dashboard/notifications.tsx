@@ -54,6 +54,7 @@ type BookingRequest = {
 type Booking = {
   id: string
   business_id: string
+  customer_user_id?: string | null
   customer_name: string
   customer_email?: string | null
   customer_phone?: string | null
@@ -63,6 +64,21 @@ type Booking = {
   businesses?: RelatedBusiness | RelatedBusiness[] | null
   services?: RelatedService | RelatedService[] | null
   staff_members?: RelatedStaff | RelatedStaff[] | null
+}
+
+type NotificationRow = {
+  id: string
+  user_id?: string | null
+  business_id?: string | null
+  booking_id?: string | null
+  booking_request_id?: string | null
+  audience: string
+  type: string
+  title: string
+  message?: string | null
+  action_url?: string | null
+  read_at?: string | null
+  created_at?: string | null
 }
 
 function firstRelation<T>(value: T | T[] | null | undefined) {
@@ -109,6 +125,7 @@ export default function BusinessNotifications() {
 
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [notifications, setNotifications] = useState<NotificationRow[]>([])
   const [businessIds, setBusinessIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
@@ -139,6 +156,7 @@ export default function BusinessNotifications() {
       if (ownedBusinessIds.length === 0) {
         setRequests([])
         setBookings([])
+        setNotifications([])
         setLoading(false)
         return
       }
@@ -148,6 +166,7 @@ export default function BusinessNotifications() {
         .select(`
           id,
           business_id,
+          customer_user_id,
           customer_name,
           customer_email,
           customer_phone,
@@ -179,6 +198,18 @@ export default function BusinessNotifications() {
       }))
 
       setBookings(normalisedBookings as Booking[])
+
+      const { data: notificationData, error: notificationError } = await supabase
+        .from('notifications')
+        .select('id, user_id, business_id, booking_id, booking_request_id, audience, type, title, message, action_url, read_at, created_at')
+        .in('business_id', ownedBusinessIds)
+        .eq('audience', 'business')
+        .order('created_at', { ascending: false })
+        .limit(30)
+
+      if (notificationError) throw notificationError
+
+      setNotifications((notificationData || []) as NotificationRow[])
 
       const { data: requestData, error: requestError } = await supabase
         .from('booking_requests')
@@ -263,6 +294,89 @@ export default function BusinessNotifications() {
     }
   }, [])
 
+  async function createCustomerNotification(params: {
+    userId?: string | null
+    businessId: string
+    bookingId?: string | null
+    bookingRequestId?: string | null
+    type: string
+    title: string
+    message: string
+    actionUrl: string
+  }) {
+    if (!params.userId) return
+
+    await supabase.from('notifications').insert({
+      user_id: params.userId,
+      business_id: params.businessId,
+      booking_id: params.bookingId || null,
+      booking_request_id: params.bookingRequestId || null,
+      audience: 'customer',
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      action_url: params.actionUrl
+    })
+  }
+
+  async function markNotificationRead(notification: NotificationRow) {
+    if (notification.read_at) return
+
+    const readAt = new Date().toISOString()
+
+    setNotifications((current) =>
+      current.map((item) => item.id === notification.id ? { ...item, read_at: readAt } : item)
+    )
+
+    await supabase
+      .from('notifications')
+      .update({ read_at: readAt })
+      .eq('id', notification.id)
+  }
+
+  async function markAllBusinessNotificationsRead() {
+    const unread = notifications.filter((notification) => !notification.read_at)
+    if (unread.length === 0) return
+
+    const readAt = new Date().toISOString()
+
+    setNotifications((current) =>
+      current.map((notification) => ({
+        ...notification,
+        read_at: notification.read_at || readAt
+      }))
+    )
+
+    await supabase
+      .from('notifications')
+      .update({ read_at: readAt })
+      .in('id', unread.map((notification) => notification.id))
+  }
+
+  function notificationTone(notification: NotificationRow) {
+    if (notification.type.includes('confirmed') || notification.type.includes('accepted') || notification.type.includes('created')) return 'success'
+    if (notification.type.includes('declined') || notification.type.includes('cancelled')) return 'warning'
+    if (notification.type.includes('approval') || notification.type.includes('requested')) return 'accent'
+    return 'muted'
+  }
+
+  function notificationBorder(notification: NotificationRow) {
+    const tone = notificationTone(notification)
+    if (tone === 'success') return 'rgba(45,212,191,0.28)'
+    if (tone === 'warning') return 'rgba(255,190,11,0.28)'
+    if (tone === 'accent') return 'rgba(255,107,53,0.28)'
+    return 'var(--border)'
+  }
+
+  function notificationBackground(notification: NotificationRow) {
+    if (notification.read_at) return 'var(--surface)'
+    const tone = notificationTone(notification)
+    if (tone === 'success') return 'rgba(45,212,191,0.06)'
+    if (tone === 'warning') return 'rgba(255,190,11,0.06)'
+    if (tone === 'accent') return 'rgba(255,107,53,0.06)'
+    return 'var(--surface)'
+  }
+
   async function acceptBooking(booking: Booking) {
     const confirmed = confirm('Accept this booking request and confirm the appointment?')
     if (!confirmed) return
@@ -282,6 +396,16 @@ export default function BusinessNotifications() {
       setError(error.message)
       return
     }
+
+    await createCustomerNotification({
+               userId: booking.customer_user_id,
+      businessId: booking.business_id,
+      bookingId: booking.id,
+      type: 'booking_confirmed',
+      title: 'Booking accepted',
+      message: `Your booking for ${serviceName(booking)} has been accepted and confirmed for ${new Date(booking.start_at).toLocaleString()}.`,
+      actionUrl: `/booking-confirmation?id=${booking.id}`
+    })
 
     await loadNotifications()
     router.replace('/dashboard/notifications?action=booking-accepted', undefined, { shallow: true })
@@ -306,6 +430,16 @@ export default function BusinessNotifications() {
       setError(error.message)
       return
     }
+
+    await createCustomerNotification({
+               userId: booking.customer_user_id,
+      businessId: booking.business_id,
+      bookingId: booking.id,
+      type: 'booking_declined',
+      title: 'Booking declined',
+      message: `Your booking request for ${serviceName(booking)} on ${new Date(booking.start_at).toLocaleString()} was declined.`,
+      actionUrl: '/my-bookings'
+    })
 
     await loadNotifications()
     router.replace('/dashboard/notifications?action=booking-declined', undefined, { shallow: true })
@@ -372,6 +506,17 @@ export default function BusinessNotifications() {
       return
     }
 
+    await createCustomerNotification({
+      userId: request.customer_user_id,
+      businessId: request.business_id,
+      bookingId: request.booking_id,
+      bookingRequestId: request.id,
+      type: 'reschedule_accepted',
+      title: 'Reschedule accepted',
+      message: `Your reschedule request has been accepted for ${new Date(request.requested_start_at).toLocaleString()}.`,
+      actionUrl: `/booking-confirmation?id=${request.booking_id}`
+    })
+
     await loadNotifications()
     router.replace('/dashboard/notifications?action=reschedule-accepted', undefined, { shallow: true })
   }
@@ -399,6 +544,17 @@ export default function BusinessNotifications() {
       setError(error.message)
       return
     }
+
+    await createCustomerNotification({
+      userId: request.customer_user_id,
+      businessId: request.business_id,
+      bookingId: request.booking_id,
+      bookingRequestId: request.id,
+      type: 'reschedule_declined',
+      title: 'Reschedule declined',
+      message: responseMessage || 'Your reschedule request was declined. The original booking remains unchanged.',
+      actionUrl: '/my-bookings'
+    })
 
     await loadNotifications()
     router.replace('/dashboard/notifications?action=reschedule-declined', undefined, { shallow: true })
@@ -430,6 +586,8 @@ export default function BusinessNotifications() {
   )
 
   const actionCount = pendingBookings.length + pendingRequests.length
+  const unreadBusinessNotifications = notifications.filter((notification) => !notification.read_at)
+  const recentBusinessNotifications = notifications.slice(0, 10)
 
   function statusLabel(status: string) {
     if (status === 'pending') return 'Pending approval'
@@ -543,6 +701,15 @@ export default function BusinessNotifications() {
             {loading ? 'Refreshing...' : 'Refresh notifications'}
           </button>
 
+          <button
+            type="button"
+            onClick={markAllBusinessNotificationsRead}
+            className="btn btn-ghost"
+            disabled={unreadBusinessNotifications.length === 0}
+          >
+            {unreadBusinessNotifications.length > 0 ? `Mark ${unreadBusinessNotifications.length} read` : 'All read'}
+          </button>
+
           <Link href="/dashboard/bookings?view=upcoming&status=pending" className="btn btn-accent">
             Pending bookings
           </Link>
@@ -567,6 +734,12 @@ export default function BusinessNotifications() {
           <h3>{actionCount}</h3>
           <p className="muted small">Items needing business review</p>
         </div>
+
+        <div className="card" style={{ borderColor: unreadBusinessNotifications.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
+          <p className="small muted">Unread updates</p>
+          <h3>{unreadBusinessNotifications.length}</h3>
+          <p className="muted small">Real Mirëbook notification records</p>
+        </div>
       </div>
 
       {loading && (
@@ -581,7 +754,7 @@ export default function BusinessNotifications() {
         </div>
       )}
 
-      {!loading && actionCount === 0 && (
+      {!loading && actionCount === 0 && recentBusinessNotifications.length === 0 && (
         <div className="card" style={{ marginBottom: '1.5rem' }}>
           <h3>No pending actions</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
@@ -591,6 +764,82 @@ export default function BusinessNotifications() {
           <Link href="/dashboard/bookings?view=today" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
             Open today’s bookings
           </Link>
+        </div>
+      )}
+
+      {!loading && recentBusinessNotifications.length > 0 && (
+        <div className="business-notification-section">
+          <div>
+            <p className="small muted">Notification inbox</p>
+            <h2 style={{ fontFamily: 'var(--font-display)' }}>
+              Recent business updates
+            </h2>
+            <p className="muted small" style={{ marginTop: '0.35rem' }}>
+              These are real Mirëbook notification rows for your business account.
+            </p>
+          </div>
+
+          {recentBusinessNotifications.map((notification) => (
+            <div
+              key={notification.id}
+              className="card"
+              style={{
+                borderColor: notificationBorder(notification),
+                background: notificationBackground(notification)
+              }}
+            >
+              <div className="business-notification-card-row">
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                    <strong>{notification.title}</strong>
+
+                    <span
+                      className="small"
+                      style={{
+                        background: notification.read_at ? 'var(--surface-2)' : 'var(--accent-dim)',
+                        color: notification.read_at ? 'var(--text-muted)' : 'var(--accent)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: 999,
+                        border: '1px solid var(--border)'
+                      }}
+                    >
+                      {notification.read_at ? 'Read' : 'Unread'}
+                    </span>
+                  </div>
+
+                  {notification.message && (
+                    <p className="small muted">{notification.message}</p>
+                  )}
+
+                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    {notification.created_at ? new Date(notification.created_at).toLocaleString() : 'Recently'}
+                  </p>
+                </div>
+
+                <div className="business-notification-card-actions">
+                  {notification.action_url && (
+                    <Link
+                      href={notification.action_url}
+                      className="btn btn-accent"
+                      onClick={() => markNotificationRead(notification)}
+                    >
+                      Open
+                    </Link>
+                  )}
+
+                  {!notification.read_at && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => markNotificationRead(notification)}
+                    >
+                      Mark read
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

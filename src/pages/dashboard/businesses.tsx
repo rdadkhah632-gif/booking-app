@@ -75,16 +75,6 @@ export default function Businesses() {
       return
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single()
-
-    if (!profile || profile.role !== 'business') {
-      router.replace('/explore')
-      return
-    }
 
     const { data, error } = await supabase
       .from('businesses')
@@ -208,7 +198,8 @@ export default function Businesses() {
       business.name?.trim() &&
       business.category?.trim() &&
       business.city?.trim() &&
-      business.description?.trim()
+      business.description?.trim() &&
+      business.phone?.trim()
     )
 
     const hasActiveServices = activeServices > 0
@@ -230,12 +221,14 @@ export default function Businesses() {
   const dashboardStats = useMemo(() => {
     const published = businesses.filter((business) => business.published).length
     const ready = businesses.filter((business) => getReadiness(business).readyToPublish).length
+    const incompletePublished = businesses.filter((business) => business.published && !getReadiness(business).readyToPublish).length
 
     return {
       total: businesses.length,
       published,
       hidden: businesses.length - published,
-      ready
+      ready,
+      incompletePublished
     }
   }, [businesses, services, staffMembers, availabilityRows])
 
@@ -279,7 +272,7 @@ export default function Businesses() {
 
     if (!business.published && !readiness.readyToPublish) {
       const confirmed = confirm(
-        'This business is missing setup details. You can publish it, but customers may not be able to book properly until services, staff and hours are complete. Publish anyway?'
+        'This business is missing setup details. You can publish it, but customers may not be able to book properly until profile details, services, staff and hours are complete. Publish anyway?'
       )
 
       if (!confirmed) {
@@ -306,16 +299,7 @@ export default function Businesses() {
 
   function readinessRow(label: string, complete: boolean, helper: string) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: '0.75rem',
-          alignItems: 'flex-start',
-          padding: '0.7rem 0',
-          borderBottom: '1px solid var(--border)'
-        }}
-      >
+      <div className="business-readiness-row">
         <div>
           <strong>{label}</strong>
           <p className="small muted" style={{ marginTop: '0.2rem' }}>
@@ -350,7 +334,7 @@ export default function Businesses() {
     return (
       <Link
         href={href}
-        className="card"
+        className="card business-setup-link-card"
         style={{
           background: ready
             ? 'linear-gradient(135deg, rgba(45,212,191,0.10), rgba(31,28,44,0.75))'
@@ -401,18 +385,18 @@ export default function Businesses() {
           borderColor: 'rgba(255,107,53,0.25)'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <div className="business-setup-hero-row">
           <div style={{ flex: 1, minWidth: 260 }}>
             <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook setup</p>
             <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
               Set up your business before customers book.
             </h2>
             <p className="muted" style={{ marginTop: '0.6rem' }}>
-              Most businesses only need one shop profile. This hub keeps your profile, services, staff, hours and publishing controls together so the sidebar stays focused on daily operations.
+              Most businesses only need one shop profile. This hub keeps your profile, services, staff, hours and publishing controls together so Mirëbook stays easy to run from desktop now and mobile app later.
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="business-setup-hero-actions">
             <Link href="/dashboard/services" className="btn btn-ghost">
               Manage services
             </Link>
@@ -426,7 +410,7 @@ export default function Businesses() {
         </div>
       </div>
 
-      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+      <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
         <div className="card">
           <p className="small muted">Businesses</p>
           <h3>{dashboardStats.total}</h3>
@@ -437,6 +421,12 @@ export default function Businesses() {
           <p className="small muted">Ready profiles</p>
           <h3>{dashboardStats.ready}/{dashboardStats.total}</h3>
           <p className="muted small">Profiles with services, staff and hours</p>
+        </div>
+
+        <div className="card" style={{ borderColor: dashboardStats.incompletePublished > 0 ? 'rgba(255,190,11,0.28)' : 'var(--border)' }}>
+          <p className="small muted">Live but incomplete</p>
+          <h3>{dashboardStats.incompletePublished}</h3>
+          <p className="muted small">Published profiles that still need setup attention</p>
         </div>
 
         <div className="card">
@@ -452,30 +442,16 @@ export default function Businesses() {
         </div>
       </div>
 
-      <form
-        onSubmit={createBusiness}
-        className="card"
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          marginBottom: '1.5rem'
-        }}
-      >
+      <form onSubmit={createBusiness} className="card business-create-card">
         <div>
           <p className="small muted">Create profile</p>
           <h3>Add a new business</h3>
           <p className="muted small" style={{ marginTop: '0.35rem' }}>
-            Create the business first, then add profile details, services, staff, working hours and publish when ready.
+            Create the business first, then add profile details, services, staff, working hours and publish when it is ready for customers.
           </p>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) auto',
-            gap: '0.75rem'
-          }}
-        >
+        <div className="business-create-row">
           <input
             placeholder="Business name"
             value={newName}
@@ -483,7 +459,7 @@ export default function Businesses() {
           />
 
           <button className="btn btn-accent" disabled={loading} type="submit">
-            {loading ? 'Adding...' : 'Add business'}
+            {loading ? 'Adding...' : 'Add business to Mirëbook'}
           </button>
         </div>
       </form>
@@ -502,7 +478,7 @@ export default function Businesses() {
 
       {pageLoading && (
         <div className="card">
-          <p className="muted">Loading your businesses...</p>
+          <p className="muted">Loading your Mirëbook businesses...</p>
         </div>
       )}
 
@@ -515,14 +491,14 @@ export default function Businesses() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gap: '1.25rem' }}>
+      <div className="business-profile-list">
         {businesses.map((business) => {
           const readiness = getReadiness(business)
 
           return (
             <div
               key={business.id}
-              className="card"
+              className="card business-profile-card"
               style={{
                 display: 'grid',
                 gap: '1rem',
@@ -533,15 +509,9 @@ export default function Businesses() {
                     : 'var(--border)'
               }}
             >
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '150px minmax(0, 1fr) auto',
-                  gap: '1rem',
-                  alignItems: 'start'
-                }}
-              >
+              <div className="business-profile-card-top">
                 <div
+                  className="business-profile-image-preview"
                   style={{
                     height: 112,
                     borderRadius: 'var(--radius)',
@@ -566,7 +536,7 @@ export default function Businesses() {
                   </h3>
 
                   <p className="small muted">
-                    {[business.category, business.city, business.country].filter(Boolean).join(' · ') || 'Add category and location'}
+                    {[business.category, business.city, business.country].filter(Boolean).join(' · ') || 'Add category and location before publishing'}
                   </p>
 
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
@@ -616,12 +586,12 @@ export default function Businesses() {
                   {publishingBusinessId === business.id
                     ? 'Updating...'
                     : business.published
-                      ? 'Unpublish'
-                      : 'Publish'}
+                      ? 'Hide from marketplace'
+                      : readiness.readyToPublish ? 'Publish to Mirëbook' : 'Publish anyway'}
                 </button>
               </div>
 
-              <div className="grid-2">
+              <div className="grid-2 business-setup-card-grid">
                 {setupCard(
                   'Services',
                   `${readiness.activeServices} active`,
@@ -654,29 +624,24 @@ export default function Businesses() {
                   business.published ? 'Live' : 'Hidden',
                   business.published
                     ? 'Preview how customers see this business on Mirëbook.'
-                    : 'Preview and publish when setup is complete.',
+                    : readiness.readyToPublish
+                      ? 'Preview the public page before publishing.'
+                      : 'Preview is available, but customers may not be able to book until setup is complete.',
                   business.published,
                   `/explore/${business.id}`,
                   'Open public page'
                 )}
               </div>
 
-              <div className="grid-2">
+              <div className="grid-2 business-detail-grid">
                 <div className="card" style={{ background: 'var(--surface-2)' }}>
                   <p className="small muted">Customer-facing profile</p>
                   <h3 style={{ marginTop: '0.25rem' }}>Profile details</h3>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    These details appear on the public Mirëbook marketplace and booking page.
+                    These details appear on the public Mirëbook marketplace, booking page and later in the mobile app view.
                   </p>
 
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                      gap: '0.75rem',
-                      marginTop: '1rem'
-                    }}
-                  >
+                  <div className="business-profile-input-grid">
                     <input
                       placeholder="Business name"
                       value={business.name || ''}
@@ -747,7 +712,7 @@ export default function Businesses() {
                     {readinessRow(
                       'Profile details',
                       readiness.profileComplete,
-                      'Name, category, city and description are filled in.'
+                      'Name, category, city, phone and description are filled in.'
                     )}
 
                     {readinessRow(
@@ -786,7 +751,7 @@ export default function Businesses() {
                       {business.auto_accept_bookings ?? true ? 'Auto-accept customer bookings' : 'Manually approve customer bookings'}
                     </h3>
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      Auto-accept confirms future customer bookings instantly. Manual approval sends new bookings to Notifications for review.
+                      Auto-accept confirms available customer bookings instantly. Manual approval sends new bookings to Needs action for review.
                     </p>
                   </div>
 
@@ -804,7 +769,7 @@ export default function Businesses() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div className="business-profile-actions">
                 <button
                   onClick={() => saveBusiness(business)}
                   className="btn btn-accent"
@@ -834,13 +799,126 @@ export default function Businesses() {
                 </Link>
 
                 <Link href={`/explore/${business.id}`} className="btn btn-ghost">
-                  Public page
+                  Preview public page
                 </Link>
               </div>
             </div>
           )
         })}
       </div>
+      <style jsx>{`
+        .business-setup-hero-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+
+        .business-setup-hero-actions,
+        .business-profile-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .business-create-card {
+          display: grid;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .business-create-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 0.75rem;
+        }
+
+        .business-profile-list {
+          display: grid;
+          gap: 1.25rem;
+        }
+
+        .business-profile-card {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .business-profile-card-top {
+          display: grid;
+          grid-template-columns: 150px minmax(0, 1fr) auto;
+          gap: 1rem;
+          align-items: start;
+        }
+
+        .business-profile-image-preview {
+          height: 112px;
+          border-radius: var(--radius);
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+        }
+
+        .business-setup-link-card {
+          text-decoration: none;
+          color: var(--text);
+        }
+
+        .business-setup-link-card:hover {
+          transform: translateY(-1px);
+          border-color: rgba(255,107,53,0.35);
+        }
+
+        .business-profile-input-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 0.75rem;
+          margin-top: 1rem;
+        }
+
+        .business-readiness-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: flex-start;
+          padding: 0.7rem 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        @media (max-width: 860px) {
+          .business-profile-card-top {
+            grid-template-columns: 1fr;
+          }
+
+          .business-profile-image-preview {
+            min-height: 160px;
+            height: auto;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .business-create-row {
+            grid-template-columns: 1fr;
+          }
+
+          .business-setup-hero-actions,
+          .business-profile-actions,
+          .business-setup-hero-actions :global(.btn),
+          .business-profile-actions :global(.btn),
+          .business-setup-hero-actions a,
+          .business-profile-actions a,
+          .business-profile-actions button {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .business-readiness-row {
+            display: grid;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }

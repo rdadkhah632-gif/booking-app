@@ -4,17 +4,32 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <meta name="application-name" content="Slotly" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Slotly" />
-        <meta name="description" content="Book local services with real availability." />
+        <meta name="application-name" content="Mirëbook" />
+        <meta
+          name="description"
+          content="Mirëbook helps customers discover and book local services with real availability, staff selection and appointment management."
+        />
         <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#0f0e17" />
         <meta name="theme-color" content="#0f0e17" />
+        <meta name="msapplication-TileColor" content="#0f0e17" />
+
+        <meta property="og:site_name" content="Mirëbook" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Mirëbook — Book local services" />
+        <meta
+          property="og:description"
+          content="Discover businesses, choose services, pick available times and manage bookings through Mirëbook."
+        />
+
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Mirëbook — Book local services" />
+        <meta
+          name="twitter:description"
+          content="Discover businesses, choose services, pick available times and manage bookings through Mirëbook."
+        />
 
         <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </Head>
 

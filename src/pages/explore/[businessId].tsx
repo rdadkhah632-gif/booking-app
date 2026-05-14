@@ -48,7 +48,16 @@ type Business = {
   phone?: string | null
   address?: string | null
   image_url?: string | null
-  auto_accept_bookings?: boolean
+    auto_accept_bookings?: boolean
+  booking_interval_minutes?: number | null
+  min_notice_minutes?: number | null
+  max_advance_days?: number | null
+  buffer_before_minutes?: number | null
+  buffer_after_minutes?: number | null
+  cancellation_policy?: string | null
+  reschedule_policy?: string | null
+  timezone?: string | null
+  currency?: string | null
 }
 
 type Booking = {
@@ -90,7 +99,7 @@ export default function BusinessBookingPage() {
 
   const [business, setBusiness] = useState<Business | null>(null)
   const [services, setServices] = useState<Service[]>([])
-const [availability, setAvailability] = useState<BusinessAvailability[]>([])
+  const [availability, setAvailability] = useState<BusinessAvailability[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
 
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
@@ -116,7 +125,7 @@ const [availability, setAvailability] = useState<BusinessAvailability[]>([])
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
-
+  const [customerNote, setCustomerNote] = useState('')
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -311,6 +320,80 @@ const [availability, setAvailability] = useState<BusinessAvailability[]>([])
   function addMinutes(date: Date, minutes: number) {
     return new Date(date.getTime() + minutes * 60000)
   }
+  function bookingIntervalMinutes() {
+    return business?.booking_interval_minutes || 15
+  }
+
+  function minNoticeMinutes() {
+    return business?.min_notice_minutes || 0
+  }
+
+  function maxAdvanceDays() {
+    return business?.max_advance_days || 60
+  }
+
+  function bufferBeforeMinutes() {
+    return business?.buffer_before_minutes || 0
+  }
+
+  function bufferAfterMinutes() {
+    return business?.buffer_after_minutes || 0
+  }
+
+  function currencySymbol() {
+    if (business?.currency === 'EUR') return '€'
+    if (business?.currency === 'ALL') return 'L'
+    if (business?.currency === 'USD') return '$'
+    return '£'
+  }
+
+  function formatServicePrice(price: number) {
+    return `${currencySymbol()}${Number(price || 0).toFixed(2)}`
+  }
+
+  function businessTimezoneLabel() {
+    return business?.timezone || 'local business time'
+  }
+
+  function cancellationPolicyText() {
+    return business?.cancellation_policy?.trim() || 'Cancellation policy has not been added by this business yet.'
+  }
+
+  function reschedulePolicyText() {
+    return business?.reschedule_policy?.trim() || 'Reschedule requests can be managed from My Bookings where available.'
+  }
+
+  async function createBookingNotifications(bookingId: string | null, bookingStatus: string, startAt: string, staffMemberId: string) {
+    if (!business || !businessId || Array.isArray(businessId) || !selectedService || !customerUserId) return
+
+    const appointmentTime = new Date(startAt).toLocaleString()
+    const staff = staffMembers.find((member) => member.id === staffMemberId)
+    const staffLabel = staff ? staff.name : 'Any available staff'
+
+    await supabase.from('notifications').insert([
+      {
+        user_id: customerUserId,
+        business_id: businessId,
+        booking_id: bookingId,
+        audience: 'customer',
+        type: bookingStatus === 'pending' ? 'booking_requested' : 'booking_confirmed',
+        title: bookingStatus === 'pending' ? 'Booking request sent' : 'Booking confirmed',
+        message: bookingStatus === 'pending'
+          ? `${business.name} will review your ${selectedService.name} booking request for ${appointmentTime}.`
+          : `Your ${selectedService.name} booking with ${business.name} is confirmed for ${appointmentTime}.`,
+        action_url: bookingId ? `/booking-confirmation?id=${bookingId}` : '/my-bookings'
+      },
+      {
+        business_id: businessId,
+        booking_id: bookingId,
+        audience: 'business',
+        type: bookingStatus === 'pending' ? 'booking_needs_approval' : 'booking_created',
+        title: bookingStatus === 'pending' ? 'New booking needs approval' : 'New booking created',
+        message: `${customerName.trim() || 'A customer'} booked ${selectedService.name} for ${appointmentTime} with ${staffLabel}.`,
+        action_url: `/dashboard/bookings?businessId=${businessId}&date=${selectedDate}`
+      }
+    ])
+  }
 
   function getServiceStaff(service: Service | null) {
     if (!service) return []
@@ -372,13 +455,21 @@ function getBusinessDayAvailabilityForDate(dateValue: string) {
     const slots: string[] = []
     let start = new Date(`${dateValue}T${dayAvailability.start_time}`)
     const end = new Date(`${dateValue}T${dayAvailability.end_time}`)
-const now = new Date()
-const slotIntervalMinutes = 15
+    const now = new Date()
+    const slotIntervalMinutes = bookingIntervalMinutes()
+    const earliestBookableTime = addMinutes(now, minNoticeMinutes())
+    const maxAdvanceDate = new Date(now)
+    maxAdvanceDate.setDate(maxAdvanceDate.getDate() + maxAdvanceDays())
+    maxAdvanceDate.setHours(23, 59, 59, 999)
     while (start.getTime() + service.duration_minutes * 60000 <= end.getTime()) {
-      const slotStart = new Date(start)
-      const slotEnd = addMinutes(slotStart, service.duration_minutes)
-      const timeString = slotStart.toTimeString().slice(0, 5)
-      const isPastSlot = slotStart < now
+      const visibleSlotStart = new Date(start)
+      const slotStart = addMinutes(visibleSlotStart, -bufferBeforeMinutes())
+      const appointmentEnd = addMinutes(visibleSlotStart, service.duration_minutes)
+      const slotEnd = addMinutes(appointmentEnd, bufferAfterMinutes())
+      const timeString = visibleSlotStart.toTimeString().slice(0, 5)
+      const isPastSlot = visibleSlotStart < now
+      const isTooSoon = visibleSlotStart < earliestBookableTime
+      const isTooFarAhead = visibleSlotStart > maxAdvanceDate
 
       const overlapsBooking = bookings.some((booking) => {
         if (booking.staff_member_id !== staffId) return false
@@ -391,7 +482,7 @@ const slotIntervalMinutes = 15
         return slotStart < bookingEnd && slotEnd > bookingStart
       })
 
-      if (!isPastSlot && !overlapsBooking) {
+      if (!isPastSlot && !isTooSoon && !isTooFarAhead && !overlapsBooking) {
         slots.push(timeString)
       }
 
@@ -463,7 +554,7 @@ const slotIntervalMinutes = 15
         ...availabilitySummary
       }
     })
-  }, [calendarMonth, selectedService, staffFilter, staffMembers, staffServices, staffAvailability, bookings])
+  }, [calendarMonth, selectedService, staffFilter, staffMembers, staffServices, staffAvailability, bookings, business])
 
   const selectedStaff = useMemo(() => {
     if (selectedStaffChoice === 'any') return null
@@ -525,7 +616,7 @@ const visibleServices = useMemo(() => {
       setSelectedTime('')
       setSelectedStaffChoice('any')
     }
-  }, [selectedDate, selectedService, staffFilter, staffAvailability, bookings, selectableStaff])
+  }, [selectedDate, selectedService, staffFilter, staffAvailability, bookings, selectableStaff, business])
 
   function staffForSlot(slotTime: string) {
     const slot = timeSlots.find((item) => item.time === slotTime)
@@ -598,7 +689,7 @@ const visibleServices = useMemo(() => {
     const startAt = new Date(`${selectedDate}T${selectedTime}:00`).toISOString()
     const bookingStatus = business?.auto_accept_bookings === false ? 'pending' : 'confirmed'
 
-    const { error } = await supabase
+    const { data: createdBooking, error } = await supabase
       .from('bookings')
       .insert({
         business_id: businessId,
@@ -608,10 +699,13 @@ const visibleServices = useMemo(() => {
         customer_name: customerName.trim(),
         customer_email: customerEmail.trim().toLowerCase(),
         customer_phone: customerPhone.trim() || null,
+        customer_notes: customerNote.trim() || null,
         start_at: startAt,
         duration_minutes: selectedService.duration_minutes,
         status: bookingStatus
       })
+      .select('id')
+      .single()
 
     setLoading(false)
 
@@ -625,18 +719,10 @@ const visibleServices = useMemo(() => {
       return
     }
 
-    const { data: latestBooking } = await supabase
-      .from('bookings')
-      .select('id')
-      .eq('business_id', businessId)
-      .eq('customer_user_id', customerUserId)
-      .eq('start_at', startAt)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+    await createBookingNotifications(createdBooking?.id || null, bookingStatus, startAt, staffMemberIdForBooking)
 
-    if (latestBooking?.id) {
-      router.push(`/booking-confirmation?id=${latestBooking.id}`)
+    if (createdBooking?.id) {
+      router.push(`/booking-confirmation?id=${createdBooking.id}`)
     } else {
       router.push(bookingStatus === 'pending' ? '/my-bookings?bookingRequested=1' : '/my-bookings')
     }
@@ -647,7 +733,7 @@ const visibleServices = useMemo(() => {
         <AuthNav />
         <section className="page-shell">
           <div className="container">
-            <p className="muted">Loading booking page...</p>
+            <p className="muted">Loading Mirëbook booking page...</p>
           </div>
         </section>
       </main>
@@ -663,7 +749,7 @@ const visibleServices = useMemo(() => {
             <h1 className="page-title">Business not found</h1>
             <p className="page-sub">This business may be hidden, unpublished or unavailable.</p>
             <Link href="/explore" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-              Back to explore
+              Back to Mirëbook marketplace
             </Link>
           </div>
         </section>
@@ -693,23 +779,23 @@ const visibleServices = useMemo(() => {
           ← Back to results
         </Link>
 
-        {error && (
-          <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginTop: '1rem' }}>
-            <p style={{ color: 'var(--danger)' }}>{error}</p>
+            {error && (
+              <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginTop: '1rem' }}>
+                <p style={{ color: 'var(--danger)' }}>{error}</p>
 
-            {(!customerUserId || userRole !== 'customer') && (
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                <Link href="/login" className="btn btn-accent">
-                  Login to book
-                </Link>
+                {(!customerUserId || userRole !== 'customer') && (
+                  <div className="booking-action-row">
+                    <Link href="/login" className="btn btn-accent">
+                      Login to book
+                    </Link>
 
-                <Link href="/register" className="btn btn-ghost">
-                  Create customer account
-                </Link>
+                    <Link href="/register" className="btn btn-ghost">
+                      Create customer account
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
 
         <div className="card" style={{ marginTop: '1.5rem', overflow: 'hidden', padding: 0 }}>
           {business.image_url ? (
@@ -811,10 +897,23 @@ const visibleServices = useMemo(() => {
               >
                 Smart Mirëbook slots
               </span>
+
+              <span
+                className="small"
+                style={{
+                  background: 'var(--surface-2)',
+                  color: 'var(--text-muted)',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: 999,
+                  border: '1px solid var(--border)'
+                }}
+              >
+                No Mirëbook checkout
+              </span>
             </div>
 
             <p className="muted">
-              {business.description || 'Book available appointments through Mirëbook.'}
+              {business.description || 'Book available appointments through Mirëbook. Customers do not pay Mirëbook to make appointments.'}
             </p>
 
             <div style={{ display: 'grid', gap: '0.4rem', marginTop: '1rem' }}>
@@ -827,6 +926,10 @@ const visibleServices = useMemo(() => {
                   Phone: {business.phone}
                 </p>
               )}
+
+              <p className="small muted">
+                Times shown in {businessTimezoneLabel()} · {bookingIntervalMinutes()} minute slot grid
+              </p>
             </div>
           </div>
         </div>
@@ -834,16 +937,7 @@ const visibleServices = useMemo(() => {
        <div className="booking-page-grid">
           <section>
             <div className="card">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  flexWrap: 'wrap',
-                  alignItems: 'flex-end',
-                  marginBottom: '1rem'
-                }}
-              >
+              <div className="booking-section-heading">
                 <div>
                   <p className="small muted">Step 1</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>
@@ -920,7 +1014,7 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                       <div style={{ padding: service.image_url ? '1rem' : 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
                           <strong>{service.name}</strong>
-                          <strong>£{Number(service.price).toFixed(2)}</strong>
+                          <strong>{formatServicePrice(service.price)}</strong>
                         </div>
 
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.55rem' }}>
@@ -954,7 +1048,7 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                 {business.auto_accept_bookings === false ? 'Request appointment' : 'Book appointment'}
               </h2>
               <p className="small muted">
-                Mirëbook only shows days and times that can actually be booked. Choose a service, pick a smart date, select a time, then choose Any available staff or a specific person.
+                Mirëbook only shows days and times that can actually be booked. Choose a service, pick a smart date, select a time, then choose Any available staff or a specific person. Customers do not pay Mirëbook at booking.
               </p>
             </div>
 
@@ -981,10 +1075,10 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
               <div className="card" style={{ background: 'var(--surface-2)', marginBottom: '1rem' }}>
                 <strong>Login required</strong>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  You can browse services, but you need a customer account to confirm a booking.
+                  You can browse services, but you need a customer account to request or confirm a booking.
                 </p>
 
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                <div className="booking-action-row compact">
                   <Link href="/login" className="btn btn-accent">
                     Login
                   </Link>
@@ -1017,7 +1111,7 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                     <>
                       <strong>{selectedService.name}</strong>
                       <p className="small muted">
-                        {selectedService.duration_minutes} mins · £{Number(selectedService.price).toFixed(2)}
+                        {selectedService.duration_minutes} mins · {formatServicePrice(selectedService.price)}
                       </p>
                     </>
                   ) : (
@@ -1050,7 +1144,7 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
 
                       <div style={{ textAlign: 'center' }}>
                         <strong>{monthLabel(calendarMonth)}</strong>
-                        <p className="small muted">Unavailable days are disabled automatically</p>
+                        <p className="small muted">Unavailable days are disabled automatically · {businessTimezoneLabel()}</p>
                       </div>
 
                       <button type="button" onClick={() => moveCalendarMonth(1)} className="btn btn-ghost" style={{ padding: '0.5rem 0.7rem' }}>
@@ -1165,6 +1259,10 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                         Selected: <strong style={{ color: 'var(--text)' }}>{selectedDateLabel}</strong>
                       </p>
                     )}
+
+                    <p className="small muted" style={{ marginTop: '0.45rem' }}>
+                      Booking rules: {minNoticeMinutes() > 0 ? `${Math.round(minNoticeMinutes() / 60)}h minimum notice` : 'no minimum notice'} · up to {maxAdvanceDays()} days ahead
+                    </p>
                   </div>
                 )}
               </div>
@@ -1306,13 +1404,23 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
               <div className="card" style={{ background: 'var(--surface-2)', padding: '0.85rem' }}>
                 <p className="small muted">Summary</p>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {selectedService ? `${selectedService.name} · ${selectedService.duration_minutes} mins · £${Number(selectedService.price).toFixed(2)}` : 'No service selected'}
+                  {selectedService ? `${selectedService.name} · ${selectedService.duration_minutes} mins · ${formatServicePrice(selectedService.price)}` : 'No service selected'}
                 </p>
                 <p className="small muted">
                   {selectedDateLabel || 'No date selected'}{selectedTime ? ` · ${selectedTime}` : ''}
                 </p>
                 <p className="small muted">
                   {selectedStaffSummary()}
+                </p>
+              </div>
+
+              <div className="card" style={{ background: 'var(--surface-2)', padding: '0.85rem' }}>
+                <p className="small muted">Business policies</p>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  Cancellation: {cancellationPolicyText()}
+                </p>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  Reschedule: {reschedulePolicyText()}
                 </p>
               </div>
 
@@ -1342,6 +1450,14 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                 disabled={!customerUserId || userRole !== 'customer'}
               />
 
+              <textarea
+                placeholder="Optional note for the business"
+                value={customerNote}
+                onChange={(e) => setCustomerNote(e.target.value)}
+                rows={3}
+                disabled={!customerUserId || userRole !== 'customer'}
+              />
+
               <button
                 type="submit"
                 disabled={loading || !canSubmit}
@@ -1357,6 +1473,26 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
      </section>
 
 <style jsx>{`
+  .booking-action-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .booking-action-row.compact {
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .booking-section-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+  }
   .booking-page-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 430px;
@@ -1409,6 +1545,18 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
 
     .booking-time-grid {
       grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+    }
+
+    .booking-action-row,
+    .booking-section-heading {
+      display: grid;
+    }
+
+    .booking-action-row :global(.btn),
+    .booking-action-row a,
+    .booking-action-row button {
+      width: 100%;
+      justify-content: center;
     }
   }
 `}</style>

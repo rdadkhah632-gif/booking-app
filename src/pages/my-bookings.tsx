@@ -10,9 +10,9 @@ type Booking = {
   start_at: string
   duration_minutes: number
   status: string
-  businesses?: { name: string } | null
-  services?: { name: string; price: number } | null
-  staff_members?: { name: string; role_title?: string | null } | null
+  businesses?: { name: string } | { name: string }[] | null
+  services?: { name: string; price: number } | { name: string; price: number }[] | null
+  staff_members?: { name: string; role_title?: string | null } | { name: string; role_title?: string | null }[] | null
   completed_at?: string | null
 }
 
@@ -24,10 +24,13 @@ type BookingRequest = {
   requested_duration_minutes: number
   response_message?: string | null
   created_at: string
-  requested_staff?: {
+   requested_staff?: {
     name: string
     role_title?: string | null
-  } | null
+  } | {
+    name: string
+    role_title?: string | null
+  }[] | null
 }
 
 export default function MyBookings() {
@@ -58,16 +61,7 @@ export default function MyBookings() {
 
     setEmail(session.user.email || '')
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single()
-
-    if (profile?.role === 'business') {
-      router.replace('/dashboard')
-      return
-    }
+ 
 
     const { data, error } = await supabase
       .from('bookings')
@@ -93,7 +87,7 @@ export default function MyBookings() {
       staff_members: Array.isArray(booking.staff_members) ? booking.staff_members[0] || null : booking.staff_members
     }))
 
-    setBookings(normalisedBookings)
+      setBookings(normalisedBookings as Booking[])
 
     const { data: requestData, error: requestError } = await supabase
       .from('booking_requests')
@@ -126,7 +120,7 @@ export default function MyBookings() {
         : request.requested_staff
     }))
 
-    setRequests(normalisedRequests)
+    setRequests(normalisedRequests as BookingRequest[])
     setLoading(false)
   }
 
@@ -238,6 +232,34 @@ export default function MyBookings() {
     }
   }
 
+  function firstRelation<T>(value: T | T[] | null | undefined) {
+    return Array.isArray(value) ? value[0] : value
+  }
+
+  function businessName(booking: Booking) {
+    return firstRelation(booking.businesses)?.name || 'Business'
+  }
+
+  function serviceName(booking: Booking) {
+    return firstRelation(booking.services)?.name || 'Service not recorded'
+  }
+
+  function servicePrice(booking: Booking) {
+    return Number(firstRelation(booking.services)?.price || 0)
+  }
+
+  function staffName(booking: Booking) {
+    const staff = firstRelation(booking.staff_members)
+    if (!staff) return 'Staff not recorded'
+    return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
+  }
+
+  function requestedStaffName(request: BookingRequest) {
+    const staff = firstRelation(request.requested_staff)
+    if (!staff) return 'Staff not recorded'
+    return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
+  }
+
   function lifecycleTitle(booking: Booking, pendingRequest?: BookingRequest) {
     if (booking.status === 'pending') return 'Waiting for business approval'
     if (pendingRequest && booking.status === 'confirmed') return 'Confirmed appointment with a pending change request'
@@ -344,17 +366,17 @@ export default function MyBookings() {
     return (
       <div
         key={booking.id}
-        className="card"
+        className="card my-booking-card"
         style={{
           opacity: isLocked ? 0.78 : 1,
           borderColor: tone.border,
           background: tone.background
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className="my-booking-card-row">
           <div style={{ flex: 1, minWidth: 260 }}>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
-              <strong>{booking.businesses?.name || 'Business'}</strong>
+              <strong>{businessName(booking)}</strong>
               <span
                 className="small"
                 style={{
@@ -410,15 +432,14 @@ export default function MyBookings() {
               {lifecycleCopy(booking, pendingRequest)}
             </p>
 
-            <p className="small muted">Service: {booking.services?.name || 'Service not recorded'}</p>
+            <p className="small muted">Service: {serviceName(booking)}</p>
 
             <p className="small muted">
-              Staff: {booking.staff_members?.name || 'Staff not recorded'}
-              {booking.staff_members?.role_title ? ` — ${booking.staff_members.role_title}` : ''}
+              Staff: {staffName(booking)}
             </p>
 
             <p className="small muted">
-              Price: £{booking.services?.price ? Number(booking.services.price).toFixed(2) : '0.00'}
+              Price: £{servicePrice(booking).toFixed(2)}
             </p>
 
             <div
@@ -472,7 +493,7 @@ export default function MyBookings() {
                   borderColor: 'rgba(255,107,53,0.45)'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                <div className="my-booking-card-row">
                   <div>
                     <p className="small" style={{ color: 'var(--accent)' }}>
                       Requested change awaiting approval
@@ -509,8 +530,7 @@ export default function MyBookings() {
                   <strong>{new Date(pendingRequest.requested_start_at).toLocaleString()}</strong>
 
                   <p className="small muted" style={{ marginTop: '0.55rem' }}>
-                    Requested staff: {pendingRequest.requested_staff?.name || 'Staff not recorded'}
-                    {pendingRequest.requested_staff?.role_title ? ` — ${pendingRequest.requested_staff.role_title}` : ''}
+                    Requested staff: {requestedStaffName(pendingRequest)}
                   </p>
 
                   <p className="small muted">
@@ -525,7 +545,7 @@ export default function MyBookings() {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
+          <div className="my-booking-card-actions">
             {booking.status === 'pending' && (
               <>
                 <Link href="/notifications" className="btn btn-ghost">
@@ -590,14 +610,14 @@ export default function MyBookings() {
 
       <section className="container" style={{ padding: '36px 24px 70px' }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <p className="small muted">Customer dashboard</p>
+          <p className="small muted">Mirëbook customer dashboard</p>
 
           <h1 className="page-title">
-            My bookings
+            My Mirëbook bookings
           </h1>
 
           <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-            {email ? `Signed in as ${email}` : 'View and manage your appointments.'}
+            {email ? `Signed in as ${email}` : 'View and manage your Mirëbook appointments.'}
           </p>
 
           {router.query.bookingRequested && (
@@ -638,7 +658,7 @@ export default function MyBookings() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <div className="my-bookings-header-actions">
             <Link href="/account" className="btn btn-ghost">
               Account settings
             </Link>
@@ -652,16 +672,16 @@ export default function MyBookings() {
             </button>
 
             <Link href="/explore" className="btn btn-accent">
-              Browse businesses
+              Explore Mirëbook
             </Link>
           </div>
 
           <p className="small muted" style={{ marginTop: '0.75rem' }}>
-            Your bookings and pending requests refresh when you return to this tab. Use refresh if a recent change does not appear straight away.
+            Mirëbook refreshes your bookings and pending requests when you return to this tab. Use refresh if a recent change does not appear straight away.
           </p>
         </div>
 
-        <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+        <div className="grid-2 my-bookings-summary-grid" style={{ marginBottom: '1.5rem' }}>
           <button
             type="button"
             className="card"
@@ -731,7 +751,7 @@ export default function MyBookings() {
 
         {loading && (
           <div className="card">
-            <p className="muted">Loading your bookings...</p>
+            <p className="muted">Loading your Mirëbook bookings...</p>
           </div>
         )}
 
@@ -739,19 +759,19 @@ export default function MyBookings() {
           <div className="card">
             <h3>No bookings yet</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              You have not booked any appointments yet. Browse businesses and make your first booking.
+              You have not booked any appointments yet. Explore Mirëbook businesses and make your first booking.
             </p>
 
             <Link href="/explore" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-              Browse businesses
+              Explore Mirëbook
             </Link>
           </div>
         )}
 
         {!loading && bookings.length > 0 && (
-          <div style={{ display: 'grid', gap: '1.5rem' }}>
+          <div className="my-bookings-section-list">
             {pendingBookings.length > 0 && (
-              <section ref={pendingSectionRef} id="waiting-approval" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
+              <section ref={pendingSectionRef} id="waiting-approval" className="my-bookings-section">
                 <div>
                   <p className="small muted">Action status</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>Waiting for business approval</h2>
@@ -765,7 +785,7 @@ export default function MyBookings() {
             )}
 
             {pendingRescheduleCount > 0 && (
-              <section ref={changeRequestsSectionRef} id="change-requests" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
+              <section ref={changeRequestsSectionRef} id="change-requests" className="my-bookings-section">
                 <div>
                   <p className="small muted">Requested changes</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>Pending reschedule requests</h2>
@@ -781,7 +801,7 @@ export default function MyBookings() {
             )}
 
             {confirmedUpcomingBookings.length > 0 && (
-            <section ref={upcomingSectionRef} id="upcoming-bookings" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
+            <section ref={upcomingSectionRef} id="upcoming-bookings" className="my-bookings-section">
                 <div>
                   <p className="small muted">Schedule</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>Active confirmed appointments</h2>
@@ -801,7 +821,7 @@ export default function MyBookings() {
             )}
 
             {historyBookings.length > 0 && (
-            <section ref={historySectionRef} id="booking-history" style={{ display: 'grid', gap: '1rem', scrollMarginTop: 96 }}>
+            <section ref={historySectionRef} id="booking-history" className="my-bookings-section">
                 <div>
                   <p className="small muted">History</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>History and locked bookings</h2>
@@ -816,6 +836,52 @@ export default function MyBookings() {
           </div>
         )}
       </section>
+      <style jsx>{`
+        .my-bookings-header-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
+        }
+
+        .my-bookings-section-list {
+          display: grid;
+          gap: 1.5rem;
+        }
+
+        .my-bookings-section {
+          display: grid;
+          gap: 1rem;
+          scroll-margin-top: 96px;
+        }
+
+        .my-booking-card-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .my-booking-card-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          align-items: flex-start;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 640px) {
+          .my-bookings-header-actions :global(.btn),
+          .my-bookings-header-actions button,
+          .my-bookings-header-actions a,
+          .my-booking-card-actions :global(.btn),
+          .my-booking-card-actions button,
+          .my-booking-card-actions a {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </main>
   )
 }
