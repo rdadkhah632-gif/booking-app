@@ -36,6 +36,8 @@ type Booking = {
   customer_name: string
   customer_email?: string | null
   customer_phone?: string | null
+  customer_notes?: string | null
+  internal_notes?: string | null
   start_at: string
   end_at?: string | null
   duration_minutes: number
@@ -278,6 +280,8 @@ export default function StaffDashboardPage() {
           customer_name,
           customer_email,
           customer_phone,
+          customer_notes,
+          internal_notes,
           start_at,
           end_at,
           duration_minutes,
@@ -415,7 +419,30 @@ export default function StaffDashboardPage() {
       }
     })
   }, [bookings])
+  async function createCustomerNotification(params: {
+    booking: Booking
+    type: string
+    title: string
+    message: string
+    actionUrl: string
+  }) {
+    if (!params.booking.customer_user_id) return
 
+    await supabase.from('notifications').insert({
+      user_id: params.booking.customer_user_id,
+      business_id: params.booking.business_id,
+      booking_id: params.booking.id,
+      audience: 'customer',
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      action_url: params.actionUrl
+    })
+  }
+
+  function appointmentDateTime(booking: Booking) {
+    return new Date(booking.start_at).toLocaleString()
+  }
   async function markBookingComplete(booking: Booking) {
     const confirmed = confirm('Mark this appointment as completed?')
     if (!confirmed) return
@@ -436,7 +463,13 @@ export default function StaffDashboardPage() {
       setError(error.message)
       return
     }
-
+    await createCustomerNotification({
+      booking,
+      type: 'booking_completed',
+      title: 'Appointment completed',
+      message: `Your appointment for ${firstServiceName(booking) || 'your appointment'} on ${appointmentDateTime(booking)} has been marked as completed by staff.`,
+      actionUrl: '/my-bookings'
+    })
     setSuccess('Appointment marked as completed.')
     await loadStaffDashboard()
   }
@@ -482,6 +515,23 @@ export default function StaffDashboardPage() {
                 {[booking.customer_email, booking.customer_phone].filter(Boolean).join(' · ')}
               </p>
             )}
+            {(booking.customer_notes || booking.internal_notes) && (
+              <div className="staff-notes-box">
+                {booking.customer_notes && (
+                  <>
+                    <p className="small muted">Customer note</p>
+                    <p className="small">{booking.customer_notes}</p>
+                  </>
+                )}
+
+                {booking.internal_notes && (
+                  <>
+                    <p className="small muted" style={{ marginTop: booking.customer_notes ? '0.65rem' : 0 }}>Internal note</p>
+                    <p className="small">{booking.internal_notes}</p>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="staff-booking-actions">
@@ -509,7 +559,7 @@ export default function StaffDashboardPage() {
     return (
       <main>
         <AuthNav />
-        <section className="container" style={{ paddingTop: 40 }}>
+        <section className="container" style={{ paddingTop: 40, paddingBottom: 48 }}>
           <div className="card">
             <p className="muted">Loading your Mirëbook staff schedule...</p>
           </div>
@@ -533,8 +583,8 @@ export default function StaffDashboardPage() {
               This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-              <Link href="/explore" className="btn btn-ghost">
-                Explore Mirëbook
+              <Link href="/support" className="btn btn-ghost">
+                Staff support
               </Link>
               <Link href="/account" className="btn btn-accent">
                 Account settings
@@ -571,7 +621,7 @@ export default function StaffDashboardPage() {
                     Hi {staffProfile.name}
                   </h1>
                   <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                    {(Array.isArray(staffProfile.businesses) ? staffProfile.businesses[0]?.name : staffProfile.businesses?.name) || 'Your business'} · {staffProfile.role_title || staffProfile.permission_role || 'Staff member'}
+                    {(Array.isArray(staffProfile.businesses) ? staffProfile.businesses[0]?.name : staffProfile.businesses?.name) || 'Your business'} · {staffProfile.role_title || staffProfile.permission_role || 'Staff member'} · Staff-only workspace
                   </p>
                 </div>
               </div>
@@ -579,6 +629,9 @@ export default function StaffDashboardPage() {
               <div className="staff-hero-actions">
                 <Link href="/staff/availability" className="btn btn-accent">
                   Update availability
+                </Link>
+                <Link href="/notifications" className="btn btn-ghost">
+                  Updates
                 </Link>
                 <Link href="/account" className="btn btn-ghost">
                   Account
@@ -605,7 +658,7 @@ export default function StaffDashboardPage() {
               }}>
                 <p className="small muted">Today</p>
                 <h3>{todayBookings.length}</h3>
-                <p className="small muted">Appointments and requests today</p>
+                <p className="small muted">Assigned appointments today</p>
               </button>
 
               <button type="button" className="card staff-summary-button" onClick={() => setStatusFilter('active')}>
@@ -626,7 +679,7 @@ export default function StaffDashboardPage() {
                 <p className="small" style={{ color: 'var(--accent)' }}>Customer actions</p>
                 <h3 style={{ marginTop: '0.25rem' }}>{requests.length} pending request{requests.length === 1 ? '' : 's'}</h3>
                 <p className="muted small" style={{ marginTop: '0.4rem' }}>
-                  These requests are visible here for awareness. Business owners/managers approve or decline them from the business dashboard.
+                  These requests are visible here for awareness. Business owners or managers approve or decline them from the business dashboard; staff can prepare around likely schedule changes.
                 </p>
 
                 <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
@@ -655,7 +708,7 @@ export default function StaffDashboardPage() {
                     Your appointments
                   </h2>
                   <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    Mirëbook shows only appointments assigned to your staff profile.
+                    Mirëbook shows only appointments assigned to your staff profile. Service pricing, business profile and customer approvals stay with the business owner.
                   </p>
                 </div>
 
@@ -705,7 +758,7 @@ export default function StaffDashboardPage() {
                 <div className="card">
                   <h3>No appointments in this view</h3>
                   <p className="muted" style={{ marginTop: '0.5rem' }}>
-                    Try another date or status filter.
+                    Try another date or status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.
                   </p>
                 </div>
               )}
@@ -833,6 +886,13 @@ export default function StaffDashboardPage() {
           gap: 0.75rem;
           flex-wrap: wrap;
           justify-content: flex-end;
+        }
+        .staff-notes-box {
+          margin-top: 0.75rem;
+          padding: 0.8rem;
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          border: 1px solid var(--border);
         }
 
         @media (max-width: 820px) {

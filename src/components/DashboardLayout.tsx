@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
@@ -12,6 +12,7 @@ type Props = {
 export default function DashboardLayout({ children, title, subtitle }: Props) {
   const router = useRouter()
   const [pendingCount, setPendingCount] = useState(0)
+  const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadPendingNotifications() {
@@ -25,9 +26,11 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         .eq('user_id', session.user.id)
 
       const businessIds = (businesses || []).map((business) => business.id)
+      setPrimaryBusinessId(businessIds[0] || null)
 
       if (businessIds.length === 0) {
         setPendingCount(0)
+        setPrimaryBusinessId(null)
         return
       }
 
@@ -69,6 +72,10 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     { href: '/account', label: 'Account' }
   ]
 
+  const publicBusinessHref = useMemo(() => {
+    return primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
+  }, [primaryBusinessId])
+
   return (
     <main className="dashboard-layout">
       <aside className="sidebar">
@@ -100,11 +107,11 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
         <div style={{ marginTop: 'auto', padding: '1rem 0.5rem' }}>
           <p className="small muted" style={{ marginBottom: '0.5rem', paddingLeft: '0.5rem' }}>
-            Public side
+            Customer view
           </p>
 
-          <Link href="/explore" className="sidebar-link">
-            Marketplace
+          <Link href={publicBusinessHref} className="sidebar-link">
+            View public page
           </Link>
 
           <button
@@ -143,7 +150,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             <p className="small muted" style={{ marginTop: '0.45rem' }}>
               {pendingCount > 0
                 ? `${pendingCount} Mirëbook item${pendingCount === 1 ? '' : 's'} need your attention.`
-                : 'No customer actions need review right now.'}
+                : 'No customer actions need review right now. Use View public page to check how customers see your business.'}
             </p>
           </div>
 
@@ -154,6 +161,10 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
             <Link href="/dashboard/settings" className="btn btn-ghost dashboard-header-secondary">
               Settings
+            </Link>
+
+            <Link href={publicBusinessHref} className="btn btn-ghost dashboard-header-secondary">
+              View public page
             </Link>
 
             <Link

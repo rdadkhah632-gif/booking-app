@@ -267,7 +267,9 @@ export default function StaffAvailabilityPage() {
   const closedDays = useMemo(() => {
     return availability.filter((row) => row.is_closed).length
   }, [availability])
-
+  const hasUnsavedChangesHint = useMemo(() => {
+    return availability.length > 0
+  }, [availability])
   const totalWeeklyHours = useMemo(() => {
     return availability.reduce((total, row) => {
       if (row.is_closed) return total
@@ -371,7 +373,7 @@ export default function StaffAvailabilityPage() {
       return
     }
 
-    setSuccess('Availability saved. Mirëbook will use these hours when customers book with you.')
+    setSuccess('Availability saved. Mirëbook will use these staff hours when customers book with you.')
     await loadPage()
   }
 
@@ -400,7 +402,7 @@ export default function StaffAvailabilityPage() {
               Staff availability is not available yet
             </h1>
             <p className="muted" style={{ marginTop: '0.75rem' }}>
-              Ask the business owner to add your email in their Staff setup page, then log in again.
+              Ask the business owner to add your email in their Staff setup page, then log in again. Staff accounts can manage their own schedule and availability, but business profile, services and pricing stay with the business owner.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               <Link href="/staff" className="btn btn-accent">
@@ -408,6 +410,9 @@ export default function StaffAvailabilityPage() {
               </Link>
               <Link href="/account" className="btn btn-ghost">
                 Account settings
+              </Link>
+              <Link href="/support" className="btn btn-ghost">
+                Staff support
               </Link>
             </div>
           </div>
@@ -424,7 +429,7 @@ export default function StaffAvailabilityPage() {
                   Your working hours
                 </h1>
                 <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                  {staffProfile.name} · {businessName(staffProfile)}
+                  {staffProfile.name} · {businessName(staffProfile)} · Staff-only availability
                 </p>
               </div>
 
@@ -432,12 +437,21 @@ export default function StaffAvailabilityPage() {
                 <Link href="/staff" className="btn btn-ghost">
                   Staff dashboard
                 </Link>
+                <Link href="/account" className="btn btn-ghost">
+                  Account
+                </Link>
                 <button type="button" className="btn btn-accent" onClick={saveAvailability} disabled={saving}>
                   {saving ? 'Saving...' : 'Save availability'}
                 </button>
               </div>
             </div>
-
+<div className="card staff-availability-note">
+  <p className="small muted">Staff workspace</p>
+  <h3>These hours only control your own bookable staff availability.</h3>
+  <p className="muted small" style={{ marginTop: '0.45rem' }}>
+    Customers can only book you when the business is published, the service is active, the service is assigned to you, and both business and staff availability allow the selected time. Existing bookings are not moved automatically when you change these hours.
+  </p>
+</div>
             {error && (
               <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
                 <p style={{ color: 'var(--danger)' }}>{error}</p>
@@ -454,7 +468,7 @@ export default function StaffAvailabilityPage() {
               <div className="card">
                 <p className="small muted">Open days</p>
                 <h3>{openDays}</h3>
-                <p className="small muted">Days customers can book you</p>
+                <p className="small muted">Days customers can book you if assigned services are active</p>
               </div>
 
               <div className="card">
@@ -466,7 +480,7 @@ export default function StaffAvailabilityPage() {
               <div className="card">
                 <p className="small muted">Weekly hours</p>
                 <h3>{totalWeeklyHours.toFixed(1)}</h3>
-                <p className="small muted">Estimated bookable hours</p>
+                <p className="small muted">Estimated weekly staff availability</p>
               </div>
             </div>
 
@@ -488,6 +502,9 @@ export default function StaffAvailabilityPage() {
                   </button>
                   <button type="button" className="btn btn-ghost" onClick={applyExtendedTemplate}>
                     Mon-Sat 9-7
+                  </button>
+                  <button type="button" className="btn btn-accent" onClick={saveAvailability} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save changes'}
                   </button>
                 </div>
               </div>
@@ -539,7 +556,7 @@ export default function StaffAvailabilityPage() {
                       </div>
                     ) : (
                       <p className="muted small" style={{ marginTop: '0.85rem' }}>
-                        Customers cannot book you on this day.
+                        Customers cannot book you on this day unless the business reschedules an existing appointment manually.
                       </p>
                     )}
                   </div>
@@ -566,7 +583,7 @@ export default function StaffAvailabilityPage() {
 
               <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
                 {upcomingBookings.length === 0 && (
-                  <p className="muted">No upcoming assigned bookings found.</p>
+                  <p className="muted">No upcoming assigned bookings found. If you expected appointments here, ask the business owner to check staff assignment for each service.</p>
                 )}
 
                 {upcomingBookings.map((booking) => (
@@ -576,6 +593,11 @@ export default function StaffAvailabilityPage() {
                       {serviceName(booking)} · {new Date(booking.start_at).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · {formatTimeRange(booking)}
                     </p>
                     <p className="small muted">Status: {booking.status}</p>
+{booking.status === 'pending' && (
+  <p className="small muted" style={{ marginTop: '0.25rem' }}>
+    Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.
+  </p>
+)}
                   </div>
                 ))}
               </div>
@@ -600,6 +622,20 @@ export default function StaffAvailabilityPage() {
           gap: 0.75rem;
           flex-wrap: wrap;
           justify-content: flex-end;
+        }
+        .staff-availability-note {
+          margin-bottom: 1.5rem;
+          border-color: rgba(255,107,53,0.22);
+          background: rgba(255,107,53,0.06);
+        }
+
+        .staff-save-strip {
+          margin-top: 1.5rem;
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
         }
 
         .staff-template-header {
@@ -651,8 +687,18 @@ export default function StaffAvailabilityPage() {
 
           .staff-availability-actions,
           .staff-template-actions,
+          .staff-save-strip {
+            display: grid;
+          }
+
+          .staff-availability-actions,
+          .staff-template-actions,
+          .staff-save-strip,
           .staff-availability-actions :global(.btn),
-          .staff-template-actions :global(.btn) {
+          .staff-template-actions :global(.btn),
+          .staff-save-strip :global(.btn),
+          .staff-save-strip button,
+          .staff-save-strip a {
             width: 100%;
             justify-content: center;
           }

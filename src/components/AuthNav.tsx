@@ -15,6 +15,7 @@ export default function AuthNav() {
   const [availableModes, setAvailableModes] = useState<AccountMode[]>([])
   const [notificationCount, setNotificationCount] = useState(0)
   const [staffProfileId, setStaffProfileId] = useState<string | null>(null)
+  const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadUser() {
@@ -25,6 +26,7 @@ export default function AuthNav() {
         setAvailableModes([])
         setNotificationCount(0)
         setStaffProfileId(null)
+        setPrimaryBusinessId(null)
         setLoading(false)
         return
       }
@@ -37,7 +39,7 @@ export default function AuthNav() {
 
       const { data: ownedBusinesses } = await supabase
         .from('businesses')
-        .select('id')
+        .select('id, published')
         .eq('user_id', session.user.id)
         .limit(1)
 
@@ -48,6 +50,7 @@ export default function AuthNav() {
         .limit(1)
 
       const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
+      const primaryBusiness = ownedBusinesses?.[0] || null
       const hasStaffProfile = !!linkedStaff && linkedStaff.length > 0
       const modes: AccountMode[] = []
 
@@ -57,6 +60,7 @@ export default function AuthNav() {
 
       setAvailableModes(modes)
       setStaffProfileId(hasStaffProfile ? linkedStaff[0].id : null)
+      setPrimaryBusinessId(primaryBusiness?.id || null)
 
       if (hasStaffProfile && router.pathname.startsWith('/staff')) {
         setRole('staff')
@@ -108,7 +112,7 @@ export default function AuthNav() {
     }
 
     loadUser()
-  }, [])
+  }, [router.pathname])
 
   async function logout() {
     await supabase.auth.signOut()
@@ -116,6 +120,7 @@ export default function AuthNav() {
     setAvailableModes([])
     setNotificationCount(0)
     setStaffProfileId(null)
+    setPrimaryBusinessId(null)
     router.replace('/')
   }
 
@@ -141,6 +146,10 @@ export default function AuthNav() {
       return `Needs action (${notificationCount})`
     }
 
+    if (role === 'staff') {
+      return 'Staff updates'
+    }
+
     if (notificationCount <= 0) return 'Notifications'
     return `Notifications (${notificationCount})`
   }
@@ -153,6 +162,8 @@ export default function AuthNav() {
         : role === 'customer'
           ? '/explore'
           : '/'
+
+  const publicBusinessHref = primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
 
   function modeButton(mode: AccountMode, label: string) {
     return (
@@ -184,6 +195,10 @@ export default function AuthNav() {
                 Explore Mirëbook
               </Link>
 
+              <Link href="/support" className="muted nav-wide-only">
+                Support
+              </Link>
+
               <Link href="/login" className="muted">
                 Login
               </Link>
@@ -198,6 +213,10 @@ export default function AuthNav() {
             <>
               <Link href="/explore" className="muted">
                 Explore
+              </Link>
+
+              <Link href="/support" className="muted nav-wide-only">
+                Support
               </Link>
 
               <Link href="/my-bookings" className="muted">
@@ -235,16 +254,8 @@ export default function AuthNav() {
                 Dashboard
               </Link>
 
-              <Link href="/dashboard/analytics" className="muted nav-wide-only">
-                Analytics
-              </Link>
-
               <Link href="/dashboard/bookings" className="muted">
                 Bookings
-              </Link>
-
-              <Link href="/dashboard/businesses" className="muted">
-                Setup hub
               </Link>
 
               <Link
@@ -254,8 +265,20 @@ export default function AuthNav() {
                 {notificationLabel()}
               </Link>
 
-              <Link href="/explore" className="muted nav-wide-only">
-                Marketplace
+              <Link href="/dashboard/businesses" className="muted">
+                Setup hub
+              </Link>
+
+              <Link href="/dashboard/settings" className="muted nav-wide-only">
+                Settings
+              </Link>
+
+              <Link href="/dashboard/billing" className="muted nav-wide-only">
+                Billing
+              </Link>
+
+              <Link href={publicBusinessHref} className="muted nav-wide-only">
+                View public page
               </Link>
 
               {availableModes.length > 1 && (
@@ -286,8 +309,8 @@ export default function AuthNav() {
                 Availability
               </Link>
 
-              <Link href="/explore" className="muted nav-wide-only">
-                Marketplace
+              <Link href="/notifications" className="muted nav-wide-only">
+                Updates
               </Link>
 
               {availableModes.length > 1 && (
