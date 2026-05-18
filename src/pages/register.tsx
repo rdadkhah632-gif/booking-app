@@ -3,12 +3,16 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
+import { Locale } from '@/lib/i18n'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { locale, setLocale } = useI18n()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [preferredLanguage, setPreferredLanguage] = useState<Locale>('en')
   const [role, setRole] = useState<'customer' | 'business' | 'staff'>('customer')
   const [detectedStaffInvite, setDetectedStaffInvite] = useState<{
     id: string
@@ -75,6 +79,10 @@ export default function RegisterPage() {
   }, [router.isReady])
 
   useEffect(() => {
+    setPreferredLanguage(locale)
+  }, [locale])
+
+  useEffect(() => {
     async function checkStaffInvite() {
       const cleanEmail = email.trim().toLowerCase()
 
@@ -105,6 +113,7 @@ export default function RegisterPage() {
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault()
+    await setLocale(preferredLanguage)
     setLoading(true)
     setError(null)
     setMessage(null)
@@ -133,7 +142,8 @@ export default function RegisterPage() {
       options: {
         data: {
           role: role === 'staff' ? 'customer' : role,
-          account_mode: role
+          account_mode: role,
+          preferred_language: preferredLanguage
         }
       }
     })
@@ -151,7 +161,8 @@ export default function RegisterPage() {
           {
             id: data.user.id,
             email: cleanEmail,
-            role: role === 'staff' ? 'customer' : role
+            role: role === 'staff' ? 'customer' : role,
+            preferred_language: preferredLanguage
           },
           { onConflict: 'id' }
         )
@@ -314,6 +325,21 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
+            <label className="small muted" style={{ display: 'grid', gap: '0.4rem' }}>
+              Preferred language
+              <select
+                value={preferredLanguage}
+                onChange={(e) => {
+                  const nextLanguage = e.target.value as Locale
+                  setPreferredLanguage(nextLanguage)
+                  setLocale(nextLanguage)
+                }}
+              >
+                <option value="en">English</option>
+                <option value="sq">Shqip</option>
+              </select>
+            </label>
 
             <button type="submit" disabled={loading} className="btn btn-accent">
               {loading
