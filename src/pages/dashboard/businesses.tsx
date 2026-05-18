@@ -50,11 +50,13 @@ type Readiness = {
   hasActiveStaff: boolean
   hasStaffServiceAssignments: boolean
   hasWorkingHours: boolean
+  hasBusinessImage: boolean
   readyToPublish: boolean
   activeServices: number
   activeStaff: number
   staffServiceAssignments: number
   workingDays: number
+  missingItems: string[]
 }
 
 export default function Businesses() {
@@ -71,7 +73,7 @@ export default function Businesses() {
   const [pageLoading, setPageLoading] = useState(true)
   const [savingBusinessId, setSavingBusinessId] = useState<string | null>(null)
   const [publishingBusinessId, setPublishingBusinessId] = useState<string | null>(null)
-const [uploadingBusinessId, setUploadingBusinessId] = useState<string | null>(null)
+  const [uploadingBusinessId, setUploadingBusinessId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -213,42 +215,68 @@ const [uploadingBusinessId, setUploadingBusinessId] = useState<string | null>(nu
     setLoading(false)
   }
 
-  function updateLocalBusiness(id: string, field: keyof Business, value: string | boolean) {
+    function updateLocalBusiness(id: string, field: keyof Business, value: string | boolean) {
     setBusinesses((prev) =>
       prev.map((business) =>
         business.id === id ? { ...business, [field]: value } : business
       )
     )
   }
-async function uploadBusinessImage(business: Business, file: File | null) {
-  if (!file) return
 
-  setUploadingBusinessId(business.id)
-  setError(null)
-  setSuccess(null)
+  async function uploadBusinessImage(business: Business, file: File | null) {
+    if (!file) return
 
-  try {
-    const uploaded = await uploadMirebookImage({
-      file,
-      folder: 'businesses',
-      recordId: business.id
-    })
+    setUploadingBusinessId(business.id)
+    setError(null)
+    setSuccess(null)
 
-    const { error: updateError } = await supabase
+    try {
+      const uploaded = await uploadMirebookImage({
+        file,
+        folder: 'businesses',
+        recordId: business.id
+      })
+
+      const { error: updateError } = await supabase
+        .from('businesses')
+        .update({ image_url: uploaded.publicUrl })
+        .eq('id', business.id)
+
+      if (updateError) throw updateError
+
+      updateLocalBusiness(business.id, 'image_url', uploaded.publicUrl)
+      setSuccess(`${business.name || 'Business'} image uploaded.`)
+      await loadBusinesses()
+    } catch (err: any) {
+      setError(err.message || 'Could not upload business image.')
+    } finally {
+      setUploadingBusinessId(null)
+    }
+  }
+
+  async function removeBusinessImage(business: Business) {
+    const confirmed = confirm('Remove this business image from the public marketplace profile?')
+    if (!confirmed) return
+
+    setUploadingBusinessId(business.id)
+    setError(null)
+    setSuccess(null)
+
+    const { error } = await supabase
       .from('businesses')
-      .update({ image_url: uploaded.publicUrl })
+      .update({ image_url: null })
       .eq('id', business.id)
 
-    if (updateError) throw updateError
-
-    updateLocalBusiness(business.id, 'image_url', uploaded.publicUrl)
-    setSuccess(`${business.name || 'Business'} image uploaded.`)
-    await loadBusinesses()
-  } catch (err: any) {
-    setError(err.message || 'Could not upload business image.')
-  } finally {
     setUploadingBusinessId(null)
-  }
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    updateLocalBusiness(business.id, 'image_url', '')
+    setSuccess(`${business.name || 'Business'} image removed.`)
+    await loadBusinesses()
 }
   function getReadiness(business: Business): Readiness {
     const activeServices = services.filter((service) => service.business_id === business.id && service.active).length
@@ -279,18 +307,29 @@ async function uploadBusinessImage(business: Business, file: File | null) {
     const hasActiveStaff = activeStaff > 0
     const hasStaffServiceAssignments = staffServiceAssignments > 0
     const hasWorkingHours = workingDays > 0
+    const hasBusinessImage = Boolean(business.image_url?.trim())
+    const missingItems: string[] = []
+
+    if (!profileComplete) missingItems.push('profile details')
+    if (!hasBusinessImage) missingItems.push('business image')
+    if (!hasActiveServices) missingItems.push('active services')
+    if (!hasActiveStaff) missingItems.push('active staff')
+    if (!hasStaffServiceAssignments) missingItems.push('staff-service assignments')
+    if (!hasWorkingHours) missingItems.push('working hours')
 
     return {
       profileComplete,
       hasActiveServices,
       hasActiveStaff,
       hasStaffServiceAssignments,
-      hasWorkingHours,
-      readyToPublish: profileComplete && hasActiveServices && hasActiveStaff && hasStaffServiceAssignments && hasWorkingHours,
+           hasWorkingHours,
+      hasBusinessImage,
+      readyToPublish: profileComplete && hasBusinessImage && hasActiveServices && hasActiveStaff && hasStaffServiceAssignments && hasWorkingHours,
       activeServices,
       activeStaff,
       staffServiceAssignments,
-      workingDays
+      workingDays,
+      missingItems
     }
   }
 
@@ -347,7 +386,7 @@ async function uploadBusinessImage(business: Business, file: File | null) {
     const readiness = getReadiness(business)
 
     if (!business.published && !readiness.readyToPublish) {
-      setError('Complete profile details, active services, active staff, staff-service assignment and working hours before publishing this business.')
+      setError(`Complete ${readiness.missingItems.join(', ')} before publishing this business to Mirëbook.`)
       setPublishingBusinessId(null)
       return
     }
@@ -480,6 +519,9 @@ async function uploadBusinessImage(business: Business, file: File | null) {
             <Link href="/dashboard/settings" className="btn btn-ghost">
               Settings
             </Link>
+<Link href="/support/business" className="btn btn-ghost">
+  Business support
+</Link>
             <Link href="/dashboard/billing" className="btn btn-ghost">
               Billing
             </Link>
@@ -497,7 +539,7 @@ async function uploadBusinessImage(business: Business, file: File | null) {
         <div className="card" style={{ borderColor: dashboardStats.ready > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
           <p className="small muted">Ready profiles</p>
           <h3>{dashboardStats.ready}/{dashboardStats.total}</h3>
-          <p className="muted small">Profiles with services, assigned staff and hours</p>
+          <p className="muted small">Profiles with image, services, assigned staff and hours</p>
         </div>
 
         <div className="card" style={{ borderColor: dashboardStats.incompletePublished > 0 ? 'rgba(255,190,11,0.28)' : 'var(--border)' }}>
@@ -524,7 +566,7 @@ async function uploadBusinessImage(business: Business, file: File | null) {
           <p className="small muted">Create profile</p>
           <h3>Add a new business</h3>
           <p className="muted small" style={{ marginTop: '0.35rem' }}>
-            Create the business first, then add profile details, services, staff, working hours and publish when it is ready for customers.
+            Create the business first, then add profile details, a business image, services, staff, working hours and publish when it is ready for customers.
           </p>
         </div>
 
@@ -651,6 +693,19 @@ async function uploadBusinessImage(business: Business, file: File | null) {
                       }}
                     >
                       {readiness.readyToPublish ? 'Ready to book' : 'Setup incomplete'}
+{!readiness.hasBusinessImage && (
+  <span
+    className="small"
+    style={{
+      background: 'rgba(255,190,11,0.12)',
+      color: 'var(--warning)',
+      padding: '0.2rem 0.55rem',
+      borderRadius: 999
+    }}
+  >
+    Image needed
+  </span>
+)}
                     </span>
                   </div>
                 </div>
@@ -664,7 +719,7 @@ async function uploadBusinessImage(business: Business, file: File | null) {
                     ? 'Updating...'
                     : business.published
                       ? 'Hide from marketplace'
-                      : readiness.readyToPublish ? 'Publish to Mirëbook' : 'Complete setup to publish'}
+                      : readiness.readyToPublish ? 'Publish to Mirëbook' : 'Finish setup first'}
                 </button>
               </div>
 
@@ -802,7 +857,7 @@ async function uploadBusinessImage(business: Business, file: File | null) {
       <button
         type="button"
         className="btn btn-ghost"
-        onClick={() => updateLocalBusiness(business.id, 'image_url', '')}
+        onClick={() => removeBusinessImage(business)}
       >
         Remove image
       </button>
@@ -834,6 +889,11 @@ async function uploadBusinessImage(business: Business, file: File | null) {
                       readiness.profileComplete,
                       'Name, category, city, phone and description are filled in.'
                     )}
+{readinessRow(
+  'Business image',
+  readiness.hasBusinessImage,
+  readiness.hasBusinessImage ? 'A marketplace image is uploaded.' : 'Upload a business image before publishing.'
+)}
 
                     {readinessRow(
                       'Active services',
@@ -931,6 +991,9 @@ async function uploadBusinessImage(business: Business, file: File | null) {
                 <Link href={`/dashboard/billing?businessId=${business.id}`} className="btn btn-ghost">
                   Billing
                 </Link>
+<Link href="/support/business" className="btn btn-ghost">
+  Support
+</Link>
 
               <Link href={`/explore/${business.id}`} className="btn btn-ghost">
   View public page

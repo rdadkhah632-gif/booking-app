@@ -15,6 +15,8 @@ type Business = {
   address?: string | null
   image_url?: string | null
   auto_accept_bookings?: boolean | null
+  published?: boolean | null
+  created_at?: string | null
   services?: { id: string; active: boolean }[] | null
   staff_members?: { id: string; active: boolean }[] | null
   availability?: { id: string; is_closed?: boolean | null }[] | null
@@ -24,6 +26,7 @@ type BusinessCardStats = {
   activeServices: number
   activeStaff: number
   openDays: number
+  missing: string[]
   bookable: boolean
 }
 
@@ -58,7 +61,7 @@ export default function Explore() {
 
     try {
       const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Supabase request timed out after 8 seconds')), 8000)
+        setTimeout(() => reject(new Error('Mirëbook could not load marketplace results. Please refresh and try again.')), 8000)
       )
 
       const query = supabase
@@ -110,7 +113,7 @@ export default function Explore() {
         }))
         .filter((business: Business) => {
           const stats = getBusinessStats(business)
-          return stats.bookable
+          return business.published === true && stats.bookable
         })
 
       setBusinesses(normalisedBusinesses)
@@ -130,11 +133,17 @@ export default function Explore() {
     const activeServices = (business.services || []).filter((service) => service.active).length
     const activeStaff = (business.staff_members || []).filter((staff) => staff.active).length
     const openDays = (business.availability || []).filter((row) => row.is_closed !== true).length
+    const missing: string[] = []
+
+    if (activeServices === 0) missing.push('active services')
+    if (activeStaff === 0) missing.push('active staff')
+    if (openDays === 0) missing.push('working hours')
 
     return {
       activeServices,
       activeStaff,
       openDays,
+      missing,
       bookable: activeServices > 0 && activeStaff > 0 && openDays > 0
     }
   }
@@ -157,6 +166,18 @@ export default function Explore() {
 
   function bookingModeLabel(business: Business) {
     return business.auto_accept_bookings === false ? 'Approval required' : 'Instant confirmation'
+  }
+
+  function locationLabel(business: Business) {
+    return [business.address, business.city, business.country]
+      .filter(Boolean)
+      .join(', ') || 'Location details coming soon'
+  }
+
+  function imageBackground(business: Business) {
+    if (!business.image_url) return 'var(--accent-dim)'
+
+    return `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.68)), url("${business.image_url}")`
   }
 
   const cities = useMemo(() => {
@@ -263,7 +284,7 @@ export default function Explore() {
             </h1>
 
             <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 760 }}>
-              Browse published Mirëbook businesses across Albania, the UK and future international markets. Compare local services, choose a real available time with Any available staff or a specific staff member, and book without a customer checkout step.
+              Browse bookable Mirëbook businesses with active services, staff and working hours. Choose a service, pick an available time, and send a booking request or instant confirmation depending on the business settings.
             </p>
 
             <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
@@ -302,7 +323,7 @@ export default function Explore() {
                   border: '1px solid var(--border)'
                 }}
               >
-                Smart calendar availability
+                Availability-based booking
               </span>
 
               <span
@@ -315,7 +336,7 @@ export default function Explore() {
                   border: '1px solid var(--border)'
                 }}
               >
-                No Mirëbook customer payment required
+                No customer checkout yet
               </span>
             </div>
           </div>
@@ -323,9 +344,9 @@ export default function Explore() {
 
         {error && (
           <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,77,109,0.35)' }}>
-            <h3 style={{ color: 'var(--danger)' }}>Could not load businesses</h3>
+            <h3 style={{ color: 'var(--danger)' }}>Could not load marketplace results</h3>
             <p className="muted small" style={{ marginTop: '0.5rem' }}>
-              Supabase returned this error:
+              Refresh the marketplace or contact customer support if this keeps happening.
             </p>
             <pre style={{
               whiteSpace: 'pre-wrap',
@@ -334,6 +355,15 @@ export default function Explore() {
             }}>
               {error}
             </pre>
+            <div className="explore-empty-actions">
+              <button type="button" onClick={loadBusinesses} className="btn btn-accent">
+                Retry marketplace
+              </button>
+
+              <Link href="/support/customer" className="btn btn-ghost">
+                Customer support
+              </Link>
+            </div>
           </div>
         )}
 
@@ -343,7 +373,7 @@ export default function Explore() {
               Find a service
             </h3>
             <p className="small muted" style={{ marginBottom: '1rem' }}>
-              Filter by service type, business name or location. Mirëbook only shows published businesses with active services, active staff and working hours.
+              Search businesses that are currently bookable on Mirëbook. Only published businesses with active services, active staff and working hours appear here.
             </p>
 
             <div style={{ display: 'grid', gap: '1rem' }}>
@@ -352,7 +382,7 @@ export default function Explore() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Barber, nails, dentist, salon..."
+                  placeholder="Business, service, city..."
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
               </div>
@@ -362,7 +392,7 @@ export default function Explore() {
                 <input
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Barber, Nails, Dentist..."
+                  placeholder="Barber, nails, salon..."
                   list="category-options"
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
@@ -379,7 +409,7 @@ export default function Explore() {
                 <input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="Tirana, Coventry, London..."
+                  placeholder="Tirana, Coventry, Milan..."
                   list="city-options"
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
@@ -446,8 +476,8 @@ export default function Explore() {
                 List your business
               </Link>
 
-              <Link href="/support" className="btn btn-ghost">
-                Support
+              <Link href="/support/customer" className="btn btn-ghost">
+                Customer support
               </Link>
             </div>
 
@@ -461,15 +491,15 @@ export default function Explore() {
               <div className="card">
                 <h3>No bookable businesses yet</h3>
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  Businesses appear here when they are published and have active services, active staff and working hours configured. Customers can browse and book through Mirëbook without paying Mirëbook at checkout.
+                  Businesses appear here when they are published and have active services, active staff and working hours configured. Customers can browse and request appointments without a Mirëbook checkout step.
                 </p>
                 <div className="explore-empty-actions">
                   <Link href="/register" className="btn btn-accent">
                     Add the first business
                   </Link>
 
-                  <Link href="/support" className="btn btn-ghost">
-                    Learn how Mirëbook works
+                  <Link href="/support/customer" className="btn btn-ghost">
+                    Customer support
                   </Link>
                 </div>
               </div>
@@ -479,7 +509,7 @@ export default function Explore() {
               <div className="card">
                 <h3>No businesses match your filters</h3>
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  Try changing your search, category or city filter, or clear filters to view all bookable businesses. Mirëbook is being prepared for Albania, the UK and wider international markets.
+                  Try changing your search, category or city filter, or clear filters to view all currently bookable businesses.
                 </p>
                 <div className="explore-empty-actions">
                   <button onClick={clearFilters} className="btn btn-accent">
@@ -508,9 +538,7 @@ export default function Explore() {
                       className="explore-business-image"
                       style={{
                         minHeight: 150,
-                        background: business.image_url
-                          ? `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${business.image_url})`
-                          : 'var(--accent-dim)',
+                        background: imageBackground(business),
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         borderRight: '1px solid var(--border)',
@@ -557,7 +585,7 @@ export default function Explore() {
                       </div>
 
                       <p className="muted small" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
-                        {business.description || 'Book available services through Mirëbook. Customers do not pay Mirëbook to make appointments.'}
+                        {business.description || 'Book available services through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.'}
                       </p>
 
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
@@ -583,7 +611,7 @@ export default function Explore() {
                             border: '1px solid var(--border)'
                           }}
                         >
-                          Customer booking only
+                          Appointment booking
                         </span>
 
                         <span
@@ -627,15 +655,17 @@ export default function Explore() {
                       </div>
 
                       <p className="small muted">
-                        {[business.address, business.city, business.country]
-                          .filter(Boolean)
-                          .join(', ') || 'Location not added yet'}
+                        {locationLabel(business)}
                       </p>
                     </div>
 
                     <div className="explore-business-actions">
                       <Link href={`/explore/${business.id}`} className="btn btn-accent">
                         View times and book
+                      </Link>
+
+                      <Link href={`/book/${business.id}`} className="btn btn-ghost">
+                        Book now
                       </Link>
 
                       {business.phone && (
@@ -661,15 +691,15 @@ export default function Explore() {
             <p className="small muted">For customers</p>
             <h3 style={{ marginTop: '0.25rem' }}>Book without checkout friction</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Mirëbook helps customers request or confirm appointments. Appointment payment is not part of the current customer flow.
+              Mirëbook helps customers request or confirm appointments. Payment/deposit collection is not part of the current customer booking flow.
             </p>
           </div>
 
           <div className="card">
             <p className="small muted">For businesses</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Subscription billing is separate</h3>
+            <h3 style={{ marginTop: '0.25rem' }}>Business billing is separate</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Businesses can prepare subscription billing inside the dashboard while customer booking remains focused on appointments.
+              Business subscription controls are separate from the customer booking journey, so public booking stays focused on appointments.
             </p>
             <Link href="/dashboard/billing" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
               Billing groundwork
@@ -683,7 +713,7 @@ export default function Explore() {
               Support, privacy and terms pages are in place for early testing and should be reviewed before public launch.
             </p>
             <div className="explore-trust-actions">
-              <Link href="/support" className="btn btn-ghost">Support</Link>
+              <Link href="/support/customer" className="btn btn-ghost">Customer support</Link>
               <Link href="/privacy" className="btn btn-ghost">Privacy</Link>
               <Link href="/terms" className="btn btn-ghost">Terms</Link>
             </div>
@@ -715,6 +745,7 @@ export default function Explore() {
           align-items: stretch;
           overflow: hidden;
           padding: 0;
+          min-height: 170px;
         }
 
         .explore-business-image {
@@ -736,6 +767,7 @@ export default function Explore() {
           align-items: flex-end;
           justify-content: center;
           padding: 1rem;
+          min-width: 180px;
         }
 
         .explore-empty-actions,
@@ -783,6 +815,10 @@ export default function Explore() {
           .explore-business-actions :global(.btn) {
             width: 100%;
             justify-content: center;
+          }
+
+          .explore-business-actions {
+            min-width: 0;
           }
 
           .explore-empty-actions,

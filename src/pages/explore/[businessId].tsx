@@ -17,6 +17,7 @@ type StaffMember = {
   id: string
   name: string
   role_title?: string | null
+  image_url?: string | null
 }
 
 type StaffService = {
@@ -48,7 +49,7 @@ type Business = {
   phone?: string | null
   address?: string | null
   image_url?: string | null
-    auto_accept_bookings?: boolean
+  auto_accept_bookings?: boolean
   booking_interval_minutes?: number | null
   min_notice_minutes?: number | null
   max_advance_days?: number | null
@@ -172,7 +173,7 @@ export default function BusinessBookingPage() {
       .single()
 
     if (businessError) {
-      setError(businessError.message)
+      setError('This business is not currently available for public booking.')
       setPageLoading(false)
       return
     }
@@ -196,7 +197,7 @@ export default function BusinessBookingPage() {
 
     const { data: staffData, error: staffError } = await supabase
       .from('staff_members')
-      .select('id, name, role_title')
+      .select('id, name, role_title, image_url')
       .eq('business_id', businessId)
       .eq('active', true)
       .order('created_at', { ascending: false })
@@ -270,17 +271,21 @@ export default function BusinessBookingPage() {
   }, [businessId])
 
   useEffect(() => {
+    function refreshOnFocus() {
+      loadBookingPage()
+    }
+
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
         loadBookingPage()
       }
     }
 
-    window.addEventListener('focus', loadBookingPage)
+    window.addEventListener('focus', refreshOnFocus)
     document.addEventListener('visibilitychange', refreshWhenActive)
 
     return () => {
-      window.removeEventListener('focus', loadBookingPage)
+      window.removeEventListener('focus', refreshOnFocus)
       document.removeEventListener('visibilitychange', refreshWhenActive)
     }
   }, [businessId])
@@ -351,6 +356,32 @@ export default function BusinessBookingPage() {
     return `${currencySymbol()}${Number(price || 0).toFixed(2)}`
   }
 
+  function locationLabel() {
+    return [business?.address, business?.city, business?.country]
+      .filter(Boolean)
+      .join(', ') || 'Location details coming soon'
+  }
+
+  function heroBackgroundImage() {
+    if (!business?.image_url) return undefined
+    return `linear-gradient(rgba(11, 18, 32, 0.2), rgba(11, 18, 32, 0.75)), url("${business.image_url}")`
+  }
+
+  function serviceImageBackground(service: Service) {
+    if (!service.image_url) return undefined
+    return `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url("${service.image_url}")`
+  }
+
+  function bookingModeText() {
+    return business?.auto_accept_bookings === false ? 'Booking request' : 'Instant booking'
+  }
+
+  function bookingModeDescription() {
+    return business?.auto_accept_bookings === false
+      ? 'This business reviews new booking requests before confirming them.'
+      : 'This business confirms new bookings instantly when you choose an available slot.'
+  }
+
   function businessTimezoneLabel() {
     return business?.timezone || 'local business time'
   }
@@ -360,7 +391,7 @@ export default function BusinessBookingPage() {
   }
 
   function reschedulePolicyText() {
-    return business?.reschedule_policy?.trim() || 'Reschedule requests can be managed from My Bookings where available.'
+    return business?.reschedule_policy?.trim() || 'Reschedule requests can be managed from My Bookings when available.'
   }
 
   async function createBookingNotifications(bookingId: string | null, bookingStatus: string, startAt: string, staffMemberId: string) {
@@ -594,6 +625,17 @@ const visibleServices = useMemo(() => {
   })
 }, [services, staffServices])
 
+const setupIssueMessages = useMemo(() => {
+  const issues: string[] = []
+
+  if (services.length === 0) issues.push('No active services are available yet.')
+  if (staffMembers.length === 0) issues.push('No active staff are available yet.')
+  if (availability.filter((row) => row.is_closed !== true).length === 0) issues.push('No working hours are available yet.')
+  if (bookableServiceCount === 0 && services.length > 0) issues.push('Services are visible but not assigned to staff yet.')
+
+  return issues
+}, [services, staffMembers, availability, bookableServiceCount])
+
   function businessIcon() {
     if (business?.category?.toLowerCase().includes('dent')) return '🦷'
     if (business?.category?.toLowerCase().includes('barber')) return '💈'
@@ -751,6 +793,10 @@ const visibleServices = useMemo(() => {
             <Link href="/explore" className="btn btn-accent" style={{ marginTop: '1rem' }}>
               Back to Mirëbook marketplace
             </Link>
+
+            <Link href="/support/customer" className="btn btn-ghost" style={{ marginTop: '1rem', marginLeft: '0.75rem' }}>
+              Customer support
+            </Link>
           </div>
         </section>
       </main>
@@ -802,7 +848,7 @@ const visibleServices = useMemo(() => {
             <div
               style={{
                 minHeight: 210,
-                backgroundImage: `linear-gradient(rgba(11, 18, 32, 0.2), rgba(11, 18, 32, 0.75)), url(${business.image_url})`,
+                backgroundImage: heroBackgroundImage(),
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 display: 'flex',
@@ -895,7 +941,7 @@ const visibleServices = useMemo(() => {
                   border: '1px solid var(--border)'
                 }}
               >
-                Smart Mirëbook slots
+                Availability-based slots
               </span>
 
               <span
@@ -908,17 +954,17 @@ const visibleServices = useMemo(() => {
                   border: '1px solid var(--border)'
                 }}
               >
-                No Mirëbook checkout
+                No customer checkout yet
               </span>
             </div>
 
             <p className="muted">
-              {business.description || 'Book available appointments through Mirëbook. Customers do not pay Mirëbook to make appointments.'}
+              {business.description || 'Book available appointments through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.'}
             </p>
 
             <div style={{ display: 'grid', gap: '0.4rem', marginTop: '1rem' }}>
               <p className="small muted">
-                {[business.address, business.city, business.country].filter(Boolean).join(', ') || 'Location not added'}
+                {locationLabel()}
               </p>
 
               {business.phone && (
@@ -928,11 +974,35 @@ const visibleServices = useMemo(() => {
               )}
 
               <p className="small muted">
+                Booking mode: {bookingModeText()} · {bookingModeDescription()}
+              </p>
+
+              <p className="small muted">
                 Times shown in {businessTimezoneLabel()} · {bookingIntervalMinutes()} minute slot grid
               </p>
             </div>
           </div>
         </div>
+
+        {setupIssueMessages.length > 0 && (
+          <div className="card" style={{ borderColor: 'rgba(255,190,11,0.3)', background: 'rgba(255,190,11,0.06)', marginTop: '1rem' }}>
+            <p className="small" style={{ color: 'var(--warning)' }}>Limited booking setup</p>
+            <h3 style={{ marginTop: '0.25rem' }}>Some booking information is not ready yet</h3>
+            <ul style={{ marginTop: '0.75rem', paddingLeft: '1.2rem', color: 'var(--text-muted)' }}>
+              {setupIssueMessages.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+            <div className="booking-action-row compact">
+              <Link href="/support/customer" className="btn btn-ghost">
+                Customer support
+              </Link>
+              <Link href="/explore" className="btn btn-ghost">
+                Back to marketplace
+              </Link>
+            </div>
+          </div>
+        )}
 
        <div className="booking-page-grid">
           <section>
@@ -1004,7 +1074,7 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                         <div
                           style={{
                             minHeight: 120,
-                            backgroundImage: `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${service.image_url})`,
+                            backgroundImage: serviceImageBackground(service),
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
                           }}
@@ -1048,7 +1118,7 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                 {business.auto_accept_bookings === false ? 'Request appointment' : 'Book appointment'}
               </h2>
               <p className="small muted">
-                Mirëbook only shows days and times that can actually be booked. Choose a service, pick a smart date, select a time, then choose Any available staff or a specific person. Customers do not pay Mirëbook at booking.
+                Mirëbook only shows days and times that can actually be booked. Choose a service, pick a date, select a time, then choose Any available staff or a specific person. Customers do not pay through Mirëbook at booking.
               </p>
             </div>
 
@@ -1062,12 +1132,10 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
               }}
             >
               <p className="small" style={{ color: business.auto_accept_bookings === false ? 'var(--accent)' : 'var(--success)' }}>
-                {business.auto_accept_bookings === false ? 'Booking approval required' : 'Instant confirmation'}
+                {bookingModeText()}
               </p>
               <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {business.auto_accept_bookings === false
-                  ? 'This business reviews new booking requests before confirming them.'
-                  : 'This business confirms new bookings instantly.'}
+                {bookingModeDescription()}
               </p>
             </div>
 
@@ -1086,6 +1154,10 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                   <Link href="/register" className="btn btn-ghost">
                     Register
                   </Link>
+
+                  <Link href="/support/customer" className="btn btn-ghost">
+                    Help
+                  </Link>
                 </div>
               </div>
             )}
@@ -1099,6 +1171,10 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
 
                 <Link href="/dashboard" className="btn btn-accent" style={{ marginTop: '0.75rem' }}>
                   Go to dashboard
+                </Link>
+
+                <Link href="/support/business" className="btn btn-ghost" style={{ marginTop: '0.75rem', marginLeft: '0.5rem' }}>
+                  Business support
                 </Link>
               </div>
             )}
@@ -1412,6 +1488,9 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
                 <p className="small muted">
                   {selectedStaffSummary()}
                 </p>
+                <p className="small muted">
+                  {business.auto_accept_bookings === false ? 'This will be sent as a booking request.' : 'This will be confirmed instantly if the slot is still available.'}
+                </p>
               </div>
 
               <div className="card" style={{ background: 'var(--surface-2)', padding: '0.85rem' }}>
@@ -1465,7 +1544,7 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
               >
                 {loading
                   ? business.auto_accept_bookings === false ? 'Sending request...' : 'Booking...'
-                  : business.auto_accept_bookings === false ? 'Request booking' : 'Confirm booking'}
+                  : business.auto_accept_bookings === false ? 'Send booking request' : 'Confirm appointment'}
               </button>
             </form>
           </aside>
@@ -1557,6 +1636,13 @@ cursor: isBookable ? 'pointer' : 'not-allowed'
     .booking-action-row button {
       width: 100%;
       justify-content: center;
+    }
+
+    .booking-summary-panel input,
+    .booking-summary-panel textarea,
+    .booking-summary-panel select,
+    .booking-summary-panel .btn {
+      width: 100%;
     }
   }
 `}</style>
