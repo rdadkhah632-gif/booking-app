@@ -30,9 +30,11 @@ type BusinessRow = {
   min_notice_minutes?: number | null
   max_advance_days?: number | null
   profiles?: {
+    id?: string | null
     email?: string | null
     full_name?: string | null
   } | {
+    id?: string | null
     email?: string | null
     full_name?: string | null
   }[] | null
@@ -67,6 +69,10 @@ function ownerEmail(business: BusinessRow) {
 function ownerName(business: BusinessRow) {
   const profile = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
   return profile?.full_name || 'No owner name'
+}
+function ownerId(business: BusinessRow) {
+  const profile = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
+  return profile?.id || business.user_id || ''
 }
 
 function formatMoney(value?: number | null) {
@@ -195,6 +201,7 @@ export default function AdminBusinessesPage() {
           min_notice_minutes,
           max_advance_days,
           profiles (
+            id,
             email,
             full_name
           )
@@ -442,6 +449,14 @@ export default function AdminBusinessesPage() {
                 Admin overview
               </Link>
 
+              <Link href="/admin/users" className="btn btn-ghost">
+                Users
+              </Link>
+
+              <Link href="/admin/notifications" className="btn btn-ghost">
+                Notifications
+              </Link>
+
               <button type="button" className="btn btn-ghost" onClick={loadAdminBusinesses}>
                 Refresh
               </button>
@@ -543,6 +558,11 @@ export default function AdminBusinessesPage() {
                           <span className="small muted">
                             {ownerEmail(business)}
                           </span>
+                          {ownerId(business) && (
+                            <span className="small muted">
+                              Owner ID: {ownerId(business).slice(0, 8)}…
+                            </span>
+                          )}
                         </span>
 
                         <span className="admin-row-meta">
@@ -585,6 +605,14 @@ export default function AdminBusinessesPage() {
                     <div className="admin-actions">
                       <Link href={`/explore/${selectedBusiness.id}`} className="btn btn-ghost">
                         Public page
+                      </Link>
+                      {ownerId(selectedBusiness) && (
+                        <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">
+                          Owner account
+                        </Link>
+                      )}
+                      <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">
+                        Notify
                       </Link>
 
                       <button type="button" className="btn btn-accent" onClick={saveSelectedBusiness} disabled={saving}>
@@ -766,6 +794,24 @@ export default function AdminBusinessesPage() {
                       </div>
                     </div>
                   </div>
+                  <div className="admin-owner-box">
+                    <div>
+                      <p className="small muted">Owner account</p>
+                      <strong>{ownerName(selectedBusiness)}</strong>
+                      <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                        {ownerEmail(selectedBusiness)}
+                      </p>
+                    </div>
+
+                    {ownerId(selectedBusiness) && (
+                      <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">
+                        Manage owner
+                      </Link>
+                    )}
+                    <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">
+                      Send notice
+                    </Link>
+                  </div>
 
                   <div className="admin-save-footer">
                     <div>
@@ -938,11 +984,20 @@ export default function AdminBusinessesPage() {
           padding-top: 0.25rem;
         }
 
-        .admin-readiness-box {
+                        .admin-readiness-box,
+        .admin-owner-box {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
           padding: 1rem;
+        }
+
+        .admin-owner-box {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
         }
 
         .admin-save-footer {
@@ -967,7 +1022,8 @@ export default function AdminBusinessesPage() {
           .admin-header,
           .admin-section-header,
           .admin-editor-header,
-          .admin-save-footer {
+          .admin-save-footer,
+          .admin-owner-box {
             display: grid;
           }
 
@@ -978,10 +1034,12 @@ export default function AdminBusinessesPage() {
           .admin-business-actions :global(.btn),
           .admin-quick-actions :global(.btn),
           .admin-save-footer :global(.btn),
+          .admin-owner-box :global(.btn),
           .admin-actions a,
           .admin-business-actions a,
           .admin-quick-actions button,
-          .admin-save-footer button {
+          .admin-save-footer button,
+          .admin-owner-box a {
             width: 100%;
             justify-content: center;
           }

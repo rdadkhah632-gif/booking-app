@@ -12,6 +12,7 @@ type Profile = {
   role: Role
   full_name?: string | null
   phone?: string | null
+  is_admin?: boolean | null
 }
 
 type StaffProfile = {
@@ -60,7 +61,7 @@ export default function AccountPage() {
 
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .select('id, email, role, full_name, phone')
+      .select('id, email, role, full_name, phone, is_admin')
       .eq('id', session.user.id)
       .single()
 
@@ -231,7 +232,7 @@ export default function AccountPage() {
               </h1>
 
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Manage your Mirëbook profile and contact details. Business, customer and staff areas stay separated so each workspace stays clear.
+                Manage your Mirëbook profile and contact details. Customer, business, staff and internal admin areas stay separated so each workspace stays clear.
               </p>
             </div>
 
@@ -303,6 +304,32 @@ export default function AccountPage() {
               </div>
             </div>
 
+            {profile.is_admin && (
+              <div className="card admin-account-card">
+                <div className="admin-account-row">
+                  <div>
+                    <p className="small" style={{ color: 'var(--accent)' }}>Internal admin</p>
+                    <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+                      Mirëbook operator dashboard
+                    </h2>
+                    <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                      Use this area to control business onboarding, trial access, subscription status, custom pricing and platform-level admin tasks. This is separate from customer, business and staff workspaces.
+                    </p>
+                  </div>
+
+                  <div className="admin-account-actions">
+                    <Link href="/admin" className="btn btn-accent">
+                      Admin overview
+                    </Link>
+
+                    <Link href="/admin/businesses" className="btn btn-ghost">
+                      Manage businesses
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={saveProfile} className="card" style={{ display: 'grid', gap: '1rem' }}>
               <h2 style={{ fontFamily: 'var(--font-display)' }}>
                 Contact details
@@ -345,7 +372,7 @@ export default function AccountPage() {
                 Workspace shortcuts
               </h2>
               <p className="small muted" style={{ marginBottom: '1rem' }}>
-                Jump into the workspaces connected to this login. Business owners manage their own business here; customer browsing stays in the customer area.
+                Jump into the customer, business or staff workspaces connected to this login. Admin controls stay in the internal operator dashboard above.
               </p>
               <div className="account-shortcut-actions">
                 {actualRole === 'business' ? (
@@ -432,7 +459,35 @@ export default function AccountPage() {
           flex-wrap: wrap;
         }
 
+        .admin-account-card {
+          border-color: rgba(255,107,53,0.28);
+          background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(45,212,191,0.04));
+        }
+
+        .admin-account-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .admin-account-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
         @media (max-width: 620px) {
+          .admin-account-row,
+          .admin-account-actions,
+          .account-shortcut-actions {
+            display: grid;
+          }
+
+          .admin-account-actions :global(.btn),
+          .admin-account-actions a,
           .account-shortcut-actions :global(.btn),
           .account-shortcut-actions button,
           .account-shortcut-actions a {

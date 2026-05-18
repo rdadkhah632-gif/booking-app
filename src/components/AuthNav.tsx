@@ -16,6 +16,7 @@ export default function AuthNav() {
   const [notificationCount, setNotificationCount] = useState(0)
   const [staffProfileId, setStaffProfileId] = useState<string | null>(null)
   const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     async function loadUser() {
@@ -27,13 +28,14 @@ export default function AuthNav() {
         setNotificationCount(0)
         setStaffProfileId(null)
         setPrimaryBusinessId(null)
+        setIsAdmin(false)
         setLoading(false)
         return
       }
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', session.user.id)
         .single()
 
@@ -52,6 +54,7 @@ export default function AuthNav() {
       const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
       const primaryBusiness = ownedBusinesses?.[0] || null
       const hasStaffProfile = !!linkedStaff && linkedStaff.length > 0
+      const adminUser = !!profile?.is_admin
       const modes: AccountMode[] = []
 
       if (ownsBusiness || profile?.role === 'business') modes.push('business')
@@ -61,6 +64,7 @@ export default function AuthNav() {
       setAvailableModes(modes)
       setStaffProfileId(hasStaffProfile ? linkedStaff[0].id : null)
       setPrimaryBusinessId(primaryBusiness?.id || null)
+      setIsAdmin(adminUser)
 
       if (hasStaffProfile && router.pathname.startsWith('/staff')) {
         setRole('staff')
@@ -121,6 +125,7 @@ export default function AuthNav() {
     setNotificationCount(0)
     setStaffProfileId(null)
     setPrimaryBusinessId(null)
+    setIsAdmin(false)
     router.replace('/')
   }
 
@@ -177,6 +182,21 @@ export default function AuthNav() {
     )
   }
 
+  function adminLinks() {
+    if (!isAdmin) return null
+
+    return (
+      <div className="admin-nav-cluster" aria-label="Admin controls">
+        <Link href="/admin" className="btn btn-accent">
+          Admin
+        </Link>
+        <Link href="/admin/businesses" className="muted nav-wide-only">
+          Businesses
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <nav className="nav-simple">
       <div className="nav-simple-inner">
@@ -230,6 +250,8 @@ export default function AuthNav() {
                 {notificationLabel()}
               </Link>
 
+              {adminLinks()}
+
               {availableModes.length > 1 && (
                 <div className="auth-mode-switcher" aria-label="Account mode switcher">
                   {availableModes.includes('customer') && modeButton('customer', 'Customer')}
@@ -281,6 +303,8 @@ export default function AuthNav() {
                 View public page
               </Link>
 
+              {adminLinks()}
+
               {availableModes.length > 1 && (
                 <div className="auth-mode-switcher" aria-label="Account mode switcher">
                   {availableModes.includes('customer') && modeButton('customer', 'Customer')}
@@ -312,6 +336,8 @@ export default function AuthNav() {
               <Link href="/notifications" className="muted nav-wide-only">
                 Updates
               </Link>
+
+              {adminLinks()}
 
               {availableModes.length > 1 && (
                 <div className="auth-mode-switcher" aria-label="Account mode switcher">
@@ -372,6 +398,14 @@ export default function AuthNav() {
           color: var(--accent);
         }
 
+        .admin-nav-cluster {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding-left: 0.75rem;
+          border-left: 1px solid var(--border);
+        }
+
         @media (max-width: 760px) {
           .auth-nav-links {
             width: 100%;
@@ -391,6 +425,21 @@ export default function AuthNav() {
 
           .auth-mode-switcher button {
             flex: 1;
+          }
+
+          .admin-nav-cluster {
+            width: 100%;
+            order: 9;
+            padding-left: 0;
+            border-left: none;
+            display: grid;
+            grid-template-columns: 1fr;
+          }
+
+          .admin-nav-cluster :global(.btn),
+          .admin-nav-cluster :global(a) {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

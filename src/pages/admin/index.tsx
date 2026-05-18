@@ -26,6 +26,12 @@ type BusinessRow = {
   billing_email?: string | null
 }
 
+type UserSummary = {
+  id: string
+  role?: string | null
+  is_admin?: boolean | null
+}
+
 function statusLabel(status?: string | null) {
   if (!status) return 'trial'
   return status.replace(/_/g, ' ')
@@ -40,6 +46,7 @@ export default function AdminIndexPage() {
 
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null)
   const [businesses, setBusinesses] = useState<BusinessRow[]>([])
+  const [users, setUsers] = useState<UserSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -66,6 +73,14 @@ export default function AdminIndexPage() {
     }, 0)
   }, [businesses])
 
+  const adminUserCount = useMemo(() => {
+    return users.filter((user) => user.is_admin).length
+  }, [users])
+
+  const businessRoleCount = useMemo(() => {
+    return users.filter((user) => user.role === 'business').length
+  }, [users])
+
   async function loadAdmin() {
     setLoading(true)
     setError(null)
@@ -89,6 +104,7 @@ export default function AdminIndexPage() {
       if (!profileData?.is_admin) {
         setAdminProfile(profileData as AdminProfile)
         setBusinesses([])
+        setUsers([])
         setLoading(false)
         return
       }
@@ -117,7 +133,16 @@ export default function AdminIndexPage() {
 
       if (businessError) throw businessError
 
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('id, role, is_admin')
+        .order('created_at', { ascending: false })
+        .limit(300)
+
+      if (userError) throw userError
+
       setBusinesses((businessData || []) as BusinessRow[])
+      setUsers((userData || []) as UserSummary[])
       setLoading(false)
     } catch (err: any) {
       setError(err.message || 'Could not load admin dashboard.')
@@ -194,12 +219,16 @@ export default function AdminIndexPage() {
             </div>
 
             <div className="admin-actions">
-              <Link href="/dashboard" className="btn btn-ghost">
-                Business dashboard
+              <Link href="/admin/businesses" className="btn btn-accent">
+                Businesses
               </Link>
 
-              <Link href="/admin/businesses" className="btn btn-accent">
-                Manage businesses
+              <Link href="/admin/users" className="btn btn-ghost">
+                Users
+              </Link>
+
+              <Link href="/admin/notifications" className="btn btn-ghost">
+                Notifications
               </Link>
             </div>
           </div>
@@ -212,21 +241,21 @@ export default function AdminIndexPage() {
 
           <div className="grid-4">
             <div className="card">
-              <p className="small muted">Businesses</p>
-              <h2>{businesses.length}</h2>
-              <p className="small muted">Total profiles loaded</p>
+              <p className="small muted">Users</p>
+              <h2>{users.length}</h2>
+              <p className="small muted">{adminUserCount} admin account{adminUserCount === 1 ? '' : 's'}</p>
             </div>
 
             <div className="card">
-              <p className="small muted">Published</p>
-              <h2>{publishedCount}</h2>
-              <p className="small muted">{draftCount} hidden/draft</p>
+              <p className="small muted">Businesses</p>
+              <h2>{businesses.length}</h2>
+              <p className="small muted">{publishedCount} published · {draftCount} draft</p>
             </div>
 
             <div className="card">
               <p className="small muted">Trials</p>
               <h2>{trialCount}</h2>
-              <p className="small muted">{activeCount} active subscriptions</p>
+              <p className="small muted">{activeCount} active · {businessRoleCount} business-role users</p>
             </div>
 
             <div className="card">
@@ -234,6 +263,32 @@ export default function AdminIndexPage() {
               <h2>{formatMoney(monthlyTotal)}</h2>
               <p className="small muted">Based on active businesses only</p>
             </div>
+          </div>
+
+          <div className="grid-3">
+            <Link href="/admin/businesses" className="card admin-control-card">
+              <p className="small muted">Business control</p>
+              <h3>Businesses, trials and pricing</h3>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                Manage publishing, custom monthly prices, plan status and trial periods.
+              </p>
+            </Link>
+
+            <Link href="/admin/users" className="card admin-control-card">
+              <p className="small muted">Account control</p>
+              <h3>Users, roles and admin access</h3>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                Fix mixed accounts, review business ownership and control internal admin flags.
+              </p>
+            </Link>
+
+            <Link href="/admin/notifications" className="card admin-control-card">
+              <p className="small muted">Platform messaging</p>
+              <h3>Notifications and promotions</h3>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                Send site-wide, business-specific or user-specific notices, offers and support messages.
+              </p>
+            </Link>
           </div>
 
           <div className="card">
@@ -294,6 +349,10 @@ export default function AdminIndexPage() {
                       <Link href={`/admin/businesses?businessId=${business.id}`} className="btn btn-accent">
                         Manage
                       </Link>
+
+                      <Link href={`/admin/notifications?businessId=${business.id}`} className="btn btn-ghost">
+                        Notify
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -303,9 +362,9 @@ export default function AdminIndexPage() {
 
           <div className="card" style={{ borderColor: 'rgba(255,190,11,0.25)' }}>
             <p className="small muted">Admin note</p>
-            <h3 style={{ marginTop: '0.25rem' }}>This is internal groundwork, not customer-facing.</h3>
+            <h3 style={{ marginTop: '0.25rem' }}>This is the internal Mirëbook operator workspace.</h3>
             <p className="small muted" style={{ marginTop: '0.5rem' }}>
-              Use this area to control early trials, custom monthly prices and onboarding status before Stripe or a full billing provider is connected.
+              Business controls, user controls, platform notifications, trial management and future promotions should stay here rather than inside customer, staff or business-owner workspaces.
             </p>
           </div>
         </div>
@@ -336,6 +395,18 @@ export default function AdminIndexPage() {
           flex-wrap: wrap;
           justify-content: flex-end;
         }
+
+        .admin-control-card {
+          display: block;
+          min-height: 150px;
+          transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .admin-control-card:hover {
+          border-color: rgba(255,107,53,0.35);
+          transform: translateY(-1px);
+        }
+
 
         .admin-empty {
           padding: 1rem;
