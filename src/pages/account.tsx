@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
 
-type Role = 'customer' | 'business'
+type Role = 'customer' | 'business' | 'staff'
 
 type Profile = {
   id: string
@@ -37,6 +37,7 @@ export default function AccountPage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [businessCount, setBusinessCount] = useState(0)
+  const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(null)
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null)
   const [bookingCount, setBookingCount] = useState(0)
   const [notificationCount, setNotificationCount] = useState(0)
@@ -73,10 +74,11 @@ export default function AccountPage() {
       .from('businesses')
       .select('id')
       .eq('user_id', session.user.id)
-      .limit(1)
+      .limit(10)
 
     const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
     setBusinessCount(ownedBusinesses?.length || 0)
+    setPrimaryBusinessId(ownedBusinesses?.[0]?.id || null)
 
     const { data: staffData } = await supabase
       .from('staff_members')
@@ -110,7 +112,7 @@ export default function AccountPage() {
       .from('notifications')
       .select('id')
       .eq('user_id', session.user.id)
-      .eq('read', false)
+      .is('read_at', null)
       .limit(100)
 
     setNotificationCount(customerNotifications?.length || 0)
@@ -193,6 +195,10 @@ export default function AccountPage() {
       : staffProfile.businesses.name || 'Linked business'
   }
 
+  function publicBusinessHref() {
+    return primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
+  }
+
   async function logout() {
     await supabase.auth.signOut()
     router.replace('/')
@@ -225,7 +231,7 @@ export default function AccountPage() {
               </h1>
 
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Manage your Mirëbook profile, contact details and shortcuts across customer, business and staff workspaces.
+                Manage your Mirëbook profile and contact details. Business, customer and staff areas stay separated so each workspace stays clear.
               </p>
             </div>
 
@@ -239,9 +245,9 @@ export default function AccountPage() {
               </div>
 
               <div className="card" style={{ borderColor: actualRole === 'business' ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
-                <p className="small muted">Primary account type</p>
+                <p className="small muted">Connected workspace</p>
                 <strong style={{ textTransform: 'capitalize' }}>
-                  {actualRole}
+                  {actualRole === 'business' ? 'Business owner' : staffProfile ? 'Customer + staff' : 'Customer'}
                 </strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
                   {actualRole === 'business'
@@ -289,9 +295,11 @@ export default function AccountPage() {
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
                   {notificationCount} unread notification{notificationCount === 1 ? '' : 's'} on this account.
                 </p>
-                <Link href="/my-bookings" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
-                  View my bookings
-                </Link>
+                {actualRole !== 'business' && (
+                  <Link href="/my-bookings" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                    View my bookings
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -337,7 +345,7 @@ export default function AccountPage() {
                 Workspace shortcuts
               </h2>
               <p className="small muted" style={{ marginBottom: '1rem' }}>
-                Jump into the Mirëbook areas connected to this account. You can use customer mode even if you also own a business or work as staff.
+                Jump into the workspaces connected to this login. Business owners manage their own business here; customer browsing stays in the customer area.
               </p>
               <div className="account-shortcut-actions">
                 {actualRole === 'business' ? (
@@ -354,16 +362,20 @@ export default function AccountPage() {
                       Bookings
                     </Link>
 
-                    <Link href="/dashboard/analytics" className="btn btn-ghost">
-                      Analytics
-                    </Link>
-
                     <Link href="/dashboard/notifications" className="btn btn-ghost">
-                      Notifications
+                      Needs action
                     </Link>
 
-                    <Link href="/explore" className="btn btn-ghost">
-                      Preview Mirëbook
+                    <Link href="/dashboard/settings" className="btn btn-ghost">
+                      Business settings
+                    </Link>
+
+                    <Link href="/dashboard/billing" className="btn btn-ghost">
+                      Billing
+                    </Link>
+
+                    <Link href={publicBusinessHref()} className="btn btn-ghost">
+                      View public page
                     </Link>
                   </>
                 ) : (
@@ -378,10 +390,6 @@ export default function AccountPage() {
 
                     <Link href="/explore" className="btn btn-ghost">
                       Browse businesses
-                    </Link>
-
-                    <Link href="/register" className="btn btn-ghost">
-                      Add business or staff access
                     </Link>
                   </>
                 )}
@@ -402,16 +410,6 @@ export default function AccountPage() {
                   Log out
                 </button>
               </div>
-            </div>
-
-            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.22)' }}>
-              <p className="small muted">Role note</p>
-              <h3 style={{ marginTop: '0.25rem' }}>
-                How roles work in Mirëbook
-              </h3>
-              <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                Your main profile role is still simple, but Mirëbook now also checks business ownership and linked staff profiles. That means one login can book as a customer, manage a business, or open a staff schedule when linked.
-              </p>
             </div>
           </div>
         )}

@@ -31,6 +31,12 @@ type StaffMember = {
   active: boolean
 }
 
+type StaffService = {
+  id: string
+  staff_member_id: string
+  service_id: string
+}
+
 type AvailabilityRow = {
   id: string
   business_id: string
@@ -41,10 +47,12 @@ type Readiness = {
   profileComplete: boolean
   hasActiveServices: boolean
   hasActiveStaff: boolean
+  hasStaffServiceAssignments: boolean
   hasWorkingHours: boolean
   readyToPublish: boolean
   activeServices: number
   activeStaff: number
+  staffServiceAssignments: number
   workingDays: number
 }
 
@@ -54,6 +62,7 @@ export default function Businesses() {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [services, setServices] = useState<Service[]>([])
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
+  const [staffServices, setStaffServices] = useState<StaffService[]>([])
   const [availabilityRows, setAvailabilityRows] = useState<AvailabilityRow[]>([])
 
   const [newName, setNewName] = useState('')
@@ -96,6 +105,7 @@ export default function Businesses() {
     if (businessIds.length === 0) {
       setServices([])
       setStaffMembers([])
+      setStaffServices([])
       setAvailabilityRows([])
       setPageLoading(false)
       return
@@ -123,6 +133,25 @@ export default function Businesses() {
       return
     }
 
+    const activeStaffIds = (staffData || []).filter((staff) => staff.active).map((staff) => staff.id)
+
+    let staffServiceData: StaffService[] = []
+
+    if (activeStaffIds.length > 0) {
+      const { data: staffServiceRows, error: staffServiceError } = await supabase
+        .from('staff_services')
+        .select('id, staff_member_id, service_id')
+        .in('staff_member_id', activeStaffIds)
+
+      if (staffServiceError) {
+        setError(staffServiceError.message)
+        setPageLoading(false)
+        return
+      }
+
+      staffServiceData = (staffServiceRows || []) as StaffService[]
+    }
+
     const { data: availabilityData, error: availabilityError } = await supabase
       .from('availability')
       .select('id, business_id, is_closed')
@@ -136,6 +165,7 @@ export default function Businesses() {
 
     setServices(serviceData || [])
     setStaffMembers(staffData || [])
+    setStaffServices(staffServiceData)
     setAvailabilityRows(availabilityData || [])
     setPageLoading(false)
   }
@@ -194,6 +224,18 @@ export default function Businesses() {
     const activeStaff = staffMembers.filter((staff) => staff.business_id === business.id && staff.active).length
     const workingDays = availabilityRows.filter((row) => row.business_id === business.id && row.is_closed !== true).length
 
+    const activeServiceIds = services
+      .filter((service) => service.business_id === business.id && service.active)
+      .map((service) => service.id)
+
+    const activeStaffIds = staffMembers
+      .filter((staff) => staff.business_id === business.id && staff.active)
+      .map((staff) => staff.id)
+
+    const staffServiceAssignments = staffServices.filter((assignment) =>
+      activeStaffIds.includes(assignment.staff_member_id) && activeServiceIds.includes(assignment.service_id)
+    ).length
+
     const profileComplete = Boolean(
       business.name?.trim() &&
       business.category?.trim() &&
@@ -204,16 +246,19 @@ export default function Businesses() {
 
     const hasActiveServices = activeServices > 0
     const hasActiveStaff = activeStaff > 0
+    const hasStaffServiceAssignments = staffServiceAssignments > 0
     const hasWorkingHours = workingDays > 0
 
     return {
       profileComplete,
       hasActiveServices,
       hasActiveStaff,
+      hasStaffServiceAssignments,
       hasWorkingHours,
-      readyToPublish: profileComplete && hasActiveServices && hasActiveStaff && hasWorkingHours,
+      readyToPublish: profileComplete && hasActiveServices && hasActiveStaff && hasStaffServiceAssignments && hasWorkingHours,
       activeServices,
       activeStaff,
+      staffServiceAssignments,
       workingDays
     }
   }
@@ -230,7 +275,7 @@ export default function Businesses() {
       ready,
       incompletePublished
     }
-  }, [businesses, services, staffMembers, availabilityRows])
+  }, [businesses, services, staffMembers, staffServices, availabilityRows])
 
   async function saveBusiness(business: Business) {
     setSavingBusinessId(business.id)
@@ -271,14 +316,9 @@ export default function Businesses() {
     const readiness = getReadiness(business)
 
     if (!business.published && !readiness.readyToPublish) {
-      const confirmed = confirm(
-        'This business is missing setup details. You can publish it, but customers may not be able to book properly until profile details, services, staff and hours are complete. Publish anyway?'
-      )
-
-      if (!confirmed) {
-        setPublishingBusinessId(null)
-        return
-      }
+      setError('Complete profile details, active services, active staff, staff-service assignment and working hours before publishing this business.')
+      setPublishingBusinessId(null)
+      return
     }
 
     const { error } = await supabase
@@ -406,6 +446,12 @@ export default function Businesses() {
             <Link href="/dashboard/availability" className="btn btn-ghost">
               Working hours
             </Link>
+            <Link href="/dashboard/settings" className="btn btn-ghost">
+              Settings
+            </Link>
+            <Link href="/dashboard/billing" className="btn btn-ghost">
+              Billing
+            </Link>
           </div>
         </div>
       </div>
@@ -420,7 +466,7 @@ export default function Businesses() {
         <div className="card" style={{ borderColor: dashboardStats.ready > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
           <p className="small muted">Ready profiles</p>
           <h3>{dashboardStats.ready}/{dashboardStats.total}</h3>
-          <p className="muted small">Profiles with services, staff and hours</p>
+          <p className="muted small">Profiles with services, assigned staff and hours</p>
         </div>
 
         <div className="card" style={{ borderColor: dashboardStats.incompletePublished > 0 ? 'rgba(255,190,11,0.28)' : 'var(--border)' }}>
@@ -587,7 +633,7 @@ export default function Businesses() {
                     ? 'Updating...'
                     : business.published
                       ? 'Hide from marketplace'
-                      : readiness.readyToPublish ? 'Publish to Mirëbook' : 'Publish anyway'}
+                      : readiness.readyToPublish ? 'Publish to Mirëbook' : 'Complete setup to publish'}
                 </button>
               </div>
 
@@ -604,10 +650,27 @@ export default function Businesses() {
                 {setupCard(
                   'Staff',
                   `${readiness.activeStaff} active`,
-                  'Add staff, assign services and control who customers can book with.',
-                  readiness.hasActiveStaff,
+                  'Add staff, link emails and assign active services so customers can book the right people.',
+                  readiness.hasActiveStaff && readiness.hasStaffServiceAssignments,
                   `/dashboard/staff?businessId=${business.id}`,
                   'Manage staff'
+                )}
+                {setupCard(
+                  'Settings',
+                  business.auto_accept_bookings ?? true ? 'Auto-accept' : 'Manual approval',
+                  'Control approval mode, booking intervals, notice periods, buffers and customer policies.',
+                  true,
+                  `/dashboard/settings?businessId=${business.id}`,
+                  'Open settings'
+                )}
+
+                {setupCard(
+                  'Billing',
+                  'Subscription',
+                  'Prepare trial, plan and subscription details for this business account.',
+                  true,
+                  `/dashboard/billing?businessId=${business.id}`,
+                  'Open billing'
                 )}
 
                 {setupCard(
@@ -728,6 +791,12 @@ export default function Businesses() {
                     )}
 
                     {readinessRow(
+                      'Staff-service assignment',
+                      readiness.hasStaffServiceAssignments,
+                      `${readiness.staffServiceAssignments} active staff-service assignment${readiness.staffServiceAssignments === 1 ? '' : 's'} found.`
+                    )}
+
+                    {readinessRow(
                       'Working hours',
                       readiness.hasWorkingHours,
                       `${readiness.workingDays} open day${readiness.workingDays === 1 ? '' : 's'} configured.`
@@ -795,7 +864,15 @@ export default function Businesses() {
                 </Link>
 
                 <Link href="/dashboard/notifications" className="btn btn-ghost">
-                  Notifications
+                  Needs action
+                </Link>
+
+                <Link href={`/dashboard/settings?businessId=${business.id}`} className="btn btn-ghost">
+                  Settings
+                </Link>
+
+                <Link href={`/dashboard/billing?businessId=${business.id}`} className="btn btn-ghost">
+                  Billing
                 </Link>
 
                 <Link href={`/explore/${business.id}`} className="btn btn-ghost">
@@ -846,7 +923,7 @@ export default function Businesses() {
 
         .business-profile-card-top {
           display: grid;
-          grid-template-columns: 150px minmax(0, 1fr) auto;
+          grid-template-columns: 150px minmax(0, 1fr) minmax(170px, auto);
           gap: 1rem;
           align-items: start;
         }
