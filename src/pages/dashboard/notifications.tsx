@@ -130,10 +130,12 @@ export default function BusinessNotifications() {
   const [loading, setLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  async function loadNotifications() {
+  async function loadNotifications(options?: { keepSuccess?: boolean }) {
     setLoading(true)
     setError(null)
+    if (!options?.keepSuccess) setSuccess(null)
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -278,18 +280,22 @@ export default function BusinessNotifications() {
     loadNotifications()
   }, [])
 
-  useEffect(() => {
+   useEffect(() => {
+    function refreshOnFocus() {
+      loadNotifications()
+    }
+
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
         loadNotifications()
       }
     }
 
-    window.addEventListener('focus', loadNotifications)
+    window.addEventListener('focus', refreshOnFocus)
     document.addEventListener('visibilitychange', refreshWhenActive)
 
     return () => {
-      window.removeEventListener('focus', loadNotifications)
+      window.removeEventListener('focus', refreshOnFocus)
       document.removeEventListener('visibilitychange', refreshWhenActive)
     }
   }, [])
@@ -332,6 +338,8 @@ export default function BusinessNotifications() {
       .from('notifications')
       .update({ read_at: readAt })
       .eq('id', notification.id)
+
+    await loadNotifications({ keepSuccess: true })
   }
 
   async function markAllBusinessNotificationsRead() {
@@ -351,6 +359,9 @@ export default function BusinessNotifications() {
       .from('notifications')
       .update({ read_at: readAt })
       .in('id', unread.map((notification) => notification.id))
+
+    setSuccess('Business notifications marked as read.')
+    await loadNotifications({ keepSuccess: true })
   }
 
   function notificationTone(notification: NotificationRow) {
@@ -383,6 +394,7 @@ export default function BusinessNotifications() {
 
     setActionLoadingId(`booking-${booking.id}`)
     setError(null)
+    setSuccess(null)
 
     const { error } = await supabase
       .from('bookings')
@@ -397,8 +409,12 @@ export default function BusinessNotifications() {
       return
     }
 
+    setBookings((current) =>
+      current.map((item) => item.id === booking.id ? { ...item, status: 'confirmed' } : item)
+    )
+
     await createCustomerNotification({
-               userId: booking.customer_user_id,
+      userId: booking.customer_user_id,
       businessId: booking.business_id,
       bookingId: booking.id,
       type: 'booking_confirmed',
@@ -407,8 +423,8 @@ export default function BusinessNotifications() {
       actionUrl: `/booking-confirmation?id=${booking.id}`
     })
 
-    await loadNotifications()
-    router.replace('/dashboard/notifications?action=booking-accepted', undefined, { shallow: true })
+    setSuccess('Booking accepted. The customer has been notified and the request is no longer pending.')
+    await loadNotifications({ keepSuccess: true })
   }
 
   async function declineBooking(booking: Booking) {
@@ -417,6 +433,7 @@ export default function BusinessNotifications() {
 
     setActionLoadingId(`booking-${booking.id}`)
     setError(null)
+    setSuccess(null)
 
     const { error } = await supabase
       .from('bookings')
@@ -431,8 +448,12 @@ export default function BusinessNotifications() {
       return
     }
 
+    setBookings((current) =>
+      current.map((item) => item.id === booking.id ? { ...item, status: 'cancelled' } : item)
+    )
+
     await createCustomerNotification({
-               userId: booking.customer_user_id,
+      userId: booking.customer_user_id,
       businessId: booking.business_id,
       bookingId: booking.id,
       type: 'booking_declined',
@@ -441,8 +462,8 @@ export default function BusinessNotifications() {
       actionUrl: '/my-bookings'
     })
 
-    await loadNotifications()
-    router.replace('/dashboard/notifications?action=booking-declined', undefined, { shallow: true })
+    setSuccess('Booking declined. The customer has been notified and the request is no longer pending.')
+    await loadNotifications({ keepSuccess: true })
   }
 
   async function acceptRequest(request: BookingRequest) {
@@ -451,6 +472,7 @@ export default function BusinessNotifications() {
 
     setActionLoadingId(`request-${request.id}`)
     setError(null)
+    setSuccess(null)
 
     const { error: bookingError } = await supabase
       .from('bookings')
@@ -506,6 +528,49 @@ export default function BusinessNotifications() {
       return
     }
 
+    setRequests((current) =>
+      current.map((item) => {
+        if (item.id === request.id) {
+          return {
+            ...item,
+            status: 'accepted',
+            response_message: 'Accepted by business',
+            updated_at: new Date().toISOString()
+          }
+        }
+
+        if (
+          item.booking_id === request.booking_id &&
+          item.id !== request.id &&
+          item.requested_by === 'customer' &&
+          item.request_type === 'reschedule' &&
+          item.status === 'pending'
+        ) {
+          return {
+            ...item,
+            status: 'cancelled',
+            response_message: 'Cancelled automatically because another reschedule request was accepted.',
+            updated_at: new Date().toISOString()
+          }
+        }
+
+        return item
+      })
+    )
+
+    setBookings((current) =>
+      current.map((item) =>
+        item.id === request.booking_id
+          ? {
+              ...item,
+              start_at: request.requested_start_at,
+              duration_minutes: request.requested_duration_minutes,
+              status: 'confirmed'
+            }
+          : item
+      )
+    )
+
     await createCustomerNotification({
       userId: request.customer_user_id,
       businessId: request.business_id,
@@ -517,8 +582,8 @@ export default function BusinessNotifications() {
       actionUrl: `/booking-confirmation?id=${request.booking_id}`
     })
 
-    await loadNotifications()
-    router.replace('/dashboard/notifications?action=reschedule-accepted', undefined, { shallow: true })
+    setSuccess('Reschedule accepted. The booking has been updated and the customer has been notified.')
+    await loadNotifications({ keepSuccess: true })
   }
 
   async function declineRequest(request: BookingRequest) {
@@ -527,6 +592,7 @@ export default function BusinessNotifications() {
 
     setActionLoadingId(`request-${request.id}`)
     setError(null)
+    setSuccess(null)
 
     const { error } = await supabase
       .from('booking_requests')
@@ -545,6 +611,19 @@ export default function BusinessNotifications() {
       return
     }
 
+    setRequests((current) =>
+      current.map((item) =>
+        item.id === request.id
+          ? {
+              ...item,
+              status: 'declined',
+              response_message: responseMessage,
+              updated_at: new Date().toISOString()
+            }
+          : item
+      )
+    )
+
     await createCustomerNotification({
       userId: request.customer_user_id,
       businessId: request.business_id,
@@ -556,8 +635,8 @@ export default function BusinessNotifications() {
       actionUrl: '/my-bookings'
     })
 
-    await loadNotifications()
-    router.replace('/dashboard/notifications?action=reschedule-declined', undefined, { shallow: true })
+    setSuccess('Reschedule declined. The original booking remains unchanged and the customer has been notified.')
+    await loadNotifications({ keepSuccess: true })
   }
 
   const pendingBookings = useMemo(() => {
@@ -618,72 +697,32 @@ export default function BusinessNotifications() {
     return 'var(--surface-2)'
   }
 
-  function successBanner() {
-    const action = router.query.action
-
-    if (action === 'booking-accepted') {
-      return {
-        tone: 'success',
-        title: 'Booking accepted',
-        body: 'The customer booking request has been confirmed.'
-      }
-    }
-
-    if (action === 'booking-declined') {
-      return {
-        tone: 'warning',
-        title: 'Booking declined',
-        body: 'The customer booking request has been declined and marked as cancelled.'
-      }
-    }
-
-    if (action === 'reschedule-accepted') {
-      return {
-        tone: 'success',
-        title: 'Reschedule accepted',
-        body: 'The booking has been updated to the customer’s requested time.'
-      }
-    }
-
-    if (action === 'reschedule-declined') {
-      return {
-        tone: 'warning',
-        title: 'Reschedule declined',
-        body: 'The original booking remains unchanged.'
-      }
-    }
-
-    return null
-  }
-
-  const banner = successBanner()
-
   return (
     <DashboardLayout
       title="Needs action"
       subtitle="Review Mirëbook booking approvals, customer reschedule requests and actions that need your attention."
     >
-      {banner && (
+      {success && (
         <div
           className="card"
           style={{
-            borderColor: banner.tone === 'success' ? 'rgba(45,212,191,0.28)' : 'rgba(255,190,11,0.28)',
-            background: banner.tone === 'success' ? 'rgba(45,212,191,0.06)' : 'rgba(255,190,11,0.06)',
+            borderColor: 'rgba(45,212,191,0.28)',
+            background: 'rgba(45,212,191,0.06)',
             marginBottom: '1rem'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div className="business-notification-banner-row">
             <div>
-              <p className="small" style={{ color: banner.tone === 'success' ? 'var(--success)' : 'var(--warning)' }}>
-                {banner.title}
+              <p className="small" style={{ color: 'var(--success)' }}>
+                Action completed
               </p>
-              <strong>{banner.body}</strong>
+              <strong>{success}</strong>
             </div>
 
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={() => router.replace('/dashboard/notifications', undefined, { shallow: true })}
+              onClick={() => setSuccess(null)}
             >
               Dismiss
             </button>
@@ -693,11 +732,11 @@ export default function BusinessNotifications() {
 
       <div className="business-notification-toolbar">
         <p className="small muted">
-          Mirëbook refreshes this page when you return to the tab. Use refresh if a new request does not appear straight away.
+          Review customer booking approvals, reschedule requests and business notifications. Actions update this page immediately after completion.
         </p>
 
         <div className="business-notification-toolbar-actions">
-          <button onClick={loadNotifications} className="btn btn-ghost" disabled={loading}>
+          <button onClick={() => loadNotifications()} className="btn btn-ghost" disabled={loading}>
             {loading ? 'Refreshing...' : 'Refresh notifications'}
           </button>
 
@@ -758,12 +797,22 @@ export default function BusinessNotifications() {
         <div className="card" style={{ marginBottom: '1.5rem' }}>
           <h3>No pending actions</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Booking approvals and customer reschedule requests will appear here when they need your attention.
+            Booking approvals, customer reschedule requests and business notifications will appear here when they need your attention.
           </p>
 
-          <Link href="/dashboard/bookings?view=today" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
-            Open today’s bookings
-          </Link>
+          <div className="business-notification-empty-actions">
+            <Link href="/dashboard/bookings?view=today" className="btn btn-ghost">
+              Open today’s bookings
+            </Link>
+
+            <Link href="/dashboard/settings" className="btn btn-ghost">
+              Booking settings
+            </Link>
+
+            <Link href="/support/business" className="btn btn-ghost">
+              Business support
+            </Link>
+          </div>
         </div>
       )}
 
@@ -1140,6 +1189,20 @@ export default function BusinessNotifications() {
           margin-bottom: 1rem;
         }
 
+        .business-notification-banner-row,
+        .business-notification-empty-actions {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .business-notification-empty-actions {
+          justify-content: flex-start;
+          margin-top: 1rem;
+        }
+
         .business-notification-toolbar-actions {
           display: flex;
           gap: 0.75rem;
@@ -1177,7 +1240,9 @@ export default function BusinessNotifications() {
 
         @media (max-width: 640px) {
           .business-notification-toolbar-actions,
-          .business-notification-card-actions {
+          .business-notification-card-actions,
+          .business-notification-banner-row,
+          .business-notification-empty-actions {
             width: 100%;
             justify-content: stretch;
           }
@@ -1187,7 +1252,11 @@ export default function BusinessNotifications() {
           .business-notification-toolbar-actions a,
           .business-notification-card-actions :global(.btn),
           .business-notification-card-actions button,
-          .business-notification-card-actions a {
+          .business-notification-card-actions a,
+          .business-notification-banner-row :global(.btn),
+          .business-notification-banner-row button,
+          .business-notification-empty-actions :global(.btn),
+          .business-notification-empty-actions a {
             width: 100%;
             justify-content: center;
           }

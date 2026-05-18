@@ -6,6 +6,7 @@ import AuthNav from '@/components/AuthNav'
 
 type Booking = {
   id: string
+  business_id?: string | null
   customer_name: string
   start_at: string
   duration_minutes: number
@@ -24,7 +25,7 @@ type BookingRequest = {
   requested_duration_minutes: number
   response_message?: string | null
   created_at: string
-   requested_staff?: {
+  requested_staff?: {
     name: string
     role_title?: string | null
   } | {
@@ -42,26 +43,26 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   const pendingSectionRef = useRef<HTMLElement | null>(null)
   const upcomingSectionRef = useRef<HTMLElement | null>(null)
   const changeRequestsSectionRef = useRef<HTMLElement | null>(null)
   const historySectionRef = useRef<HTMLElement | null>(null)
 
-  async function loadBookings() {
+  async function loadBookings(options?: { keepSuccess?: boolean }) {
     setLoading(true)
     setError(null)
+    if (!options?.keepSuccess) setSuccess(null)
 
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      router.replace('/login')
+      router.replace('/login?redirectTo=/my-bookings')
       return
     }
 
     setEmail(session.user.email || '')
-
- 
 
     const { data, error } = await supabase
       .from('bookings')
@@ -87,7 +88,7 @@ export default function MyBookings() {
       staff_members: Array.isArray(booking.staff_members) ? booking.staff_members[0] || null : booking.staff_members
     }))
 
-      setBookings(normalisedBookings as Booking[])
+    setBookings(normalisedBookings as Booking[])
 
     const { data: requestData, error: requestError } = await supabase
       .from('booking_requests')
@@ -129,32 +130,51 @@ export default function MyBookings() {
   }, [])
 
   useEffect(() => {
+    function refreshOnFocus() {
+      loadBookings()
+    }
+
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
         loadBookings()
       }
     }
 
-    window.addEventListener('focus', loadBookings)
+    window.addEventListener('focus', refreshOnFocus)
     document.addEventListener('visibilitychange', refreshWhenActive)
 
     return () => {
-      window.removeEventListener('focus', loadBookings)
+      window.removeEventListener('focus', refreshOnFocus)
       document.removeEventListener('visibilitychange', refreshWhenActive)
     }
   }, [])
 
-  async function cancelBooking(id: string) {
+  async function createBusinessNotification(booking: Booking, type: string, title: string, message: string) {
+    if (!booking.business_id) return
+
+    await supabase.from('notifications').insert({
+      business_id: booking.business_id,
+      booking_id: booking.id,
+      audience: 'business',
+      type,
+      title,
+      message,
+      action_url: '/dashboard/notifications'
+    })
+  }
+
+  async function cancelBooking(booking: Booking) {
     const confirmed = confirm('Cancel this booking?')
     if (!confirmed) return
 
-    setActionLoadingId(id)
+    setActionLoadingId(booking.id)
     setError(null)
+    setSuccess(null)
 
     const { error } = await supabase
       .from('bookings')
       .update({ status: 'cancelled' })
-      .eq('id', id)
+      .eq('id', booking.id)
 
     setActionLoadingId(null)
 
@@ -163,7 +183,22 @@ export default function MyBookings() {
       return
     }
 
-    await loadBookings()
+    setBookings((current) =>
+      current.map((item) => item.id === booking.id ? { ...item, status: 'cancelled' } : item)
+    )
+
+    await createBusinessNotification(
+      booking,
+      'booking_cancelled_by_customer',
+      'Customer cancelled booking',
+      `${booking.customer_name || 'A customer'} cancelled their booking for ${serviceName(booking)} on ${new Date(booking.start_at).toLocaleString()}.`
+    )
+
+    setSuccess(booking.status === 'pending'
+      ? 'Booking request cancelled. It is no longer waiting for business approval.'
+      : 'Booking cancelled. The business has been notified and this booking is now locked as cancelled.'
+    )
+    await loadBookings({ keepSuccess: true })
   }
 
   function statusLabel(status: string) {
@@ -337,7 +372,6 @@ export default function MyBookings() {
     }
 
     const target = sectionMap[section].current
-
     if (!target) return
 
     target.scrollIntoView({
@@ -433,14 +467,8 @@ export default function MyBookings() {
             </p>
 
             <p className="small muted">Service: {serviceName(booking)}</p>
-
-            <p className="small muted">
-              Staff: {staffName(booking)}
-            </p>
-
-            <p className="small muted">
-              Price: £{servicePrice(booking).toFixed(2)}
-            </p>
+            <p className="small muted">Staff: {staffName(booking)}</p>
+            <p className="small muted">Price: £{servicePrice(booking).toFixed(2)}</p>
 
             <div
               style={{
@@ -485,47 +513,23 @@ export default function MyBookings() {
             </p>
 
             {pendingRequest && booking.status === 'confirmed' && (
-              <div
-                className="card"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,107,53,0.14), rgba(255,107,53,0.05))',
-                  marginTop: '1rem',
-                  borderColor: 'rgba(255,107,53,0.45)'
-                }}
-              >
+              <div className="card my-booking-pending-change-card">
                 <div className="my-booking-card-row">
                   <div>
                     <p className="small" style={{ color: 'var(--accent)' }}>
                       Requested change awaiting approval
                     </p>
-
                     <h3 style={{ marginTop: '0.25rem', marginBottom: '0.5rem' }}>
                       New requested appointment time
                     </h3>
                   </div>
 
-                  <span
-                    className="small"
-                    style={{
-                      background: 'rgba(255,107,53,0.14)',
-                      color: 'var(--accent)',
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: 999
-                    }}
-                  >
+                  <span className="small my-booking-pill-accent">
                     Business approval needed
                   </span>
                 </div>
 
-                <div
-                  style={{
-                    marginTop: '0.75rem',
-                    padding: '0.85rem',
-                    borderRadius: 'var(--radius)',
-                    background: 'rgba(11,18,32,0.28)',
-                    border: '1px solid rgba(255,107,53,0.28)'
-                  }}
-                >
+                <div className="my-booking-requested-time-box">
                   <p className="small muted">Requested new time</p>
                   <strong>{new Date(pendingRequest.requested_start_at).toLocaleString()}</strong>
 
@@ -552,7 +556,7 @@ export default function MyBookings() {
                   Track request
                 </Link>
 
-                <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger" disabled={isWorking}>
+                <button onClick={() => cancelBooking(booking)} className="btn btn-danger" disabled={isWorking}>
                   {isWorking ? 'Working...' : 'Cancel request'}
                 </button>
               </>
@@ -570,22 +574,14 @@ export default function MyBookings() {
                   </Link>
                 )}
 
-                <button onClick={() => cancelBooking(booking.id)} className="btn btn-danger" disabled={isWorking}>
+                <button onClick={() => cancelBooking(booking)} className="btn btn-danger" disabled={isWorking}>
                   {isWorking ? 'Working...' : 'Cancel booking'}
                 </button>
               </>
             )}
 
             {(booking.status === 'completed' || booking.status === 'cancelled' || mode === 'history') && booking.status !== 'pending' && (
-              <div
-                className="card"
-                style={{
-                  background: 'var(--surface-2)',
-                  borderColor: booking.status === 'completed' ? 'rgba(45,212,191,0.22)' : 'rgba(255,190,11,0.22)',
-                  padding: '0.85rem',
-                  maxWidth: 240
-                }}
-              >
+              <div className="card my-booking-locked-card">
                 <p className="small" style={{ color: statusColor(booking.status) }}>
                   {booking.status === 'completed'
                     ? 'Locked completed record'
@@ -621,14 +617,7 @@ export default function MyBookings() {
           </p>
 
           {router.query.bookingRequested && (
-            <div
-              className="card"
-              style={{
-                marginTop: '1rem',
-                borderColor: 'rgba(255,107,53,0.45)',
-                background: 'var(--accent-dim)'
-              }}
-            >
+            <div className="card my-booking-route-banner">
               <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
                 Booking request sent
               </p>
@@ -640,14 +629,7 @@ export default function MyBookings() {
           )}
 
           {router.query.requestSent && (
-            <div
-              className="card"
-              style={{
-                marginTop: '1rem',
-                borderColor: 'rgba(255,107,53,0.45)',
-                background: 'var(--accent-dim)'
-              }}
-            >
+            <div className="card my-booking-route-banner">
               <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
                 Reschedule request sent
               </p>
@@ -655,6 +637,20 @@ export default function MyBookings() {
               <p className="small muted" style={{ marginTop: '0.5rem' }}>
                 Your original appointment is still confirmed. If the business accepts your request, your booking will update to the requested time.
               </p>
+            </div>
+          )}
+
+          {success && (
+            <div className="card my-booking-success-banner">
+              <div className="my-booking-banner-row">
+                <div>
+                  <p className="small" style={{ color: 'var(--success)' }}>Action completed</p>
+                  <strong>{success}</strong>
+                </div>
+                <button type="button" className="btn btn-ghost" onClick={() => setSuccess(null)}>
+                  Dismiss
+                </button>
+              </div>
             </div>
           )}
 
@@ -667,7 +663,11 @@ export default function MyBookings() {
               Notifications
             </Link>
 
-            <button onClick={loadBookings} className="btn btn-ghost" disabled={loading}>
+            <Link href="/support/customer" className="btn btn-ghost">
+              Customer support
+            </Link>
+
+            <button onClick={() => loadBookings()} className="btn btn-ghost" disabled={loading}>
               {loading ? 'Refreshing...' : 'Refresh bookings'}
             </button>
 
@@ -677,7 +677,7 @@ export default function MyBookings() {
           </div>
 
           <p className="small muted" style={{ marginTop: '0.75rem' }}>
-            Mirëbook refreshes your bookings and pending requests when you return to this tab. Use refresh if a recent change does not appear straight away.
+            Booking changes update this page after each action. It also refreshes when you return to the tab.
           </p>
         </div>
 
@@ -762,9 +762,15 @@ export default function MyBookings() {
               You have not booked any appointments yet. Explore Mirëbook businesses and make your first booking.
             </p>
 
-            <Link href="/explore" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-              Explore Mirëbook
-            </Link>
+            <div className="my-booking-empty-actions">
+              <Link href="/explore" className="btn btn-accent">
+                Explore Mirëbook
+              </Link>
+
+              <Link href="/support/customer" className="btn btn-ghost">
+                Customer support
+              </Link>
+            </div>
           </div>
         )}
 
@@ -801,7 +807,7 @@ export default function MyBookings() {
             )}
 
             {confirmedUpcomingBookings.length > 0 && (
-            <section ref={upcomingSectionRef} id="upcoming-bookings" className="my-bookings-section">
+              <section ref={upcomingSectionRef} id="upcoming-bookings" className="my-bookings-section">
                 <div>
                   <p className="small muted">Schedule</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>Active confirmed appointments</h2>
@@ -821,7 +827,7 @@ export default function MyBookings() {
             )}
 
             {historyBookings.length > 0 && (
-            <section ref={historySectionRef} id="booking-history" className="my-bookings-section">
+              <section ref={historySectionRef} id="booking-history" className="my-bookings-section">
                 <div>
                   <p className="small muted">History</p>
                   <h2 style={{ fontFamily: 'var(--font-display)' }}>History and locked bookings</h2>
@@ -837,11 +843,32 @@ export default function MyBookings() {
         )}
       </section>
       <style jsx>{`
-        .my-bookings-header-actions {
+        .my-bookings-header-actions,
+        .my-booking-empty-actions {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
           margin-top: 1rem;
+        }
+
+        .my-booking-success-banner {
+          margin-top: 1rem;
+          border-color: rgba(45,212,191,0.35);
+          background: rgba(45,212,191,0.06);
+        }
+
+        .my-booking-route-banner {
+          margin-top: 1rem;
+          border-color: rgba(255,107,53,0.45);
+          background: var(--accent-dim);
+        }
+
+        .my-booking-banner-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
         }
 
         .my-bookings-section-list {
@@ -870,10 +897,41 @@ export default function MyBookings() {
           justify-content: flex-end;
         }
 
+        .my-booking-pending-change-card {
+          background: linear-gradient(135deg, rgba(255,107,53,0.14), rgba(255,107,53,0.05));
+          margin-top: 1rem;
+          border-color: rgba(255,107,53,0.45);
+        }
+
+        .my-booking-pill-accent {
+          background: rgba(255,107,53,0.14);
+          color: var(--accent);
+          padding: 0.2rem 0.55rem;
+          border-radius: 999px;
+        }
+
+        .my-booking-requested-time-box {
+          margin-top: 0.75rem;
+          padding: 0.85rem;
+          border-radius: var(--radius);
+          background: rgba(11,18,32,0.28);
+          border: 1px solid rgba(255,107,53,0.28);
+        }
+
+        .my-booking-locked-card {
+          background: var(--surface-2);
+          padding: 0.85rem;
+          max-width: 240px;
+        }
+
         @media (max-width: 640px) {
           .my-bookings-header-actions :global(.btn),
           .my-bookings-header-actions button,
           .my-bookings-header-actions a,
+          .my-booking-empty-actions :global(.btn),
+          .my-booking-empty-actions a,
+          .my-booking-banner-row :global(.btn),
+          .my-booking-banner-row button,
           .my-booking-card-actions :global(.btn),
           .my-booking-card-actions button,
           .my-booking-card-actions a {

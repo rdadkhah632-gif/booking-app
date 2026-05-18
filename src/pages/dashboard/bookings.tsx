@@ -16,15 +16,15 @@ type Booking = {
   business_id: string
   customer_user_id?: string | null
   customer_name: string
-  customer_email?: string
-  customer_phone?: string
+  customer_email?: string | null
+  customer_phone?: string | null
   customer_notes?: string | null
   internal_notes?: string | null
   start_at: string
-  end_at?: string
+  end_at?: string | null
   duration_minutes: number
   status: string
-  created_at?: string
+  created_at?: string | null
   services?: {
     name: string
     price: number
@@ -35,9 +35,35 @@ type Booking = {
   } | null
 }
 
+function toDateInputValue(date: Date) {
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function startOfDay(date: Date) {
+  const result = new Date(date)
+  result.setHours(0, 0, 0, 0)
+  return result
+}
+
+function endOfDay(date: Date) {
+  const result = new Date(date)
+  result.setHours(23, 59, 59, 999)
+  return result
+}
+
+function addDays(date: Date, days: number) {
+  const result = new Date(date)
+  result.setDate(result.getDate() + days)
+  return result
+}
+
 export default function Bookings() {
   const router = useRouter()
   const { businessId, date, status, view } = router.query
+
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [business, setBusiness] = useState<Business | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -50,45 +76,19 @@ export default function Bookings() {
   const [pageLoading, setPageLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  function toDateInputValue(date: Date) {
-    const yyyy = date.getFullYear()
-    const mm = String(date.getMonth() + 1).padStart(2, '0')
-    const dd = String(date.getDate()).padStart(2, '0')
-    return `${yyyy}-${mm}-${dd}`
-  }
-
-  function startOfDay(date: Date) {
-    const result = new Date(date)
-    result.setHours(0, 0, 0, 0)
-    return result
-  }
-
-  function endOfDay(date: Date) {
-    const result = new Date(date)
-    result.setHours(23, 59, 59, 999)
-    return result
-  }
-
-  function addDays(date: Date, days: number) {
-    const result = new Date(date)
-    result.setDate(result.getDate() + days)
-    return result
-  }
+  const [success, setSuccess] = useState<string | null>(null)
 
   function buildBookingsQuery(next?: {
     nextBusinessId?: string
     nextFilter?: RangeFilter
     nextDate?: string
     nextStatus?: string
-    nextAction?: string | null
   }) {
     const query: Record<string, string> = {}
     const effectiveBusinessId = next?.nextBusinessId || business?.id || (typeof businessId === 'string' ? businessId : '')
     const effectiveFilter = next?.nextFilter || rangeFilter
     const effectiveDate = next?.nextDate || selectedDate
     const effectiveStatus = next?.nextStatus ?? statusFilter
-    const effectiveAction = next?.nextAction === null ? '' : next?.nextAction || (typeof router.query.action === 'string' ? router.query.action : '')
 
     if (effectiveBusinessId) query.businessId = effectiveBusinessId
 
@@ -99,7 +99,6 @@ export default function Bookings() {
     }
 
     if (effectiveStatus !== 'all') query.status = effectiveStatus
-    if (effectiveAction) query.action = effectiveAction
 
     return query
   }
@@ -109,7 +108,6 @@ export default function Bookings() {
     nextFilter?: RangeFilter
     nextDate?: string
     nextStatus?: string
-    nextAction?: string | null
   }) {
     router.replace(
       {
@@ -147,7 +145,7 @@ export default function Bookings() {
     if (owned.length === 0) return null
 
     if (businessId && !Array.isArray(businessId)) {
-      const selected = owned.find((b) => b.id === businessId)
+      const selected = owned.find((item) => item.id === businessId)
 
       if (!selected) {
         throw new Error('You do not have access to this business.')
@@ -161,8 +159,9 @@ export default function Bookings() {
     return null
   }
 
-  async function loadBookings() {
+  async function loadBookings(options?: { keepSuccess?: boolean }) {
     setError(null)
+    if (!options?.keepSuccess) setSuccess(null)
     setPageLoading(true)
 
     try {
@@ -172,7 +171,6 @@ export default function Bookings() {
         router.replace('/login')
         return
       }
-
 
       const selectedBusiness = await getBusinessContext(session.user.id)
 
@@ -237,20 +235,25 @@ export default function Bookings() {
   useEffect(() => {
     if (!router.isReady) return
 
+    function refreshOnFocus() {
+      loadBookings()
+    }
+
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
         loadBookings()
       }
     }
 
-    window.addEventListener('focus', loadBookings)
+    window.addEventListener('focus', refreshOnFocus)
     document.addEventListener('visibilitychange', refreshWhenActive)
 
     return () => {
-      window.removeEventListener('focus', loadBookings)
+      window.removeEventListener('focus', refreshOnFocus)
       document.removeEventListener('visibilitychange', refreshWhenActive)
     }
   }, [router.isReady, businessId])
+
   useEffect(() => {
     if (!router.isReady) return
 
@@ -273,6 +276,7 @@ export default function Bookings() {
       setStatusFilter('all')
     }
   }, [router.isReady, date, status, view])
+
   async function createCustomerNotification(params: {
     booking: Booking
     type: string
@@ -294,6 +298,14 @@ export default function Bookings() {
     })
   }
 
+  function updateLocalBookingStatus(bookingId: string, nextStatus: string) {
+    setBookings((current) =>
+      current.map((booking) =>
+        booking.id === bookingId ? { ...booking, status: nextStatus } : booking
+      )
+    )
+  }
+
   function serviceName(booking: Booking) {
     return booking.services?.name || 'your appointment'
   }
@@ -301,196 +313,169 @@ export default function Bookings() {
   function appointmentDateTime(booking: Booking) {
     return new Date(booking.start_at).toLocaleString()
   }
+
   async function acceptPendingBooking(booking: Booking) {
-  const confirmed = confirm('Accept this booking request and confirm the appointment?')
-  if (!confirmed) return
+    const confirmed = confirm('Accept this booking request and confirm the appointment?')
+    if (!confirmed) return
 
-  setActionLoadingId(booking.id)
-  setError(null)
+    setActionLoadingId(booking.id)
+    setError(null)
+    setSuccess(null)
 
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: 'confirmed' })
-    .eq('id', booking.id)
-    .eq('business_id', booking.business_id)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'confirmed' })
+      .eq('id', booking.id)
+      .eq('business_id', booking.business_id)
 
-  setActionLoadingId(null)
+    setActionLoadingId(null)
 
-  if (error) {
-    setError(error.message)
-    return
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    updateLocalBookingStatus(booking.id, 'confirmed')
+
+    await createCustomerNotification({
+      booking,
+      type: 'booking_confirmed',
+      title: 'Booking accepted',
+      message: `Your booking for ${serviceName(booking)} has been accepted and confirmed for ${appointmentDateTime(booking)}.`,
+      actionUrl: `/booking-confirmation?id=${booking.id}`
+    })
+
+    setSuccess('Booking accepted. The customer has been notified and the appointment is now confirmed.')
+    await loadBookings({ keepSuccess: true })
   }
-
-  await createCustomerNotification({
-    booking,
-    type: 'booking_confirmed',
-    title: 'Booking accepted',
-    message: `Your booking for ${serviceName(booking)} has been accepted and confirmed for ${appointmentDateTime(booking)}.`,
-    actionUrl: `/booking-confirmation?id=${booking.id}`
-  })
-
-  await loadBookings()
-  replaceBookingsQuery({ nextAction: 'accepted' })
-}
 
   async function declinePendingBooking(booking: Booking) {
-  const confirmed = confirm('Decline this booking request? The customer will see it as cancelled/not accepted.')
-  if (!confirmed) return
+    const confirmed = confirm('Decline this booking request? The customer will see it as cancelled/not accepted.')
+    if (!confirmed) return
 
-  setActionLoadingId(booking.id)
-  setError(null)
+    setActionLoadingId(booking.id)
+    setError(null)
+    setSuccess(null)
 
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: 'cancelled' })
-    .eq('id', booking.id)
-    .eq('business_id', booking.business_id)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', booking.id)
+      .eq('business_id', booking.business_id)
 
-  setActionLoadingId(null)
+    setActionLoadingId(null)
 
-  if (error) {
-    setError(error.message)
-    return
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    updateLocalBookingStatus(booking.id, 'cancelled')
+
+    await createCustomerNotification({
+      booking,
+      type: 'booking_declined',
+      title: 'Booking declined',
+      message: `Your booking request for ${serviceName(booking)} on ${appointmentDateTime(booking)} was declined.`,
+      actionUrl: '/my-bookings'
+    })
+
+    setSuccess('Booking declined. The customer has been notified and the request is no longer pending.')
+    await loadBookings({ keepSuccess: true })
   }
 
-  await createCustomerNotification({
-    booking,
-    type: 'booking_declined',
-    title: 'Booking declined',
-    message: `Your booking request for ${serviceName(booking)} on ${appointmentDateTime(booking)} was declined.`,
-    actionUrl: '/my-bookings'
-  })
+  async function cancelBooking(booking: Booking) {
+    const confirmed = confirm('Cancel this booking? This will also show as cancelled to the customer.')
+    if (!confirmed) return
 
-  await loadBookings()
-  replaceBookingsQuery({ nextAction: 'declined' })
-}
+    setActionLoadingId(booking.id)
+    setError(null)
+    setSuccess(null)
 
- async function cancelBooking(booking: Booking) {
-  const confirmed = confirm('Cancel this booking? This will also show as cancelled to the customer.')
-  if (!confirmed) return
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', booking.id)
+      .eq('business_id', booking.business_id)
 
-  setActionLoadingId(booking.id)
-  setError(null)
+    setActionLoadingId(null)
 
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: 'cancelled' })
-    .eq('id', booking.id)
-    .eq('business_id', booking.business_id)
+    if (error) {
+      setError(error.message)
+      return
+    }
 
-  setActionLoadingId(null)
+    updateLocalBookingStatus(booking.id, 'cancelled')
 
-  if (error) {
-    setError(error.message)
-    return
+    await createCustomerNotification({
+      booking,
+      type: 'booking_cancelled',
+      title: 'Booking cancelled',
+      message: `Your booking for ${serviceName(booking)} on ${appointmentDateTime(booking)} was cancelled by the business.`,
+      actionUrl: '/my-bookings'
+    })
+
+    setSuccess('Booking cancelled. The customer has been notified and the booking is now locked as cancelled.')
+    await loadBookings({ keepSuccess: true })
   }
-
-  await createCustomerNotification({
-    booking,
-    type: 'booking_cancelled',
-    title: 'Booking cancelled',
-    message: `Your booking for ${serviceName(booking)} on ${appointmentDateTime(booking)} was cancelled by the business.`,
-    actionUrl: '/my-bookings'
-  })
-
-  await loadBookings()
-  replaceBookingsQuery({ nextAction: 'cancelled' })
-}
 
   async function completeBooking(booking: Booking) {
-  const confirmed = confirm('Mark this appointment as completed?')
-  if (!confirmed) return
+    const confirmed = confirm('Mark this appointment as completed?')
+    if (!confirmed) return
 
-  setActionLoadingId(booking.id)
-  setError(null)
+    setActionLoadingId(booking.id)
+    setError(null)
+    setSuccess(null)
 
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: 'completed' })
-    .eq('id', booking.id)
-    .eq('business_id', booking.business_id)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'completed' })
+      .eq('id', booking.id)
+      .eq('business_id', booking.business_id)
 
-  setActionLoadingId(null)
+    setActionLoadingId(null)
 
-  if (error) {
-    setError(error.message)
-    return
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    updateLocalBookingStatus(booking.id, 'completed')
+
+    await createCustomerNotification({
+      booking,
+      type: 'booking_completed',
+      title: 'Appointment completed',
+      message: `Your appointment for ${serviceName(booking)} on ${appointmentDateTime(booking)} has been marked as completed.`,
+      actionUrl: '/my-bookings'
+    })
+
+    setSuccess('Booking marked as completed. The customer has been notified and the booking is now locked in history.')
+    await loadBookings({ keepSuccess: true })
   }
 
-  await createCustomerNotification({
-    booking,
-    type: 'booking_completed',
-    title: 'Appointment completed',
-    message: `Your appointment for ${serviceName(booking)} on ${appointmentDateTime(booking)} has been marked as completed.`,
-    actionUrl: '/my-bookings'
-  })
-
-  await loadBookings()
-  replaceBookingsQuery({ nextAction: 'completed' })
-}
-
-  function statusLabel(status: string) {
-    if (status === 'pending') return 'Pending approval'
-    if (status === 'confirmed') return 'Confirmed appointment'
-    if (status === 'completed') return 'Completed appointment'
-    if (status === 'cancelled') return 'Cancelled booking'
-    return status
+  function statusLabel(value: string) {
+    if (value === 'pending') return 'Pending approval'
+    if (value === 'confirmed') return 'Confirmed appointment'
+    if (value === 'completed') return 'Completed appointment'
+    if (value === 'cancelled') return 'Cancelled booking'
+    return value
   }
 
-  function statusColor(status: string) {
-    if (status === 'pending') return 'var(--accent)'
-    if (status === 'confirmed') return 'var(--success)'
-    if (status === 'completed') return 'var(--success)'
-    if (status === 'cancelled') return 'var(--warning)'
+  function statusColor(value: string) {
+    if (value === 'pending') return 'var(--accent)'
+    if (value === 'confirmed') return 'var(--success)'
+    if (value === 'completed') return 'var(--success)'
+    if (value === 'cancelled') return 'var(--warning)'
     return 'var(--text-muted)'
   }
 
-  function statusBackground(status: string) {
-    if (status === 'pending') return 'rgba(255,107,53,0.12)'
-    if (status === 'confirmed') return 'rgba(45,212,191,0.12)'
-    if (status === 'completed') return 'rgba(45,212,191,0.12)'
-    if (status === 'cancelled') return 'rgba(255,190,11,0.12)'
+  function statusBackground(value: string) {
+    if (value === 'pending') return 'rgba(255,107,53,0.12)'
+    if (value === 'confirmed') return 'rgba(45,212,191,0.12)'
+    if (value === 'completed') return 'rgba(45,212,191,0.12)'
+    if (value === 'cancelled') return 'rgba(255,190,11,0.12)'
     return 'var(--surface-2)'
-  }
-
-  function actionFeedbackCopy(action: string) {
-    if (action === 'accepted') {
-      return {
-        tone: 'success',
-        label: 'Booking accepted',
-        title: 'The booking request has been confirmed.',
-        body: 'The appointment now appears as a confirmed booking for the customer.'
-      }
-    }
-
-    if (action === 'declined') {
-      return {
-        tone: 'warning',
-        label: 'Booking declined',
-        title: 'The booking request has been declined.',
-        body: 'The customer will see this request as cancelled/not accepted.'
-      }
-    }
-
-    if (action === 'cancelled') {
-      return {
-        tone: 'warning',
-        label: 'Booking cancelled',
-        title: 'The booking has been cancelled.',
-        body: 'The customer will see this appointment as cancelled.'
-      }
-    }
-
-    if (action === 'completed') {
-      return {
-        tone: 'success',
-        label: 'Booking completed',
-        title: 'The appointment has been marked as completed.',
-        body: 'This record is now locked in the booking history.'
-      }
-    }
-
-    return null
   }
 
   function dateRangeForFilter(filter: RangeFilter) {
@@ -604,9 +589,6 @@ export default function Bookings() {
   }, [filteredBookings, rangeFilter])
 
   const selectedRange = dateRangeForFilter(rangeFilter)
-  const activeActionFeedback = typeof router.query.action === 'string'
-    ? actionFeedbackCopy(router.query.action)
-    : null
 
   const activeFilterSummary = [
     selectedRange.label,
@@ -622,8 +604,8 @@ export default function Bookings() {
     return `/dashboard/customers/by-email?email=${encodeURIComponent(booking.customer_email || '')}&businessId=${business?.id || booking.business_id}`
   }
 
-  function renderBookingCard(booking: Booking, mode: 'pending' | 'confirmed' | 'history' | 'filtered') {
-    const isLocked = booking.status === 'cancelled' || booking.status === 'completed' || mode === 'history'
+  function renderBookingCard(booking: Booking) {
+    const isLocked = booking.status === 'cancelled' || booking.status === 'completed'
     const isWorking = actionLoadingId === booking.id
     const start = new Date(booking.start_at)
     const end = booking.end_at ? new Date(booking.end_at) : new Date(start.getTime() + booking.duration_minutes * 60000)
@@ -645,7 +627,7 @@ export default function Bookings() {
       >
         <div className="booking-manager-card-inner">
           <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+            <div className="booking-card-heading-row">
               <Link href={customerHistoryLink(booking)} style={{ color: 'var(--text)', fontWeight: 800 }}>
                 {booking.customer_name || 'Customer'}
               </Link>
@@ -695,33 +677,26 @@ export default function Bookings() {
                 </p>
               )}
             </div>
-{(booking.customer_notes || booking.internal_notes) && (
-  <div
-    style={{
-      marginTop: '0.75rem',
-      padding: '0.8rem',
-      borderRadius: 'var(--radius)',
-      background: 'var(--surface-2)',
-      border: '1px solid var(--border)'
-    }}
-  >
-    {booking.customer_notes && (
-      <>
-        <p className="small muted">Customer note</p>
-        <p className="small" style={{ marginTop: '0.25rem' }}>{booking.customer_notes}</p>
-      </>
-    )}
 
-    {booking.internal_notes && (
-      <>
-        <p className="small muted" style={{ marginTop: booking.customer_notes ? '0.75rem' : 0 }}>Internal note</p>
-        <p className="small" style={{ marginTop: '0.25rem' }}>{booking.internal_notes}</p>
-      </>
-    )}
-  </div>
-)}
+            {(booking.customer_notes || booking.internal_notes) && (
+              <div className="booking-note-box">
+                {booking.customer_notes && (
+                  <>
+                    <p className="small muted">Customer note</p>
+                    <p className="small" style={{ marginTop: '0.25rem' }}>{booking.customer_notes}</p>
+                  </>
+                )}
 
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
+                {booking.internal_notes && (
+                  <>
+                    <p className="small muted" style={{ marginTop: booking.customer_notes ? '0.75rem' : 0 }}>Internal note</p>
+                    <p className="small" style={{ marginTop: '0.25rem' }}>{booking.internal_notes}</p>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="booking-contact-actions">
               <Link href={customerHistoryLink(booking)} className="btn btn-ghost">
                 Customer details
               </Link>
@@ -769,7 +744,7 @@ export default function Bookings() {
               </>
             )}
 
-            {(booking.status === 'completed' || booking.status === 'cancelled' || isLocked) && booking.status !== 'pending' && (
+            {isLocked && booking.status !== 'pending' && (
               <div
                 className="card"
                 style={{
@@ -780,11 +755,7 @@ export default function Bookings() {
                 }}
               >
                 <p className="small" style={{ color: statusColor(booking.status) }}>
-                  {booking.status === 'completed'
-                    ? 'Locked completed record'
-                    : booking.status === 'cancelled'
-                      ? 'Locked cancelled record'
-                      : 'Past appointment'}
+                  {booking.status === 'completed' ? 'Locked completed record' : 'Locked cancelled record'}
                 </p>
                 <p className="small muted" style={{ marginTop: '0.3rem' }}>
                   This booking can no longer be changed.
@@ -802,37 +773,42 @@ export default function Bookings() {
       title="Bookings"
       subtitle={business ? `Manage Mirëbook bookings for ${business.name}` : 'Choose which business bookings to view.'}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+      <div className="booking-top-toolbar">
         <p className="small muted">
           Use the date, status and search filters to manage appointments, approvals and booking history as the business grows.
         </p>
 
-        <button onClick={loadBookings} className="btn btn-ghost" disabled={pageLoading}>
-          {pageLoading ? 'Refreshing...' : 'Refresh bookings'}
-        </button>
+        <div className="booking-top-toolbar-actions">
+          <button onClick={() => loadBookings()} className="btn btn-ghost" disabled={pageLoading}>
+            {pageLoading ? 'Refreshing...' : 'Refresh bookings'}
+          </button>
+
+          <Link href="/dashboard/notifications" className="btn btn-ghost">
+            Needs action
+          </Link>
+
+          <Link href="/support/business" className="btn btn-ghost">
+            Business support
+          </Link>
+        </div>
       </div>
 
-      {activeActionFeedback && (
+      {success && (
         <div
           className="card"
           style={{
-            borderColor: activeActionFeedback.tone === 'success' ? 'rgba(45,212,191,0.28)' : 'rgba(255,190,11,0.28)',
-            background: activeActionFeedback.tone === 'success' ? 'rgba(45,212,191,0.06)' : 'rgba(255,190,11,0.06)',
+            borderColor: 'rgba(45,212,191,0.28)',
+            background: 'rgba(45,212,191,0.06)',
             marginBottom: '1rem'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div className="booking-success-row">
             <div>
-              <p className="small" style={{ color: activeActionFeedback.tone === 'success' ? 'var(--success)' : 'var(--warning)' }}>
-                {activeActionFeedback.label}
-              </p>
-              <strong>{activeActionFeedback.title}</strong>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {activeActionFeedback.body}
-              </p>
+              <p className="small" style={{ color: 'var(--success)' }}>Action completed</p>
+              <strong>{success}</strong>
             </div>
 
-            <button type="button" className="btn btn-ghost" onClick={() => replaceBookingsQuery({ nextAction: null })}>
+            <button type="button" className="btn btn-ghost" onClick={() => setSuccess(null)}>
               Dismiss
             </button>
           </div>
@@ -873,20 +849,14 @@ export default function Bookings() {
             </p>
           </div>
 
-          {businesses.map((b) => (
+          {businesses.map((item) => (
             <Link
-              key={b.id}
-              href={`/dashboard/bookings?businessId=${b.id}&view=today`}
-              className="card"
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '1rem'
-              }}
+              key={item.id}
+              href={`/dashboard/bookings?businessId=${item.id}&view=today`}
+              className="card business-select-card"
             >
               <div>
-                <strong>{b.name}</strong>
+                <strong>{item.name}</strong>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
                   View bookings for this business.
                 </p>
@@ -904,8 +874,22 @@ export default function Bookings() {
         <div className="card">
           <h3>No bookings yet</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Customer bookings for this business will appear here.
+            Customer bookings for this business will appear here once your public page is published and customers start booking.
           </p>
+
+          <div className="booking-empty-actions">
+            <Link href="/dashboard/businesses" className="btn btn-ghost">
+              Check setup
+            </Link>
+
+            <Link href={business ? `/explore/${business.id}` : '/explore'} className="btn btn-ghost">
+              View public page
+            </Link>
+
+            <Link href="/support/business" className="btn btn-ghost">
+              Business support
+            </Link>
+          </div>
         </div>
       )}
 
@@ -952,7 +936,7 @@ export default function Bookings() {
           </div>
 
           <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
+            <div className="booking-calendar-header">
               <div>
                 <p className="small muted">Calendar view</p>
                 <h3>{selectedRange.label}</h3>
@@ -966,7 +950,7 @@ export default function Bookings() {
               </Link>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+            <div className="booking-filter-button-row">
               {[
                 { key: 'today', label: 'Today' },
                 { key: 'tomorrow', label: 'Tomorrow' },
@@ -985,15 +969,13 @@ export default function Bookings() {
               ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+            <div className="booking-filter-grid">
               <label className="small muted">
                 Jump to date
                 <input
                   type="date"
                   value={selectedDate}
-                  onChange={(e) => {
-                    updateBookingView('custom', e.target.value)
-                  }}
+                  onChange={(e) => updateBookingView('custom', e.target.value)}
                   style={{ marginTop: '0.35rem' }}
                 />
               </label>
@@ -1029,8 +1011,11 @@ export default function Bookings() {
             </div>
 
             <div className="booking-active-filter-bar">
-              <p className="small muted">Active view</p>
-              <strong>{activeFilterSummary}</strong>
+              <div>
+                <p className="small muted">Active view</p>
+                <strong>{activeFilterSummary}</strong>
+              </div>
+
               {(statusFilter !== 'all' || searchTerm.trim() || rangeFilter !== 'today') && (
                 <button
                   type="button"
@@ -1039,7 +1024,7 @@ export default function Bookings() {
                     setSearchTerm('')
                     setStatusFilter('all')
                     updateBookingView('today')
-                    replaceBookingsQuery({ nextFilter: 'today', nextStatus: 'all', nextAction: null })
+                    replaceBookingsQuery({ nextFilter: 'today', nextStatus: 'all' })
                   }}
                 >
                   Reset filters
@@ -1064,19 +1049,48 @@ export default function Bookings() {
                 <h2 style={{ fontFamily: 'var(--font-display)' }}>{group.label}</h2>
               </div>
 
-              {group.bookings.map((booking) => renderBookingCard(
-                booking,
-                booking.status === 'pending'
-                  ? 'pending'
-                  : booking.status === 'confirmed' && new Date(booking.start_at) >= now
-                    ? 'confirmed'
-                    : 'history'
-              ))}
+              {group.bookings.map((booking) => renderBookingCard(booking))}
             </section>
           ))}
         </div>
       )}
+
       <style jsx>{`
+        .booking-top-toolbar,
+        .booking-success-row,
+        .booking-calendar-header,
+        .business-select-card {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+        }
+
+        .booking-top-toolbar-actions,
+        .booking-empty-actions,
+        .booking-filter-button-row,
+        .booking-contact-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .booking-empty-actions {
+          margin-top: 1rem;
+        }
+
+        .booking-filter-button-row {
+          margin-bottom: 1rem;
+        }
+
+        .booking-filter-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 0.75rem;
+        }
+
         .booking-summary-button {
           width: 100%;
           text-align: left;
@@ -1109,6 +1123,26 @@ export default function Bookings() {
           flex-wrap: wrap;
         }
 
+        .booking-card-heading-row {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          flex-wrap: wrap;
+          margin-bottom: 0.35rem;
+        }
+
+        .booking-note-box {
+          margin-top: 0.75rem;
+          padding: 0.8rem;
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+        }
+
+        .booking-contact-actions {
+          margin-top: 0.7rem;
+        }
+
         .booking-manager-actions {
           display: flex;
           gap: 0.75rem;
@@ -1118,17 +1152,40 @@ export default function Bookings() {
         }
 
         @media (max-width: 700px) {
-          .booking-manager-card-inner {
+          .booking-top-toolbar,
+          .booking-success-row,
+          .booking-calendar-header,
+          .business-select-card,
+          .booking-manager-card-inner,
+          .booking-active-filter-bar {
             display: grid;
           }
 
+          .booking-top-toolbar-actions,
+          .booking-empty-actions,
+          .booking-filter-button-row,
+          .booking-contact-actions,
           .booking-manager-actions {
             justify-content: stretch;
           }
 
+          .booking-top-toolbar-actions :global(.btn),
+          .booking-top-toolbar-actions button,
+          .booking-top-toolbar-actions a,
+          .booking-empty-actions :global(.btn),
+          .booking-empty-actions a,
+          .booking-filter-button-row :global(.btn),
+          .booking-filter-button-row button,
+          .booking-contact-actions :global(.btn),
+          .booking-contact-actions a,
           .booking-manager-actions :global(.btn),
           .booking-manager-actions button,
-          .booking-manager-actions a {
+          .booking-manager-actions a,
+          .booking-success-row :global(.btn),
+          .booking-success-row button,
+          .booking-calendar-header :global(.btn),
+          .booking-calendar-header a,
+          .business-select-card :global(.btn) {
             width: 100%;
             justify-content: center;
           }
