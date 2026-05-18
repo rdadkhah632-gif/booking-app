@@ -1,16 +1,18 @@
 import Link from 'next/link'
 import LanguageToggle from './LanguageToggle'
+import { useI18n } from '@/lib/useI18n'
 import { NavProps, notificationLabel } from './navTypes'
 
 export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
+  const { t } = useI18n()
   return (
     <>
       <Link href="/explore" className="muted">
-        Explore
+        {t('nav.explore')}
       </Link>
 
       <Link href="/my-bookings" className="muted">
-        My bookings
+        {t('nav.myBookings')}
       </Link>
 
       <Link
@@ -21,17 +23,17 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
       </Link>
 
       <Link href="/support/customer" className="muted nav-wide-only">
-        Support
+        {t('nav.customerSupport')}
       </Link>
 
       <LanguageToggle />
 
       <Link href="/account" className="muted">
-        Account
+        {t('nav.account')}
       </Link>
 
       <button onClick={onLogout} className="btn btn-ghost">
-        Log out
+        {t('nav.logout')}
       </button>
     </>
   )

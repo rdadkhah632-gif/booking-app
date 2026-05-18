@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
 import { NavProps, notificationLabel } from './navTypes'
 
 export default function BusinessNav({ notificationCount, primaryBusinessId, onLogout }: NavProps) {
+  const { t } = useI18n()
   const publicBusinessHref = primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
 
   return (
@@ -42,15 +44,15 @@ export default function BusinessNav({ notificationCount, primaryBusinessId, onLo
       </Link>
 
       <Link href="/support/business" className="muted nav-wide-only">
-        Support
+        {t('nav.businessSupport')}
       </Link>
 
       <Link href="/account" className="muted">
-        Account
+        {t('nav.account')}
       </Link>
 
       <button onClick={onLogout} className="btn btn-ghost">
-        Log out
+        {t('nav.logout')}
       </button>
     </>
   )

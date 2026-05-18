@@ -1,25 +1,27 @@
 import Link from 'next/link'
 import LanguageToggle from './LanguageToggle'
+import { useI18n } from '@/lib/useI18n'
 
 export default function PublicNav() {
+  const { t } = useI18n()
   return (
     <>
       <Link href="/explore" className="muted">
-        Explore
+        {t('nav.explore')}
       </Link>
 
       <Link href="/support" className="muted nav-wide-only">
-        Support
+        {t('nav.support')}
       </Link>
 
       <LanguageToggle />
 
       <Link href="/login" className="muted">
-        Login
+        {t('nav.login')}
       </Link>
 
       <Link href="/register" className="btn btn-accent">
-        Create account
+        {t('nav.register')}
       </Link>
     </>
   )

@@ -1,34 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
-
-type Business = {
-  id: string
-  name: string
-  description?: string | null
-  category?: string | null
-  city?: string | null
-  country?: string | null
-  phone?: string | null
-  address?: string | null
-  image_url?: string | null
-  auto_accept_bookings?: boolean | null
-  published?: boolean | null
-  created_at?: string | null
-  services?: { id: string; active: boolean }[] | null
-  staff_members?: { id: string; active: boolean }[] | null
-  availability?: { id: string; is_closed?: boolean | null }[] | null
-}
-
-type BusinessCardStats = {
-  activeServices: number
-  activeStaff: number
-  openDays: number
-  missing: string[]
-  bookable: boolean
-}
+import ExploreHero from '@/components/explore/ExploreHero'
+import ExploreFilters from '@/components/explore/ExploreFilters'
+import ExploreResultsHeader from '@/components/explore/ExploreResultsHeader'
+import ExploreBusinessCard from '@/components/explore/ExploreBusinessCard'
+import ExploreEmptyState from '@/components/explore/ExploreEmptyState'
+import ExploreTrustSection from '@/components/explore/ExploreTrustSection'
+import { Business, BusinessCardStats, SortOption } from '@/components/explore/exploreTypes'
 
 export default function Explore() {
   const router = useRouter()
@@ -37,7 +17,7 @@ export default function Explore() {
   const [search, setSearch] = useState('')
   const [city, setCity] = useState('')
   const [category, setCategory] = useState('')
-  const [sortBy, setSortBy] = useState<'newest' | 'name' | 'city' | 'services'>('newest')
+  const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -52,7 +32,7 @@ export default function Explore() {
     setSearch(queryParam)
     setCity(cityParam)
     setCategory(categoryParam)
-    setSortBy(['newest', 'name', 'city', 'services'].includes(sortParam) ? sortParam as 'newest' | 'name' | 'city' | 'services' : 'newest')
+    setSortBy(['newest', 'name', 'city', 'services'].includes(sortParam) ? sortParam as SortOption : 'newest')
   }, [router.isReady, router.query.query, router.query.city, router.query.category, router.query.sort])
 
   async function loadBusinesses() {
@@ -183,7 +163,7 @@ export default function Explore() {
   const cities = useMemo(() => {
     const unique = new Set(
       businesses
-        .map((b) => b.city?.trim())
+        .map((business) => business.city?.trim())
         .filter(Boolean) as string[]
     )
 
@@ -193,7 +173,7 @@ export default function Explore() {
   const categories = useMemo(() => {
     const unique = new Set(
       businesses
-        .map((b) => b.category?.trim())
+        .map((business) => business.category?.trim())
         .filter(Boolean) as string[]
     )
 
@@ -261,225 +241,37 @@ export default function Explore() {
       <AuthNav />
 
       <section className="container" style={{ padding: '32px 24px 70px' }}>
-        <div
-          className="card"
-          style={{
-            marginBottom: '1.5rem',
-            overflow: 'hidden',
-            padding: 0
-          }}
-        >
-          <div
-            style={{
-              padding: '2rem',
-              background: 'linear-gradient(135deg, rgba(255,107,53,0.16), rgba(45,212,191,0.10))'
-            }}
-          >
-            <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
-              Mirëbook marketplace
-            </p>
-
-            <h1 className="page-title">
-              Find real appointments near you.
-            </h1>
-
-            <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 760 }}>
-              Browse bookable Mirëbook businesses with active services, staff and working hours. Choose a service, pick an available time, and send a booking request or instant confirmation depending on the business settings.
-            </p>
-
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-              <span
-                className="small"
-                style={{
-                  background: 'rgba(45,212,191,0.12)',
-                  color: 'var(--success)',
-                  padding: '0.25rem 0.65rem',
-                  borderRadius: 999
-                }}
-              >
-                {marketplaceStats.businesses} bookable business{marketplaceStats.businesses === 1 ? '' : 'es'}
-              </span>
-
-              <span
-                className="small"
-                style={{
-                  background: 'var(--surface-2)',
-                  color: 'var(--text-muted)',
-                  padding: '0.25rem 0.65rem',
-                  borderRadius: 999,
-                  border: '1px solid var(--border)'
-                }}
-              >
-                {marketplaceStats.cities} cit{marketplaceStats.cities === 1 ? 'y' : 'ies'}
-              </span>
-
-              <span
-                className="small"
-                style={{
-                  background: 'var(--surface-2)',
-                  color: 'var(--text-muted)',
-                  padding: '0.25rem 0.65rem',
-                  borderRadius: 999,
-                  border: '1px solid var(--border)'
-                }}
-              >
-                Availability-based booking
-              </span>
-
-              <span
-                className="small"
-                style={{
-                  background: 'var(--surface-2)',
-                  color: 'var(--text-muted)',
-                  padding: '0.25rem 0.65rem',
-                  borderRadius: 999,
-                  border: '1px solid var(--border)'
-                }}
-              >
-                No customer checkout yet
-              </span>
-            </div>
-          </div>
-        </div>
+        <ExploreHero marketplaceStats={marketplaceStats} />
 
         {error && (
-          <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,77,109,0.35)' }}>
-            <h3 style={{ color: 'var(--danger)' }}>Could not load marketplace results</h3>
-            <p className="muted small" style={{ marginTop: '0.5rem' }}>
-              Refresh the marketplace or contact customer support if this keeps happening.
-            </p>
-            <pre style={{
-              whiteSpace: 'pre-wrap',
-              marginTop: '0.75rem',
-              color: 'var(--danger)'
-            }}>
-              {error}
-            </pre>
-            <div className="explore-empty-actions">
-              <button type="button" onClick={loadBusinesses} className="btn btn-accent">
-                Retry marketplace
-              </button>
-
-              <Link href="/support/customer" className="btn btn-ghost">
-                Customer support
-              </Link>
-            </div>
-          </div>
+          <ExploreEmptyState type="error" error={error} onRetry={loadBusinesses} />
         )}
 
         <div className="explore-layout-grid">
-          <aside className="card explore-filter-panel">
-            <h3 style={{ marginBottom: '0.35rem' }}>
-              Find a service
-            </h3>
-            <p className="small muted" style={{ marginBottom: '1rem' }}>
-              Search businesses that are currently bookable on Mirëbook. Only published businesses with active services, active staff and working hours appear here.
-            </p>
-
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label className="small muted">Search</label>
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Business, service, city..."
-                  style={{ width: '100%', marginTop: '0.4rem' }}
-                />
-              </div>
-
-              <div>
-                <label className="small muted">Category</label>
-                <input
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Barber, nails, salon..."
-                  list="category-options"
-                  style={{ width: '100%', marginTop: '0.4rem' }}
-                />
-
-                <datalist id="category-options">
-                  {categories.map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div>
-                <label className="small muted">City</label>
-                <input
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Tirana, Coventry, Milan..."
-                  list="city-options"
-                  style={{ width: '100%', marginTop: '0.4rem' }}
-                />
-
-                <datalist id="city-options">
-                  {cities.map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div>
-                <label className="small muted">Sort</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'newest' | 'name' | 'city' | 'services')}
-                  style={{ width: '100%', marginTop: '0.4rem' }}
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="name">Business name</option>
-                  <option value="city">City</option>
-                  <option value="services">Most services</option>
-                </select>
-              </div>
-
-              <button className="btn btn-accent" onClick={applyFiltersToUrl}>
-                Search Mirëbook
-              </button>
-
-              <button className="btn btn-ghost" onClick={clearFilters}>
-                Clear filters
-              </button>
-
-              <button className="btn btn-ghost" onClick={loadBusinesses} disabled={loading}>
-                {loading ? 'Refreshing...' : 'Refresh results'}
-              </button>
-            </div>
-          </aside>
+          <ExploreFilters
+            search={search}
+            city={city}
+            category={category}
+            sortBy={sortBy}
+            cities={cities}
+            categories={categories}
+            loading={loading}
+            onSearchChange={setSearch}
+            onCityChange={setCity}
+            onCategoryChange={setCategory}
+            onSortChange={setSortBy}
+            onApplyFilters={applyFiltersToUrl}
+            onClearFilters={clearFilters}
+            onRefresh={loadBusinesses}
+          />
 
           <section>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '1rem',
-              marginBottom: '1rem',
-              flexWrap: 'wrap'
-            }}>
-              <div>
-                <p className="small muted">Mirëbook marketplace</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
-                  {loading
-                    ? 'Loading businesses...'
-                    : `${filteredBusinesses.length} bookable business${filteredBusinesses.length === 1 ? '' : 'es'}`}
-                </h2>
-              </div>
-
-              {(search || city || category) && (
-                <button onClick={clearFilters} className="btn btn-ghost">
-                  Clear current filters
-                </button>
-              )}
-              <Link href="/register" className="btn btn-ghost">
-                List your business
-              </Link>
-
-              <Link href="/support/customer" className="btn btn-ghost">
-                Customer support
-              </Link>
-            </div>
+            <ExploreResultsHeader
+              loading={loading}
+              filteredCount={filteredBusinesses.length}
+              hasFilters={Boolean(search || city || category)}
+              onClearFilters={clearFilters}
+            />
 
             {loading && (
               <div className="card">
@@ -488,238 +280,32 @@ export default function Explore() {
             )}
 
             {!loading && !error && businesses.length === 0 && (
-              <div className="card">
-                <h3>No bookable businesses yet</h3>
-                <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  Businesses appear here when they are published and have active services, active staff and working hours configured. Customers can browse and request appointments without a Mirëbook checkout step.
-                </p>
-                <div className="explore-empty-actions">
-                  <Link href="/register" className="btn btn-accent">
-                    Add the first business
-                  </Link>
-
-                  <Link href="/support/customer" className="btn btn-ghost">
-                    Customer support
-                  </Link>
-                </div>
-              </div>
+              <ExploreEmptyState type="no-businesses" />
             )}
 
             {!loading && !error && businesses.length > 0 && filteredBusinesses.length === 0 && (
-              <div className="card">
-                <h3>No businesses match your filters</h3>
-                <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  Try changing your search, category or city filter, or clear filters to view all currently bookable businesses.
-                </p>
-                <div className="explore-empty-actions">
-                  <button onClick={clearFilters} className="btn btn-accent">
-                    Clear filters
-                  </button>
-
-                  <Link href="/register" className="btn btn-ghost">
-                    List your business
-                  </Link>
-                </div>
-              </div>
+              <ExploreEmptyState type="no-results" onClearFilters={clearFilters} />
             )}
 
             <div className="explore-results-grid">
-              {!loading && !error && filteredBusinesses.map((business) => {
-                const stats = getBusinessStats(business)
-                const serviceText = `${stats.activeServices} service${stats.activeServices === 1 ? '' : 's'}`
-                const staffText = `${stats.activeStaff} staff`
-
-                return (
-                  <div
-                    key={business.id}
-                    className="card explore-business-card"
-                  >
-                    <div
-                      className="explore-business-image"
-                      style={{
-                        minHeight: 150,
-                        background: imageBackground(business),
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        borderRight: '1px solid var(--border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '2rem'
-                      }}
-                    >
-                      {!business.image_url && businessIcon(business)}
-                    </div>
-
-                    <div className="explore-business-content">
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <h3 style={{ marginBottom: '0.25rem' }}>
-                          {business.name}
-                        </h3>
-
-                        {business.category && (
-                          <span
-                            className="small"
-                            style={{
-                              background: 'var(--accent-dim)',
-                              color: 'var(--accent)',
-                              padding: '0.2rem 0.55rem',
-                              borderRadius: 999
-                            }}
-                          >
-                            {business.category}
-                          </span>
-                        )}
-
-                        <span
-                          className="small"
-                          style={{
-                            background: business.auto_accept_bookings === false ? 'rgba(255,107,53,0.12)' : 'rgba(45,212,191,0.12)',
-                            color: business.auto_accept_bookings === false ? 'var(--accent)' : 'var(--success)',
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 999
-                          }}
-                        >
-                          {business.auto_accept_bookings === false ? 'Approval required' : 'Instant confirmation'}
-                        </span>
-                      </div>
-
-                      <p className="muted small" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
-                        {business.description || 'Book available services through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.'}
-                      </p>
-
-                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
-                        <span
-                          className="small"
-                          style={{
-                            background: 'rgba(45,212,191,0.12)',
-                            color: 'var(--success)',
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 999
-                          }}
-                        >
-                          Bookable on Mirëbook
-                        </span>
-
-                        <span
-                          className="small"
-                          style={{
-                            background: 'var(--surface-2)',
-                            color: 'var(--text-muted)',
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 999,
-                            border: '1px solid var(--border)'
-                          }}
-                        >
-                          Appointment booking
-                        </span>
-
-                        <span
-                          className="small"
-                          style={{
-                            background: 'var(--surface-2)',
-                            color: 'var(--text-muted)',
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 999,
-                            border: '1px solid var(--border)'
-                          }}
-                        >
-                          {serviceText}
-                        </span>
-
-                        <span
-                          className="small"
-                          style={{
-                            background: 'var(--surface-2)',
-                            color: 'var(--text-muted)',
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 999,
-                            border: '1px solid var(--border)'
-                          }}
-                        >
-                          {staffText}
-                        </span>
-
-                        <span
-                          className="small"
-                          style={{
-                            background: 'var(--surface-2)',
-                            color: 'var(--text-muted)',
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 999,
-                            border: '1px solid var(--border)'
-                          }}
-                        >
-                          {stats.openDays} open day{stats.openDays === 1 ? '' : 's'}
-                        </span>
-                      </div>
-
-                      <p className="small muted">
-                        {locationLabel(business)}
-                      </p>
-                    </div>
-
-                    <div className="explore-business-actions">
-                      <Link href={`/explore/${business.id}`} className="btn btn-accent">
-                        View times and book
-                      </Link>
-
-                      <Link href={`/book/${business.id}`} className="btn btn-ghost">
-                        Book now
-                      </Link>
-
-                      {business.phone && (
-                        <span className="small muted">
-                          {business.phone}
-                        </span>
-                      )}
-
-                      <span className="small muted">
-                        {bookingModeLabel(business)}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
+              {!loading && !error && filteredBusinesses.map((business) => (
+                <ExploreBusinessCard
+                  key={business.id}
+                  business={business}
+                  stats={getBusinessStats(business)}
+                  businessIcon={businessIcon}
+                  bookingModeLabel={bookingModeLabel}
+                  locationLabel={locationLabel}
+                  imageBackground={imageBackground}
+                />
+              ))}
             </div>
           </section>
         </div>
       </section>
-      <section className="container explore-trust-section">
-        <div className="grid-3">
-          <div className="card">
-            <p className="small muted">For customers</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Book without checkout friction</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Mirëbook helps customers request or confirm appointments. Payment/deposit collection is not part of the current customer booking flow.
-            </p>
-          </div>
 
-          <div className="card">
-            <p className="small muted">For businesses</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Business billing is separate</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Business subscription controls are separate from the customer booking journey, so public booking stays focused on appointments.
-            </p>
-            <Link href="/dashboard/billing" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
-              Billing groundwork
-            </Link>
-          </div>
+      <ExploreTrustSection />
 
-          <div className="card">
-            <p className="small muted">Support and trust</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Clear launch foundations</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Support, privacy and terms pages are in place for early testing and should be reviewed before public launch.
-            </p>
-            <div className="explore-trust-actions">
-              <Link href="/support/customer" className="btn btn-ghost">Customer support</Link>
-              <Link href="/privacy" className="btn btn-ghost">Privacy</Link>
-              <Link href="/terms" className="btn btn-ghost">Terms</Link>
-            </div>
-          </div>
-        </div>
-      </section>
       <style jsx>{`
         .explore-layout-grid {
           display: grid;
@@ -728,9 +314,18 @@ export default function Explore() {
           align-items: start;
         }
 
-        .explore-filter-panel {
+        :global(.explore-filter-panel) {
           position: sticky;
           top: 96px;
+        }
+
+        :global(.explore-results-header) {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
         }
 
         .explore-results-grid {
@@ -738,7 +333,7 @@ export default function Explore() {
           gap: 1rem;
         }
 
-        .explore-business-card {
+        :global(.explore-business-card) {
           display: grid;
           grid-template-columns: 160px 1fr auto;
           gap: 1rem;
@@ -748,7 +343,7 @@ export default function Explore() {
           min-height: 170px;
         }
 
-        .explore-business-image {
+        :global(.explore-business-image) {
           border-right: 1px solid var(--border);
           display: flex;
           align-items: center;
@@ -756,11 +351,11 @@ export default function Explore() {
           font-size: 2rem;
         }
 
-        .explore-business-content {
+        :global(.explore-business-content) {
           padding: 1rem 0;
         }
 
-        .explore-business-actions {
+        :global(.explore-business-actions) {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
@@ -770,15 +365,23 @@ export default function Explore() {
           min-width: 180px;
         }
 
-        .explore-empty-actions,
-        .explore-trust-actions {
+        :global(.explore-muted-pill) {
+          background: var(--surface-2);
+          color: var(--text-muted);
+          padding: 0.2rem 0.55rem;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+        }
+
+        :global(.explore-empty-actions),
+        :global(.explore-trust-actions) {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
           margin-top: 1rem;
         }
 
-        .explore-trust-section {
+        :global(.explore-trust-section) {
           padding-bottom: 70px;
         }
 
@@ -787,50 +390,47 @@ export default function Explore() {
             grid-template-columns: 1fr;
           }
 
-          .explore-filter-panel {
+          :global(.explore-filter-panel) {
             position: static;
           }
         }
 
         @media (max-width: 760px) {
-          .explore-business-card {
+          :global(.explore-business-card) {
             grid-template-columns: 1fr;
           }
 
-          .explore-business-image {
+          :global(.explore-business-image) {
             min-height: 180px !important;
             border-right: 0;
             border-bottom: 1px solid var(--border);
           }
 
-          .explore-business-content {
+          :global(.explore-business-content) {
             padding: 1rem;
           }
 
-          .explore-business-actions {
+          :global(.explore-business-actions) {
             align-items: stretch;
             padding: 0 1rem 1rem;
+            min-width: 0;
           }
 
-          .explore-business-actions :global(.btn) {
+          :global(.explore-business-actions .btn) {
             width: 100%;
             justify-content: center;
           }
 
-          .explore-business-actions {
-            min-width: 0;
-          }
-
-          .explore-empty-actions,
-          .explore-trust-actions {
+          :global(.explore-empty-actions),
+          :global(.explore-trust-actions) {
             display: grid;
           }
 
-          .explore-empty-actions :global(.btn),
-          .explore-empty-actions button,
-          .explore-empty-actions a,
-          .explore-trust-actions :global(.btn),
-          .explore-trust-actions a {
+          :global(.explore-empty-actions .btn),
+          :global(.explore-empty-actions button),
+          :global(.explore-empty-actions a),
+          :global(.explore-trust-actions .btn),
+          :global(.explore-trust-actions a) {
             width: 100%;
             justify-content: center;
           }
