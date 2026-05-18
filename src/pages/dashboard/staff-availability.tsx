@@ -241,7 +241,7 @@ export default function StaffAvailabilityPage() {
       return
     }
 
-    setSuccess('Staff working hours saved. Customer availability will use these hours straight away.')
+    setSuccess('Staff working hours saved. Customer booking slots will use these hours straight away.')
     await loadPage()
   }
 
@@ -258,7 +258,15 @@ export default function StaffAvailabilityPage() {
 
       {success && (
         <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
-          <p style={{ color: 'var(--success)' }}>{success}</p>
+          <div className="staff-availability-banner-row">
+            <div>
+              <p className="small" style={{ color: 'var(--success)' }}>Saved</p>
+              <strong>{success}</strong>
+            </div>
+            <button type="button" className="btn btn-ghost" onClick={() => setSuccess(null)}>
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -271,7 +279,7 @@ export default function StaffAvailabilityPage() {
       {!loading && staff && (
         <>
           <div className="card" style={{ marginBottom: '1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div className="staff-availability-card-row">
               <div>
                 <p className="small muted">Staff member</p>
                 <h3>{staff.name}</h3>
@@ -306,13 +314,57 @@ export default function StaffAvailabilityPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div className="staff-availability-action-row">
                 <Link href={`/dashboard/staff?businessId=${staff.business_id}`} className="btn btn-ghost">
                   Back to staff
                 </Link>
 
                 <Link href={`/dashboard/bookings?businessId=${staff.business_id}`} className="btn btn-ghost">
                   View bookings
+                </Link>
+
+                <Link href={`/dashboard/services?businessId=${staff.business_id}`} className="btn btn-ghost">
+                  Services
+                </Link>
+
+                <Link href="/support/business" className="btn btn-ghost">
+                  Business support
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="card"
+            style={{
+              marginBottom: '1.25rem',
+              borderColor: staff.active === false || !availabilityStats.ready ? 'rgba(255,190,11,0.32)' : 'rgba(45,212,191,0.24)',
+              background: staff.active === false || !availabilityStats.ready ? 'rgba(255,190,11,0.06)' : 'rgba(45,212,191,0.05)'
+            }}
+          >
+            <div className="staff-availability-card-row">
+              <div>
+                <p className="small" style={{ color: staff.active === false || !availabilityStats.ready ? 'var(--warning)' : 'var(--success)' }}>
+                  Booking readiness
+                </p>
+                <h3 style={{ marginTop: '0.25rem' }}>
+                  {staff.active === false
+                    ? 'This staff member is hidden from public booking'
+                    : availabilityStats.ready
+                      ? 'This staff member has valid public booking hours'
+                      : 'This staff member needs valid working hours'}
+                </h3>
+                <p className="small muted" style={{ marginTop: '0.45rem' }}>
+                  Staff working hours are used to generate public booking slots. The staff member must also be active and assigned to services from the Staff page before customers can book them.
+                </p>
+              </div>
+
+              <div className="staff-availability-action-row">
+                <Link href={`/dashboard/staff?businessId=${staff.business_id}`} className="btn btn-ghost">
+                  Check staff setup
+                </Link>
+                <Link href={`/dashboard/businesses?businessId=${staff.business_id}`} className="btn btn-ghost">
+                  Setup hub
                 </Link>
               </div>
             </div>
@@ -345,7 +397,7 @@ export default function StaffAvailabilityPage() {
           </div>
 
           <div className="card" style={{ marginBottom: '1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div className="staff-availability-card-row">
               <div>
                 <p className="small muted">Quick presets</p>
                 <h3>Set common working patterns</h3>
@@ -354,7 +406,7 @@ export default function StaffAvailabilityPage() {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div className="staff-availability-action-row">
                 <button type="button" onClick={applyWeekdayPreset} className="btn btn-ghost">
                   Mon-Fri 9-5
                 </button>
@@ -377,12 +429,8 @@ export default function StaffAvailabilityPage() {
               return (
                 <div
                   key={row.day_of_week}
-                  className="card"
+                  className="card staff-availability-row"
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1.2fr 1fr 1fr 1fr',
-                    gap: '0.75rem',
-                    alignItems: 'center',
                     borderColor: invalid ? 'rgba(255,77,109,0.35)' : row.is_closed ? 'rgba(255,190,11,0.20)' : 'var(--border)',
                     opacity: row.is_closed ? 0.76 : 1
                   }}
@@ -429,7 +477,7 @@ export default function StaffAvailabilityPage() {
             })}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+          <div className="staff-availability-save-row">
             <button
               onClick={saveAvailability}
               disabled={saving}
@@ -441,9 +489,70 @@ export default function StaffAvailabilityPage() {
             <Link href={`/dashboard/staff?businessId=${staff.business_id}`} className="btn btn-ghost">
               Back to staff
             </Link>
+
+            <Link href="/support/business" className="btn btn-ghost">
+              Business support
+            </Link>
           </div>
         </>
       )}
+
+      <style jsx>{`
+        .staff-availability-banner-row,
+        .staff-availability-card-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .staff-availability-action-row,
+        .staff-availability-save-row {
+          display: flex;
+          gap: 0.75rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .staff-availability-save-row {
+          margin-top: 1.25rem;
+        }
+
+        .staff-availability-row {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr 1fr 1fr;
+          gap: 0.75rem;
+          align-items: center;
+        }
+
+        @media (max-width: 760px) {
+          .staff-availability-banner-row,
+          .staff-availability-card-row,
+          .staff-availability-row {
+            display: grid;
+            grid-template-columns: 1fr;
+          }
+
+          .staff-availability-action-row,
+          .staff-availability-save-row {
+            width: 100%;
+            justify-content: stretch;
+          }
+
+          .staff-availability-action-row :global(.btn),
+          .staff-availability-action-row a,
+          .staff-availability-action-row button,
+          .staff-availability-save-row :global(.btn),
+          .staff-availability-save-row a,
+          .staff-availability-save-row button,
+          .staff-availability-banner-row :global(.btn),
+          .staff-availability-banner-row button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }

@@ -48,16 +48,16 @@ export default function Services() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
-const [imageFile, setImageFile] = useState<File | null>(null)
-const [imagePreviewUrl, setImagePreviewUrl] = useState('')
-const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [duration, setDuration] = useState(30)
   const [price, setPrice] = useState(0)
   const [formExpanded, setFormExpanded] = useState(true)
 
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
   const [savingServiceId, setSavingServiceId] = useState<string | null>(null)
-const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null)
+  const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -177,22 +177,25 @@ const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null
     const averageDuration = services.length > 0
       ? services.reduce((total, service) => total + Number(service.duration_minutes || 0), 0) / services.length
       : 0
-const bookable = services.filter((service) =>
-  service.active && staffServices.some((link) => link.service_id === service.id)
-).length
+    const bookable = services.filter((service) =>
+      service.active && staffServices.some((link) => link.service_id === service.id)
+    ).length
 
-const totalValue = services.reduce((total, service) => total + Number(service.price || 0), 0)
+    const withImages = services.filter((service) => Boolean(service.image_url?.trim())).length
+    const totalValue = services.reduce((total, service) => total + Number(service.price || 0), 0)
+
     return {
-  total: services.length,
-  active,
-  inactive,
-  assigned,
-  unassigned,
-  averagePrice,
-  averageDuration,
-  bookable,
-  totalValue
-}
+      total: services.length,
+      active,
+      inactive,
+      assigned,
+      unassigned,
+      averagePrice,
+      averageDuration,
+      bookable,
+      withImages,
+      totalValue
+    }
   }, [services, staffServices])
 
   function assignedStaffForService(serviceId: string) {
@@ -202,85 +205,111 @@ const totalValue = services.reduce((total, service) => total + Number(service.pr
   }
 
   function resetForm() {
-  setName('')
-  setDescription('')
-  setImageUrl('')
-  setImageFile(null)
-  setImagePreviewUrl('')
-  setDuration(30)
-  setPrice(0)
-}
-function handleCreateImageChange(file: File | null) {
-  setError(null)
-  setImageFile(file)
-
-  if (!file) {
-    setImagePreviewUrl('')
-    return
-  }
-
-  setImagePreviewUrl(URL.createObjectURL(file))
-}
-
-async function uploadCreateImage() {
-  if (!imageFile) {
-    setError('Choose an image file first.')
-    return null
-  }
-
-  setUploadingImage(true)
-  setError(null)
-
-  try {
-    const uploaded = await uploadMirebookImage({
-      file: imageFile,
-      folder: 'services',
-      recordId: business?.id || 'new-service'
-    })
-
-    setImageUrl(uploaded.publicUrl)
+    setName('')
+    setDescription('')
+    setImageUrl('')
     setImageFile(null)
-    setImagePreviewUrl(uploaded.publicUrl)
-    setSuccess('Service image uploaded.')
-    return uploaded.publicUrl
-  } catch (err: any) {
-    setError(err.message || 'Could not upload image.')
-    return null
-  } finally {
-    setUploadingImage(false)
+    setImagePreviewUrl('')
+    setDuration(30)
+    setPrice(0)
   }
-}
 
-async function uploadServiceImage(service: Service, file: File | null) {
-  if (!file) return
+  function handleCreateImageChange(file: File | null) {
+    setError(null)
+    setImageFile(file)
 
-  setUploadingServiceId(service.id)
-  setError(null)
-  setSuccess(null)
+    if (!file) {
+      setImagePreviewUrl('')
+      return
+    }
 
-  try {
-    const uploaded = await uploadMirebookImage({
-      file,
-      folder: 'services',
-      recordId: service.id
-    })
+    setImagePreviewUrl(URL.createObjectURL(file))
+  }
 
-    const { error: updateError } = await supabase
+  async function uploadCreateImage() {
+    if (!imageFile) {
+      setError('Choose an image file first.')
+      return null
+    }
+
+    setUploadingImage(true)
+    setError(null)
+
+    try {
+      const uploaded = await uploadMirebookImage({
+        file: imageFile,
+        folder: 'services',
+        recordId: business?.id || 'new-service'
+      })
+
+      setImageUrl(uploaded.publicUrl)
+      setImageFile(null)
+      setImagePreviewUrl(uploaded.publicUrl)
+      setSuccess('Service image uploaded.')
+      return uploaded.publicUrl
+    } catch (err: any) {
+      setError(err.message || 'Could not upload image.')
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  async function uploadServiceImage(service: Service, file: File | null) {
+    if (!file) return
+
+    setUploadingServiceId(service.id)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const uploaded = await uploadMirebookImage({
+        file,
+        folder: 'services',
+        recordId: service.id
+      })
+
+      const { error: updateError } = await supabase
+        .from('services')
+        .update({ image_url: uploaded.publicUrl })
+        .eq('id', service.id)
+
+      if (updateError) throw updateError
+
+      updateLocalService(service.id, 'image_url', uploaded.publicUrl)
+      setSuccess(`${service.name} image uploaded.`)
+      await loadData()
+    } catch (err: any) {
+      setError(err.message || 'Could not upload service image.')
+    } finally {
+      setUploadingServiceId(null)
+    }
+  }
+
+  async function removeServiceImage(service: Service) {
+    const confirmed = confirm('Remove this service image from the public booking page?')
+    if (!confirmed) return
+
+    setUploadingServiceId(service.id)
+    setError(null)
+    setSuccess(null)
+
+    const { error } = await supabase
       .from('services')
-      .update({ image_url: uploaded.publicUrl })
+      .update({ image_url: null })
       .eq('id', service.id)
 
-    if (updateError) throw updateError
-
-    updateLocalService(service.id, 'image_url', uploaded.publicUrl)
-    setSuccess(`${service.name} image uploaded.`)
-    await loadData()
-  } catch (err: any) {
-    setError(err.message || 'Could not upload service image.')
-  } finally {
     setUploadingServiceId(null)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    updateLocalService(service.id, 'image_url', '')
+    setSuccess(`${service.name} image removed.`)
+    await loadData()
   }
-}
 
   async function addService(e: React.FormEvent) {
     e.preventDefault()
@@ -303,16 +332,17 @@ async function uploadServiceImage(service: Service, file: File | null) {
     setLoading(true)
     setError(null)
     setSuccess(null)
-let finalImageUrl = imageUrl.trim() || null
 
-if (imageFile) {
-  const uploadedUrl = await uploadCreateImage()
-  if (!uploadedUrl) {
-    setLoading(false)
-    return
-  }
-  finalImageUrl = uploadedUrl
-}
+    let finalImageUrl = imageUrl.trim() || null
+
+    if (imageFile) {
+      const uploadedUrl = await uploadCreateImage()
+      if (!uploadedUrl) {
+        setLoading(false)
+        return
+      }
+      finalImageUrl = uploadedUrl
+    }
 
     const { error } = await supabase
       .from('services')
@@ -415,27 +445,39 @@ if (imageFile) {
   function serviceBookable(service: Service) {
     return service.active && assignedStaffForService(service.id).length > 0
   }
-function serviceReadinessText(service: Service) {
-  const assignedStaff = assignedStaffForService(service.id)
+  function serviceReadinessText(service: Service) {
+    const assignedStaff = assignedStaffForService(service.id)
 
-  if (!service.active && assignedStaff.length === 0) {
-    return 'Hidden and needs staff assignment before customers can book.'
+    if (!service.active && assignedStaff.length === 0) {
+      return 'Hidden and needs staff assignment before customers can book.'
+    }
+
+    if (!service.active) {
+      return 'Hidden from customers. Show it when you are ready to take bookings.'
+    }
+
+    if (assignedStaff.length === 0) {
+      return 'Visible but not bookable yet because no staff are assigned.'
+    }
+
+    return 'Ready for customers to book through Mirëbook.'
   }
 
-  if (!service.active) {
-    return 'Hidden from customers. Show it when you are ready to take bookings.'
+  function serviceLaunchWarning(service: Service) {
+    const warnings: string[] = []
+    const assignedStaff = assignedStaffForService(service.id)
+
+    if (!service.active) warnings.push('hidden')
+    if (assignedStaff.length === 0) warnings.push('no staff assigned')
+    if (!service.description?.trim()) warnings.push('no description')
+    if (!service.image_url?.trim()) warnings.push('no image')
+
+    return warnings
   }
 
-  if (assignedStaff.length === 0) {
-    return 'Visible but not bookable yet because no staff are assigned.'
+  function durationOptions() {
+    return [15, 30, 45, 60, 75, 90, 120]
   }
-
-  return 'Ready for customers to book through Mirëbook.'
-}
-
-function durationOptions() {
-  return [15, 30, 45, 60, 75, 90, 120]
-}
 
   function statusBadge(label: string, tone: 'success' | 'warning' | 'accent' | 'muted') {
     const styles = {
@@ -561,6 +603,9 @@ function durationOptions() {
                 <Link href={`/explore/${business.id}`} className="btn btn-ghost">
                   Preview public page
                 </Link>
+<Link href="/support/business" className="btn btn-ghost">
+  Business support
+</Link>
               </div>
             </div>
           </div>
@@ -583,6 +628,11 @@ function durationOptions() {
               <h3>{serviceStats.bookable}</h3>
               <p className="muted small">Visible services with assigned staff</p>
             </div>
+<div className="card" style={{ borderColor: serviceStats.withImages > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
+  <p className="small muted">With images</p>
+  <h3>{serviceStats.withImages}</h3>
+  <p className="muted small">Services with uploaded public images</p>
+</div>
 
             <div className="card" style={{ borderColor: serviceStats.unassigned > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
               <p className="small muted">Unassigned</p>
@@ -771,6 +821,7 @@ function durationOptions() {
               const assignedStaff = assignedStaffForService(service.id)
               const isEditing = editingServiceId === service.id
               const isBookable = serviceBookable(service)
+              const launchWarnings = serviceLaunchWarning(service)
 
               return (
                 <div
@@ -904,7 +955,7 @@ function durationOptions() {
       <button
         type="button"
         className="btn btn-ghost"
-        onClick={() => updateLocalService(service.id, 'image_url', '')}
+        onClick={() => removeServiceImage(service)}
       >
         Remove image
       </button>
@@ -970,6 +1021,9 @@ function durationOptions() {
                               <Link href={`/dashboard/staff?businessId=${business.id}`} className="btn btn-ghost">
                                 Assign staff
                               </Link>
+{service.image_url
+  ? statusBadge('Image added', 'muted')
+  : statusBadge('No image', 'muted')}
                             </>
                           )}
                         </div>
@@ -1073,21 +1127,21 @@ function durationOptions() {
         }
 
         @media (max-width: 640px) {
-          .services-hero-actions,
-.service-card-actions,
-.image-upload-actions {
-  width: 100%;
-  justify-content: stretch;
-}
+                  .services-hero-actions,
+          .service-card-actions,
+          .image-upload-actions {
+            width: 100%;
+            justify-content: stretch;
+          }
 
           .services-hero-actions :global(.btn),
-.services-hero-actions a,
-.services-hero-actions button,
-.service-card-actions :global(.btn),
-.service-card-actions a,
-.service-card-actions button,
-.image-upload-actions :global(.btn),
-.image-upload-actions button {
+          .services-hero-actions a,
+          .services-hero-actions button,
+          .service-card-actions :global(.btn),
+          .service-card-actions a,
+          .service-card-actions button,
+          .image-upload-actions :global(.btn),
+          .image-upload-actions button {
             width: 100%;
             justify-content: center;
           }

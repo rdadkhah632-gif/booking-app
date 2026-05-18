@@ -346,7 +346,30 @@ export default function StaffPage() {
       setUploadingStaffId(null)
     }
   }
+  async function removeStaffImage(member: StaffMember) {
+    const confirmed = confirm('Remove this optional staff photo?')
+    if (!confirmed) return
 
+    setUploadingStaffId(member.id)
+    setError(null)
+    setSuccess(null)
+
+    const { error } = await supabase
+      .from('staff_members')
+      .update({ image_url: null })
+      .eq('id', member.id)
+
+    setUploadingStaffId(null)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    updateLocalStaff(member.id, 'image_url', '')
+    setSuccess(`${member.name} photo removed.`)
+    await loadPage()
+  }
   function updateLocalStaff(id: string, field: keyof StaffMember, value: string | boolean) {
     setStaff((prev) =>
       prev.map((member) =>
@@ -545,7 +568,7 @@ export default function StaffPage() {
       </span>
     )
   }
-const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 0 && staffStats.staffWithHours > 0
+  const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 0 && staffStats.staffWithHours > 0
   return (
     <DashboardLayout
       title="Staff setup"
@@ -573,9 +596,9 @@ const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 
     <div>
       <p className="small muted">Staff readiness</p>
       <h3>{setupReady ? 'Staff setup is ready for booking' : 'Complete staff setup before publishing'}</h3>
-      <p className="small muted" style={{ marginTop: '0.4rem' }}>
-        A staff member becomes bookable when they are active, assigned to at least one active service, and have working hours set.
-      </p>
+    <p className="small muted" style={{ marginTop: '0.4rem' }}>
+  A staff member becomes bookable when they are active, assigned to at least one active service, and have working hours set. Staff photos are optional polish and do not block publishing.
+</p>
     </div>
 
     <div className="staff-readiness-actions">
@@ -588,6 +611,9 @@ const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 
       <Link href={`/explore/${business.id}`} className="btn btn-ghost">
         View public page
       </Link>
+<Link href="/support/business" className="btn btn-ghost">
+  Business support
+</Link>
     </div>
   </div>
 )}
@@ -708,7 +734,7 @@ const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 
                   <p className="small muted">Staff photo</p>
                   <strong>Upload from your device</strong>
                   <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                    JPG, PNG, WEBP or GIF up to 5MB.
+                    Optional. JPG, PNG, WEBP or GIF up to 5MB. Staff photos help the public page look better but are not required for booking.
                   </p>
                 </div>
 
@@ -862,11 +888,11 @@ const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 
                             {member.phone && <p className="small muted">Phone: {member.phone}</p>}
                             <p className="small muted">Permission: {member.permission_role || 'staff'}</p>
                             <p className="small muted">Account: {inviteStatusLabel(member)}</p>
-{!member.email && (
-  <p className="small" style={{ color: 'var(--warning)', marginTop: '0.35rem' }}>
-    Add an email if this person should log in to the staff portal.
-  </p>
-)}
+                            {!member.email && (
+                              <p className="small" style={{ color: 'var(--warning)', marginTop: '0.35rem' }}>
+                                Add an email if this person should log in to the staff portal.
+                              </p>
+                            )}
 
                             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
                               <span className="small muted">{assignedServices.length} service{assignedServices.length === 1 ? '' : 's'} assigned</span>
@@ -913,7 +939,7 @@ const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 
                                 <p className="small muted">Staff photo</p>
                                 <strong>{member.image_url ? 'Replace uploaded image' : 'Upload image'}</strong>
                                 <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                                  JPG, PNG, WEBP or GIF up to 5MB.
+                                  Optional. JPG, PNG, WEBP or GIF up to 5MB. Staff photos help the public page look better but are not required for booking.
                                 </p>
                               </div>
 
@@ -937,7 +963,8 @@ const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 
                                   <button
                                     type="button"
                                     className="btn btn-ghost"
-                                    onClick={() => updateLocalStaff(member.id, 'image_url', '')}
+                                    onClick={() => removeStaffImage(member)}
+disabled={uploadingStaffId === member.id}
                                   >
                                     Remove image
                                   </button>
@@ -1023,18 +1050,26 @@ const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '0.7rem' }}>
                       <div>
                         <p className="small muted">Services this staff member can perform</p>
-                        <p className="small muted" style={{ marginTop: '0.25rem' }}>
-Assign every active service this staff member can perform. Orange means assigned; hidden services do not show to customers.                        </p>
-              {assignedServices.length === 0 && services.length > 0 && (
-  <p className="small" style={{ color: 'var(--warning)', marginTop: '0.7rem' }}>
-    No services assigned yet. This staff member will not appear in public booking slots until at least one active service is assigned.
-  </p>
-)}        
-</div>
+                                             <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                          Assign every active service this staff member can perform. Orange means assigned; hidden services do not show to customers.
+                        </p>
 
-                      <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
-                        Manage services
-                      </Link>
+                        {assignedServices.length === 0 && services.length > 0 && (
+                          <p className="small" style={{ color: 'var(--warning)', marginTop: '0.7rem' }}>
+                            No services assigned yet. This staff member will not appear in public booking slots until at least one active service is assigned.
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="staff-service-actions">
+                        <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
+                          Manage services
+                        </Link>
+
+                        <Link href="/support/business" className="btn btn-ghost">
+                          Support
+                        </Link>
+                      </div>
                     </div>
 
                     {services.length === 0 && (
@@ -1072,23 +1107,24 @@ Assign every active service this staff member can perform. Orange means assigned
         .staff-summary-card {
           min-height: 122px;
         }
-.staff-readiness-panel {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-  border-color: rgba(255,107,53,0.22);
-  background: rgba(255,107,53,0.05);
-}
+        .staff-readiness-panel {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+          border-color: rgba(255,107,53,0.22);
+          background: rgba(255,107,53,0.05);
+        }
 
-.staff-readiness-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
+        .staff-readiness-actions,
+        .staff-service-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
         .staff-form-card {
           display: grid;
           gap: 0.85rem;
@@ -1178,11 +1214,11 @@ Assign every active service this staff member can perform. Orange means assigned
         }
 
         @media (max-width: 720px) {
-          .staff-readiness-panel,
-.staff-member-card-header,
-.staff-member-main {
-  display: grid;
-}
+                    .staff-readiness-panel,
+          .staff-member-card-header,
+          .staff-member-main {
+            display: grid;
+          }
 
           .staff-card-actions {
             justify-content: stretch;
