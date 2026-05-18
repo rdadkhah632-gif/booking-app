@@ -105,6 +105,10 @@ export default function DashboardSettingsPage() {
     return Math.round((checks.filter(Boolean).length / checks.length) * 100)
   }, [settings])
 
+  const selectedBusinessPublicHref = settings ? `/explore/${settings.id}` : '/dashboard/businesses'
+
+  const approvalModeLabel = settings?.auto_accept_bookings ? 'Instant confirmation' : 'Manual approval'
+
   async function loadSettings() {
     setLoading(true)
     setError(null)
@@ -223,20 +227,20 @@ export default function DashboardSettingsPage() {
       return
     }
 
-    setSuccess('Mirëbook business settings saved.')
+    setSuccess(`${settings.name} settings saved. ${settings.auto_accept_bookings ? 'New bookings will confirm instantly.' : 'New bookings will go to Needs action for approval.'}`)
     await loadSettings()
   }
 
   function settingSummary() {
     if (!settings) return 'Choose a business to manage its booking settings.'
 
-    return `${settings.booking_interval_minutes || 30} minute slots · ${settings.min_notice_minutes || 0} minute notice · ${settings.max_advance_days || 60} days advance booking`
+    return `${approvalModeLabel} · ${settings.booking_interval_minutes || 30} minute slots · ${settings.min_notice_minutes || 0} minute notice · ${settings.max_advance_days || 60} days ahead`
   }
 
   return (
     <DashboardLayout
       title="Business settings"
-      subtitle={selectedBusiness ? `Control Mirëbook booking rules for ${selectedBusiness.name}.` : 'Control booking rules, policies and business defaults.'}
+      subtitle={selectedBusiness ? `Control booking approval, rules and policies for ${selectedBusiness.name}.` : 'Control booking approval, rules and policies.'}
     >
       {loading && (
         <div className="card">
@@ -280,13 +284,22 @@ export default function DashboardSettingsPage() {
                 Booking rules and customer policies
               </h2>
               <p className="muted" style={{ marginTop: '0.5rem' }}>
-                These settings prepare Mirëbook for a proper booking SaaS setup. Some values are saved now and can be wired deeper into the shared availability engine as the app becomes more advanced.
+                Set how bookings are approved, how far ahead customers can book, and what policy wording customers see before requesting changes.
               </p>
             </div>
 
             <div className="settings-hero-actions">
               <Link href="/dashboard/businesses" className="btn btn-ghost">
                 Setup hub
+              </Link>
+              <Link href="/dashboard/notifications" className="btn btn-ghost">
+                Needs action
+              </Link>
+              <Link href="/dashboard/billing" className="btn btn-ghost">
+                Billing
+              </Link>
+              <Link href={selectedBusinessPublicHref} className="btn btn-ghost">
+                View public page
               </Link>
               <button className="btn btn-accent" onClick={saveSettings} disabled={saving}>
                 {saving ? 'Saving...' : 'Save settings'}
@@ -301,6 +314,9 @@ export default function DashboardSettingsPage() {
               <p className="muted small">
                 {selectedBusiness?.published ? 'Published on Mirëbook' : 'Hidden / draft'}
               </p>
+              <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                {approvalModeLabel}
+              </p>
             </div>
 
             <div className="card">
@@ -312,7 +328,7 @@ export default function DashboardSettingsPage() {
             <div className="card">
               <p className="small muted">Current rules</p>
               <h3 style={{ fontSize: '1rem' }}>{settingSummary()}</h3>
-              <p className="muted small">Used for booking availability groundwork</p>
+              <p className="muted small">Used by public booking and reschedule flows</p>
             </div>
           </div>
 
@@ -340,27 +356,41 @@ export default function DashboardSettingsPage() {
           )}
 
           <div className="settings-grid">
-            <div className="card settings-card">
+            <div className="card settings-card settings-approval-card">
               <div>
                 <p className="small muted">Booking approval</p>
                 <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
                   Confirmation mode
                 </h2>
                 <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  Auto-accept confirms available bookings instantly. Manual approval sends new bookings to Needs action.
+                  Choose whether customers are confirmed instantly or whether each booking needs business approval first.
                 </p>
               </div>
 
-              <label className="settings-toggle">
-                <input
-                  type="checkbox"
-                  checked={Boolean(settings.auto_accept_bookings)}
-                  onChange={(e) => updateSetting('auto_accept_bookings', e.target.checked)}
-                />
-                <span>
-                  {settings.auto_accept_bookings ? 'Auto-accept bookings' : 'Manual approval'}
-                </span>
-              </label>
+              <div className="settings-mode-grid" role="radiogroup" aria-label="Booking confirmation mode">
+                <button
+                  type="button"
+                  className={settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
+                  onClick={() => updateSetting('auto_accept_bookings', true)}
+                >
+                  <span className="settings-mode-title">Instant confirmation</span>
+                  <span className="small muted">Customers get a confirmed booking as soon as they pick an available slot.</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={!settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
+                  onClick={() => updateSetting('auto_accept_bookings', false)}
+                >
+                  <span className="settings-mode-title">Manual approval</span>
+                  <span className="small muted">New bookings appear in Needs action until the business accepts or declines them.</span>
+                </button>
+              </div>
+
+              <div className="settings-current-mode">
+                <p className="small muted">Current mode</p>
+                <strong>{approvalModeLabel}</strong>
+              </div>
             </div>
 
             <div className="card settings-card">
@@ -370,7 +400,7 @@ export default function DashboardSettingsPage() {
                   Booking slot size
                 </h2>
                 <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  This controls the time grid Mirëbook should use when generating customer booking times.
+                  This controls the time grid customers see when choosing appointment slots.
                 </p>
               </div>
 
@@ -433,7 +463,7 @@ export default function DashboardSettingsPage() {
                   Time around appointments
                 </h2>
                 <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  Buffers prepare the booking engine for clean-up, travel, admin or setup time around bookings.
+                  Buffers block extra time before or after appointments for clean-up, travel, admin or setup.
                 </p>
               </div>
 
@@ -473,7 +503,7 @@ export default function DashboardSettingsPage() {
                   Timezone and currency
                 </h2>
                 <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  This is useful for Albania, UK and future international Mirëbook launches.
+                  These defaults support UK, Albania and future international launches.
                 </p>
               </div>
 
@@ -515,7 +545,7 @@ export default function DashboardSettingsPage() {
                   Customer cancellation wording
                 </h2>
                 <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  This can later be shown on the booking page, confirmation page and mobile app screens.
+                  This wording can be shown on booking, confirmation and account pages.
                 </p>
               </div>
 
@@ -552,21 +582,17 @@ export default function DashboardSettingsPage() {
               Back to setup hub
             </Link>
 
-            <Link href={`/explore/${settings.id}`} className="btn btn-ghost">
-              Preview public page
+            <Link href={selectedBusinessPublicHref} className="btn btn-ghost">
+              View public page
+            </Link>
+
+            <Link href="/dashboard/notifications" className="btn btn-ghost">
+              Needs action
             </Link>
 
             <button className="btn btn-accent" onClick={saveSettings} disabled={saving}>
               {saving ? 'Saving...' : 'Save Mirëbook settings'}
             </button>
-          </div>
-
-          <div className="card" style={{ marginTop: '1.5rem', borderColor: 'rgba(255,190,11,0.24)' }}>
-            <p className="small muted">Implementation note</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Availability engine integration</h3>
-            <p className="muted small" style={{ marginTop: '0.5rem' }}>
-              These settings are saved on the business profile. The next technical step is to wire interval, notice, advance window and buffers into the shared booking availability helper so booking and reschedule use these rules consistently.
-            </p>
           </div>
         </>
       )}
@@ -638,19 +664,43 @@ export default function DashboardSettingsPage() {
           background: var(--accent-dim);
         }
 
-        .settings-toggle {
-          display: flex;
-          gap: 0.6rem;
-          align-items: center;
+        .settings-approval-card {
+          grid-column: 1 / -1;
+        }
+
+        .settings-mode-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 0.85rem;
+        }
+
+        .settings-mode-card {
+          display: grid;
+          gap: 0.45rem;
+          text-align: left;
+          border: 1px solid var(--border);
+          background: var(--surface-2);
           color: var(--text);
+          border-radius: var(--radius);
+          padding: 1rem;
+          min-height: 130px;
+        }
+
+        .settings-mode-card-active {
+          border-color: rgba(255,107,53,0.45);
+          background: var(--accent-dim);
+        }
+
+        .settings-mode-title {
+          font-weight: 800;
+          font-size: 1rem;
+        }
+
+        .settings-current-mode {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
           padding: 0.85rem;
-        }
-
-        .settings-toggle input {
-          width: auto;
         }
 
         .settings-final-actions {
@@ -660,7 +710,8 @@ export default function DashboardSettingsPage() {
 
         @media (max-width: 640px) {
           .settings-hero,
-          .settings-final-actions {
+          .settings-final-actions,
+          .settings-mode-grid {
             display: grid;
           }
 

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
+import { uploadMirebookImage } from '@/lib/imageUpload'
 
 type Business = {
   id: string
@@ -47,12 +48,16 @@ export default function Services() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+const [imageFile, setImageFile] = useState<File | null>(null)
+const [imagePreviewUrl, setImagePreviewUrl] = useState('')
+const [uploadingImage, setUploadingImage] = useState(false)
   const [duration, setDuration] = useState(30)
   const [price, setPrice] = useState(0)
   const [formExpanded, setFormExpanded] = useState(true)
 
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
   const [savingServiceId, setSavingServiceId] = useState<string | null>(null)
+const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -197,12 +202,85 @@ const totalValue = services.reduce((total, service) => total + Number(service.pr
   }
 
   function resetForm() {
-    setName('')
-    setDescription('')
-    setImageUrl('')
-    setDuration(30)
-    setPrice(0)
+  setName('')
+  setDescription('')
+  setImageUrl('')
+  setImageFile(null)
+  setImagePreviewUrl('')
+  setDuration(30)
+  setPrice(0)
+}
+function handleCreateImageChange(file: File | null) {
+  setError(null)
+  setImageFile(file)
+
+  if (!file) {
+    setImagePreviewUrl('')
+    return
   }
+
+  setImagePreviewUrl(URL.createObjectURL(file))
+}
+
+async function uploadCreateImage() {
+  if (!imageFile) {
+    setError('Choose an image file first.')
+    return null
+  }
+
+  setUploadingImage(true)
+  setError(null)
+
+  try {
+    const uploaded = await uploadMirebookImage({
+      file: imageFile,
+      folder: 'services',
+      recordId: business?.id || 'new-service'
+    })
+
+    setImageUrl(uploaded.publicUrl)
+    setImageFile(null)
+    setImagePreviewUrl(uploaded.publicUrl)
+    setSuccess('Service image uploaded.')
+    return uploaded.publicUrl
+  } catch (err: any) {
+    setError(err.message || 'Could not upload image.')
+    return null
+  } finally {
+    setUploadingImage(false)
+  }
+}
+
+async function uploadServiceImage(service: Service, file: File | null) {
+  if (!file) return
+
+  setUploadingServiceId(service.id)
+  setError(null)
+  setSuccess(null)
+
+  try {
+    const uploaded = await uploadMirebookImage({
+      file,
+      folder: 'services',
+      recordId: service.id
+    })
+
+    const { error: updateError } = await supabase
+      .from('services')
+      .update({ image_url: uploaded.publicUrl })
+      .eq('id', service.id)
+
+    if (updateError) throw updateError
+
+    updateLocalService(service.id, 'image_url', uploaded.publicUrl)
+    setSuccess(`${service.name} image uploaded.`)
+    await loadData()
+  } catch (err: any) {
+    setError(err.message || 'Could not upload service image.')
+  } finally {
+    setUploadingServiceId(null)
+  }
+}
 
   async function addService(e: React.FormEvent) {
     e.preventDefault()
@@ -225,6 +303,16 @@ const totalValue = services.reduce((total, service) => total + Number(service.pr
     setLoading(true)
     setError(null)
     setSuccess(null)
+let finalImageUrl = imageUrl.trim() || null
+
+if (imageFile) {
+  const uploadedUrl = await uploadCreateImage()
+  if (!uploadedUrl) {
+    setLoading(false)
+    return
+  }
+  finalImageUrl = uploadedUrl
+}
 
     const { error } = await supabase
       .from('services')
@@ -232,7 +320,7 @@ const totalValue = services.reduce((total, service) => total + Number(service.pr
         business_id: business.id,
         name: name.trim(),
         description: description.trim() || null,
-        image_url: imageUrl.trim() || null,
+        image_url: finalImageUrl,
         duration_minutes: duration,
         price,
         active: true
@@ -573,11 +661,48 @@ function durationOptions() {
                       </label>
                     </div>
 
-                    <input
-                      placeholder="Service image URL optional"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                    />
+                   <div className="image-upload-box">
+  <div>
+    <p className="small muted">Service image</p>
+    <strong>Upload from your device</strong>
+    <p className="small muted" style={{ marginTop: '0.25rem' }}>
+      JPG, PNG, WEBP or GIF up to 5MB.
+    </p>
+  </div>
+
+  <input
+    type="file"
+    accept="image/jpeg,image/png,image/webp,image/gif"
+    onChange={(e) => handleCreateImageChange(e.target.files?.[0] || null)}
+  />
+
+  {(imagePreviewUrl || imageUrl) && (
+    <div
+      className="image-preview"
+      style={{ backgroundImage: `url(${imagePreviewUrl || imageUrl})` }}
+    />
+  )}
+
+  <div className="image-upload-actions">
+    <button type="button" className="btn btn-ghost" onClick={uploadCreateImage} disabled={uploadingImage || !imageFile}>
+      {uploadingImage ? 'Uploading...' : imageUrl ? 'Replace image' : 'Upload image'}
+    </button>
+
+    {(imageUrl || imagePreviewUrl) && (
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={() => {
+          setImageUrl('')
+          setImageFile(null)
+          setImagePreviewUrl('')
+        }}
+      >
+        Remove image
+      </button>
+    )}
+  </div>
+</div>
 
                     <textarea
                       placeholder="Short description shown to customers optional"
@@ -595,8 +720,8 @@ function durationOptions() {
                         borderRadius: 'var(--radius)',
                         margin: '0.75rem 0',
                         border: '1px solid var(--border)',
-                        background: imageUrl
-                          ? `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${imageUrl})`
+                        background: (imagePreviewUrl || imageUrl)
+  ? `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${imagePreviewUrl || imageUrl})`
                           : 'linear-gradient(135deg, rgba(255,107,53,0.16), rgba(45,212,191,0.10))',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
@@ -606,7 +731,7 @@ function durationOptions() {
                         fontSize: '2rem'
                       }}
                     >
-                      {!imageUrl && '✨'}
+                      {!(imagePreviewUrl || imageUrl) && '✨'}
                     </div>
 
                     <h3>{name || 'Service name'}</h3>
@@ -621,7 +746,7 @@ function durationOptions() {
 
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <button type="submit" disabled={loading} className="btn btn-accent">
-                    {loading ? 'Adding...' : 'Add Mirëbook service'}
+                    {loading ? 'Adding...' : 'Add service'}
                   </button>
 
                   <button type="button" onClick={resetForm} className="btn btn-ghost">
@@ -750,11 +875,42 @@ function durationOptions() {
                                 />
                               </div>
 
-                              <input
-                                placeholder="Service image URL optional"
-                                value={service.image_url || ''}
-                                onChange={(e) => updateLocalService(service.id, 'image_url', e.target.value)}
-                              />
+                             <div className="image-upload-box">
+  <div>
+    <p className="small muted">Service image</p>
+    <strong>{service.image_url ? 'Replace uploaded image' : 'Upload image'}</strong>
+    <p className="small muted" style={{ marginTop: '0.25rem' }}>
+      JPG, PNG, WEBP or GIF up to 5MB.
+    </p>
+  </div>
+
+  {service.image_url && (
+    <div
+      className="image-preview"
+      style={{ backgroundImage: `url(${service.image_url})` }}
+    />
+  )}
+
+  <input
+    type="file"
+    accept="image/jpeg,image/png,image/webp,image/gif"
+    onChange={(e) => uploadServiceImage(service, e.target.files?.[0] || null)}
+    disabled={uploadingServiceId === service.id}
+  />
+
+  <div className="image-upload-actions">
+    {uploadingServiceId === service.id && <p className="small muted">Uploading image...</p>}
+    {service.image_url && (
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={() => updateLocalService(service.id, 'image_url', '')}
+      >
+        Remove image
+      </button>
+    )}
+  </div>
+</div>
 
                               <textarea
                                 placeholder="Service description optional"
@@ -880,6 +1036,29 @@ function durationOptions() {
           grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
           gap: 0.75rem;
         }
+.image-upload-box {
+  display: grid;
+  gap: 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.image-preview {
+  min-height: 150px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface);
+}
+
+.image-upload-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
 
         @media (max-width: 860px) {
           .services-create-grid,
@@ -895,17 +1074,20 @@ function durationOptions() {
 
         @media (max-width: 640px) {
           .services-hero-actions,
-          .service-card-actions {
-            width: 100%;
-            justify-content: stretch;
-          }
+.service-card-actions,
+.image-upload-actions {
+  width: 100%;
+  justify-content: stretch;
+}
 
           .services-hero-actions :global(.btn),
-          .services-hero-actions a,
-          .services-hero-actions button,
-          .service-card-actions :global(.btn),
-          .service-card-actions a,
-          .service-card-actions button {
+.services-hero-actions a,
+.services-hero-actions button,
+.service-card-actions :global(.btn),
+.service-card-actions a,
+.service-card-actions button,
+.image-upload-actions :global(.btn),
+.image-upload-actions button {
             width: 100%;
             justify-content: center;
           }

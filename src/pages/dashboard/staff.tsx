@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
+import { uploadMirebookImage } from '@/lib/imageUpload'
 
 type Business = {
   id: string
@@ -58,10 +59,14 @@ export default function StaffPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [permissionRole, setPermissionRole] = useState<'staff' | 'manager' | 'reception'>('staff')
 
   const [editingStaffId, setEditingStaffId] = useState<string | null>(null)
   const [savingStaffId, setSavingStaffId] = useState<string | null>(null)
+  const [uploadingStaffId, setUploadingStaffId] = useState<string | null>(null)
   const [pageLoading, setPageLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [actionLoadingKey, setActionLoadingKey] = useState<string | null>(null)
@@ -111,12 +116,12 @@ export default function StaffPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', session.user.id)
         .single()
 
       if (!profile || profile.role !== 'business') {
-        router.replace('/explore')
+        router.replace(profile?.is_admin ? '/admin' : '/explore')
         return
       }
 
@@ -224,6 +229,17 @@ export default function StaffPage() {
     setError(null)
     setSuccess(null)
 
+    let finalImageUrl = imageUrl.trim() || null
+
+    if (imageFile) {
+      const uploadedUrl = await uploadCreateImage()
+      if (!uploadedUrl) {
+        setSaving(false)
+        return
+      }
+      finalImageUrl = uploadedUrl
+    }
+
     const { error } = await supabase
       .from('staff_members')
       .insert({
@@ -232,7 +248,7 @@ export default function StaffPage() {
         role_title: roleTitle.trim() || null,
         email: email.trim() || null,
         phone: phone.trim() || null,
-        image_url: imageUrl.trim() || null,
+        image_url: finalImageUrl,
         invite_status: email.trim() ? 'not_invited' : 'not_invited',
         permission_role: permissionRole,
         active: true
@@ -250,10 +266,85 @@ export default function StaffPage() {
     setEmail('')
     setPhone('')
     setImageUrl('')
+    setImageFile(null)
+    setImagePreviewUrl('')
     setPermissionRole('staff')
     setSuccess('Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.')
 
     await loadPage()
+  }
+
+  
+  function handleCreateImageChange(file: File | null) {
+    setError(null)
+    setImageFile(file)
+
+    if (!file) {
+      setImagePreviewUrl('')
+      return
+    }
+
+    setImagePreviewUrl(URL.createObjectURL(file))
+  }
+
+  async function uploadCreateImage() {
+    if (!imageFile) {
+      setError('Choose an image file first.')
+      return null
+    }
+
+    setUploadingImage(true)
+    setError(null)
+
+    try {
+      const uploaded = await uploadMirebookImage({
+        file: imageFile,
+        folder: 'staff',
+        recordId: business?.id || 'new-staff'
+      })
+
+      setImageUrl(uploaded.publicUrl)
+      setImageFile(null)
+      setImagePreviewUrl(uploaded.publicUrl)
+      setSuccess('Staff image uploaded.')
+      return uploaded.publicUrl
+    } catch (err: any) {
+      setError(err.message || 'Could not upload image.')
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  async function uploadStaffImage(member: StaffMember, file: File | null) {
+    if (!file) return
+
+    setUploadingStaffId(member.id)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const uploaded = await uploadMirebookImage({
+        file,
+        folder: 'staff',
+        recordId: member.id
+      })
+
+      const { error: updateError } = await supabase
+        .from('staff_members')
+        .update({ image_url: uploaded.publicUrl })
+        .eq('id', member.id)
+
+      if (updateError) throw updateError
+
+      updateLocalStaff(member.id, 'image_url', uploaded.publicUrl)
+      setSuccess(`${member.name} image uploaded.`)
+      await loadPage()
+    } catch (err: any) {
+      setError(err.message || 'Could not upload staff image.')
+    } finally {
+      setUploadingStaffId(null)
+    }
   }
 
   function updateLocalStaff(id: string, field: keyof StaffMember, value: string | boolean) {
@@ -299,7 +390,7 @@ export default function StaffPage() {
     await loadPage()
   }
 
-    async function markStaffInvited(member: StaffMember) {
+  async function markStaffInvited(member: StaffMember) {
     if (!member.email) {
       setError('Add an email before marking this staff member as invited.')
       return
@@ -321,7 +412,7 @@ export default function StaffPage() {
       return
     }
 
-    setSuccess(`${member.name} marked as invited. When they register with ${member.email}, link their account from the staff login flow.`)
+    setSuccess(`${member.name} marked as invited. Ask them to register or log in with ${member.email}; Mirëbook will link the staff account when the email matches.`)
     await loadPage()
   }
 
@@ -334,7 +425,7 @@ export default function StaffPage() {
     const openDays = openDaysForStaff(member.id)
 
     if (!member.active && (assignedServices.length === 0 || openDays === 0)) {
-      const confirmed = confirm('This staff member is missing assigned services or working hours. Customers may not be able to book with them properly. Show them anyway?')
+      const confirmed = confirm('This staff member is missing assigned services or working hours. They may still not appear as bookable until both are complete. Show them anyway?')
       if (!confirmed) {
         setActionLoadingKey(null)
         return
@@ -454,7 +545,7 @@ export default function StaffPage() {
       </span>
     )
   }
-
+const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 0 && staffStats.staffWithHours > 0
   return (
     <DashboardLayout
       title="Staff setup"
@@ -477,7 +568,29 @@ export default function StaffPage() {
           <p style={{ color: 'var(--danger)' }}>{error}</p>
         </div>
       )}
+{!pageLoading && business && (
+  <div className="card staff-readiness-panel">
+    <div>
+      <p className="small muted">Staff readiness</p>
+      <h3>{setupReady ? 'Staff setup is ready for booking' : 'Complete staff setup before publishing'}</h3>
+      <p className="small muted" style={{ marginTop: '0.4rem' }}>
+        A staff member becomes bookable when they are active, assigned to at least one active service, and have working hours set.
+      </p>
+    </div>
 
+    <div className="staff-readiness-actions">
+      <Link href={`/dashboard/businesses?businessId=${business.id}`} className="btn btn-ghost">
+        Setup hub
+      </Link>
+      <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
+        Services
+      </Link>
+      <Link href={`/explore/${business.id}`} className="btn btn-ghost">
+        View public page
+      </Link>
+    </div>
+  </div>
+)}
       {!pageLoading && businesses.length === 0 && (
         <div className="card">
           <h3>No business found</h3>
@@ -532,13 +645,13 @@ export default function StaffPage() {
             <div className="card staff-summary-card">
               <p className="small muted">Staff</p>
               <h3>{staffStats.total}</h3>
-              <p className="muted small">Total staff members</p>
+              <p className="muted small">Total staff profiles</p>
             </div>
 
             <div className="card staff-summary-card">
               <p className="small muted">Active</p>
               <h3>{staffStats.activeStaff}</h3>
-              <p className="muted small">Visible for booking</p>
+              <p className="muted small">Active staff profiles</p>
             </div>
 
             <div className="card staff-summary-card" style={{ borderColor: staffStats.staffWithoutServices > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
@@ -559,7 +672,7 @@ export default function StaffPage() {
               <p className="small muted">Create staff</p>
               <h3>Add staff member</h3>
               <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                Staff are assigned to services and working hours. Mirëbook only shows customers staff who can actually perform the selected service at the selected time.
+                Staff must be active, assigned to services and given working hours before customers can book them.
               </p>
             </div>
 
@@ -590,11 +703,48 @@ export default function StaffPage() {
                 onChange={(e) => setPhone(e.target.value)}
               />
 
-              <input
-                placeholder="Image URL optional"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-              />
+              <div className="image-upload-box">
+                <div>
+                  <p className="small muted">Staff photo</p>
+                  <strong>Upload from your device</strong>
+                  <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                    JPG, PNG, WEBP or GIF up to 5MB.
+                  </p>
+                </div>
+
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(e) => handleCreateImageChange(e.target.files?.[0] || null)}
+                />
+
+                {(imagePreviewUrl || imageUrl) && (
+                  <div
+                    className="image-preview"
+                    style={{ backgroundImage: `url(${imagePreviewUrl || imageUrl})` }}
+                  />
+                )}
+
+                <div className="image-upload-actions">
+                  <button type="button" className="btn btn-ghost" onClick={uploadCreateImage} disabled={uploadingImage || !imageFile}>
+                    {uploadingImage ? 'Uploading...' : imageUrl ? 'Replace image' : 'Upload image'}
+                  </button>
+
+                  {(imageUrl || imagePreviewUrl) && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        setImageUrl('')
+                        setImageFile(null)
+                        setImagePreviewUrl('')
+                      }}
+                    >
+                      Remove image
+                    </button>
+                  )}
+                </div>
+              </div>
 
               <select
                 value={permissionRole}
@@ -607,7 +757,7 @@ export default function StaffPage() {
             </div>
 
             <button type="submit" disabled={saving} className="btn btn-accent">
-              {saving ? 'Adding...' : 'Add staff to Mirëbook'}
+              {saving ? 'Adding...' : 'Add staff member'}
             </button>
           </form>
 
@@ -712,6 +862,11 @@ export default function StaffPage() {
                             {member.phone && <p className="small muted">Phone: {member.phone}</p>}
                             <p className="small muted">Permission: {member.permission_role || 'staff'}</p>
                             <p className="small muted">Account: {inviteStatusLabel(member)}</p>
+{!member.email && (
+  <p className="small" style={{ color: 'var(--warning)', marginTop: '0.35rem' }}>
+    Add an email if this person should log in to the staff portal.
+  </p>
+)}
 
                             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
                               <span className="small muted">{assignedServices.length} service{assignedServices.length === 1 ? '' : 's'} assigned</span>
@@ -753,11 +908,42 @@ export default function StaffPage() {
                               onChange={(e) => updateLocalStaff(member.id, 'phone', e.target.value)}
                             />
 
-                            <input
-                              placeholder="Image URL optional"
-                              value={member.image_url || ''}
-                              onChange={(e) => updateLocalStaff(member.id, 'image_url', e.target.value)}
-                            />
+                            <div className="image-upload-box">
+                              <div>
+                                <p className="small muted">Staff photo</p>
+                                <strong>{member.image_url ? 'Replace uploaded image' : 'Upload image'}</strong>
+                                <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                                  JPG, PNG, WEBP or GIF up to 5MB.
+                                </p>
+                              </div>
+
+                              {member.image_url && (
+                                <div
+                                  className="image-preview"
+                                  style={{ backgroundImage: `url(${member.image_url})` }}
+                                />
+                              )}
+
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                onChange={(e) => uploadStaffImage(member, e.target.files?.[0] || null)}
+                                disabled={uploadingStaffId === member.id}
+                              />
+
+                              <div className="image-upload-actions">
+                                {uploadingStaffId === member.id && <p className="small muted">Uploading image...</p>}
+                                {member.image_url && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost"
+                                    onClick={() => updateLocalStaff(member.id, 'image_url', '')}
+                                  >
+                                    Remove image
+                                  </button>
+                                )}
+                              </div>
+                            </div>
 
                             <select
                               value={member.permission_role || 'staff'}
@@ -838,9 +1024,13 @@ export default function StaffPage() {
                       <div>
                         <p className="small muted">Services this staff member can perform</p>
                         <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                          Active services are what customers can select on the booking page. Orange means this staff member can perform that service.
-                        </p>
-                      </div>
+Assign every active service this staff member can perform. Orange means assigned; hidden services do not show to customers.                        </p>
+              {assignedServices.length === 0 && services.length > 0 && (
+  <p className="small" style={{ color: 'var(--warning)', marginTop: '0.7rem' }}>
+    No services assigned yet. This staff member will not appear in public booking slots until at least one active service is assigned.
+  </p>
+)}        
+</div>
 
                       <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
                         Manage services
@@ -882,7 +1072,23 @@ export default function StaffPage() {
         .staff-summary-card {
           min-height: 122px;
         }
+.staff-readiness-panel {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  border-color: rgba(255,107,53,0.22);
+  background: rgba(255,107,53,0.05);
+}
 
+.staff-readiness-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
         .staff-form-card {
           display: grid;
           gap: 0.85rem;
@@ -894,7 +1100,29 @@ export default function StaffPage() {
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 0.75rem;
         }
+        .image-upload-box {
+          display: grid;
+          gap: 0.75rem;
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 1rem;
+        }
 
+        .image-preview {
+          min-height: 150px;
+          border-radius: var(--radius);
+          border: 1px solid var(--border);
+          background-size: cover;
+          background-position: center;
+          background-color: var(--surface);
+        }
+
+        .image-upload-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
         .staff-card-list {
           display: grid;
           gap: 1rem;
@@ -950,15 +1178,22 @@ export default function StaffPage() {
         }
 
         @media (max-width: 720px) {
-          .staff-member-card-header,
-          .staff-member-main {
-            display: grid;
-          }
+          .staff-readiness-panel,
+.staff-member-card-header,
+.staff-member-main {
+  display: grid;
+}
 
           .staff-card-actions {
             justify-content: stretch;
           }
 
+          .staff-readiness-actions,
+          .image-upload-actions,
+          .staff-readiness-actions :global(.btn),
+          .staff-readiness-actions a,
+          .image-upload-actions :global(.btn),
+          .image-upload-actions button,
           .staff-card-actions :global(.btn),
           .staff-card-actions button,
           .staff-card-actions a {

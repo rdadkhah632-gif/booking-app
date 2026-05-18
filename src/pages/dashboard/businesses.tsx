@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
+import { uploadMirebookImage } from '@/lib/imageUpload'
 
 type Business = {
   id: string
@@ -70,6 +71,7 @@ export default function Businesses() {
   const [pageLoading, setPageLoading] = useState(true)
   const [savingBusinessId, setSavingBusinessId] = useState<string | null>(null)
   const [publishingBusinessId, setPublishingBusinessId] = useState<string | null>(null)
+const [uploadingBusinessId, setUploadingBusinessId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -218,7 +220,36 @@ export default function Businesses() {
       )
     )
   }
+async function uploadBusinessImage(business: Business, file: File | null) {
+  if (!file) return
 
+  setUploadingBusinessId(business.id)
+  setError(null)
+  setSuccess(null)
+
+  try {
+    const uploaded = await uploadMirebookImage({
+      file,
+      folder: 'businesses',
+      recordId: business.id
+    })
+
+    const { error: updateError } = await supabase
+      .from('businesses')
+      .update({ image_url: uploaded.publicUrl })
+      .eq('id', business.id)
+
+    if (updateError) throw updateError
+
+    updateLocalBusiness(business.id, 'image_url', uploaded.publicUrl)
+    setSuccess(`${business.name || 'Business'} image uploaded.`)
+    await loadBusinesses()
+  } catch (err: any) {
+    setError(err.message || 'Could not upload business image.')
+  } finally {
+    setUploadingBusinessId(null)
+  }
+}
   function getReadiness(business: Business): Readiness {
     const activeServices = services.filter((service) => service.business_id === business.id && service.active).length
     const activeStaff = staffMembers.filter((staff) => staff.business_id === business.id && staff.active).length
@@ -742,16 +773,42 @@ export default function Businesses() {
                     />
                   </div>
 
-                  <input
-                    placeholder="Business image URL optional"
-                    value={business.image_url || ''}
-                    onChange={(e) => updateLocalBusiness(business.id, 'image_url', e.target.value)}
-                    style={{ marginTop: '0.75rem' }}
-                  />
+                 <div className="image-upload-box" style={{ marginTop: '0.75rem' }}>
+  <div>
+    <p className="small muted">Business image</p>
+    <strong>{business.image_url ? 'Replace uploaded image' : 'Upload from your device'}</strong>
+    <p className="small muted" style={{ marginTop: '0.25rem' }}>
+      JPG, PNG, WEBP or GIF up to 5MB. This image appears on the marketplace and public booking page.
+    </p>
+  </div>
 
-                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    Optional for now. Paste a public image URL to show a header image on your marketplace and booking pages.
-                  </p>
+  {business.image_url && (
+    <div
+      className="image-preview"
+      style={{ backgroundImage: `url(${business.image_url})` }}
+    />
+  )}
+
+  <input
+    type="file"
+    accept="image/jpeg,image/png,image/webp,image/gif"
+    onChange={(e) => uploadBusinessImage(business, e.target.files?.[0] || null)}
+    disabled={uploadingBusinessId === business.id}
+  />
+
+  <div className="image-upload-actions">
+    {uploadingBusinessId === business.id && <p className="small muted">Uploading image...</p>}
+    {business.image_url && (
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={() => updateLocalBusiness(business.id, 'image_url', '')}
+      >
+        Remove image
+      </button>
+    )}
+  </div>
+</div>
 
                   <textarea
                     placeholder="Description shown to customers"
@@ -875,9 +932,9 @@ export default function Businesses() {
                   Billing
                 </Link>
 
-                <Link href={`/explore/${business.id}`} className="btn btn-ghost">
-                  Preview public page
-                </Link>
+              <Link href={`/explore/${business.id}`} className="btn btn-ghost">
+  View public page
+</Link>
               </div>
             </div>
           )
@@ -954,7 +1011,30 @@ export default function Businesses() {
           gap: 0.75rem;
           margin-top: 1rem;
         }
+.image-upload-box {
+  display: grid;
+  gap: 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
 
+.image-preview {
+  min-height: 170px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface);
+}
+
+.image-upload-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
         .business-readiness-row {
           display: flex;
           justify-content: space-between;
@@ -980,13 +1060,16 @@ export default function Businesses() {
             grid-template-columns: 1fr;
           }
 
-          .business-setup-hero-actions,
-          .business-profile-actions,
-          .business-setup-hero-actions :global(.btn),
-          .business-profile-actions :global(.btn),
-          .business-setup-hero-actions a,
-          .business-profile-actions a,
-          .business-profile-actions button {
+         .business-setup-hero-actions,
+.business-profile-actions,
+.image-upload-actions,
+.business-setup-hero-actions :global(.btn),
+.business-profile-actions :global(.btn),
+.image-upload-actions :global(.btn),
+.business-setup-hero-actions a,
+.business-profile-actions a,
+.image-upload-actions button,
+.business-profile-actions button {
             width: 100%;
             justify-content: center;
           }
