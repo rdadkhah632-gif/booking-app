@@ -2,9 +2,11 @@ import AuthNav from '@/components/AuthNav'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useI18n } from '@/lib/useI18n'
 
 export default function Home() {
   const router = useRouter()
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [city, setCity] = useState('')
 
@@ -31,105 +33,105 @@ export default function Home() {
         <div className="container home-hero-grid">
           <div className="home-copy">
             <div className="home-eyebrow">
-              Mirëbook · live booking marketplace
+              {t('home.eyebrow')}
             </div>
 
             <h1 className="home-title">
-              Book trusted local services with <em>real availability</em>.
+              {t('home.title')}
             </h1>
 
             <p className="home-subtitle">
-              Mirëbook helps customers discover barbers, salons, clinics, dentists and service businesses across Albania, the UK and international markets. Choose a service, pick a smart calendar date, see real available times and book instantly or request approval depending on the business.
+              {t('home.subtitle')}
             </p>
 
             <form onSubmit={searchBusinesses} className="home-search">
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Haircut, nails, dental checkup, massage..."
+                placeholder={t('home.search.servicePlaceholder')}
                 className="home-search-input"
               />
 
               <input
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="Tirana, Coventry, London..."
+                placeholder={t('home.search.cityPlaceholder')}
                 className="home-search-input"
               />
 
               <button className="btn btn-accent home-search-button">
-                Search Mirëbook
+                {t('home.search.button')}
               </button>
             </form>
 
             <div className="home-cta-row">
               <Link href="/explore" className="btn btn-accent">
-                Explore Mirëbook
+                {t('home.cta.explore')}
               </Link>
 
               <Link href="/my-bookings" className="btn btn-ghost">
-                My bookings
+                {t('home.cta.myBookings')}
               </Link>
 
               <Link href="/register" className="btn btn-ghost">
-                Create account
+                {t('home.cta.createAccount')}
               </Link>
             </div>
 
             <div className="home-proof-row">
-              <span className="small muted">✓ Smart calendar availability</span>
-              <span className="small muted">✓ Any staff or specific staff</span>
-              <span className="small muted">✓ Approval and reschedule tracking</span>
-              <span className="small muted">✓ English now, Albanian toggle planned</span>
+              <span className="small muted">{t('home.proof.availability')}</span>
+              <span className="small muted">{t('home.proof.staff')}</span>
+              <span className="small muted">{t('home.proof.tracking')}</span>
+              <span className="small muted">{t('home.proof.language')}</span>
             </div>
           </div>
 
           <aside className="card home-business-card">
             <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
-              For businesses
+              {t('home.business.kicker')}
             </p>
 
             <h2 className="home-card-title">
-              Run your service business from one Mirëbook workspace.
+              {t('home.business.title')}
             </h2>
 
             <p className="muted" style={{ marginBottom: 24 }}>
-              Build your customer-facing profile, add services, assign staff, set working hours and manage approvals, reschedules and daily appointments from your dashboard. Customer bookings stay free at point of booking; Mirëbook is preparing for business subscription billing.
+              {t('home.business.body')}
             </p>
 
             <div className="home-business-links">
               <Link href="/dashboard/businesses" className="card home-mini-card">
-                <strong>Profile readiness</strong>
-                <p className="small muted">Check services, staff, hours and publishing status.</p>
+                <strong>{t('home.business.profileTitle')}</strong>
+                <p className="small muted">{t('home.business.profileBody')}</p>
               </Link>
 
               <Link href="/dashboard/notifications" className="card home-mini-card">
-                <strong>Action centre</strong>
-                <p className="small muted">Approve new bookings and customer reschedule requests.</p>
+                <strong>{t('home.business.actionTitle')}</strong>
+                <p className="small muted">{t('home.business.actionBody')}</p>
               </Link>
 
               <Link href="/dashboard/bookings" className="card home-mini-card">
-                <strong>Booking manager</strong>
-                <p className="small muted">View confirmed, pending, completed and cancelled bookings.</p>
+                <strong>{t('home.business.managerTitle')}</strong>
+                <p className="small muted">{t('home.business.managerBody')}</p>
               </Link>
 
               <Link href="/dashboard/billing" className="card home-mini-card">
-                <strong>Business billing</strong>
-                <p className="small muted">Prepare monthly subscription details for your business account.</p>
+                <strong>{t('home.business.billingTitle')}</strong>
+                <p className="small muted">{t('home.business.billingBody')}</p>
               </Link>
             </div>
 
             <div className="home-cta-row" style={{ marginBottom: 0 }}>
               <Link href="/register" className="btn btn-accent">
-                Join as a business
+                {t('home.business.join')}
               </Link>
 
               <Link href="/login" className="btn btn-ghost">
-                Business login
+                {t('home.business.login')}
               </Link>
 
               <Link href="/support" className="btn btn-ghost">
-                Get support
+                {t('home.business.support')}
               </Link>
             </div>
           </aside>
@@ -139,36 +141,36 @@ export default function Home() {
       <section className="container home-confidence-section">
         <div className="home-section-heading">
           <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
-            Built for confidence
+            {t('home.confidence.kicker')}
           </p>
-          <h2>Clear booking states for customers and businesses.</h2>
+          <h2>{t('home.confidence.title')}</h2>
           <p className="muted">
-            Mirëbook separates confirmed appointments, approval requests, reschedule requests and completed bookings so customers and businesses always know what needs action.
+            {t('home.confidence.body')}
           </p>
         </div>
 
         <div className="grid-2">
           <div className="card">
-            <p className="small muted">Customers</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Book and track appointments</h3>
+            <p className="small muted">{t('home.customers.kicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.customers.title')}</h3>
             <p className="muted" style={{ margin: '0.5rem 0 1rem' }}>
-              Browse bookable businesses, choose a service, pick from real available times, select Any available staff or a specific staff member, and track every appointment from your account. Customers do not pay Mirëbook to book appointments.
+              {t('home.customers.body')}
             </p>
             <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href="/explore" className="btn btn-accent">Explore marketplace</Link>
-              <Link href="/notifications" className="btn btn-ghost">Notifications</Link>
+              <Link href="/explore" className="btn btn-accent">{t('home.customers.explore')}</Link>
+              <Link href="/notifications" className="btn btn-ghost">{t('home.customers.notifications')}</Link>
             </div>
           </div>
 
           <div className="card">
-            <p className="small muted">Businesses</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Control how bookings are accepted</h3>
+            <p className="small muted">{t('home.businesses.kicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.businesses.title')}</h3>
             <p className="muted" style={{ margin: '0.5rem 0 1rem' }}>
-              Use instant confirmation for simple flows or manual approval when you want to review each booking request first. Mirëbook keeps pending, confirmed, rescheduled, completed and cancelled bookings separated, with business billing handled separately from customer appointment booking.
+              {t('home.businesses.body')}
             </p>
             <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href="/dashboard" className="btn btn-accent">Business dashboard</Link>
-              <Link href="/dashboard/businesses" className="btn btn-ghost">Setup profile</Link>
+              <Link href="/dashboard" className="btn btn-accent">{t('home.businesses.dashboard')}</Link>
+              <Link href="/dashboard/businesses" className="btn btn-ghost">{t('home.businesses.setup')}</Link>
             </div>
           </div>
         </div>
@@ -177,36 +179,36 @@ export default function Home() {
       <section className="container home-confidence-section">
         <div className="home-section-heading">
           <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
-            Built for international growth
+            {t('home.growth.kicker')}
           </p>
-          <h2>Start local, scale across cities.</h2>
+          <h2>{t('home.growth.title')}</h2>
           <p className="muted">
-            Mirëbook is designed for independent service providers and growing teams across Albania, the UK and wider international markets. The product is being built in English first, with Albanian and region-aware language support planned as the platform matures.
+            {t('home.growth.body')}
           </p>
         </div>
 
         <div className="grid-3">
           <div className="card">
-            <p className="small muted">For customers</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Find real availability fast</h3>
+            <p className="small muted">{t('explore.trust.customerKicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.growth.customerTitle')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Search by service or city, compare bookable businesses and choose a time that already fits staff availability, without a customer checkout step.
+              {t('home.growth.customerBody')}
             </p>
           </div>
 
           <div className="card">
-            <p className="small muted">For businesses</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Launch without messy admin</h3>
+            <p className="small muted">{t('explore.trust.businessKicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.growth.businessTitle')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Add services, staff and working hours, then publish a profile customers can book from directly. Subscription and billing controls are kept inside the business dashboard.
+              {t('home.growth.businessBody')}
             </p>
           </div>
 
           <div className="card">
-            <p className="small muted">For teams</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Keep every appointment clear</h3>
+            <p className="small muted">{t('home.growth.teamKicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.growth.teamTitle')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Track pending approvals, confirmed appointments, reschedule requests and completed bookings in one place.
+              {t('home.growth.teamBody')}
             </p>
           </div>
         </div>
@@ -215,46 +217,46 @@ export default function Home() {
       <section className="container home-confidence-section">
         <div className="home-section-heading">
           <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
-            Trust and launch readiness
+            {t('home.trust.kicker')}
           </p>
-          <h2>Built for real onboarding, not just a demo.</h2>
+          <h2>{t('home.trust.title')}</h2>
           <p className="muted">
-            Mirëbook is being shaped around business setup, customer clarity, staff workflows, support pages and future app-store readiness.
+            {t('home.trust.body')}
           </p>
         </div>
 
         <div className="grid-3">
           <div className="card">
-            <p className="small muted">Business model</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Business subscription billing</h3>
+            <p className="small muted">{t('home.trust.modelKicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.trust.modelTitle')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Customers book appointments through Mirëbook, while businesses will later pay a monthly subscription to use the platform.
+              {t('home.trust.modelBody')}
             </p>
             <Link href="/dashboard/billing" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
-              Billing groundwork
+              {t('home.trust.billing')}
             </Link>
           </div>
 
           <div className="card">
-            <p className="small muted">Support</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Help for customers, businesses and staff</h3>
+            <p className="small muted">{t('home.trust.supportKicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.trust.supportTitle')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Support pages explain booking states, staff access, business setup and the current payment model clearly.
+              {t('home.trust.supportBody')}
             </p>
             <Link href="/support" className="btn btn-ghost" style={{ marginTop: '1rem' }}>
-              Support centre
+              {t('home.trust.supportCentre')}
             </Link>
           </div>
 
           <div className="card">
-            <p className="small muted">Legal basics</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Privacy and terms foundations</h3>
+            <p className="small muted">{t('home.trust.legalKicker')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('home.trust.legalTitle')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Starter privacy and terms pages are in place for early testing and should be reviewed before public launch.
+              {t('home.trust.legalBody')}
             </p>
             <div className="home-cta-row" style={{ marginBottom: 0, marginTop: '1rem' }}>
-              <Link href="/privacy" className="btn btn-ghost">Privacy</Link>
-              <Link href="/terms" className="btn btn-ghost">Terms</Link>
+              <Link href="/privacy" className="btn btn-ghost">{t('common.privacy')}</Link>
+              <Link href="/terms" className="btn btn-ghost">{t('common.terms')}</Link>
             </div>
           </div>
         </div>
