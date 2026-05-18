@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   loading: boolean
@@ -8,14 +9,15 @@ type Props = {
 }
 
 export default function ExploreResultsHeader({ loading, filteredCount, hasFilters, onClearFilters }: Props) {
+  const { t } = useI18n()
   return (
     <div className="explore-results-header">
       <div>
-        <p className="small muted">Mirëbook marketplace</p>
+        <p className="small muted">{t('explore.hero.kicker')}</p>
         <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
           {loading
             ? 'Loading businesses...'
-            : `${filteredCount} bookable business${filteredCount === 1 ? '' : 'es'}`}
+            : `${filteredCount} ${t('explore.results.title').toLowerCase()}`}
         </h2>
       </div>
 
@@ -30,7 +32,7 @@ export default function ExploreResultsHeader({ loading, filteredCount, hasFilter
       </Link>
 
       <Link href="/support/customer" className="btn btn-ghost">
-        Customer support
+        {t('nav.customerSupport')}
       </Link>
     </div>
   )

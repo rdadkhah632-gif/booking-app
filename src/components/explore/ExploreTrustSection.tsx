@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
 
 export default function ExploreTrustSection() {
+  const { t } = useI18n()
   return (
     <section className="container explore-trust-section">
       <div className="grid-3">
@@ -30,7 +32,7 @@ export default function ExploreTrustSection() {
             Support, privacy and terms pages are in place for early testing and should be reviewed before public launch.
           </p>
           <div className="explore-trust-actions">
-            <Link href="/support/customer" className="btn btn-ghost">Customer support</Link>
+            <Link href="/support/customer" className="btn btn-ghost">{t('nav.customerSupport')}</Link>
             <Link href="/privacy" className="btn btn-ghost">Privacy</Link>
             <Link href="/terms" className="btn btn-ghost">Terms</Link>
           </div>

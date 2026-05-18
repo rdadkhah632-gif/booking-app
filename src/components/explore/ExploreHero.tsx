@@ -1,10 +1,12 @@
 import { MarketplaceStats } from './exploreTypes'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   marketplaceStats: MarketplaceStats
 }
 
 export default function ExploreHero({ marketplaceStats }: Props) {
+  const { t } = useI18n()
   return (
     <div
       className="card"
@@ -21,15 +23,15 @@ export default function ExploreHero({ marketplaceStats }: Props) {
         }}
       >
         <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
-          Mirëbook marketplace
+          {t('explore.hero.kicker')}
         </p>
 
         <h1 className="page-title">
-          Find real appointments near you.
+          {t('explore.hero.title')}
         </h1>
 
         <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 760 }}>
-          Browse bookable Mirëbook businesses with active services, staff and working hours. Choose a service, pick an available time, and send a booking request or instant confirmation depending on the business settings.
+          {t('explore.hero.subtitle')}
         </p>
 
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
@@ -68,7 +70,7 @@ export default function ExploreHero({ marketplaceStats }: Props) {
               border: '1px solid var(--border)'
             }}
           >
-            Availability-based booking
+            {t('explore.badge.availability')}
           </span>
 
           <span
@@ -81,7 +83,7 @@ export default function ExploreHero({ marketplaceStats }: Props) {
               border: '1px solid var(--border)'
             }}
           >
-            No customer checkout yet
+            {t('explore.badge.noCheckout')}
           </span>
         </div>
       </div>

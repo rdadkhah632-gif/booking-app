@@ -1,4 +1,5 @@
 import { SortOption } from './exploreTypes'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   search: string
@@ -33,13 +34,14 @@ export default function ExploreFilters({
   onClearFilters,
   onRefresh
 }: Props) {
+  const { t } = useI18n()
   return (
     <aside className="card explore-filter-panel">
       <h3 style={{ marginBottom: '0.35rem' }}>
-        Find a service
+        {t('explore.filters.title')}
       </h3>
       <p className="small muted" style={{ marginBottom: '1rem' }}>
-        Search businesses that are currently bookable on Mirëbook. Only published businesses with active services, active staff and working hours appear here.
+        {t('explore.filters.subtitle')}
       </p>
 
       <div style={{ display: 'grid', gap: '1rem' }}>
@@ -48,7 +50,7 @@ export default function ExploreFilters({
           <input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Business, service, city..."
+            placeholder={t('explore.search.placeholder')}
             style={{ width: '100%', marginTop: '0.4rem' }}
           />
         </div>
@@ -58,7 +60,7 @@ export default function ExploreFilters({
           <input
             value={category}
             onChange={(e) => onCategoryChange(e.target.value)}
-            placeholder="Barber, nails, salon..."
+            placeholder={t('explore.category.placeholder')}
             list="category-options"
             style={{ width: '100%', marginTop: '0.4rem' }}
           />
@@ -75,7 +77,7 @@ export default function ExploreFilters({
           <input
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
-            placeholder="Tirana, Coventry, Milan..."
+            placeholder={t('explore.city.placeholder')}
             list="city-options"
             style={{ width: '100%', marginTop: '0.4rem' }}
           />

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   type: 'error' | 'no-businesses' | 'no-results'
@@ -8,6 +9,8 @@ type Props = {
 }
 
 export default function ExploreEmptyState({ type, error, onRetry, onClearFilters }: Props) {
+  const { t } = useI18n()
+
   if (type === 'error') {
     return (
       <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,77,109,0.35)' }}>
@@ -32,7 +35,7 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
           )}
 
           <Link href="/support/customer" className="btn btn-ghost">
-            Customer support
+            {t('nav.customerSupport')}
           </Link>
         </div>
       </div>
@@ -42,9 +45,9 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
   if (type === 'no-businesses') {
     return (
       <div className="card">
-        <h3>No bookable businesses yet</h3>
+        <h3>{t('explore.empty.title')}</h3>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
-          Businesses appear here when they are published and have active services, active staff and working hours configured. Customers can browse and request appointments without a Mirëbook checkout step.
+          {t('explore.empty.body')}
         </p>
         <div className="explore-empty-actions">
           <Link href="/register" className="btn btn-accent">
@@ -52,7 +55,7 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
           </Link>
 
           <Link href="/support/customer" className="btn btn-ghost">
-            Customer support
+            {t('nav.customerSupport')}
           </Link>
         </div>
       </div>
