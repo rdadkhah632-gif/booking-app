@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
+import { useI18n } from '@/lib/useI18n'
+import { Locale } from '@/lib/i18n'
 
 type Role = 'customer' | 'business' | 'staff'
 
@@ -12,6 +14,7 @@ type Profile = {
   role: Role | string | null
   full_name?: string | null
   phone?: string | null
+  preferred_language?: Locale | string | null
   is_admin?: boolean | null
 }
 
@@ -56,6 +59,7 @@ function roleLabel(role?: string | null) {
 
 export default function AccountPage() {
   const router = useRouter()
+  const { locale, setLocale } = useI18n()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [ownedBusinesses, setOwnedBusinesses] = useState<BusinessRow[]>([])
@@ -71,6 +75,7 @@ export default function AccountPage() {
   })
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
+  const [preferredLanguage, setPreferredLanguage] = useState<Locale>('en')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -103,7 +108,7 @@ export default function AccountPage() {
 
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .select('id, email, role, full_name, phone, is_admin')
+      .select('id, email, role, full_name, phone, preferred_language, is_admin')
       .eq('id', session.user.id)
       .single()
 
@@ -117,6 +122,9 @@ export default function AccountPage() {
     setProfile(currentProfile)
     setFullName(currentProfile.full_name || '')
     setPhone(currentProfile.phone || '')
+    const profileLanguage = currentProfile.preferred_language === 'sq' ? 'sq' : 'en'
+    setPreferredLanguage(profileLanguage)
+    setLocale(profileLanguage)
 
     const { data: businessData } = await supabase
       .from('businesses')
@@ -219,6 +227,10 @@ export default function AccountPage() {
     loadProfile()
   }, [])
 
+  useEffect(() => {
+    setPreferredLanguage(locale)
+  }, [locale])
+
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault()
 
@@ -232,11 +244,13 @@ export default function AccountPage() {
       .from('profiles')
       .update({
         full_name: fullName.trim() || null,
-        phone: phone.trim() || null
+        phone: phone.trim() || null,
+        preferred_language: preferredLanguage
       })
       .eq('id', profile.id)
 
     setSaving(false)
+    await setLocale(preferredLanguage)
 
     if (updateError) {
       setError(updateError.message)
@@ -405,6 +419,25 @@ export default function AccountPage() {
                 />
               </div>
 
+              <div>
+                <label className="small muted">Preferred language</label>
+                <select
+                  value={preferredLanguage}
+                  onChange={(e) => {
+                    const nextLanguage = e.target.value as Locale
+                    setPreferredLanguage(nextLanguage)
+                    setLocale(nextLanguage)
+                  }}
+                  style={{ width: '100%', marginTop: '0.4rem' }}
+                >
+                  <option value="en">English</option>
+                  <option value="sq">Shqip</option>
+                </select>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  This is saved to your account and used when you sign in on another device.
+                </p>
+              </div>
+
               <button type="submit" disabled={saving} className="btn btn-accent">
                 {saving ? 'Saving...' : 'Save account details'}
               </button>
@@ -514,13 +547,13 @@ export default function AccountPage() {
                 <p className="small muted">Help and language</p>
                 <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>Support</h2>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  For launch, customer and business support should flow through the support page and future operator support inbox. A public language toggle is planned for the localization pass; this account page is kept language-neutral until then.
+                  Customer, business and staff support routes are separated. Your preferred language is now saved above and will be used across translated Mirëbook pages when you sign in.
                 </p>
               </div>
 
               <div className="workspace-actions">
                 <Link href="/support" className="btn btn-ghost">Contact support</Link>
-                <span className="language-pill" title="Language toggle planned for public launch localization">EN</span>
+                <span className="language-pill" title="Saved account language">{preferredLanguage === 'sq' ? 'SQ' : 'EN'}</span>
                 <button onClick={logout} className="btn btn-danger">Log out</button>
               </div>
             </div>
