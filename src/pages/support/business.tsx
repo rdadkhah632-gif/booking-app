@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type Profile = {
   id: string
@@ -17,26 +18,27 @@ type Business = {
   subscription_status?: string | null
 }
 
-const BUSINESS_SUBJECTS = [
-  'Business setup or publishing issue',
-  'Services, staff or working hours issue',
-  'Booking approval issue',
-  'Customer booking problem',
-  'Trial or subscription issue',
-  'Image upload issue',
-  'Account or login issue',
-  'Other business issue'
+const BUSINESS_SUBJECT_KEYS = [
+  'support.business.subject.setup',
+  'support.business.subject.services',
+  'support.business.subject.approval',
+  'support.business.subject.customerBooking',
+  'support.business.subject.subscription',
+  'support.business.subject.imageUpload',
+  'support.business.subject.account',
+  'support.business.subject.other'
 ]
 
 export default function BusinessSupportPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [businessId, setBusinessId] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [subject, setSubject] = useState(BUSINESS_SUBJECTS[0])
+  const [subject, setSubject] = useState(BUSINESS_SUBJECT_KEYS[0])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -86,12 +88,12 @@ export default function BusinessSupportPage() {
     e.preventDefault()
 
     if (!profile) {
-      setError('You need to be logged in to send a support message.')
+      setError(t('support.business.loginRequired'))
       return
     }
 
     if (!subject.trim() || !message.trim()) {
-      setError('Choose a subject and write a message before sending.')
+      setError(t('support.business.validation'))
       return
     }
 
@@ -107,10 +109,10 @@ export default function BusinessSupportPage() {
         account_type: 'business',
         name: name.trim() || profile.full_name || null,
         email: email.trim() || profile.email || null,
-        subject: subject.trim(),
+        subject: t(subject).trim(),
         message: message.trim(),
         status: 'open',
-        priority: subject.includes('Booking approval') || subject.includes('Trial') ? 'high' : 'normal'
+        priority: subject === 'support.business.subject.approval' || subject === 'support.business.subject.subscription' ? 'high' : 'normal'
       })
 
     setSending(false)
@@ -120,9 +122,9 @@ export default function BusinessSupportPage() {
       return
     }
 
-    setSuccess('Your business support request has been sent to the Mirëbook operator inbox.')
+    setSuccess(t('support.business.success'))
     setMessage('')
-    setSubject(BUSINESS_SUBJECTS[0])
+    setSubject(BUSINESS_SUBJECT_KEYS[0])
   }
 
   return (
@@ -132,16 +134,16 @@ export default function BusinessSupportPage() {
       <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: 'var(--accent)' }}>Business support</p>
-            <h1 className="page-title">Help with business setup and bookings</h1>
+            <p className="small" style={{ color: 'var(--accent)' }}>{t('nav.businessSupport')}</p>
+            <h1 className="page-title">{t('support.business.heroTitle')}</h1>
             <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              Use this for setup, publishing, services, staff, working hours, booking approval, trials, subscription access and business account issues.
+              {t('support.business.heroBody')}
             </p>
           </div>
 
           {loading && (
             <div className="card">
-              <p className="muted">Loading your business context...</p>
+              <p className="muted">{t('support.business.loading')}</p>
             </div>
           )}
 
@@ -161,48 +163,48 @@ export default function BusinessSupportPage() {
             <div className="support-grid">
               <form onSubmit={submitSupportMessage} className="card support-form-card">
                 <div>
-                  <p className="small muted">Support request</p>
-                  <h2>Send business support message</h2>
+                  <p className="small muted">{t('support.business.formKicker')}</p>
+                  <h2>{t('support.business.formTitle')}</h2>
                 </div>
 
                 <div className="support-form-grid">
                   <div>
-                    <label className="small muted">Name</label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t('common.name')}</label>
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('support.business.namePlaceholder')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div>
-                    <label className="small muted">Email</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t('common.email')}</label>
+                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('support.business.emailPlaceholder')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">Business</label>
+                    <label className="small muted">{t('common.business')}</label>
                     <select value={businessId} onChange={(e) => setBusinessId(e.target.value)} style={{ marginTop: '0.4rem' }}>
-                      {businesses.length === 0 && <option value="">No linked business found</option>}
+                      {businesses.length === 0 && <option value="">{t('support.business.noBusiness')}</option>}
                       {businesses.map((business) => (
                         <option key={business.id} value={business.id}>
-                          {business.name} · {business.published ? 'published' : 'draft'} · {business.subscription_status || 'trial'}
+                          {business.name} · {business.published ? t('support.business.status.published') : t('support.business.status.draft')} · {business.subscription_status || t('support.business.status.trial')}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">What is this about?</label>
+                    <label className="small muted">{t('support.business.subjectLabel')}</label>
                     <select value={subject} onChange={(e) => setSubject(e.target.value)} style={{ marginTop: '0.4rem' }}>
-                      {BUSINESS_SUBJECTS.map((item) => (
-                        <option key={item} value={item}>{item}</option>
+                      {BUSINESS_SUBJECT_KEYS.map((item) => (
+                        <option key={item} value={item}>{t(item)}</option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">Message</label>
+                    <label className="small muted">{t('support.business.messageLabel')}</label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Explain the issue. Include service/staff names, booking details or screenshots context if relevant."
+                      placeholder={t('support.business.messagePlaceholder')}
                       rows={7}
                       style={{ marginTop: '0.4rem' }}
                     />
@@ -210,43 +212,43 @@ export default function BusinessSupportPage() {
                 </div>
 
                 <button type="submit" className="btn btn-accent" disabled={sending}>
-                  {sending ? 'Sending...' : 'Send business support request'}
+                  {sending ? t('support.business.sending') : t('support.business.sendButton')}
                 </button>
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">Useful business links</p>
-                <h2>Quick actions</h2>
+                <p className="small muted">{t('support.business.linksKicker')}</p>
+                <h2>{t('support.business.quickActions')}</h2>
 
                 <div className="support-link-list">
                   <Link href="/dashboard/businesses" className="support-link-row">
                     <span>
-                      <strong>Setup hub</strong>
-                      <small>Check profile, services, staff, hours and publish status.</small>
+                      <strong>{t('support.business.setupHub')}</strong>
+                      <small>{t('support.business.setupHubBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/dashboard/bookings" className="support-link-row">
                     <span>
-                      <strong>Bookings</strong>
-                      <small>Review confirmed, pending and completed bookings.</small>
+                      <strong>{t('support.business.bookings')}</strong>
+                      <small>{t('support.business.bookingsBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/dashboard/services" className="support-link-row">
                     <span>
-                      <strong>Services</strong>
-                      <small>Edit services, prices, durations and images.</small>
+                      <strong>{t('support.business.services')}</strong>
+                      <small>{t('support.business.servicesBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/dashboard/staff" className="support-link-row">
                     <span>
-                      <strong>Staff</strong>
-                      <small>Manage staff, service assignments and staff photos.</small>
+                      <strong>{t('support.business.staff')}</strong>
+                      <small>{t('support.business.staffBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
