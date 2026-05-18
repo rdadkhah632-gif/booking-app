@@ -1,4 +1,5 @@
 import { Service } from './publicBusinessTypes'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   services: Service[]
@@ -17,20 +18,21 @@ export default function PublicBusinessServices({
   formatServicePrice,
   serviceImageBackground
 }: Props) {
+  const { t } = useI18n()
   return (
     <div className="card">
       <div>
-        <p className="small muted">Step 1</p>
-        <h2 style={{ fontFamily: 'var(--font-display)' }}>Choose a service</h2>
+        <p className="small muted">{t('publicBusiness.services.step')}</p>
+        <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('publicBusiness.services.title')}</h2>
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
-          {bookableServiceCount} service{bookableServiceCount === 1 ? '' : 's'} can currently be booked.
+          {bookableServiceCount} {t('common.service').toLowerCase()}{bookableServiceCount === 1 ? '' : 's'} {t('publicBusiness.services.bookableCount')}.
         </p>
       </div>
 
       <div className="public-business-service-list">
         {services.length === 0 && (
           <div className="card" style={{ background: 'var(--surface-2)' }}>
-            <p className="muted">No active services are available yet.</p>
+            <p className="muted">{t('publicBusiness.services.none')}</p>
           </div>
         )}
 
@@ -70,7 +72,7 @@ export default function PublicBusinessServices({
               </div>
 
               <span className={selected ? 'btn btn-accent' : 'btn btn-ghost'}>
-                {selected ? 'Selected' : 'Choose'}
+                {selected ? t('common.selected') : t('common.choose')}
               </span>
             </button>
           )

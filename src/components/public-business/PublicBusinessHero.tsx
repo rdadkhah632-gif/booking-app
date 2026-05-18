@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
 import { Business } from './publicBusinessTypes'
 
 type Props = {
@@ -16,6 +17,7 @@ export default function PublicBusinessHero({
   bookingModeText,
   bookingModeDescription
 }: Props) {
+  const { t } = useI18n()
   return (
     <div className="card public-business-hero">
       <div
@@ -35,43 +37,43 @@ export default function PublicBusinessHero({
           )}
 
           <span className="small public-business-pill-muted">
-            Availability-based slots
+            {t('publicBusiness.hero.availabilitySlots')}
           </span>
 
           <span className="small public-business-pill-muted">
-            No customer checkout yet
+            {t('publicBusiness.hero.noCheckout')}
           </span>
         </div>
 
         <h1 className="page-title">{business.name}</h1>
 
         <p className="page-sub" style={{ marginTop: '0.75rem' }}>
-          {business.description || 'Book available appointments through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.'}
+          {business.description || t('publicBusiness.hero.fallbackDescription')}
         </p>
 
         <div className="public-business-meta-grid">
           <p className="small muted">
-            Location: {locationLabel()}
+            {t('publicBusiness.hero.location')}: {locationLabel()}
           </p>
 
           {business.phone && (
             <p className="small muted">
-              Phone: {business.phone}
+              {t('publicBusiness.hero.phone')}: {business.phone}
             </p>
           )}
 
           <p className="small muted">
-            Booking mode: {bookingModeText()} · {bookingModeDescription()}
+            {t('publicBusiness.hero.bookingMode')}: {bookingModeText()} · {bookingModeDescription()}
           </p>
         </div>
 
         <div className="booking-action-row compact">
           <Link href="/explore" className="btn btn-ghost">
-            Back to marketplace
+            {t('publicBusiness.hero.backToMarketplace')}
           </Link>
 
           <Link href="/support/customer" className="btn btn-ghost">
-            Customer support
+            {t('nav.customerSupport')}
           </Link>
         </div>
       </div>

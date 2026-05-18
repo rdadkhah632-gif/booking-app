@@ -1,4 +1,5 @@
 import { StaffMember } from './publicBusinessTypes'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   staffMembers: StaffMember[]
@@ -13,13 +14,14 @@ export default function PublicBusinessStaffPicker({
   onSelectStaff,
   availableStaffForSelectedService
 }: Props) {
+  const { t } = useI18n()
   return (
     <div className="card">
       <div>
-        <p className="small muted">Step 2</p>
-        <h2 style={{ fontFamily: 'var(--font-display)' }}>Choose staff</h2>
+        <p className="small muted">{t('publicBusiness.staff.step')}</p>
+        <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('publicBusiness.staff.title')}</h2>
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
-          Choose Any available staff or select a specific person.
+          {t('publicBusiness.staff.subtitle')}
         </p>
       </div>
 
@@ -34,9 +36,9 @@ export default function PublicBusinessStaffPicker({
           }}
         >
           <div>
-            <strong>Any available staff</strong>
+            <strong>{t('publicBusiness.staff.any')}</strong>
             <p className="small muted" style={{ marginTop: '0.25rem' }}>
-              Mirëbook will show slots for anyone who can perform the selected service.
+              {t('publicBusiness.staff.anyBody')}
             </p>
           </div>
         </button>
@@ -63,14 +65,14 @@ export default function PublicBusinessStaffPicker({
             <div>
               <strong>{staff.name}</strong>
               <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                {staff.role_title || 'Staff member'}
+                {staff.role_title || t('publicBusiness.staff.memberFallback')}
               </p>
             </div>
           </button>
         ))}
 
         {staffMembers.length === 0 && (
-          <p className="small muted">No active staff are available yet.</p>
+          <p className="small muted">{t('publicBusiness.staff.none')}</p>
         )}
       </div>
     </div>

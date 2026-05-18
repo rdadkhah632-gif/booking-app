@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
 import { Business, Service, TimeSlot } from './publicBusinessTypes'
 
 type Props = {
@@ -52,12 +53,13 @@ export default function PublicBusinessSummary({
   bookingModeDescription,
   reschedulePolicyText
 }: Props) {
+  const { t } = useI18n()
   const blockedByRole = Boolean(customerUserId && userRole && userRole !== 'customer')
 
   return (
     <aside className="card booking-summary-panel">
       <div>
-        <p className="small muted">Booking summary</p>
+        <p className="small muted">{t('publicBusiness.summary.title')}</p>
         <h2 style={{ fontFamily: 'var(--font-display)' }}>{bookingModeText()}</h2>
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
           {bookingModeDescription()}
@@ -65,11 +67,11 @@ export default function PublicBusinessSummary({
       </div>
 
       <div className="public-business-summary-box">
-        <p className="small muted">Business</p>
+        <p className="small muted">{t('common.business')}</p>
         <strong>{business.name}</strong>
 
-        <p className="small muted" style={{ marginTop: '0.75rem' }}>Service</p>
-        <strong>{selectedService ? selectedService.name : 'Choose a service'}</strong>
+        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.service')}</p>
+        <strong>{selectedService ? selectedService.name : t('publicBusiness.summary.chooseService')}</strong>
 
         {selectedService && (
           <p className="small muted" style={{ marginTop: '0.25rem' }}>
@@ -77,33 +79,33 @@ export default function PublicBusinessSummary({
           </p>
         )}
 
-        <p className="small muted" style={{ marginTop: '0.75rem' }}>Staff</p>
+        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.staff')}</p>
         <strong>{selectedStaffSummary()}</strong>
 
-        <p className="small muted" style={{ marginTop: '0.75rem' }}>Time</p>
-        <strong>{selectedSlot ? new Date(selectedSlot.startAt).toLocaleString() : 'Choose a time'}</strong>
+        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.time')}</p>
+        <strong>{selectedSlot ? new Date(selectedSlot.startAt).toLocaleString() : t('publicBusiness.summary.chooseTime')}</strong>
 
         <p className="small muted" style={{ marginTop: '0.75rem' }}>
-          {business.auto_accept_bookings === false ? 'This will be sent as a booking request.' : 'This will be confirmed instantly if the slot is still available.'}
+          {business.auto_accept_bookings === false ? t('publicBusiness.summary.requestNotice') : t('publicBusiness.summary.instantNotice')}
         </p>
       </div>
 
       {!customerUserId && (
         <div className="public-business-summary-box" style={{ borderColor: 'rgba(255,107,53,0.28)', background: 'rgba(255,107,53,0.06)' }}>
-          <p className="small" style={{ color: 'var(--accent)' }}>Login required</p>
-          <h3 style={{ marginTop: '0.25rem' }}>Sign in to continue</h3>
+          <p className="small" style={{ color: 'var(--accent)' }}>{t('publicBusiness.summary.loginRequired')}</p>
+          <h3 style={{ marginTop: '0.25rem' }}>{t('publicBusiness.summary.signIn')}</h3>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            Customers need to log in before sending booking requests or confirming appointments.
+            {t('publicBusiness.summary.signInBody')}
           </p>
           <div className="booking-action-row compact">
             <Link href={loginHref} className="btn btn-accent">
-              Login
+              {t('nav.login')}
             </Link>
             <Link href="/register" className="btn btn-ghost">
-              Create account
+              {t('publicBusiness.summary.createAccount')}
             </Link>
             <Link href="/support/customer" className="btn btn-ghost">
-              Help
+              {t('common.help')}
             </Link>
           </div>
         </div>
@@ -111,17 +113,17 @@ export default function PublicBusinessSummary({
 
       {blockedByRole && (
         <div className="public-business-summary-box" style={{ borderColor: 'rgba(255,190,11,0.28)', background: 'rgba(255,190,11,0.06)' }}>
-          <p className="small" style={{ color: 'var(--warning)' }}>Customer account required</p>
-          <h3 style={{ marginTop: '0.25rem' }}>This account cannot book as a customer</h3>
+          <p className="small" style={{ color: 'var(--warning)' }}>{t('publicBusiness.summary.customerRequired')}</p>
+          <h3 style={{ marginTop: '0.25rem' }}>{t('publicBusiness.summary.customerRequiredTitle')}</h3>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            Business, staff and operator accounts can view this page, but bookings must be made from a customer account.
+            {t('publicBusiness.summary.customerRequiredBody')}
           </p>
           <div className="booking-action-row compact">
             <Link href="/account" className="btn btn-ghost">
-              Account
+              {t('nav.account')}
             </Link>
             <Link href="/support/customer" className="btn btn-ghost">
-              Customer support
+              {t('nav.customerSupport')}
             </Link>
           </div>
         </div>
@@ -129,23 +131,23 @@ export default function PublicBusinessSummary({
 
       <form onSubmit={onSubmit} className="public-business-form">
         <label className="small muted">
-          Name
-          <input value={customerName} onChange={(e) => onCustomerNameChange(e.target.value)} placeholder="Your name" style={{ marginTop: '0.35rem' }} />
+          {t('common.name')}
+          <input value={customerName} onChange={(e) => onCustomerNameChange(e.target.value)} placeholder={t('publicBusiness.summary.namePlaceholder')} style={{ marginTop: '0.35rem' }} />
         </label>
 
         <label className="small muted">
-          Email
-          <input value={customerEmail} onChange={(e) => onCustomerEmailChange(e.target.value)} placeholder="you@example.com" style={{ marginTop: '0.35rem' }} />
+          {t('common.email')}
+          <input value={customerEmail} onChange={(e) => onCustomerEmailChange(e.target.value)} placeholder={t('publicBusiness.summary.emailPlaceholder')} style={{ marginTop: '0.35rem' }} />
         </label>
 
         <label className="small muted">
-          Phone
-          <input value={customerPhone} onChange={(e) => onCustomerPhoneChange(e.target.value)} placeholder="Phone number" style={{ marginTop: '0.35rem' }} />
+          {t('common.phone')}
+          <input value={customerPhone} onChange={(e) => onCustomerPhoneChange(e.target.value)} placeholder={t('publicBusiness.summary.phonePlaceholder')} style={{ marginTop: '0.35rem' }} />
         </label>
 
         <label className="small muted">
-          Notes
-          <textarea value={customerNotes} onChange={(e) => onCustomerNotesChange(e.target.value)} placeholder="Optional notes for the business" rows={4} style={{ marginTop: '0.35rem' }} />
+          {t('common.notes')}
+          <textarea value={customerNotes} onChange={(e) => onCustomerNotesChange(e.target.value)} placeholder={t('publicBusiness.summary.notesPlaceholder')} rows={4} style={{ marginTop: '0.35rem' }} />
         </label>
 
         {error && (
@@ -156,13 +158,13 @@ export default function PublicBusinessSummary({
 
         <button type="submit" className="btn btn-accent" disabled={submitting || !canSubmit}>
           {submitting
-            ? 'Working...'
-            : business.auto_accept_bookings === false ? 'Send booking request' : 'Confirm appointment'}
+            ? t('common.working')
+            : business.auto_accept_bookings === false ? t('publicBusiness.summary.sendRequest') : t('publicBusiness.summary.confirmAppointment')}
         </button>
       </form>
 
       <div className="public-business-summary-box">
-        <p className="small muted">Business policies</p>
+        <p className="small muted">{t('publicBusiness.summary.policies')}</p>
         <p className="small muted" style={{ marginTop: '0.25rem' }}>{reschedulePolicyText()}</p>
         {business.cancellation_policy && (
           <p className="small muted" style={{ marginTop: '0.45rem' }}>{business.cancellation_policy}</p>
@@ -170,7 +172,7 @@ export default function PublicBusinessSummary({
       </div>
 
       <Link href="/support/customer" className="btn btn-ghost">
-        Need help?
+        {t('common.needHelp')}
       </Link>
     </aside>
   )

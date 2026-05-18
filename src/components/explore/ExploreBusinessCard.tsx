@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
 import { Business, BusinessCardStats } from './exploreTypes'
 
 type Props = {
@@ -18,8 +19,9 @@ export default function ExploreBusinessCard({
   locationLabel,
   imageBackground
 }: Props) {
-  const serviceText = `${stats.activeServices} service${stats.activeServices === 1 ? '' : 's'}`
-  const staffText = `${stats.activeStaff} staff`
+  const { t } = useI18n()
+  const serviceText = `${stats.activeServices} ${t('common.service').toLowerCase()}${stats.activeServices === 1 ? '' : 's'}`
+  const staffText = `${stats.activeStaff} ${t('common.staff').toLowerCase()}`
 
   return (
     <div className="card explore-business-card">
@@ -69,12 +71,12 @@ export default function ExploreBusinessCard({
               borderRadius: 999
             }}
           >
-            {business.auto_accept_bookings === false ? 'Approval required' : 'Instant confirmation'}
+            {business.auto_accept_bookings === false ? t('explore.card.approvalRequired') : t('explore.card.instantConfirmation')}
           </span>
         </div>
 
         <p className="muted small" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
-          {business.description || 'Book available services through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.'}
+          {business.description || t('explore.card.fallbackDescription')}
         </p>
 
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
@@ -87,10 +89,10 @@ export default function ExploreBusinessCard({
               borderRadius: 999
             }}
           >
-            Bookable on Mirëbook
+            {t('explore.card.bookable')}
           </span>
 
-          <span className="small explore-muted-pill">Appointment booking</span>
+          <span className="small explore-muted-pill">{t('explore.card.appointmentBooking')}</span>
           <span className="small explore-muted-pill">{serviceText}</span>
           <span className="small explore-muted-pill">{staffText}</span>
           <span className="small explore-muted-pill">
@@ -105,11 +107,11 @@ export default function ExploreBusinessCard({
 
       <div className="explore-business-actions">
         <Link href={`/explore/${business.id}`} className="btn btn-accent">
-          View times and book
+          {t('explore.card.viewTimes')}
         </Link>
 
         <Link href={`/book/${business.id}`} className="btn btn-ghost">
-          Book now
+          {t('explore.card.bookNow')}
         </Link>
 
         {business.phone && (

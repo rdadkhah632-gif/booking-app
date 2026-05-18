@@ -1,4 +1,5 @@
 import { TimeSlot } from './publicBusinessTypes'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   selectedDate: string
@@ -17,18 +18,19 @@ export default function PublicBusinessAvailability({
   onDateChange,
   onSelectSlot
 }: Props) {
+  const { t } = useI18n()
   return (
     <div className="card">
       <div>
-        <p className="small muted">Step 3</p>
-        <h2 style={{ fontFamily: 'var(--font-display)' }}>Choose a time</h2>
+        <p className="small muted">{t('publicBusiness.availability.step')}</p>
+        <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('publicBusiness.availability.title')}</h2>
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
-          Only available booking slots are shown.
+          {t('publicBusiness.availability.subtitle')}
         </p>
       </div>
 
       <label className="small muted" style={{ display: 'block', marginTop: '1rem' }}>
-        Date
+        {t('publicBusiness.availability.date')}
         <input
           type="date"
           value={selectedDate}
@@ -39,12 +41,12 @@ export default function PublicBusinessAvailability({
 
       <div className="public-business-slot-grid">
         {loadingSlots && (
-          <p className="small muted">Loading available slots...</p>
+          <p className="small muted">{t('publicBusiness.availability.loading')}</p>
         )}
 
         {!loadingSlots && availableSlots.length === 0 && (
           <div className="card" style={{ background: 'var(--surface-2)', gridColumn: '1 / -1' }}>
-            <p className="muted">No available slots for this date. Try another date or staff member.</p>
+            <p className="muted">{t('publicBusiness.availability.none')}</p>
           </div>
         )}
 
