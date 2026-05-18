@@ -1,11 +1,45 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 
-type Role = 'customer' | 'business' | 'staff' | null
+type Role = 'customer' | 'business' | 'staff' | 'admin' | null
 
-type AccountMode = 'customer' | 'business' | 'staff'
+type AccountMode = 'customer' | 'business' | 'staff' | 'admin'
+
+type BusinessRow = {
+  id: string
+  published?: boolean | null
+}
+
+type StaffRow = {
+  id: string
+}
+
+type ProfileRow = {
+  role?: 'customer' | 'business' | 'staff' | string | null
+  is_admin?: boolean | null
+}
+
+function isAdminRoute(pathname: string) {
+  return pathname.startsWith('/admin')
+}
+
+function isBusinessRoute(pathname: string) {
+  return pathname.startsWith('/dashboard')
+}
+
+function isStaffRoute(pathname: string) {
+  return pathname.startsWith('/staff')
+}
+
+function isCustomerRoute(pathname: string) {
+  return pathname.startsWith('/explore') ||
+    pathname.startsWith('/book') ||
+    pathname.startsWith('/my-bookings') ||
+    pathname.startsWith('/reschedule-booking') ||
+    pathname.startsWith('/booking-confirmation')
+}
 
 export default function AuthNav() {
   const router = useRouter()
@@ -19,8 +53,14 @@ export default function AuthNav() {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
+
     async function loadUser() {
+      setLoading(true)
+
       const { data: { session } } = await supabase.auth.getSession()
+
+      if (cancelled) return
 
       if (!session) {
         setRole(null)
@@ -37,19 +77,24 @@ export default function AuthNav() {
         .from('profiles')
         .select('role, is_admin')
         .eq('id', session.user.id)
-        .single()
+        .single<ProfileRow>()
 
       const { data: ownedBusinesses } = await supabase
         .from('businesses')
         .select('id, published')
         .eq('user_id', session.user.id)
-        .limit(1)
+        .order('created_at', { ascending: false })
+        .limit(10)
+        .returns<BusinessRow[]>()
 
       const { data: linkedStaff } = await supabase
         .from('staff_members')
         .select('id')
         .eq('user_id', session.user.id)
         .limit(1)
+        .returns<StaffRow[]>()
+
+      if (cancelled) return
 
       const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
       const primaryBusiness = ownedBusinesses?.[0] || null
@@ -57,6 +102,7 @@ export default function AuthNav() {
       const adminUser = !!profile?.is_admin
       const modes: AccountMode[] = []
 
+      if (adminUser) modes.push('admin')
       if (ownsBusiness || profile?.role === 'business') modes.push('business')
       if (hasStaffProfile) modes.push('staff')
       modes.push('customer')
@@ -66,57 +112,107 @@ export default function AuthNav() {
       setPrimaryBusinessId(primaryBusiness?.id || null)
       setIsAdmin(adminUser)
 
-      if (hasStaffProfile && router.pathname.startsWith('/staff')) {
+      if (adminUser && isAdminRoute(router.pathname)) {
+        setRole('admin')
+      } else if (hasStaffProfile && isStaffRoute(router.pathname)) {
         setRole('staff')
-      } else if (profile?.role === 'business' || ownsBusiness || router.pathname.startsWith('/dashboard')) {
+      } else if ((profile?.role === 'business' || ownsBusiness) && isBusinessRoute(router.pathname)) {
         setRole('business')
+      } else if (adminUser && !isCustomerRoute(router.pathname) && !isStaffRoute(router.pathname) && !isBusinessRoute(router.pathname)) {
+        setRole('admin')
+      } else if (profile?.role === 'business' || ownsBusiness) {
+        setRole('business')
+      } else if (hasStaffProfile && isStaffRoute(router.pathname)) {
+        setRole('staff')
       } else {
         setRole('customer')
       }
 
-      if ((profile?.role === 'business' || ownsBusiness) && !router.pathname.startsWith('/staff')) {
-        const businessIds = (ownedBusinesses || []).map((business) => business.id)
+      await loadNotificationCounts({
+        userId: session.user.id,
+        activePath: router.pathname,
+        adminUser,
+        ownsBusiness,
+        businessIds: (ownedBusinesses || []).map((business) => business.id),
+        hasStaffProfile
+      })
 
-        if (businessIds.length > 0) {
-          const { count: pendingBookingsCount } = await supabase
-            .from('bookings')
-            .select('id', { count: 'exact', head: true })
-            .in('business_id', businessIds)
-            .eq('status', 'pending')
-
-          const { data: pendingRequests } = await supabase
-            .from('booking_requests')
-            .select('booking_id')
-            .in('business_id', businessIds)
-            .eq('status', 'pending')
-
-          const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
-          setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules)
-        } else {
-          setNotificationCount(0)
-        }
-      } else {
-        const { count: pendingBookingsCount } = await supabase
-          .from('bookings')
-          .select('id', { count: 'exact', head: true })
-          .eq('customer_user_id', session.user.id)
-          .eq('status', 'pending')
-
-        const { data: pendingRequests } = await supabase
-          .from('booking_requests')
-          .select('booking_id')
-          .eq('customer_user_id', session.user.id)
-          .eq('status', 'pending')
-
-        const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
-        setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules)
-      }
-
-      setLoading(false)
+      if (!cancelled) setLoading(false)
     }
 
     loadUser()
+
+    return () => {
+      cancelled = true
+    }
   }, [router.pathname])
+
+  async function loadNotificationCounts(params: {
+    userId: string
+    activePath: string
+    adminUser: boolean
+    ownsBusiness: boolean
+    businessIds: string[]
+    hasStaffProfile: boolean
+  }) {
+    if (params.adminUser && isAdminRoute(params.activePath)) {
+      const { count: unreadAdminCount } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('audience', 'admin')
+        .is('read_at', null)
+
+      setNotificationCount(unreadAdminCount || 0)
+      return
+    }
+
+    if ((params.ownsBusiness || isBusinessRoute(params.activePath)) && !isStaffRoute(params.activePath) && params.businessIds.length > 0) {
+      const { count: pendingBookingsCount } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .in('business_id', params.businessIds)
+        .eq('status', 'pending')
+
+      const { data: pendingRequests } = await supabase
+        .from('booking_requests')
+        .select('booking_id')
+        .in('business_id', params.businessIds)
+        .eq('status', 'pending')
+
+      const { count: unreadBusinessNotifications } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', params.userId)
+        .eq('audience', 'business')
+        .is('read_at', null)
+
+      const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
+      setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules + (unreadBusinessNotifications || 0))
+      return
+    }
+
+    const { count: pendingBookingsCount } = await supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('customer_user_id', params.userId)
+      .eq('status', 'pending')
+
+    const { data: pendingRequests } = await supabase
+      .from('booking_requests')
+      .select('booking_id')
+      .eq('customer_user_id', params.userId)
+      .eq('status', 'pending')
+
+    const { count: unreadCustomerNotifications } = await supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', params.userId)
+      .in('audience', ['general', 'customer'])
+      .is('read_at', null)
+
+    const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
+    setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules + (unreadCustomerNotifications || 0))
+  }
 
   async function logout() {
     await supabase.auth.signOut()
@@ -132,13 +228,18 @@ export default function AuthNav() {
   function switchMode(nextMode: AccountMode) {
     setRole(nextMode)
 
+    if (nextMode === 'admin') {
+      router.push('/admin')
+      return
+    }
+
     if (nextMode === 'business') {
       router.push('/dashboard')
       return
     }
 
     if (nextMode === 'staff') {
-      router.push('/staff')
+      router.push(staffProfileId ? '/staff' : '/staff')
       return
     }
 
@@ -146,27 +247,31 @@ export default function AuthNav() {
   }
 
   function notificationLabel() {
+    if (role === 'admin') {
+      if (notificationCount <= 0) return 'Operator notices'
+      return `Operator notices (${notificationCount})`
+    }
+
     if (role === 'business') {
       if (notificationCount <= 0) return 'Needs action'
       return `Needs action (${notificationCount})`
     }
 
     if (role === 'staff') {
-      return 'Staff updates'
+      return 'Updates'
     }
 
     if (notificationCount <= 0) return 'Notifications'
     return `Notifications (${notificationCount})`
   }
 
-  const logoHref =
-    role === 'business'
-      ? '/dashboard'
-      : role === 'staff'
-        ? '/staff'
-        : role === 'customer'
-          ? '/explore'
-          : '/'
+  const logoHref = useMemo(() => {
+    if (role === 'admin') return '/admin'
+    if (role === 'business') return '/dashboard'
+    if (role === 'staff') return '/staff'
+    if (role === 'customer') return '/explore'
+    return '/'
+  }, [role])
 
   const publicBusinessHref = primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
 
@@ -182,26 +287,33 @@ export default function AuthNav() {
     )
   }
 
-  function adminLinks() {
-    if (!isAdmin) return null
+  function modeSwitcher() {
+    if (availableModes.length <= 1) return null
 
     return (
-      <div className="admin-nav-cluster" aria-label="Admin controls">
-        <Link href="/admin" className="btn btn-accent">
-          Admin
-        </Link>
-        <Link href="/admin/businesses" className="muted nav-wide-only">
-          Businesses
-        </Link>
+      <div className="auth-mode-switcher" aria-label="Workspace switcher">
+        {availableModes.includes('admin') && modeButton('admin', 'Operator')}
+        {availableModes.includes('business') && modeButton('business', 'Business')}
+        {availableModes.includes('staff') && modeButton('staff', 'Staff')}
+        {availableModes.includes('customer') && modeButton('customer', 'Customer')}
       </div>
     )
   }
 
+  function languagePlaceholder() {
+    return (
+      <span className="language-pill nav-wide-only" title="Language toggle planned for the public launch pass">
+        EN
+      </span>
+    )
+  }
+
   return (
-    <nav className="nav-simple">
+    <nav className={role === 'admin' ? 'nav-simple nav-operator' : 'nav-simple'}>
       <div className="nav-simple-inner">
         <Link href={logoHref} className="logo">
           Mirë<span>book</span>
+          {role === 'admin' && <em>Operator</em>}
         </Link>
 
         <div className="auth-nav-links">
@@ -212,12 +324,14 @@ export default function AuthNav() {
           {!loading && !role && (
             <>
               <Link href="/explore" className="muted">
-                Explore Mirëbook
+                Explore
               </Link>
 
               <Link href="/support" className="muted nav-wide-only">
                 Support
               </Link>
+
+              {languagePlaceholder()}
 
               <Link href="/login" className="muted">
                 Login
@@ -229,14 +343,50 @@ export default function AuthNav() {
             </>
           )}
 
-          {!loading && role === 'customer' && (
+          {!loading && role === 'admin' && (
             <>
-              <Link href="/explore" className="muted">
-                Explore
+              <Link href="/admin" className="btn btn-accent">
+                Operator
+              </Link>
+
+              <Link href="/admin/businesses" className="muted">
+                Businesses
+              </Link>
+
+              <Link href="/admin/users" className="muted">
+                Users
+              </Link>
+
+              <Link href="/admin/notifications" className={notificationCount > 0 ? 'btn btn-accent' : 'muted'}>
+                {notificationLabel()}
               </Link>
 
               <Link href="/support" className="muted nav-wide-only">
                 Support
+              </Link>
+
+              {modeSwitcher()}
+
+              <Link href="/account" className="muted">
+                Account
+              </Link>
+
+              <button onClick={logout} className="btn btn-ghost">
+                Log out
+              </button>
+            </>
+          )}
+
+          {!loading && role === 'customer' && (
+            <>
+              {isAdmin && (
+                <Link href="/admin" className="btn btn-accent">
+                  Operator
+                </Link>
+              )}
+
+              <Link href="/explore" className="muted">
+                Explore
               </Link>
 
               <Link href="/my-bookings" className="muted">
@@ -250,15 +400,13 @@ export default function AuthNav() {
                 {notificationLabel()}
               </Link>
 
-              {adminLinks()}
+              <Link href="/support" className="muted nav-wide-only">
+                Support
+              </Link>
 
-              {availableModes.length > 1 && (
-                <div className="auth-mode-switcher" aria-label="Account mode switcher">
-                  {availableModes.includes('customer') && modeButton('customer', 'Customer')}
-                  {availableModes.includes('business') && modeButton('business', 'Business')}
-                  {availableModes.includes('staff') && modeButton('staff', 'Staff')}
-                </div>
-              )}
+              {languagePlaceholder()}
+
+              {modeSwitcher()}
 
               <Link href="/account" className="muted">
                 Account
@@ -272,6 +420,12 @@ export default function AuthNav() {
 
           {!loading && role === 'business' && (
             <>
+              {isAdmin && (
+                <Link href="/admin" className="btn btn-accent">
+                  Operator
+                </Link>
+              )}
+
               <Link href="/dashboard" className="muted">
                 Dashboard
               </Link>
@@ -288,30 +442,22 @@ export default function AuthNav() {
               </Link>
 
               <Link href="/dashboard/businesses" className="muted">
-                Setup hub
+                Setup
               </Link>
 
-              <Link href="/dashboard/settings" className="muted nav-wide-only">
-                Settings
+              <Link href="/dashboard/services" className="muted nav-wide-only">
+                Services
               </Link>
 
-              <Link href="/dashboard/billing" className="muted nav-wide-only">
-                Billing
+              <Link href="/dashboard/staff" className="muted nav-wide-only">
+                Staff
               </Link>
 
               <Link href={publicBusinessHref} className="muted nav-wide-only">
-                View public page
+                Public page
               </Link>
 
-              {adminLinks()}
-
-              {availableModes.length > 1 && (
-                <div className="auth-mode-switcher" aria-label="Account mode switcher">
-                  {availableModes.includes('customer') && modeButton('customer', 'Customer')}
-                  {availableModes.includes('business') && modeButton('business', 'Business')}
-                  {availableModes.includes('staff') && modeButton('staff', 'Staff')}
-                </div>
-              )}
+              {modeSwitcher()}
 
               <Link href="/account" className="muted">
                 Account
@@ -325,8 +471,14 @@ export default function AuthNav() {
 
           {!loading && role === 'staff' && (
             <>
+              {isAdmin && (
+                <Link href="/admin" className="btn btn-accent">
+                  Operator
+                </Link>
+              )}
+
               <Link href="/staff" className="muted">
-                Staff schedule
+                Schedule
               </Link>
 
               <Link href="/staff/availability" className="muted">
@@ -334,18 +486,14 @@ export default function AuthNav() {
               </Link>
 
               <Link href="/notifications" className="muted nav-wide-only">
-                Updates
+                {notificationLabel()}
               </Link>
 
-              {adminLinks()}
+              <Link href="/support" className="muted nav-wide-only">
+                Support
+              </Link>
 
-              {availableModes.length > 1 && (
-                <div className="auth-mode-switcher" aria-label="Account mode switcher">
-                  {availableModes.includes('customer') && modeButton('customer', 'Customer')}
-                  {availableModes.includes('business') && modeButton('business', 'Business')}
-                  {availableModes.includes('staff') && modeButton('staff', 'Staff')}
-                </div>
-              )}
+              {modeSwitcher()}
 
               <Link href="/account" className="muted">
                 Account
@@ -370,6 +518,28 @@ export default function AuthNav() {
         .auth-nav-links :global(a),
         .auth-nav-links button {
           flex-shrink: 0;
+        }
+
+        .logo {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+        }
+
+        .logo em {
+          font-style: normal;
+          font-size: 0.7rem;
+          line-height: 1;
+          padding: 0.22rem 0.45rem;
+          border-radius: 999px;
+          color: var(--accent);
+          background: var(--accent-dim);
+          border: 1px solid rgba(255,107,53,0.24);
+        }
+
+        .nav-operator {
+          border-bottom-color: rgba(255,107,53,0.24);
+          background: linear-gradient(180deg, rgba(255,107,53,0.07), rgba(11,18,32,0));
         }
 
         .auth-mode-switcher {
@@ -398,15 +568,22 @@ export default function AuthNav() {
           color: var(--accent);
         }
 
-        .admin-nav-cluster {
+        .language-pill {
           display: inline-flex;
           align-items: center;
-          gap: 0.75rem;
-          padding-left: 0.75rem;
-          border-left: 1px solid var(--border);
+          justify-content: center;
+          min-width: 2.2rem;
+          height: 2rem;
+          padding: 0 0.6rem;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.8rem;
+          font-weight: 700;
         }
 
-        @media (max-width: 760px) {
+        @media (max-width: 860px) {
           .auth-nav-links {
             width: 100%;
             justify-content: flex-start;
@@ -426,20 +603,19 @@ export default function AuthNav() {
           .auth-mode-switcher button {
             flex: 1;
           }
+        }
 
-          .admin-nav-cluster {
-            width: 100%;
-            order: 9;
-            padding-left: 0;
-            border-left: none;
-            display: grid;
-            grid-template-columns: 1fr;
-          }
-
-          .admin-nav-cluster :global(.btn),
-          .admin-nav-cluster :global(a) {
+        @media (max-width: 540px) {
+          .auth-nav-links :global(a),
+          .auth-nav-links button {
             width: 100%;
             justify-content: center;
+          }
+
+          .auth-mode-switcher {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            border-radius: var(--radius);
           }
         }
       `}</style>

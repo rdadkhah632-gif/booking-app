@@ -14,6 +14,7 @@ type ProfileRow = {
   id: string
   email?: string | null
   full_name?: string | null
+  phone?: string | null
   role?: string | null
   is_admin?: boolean | null
 }
@@ -22,17 +23,12 @@ type BusinessRow = {
   id: string
   user_id?: string | null
   name: string
+  city?: string | null
+  country?: string | null
+  category?: string | null
   published?: boolean | null
   subscription_status?: string | null
-    profiles?: {
-    id?: string | null
-    email?: string | null
-    full_name?: string | null
-  } | {
-    id?: string | null
-    email?: string | null
-    full_name?: string | null
-  }[] | null
+  owner?: ProfileRow | null
 }
 
 type NotificationRow = {
@@ -46,25 +42,19 @@ type NotificationRow = {
   action_url?: string | null
   read_at?: string | null
   created_at?: string | null
-  profiles?: {
-    email?: string | null
-    full_name?: string | null
-  } | {
-    email?: string | null
-    full_name?: string | null
-  }[] | null
-  businesses?: {
-    name?: string | null
-  } | {
-    name?: string | null
-  }[] | null
+}
+
+type NotificationDisplayRow = NotificationRow & {
+  profile?: ProfileRow | null
+  business?: BusinessRow | null
 }
 
 const TARGET_OPTIONS = [
   { value: 'single_user', label: 'Single user' },
-  { value: 'single_business', label: 'Single business' },
+  { value: 'single_business', label: 'Single business owner' },
   { value: 'all_business_owners', label: 'All business owners' },
-  { value: 'all_users', label: 'All users' }
+  { value: 'all_users', label: 'All users' },
+  { value: 'admins_only', label: 'Admins only' }
 ]
 
 const TYPE_OPTIONS = [
@@ -77,26 +67,29 @@ const TYPE_OPTIONS = [
 ]
 
 function profileLabel(profile: ProfileRow) {
-  return `${profile.email || 'No email'}${profile.full_name ? ` · ${profile.full_name}` : ''}`
+  const name = profile.full_name ? ` · ${profile.full_name}` : ''
+  const role = profile.is_admin ? ' · admin' : profile.role ? ` · ${profile.role}` : ''
+  return `${profile.email || 'No email'}${name}${role}`
 }
 
 function businessOwnerEmail(business: BusinessRow) {
-  const profile = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
-  return profile?.email || 'No owner email'
+  return business.owner?.email || 'No owner email'
 }
+
 function businessOwnerId(business: BusinessRow) {
-  const profile = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
-  return profile?.id || business.user_id || ''
+  return business.owner?.id || business.user_id || ''
 }
 
-function notificationProfileEmail(notification: NotificationRow) {
-  const profile = Array.isArray(notification.profiles) ? notification.profiles[0] : notification.profiles
-  return profile?.email || ''
+function businessLabel(business: BusinessRow) {
+  const location = [business.city, business.country].filter(Boolean).join(', ')
+  return `${business.name}${location ? ` · ${location}` : ''} · ${businessOwnerEmail(business)}`
 }
 
-function notificationBusinessName(notification: NotificationRow) {
-  const business = Array.isArray(notification.businesses) ? notification.businesses[0] : notification.businesses
-  return business?.name || ''
+function defaultActionForTarget(targetMode: string, businessId?: string) {
+  if (targetMode === 'single_business' && businessId) return '/dashboard/notifications'
+  if (targetMode === 'all_business_owners') return '/dashboard/notifications'
+  if (targetMode === 'admins_only') return '/admin'
+  return '/notifications'
 }
 
 export default function AdminNotificationsPage() {
@@ -105,7 +98,7 @@ export default function AdminNotificationsPage() {
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null)
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [businesses, setBusinesses] = useState<BusinessRow[]>([])
-  const [recentNotifications, setRecentNotifications] = useState<NotificationRow[]>([])
+  const [recentNotifications, setRecentNotifications] = useState<NotificationDisplayRow[]>([])
 
   const [targetMode, setTargetMode] = useState('single_user')
   const [selectedUserId, setSelectedUserId] = useState('')
@@ -115,6 +108,8 @@ export default function AdminNotificationsPage() {
   const [message, setMessage] = useState('')
   const [actionUrl, setActionUrl] = useState('')
   const [audience, setAudience] = useState('general')
+  const [userSearch, setUserSearch] = useState('')
+  const [businessSearch, setBusinessSearch] = useState('')
 
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -122,17 +117,70 @@ export default function AdminNotificationsPage() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const businessOwners = useMemo(() => {
-    const ownerIds = new Set(businesses.map((business) => business.user_id).filter(Boolean))
-    return profiles.filter((profile) => ownerIds.has(profile.id))
-  }, [businesses, profiles])
+    const seen = new Set<string>()
+
+    return businesses
+      .map((business) => business.owner)
+      .filter((owner): owner is ProfileRow => Boolean(owner?.id))
+      .filter((owner) => {
+        if (seen.has(owner.id)) return false
+        seen.add(owner.id)
+        return true
+      })
+  }, [businesses])
+
+  const admins = useMemo(() => {
+    return profiles.filter((profile) => profile.is_admin)
+  }, [profiles])
+
+  const filteredUsers = useMemo(() => {
+    const term = userSearch.trim().toLowerCase()
+    const rows = profiles.filter((profile) => {
+      if (!term) return true
+      return [profile.email, profile.full_name, profile.phone, profile.role]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term))
+    })
+
+    return rows.slice(0, 60)
+  }, [profiles, userSearch])
+
+  const filteredBusinesses = useMemo(() => {
+    const term = businessSearch.trim().toLowerCase()
+    const rows = businesses.filter((business) => {
+      if (!term) return true
+      return [
+        business.name,
+        business.city,
+        business.country,
+        business.category,
+        business.subscription_status,
+        businessOwnerEmail(business),
+        business.owner?.full_name
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term))
+    })
+
+    return rows.slice(0, 60)
+  }, [businesses, businessSearch])
+
+  const selectedUser = useMemo(() => {
+    return profiles.find((profile) => profile.id === selectedUserId) || null
+  }, [profiles, selectedUserId])
+
+  const selectedBusiness = useMemo(() => {
+    return businesses.find((business) => business.id === selectedBusinessId) || null
+  }, [businesses, selectedBusinessId])
 
   const targetCount = useMemo(() => {
     if (targetMode === 'single_user') return selectedUserId ? 1 : 0
-    if (targetMode === 'single_business') return selectedBusinessId ? 1 : 0
+    if (targetMode === 'single_business') return selectedBusinessId && selectedBusiness?.owner ? 1 : 0
     if (targetMode === 'all_business_owners') return businessOwners.length
     if (targetMode === 'all_users') return profiles.length
+    if (targetMode === 'admins_only') return admins.length
     return 0
-  }, [targetMode, selectedUserId, selectedBusinessId, businessOwners.length, profiles.length])
+  }, [targetMode, selectedUserId, selectedBusinessId, selectedBusiness, businessOwners.length, profiles.length, admins.length])
 
   const canSend = title.trim().length > 0 && message.trim().length > 0 && targetCount > 0
 
@@ -170,72 +218,55 @@ export default function AdminNotificationsPage() {
 
       const { data: profileRows, error: profileRowsError } = await supabase
         .from('profiles')
-        .select('id, email, full_name, role, is_admin')
+        .select('id, email, full_name, phone, role, is_admin')
         .order('email', { ascending: true })
-        .limit(500)
+        .limit(1000)
 
       if (profileRowsError) throw profileRowsError
 
+      const loadedProfiles = (profileRows || []) as ProfileRow[]
+      const profileMap = loadedProfiles.reduce((map: Record<string, ProfileRow>, profile) => {
+        map[profile.id] = profile
+        return map
+      }, {})
+
       const { data: businessRows, error: businessRowsError } = await supabase
         .from('businesses')
-        .select(`
-          id,
-          user_id,
-          name,
-          published,
-          subscription_status,
-          profiles (
-            id,
-            email,
-            full_name
-          )
-        `)
+        .select('id, user_id, name, city, country, category, published, subscription_status')
         .order('name', { ascending: true })
-        .limit(500)
+        .limit(1000)
 
       if (businessRowsError) throw businessRowsError
 
+      const loadedBusinesses = ((businessRows || []) as BusinessRow[]).map((business) => ({
+        ...business,
+        owner: business.user_id ? profileMap[business.user_id] || null : null
+      }))
+
       const { data: notificationRows, error: notificationRowsError } = await supabase
         .from('notifications')
-        .select(`
-          id,
-          user_id,
-          business_id,
-          audience,
-          type,
-          title,
-          message,
-          action_url,
-          read_at,
-          created_at,
-          profiles (
-            email,
-            full_name
-          ),
-          businesses (
-            name
-          )
-        `)
+        .select('id, user_id, business_id, audience, type, title, message, action_url, read_at, created_at')
         .in('type', TYPE_OPTIONS.map((option) => option.value))
         .order('created_at', { ascending: false })
-        .limit(40)
+        .limit(60)
 
       if (notificationRowsError) throw notificationRowsError
 
-      const loadedProfiles = (profileRows || []) as ProfileRow[]
-      const loadedBusinesses = (businessRows || []) as unknown as BusinessRow[]
+      const businessMap = loadedBusinesses.reduce((map: Record<string, BusinessRow>, business) => {
+        map[business.id] = business
+        return map
+      }, {})
+
+      const displayNotifications = ((notificationRows || []) as NotificationRow[]).map((notification) => ({
+        ...notification,
+        profile: notification.user_id ? profileMap[notification.user_id] || null : null,
+        business: notification.business_id ? businessMap[notification.business_id] || null : null
+      }))
 
       setProfiles(loadedProfiles)
       setBusinesses(loadedBusinesses)
-      setRecentNotifications((notificationRows || []) as unknown as NotificationRow[])
+      setRecentNotifications(displayNotifications)
 
-      if (!selectedUserId && loadedProfiles[0]?.id) {
-        setSelectedUserId(loadedProfiles[0].id)
-      }
-
-      if (!selectedBusinessId && loadedBusinesses[0]?.id) {
-        setSelectedBusinessId(loadedBusinesses[0].id)
-      }
       const queryUserId = typeof router.query.userId === 'string' ? router.query.userId : ''
       const queryBusinessId = typeof router.query.businessId === 'string' ? router.query.businessId : ''
 
@@ -243,15 +274,20 @@ export default function AdminNotificationsPage() {
         setTargetMode('single_user')
         setSelectedUserId(queryUserId)
         setAudience('general')
+        setActionUrl('/notifications')
+      } else if (!selectedUserId && loadedProfiles[0]?.id) {
+        setSelectedUserId(loadedProfiles[0].id)
       }
 
       if (queryBusinessId && loadedBusinesses.some((business) => business.id === queryBusinessId)) {
-        const business = loadedBusinesses.find((item) => item.id === queryBusinessId)
+        const business = loadedBusinesses.find((item) => item.id === queryBusinessId) || null
         setTargetMode('single_business')
         setSelectedBusinessId(queryBusinessId)
-        setSelectedUserId(business ? businessOwnerId(business) : selectedUserId)
+        setSelectedUserId(business ? businessOwnerId(business) : '')
         setAudience('business')
-        setActionUrl(`/dashboard?businessId=${queryBusinessId}`)
+        setActionUrl('/dashboard/notifications')
+      } else if (!selectedBusinessId && loadedBusinesses[0]?.id) {
+        setSelectedBusinessId(loadedBusinesses[0].id)
       }
 
       setLoading(false)
@@ -266,10 +302,29 @@ export default function AdminNotificationsPage() {
     loadAdminNotifications()
   }, [router.isReady])
 
+  function setTargetModeSafely(nextMode: string) {
+    setTargetMode(nextMode)
+
+    if (nextMode === 'single_business' || nextMode === 'all_business_owners') {
+      setAudience('business')
+      setActionUrl(defaultActionForTarget(nextMode, selectedBusinessId))
+      return
+    }
+
+    if (nextMode === 'admins_only') {
+      setAudience('admin')
+      setActionUrl('/admin')
+      return
+    }
+
+    setAudience('general')
+    setActionUrl(defaultActionForTarget(nextMode))
+  }
+
   function buildNotificationRows() {
     const cleanTitle = title.trim()
     const cleanMessage = message.trim()
-    const cleanActionUrl = actionUrl.trim() || null
+    const cleanActionUrl = actionUrl.trim() || defaultActionForTarget(targetMode, selectedBusinessId)
 
     if (targetMode === 'single_user') {
       return [{
@@ -285,15 +340,16 @@ export default function AdminNotificationsPage() {
 
     if (targetMode === 'single_business') {
       const business = businesses.find((item) => item.id === selectedBusinessId)
+      const ownerUserId = business ? businessOwnerId(business) : ''
 
       return [{
-        user_id: business ? businessOwnerId(business) || null : null,
+        user_id: ownerUserId || null,
         business_id: selectedBusinessId,
         audience: audience === 'general' ? 'business' : audience,
         type: notificationType,
         title: cleanTitle,
         message: cleanMessage,
-        action_url: cleanActionUrl || `/dashboard?businessId=${selectedBusinessId}`
+        action_url: cleanActionUrl || '/dashboard/notifications'
       }]
     }
 
@@ -305,7 +361,7 @@ export default function AdminNotificationsPage() {
         type: notificationType,
         title: cleanTitle,
         message: cleanMessage,
-        action_url: cleanActionUrl || '/dashboard'
+        action_url: cleanActionUrl || '/dashboard/notifications'
       }))
     }
 
@@ -318,6 +374,18 @@ export default function AdminNotificationsPage() {
         title: cleanTitle,
         message: cleanMessage,
         action_url: cleanActionUrl || '/notifications'
+      }))
+    }
+
+    if (targetMode === 'admins_only') {
+      return admins.map((profile) => ({
+        user_id: profile.id,
+        business_id: null,
+        audience: 'admin',
+        type: notificationType,
+        title: cleanTitle,
+        message: cleanMessage,
+        action_url: cleanActionUrl || '/admin'
       }))
     }
 
@@ -353,7 +421,7 @@ export default function AdminNotificationsPage() {
     setSuccess(`Notification sent to ${rows.length} recipient${rows.length === 1 ? '' : 's'}.`)
     setTitle('')
     setMessage('')
-    setActionUrl('')
+    setActionUrl(defaultActionForTarget(targetMode, selectedBusinessId))
     await loadAdminNotifications()
   }
 
@@ -389,13 +457,8 @@ export default function AdminNotificationsPage() {
               </p>
 
               <div className="admin-actions">
-                <Link href="/" className="btn btn-ghost">
-                  Back to Mirëbook
-                </Link>
-
-                <button type="button" className="btn btn-danger" onClick={logout}>
-                  Log out
-                </button>
+                <Link href="/" className="btn btn-ghost">Back to Mirëbook</Link>
+                <button type="button" className="btn btn-danger" onClick={logout}>Log out</button>
               </div>
             </div>
           </div>
@@ -412,33 +475,18 @@ export default function AdminNotificationsPage() {
         <div className="admin-shell">
           <div className="admin-header">
             <div>
-              <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook internal</p>
+              <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook operator</p>
               <h1 className="page-title">Platform notifications</h1>
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Send operational notices, trial reminders, promotions and support updates from the admin dashboard.
+                Send operational notices, trial reminders, promotions and support updates without relying on business dashboards.
               </p>
             </div>
 
             <div className="admin-actions">
-              <Link href="/admin" className="btn btn-ghost">
-                Admin overview
-              </Link>
-
-              <Link href="/admin/businesses" className="btn btn-ghost">
-                Businesses
-              </Link>
-
-              <Link href="/admin/users" className="btn btn-ghost">
-                Users
-              </Link>
-
-              <Link href="/admin/notifications" className="btn btn-accent">
-                Notifications
-              </Link>
-
-              <button type="button" className="btn btn-ghost" onClick={loadAdminNotifications}>
-                Refresh
-              </button>
+              <Link href="/admin" className="btn btn-ghost">Overview</Link>
+              <Link href="/admin/businesses" className="btn btn-ghost">Businesses</Link>
+              <Link href="/admin/users" className="btn btn-ghost">Users</Link>
+              <button type="button" className="btn btn-accent" onClick={loadAdminNotifications}>Refresh</button>
             </div>
           </div>
 
@@ -458,21 +506,18 @@ export default function AdminNotificationsPage() {
             <div className="card">
               <p className="small muted">Users loaded</p>
               <h2>{profiles.length}</h2>
-              <p className="small muted">Possible individual recipients</p>
+              <p className="small muted">Searchable recipients</p>
             </div>
-
             <div className="card">
               <p className="small muted">Businesses loaded</p>
               <h2>{businesses.length}</h2>
               <p className="small muted">Business targets</p>
             </div>
-
             <div className="card">
               <p className="small muted">Business owners</p>
               <h2>{businessOwners.length}</h2>
-              <p className="small muted">Bulk business recipients</p>
+              <p className="small muted">Unique owner accounts</p>
             </div>
-
             <div className="card">
               <p className="small muted">Current target</p>
               <h2>{targetCount}</h2>
@@ -490,7 +535,7 @@ export default function AdminNotificationsPage() {
               <div className="admin-form-grid">
                 <div>
                   <label className="small muted">Target</label>
-                  <select value={targetMode} onChange={(event) => setTargetMode(event.target.value)} style={{ marginTop: '0.4rem' }}>
+                  <select value={targetMode} onChange={(event) => setTargetModeSafely(event.target.value)} style={{ marginTop: '0.4rem' }}>
                     {TARGET_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
@@ -498,41 +543,65 @@ export default function AdminNotificationsPage() {
                 </div>
 
                 {targetMode === 'single_user' && (
-                  <div>
-                    <label className="small muted">User</label>
-                    <select value={selectedUserId} onChange={(event) => setSelectedUserId(event.target.value)} style={{ marginTop: '0.4rem' }}>
-                      {profiles.map((profile) => (
+                  <div className="admin-target-select-block">
+                    <label className="small muted">Find user</label>
+                    <input
+                      value={userSearch}
+                      onChange={(event) => setUserSearch(event.target.value)}
+                      placeholder="Search email, name, phone or role..."
+                      style={{ marginTop: '0.4rem' }}
+                    />
+                    <select value={selectedUserId} onChange={(event) => setSelectedUserId(event.target.value)} style={{ marginTop: '0.55rem' }}>
+                      {filteredUsers.map((profile) => (
                         <option key={profile.id} value={profile.id}>{profileLabel(profile)}</option>
                       ))}
                     </select>
+                    {profiles.length > 60 && !userSearch && (
+                      <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                        Showing first 60 users. Search to narrow results.
+                      </p>
+                    )}
                     {selectedUserId && (
                       <div className="admin-inline-actions">
-                        <Link href={`/admin/users?userId=${selectedUserId}`} className="btn btn-ghost">
-                          Open user
-                        </Link>
+                        <Link href={`/admin/users?userId=${selectedUserId}`} className="btn btn-ghost">Open user</Link>
                       </div>
                     )}
                   </div>
                 )}
 
-                                {targetMode === 'single_business' && (
-                  <div>
-                    <label className="small muted">Business</label>
-                    <select value={selectedBusinessId} onChange={(event) => setSelectedBusinessId(event.target.value)} style={{ marginTop: '0.4rem' }}>
-                      {businesses.map((business) => (
-                        <option key={business.id} value={business.id}>
-                          {business.name} · {businessOwnerEmail(business)}
-                        </option>
+                {targetMode === 'single_business' && (
+                  <div className="admin-target-select-block">
+                    <label className="small muted">Find business</label>
+                    <input
+                      value={businessSearch}
+                      onChange={(event) => setBusinessSearch(event.target.value)}
+                      placeholder="Search business, owner, city or category..."
+                      style={{ marginTop: '0.4rem' }}
+                    />
+                    <select
+                      value={selectedBusinessId}
+                      onChange={(event) => {
+                        const nextBusinessId = event.target.value
+                        const business = businesses.find((item) => item.id === nextBusinessId) || null
+                        setSelectedBusinessId(nextBusinessId)
+                        setSelectedUserId(business ? businessOwnerId(business) : '')
+                        setActionUrl('/dashboard/notifications')
+                      }}
+                      style={{ marginTop: '0.55rem' }}
+                    >
+                      {filteredBusinesses.map((business) => (
+                        <option key={business.id} value={business.id}>{businessLabel(business)}</option>
                       ))}
                     </select>
+                    {businesses.length > 60 && !businessSearch && (
+                      <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                        Showing first 60 businesses. Search to narrow results.
+                      </p>
+                    )}
                     {selectedBusinessId && (
                       <div className="admin-inline-actions">
-                        <Link href={`/admin/businesses?businessId=${selectedBusinessId}`} className="btn btn-ghost">
-                          Open business
-                        </Link>
-                        <Link href={`/explore/${selectedBusinessId}`} className="btn btn-ghost">
-                          Public page
-                        </Link>
+                        <Link href={`/admin/businesses?businessId=${selectedBusinessId}`} className="btn btn-ghost">Open business</Link>
+                        <Link href={`/explore/${selectedBusinessId}`} className="btn btn-ghost">Public page</Link>
                       </div>
                     )}
                   </div>
@@ -569,11 +638,11 @@ export default function AdminNotificationsPage() {
                 </div>
 
                 <div>
-                  <label className="small muted">Action URL optional</label>
+                  <label className="small muted">Action URL</label>
                   <input
                     value={actionUrl}
                     onChange={(event) => setActionUrl(event.target.value)}
-                    placeholder="/dashboard/billing or /notifications"
+                    placeholder={defaultActionForTarget(targetMode, selectedBusinessId)}
                     style={{ marginTop: '0.4rem' }}
                   />
                 </div>
@@ -583,7 +652,7 @@ export default function AdminNotificationsPage() {
                   <textarea
                     value={message}
                     onChange={(event) => setMessage(event.target.value)}
-                    placeholder="Write the message that should appear in the user's notification centre."
+                    placeholder="Write the message that should appear in the notification centre."
                     rows={5}
                     style={{ marginTop: '0.4rem' }}
                   />
@@ -600,21 +669,33 @@ export default function AdminNotificationsPage() {
                   Target: {TARGET_OPTIONS.find((option) => option.value === targetMode)?.label} · {targetCount} recipient{targetCount === 1 ? '' : 's'}
                 </p>
               </div>
+
               {(targetMode === 'single_user' || targetMode === 'single_business') && (
                 <div className="admin-target-box">
                   <p className="small muted">Selected target</p>
                   <strong>
                     {targetMode === 'single_user'
-                      ? profiles.find((profile) => profile.id === selectedUserId)?.email || 'Selected user'
-                      : businesses.find((business) => business.id === selectedBusinessId)?.name || 'Selected business'}
+                      ? selectedUser?.email || 'Selected user'
+                      : selectedBusiness?.name || 'Selected business'}
                   </strong>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
                     {targetMode === 'single_business'
-                      ? `Owner: ${businesses.find((business) => business.id === selectedBusinessId) ? businessOwnerEmail(businesses.find((business) => business.id === selectedBusinessId) as BusinessRow) : 'Unknown owner'}`
-                      : profiles.find((profile) => profile.id === selectedUserId)?.full_name || 'No full name saved'}
+                      ? `Owner: ${selectedBusiness ? businessOwnerEmail(selectedBusiness) : 'Unknown owner'}`
+                      : selectedUser?.full_name || selectedUser?.role || 'No extra details saved'}
                   </p>
                 </div>
               )}
+
+              {(targetMode === 'all_users' || targetMode === 'all_business_owners' || targetMode === 'admins_only') && (
+                <div className="admin-bulk-warning">
+                  <p className="small muted">Bulk send confirmation</p>
+                  <strong>{targetCount} recipients will receive this notification.</strong>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    Bulk messages should be used for platform notices, trial reminders, promotions or operational updates only.
+                  </p>
+                </div>
+              )}
+
               <div className="admin-send-footer">
                 <div>
                   <p className="small muted">Ready to send?</p>
@@ -661,18 +742,24 @@ export default function AdminNotificationsPage() {
                         )}
 
                         <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                          {notificationProfileEmail(notification) || notificationBusinessName(notification) || notification.audience}
+                          {notification.profile?.email || notification.business?.name || notification.audience}
                           {' · '}
                           {notification.created_at ? new Date(notification.created_at).toLocaleString() : 'Recently'}
                           {notification.read_at ? ' · read' : ' · unread'}
                         </p>
                       </div>
 
-                      {notification.action_url && (
-                        <Link href={notification.action_url} className="btn btn-ghost">
-                          Open action
-                        </Link>
-                      )}
+                      <div className="admin-inline-actions">
+                        {notification.profile?.id && (
+                          <Link href={`/admin/users?userId=${notification.profile.id}`} className="btn btn-ghost">User</Link>
+                        )}
+                        {notification.business?.id && (
+                          <Link href={`/admin/businesses?businessId=${notification.business.id}`} className="btn btn-ghost">Business</Link>
+                        )}
+                        {notification.action_url && (
+                          <Link href={notification.action_url} className="btn btn-ghost">Open action</Link>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -701,7 +788,8 @@ export default function AdminNotificationsPage() {
           flex-wrap: wrap;
         }
 
-        .admin-actions {
+        .admin-actions,
+        .admin-inline-actions {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
@@ -710,7 +798,7 @@ export default function AdminNotificationsPage() {
 
         .admin-layout-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+          grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.92fr);
           gap: 1rem;
           align-items: start;
         }
@@ -727,24 +815,28 @@ export default function AdminNotificationsPage() {
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 1rem;
         }
-        .admin-inline-actions {
-          display: flex;
-          gap: 0.65rem;
-          flex-wrap: wrap;
-          margin-top: 0.65rem;
+
+        .admin-target-select-block {
+          grid-column: 1 / -1;
         }
 
         .admin-message-field {
           grid-column: 1 / -1;
         }
 
-                .admin-preview-box,
+        .admin-preview-box,
         .admin-target-box,
+        .admin-bulk-warning,
         .admin-empty {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
           padding: 1rem;
+        }
+
+        .admin-bulk-warning {
+          border-color: rgba(255,190,11,0.28);
+          background: rgba(255,190,11,0.06);
         }
 
         .admin-send-footer {
@@ -806,7 +898,7 @@ export default function AdminNotificationsPage() {
             display: grid;
           }
 
-                    .admin-actions,
+          .admin-actions,
           .admin-inline-actions,
           .admin-actions :global(.btn),
           .admin-inline-actions :global(.btn),

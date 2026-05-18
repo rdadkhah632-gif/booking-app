@@ -10,11 +10,22 @@ type AdminProfile = {
   is_admin?: boolean | null
 }
 
+type OwnerProfile = {
+  id: string
+  email?: string | null
+  full_name?: string | null
+  phone?: string | null
+  role?: string | null
+  is_admin?: boolean | null
+}
+
 type BusinessRow = {
   id: string
   user_id?: string | null
   name: string
   description?: string | null
+  phone?: string | null
+  address?: string | null
   city?: string | null
   country?: string | null
   category?: string | null
@@ -24,26 +35,31 @@ type BusinessRow = {
   subscription_status?: string | null
   subscription_plan?: string | null
   subscription_price_monthly?: number | null
+  stripe_customer_id?: string | null
+  stripe_subscription_id?: string | null
   trial_ends_at?: string | null
   auto_accept_bookings?: boolean | null
   booking_interval_minutes?: number | null
   min_notice_minutes?: number | null
   max_advance_days?: number | null
-  profiles?: {
-    id?: string | null
-    email?: string | null
-    full_name?: string | null
-  } | {
-    id?: string | null
-    email?: string | null
-    full_name?: string | null
-  }[] | null
+  buffer_before_minutes?: number | null
+  buffer_after_minutes?: number | null
+  timezone?: string | null
+  currency?: string | null
+}
+
+type BusinessWithOwner = BusinessRow & {
+  owner?: OwnerProfile | null
 }
 
 type BusinessCounts = {
   services: number
+  activeServices: number
   staff: number
+  activeStaff: number
+  staffServiceAssignments: number
   bookings: number
+  pendingBookings: number
 }
 
 const STATUS_OPTIONS = [
@@ -61,22 +77,21 @@ const PLAN_OPTIONS = [
   { value: 'custom', label: 'Custom' }
 ]
 
-function ownerEmail(business: BusinessRow) {
-  const profile = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
-  return profile?.email || 'No owner email'
+function ownerEmail(business: BusinessWithOwner) {
+  return business.owner?.email || 'No owner email'
 }
 
-function ownerName(business: BusinessRow) {
-  const profile = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
-  return profile?.full_name || 'No owner name'
-}
-function ownerId(business: BusinessRow) {
-  const profile = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
-  return profile?.id || business.user_id || ''
+function ownerName(business: BusinessWithOwner) {
+  return business.owner?.full_name || 'No owner name'
 }
 
-function formatMoney(value?: number | null) {
-  return `£${Number(value || 0).toFixed(2)}`
+function ownerId(business: BusinessWithOwner) {
+  return business.owner?.id || business.user_id || ''
+}
+
+function formatMoney(value?: number | null, currency = 'GBP') {
+  const prefix = currency === 'EUR' ? '€' : currency === 'ALL' ? 'L ' : '£'
+  return `${prefix}${Number(value || 0).toFixed(2)}`
 }
 
 function formatDate(value?: string | null) {
@@ -92,34 +107,95 @@ function planLabel(value?: string | null) {
   return PLAN_OPTIONS.find((option) => option.value === value)?.label || 'Starter'
 }
 
+function daysUntil(value?: string | null) {
+  if (!value) return null
+  const target = new Date(value).getTime()
+  const now = new Date().getTime()
+  return Math.ceil((target - now) / (1000 * 60 * 60 * 24))
+}
+
 export default function AdminBusinessesPage() {
   const router = useRouter()
 
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null)
-  const [businesses, setBusinesses] = useState<BusinessRow[]>([])
+  const [businesses, setBusinesses] = useState<BusinessWithOwner[]>([])
   const [selectedBusinessId, setSelectedBusinessId] = useState('')
-  const [selectedBusiness, setSelectedBusiness] = useState<BusinessRow | null>(null)
+  const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithOwner | null>(null)
   const [countsByBusiness, setCountsByBusiness] = useState<Record<string, BusinessCounts>>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [publishedFilter, setPublishedFilter] = useState('all')
+  const [attentionFilter, setAttentionFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  function getCounts(businessId?: string | null) {
+    if (!businessId) {
+      return {
+        services: 0,
+        activeServices: 0,
+        staff: 0,
+        activeStaff: 0,
+        staffServiceAssignments: 0,
+        bookings: 0,
+        pendingBookings: 0
+      }
+    }
+
+    return countsByBusiness[businessId] || {
+      services: 0,
+      activeServices: 0,
+      staff: 0,
+      activeStaff: 0,
+      staffServiceAssignments: 0,
+      bookings: 0,
+      pendingBookings: 0
+    }
+  }
+
+  function readinessIssues(business: BusinessWithOwner) {
+    const counts = getCounts(business.id)
+    const issues: string[] = []
+
+    if (!business.name?.trim()) issues.push('business name')
+    if (!business.category?.trim()) issues.push('category')
+    if (!business.city?.trim() && !business.address?.trim()) issues.push('location')
+    if (counts.activeServices === 0) issues.push('active service')
+    if (counts.activeStaff === 0) issues.push('active staff')
+    if (counts.staffServiceAssignments === 0) issues.push('staff-service assignment')
+
+    return issues
+  }
+
+  function needsAttention(business: BusinessWithOwner) {
+    const counts = getCounts(business.id)
+    const trialDays = daysUntil(business.trial_ends_at)
+
+    return (
+      readinessIssues(business).length > 0 ||
+      counts.pendingBookings > 0 ||
+      business.subscription_status === 'past_due' ||
+      business.subscription_status === 'paused' ||
+      (business.subscription_status === 'trial' && trialDays !== null && trialDays <= 7)
+    )
+  }
+
   const filteredBusinesses = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
 
     return businesses.filter((business) => {
+      const counts = getCounts(business.id)
       const matchesSearch = !term || [
         business.name,
         business.city,
         business.country,
         business.category,
+        business.billing_email,
+        business.phone,
         ownerEmail(business),
-        ownerName(business),
-        business.billing_email
+        ownerName(business)
       ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term))
@@ -131,9 +207,18 @@ export default function AdminBusinessesPage() {
         (publishedFilter === 'published' && business.published) ||
         (publishedFilter === 'draft' && !business.published)
 
-      return matchesSearch && matchesStatus && matchesPublished
+      const matchesAttention =
+        attentionFilter === 'all' ||
+        (attentionFilter === 'attention' && needsAttention(business)) ||
+        (attentionFilter === 'ready' && readinessIssues(business).length === 0) ||
+        (attentionFilter === 'pending' && counts.pendingBookings > 0) ||
+        (attentionFilter === 'trial_ending' && business.subscription_status === 'trial' && daysUntil(business.trial_ends_at) !== null && Number(daysUntil(business.trial_ends_at)) <= 7)
+
+      return matchesSearch && matchesStatus && matchesPublished && matchesAttention
     })
-  }, [businesses, searchTerm, statusFilter, publishedFilter])
+  }, [businesses, countsByBusiness, searchTerm, statusFilter, publishedFilter, attentionFilter])
+
+  const visibleBusinesses = filteredBusinesses.slice(0, 75)
 
   const summary = useMemo(() => {
     return {
@@ -141,12 +226,13 @@ export default function AdminBusinessesPage() {
       published: businesses.filter((business) => business.published).length,
       active: businesses.filter((business) => business.subscription_status === 'active').length,
       trial: businesses.filter((business) => (business.subscription_status || 'trial') === 'trial').length,
+      attention: businesses.filter((business) => needsAttention(business)).length,
       monthlyValue: businesses.reduce((total, business) => {
         if (business.subscription_status !== 'active') return total
         return total + Number(business.subscription_price_monthly || 0)
       }, 0)
     }
-  }, [businesses])
+  }, [businesses, countsByBusiness])
 
   async function loadAdminBusinesses() {
     setLoading(true)
@@ -186,6 +272,8 @@ export default function AdminBusinessesPage() {
           user_id,
           name,
           description,
+          phone,
+          address,
           city,
           country,
           category,
@@ -195,22 +283,47 @@ export default function AdminBusinessesPage() {
           subscription_status,
           subscription_plan,
           subscription_price_monthly,
+          stripe_customer_id,
+          stripe_subscription_id,
           trial_ends_at,
           auto_accept_bookings,
           booking_interval_minutes,
           min_notice_minutes,
           max_advance_days,
-          profiles (
-            id,
-            email,
-            full_name
-          )
+          buffer_before_minutes,
+          buffer_after_minutes,
+          timezone,
+          currency
         `)
         .order('created_at', { ascending: false })
+        .limit(500)
 
       if (businessError) throw businessError
 
-      const rows = (businessData || []) as unknown as BusinessRow[]
+      const rawBusinesses = (businessData || []) as BusinessRow[]
+      const ownerIds = Array.from(new Set(rawBusinesses.map((business) => business.user_id).filter(Boolean))) as string[]
+
+      let ownerMap: Record<string, OwnerProfile> = {}
+
+      if (ownerIds.length > 0) {
+        const { data: ownerData, error: ownerError } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, phone, role, is_admin')
+          .in('id', ownerIds)
+
+        if (ownerError) throw ownerError
+
+        ownerMap = (ownerData || []).reduce((map: Record<string, OwnerProfile>, profile: OwnerProfile) => {
+          map[profile.id] = profile
+          return map
+        }, {})
+      }
+
+      const rows = rawBusinesses.map((business) => ({
+        ...business,
+        owner: business.user_id ? ownerMap[business.user_id] || null : null
+      }))
+
       setBusinesses(rows)
 
       await loadCounts(rows.map((business) => business.id))
@@ -247,41 +360,71 @@ export default function AdminBusinessesPage() {
     businessIds.forEach((businessId) => {
       nextCounts[businessId] = {
         services: 0,
+        activeServices: 0,
         staff: 0,
-        bookings: 0
+        activeStaff: 0,
+        staffServiceAssignments: 0,
+        bookings: 0,
+        pendingBookings: 0
       }
     })
 
     const { data: serviceData } = await supabase
       .from('services')
-      .select('id, business_id')
+      .select('id, business_id, active')
       .in('business_id', businessIds)
 
     const { data: staffData } = await supabase
       .from('staff_members')
-      .select('id, business_id')
+      .select('id, business_id, active')
       .in('business_id', businessIds)
 
     const { data: bookingData } = await supabase
       .from('bookings')
-      .select('id, business_id')
+      .select('id, business_id, status')
       .in('business_id', businessIds)
+
+    const staffIds = (staffData || []).map((row: any) => row.id).filter(Boolean)
+
+    const { data: staffServiceData } = staffIds.length > 0
+      ? await supabase
+          .from('staff_services')
+          .select('id, staff_member_id')
+          .in('staff_member_id', staffIds)
+      : { data: [] as any[] }
+
+    const staffBusinessMap = (staffData || []).reduce((map: Record<string, string>, row: any) => {
+      if (row.id && row.business_id) map[row.id] = row.business_id
+      return map
+    }, {})
 
     ;(serviceData || []).forEach((row: any) => {
       if (row.business_id && nextCounts[row.business_id]) {
         nextCounts[row.business_id].services += 1
+        if (row.active) nextCounts[row.business_id].activeServices += 1
       }
     })
 
     ;(staffData || []).forEach((row: any) => {
       if (row.business_id && nextCounts[row.business_id]) {
         nextCounts[row.business_id].staff += 1
+        if (row.active) nextCounts[row.business_id].activeStaff += 1
       }
     })
 
     ;(bookingData || []).forEach((row: any) => {
       if (row.business_id && nextCounts[row.business_id]) {
         nextCounts[row.business_id].bookings += 1
+        if (['pending', 'requested', 'awaiting_approval'].includes(String(row.status || '').toLowerCase())) {
+          nextCounts[row.business_id].pendingBookings += 1
+        }
+      }
+    })
+
+    ;(staffServiceData || []).forEach((row: any) => {
+      const businessId = staffBusinessMap[row.staff_member_id]
+      if (businessId && nextCounts[businessId]) {
+        nextCounts[businessId].staffServiceAssignments += 1
       }
     })
 
@@ -293,7 +436,7 @@ export default function AdminBusinessesPage() {
     loadAdminBusinesses()
   }, [router.isReady])
 
-  function selectBusiness(business: BusinessRow) {
+  function selectBusiness(business: BusinessWithOwner) {
     setSelectedBusinessId(business.id)
     setSelectedBusiness(business)
     setSuccess(null)
@@ -301,7 +444,7 @@ export default function AdminBusinessesPage() {
     router.replace(`/admin/businesses?businessId=${business.id}`, undefined, { shallow: true })
   }
 
-  function updateSelected<K extends keyof BusinessRow>(key: K, value: BusinessRow[K]) {
+  function updateSelected<K extends keyof BusinessWithOwner>(key: K, value: BusinessWithOwner[K]) {
     setSelectedBusiness((current) => {
       if (!current) return current
       return {
@@ -313,6 +456,9 @@ export default function AdminBusinessesPage() {
 
   async function saveSelectedBusiness() {
     if (!selectedBusiness) return
+
+    const confirmed = confirm('Save admin changes for this business?')
+    if (!confirmed) return
 
     setSaving(true)
     setError(null)
@@ -328,7 +474,9 @@ export default function AdminBusinessesPage() {
       auto_accept_bookings: Boolean(selectedBusiness.auto_accept_bookings),
       booking_interval_minutes: Number(selectedBusiness.booking_interval_minutes || 30),
       min_notice_minutes: Number(selectedBusiness.min_notice_minutes || 120),
-      max_advance_days: Number(selectedBusiness.max_advance_days || 60)
+      max_advance_days: Number(selectedBusiness.max_advance_days || 60),
+      buffer_before_minutes: Number(selectedBusiness.buffer_before_minutes || 0),
+      buffer_after_minutes: Number(selectedBusiness.buffer_after_minutes || 0)
     }
 
     const { error: updateError } = await supabase
@@ -343,23 +491,20 @@ export default function AdminBusinessesPage() {
       return
     }
 
+    const updatedSelected = { ...selectedBusiness, ...payload }
+
     setSuccess(`Saved admin changes for ${selectedBusiness.name}.`)
 
     setBusinesses((current) =>
       current.map((business) =>
-        business.id === selectedBusiness.id
-          ? {
-              ...business,
-              ...payload
-            }
-          : business
+        business.id === selectedBusiness.id ? { ...business, ...payload } : business
       )
     )
 
-    setSelectedBusiness((current) => current ? { ...current, ...payload } : current)
+    setSelectedBusiness(updatedSelected)
   }
 
-  async function quickSetTrial(days: number) {
+  function quickSetTrial(days: number) {
     if (!selectedBusiness) return
 
     const trialDate = new Date()
@@ -373,7 +518,7 @@ export default function AdminBusinessesPage() {
     })
   }
 
-  async function togglePublished() {
+  function togglePublished() {
     if (!selectedBusiness) return
 
     setSelectedBusiness({
@@ -429,6 +574,10 @@ export default function AdminBusinessesPage() {
     )
   }
 
+  const selectedCounts = getCounts(selectedBusiness?.id)
+  const selectedIssues = selectedBusiness ? readinessIssues(selectedBusiness) : []
+  const trialDays = daysUntil(selectedBusiness?.trial_ends_at)
+
   return (
     <main>
       <AuthNav />
@@ -437,29 +586,18 @@ export default function AdminBusinessesPage() {
         <div className="admin-shell">
           <div className="admin-header">
             <div>
-              <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook internal</p>
-              <h1 className="page-title">Business admin</h1>
+              <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook operator</p>
+              <h1 className="page-title">Business control centre</h1>
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Manage early business onboarding, trial periods, custom pricing, publishing and billing status.
+                Manage business onboarding, publishing, trial access, billing status and account issues without using the business dashboard.
               </p>
             </div>
 
             <div className="admin-actions">
-              <Link href="/admin" className="btn btn-ghost">
-                Admin overview
-              </Link>
-
-              <Link href="/admin/users" className="btn btn-ghost">
-                Users
-              </Link>
-
-              <Link href="/admin/notifications" className="btn btn-ghost">
-                Notifications
-              </Link>
-
-              <button type="button" className="btn btn-ghost" onClick={loadAdminBusinesses}>
-                Refresh
-              </button>
+              <Link href="/admin" className="btn btn-ghost">Overview</Link>
+              <Link href="/admin/users" className="btn btn-ghost">Users</Link>
+              <Link href="/admin/notifications" className="btn btn-ghost">Notifications</Link>
+              <button type="button" className="btn btn-accent" onClick={loadAdminBusinesses}>Refresh</button>
             </div>
           </div>
 
@@ -477,21 +615,21 @@ export default function AdminBusinessesPage() {
 
           <div className="grid-4">
             <div className="card">
-              <p className="small muted">Total businesses</p>
+              <p className="small muted">Businesses</p>
               <h2>{summary.total}</h2>
-              <p className="small muted">Loaded into admin</p>
+              <p className="small muted">{summary.published} published · {summary.total - summary.published} draft</p>
             </div>
 
             <div className="card">
-              <p className="small muted">Published</p>
-              <h2>{summary.published}</h2>
-              <p className="small muted">{summary.total - summary.published} hidden/draft</p>
+              <p className="small muted">Needs attention</p>
+              <h2>{summary.attention}</h2>
+              <p className="small muted">Setup, trial, billing or pending action</p>
             </div>
 
             <div className="card">
-              <p className="small muted">Trial accounts</p>
-              <h2>{summary.trial}</h2>
-              <p className="small muted">{summary.active} active subscriptions</p>
+              <p className="small muted">Trial / active</p>
+              <h2>{summary.trial} / {summary.active}</h2>
+              <p className="small muted">Trial and active businesses</p>
             </div>
 
             <div className="card">
@@ -505,8 +643,11 @@ export default function AdminBusinessesPage() {
             <div className="card admin-list-card">
               <div className="admin-section-header">
                 <div>
-                  <p className="small muted">Businesses</p>
-                  <h2>Find account</h2>
+                  <p className="small muted">Business accounts</p>
+                  <h2>Search and filter</h2>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    Showing {visibleBusinesses.length} of {filteredBusinesses.length} matching businesses.
+                  </p>
                 </div>
               </div>
 
@@ -514,7 +655,7 @@ export default function AdminBusinessesPage() {
                 <input
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search name, city, owner, billing email..."
+                  placeholder="Search business, owner, city, category, billing email..."
                 />
 
                 <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
@@ -529,9 +670,25 @@ export default function AdminBusinessesPage() {
                   <option value="published">Published only</option>
                   <option value="draft">Draft only</option>
                 </select>
+
+                <select value={attentionFilter} onChange={(event) => setAttentionFilter(event.target.value)}>
+                  <option value="all">All readiness states</option>
+                  <option value="attention">Needs attention</option>
+                  <option value="ready">Setup ready</option>
+                  <option value="pending">Pending bookings</option>
+                  <option value="trial_ending">Trial ending soon</option>
+                </select>
               </div>
 
-              {filteredBusinesses.length === 0 ? (
+              {filteredBusinesses.length > 75 && (
+                <div className="admin-hint-box">
+                  <p className="small muted">
+                    Refine search to narrow the list. Large accounts are intentionally limited for admin performance.
+                  </p>
+                </div>
+              )}
+
+              {visibleBusinesses.length === 0 ? (
                 <div className="admin-empty">
                   <h3>No matching businesses</h3>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
@@ -540,8 +697,10 @@ export default function AdminBusinessesPage() {
                 </div>
               ) : (
                 <div className="admin-business-list">
-                  {filteredBusinesses.map((business) => {
-                    const counts = countsByBusiness[business.id] || { services: 0, staff: 0, bookings: 0 }
+                  {visibleBusinesses.map((business) => {
+                    const counts = getCounts(business.id)
+                    const issues = readinessIssues(business)
+                    const attention = needsAttention(business)
 
                     return (
                       <button
@@ -555,14 +714,7 @@ export default function AdminBusinessesPage() {
                           <span className="small muted">
                             {[business.category, business.city, business.country].filter(Boolean).join(' · ') || 'No category/location'}
                           </span>
-                          <span className="small muted">
-                            {ownerEmail(business)}
-                          </span>
-                          {ownerId(business) && (
-                            <span className="small muted">
-                              Owner ID: {ownerId(business).slice(0, 8)}…
-                            </span>
-                          )}
+                          <span className="small muted">Owner: {ownerEmail(business)}</span>
                         </span>
 
                         <span className="admin-row-meta">
@@ -572,9 +724,17 @@ export default function AdminBusinessesPage() {
                           <span className="admin-pill admin-pill-accent">
                             {statusLabel(business.subscription_status)}
                           </span>
+                          {attention && (
+                            <span className="admin-pill admin-pill-warning">
+                              Needs attention
+                            </span>
+                          )}
                           <span className="small muted">
-                            {counts.services} services · {counts.staff} staff · {counts.bookings} bookings
+                            {counts.activeServices}/{counts.services} services · {counts.activeStaff}/{counts.staff} staff · {counts.bookings} bookings
                           </span>
+                          {issues.length > 0 && (
+                            <span className="small muted">Missing: {issues.slice(0, 3).join(', ')}</span>
+                          )}
                         </span>
                       </button>
                     )
@@ -588,7 +748,7 @@ export default function AdminBusinessesPage() {
                 <div className="admin-empty">
                   <h3>Select a business</h3>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    Choose a business to manage its trial, subscription and publishing controls.
+                    Choose a business to manage onboarding, trial and subscription controls.
                   </p>
                 </div>
               ) : (
@@ -603,21 +763,24 @@ export default function AdminBusinessesPage() {
                     </div>
 
                     <div className="admin-actions">
-                      <Link href={`/explore/${selectedBusiness.id}`} className="btn btn-ghost">
-                        Public page
-                      </Link>
+                      <Link href={`/explore/${selectedBusiness.id}`} className="btn btn-ghost">Public page</Link>
                       {ownerId(selectedBusiness) && (
-                        <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">
-                          Owner account
-                        </Link>
+                        <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">Owner account</Link>
                       )}
-                      <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">
-                        Notify
-                      </Link>
-
+                      <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">Notify</Link>
                       <button type="button" className="btn btn-accent" onClick={saveSelectedBusiness} disabled={saving}>
                         {saving ? 'Saving...' : 'Save changes'}
                       </button>
+                    </div>
+                  </div>
+
+                  <div className={selectedIssues.length > 0 ? 'admin-alert-box admin-alert-warning' : 'admin-alert-box admin-alert-success'}>
+                    <div>
+                      <p className="small muted">Launch readiness</p>
+                      <strong>{selectedIssues.length === 0 ? 'Business setup looks ready' : `Missing ${selectedIssues.length} setup item${selectedIssues.length === 1 ? '' : 's'}`}</strong>
+                      <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                        {selectedIssues.length === 0 ? 'Core business setup is complete enough for marketplace publishing.' : `Missing: ${selectedIssues.join(', ')}.`}
+                      </p>
                     </div>
                   </div>
 
@@ -687,6 +850,11 @@ export default function AdminBusinessesPage() {
                         }}
                         style={{ marginTop: '0.4rem' }}
                       />
+                      {trialDays !== null && (
+                        <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                          {trialDays >= 0 ? `${trialDays} day${trialDays === 1 ? '' : 's'} remaining` : 'Trial has ended'}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -701,19 +869,19 @@ export default function AdminBusinessesPage() {
                     </div>
 
                     <div>
-                      <label className="small muted">Auto-accept bookings</label>
+                      <label className="small muted">Booking approval</label>
                       <select
                         value={selectedBusiness.auto_accept_bookings ? 'yes' : 'no'}
                         onChange={(event) => updateSelected('auto_accept_bookings', event.target.value === 'yes')}
                         style={{ marginTop: '0.4rem' }}
                       >
-                        <option value="yes">Yes, instant confirm</option>
-                        <option value="no">No, manual approval</option>
+                        <option value="yes">Instant confirmation</option>
+                        <option value="no">Manual approval</option>
                       </select>
                     </div>
 
                     <div>
-                      <label className="small muted">Booking interval minutes</label>
+                      <label className="small muted">Booking interval</label>
                       <select
                         value={selectedBusiness.booking_interval_minutes || 30}
                         onChange={(event) => updateSelected('booking_interval_minutes', Number(event.target.value))}
@@ -756,44 +924,44 @@ export default function AdminBusinessesPage() {
                     </div>
                   </div>
 
-                  <div className="admin-quick-actions">
-                    <button type="button" className="btn btn-ghost" onClick={() => quickSetTrial(30)}>
-                      Give 30 day trial
-                    </button>
-
-                    <button type="button" className="btn btn-ghost" onClick={() => quickSetTrial(60)}>
-                      Give 60 day trial
-                    </button>
-
-                    <button type="button" className="btn btn-ghost" onClick={() => {
-                      updateSelected('subscription_status', 'active')
-                      updateSelected('trial_ends_at', null)
-                    }}>
-                      Mark active
-                    </button>
-
-                    <button type="button" className="btn btn-danger" onClick={() => updateSelected('subscription_status', 'paused')}>
-                      Pause access status
-                    </button>
+                  <div className="admin-quick-actions-box">
+                    <div>
+                      <p className="small muted">Quick subscription actions</p>
+                      <strong>Staged changes require Save changes</strong>
+                    </div>
+                    <div className="admin-quick-actions">
+                      <button type="button" className="btn btn-ghost" onClick={() => quickSetTrial(30)}>Give 30 day trial</button>
+                      <button type="button" className="btn btn-ghost" onClick={() => quickSetTrial(60)}>Give 60 day trial</button>
+                      <button type="button" className="btn btn-ghost" onClick={() => {
+                        updateSelected('subscription_status', 'active')
+                        updateSelected('trial_ends_at', null)
+                      }}>
+                        Mark active
+                      </button>
+                      <button type="button" className="btn btn-danger" onClick={() => updateSelected('subscription_status', 'paused')}>
+                        Pause access
+                      </button>
+                    </div>
                   </div>
 
                   <div className="admin-readiness-box">
                     <p className="small muted">Operational snapshot</p>
                     <div className="grid-3" style={{ marginTop: '0.75rem' }}>
                       <div>
-                        <strong>{countsByBusiness[selectedBusiness.id]?.services || 0}</strong>
-                        <p className="small muted">Services</p>
+                        <strong>{selectedCounts.activeServices}/{selectedCounts.services}</strong>
+                        <p className="small muted">Active services</p>
                       </div>
                       <div>
-                        <strong>{countsByBusiness[selectedBusiness.id]?.staff || 0}</strong>
-                        <p className="small muted">Staff</p>
+                        <strong>{selectedCounts.activeStaff}/{selectedCounts.staff}</strong>
+                        <p className="small muted">Active staff</p>
                       </div>
                       <div>
-                        <strong>{countsByBusiness[selectedBusiness.id]?.bookings || 0}</strong>
-                        <p className="small muted">Bookings</p>
+                        <strong>{selectedCounts.pendingBookings}/{selectedCounts.bookings}</strong>
+                        <p className="small muted">Pending / total bookings</p>
                       </div>
                     </div>
                   </div>
+
                   <div className="admin-owner-box">
                     <div>
                       <p className="small muted">Owner account</p>
@@ -801,23 +969,24 @@ export default function AdminBusinessesPage() {
                       <p className="small muted" style={{ marginTop: '0.25rem' }}>
                         {ownerEmail(selectedBusiness)}
                       </p>
+                      <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                        Role: {selectedBusiness.owner?.role || 'unknown'} · Admin: {selectedBusiness.owner?.is_admin ? 'yes' : 'no'}
+                      </p>
                     </div>
 
-                    {ownerId(selectedBusiness) && (
-                      <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">
-                        Manage owner
-                      </Link>
-                    )}
-                    <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">
-                      Send notice
-                    </Link>
+                    <div className="admin-actions">
+                      {ownerId(selectedBusiness) && (
+                        <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">Manage owner</Link>
+                      )}
+                      <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">Send notice</Link>
+                    </div>
                   </div>
 
                   <div className="admin-save-footer">
                     <div>
                       <p className="small muted">Current state</p>
                       <strong>
-                        {selectedBusiness.published ? 'Published' : 'Draft'} · {statusLabel(selectedBusiness.subscription_status)} · {planLabel(selectedBusiness.subscription_plan)} · {formatMoney(selectedBusiness.subscription_price_monthly)} / month
+                        {selectedBusiness.published ? 'Published' : 'Draft'} · {statusLabel(selectedBusiness.subscription_status)} · {planLabel(selectedBusiness.subscription_plan)} · {formatMoney(selectedBusiness.subscription_price_monthly, selectedBusiness.currency || 'GBP')} / month
                       </strong>
                       <p className="small muted" style={{ marginTop: '0.25rem' }}>
                         Trial ends: {formatDate(selectedBusiness.trial_ends_at)}
@@ -865,7 +1034,7 @@ export default function AdminBusinessesPage() {
 
         .admin-layout-grid {
           display: grid;
-          grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+          grid-template-columns: minmax(310px, 0.82fr) minmax(0, 1.18fr);
           gap: 1rem;
           align-items: start;
         }
@@ -885,7 +1054,7 @@ export default function AdminBusinessesPage() {
         .admin-business-list {
           display: grid;
           gap: 0.75rem;
-          max-height: 720px;
+          max-height: 760px;
           overflow: auto;
           padding-right: 0.25rem;
         }
@@ -948,11 +1117,32 @@ export default function AdminBusinessesPage() {
           text-transform: capitalize;
         }
 
-        .admin-empty {
+        .admin-pill-warning {
+          background: rgba(255,190,11,0.12);
+          color: var(--warning);
+          border-color: rgba(255,190,11,0.22);
+        }
+
+        .admin-empty,
+        .admin-hint-box,
+        .admin-alert-box,
+        .admin-readiness-box,
+        .admin-owner-box,
+        .admin-quick-actions-box {
           padding: 1rem;
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
+        }
+
+        .admin-alert-success {
+          border-color: rgba(45,212,191,0.28);
+          background: rgba(45,212,191,0.06);
+        }
+
+        .admin-alert-warning {
+          border-color: rgba(255,190,11,0.28);
+          background: rgba(255,190,11,0.06);
         }
 
         .admin-editor-grid {
@@ -979,25 +1169,17 @@ export default function AdminBusinessesPage() {
           color: var(--success);
         }
 
-        .admin-quick-actions {
-          justify-content: flex-start;
-          padding-top: 0.25rem;
-        }
-
-                        .admin-readiness-box,
-        .admin-owner-box {
-          background: var(--surface-2);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 1rem;
-        }
-
+        .admin-quick-actions-box,
         .admin-owner-box {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
           align-items: center;
           flex-wrap: wrap;
+        }
+
+        .admin-quick-actions {
+          justify-content: flex-start;
         }
 
         .admin-save-footer {
@@ -1023,7 +1205,8 @@ export default function AdminBusinessesPage() {
           .admin-section-header,
           .admin-editor-header,
           .admin-save-footer,
-          .admin-owner-box {
+          .admin-owner-box,
+          .admin-quick-actions-box {
             display: grid;
           }
 
