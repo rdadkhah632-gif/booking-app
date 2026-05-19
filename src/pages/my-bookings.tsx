@@ -1,38 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
-
-type Booking = {
-  id: string
-  business_id?: string | null
-  customer_name: string
-  start_at: string
-  duration_minutes: number
-  status: string
-  businesses?: { name: string } | { name: string }[] | null
-  services?: { name: string; price: number } | { name: string; price: number }[] | null
-  staff_members?: { name: string; role_title?: string | null } | { name: string; role_title?: string | null }[] | null
-  completed_at?: string | null
-}
-
-type BookingRequest = {
-  id: string
-  booking_id: string
-  status: string
-  requested_start_at: string
-  requested_duration_minutes: number
-  response_message?: string | null
-  created_at: string
-  requested_staff?: {
-    name: string
-    role_title?: string | null
-  } | {
-    name: string
-    role_title?: string | null
-  }[] | null
-}
+import MyBookingsHeader from '@/components/my-bookings/MyBookingsHeader'
+import MyBookingsStats from '@/components/my-bookings/MyBookingsStats'
+import MyBookingsEmptyState from '@/components/my-bookings/MyBookingsEmptyState'
+import MyBookingsSection from '@/components/my-bookings/MyBookingsSection'
+import MyBookingCard from '@/components/my-bookings/MyBookingCard'
+import { Booking, BookingRequest } from '@/components/my-bookings/myBookingsTypes'
 
 export default function MyBookings() {
   const router = useRouter()
@@ -392,211 +367,26 @@ export default function MyBookings() {
   }
 
   function renderBookingCard(booking: Booking, mode: 'pending' | 'confirmed' | 'history') {
-    const pendingRequest = pendingRequestByBookingId[booking.id]
-    const isWorking = actionLoadingId === booking.id
-    const isLocked = booking.status === 'cancelled' || booking.status === 'completed' || mode === 'history'
-    const tone = cardTone(booking.status, Boolean(pendingRequest), mode)
-
     return (
-      <div
+      <MyBookingCard
         key={booking.id}
-        className="card my-booking-card"
-        style={{
-          opacity: isLocked ? 0.78 : 1,
-          borderColor: tone.border,
-          background: tone.background
-        }}
-      >
-        <div className="my-booking-card-row">
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
-              <strong>{businessName(booking)}</strong>
-              <span
-                className="small"
-                style={{
-                  background: pendingRequest && booking.status === 'confirmed'
-                    ? 'rgba(255,107,53,0.12)'
-                    : statusBackground(booking.status),
-                  color: pendingRequest && booking.status === 'confirmed'
-                    ? 'var(--accent)'
-                    : statusColor(booking.status),
-                  padding: '0.2rem 0.55rem',
-                  borderRadius: 999
-                }}
-              >
-                {pendingRequest && booking.status === 'confirmed'
-                  ? 'Change request pending'
-                  : statusLabel(booking.status)}
-              </span>
-
-              {pendingRequest && booking.status === 'confirmed' && (
-                <span
-                  className="small"
-                  style={{
-                    background: 'rgba(45,212,191,0.12)',
-                    color: 'var(--success)',
-                    padding: '0.2rem 0.55rem',
-                    borderRadius: 999
-                  }}
-                >
-                  Original time still confirmed
-                </span>
-              )}
-
-              {booking.status === 'completed' && (
-                <span
-                  className="small"
-                  style={{
-                    background: 'rgba(45,212,191,0.12)',
-                    color: 'var(--success)',
-                    padding: '0.2rem 0.55rem',
-                    borderRadius: 999
-                  }}
-                >
-                  Locked
-                </span>
-              )}
-            </div>
-
-            <h3 style={{ marginBottom: '0.35rem' }}>
-              {lifecycleTitle(booking, pendingRequest)}
-            </h3>
-
-            <p className="small muted" style={{ marginBottom: '0.65rem' }}>
-              {lifecycleCopy(booking, pendingRequest)}
-            </p>
-
-            <p className="small muted">Service: {serviceName(booking)}</p>
-            <p className="small muted">Staff: {staffName(booking)}</p>
-            <p className="small muted">Price: £{servicePrice(booking).toFixed(2)}</p>
-
-            <div
-              style={{
-                marginTop: '0.75rem',
-                padding: '0.8rem',
-                borderRadius: 'var(--radius)',
-                background: booking.status === 'pending' || pendingRequest ? 'rgba(255,107,53,0.08)' : 'var(--surface-2)',
-                border: booking.status === 'pending' || pendingRequest ? '1px solid rgba(255,107,53,0.28)' : '1px solid var(--border)'
-              }}
-            >
-              <p className="small muted">
-                {booking.status === 'pending'
-                  ? 'Requested appointment time'
-                  : pendingRequest && booking.status === 'confirmed'
-                    ? 'Original confirmed appointment time'
-                    : booking.status === 'completed'
-                      ? 'Completed appointment time'
-                      : booking.status === 'cancelled'
-                        ? 'Cancelled appointment time'
-                        : 'Current confirmed appointment'}
-              </p>
-              <strong>{new Date(booking.start_at).toLocaleString()}</strong>
-              <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                {booking.status === 'pending'
-                  ? 'This booking is not confirmed until the business accepts it.'
-                  : pendingRequest && booking.status === 'confirmed'
-                    ? 'This remains your active appointment until the business accepts your new requested time.'
-                    : booking.status === 'confirmed'
-                      ? 'This is your active booked time.'
-                      : booking.status === 'completed'
-                        ? 'Completed bookings cannot be rescheduled or cancelled.'
-                        : 'This appointment is no longer active.'}
-              </p>
-            </div>
-
-            <p className="small muted" style={{ marginTop: '0.65rem' }}>
-              Duration: {booking.duration_minutes} minutes
-            </p>
-
-            <p className="small" style={{ color: statusColor(booking.status), marginTop: '0.4rem' }}>
-              Status: {statusLabel(booking.status)}
-            </p>
-
-            {pendingRequest && booking.status === 'confirmed' && (
-              <div className="card my-booking-pending-change-card">
-                <div className="my-booking-card-row">
-                  <div>
-                    <p className="small" style={{ color: 'var(--accent)' }}>
-                      Requested change awaiting approval
-                    </p>
-                    <h3 style={{ marginTop: '0.25rem', marginBottom: '0.5rem' }}>
-                      New requested appointment time
-                    </h3>
-                  </div>
-
-                  <span className="small my-booking-pill-accent">
-                    Business approval needed
-                  </span>
-                </div>
-
-                <div className="my-booking-requested-time-box">
-                  <p className="small muted">Requested new time</p>
-                  <strong>{new Date(pendingRequest.requested_start_at).toLocaleString()}</strong>
-
-                  <p className="small muted" style={{ marginTop: '0.55rem' }}>
-                    Requested staff: {requestedStaffName(pendingRequest)}
-                  </p>
-
-                  <p className="small muted">
-                    Requested duration: {pendingRequest.requested_duration_minutes} minutes
-                  </p>
-                </div>
-
-                <p className="small muted" style={{ marginTop: '0.75rem' }}>
-                  The business can accept or decline this request. Until then, the original confirmed appointment time above remains active.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="my-booking-card-actions">
-            {booking.status === 'pending' && (
-              <>
-                <Link href="/notifications" className="btn btn-ghost">
-                  Track request
-                </Link>
-
-                <button onClick={() => cancelBooking(booking)} className="btn btn-danger" disabled={isWorking}>
-                  {isWorking ? 'Working...' : 'Cancel request'}
-                </button>
-              </>
-            )}
-
-            {booking.status === 'confirmed' && mode !== 'history' && (
-              <>
-                {pendingRequest ? (
-                  <Link href="/notifications" className="btn btn-ghost" title="The business needs to approve your latest requested time before you can request another change.">
-                    View pending request
-                  </Link>
-                ) : (
-                  <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
-                    Reschedule
-                  </Link>
-                )}
-
-                <button onClick={() => cancelBooking(booking)} className="btn btn-danger" disabled={isWorking}>
-                  {isWorking ? 'Working...' : 'Cancel booking'}
-                </button>
-              </>
-            )}
-
-            {(booking.status === 'completed' || booking.status === 'cancelled' || mode === 'history') && booking.status !== 'pending' && (
-              <div className="card my-booking-locked-card">
-                <p className="small" style={{ color: statusColor(booking.status) }}>
-                  {booking.status === 'completed'
-                    ? 'Locked completed record'
-                    : booking.status === 'cancelled'
-                      ? 'Locked cancelled record'
-                      : 'Past appointment record'}
-                </p>
-                <p className="small muted" style={{ marginTop: '0.3rem' }}>
-                  This booking can no longer be rescheduled or cancelled.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        booking={booking}
+        mode={mode}
+        pendingRequest={pendingRequestByBookingId[booking.id]}
+        isWorking={actionLoadingId === booking.id}
+        onCancel={cancelBooking}
+        businessName={businessName}
+        serviceName={serviceName}
+        servicePrice={servicePrice}
+        staffName={staffName}
+        requestedStaffName={requestedStaffName}
+        lifecycleTitle={lifecycleTitle}
+        lifecycleCopy={lifecycleCopy}
+        statusLabel={statusLabel}
+        statusColor={statusColor}
+        statusBackground={statusBackground}
+        cardTone={cardTone}
+      />
     )
   }
 
@@ -605,143 +395,24 @@ export default function MyBookings() {
       <AuthNav />
 
       <section className="container" style={{ padding: '36px 24px 70px' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <p className="small muted">Mirëbook customer dashboard</p>
+        <MyBookingsHeader
+          email={email}
+          loading={loading}
+          bookingRequested={router.query.bookingRequested}
+          requestSent={router.query.requestSent}
+          success={success}
+          onClearSuccess={() => setSuccess(null)}
+          onRefresh={() => loadBookings()}
+        />
 
-          <h1 className="page-title">
-            My Mirëbook bookings
-          </h1>
-
-          <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-            {email ? `Signed in as ${email}` : 'View and manage your Mirëbook appointments.'}
-          </p>
-
-          {router.query.bookingRequested && (
-            <div className="card my-booking-route-banner">
-              <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
-                Booking request sent
-              </p>
-              <strong>Your booking is waiting for business approval.</strong>
-              <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                This appointment is not confirmed yet. You can track the request here or from Notifications.
-              </p>
-            </div>
-          )}
-
-          {router.query.requestSent && (
-            <div className="card my-booking-route-banner">
-              <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
-                Reschedule request sent
-              </p>
-              <strong>Your reschedule request is waiting for business approval.</strong>
-              <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                Your original appointment is still confirmed. If the business accepts your request, your booking will update to the requested time.
-              </p>
-            </div>
-          )}
-
-          {success && (
-            <div className="card my-booking-success-banner">
-              <div className="my-booking-banner-row">
-                <div>
-                  <p className="small" style={{ color: 'var(--success)' }}>Action completed</p>
-                  <strong>{success}</strong>
-                </div>
-                <button type="button" className="btn btn-ghost" onClick={() => setSuccess(null)}>
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="my-bookings-header-actions">
-            <Link href="/account" className="btn btn-ghost">
-              Account settings
-            </Link>
-
-            <Link href="/notifications" className="btn btn-ghost">
-              Notifications
-            </Link>
-
-            <Link href="/support/customer" className="btn btn-ghost">
-              Customer support
-            </Link>
-
-            <button onClick={() => loadBookings()} className="btn btn-ghost" disabled={loading}>
-              {loading ? 'Refreshing...' : 'Refresh bookings'}
-            </button>
-
-            <Link href="/explore" className="btn btn-accent">
-              Explore Mirëbook
-            </Link>
-          </div>
-
-          <p className="small muted" style={{ marginTop: '0.75rem' }}>
-            Booking changes update this page after each action. It also refreshes when you return to the tab.
-          </p>
-        </div>
-
-        <div className="grid-2 my-bookings-summary-grid" style={{ marginBottom: '1.5rem' }}>
-          <button
-            type="button"
-            className="card"
-            onClick={() => scrollToSection('pending')}
-            disabled={pendingBookings.length === 0}
-            style={statCardStyle(pendingBookings.length > 0)}
-          >
-            <p className="small muted">Waiting approval</p>
-            <h3>{pendingBookings.length}</h3>
-            <p className="muted small">Booking requests not confirmed yet</p>
-            <p className="small" style={{ color: pendingBookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
-              {pendingBookings.length > 0 ? 'Tap to view requests ↓' : 'No waiting approvals'}
-            </p>
-          </button>
-
-          <button
-            type="button"
-            className="card"
-            onClick={() => scrollToSection('upcoming')}
-            disabled={confirmedUpcomingBookings.length === 0}
-            style={statCardStyle(confirmedUpcomingBookings.length > 0)}
-          >
-            <p className="small muted">Upcoming</p>
-            <h3>{confirmedUpcomingBookings.length}</h3>
-            <p className="muted small">Confirmed future appointments</p>
-            <p className="small" style={{ color: confirmedUpcomingBookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
-              {confirmedUpcomingBookings.length > 0 ? 'Tap to view schedule ↓' : 'No upcoming appointments'}
-            </p>
-          </button>
-
-          <button
-            type="button"
-            className="card"
-            onClick={() => scrollToSection('changes')}
-            disabled={pendingRescheduleCount === 0}
-            style={statCardStyle(pendingRescheduleCount > 0)}
-          >
-            <p className="small muted">Change requests</p>
-            <h3>{pendingRescheduleCount}</h3>
-            <p className="muted small">Pending reschedule requests</p>
-            <p className="small" style={{ color: pendingRescheduleCount > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
-              {pendingRescheduleCount > 0 ? 'Tap to view requested changes ↓' : 'No pending changes'}
-            </p>
-          </button>
-
-          <button
-            type="button"
-            className="card"
-            onClick={() => scrollToSection('history')}
-            disabled={historyBookings.length === 0}
-            style={statCardStyle(historyBookings.length > 0)}
-          >
-            <p className="small muted">History</p>
-            <h3>{historyBookings.length}</h3>
-            <p className="muted small">Completed, cancelled or past bookings</p>
-            <p className="small" style={{ color: historyBookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
-              {historyBookings.length > 0 ? 'Tap to view history ↓' : 'No history yet'}
-            </p>
-          </button>
-        </div>
+        <MyBookingsStats
+          pendingCount={pendingBookings.length}
+          upcomingCount={confirmedUpcomingBookings.length}
+          changeCount={pendingRescheduleCount}
+          historyCount={historyBookings.length}
+          onJump={scrollToSection}
+          statCardStyle={statCardStyle}
+        />
 
         {error && (
           <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
@@ -756,88 +427,66 @@ export default function MyBookings() {
         )}
 
         {!loading && bookings.length === 0 && (
-          <div className="card">
-            <h3>No bookings yet</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              You have not booked any appointments yet. Explore Mirëbook businesses and make your first booking.
-            </p>
-
-            <div className="my-booking-empty-actions">
-              <Link href="/explore" className="btn btn-accent">
-                Explore Mirëbook
-              </Link>
-
-              <Link href="/support/customer" className="btn btn-ghost">
-                Customer support
-              </Link>
-            </div>
-          </div>
+          <MyBookingsEmptyState />
         )}
 
         {!loading && bookings.length > 0 && (
           <div className="my-bookings-section-list">
             {pendingBookings.length > 0 && (
-              <section ref={pendingSectionRef} id="waiting-approval" className="my-bookings-section">
-                <div>
-                  <p className="small muted">Action status</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Waiting for business approval</h2>
-                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    These bookings are not confirmed yet. The business needs to accept them first.
-                  </p>
-                </div>
-
-                {pendingBookings.map((booking) => renderBookingCard(booking, 'pending'))}
-              </section>
+            <MyBookingsSection
+  sectionRef={pendingSectionRef}
+  id="waiting-approval"
+  kicker="Action status"
+  title="Waiting for business approval"
+  body="These bookings are not confirmed yet. The business needs to accept them first."
+>
+  {pendingBookings.map((booking) => renderBookingCard(booking, 'pending'))}
+</MyBookingsSection>
             )}
 
             {pendingRescheduleCount > 0 && (
-              <section ref={changeRequestsSectionRef} id="change-requests" className="my-bookings-section">
-                <div>
-                  <p className="small muted">Requested changes</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Pending reschedule requests</h2>
-                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time.
-                  </p>
-                </div>
-
-                {confirmedUpcomingBookings
-                  .filter((booking) => pendingRequestByBookingId[booking.id])
-                  .map((booking) => renderBookingCard(booking, 'confirmed'))}
-              </section>
+             <MyBookingsSection
+  sectionRef={changeRequestsSectionRef}
+  id="change-requests"
+  kicker="Requested changes"
+  title="Pending reschedule requests"
+  body="These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time."
+>
+  {confirmedUpcomingBookings
+    .filter((booking) => pendingRequestByBookingId[booking.id])
+    .map((booking) => renderBookingCard(booking, 'confirmed'))}
+</MyBookingsSection>
             )}
 
             {confirmedUpcomingBookings.length > 0 && (
-              <section ref={upcomingSectionRef} id="upcoming-bookings" className="my-bookings-section">
-                <div>
-                  <p className="small muted">Schedule</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Active confirmed appointments</h2>
-                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time.
-                  </p>
-                  {pendingRescheduleCount > 0 && (
-                    <button type="button" onClick={() => scrollToSection('changes')} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
-                      View pending change requests
-                    </button>
-                  )}
-                </div>
-                {confirmedUpcomingBookings
-                  .filter((booking) => !pendingRequestByBookingId[booking.id])
-                  .map((booking) => renderBookingCard(booking, 'confirmed'))}
-              </section>
+              <MyBookingsSection
+  sectionRef={upcomingSectionRef}
+  id="upcoming-bookings"
+  kicker="Schedule"
+  title="Active confirmed appointments"
+  body="These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time."
+  action={pendingRescheduleCount > 0 ? (
+    <button type="button" onClick={() => scrollToSection('changes')} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+      View pending change requests
+    </button>
+  ) : null}
+>
+  {confirmedUpcomingBookings
+    .filter((booking) => !pendingRequestByBookingId[booking.id])
+    .map((booking) => renderBookingCard(booking, 'confirmed'))}
+</MyBookingsSection>
             )}
 
             {historyBookings.length > 0 && (
-              <section ref={historySectionRef} id="booking-history" className="my-bookings-section">
-                <div>
-                  <p className="small muted">History</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)' }}>History and locked bookings</h2>
-                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    Completed, cancelled and past bookings are shown for your records only.
-                  </p>
-                </div>
-
-                {historyBookings.map((booking) => renderBookingCard(booking, 'history'))}
-              </section>
+            <MyBookingsSection
+  sectionRef={historySectionRef}
+  id="booking-history"
+  kicker="History"
+  title="History and locked bookings"
+  body="Completed, cancelled and past bookings are shown for your records only."
+>
+  {historyBookings.map((booking) => renderBookingCard(booking, 'history'))}
+</MyBookingsSection>
             )}
           </div>
         )}
