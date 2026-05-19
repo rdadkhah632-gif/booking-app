@@ -465,32 +465,9 @@ function assignedServicesForStaff(staffId: string) {
     return staffAvailability.filter((row) => row.staff_member_id === staffId && row.is_closed !== true).length
   }
 
-  function inviteStatusLabel(member: StaffMember) {
-    if (member.user_id) return 'Linked account'
-    if (member.invite_status === 'invited') return 'Invite sent'
-    if (member.email) return 'Ready to invite'
-    return 'No email added'
-  }
-
-  function inviteStatusTone(member: StaffMember) {
-    if (member.user_id) return 'success'
-    if (member.invite_status === 'invited') return 'accent'
-    if (member.email) return 'warning'
-    return 'muted'
-  }
-
-  function staffInitials(member: StaffMember) {
-    return member.name
-      .split(' ')
-      .map((part) => part[0])
-      .filter(Boolean)
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || 'MB'
-  }
-
-  async function toggleStaffService(staffId: string, serviceId: string) {
-    const exists = staffCanDoService(staffId, serviceId)
+  
+async function toggleStaffService(staffId: string, serviceId: string, currentlyAssigned?: boolean) {
+  const exists = currentlyAssigned ?? staffCanDoService(staffId, serviceId)
 
     setActionLoadingKey(`service-${staffId}-${serviceId}`)
     setError(null)
@@ -525,7 +502,7 @@ function assignedServicesForStaff(staffId: string) {
       }
     }
 
-    setSuccess(exists ? 'Service removed from staff member.' : 'Service assigned to staff member.')
+    setSuccess(exists ? t('dashboardStaff.assignments.removedSuccess', 'Service removed from staff member.') : t('dashboardStaff.assignments.addedSuccess', 'Service assigned to staff member.'))
     await loadPage()
   }
 
@@ -655,444 +632,42 @@ function assignedServicesForStaff(staffId: string) {
           )}
 
           <div className="staff-card-list">
-            {staff.length === 0 && (
-              <div className="card">
-                <h3>No staff yet</h3>
-                <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  Add your first staff member above. Then assign services and set their working hours.
-                </p>
-              </div>
-            )}
+  {staff.length === 0 && (
+    <div className="card">
+      <h3>{t('dashboardStaff.empty.title', 'No staff yet')}</h3>
+      <p className="muted" style={{ marginTop: '0.5rem' }}>
+        {t('dashboardStaff.empty.body', 'Add your first staff member above. Then assign services and set their working hours.')}
+      </p>
+    </div>
+  )}
 
-            {staff.map((member) => {
-              const assignedServices = assignedServicesForStaff(member.id)
-              const openDays = openDaysForStaff(member.id)
-              const isEditing = editingStaffId === member.id
-
-              return (
-                <div
-                  key={member.id}
-                  className="card staff-member-card"
-                  style={{
-                    borderColor: !member.active
-                      ? 'rgba(255,190,11,0.25)'
-                      : assignedServices.length === 0 || openDays === 0
-                        ? 'rgba(255,190,11,0.35)'
-                        : 'var(--border)'
-                  }}
-                >
-                  <div className="staff-member-card-header">
-                    <div className="staff-member-main">
-                      <div className="staff-avatar-wrap">
-                        {member.image_url ? (
-                          <img src={member.image_url} alt={member.name} />
-                        ) : (
-                          <span>{staffInitials(member)}</span>
-                        )}
-                      </div>
-
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <h3>{member.name}</h3>
-
-                          <span
-                            className="small"
-                            style={{
-                              background: member.active ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                              color: member.active ? 'var(--success)' : 'var(--warning)',
-                              padding: '0.2rem 0.55rem',
-                              borderRadius: 999
-                            }}
-                          >
-                            {member.active ? 'Active' : 'Hidden'}
-                          </span>
-
-                          {readinessBadge(member)}
-
-                        <span
-                          className="small"
-                          style={{
-                            background: inviteStatusTone(member) === 'success'
-                              ? 'rgba(45,212,191,0.12)'
-                              : inviteStatusTone(member) === 'accent'
-                                ? 'rgba(255,107,53,0.12)'
-                                : inviteStatusTone(member) === 'warning'
-                                  ? 'rgba(255,190,11,0.12)'
-                                  : 'var(--surface-2)',
-                            color: inviteStatusTone(member) === 'success'
-                              ? 'var(--success)'
-                              : inviteStatusTone(member) === 'accent'
-                                ? 'var(--accent)'
-                                : inviteStatusTone(member) === 'warning'
-                                  ? 'var(--warning)'
-                                  : 'var(--text-muted)',
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 999
-                          }}
-                        >
-                          {inviteStatusLabel(member)}
-                        </span>
-                        </div>
-
-                        {!isEditing && (
-                          <>
-                            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                              {member.role_title || 'Staff member'}
-                            </p>
-                            {member.email && <p className="small muted">Email: {member.email}</p>}
-                            {member.phone && <p className="small muted">Phone: {member.phone}</p>}
-                            <p className="small muted">Permission: {member.permission_role || 'staff'}</p>
-                            <p className="small muted">Account: {inviteStatusLabel(member)}</p>
-                            {!member.email && (
-                              <p className="small" style={{ color: 'var(--warning)', marginTop: '0.35rem' }}>
-                                Add an email if this person should log in to the staff portal.
-                              </p>
-                            )}
-
-                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.7rem' }}>
-                              <span className="small muted">{assignedServices.length} service{assignedServices.length === 1 ? '' : 's'} assigned</span>
-                              <span className="small muted">{openDays} open day{openDays === 1 ? '' : 's'} set</span>
-                            </div>
-
-                            {(assignedServices.length === 0 || openDays === 0) && (
-                              <p className="small" style={{ color: 'var(--warning)', marginTop: '0.55rem' }}>
-                                This staff member will not be properly bookable until they have services assigned and working hours set.
-                              </p>
-                            )}
-                          </>
-                        )}
-
-                        {isEditing && (
-                          <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
-                            <input
-                              placeholder="Staff name"
-                              value={member.name || ''}
-                              onChange={(e) => updateLocalStaff(member.id, 'name', e.target.value)}
-                            />
-
-                            <input
-                              placeholder="Role/title"
-                              value={member.role_title || ''}
-                              onChange={(e) => updateLocalStaff(member.id, 'role_title', e.target.value)}
-                            />
-
-                            <input
-                              type="email"
-                              placeholder="Email optional"
-                              value={member.email || ''}
-                              onChange={(e) => updateLocalStaff(member.id, 'email', e.target.value)}
-                            />
-
-                            <input
-                              placeholder="Phone optional"
-                              value={member.phone || ''}
-                              onChange={(e) => updateLocalStaff(member.id, 'phone', e.target.value)}
-                            />
-
-                            <div className="image-upload-box">
-                              <div>
-                                <p className="small muted">Staff photo</p>
-                                <strong>{member.image_url ? 'Replace uploaded image' : 'Upload image'}</strong>
-                                <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                                  Optional. JPG, PNG, WEBP or GIF up to 5MB. Staff photos help the public page look better but are not required for booking.
-                                </p>
-                              </div>
-
-                              {member.image_url && (
-                                <div
-                                  className="image-preview"
-                                  style={{ backgroundImage: `url(${member.image_url})` }}
-                                />
-                              )}
-
-                              <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp,image/gif"
-                                onChange={(e) => uploadStaffImage(member, e.target.files?.[0] || null)}
-                                disabled={uploadingStaffId === member.id}
-                              />
-
-                              <div className="image-upload-actions">
-                                {uploadingStaffId === member.id && <p className="small muted">Uploading image...</p>}
-                                {member.image_url && (
-                                  <button
-                                    type="button"
-                                    className="btn btn-ghost"
-                                    onClick={() => removeStaffImage(member)}
-disabled={uploadingStaffId === member.id}
-                                  >
-                                    Remove image
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-
-                            <select
-                              value={member.permission_role || 'staff'}
-                              onChange={(e) => updateLocalStaff(member.id, 'permission_role', e.target.value)}
-                            >
-                              <option value="staff">Staff</option>
-                              <option value="reception">Reception</option>
-                              <option value="manager">Manager</option>
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                      </div>
-
-                    <div className="staff-card-actions">
-                      {isEditing ? (
-                        <>
-                          <button
-                            onClick={() => saveStaff(member)}
-                            className="btn btn-accent"
-                            disabled={savingStaffId === member.id}
-                          >
-                            {savingStaffId === member.id ? 'Saving...' : 'Save staff'}
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setEditingStaffId(null)
-                              loadPage()
-                            }}
-                            className="btn btn-ghost"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button onClick={() => setEditingStaffId(member.id)} className="btn btn-ghost">
-                            Edit
-                          </button>
-
-                          <button
-                            onClick={() => markStaffInvited(member)}
-                            className="btn btn-ghost"
-                            disabled={actionLoadingKey === `invite-${member.id}` || !!member.user_id || !member.email}
-                          >
-                            {actionLoadingKey === `invite-${member.id}`
-                              ? 'Updating...'
-                              : member.user_id
-                                ? 'Account linked'
-                                : member.invite_status === 'invited'
-                                  ? 'Invited'
-                                  : 'Mark invited'}
-                          </button>
-
-                          <Link href={`/dashboard/staff-availability?staffId=${member.id}`} className="btn btn-accent">
-                            Staff hours
-                          </Link>
-
-                          <button
-                            onClick={() => toggleStaffActive(member)}
-                            className={member.active ? 'btn btn-ghost' : 'btn btn-accent'}
-                            disabled={actionLoadingKey === `staff-${member.id}`}
-                          >
-                            {actionLoadingKey === `staff-${member.id}`
-                              ? 'Updating...'
-                              : member.active
-                                ? 'Hide from booking'
-                                : 'Show for booking'}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '0.7rem' }}>
-                      <div>
-                        <p className="small muted">Services this staff member can perform</p>
-                                             <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                          Assign every active service this staff member can perform. Orange means assigned; hidden services do not show to customers.
-                        </p>
-
-                        {assignedServices.length === 0 && services.length > 0 && (
-                          <p className="small" style={{ color: 'var(--warning)', marginTop: '0.7rem' }}>
-                            No services assigned yet. This staff member will not appear in public booking slots until at least one active service is assigned.
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="staff-service-actions">
-                        <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
-                          Manage services
-                        </Link>
-
-                        <Link href="/support/business" className="btn btn-ghost">
-                          Support
-                        </Link>
-                      </div>
-                    </div>
-
-                    {services.length === 0 && (
-                      <p className="small muted">No services to assign yet.</p>
-                    )}
-
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      {services.map((service) => {
-                        const assigned = staffCanDoService(member.id, service.id)
-                        const actionKey = `service-${member.id}-${service.id}`
-
-                        return (
-                          <button
-                            key={service.id}
-                            type="button"
-                            onClick={() => toggleStaffService(member.id, service.id)}
-                            className={assigned ? 'btn btn-accent' : 'btn btn-ghost'}
-                            disabled={actionLoadingKey === actionKey}
-                            title={assigned ? 'Click to remove this service from staff member' : 'Click to assign this service to staff member'}
-                          >
-                            {actionLoadingKey === actionKey ? 'Updating...' : assigned ? `✓ ${service.name}` : `+ ${service.name}`}
-                            {!service.active ? ' (hidden)' : ''}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+  {staff.map((member) => (
+    <StaffProfileCard
+      key={member.id}
+      staff={member}
+      services={services}
+      assignedServiceIds={assignedServicesForStaff(member.id).map((service) => service.id)}
+      availabilityRows={staffAvailability}
+      isEditing={editingStaffId === member.id}
+      savingStaffId={savingStaffId}
+      savingAssignmentKey={actionLoadingKey?.startsWith(`service-${member.id}-`) ? actionLoadingKey.replace(`service-${member.id}-`, `${member.id}:`) : null}
+      updateLocalStaff={updateLocalStaff}
+      saveStaff={saveStaff}
+      toggleStaffActive={toggleStaffActive}
+      setEditingStaffId={setEditingStaffId}
+      loadData={loadPage}
+      toggleStaffService={toggleStaffService}
+    />
+  ))}
+</div>
         </>
       )}
       <style jsx>{`
-        .staff-summary-card {
-          min-height: 122px;
-        }
-        .staff-readiness-panel {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          flex-wrap: wrap;
-          margin-bottom: 1rem;
-          border-color: rgba(255,107,53,0.22);
-          background: rgba(255,107,53,0.05);
-        }
-
-        .staff-readiness-actions,
-        .staff-service-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-        .staff-form-card {
-          display: grid;
-          gap: 0.85rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .staff-form-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 0.75rem;
-        }
-        .image-upload-box {
-          display: grid;
-          gap: 0.75rem;
-          background: var(--surface-2);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 1rem;
-        }
-
-        .image-preview {
-          min-height: 150px;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-          background-size: cover;
-          background-position: center;
-          background-color: var(--surface);
-        }
-
-        .image-upload-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-        .staff-card-list {
-          display: grid;
-          gap: 1rem;
-        }
-
-        .staff-member-card {
-          display: grid;
-          gap: 1rem;
-        }
-
-        .staff-member-card-header {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
-        }
-
-        .staff-member-main {
-          flex: 1;
-          min-width: 260px;
-          display: flex;
-          gap: 0.9rem;
-          align-items: flex-start;
-        }
-
-        .staff-avatar-wrap {
-          width: 56px;
-          height: 56px;
-          border-radius: 18px;
-          overflow: hidden;
-          background: var(--accent-dim);
-          border: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--accent);
-          font-weight: 800;
-          flex: 0 0 auto;
-        }
-
-        .staff-avatar-wrap img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .staff-card-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        @media (max-width: 720px) {
-                    .staff-readiness-panel,
-          .staff-member-card-header,
-          .staff-member-main {
-            display: grid;
-          }
-
-          .staff-card-actions {
-            justify-content: stretch;
-          }
-
-          .staff-readiness-actions,
-          .image-upload-actions,
-          .staff-readiness-actions :global(.btn),
-          .staff-readiness-actions a,
-          .image-upload-actions :global(.btn),
-          .image-upload-actions button,
-          .staff-card-actions :global(.btn),
-          .staff-card-actions button,
-          .staff-card-actions a {
-            width: 100%;
-            justify-content: center;
-          }
-        }
-      `}</style>
+  .staff-card-list {
+    display: grid;
+    gap: 1rem;
+  }
+`}</style>
     </DashboardLayout>
   )
 }
