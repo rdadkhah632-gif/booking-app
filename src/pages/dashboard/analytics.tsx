@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import DashboardLayout from '@/components/DashboardLayout'
+import { useI18n } from '@/lib/useI18n'
 
 type Timeframe = '7d' | '30d' | '90d' | 'all'
 
@@ -57,6 +58,7 @@ type DailySummary = {
 
 export default function AnalyticsPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -210,7 +212,7 @@ export default function AnalyticsPage() {
     const approvalLoad = pending.length
 
     const serviceMap = filteredBookings.reduce<Record<string, ServiceSummary>>((acc, booking) => {
-      const serviceName = booking.services?.name || 'Unknown service'
+      const serviceName = booking.services?.name || t('dashboardAnalytics.fallback.unknownService', 'Unknown service')
       const serviceKey = booking.services?.id || booking.service_id || serviceName
       const price = Number(booking.services?.price || 0)
 
@@ -241,7 +243,7 @@ export default function AnalyticsPage() {
       .sort((a, b) => b.count - a.count || b.estimatedValue - a.estimatedValue)
 
     const businessMap = filteredBookings.reduce<Record<string, { name: string; count: number; value: number }>>((acc, booking) => {
-      const businessName = booking.businesses?.name || 'Business'
+      const businessName = booking.businesses?.name || t('dashboardNotifications.labels.businessFallback', 'Business')
       const businessKey = booking.business_id
       const price = Number(booking.services?.price || 0)
 
@@ -324,10 +326,10 @@ export default function AnalyticsPage() {
   }, [filteredBookings])
 
   function timeframeLabel() {
-    if (timeframe === '7d') return 'Last 7 days'
-    if (timeframe === '30d') return 'Last 30 days'
-    if (timeframe === '90d') return 'Last 90 days'
-    return 'All time'
+    if (timeframe === '7d') return t('dashboardAnalytics.timeframe.last7', 'Last 7 days')
+    if (timeframe === '30d') return t('dashboardAnalytics.timeframe.last30', 'Last 30 days')
+    if (timeframe === '90d') return t('dashboardAnalytics.timeframe.last90', 'Last 90 days')
+    return t('dashboardAnalytics.timeframe.allTime', 'All time')
   }
 
   function statusColor(status: string) {
@@ -350,9 +352,9 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout title="Analytics">
+      <DashboardLayout title={t('dashboardAnalytics.pageTitle', 'Analytics')}>
         <div className="card">
-          <p className="muted">Loading analytics...</p>
+          <p className="muted">{t('dashboardAnalytics.loading', 'Loading analytics...')}</p>
         </div>
       </DashboardLayout>
     )
@@ -360,8 +362,8 @@ export default function AnalyticsPage() {
 
   return (
     <DashboardLayout
-      title="Analytics"
-      subtitle="Understand booking activity, estimated value and service demand."
+      title={t('dashboardAnalytics.pageTitle', 'Analytics')}
+      subtitle={t('dashboardAnalytics.pageSubtitle', 'Understand booking activity, estimated value and service demand.')}
     >
       {error && (
         <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
@@ -371,12 +373,12 @@ export default function AnalyticsPage() {
 
       {businesses.length === 0 && (
         <div className="card">
-          <h3>No business data yet</h3>
+          <h3>{t('dashboardAnalytics.empty.noBusinessTitle', 'No business data yet')}</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Create a business profile and receive bookings before analytics can be generated.
+            {t('dashboardAnalytics.empty.noBusinessBody', 'Create a business profile and receive bookings before analytics can be generated.')}
           </p>
           <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-            Create business profile
+            {t('dashboardAnalytics.empty.createBusinessProfile', 'Create business profile')}
           </Link>
         </div>
       )}
@@ -386,15 +388,15 @@ export default function AnalyticsPage() {
           <div className="card" style={{ marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <div>
-                <p className="small muted">Filters</p>
-                <h3 style={{ marginTop: '0.25rem' }}>Analytics controls</h3>
+                <p className="small muted">{t('dashboardAnalytics.controls.kicker', 'Filters')}</p>
+                <h3 style={{ marginTop: '0.25rem' }}>{t('dashboardAnalytics.controls.title', 'Analytics controls')}</h3>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Revenue here is estimated from listed service prices. It is not payment-confirmed revenue yet.
+                  {t('dashboardAnalytics.controls.body', 'Revenue here is estimated from listed service prices. It is not payment-confirmed revenue yet.')}
                 </p>
               </div>
 
               <button onClick={loadAnalytics} className="btn btn-ghost">
-                Refresh analytics
+                {t('dashboardAnalytics.controls.refresh', 'Refresh analytics')}
               </button>
             </div>
 
@@ -407,30 +409,30 @@ export default function AnalyticsPage() {
               }}
             >
               <label className="small muted">
-                Timeframe
+                {t('dashboardAnalytics.controls.timeframe', 'Timeframe')}
                 <select
                   value={timeframe}
                   onChange={(e) => setTimeframe(e.target.value as Timeframe)}
                   style={{ marginTop: '0.35rem', width: '100%' }}
                 >
-                  <option value="7d">Last 7 days</option>
-                  <option value="30d">Last 30 days</option>
-                  <option value="90d">Last 90 days</option>
-                  <option value="all">All time</option>
+                  <option value="7d">{t('dashboardAnalytics.timeframe.last7', 'Last 7 days')}</option>
+                  <option value="30d">{t('dashboardAnalytics.timeframe.last30', 'Last 30 days')}</option>
+                  <option value="90d">{t('dashboardAnalytics.timeframe.last90', 'Last 90 days')}</option>
+                  <option value="all">{t('dashboardAnalytics.timeframe.allTime', 'All time')}</option>
                 </select>
               </label>
 
               <label className="small muted">
-                Business
+                {t('dashboardNotifications.labels.business', 'Business')}
                 <select
                   value={selectedBusinessId}
                   onChange={(e) => setSelectedBusinessId(e.target.value)}
                   style={{ marginTop: '0.35rem', width: '100%' }}
                 >
-                  <option value="all">All businesses</option>
+                  <option value="all">{t('dashboardAnalytics.controls.allBusinesses', 'All businesses')}</option>
                   {businesses.map((business) => (
                     <option key={business.id} value={business.id}>
-                      {business.name}{business.published ? '' : ' (hidden)'}
+                      {business.name}{business.published ? '' : ` (${t('support.business.status.draft', 'hidden')})`}
                     </option>
                   ))}
                 </select>
@@ -442,52 +444,52 @@ export default function AnalyticsPage() {
             <div className="card">
               <p className="small muted">{timeframeLabel()}</p>
               <h3>{filteredBookings.length}</h3>
-              <p className="muted small">Total booking activity</p>
+              <p className="muted small">{t('dashboardAnalytics.metrics.totalBookingActivity', 'Total booking activity')}</p>
             </div>
 
             <div className="card" style={{ borderColor: 'rgba(45,212,191,0.25)' }}>
-              <p className="small muted">Estimated completed value</p>
+              <p className="small muted">{t('dashboardAnalytics.metrics.completedValue', 'Estimated completed value')}</p>
               <h3>£{analytics.estimatedCompletedValue.toFixed(2)}</h3>
-              <p className="muted small">Completed appointments only</p>
+              <p className="muted small">{t('dashboardAnalytics.metrics.completedValueBody', 'Completed appointments only')}</p>
             </div>
 
             <div className="card">
-              <p className="small muted">Average booking value</p>
+              <p className="small muted">{t('dashboardAnalytics.metrics.averageValue', 'Average booking value')}</p>
               <h3>£{analytics.averageBookingValue.toFixed(2)}</h3>
-              <p className="muted small">Average listed service price</p>
+              <p className="muted small">{t('dashboardAnalytics.metrics.averageValueBody', 'Average listed service price')}</p>
             </div>
 
             <div className="card" style={{ borderColor: analytics.approvalLoad > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-              <p className="small muted">Approval load</p>
+              <p className="small muted">{t('dashboardAnalytics.metrics.approvalLoad', 'Approval load')}</p>
               <h3>{analytics.approvalLoad}</h3>
-              <p className="muted small">Pending booking requests</p>
+              <p className="muted small">{t('dashboardBookings.summary.pendingRequests', 'Pending booking requests')}</p>
             </div>
           </div>
 
           <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
             <div className="card">
-              <p className="small muted">Confirmed upcoming value</p>
+              <p className="small muted">{t('dashboardAnalytics.metrics.confirmedValue', 'Confirmed upcoming value')}</p>
               <h3>£{analytics.estimatedConfirmedValue.toFixed(2)}</h3>
-              <p className="muted small">Estimated value of confirmed appointments</p>
+              <p className="muted small">{t('dashboardAnalytics.metrics.confirmedValueBody', 'Estimated value of confirmed appointments')}</p>
             </div>
 
             <div className="card">
-              <p className="small muted">Completion rate</p>
+              <p className="small muted">{t('dashboardAnalytics.metrics.completionRate', 'Completion rate')}</p>
               <h3>{analytics.completionRate}%</h3>
-              <p className="muted small">Completed / all bookings in this filter</p>
+              <p className="muted small">{t('dashboardAnalytics.metrics.completionRateBody', 'Completed / all bookings in this filter')}</p>
             </div>
 
             <div className="card">
-              <p className="small muted">Cancellation rate</p>
+              <p className="small muted">{t('dashboardAnalytics.metrics.cancellationRate', 'Cancellation rate')}</p>
               <h3>{analytics.cancellationRate}%</h3>
-              <p className="muted small">Cancelled / all bookings in this filter</p>
+              <p className="muted small">{t('dashboardAnalytics.metrics.cancellationRateBody', 'Cancelled / all bookings in this filter')}</p>
             </div>
 
             <div className="card">
-              <p className="small muted">Busiest day</p>
-              <h3>{analytics.busiestDay?.label || 'No data'}</h3>
+              <p className="small muted">{t('dashboardAnalytics.metrics.busiestDay', 'Busiest day')}</p>
+              <h3>{analytics.busiestDay?.label || t('dashboardAnalytics.empty.noData', 'No data')}</h3>
               <p className="muted small">
-                {analytics.busiestDay ? `${analytics.busiestDay.count} booking${analytics.busiestDay.count === 1 ? '' : 's'}` : 'No bookings in this filter'}
+                {analytics.busiestDay ? `${analytics.busiestDay.count} ${t('support.business.bookings', 'booking')}${analytics.busiestDay.count === 1 ? '' : 's'}` : t('dashboardAnalytics.empty.noBookingsInFilter', 'No bookings in this filter')}
               </p>
             </div>
           </div>
@@ -496,20 +498,20 @@ export default function AnalyticsPage() {
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 <div>
-                  <p className="small muted">Booking status</p>
-                  <h3>Status breakdown</h3>
+                  <p className="small muted">{t('dashboardAnalytics.status.kicker', 'Booking status')}</p>
+<h3>{t('dashboardAnalytics.status.title', 'Status breakdown')}</h3>
                 </div>
                 <Link href="/dashboard/bookings" className="btn btn-ghost">
-                  View bookings
+                  {t('dashboardBookings.businessPicker.cta', 'View bookings')}
                 </Link>
               </div>
 
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 {[
-                  { label: 'Completed', value: analytics.completed.length, color: 'var(--success)' },
-                  { label: 'Confirmed', value: analytics.confirmed.length, color: 'var(--success)' },
-                  { label: 'Pending', value: analytics.pending.length, color: 'var(--accent)' },
-                  { label: 'Cancelled', value: analytics.cancelled.length, color: 'var(--warning)' }
+                  { label: t('dashboardBookings.status.completed', 'Completed'), value: analytics.completed.length, color: 'var(--success)' },
+{ label: t('dashboardBookings.status.confirmed', 'Confirmed'), value: analytics.confirmed.length, color: 'var(--success)' },
+{ label: t('dashboardBookings.status.pendingApproval', 'Pending approval'), value: analytics.pending.length, color: 'var(--accent)' },
+{ label: t('dashboardBookings.status.cancelled', 'Cancelled'), value: analytics.cancelled.length, color: 'var(--warning)' }
                 ].map((row) => {
                   const width = filteredBookings.length > 0
                     ? Math.max(8, Math.round((row.value / filteredBookings.length) * 100))
@@ -547,11 +549,11 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="card">
-              <p className="small muted">Daily activity</p>
-              <h3 style={{ marginBottom: '1rem' }}>Bookings over time</h3>
+             <p className="small muted">{t('dashboardAnalytics.daily.kicker', 'Daily activity')}</p>
+<h3 style={{ marginBottom: '1rem' }}>{t('dashboardAnalytics.daily.title', 'Bookings over time')}</h3>
 
               {analytics.dailyActivity.length === 0 && (
-                <p className="muted">No booking activity in this timeframe.</p>
+                <p className="muted">{t('dashboardAnalytics.empty.noActivityTimeframe', 'No booking activity in this timeframe.')}</p>
               )}
 
               {analytics.dailyActivity.length > 0 && (
@@ -596,16 +598,16 @@ export default function AnalyticsPage() {
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 <div>
-                  <p className="small muted">Services</p>
-                  <h3>Most booked services</h3>
+                  <p className="small muted">{t('support.business.services', 'Services')}</p>
+<h3>{t('dashboardAnalytics.services.title', 'Most booked services')}</h3>
                 </div>
                 <Link href="/dashboard/services" className="btn btn-ghost">
-                  Manage services
+                  {t('dashboardAnalytics.services.manage', 'Manage services')}
                 </Link>
               </div>
 
               {analytics.topServices.length === 0 && (
-                <p className="muted">No service data in this filter yet.</p>
+                <p className="muted">{t('dashboardAnalytics.empty.noServiceData', 'No service data in this filter yet.')}</p>
               )}
 
               {analytics.topServices.length > 0 && (
@@ -620,13 +622,13 @@ export default function AnalyticsPage() {
                             <p className="small muted">#{index + 1}</p>
                             <strong>{service.name}</strong>
                             <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                              {service.completed} completed · {service.confirmed} confirmed · {service.cancelled} cancelled
+                              {service.completed} {t('dashboardBookings.status.completed', 'completed')} · {service.confirmed} {t('dashboardBookings.status.confirmed', 'confirmed')} · {service.cancelled} {t('dashboardBookings.status.cancelled', 'cancelled')}
                             </p>
                           </div>
 
                           <div style={{ textAlign: 'right' }}>
                             <strong>{service.count}</strong>
-                            <p className="small muted">bookings</p>
+                            <p className="small muted">{t('support.business.bookings', 'bookings')}</p>
                             <p className="small muted">£{service.estimatedValue.toFixed(2)}</p>
                           </div>
                         </div>
@@ -658,11 +660,11 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="card">
-              <p className="small muted">Businesses</p>
-              <h3 style={{ marginBottom: '1rem' }}>Business breakdown</h3>
+              <p className="small muted">{t('dashboardBusinesses.stats.businesses', 'Businesses')}</p>
+<h3 style={{ marginBottom: '1rem' }}>{t('dashboardAnalytics.businesses.title', 'Business breakdown')}</h3>
 
               {analytics.businessBreakdown.length === 0 && (
-                <p className="muted">No business booking data in this filter yet.</p>
+                <p className="muted">{t('dashboardAnalytics.empty.noBusinessBookingData', 'No business booking data in this filter yet.')}</p>
               )}
 
               {analytics.businessBreakdown.length > 0 && (
@@ -672,7 +674,7 @@ export default function AnalyticsPage() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
                         <div>
                           <strong>{business.name}</strong>
-                          <p className="small muted">{business.count} booking{business.count === 1 ? '' : 's'}</p>
+                          <p className="small muted">{business.count} {t('support.business.bookings', 'booking')}{business.count === 1 ? '' : 's'}</p>
                         </div>
 
                         <strong>£{business.value.toFixed(2)}</strong>
@@ -687,17 +689,17 @@ export default function AnalyticsPage() {
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '1rem' }}>
               <div>
-                <p className="small muted">Recent activity</p>
-                <h3>Latest bookings in this filter</h3>
+                <p className="small muted">{t('dashboardAnalytics.recent.kicker', 'Recent activity')}</p>
+<h3>{t('dashboardAnalytics.recent.title', 'Latest bookings in this filter')}</h3>
               </div>
 
               <Link href="/dashboard/bookings" className="btn btn-accent">
-                Open appointment manager
+                {t('dashboardAnalytics.recent.openManager', 'Open appointment manager')}
               </Link>
             </div>
 
             {analytics.recentActivity.length === 0 && (
-              <p className="muted">No booking activity found for this filter.</p>
+              <p className="muted">{t('dashboardAnalytics.empty.noActivityFilter', 'No booking activity found for this filter.')}</p>
             )}
 
             {analytics.recentActivity.length > 0 && (
@@ -708,7 +710,7 @@ export default function AnalyticsPage() {
                       <div>
                         <strong>{booking.customer_name}</strong>
                         <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                          {booking.businesses?.name || 'Business'} · {booking.services?.name || 'Service'}
+                          {booking.businesses?.name || t('dashboardNotifications.labels.businessFallback', 'Business')} · {booking.services?.name || t('dashboardNotifications.labels.serviceFallback', 'Service')}
                         </p>
                         <p className="small muted">
                           {new Date(booking.start_at).toLocaleString()}
