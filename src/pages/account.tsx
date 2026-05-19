@@ -443,105 +443,7 @@ export default function AccountPage() {
               </button>
             </form>
 
-            <div className="card workspace-card">
-              <div className="workspace-card-header">
-                <div>
-                  <p className="small muted">Workspaces</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)' }}>Open a workspace</h2>
-                  <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                    Each workspace has its own navigation so the app does not mix customer, staff, business and operator tasks.
-                  </p>
-                </div>
-              </div>
-
-              <div className="workspace-section-list">
-                {isAdmin && (
-                  <div className="workspace-section operator-section">
-                    <div>
-                      <strong>Operator</strong>
-                      <p className="small muted">Business control, account lookup and platform messaging.</p>
-                    </div>
-                    <div className="workspace-actions">
-                      <Link href="/admin" className="btn btn-accent">Dashboard</Link>
-                      <Link href="/admin/businesses" className="btn btn-ghost">Businesses</Link>
-                      <Link href="/admin/users" className="btn btn-ghost">Users</Link>
-                      <Link href="/admin/notifications" className="btn btn-ghost">Notifications</Link>
-                    </div>
-                  </div>
-                )}
-
-                {ownsBusiness && (
-                  <div className="workspace-section">
-                    <div>
-                      <strong>Business owner</strong>
-                      <p className="small muted">Bookings, setup, services, staff and public business page.</p>
-                    </div>
-                    <div className="workspace-actions">
-                      <Link href="/dashboard" className="btn btn-accent">Dashboard</Link>
-                      <Link href="/dashboard/bookings" className="btn btn-ghost">Bookings</Link>
-                      <Link href="/dashboard/businesses" className="btn btn-ghost">Setup</Link>
-                      <Link href="/dashboard/notifications" className="btn btn-ghost">Needs action</Link>
-                      <Link href={publicBusinessHref()} className="btn btn-ghost">Public page</Link>
-                    </div>
-                  </div>
-                )}
-
-                {hasStaffAccess && (
-                  <div className="workspace-section">
-                    <div>
-                      <strong>Staff</strong>
-                      <p className="small muted">Staff schedule and availability for {staffBusinessName()}.</p>
-                    </div>
-                    <div className="workspace-actions">
-                      <Link href="/staff" className="btn btn-accent">Schedule</Link>
-                      <Link href="/staff/availability" className="btn btn-ghost">Availability</Link>
-                    </div>
-                  </div>
-                )}
-
-                <div className="workspace-section">
-                  <div>
-                    <strong>Customer</strong>
-                    <p className="small muted">Browse businesses, manage bookings and read customer notifications.</p>
-                  </div>
-                  <div className="workspace-actions">
-                    <Link href="/explore" className="btn btn-accent">Explore</Link>
-                    <Link href="/my-bookings" className="btn btn-ghost">My bookings</Link>
-                    <Link href="/notifications" className="btn btn-ghost">Notifications</Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {ownedBusinesses.length > 0 && (
-              <div className="card">
-                <div className="workspace-card-header">
-                  <div>
-                    <p className="small muted">Business profiles</p>
-                    <h2 style={{ fontFamily: 'var(--font-display)' }}>Your businesses</h2>
-                  </div>
-                </div>
-
-                <div className="business-list">
-                  {ownedBusinesses.map((business) => (
-                    <div key={business.id} className="business-row">
-                      <div>
-                        <strong>{business.name}</strong>
-                        <p className="small muted" style={{ marginTop: '0.3rem' }}>
-                          {business.published ? 'Published' : 'Draft'} · {business.subscription_status || 'trial'} · {business.subscription_plan || 'starter'}
-                          {business.trial_ends_at ? ` · trial ends ${formatDate(business.trial_ends_at)}` : ''}
-                        </p>
-                      </div>
-                      <div className="workspace-actions">
-                        <Link href={`/explore/${business.id}`} className="btn btn-ghost">Public page</Link>
-                        <Link href={`/dashboard/businesses?businessId=${business.id}`} className="btn btn-accent">Manage</Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+           
             <div className="card support-card">
               <div>
                 <p className="small muted">Help and language</p>
@@ -552,9 +454,9 @@ export default function AccountPage() {
               </div>
 
               <div className="workspace-actions">
-                <Link href="/support" className="btn btn-ghost">Contact support</Link>
+                <Link href="/support" className="btn btn-ghost">{t('account.contactSupport')}</Link>
                 <span className="language-pill" title="Saved account language">{preferredLanguage === 'sq' ? 'SQ' : 'EN'}</span>
-                <button onClick={logout} className="btn btn-danger">Log out</button>
+                <button onClick={logout} className="btn btn-danger">{t('nav.logout')}</button>
               </div>
             </div>
           </div>
