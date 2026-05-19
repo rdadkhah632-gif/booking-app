@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type Props = {
   children: React.ReactNode
@@ -11,6 +12,7 @@ type Props = {
 
 export default function DashboardLayout({ children, title, subtitle }: Props) {
   const router = useRouter()
+  const { t } = useI18n()
   const [pendingCount, setPendingCount] = useState(0)
   const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(null)
 
@@ -61,20 +63,40 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     router.replace('/')
   }
 
-  const links = [
-    { href: '/dashboard', label: 'Overview' },
-    { href: '/dashboard/bookings', label: 'Bookings' },
-    { href: '/dashboard/notifications', label: pendingCount > 0 ? `Needs action (${pendingCount})` : 'Needs action', highlight: pendingCount > 0 },
-    { href: '/dashboard/analytics', label: 'Analytics' },
-    { href: '/dashboard/businesses', label: 'Setup hub' },
-    { href: '/dashboard/settings', label: 'Business settings' },
-    { href: '/dashboard/billing', label: 'Billing' },
-    { href: '/account', label: 'Account' }
+  const mainLinks = [
+    { href: '/dashboard', label: t('dashboardLayout.nav.overview', 'Overview') },
+    { href: '/dashboard/bookings', label: t('support.business.bookings', 'Bookings') },
+    {
+      href: '/dashboard/notifications',
+      label: pendingCount > 0
+        ? `${t('account.needsAction', 'Needs action')} (${pendingCount})`
+        : t('account.needsAction', 'Needs action'),
+      highlight: pendingCount > 0
+    },
+    { href: '/dashboard/analytics', label: t('dashboardHome.viewAnalytics', 'Analytics') }
+  ]
+
+  const setupLinks = [
+    { href: '/dashboard/businesses', label: t('dashboardLayout.nav.setupHub', 'Business setup hub') },
+    { href: '/dashboard/services', label: t('support.business.services', 'Services') },
+    { href: '/dashboard/staff', label: t('support.business.staff', 'Staff') },
+    { href: '/dashboard/availability', label: t('dashboardBusinesses.workingHours', 'Working hours') },
+    { href: '/dashboard/settings', label: t('dashboardSettings.pageTitle', 'Business settings') },
+    { href: '/dashboard/billing', label: t('home.trust.billing', 'Billing') }
+  ]
+
+  const accountLinks = [
+    { href: '/account', label: t('dashboardLayout.nav.accountSettings', 'Account settings') },
+    { href: '/support/business', label: t('nav.businessSupport', 'Business support') }
   ]
 
   const publicBusinessHref = useMemo(() => {
     return primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
   }, [primaryBusinessId])
+
+  function isActiveLink(href: string) {
+    return router.pathname === href || router.pathname.startsWith(`${href}/`)
+  }
 
   return (
     <main className="dashboard-layout">
@@ -84,21 +106,48 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             Mirë<span>book</span>
           </Link>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            Business control centre
+            {t('dashboardLayout.controlCentre', 'Business control centre')}
           </p>
         </div>
 
         <nav className="sidebar-nav">
-          {links.map((link) => (
+          <p className="sidebar-section-label">
+            {t('dashboardLayout.sections.business', 'Business')}
+          </p>
+
+          {mainLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`sidebar-link ${router.pathname === link.href || router.pathname.startsWith(`${link.href}/`) ? 'active' : ''} ${link.highlight ? 'active' : ''}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem'
-              }}
+              className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''} ${link.highlight ? 'active' : ''}`}
+            >
+              <span>{link.label}</span>
+            </Link>
+          ))}
+
+          <p className="sidebar-section-label">
+            {t('dashboardLayout.sections.setup', 'Setup')}
+          </p>
+
+          {setupLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''}`}
+            >
+              <span>{link.label}</span>
+            </Link>
+          ))}
+
+          <p className="sidebar-section-label">
+            {t('dashboardLayout.sections.account', 'Account')}
+          </p>
+
+          {accountLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''}`}
             >
               <span>{link.label}</span>
             </Link>
@@ -106,12 +155,8 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         </nav>
 
         <div style={{ marginTop: 'auto', padding: '1rem 0.5rem' }}>
-          <p className="small muted" style={{ marginBottom: '0.5rem', paddingLeft: '0.5rem' }}>
-            Customer view
-          </p>
-
           <Link href={publicBusinessHref} className="sidebar-link">
-            View public page
+            {t('dashboardLayout.previewBusiness', 'Preview business page')}
           </Link>
 
           <button
@@ -126,7 +171,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               color: 'var(--text-muted)'
             }}
           >
-            Log out
+            {t('auth.logout', 'Log out')}
           </button>
         </div>
       </aside>
@@ -149,22 +194,22 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             {subtitle && <p className="muted">{subtitle}</p>}
             <p className="small muted" style={{ marginTop: '0.45rem' }}>
               {pendingCount > 0
-                ? `${pendingCount} Mirëbook item${pendingCount === 1 ? '' : 's'} need your attention.`
-                : 'No customer actions need review right now. Use View public page to check how customers see your business.'}
+                ? `${pendingCount} ${t('dashboardLayout.pendingItems', 'Mirëbook item')}${pendingCount === 1 ? '' : 's'} ${t('dashboardLayout.needAttention', 'need your attention.')}`
+                : t('dashboardLayout.noActionsBody', 'No customer actions need review right now. Use Preview business page to check how customers see your business.')}
             </p>
           </div>
 
           <div className="dashboard-header-actions">
             <Link href="/dashboard/businesses" className="btn btn-ghost dashboard-header-secondary">
-              Setup hub
+              {t('dashboardSettings.setupHub', 'Setup hub')}
             </Link>
 
             <Link href="/dashboard/settings" className="btn btn-ghost dashboard-header-secondary">
-              Settings
+              {t('dashboardSettings.pageTitle', 'Business settings')}
             </Link>
 
             <Link href={publicBusinessHref} className="btn btn-ghost dashboard-header-secondary">
-              View public page
+              {t('dashboardLayout.previewBusiness', 'Preview business page')}
             </Link>
 
             <Link
@@ -178,7 +223,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               }}
             >
               <span aria-hidden="true">🔔</span>
-              <span>{pendingCount > 0 ? 'Needs action' : 'No actions'}</span>
+              <span>{pendingCount > 0 ? t('account.needsAction', 'Needs action') : t('dashboardLayout.noActions', 'No actions')}</span>
 
               {pendingCount > 0 && (
                 <span
@@ -206,6 +251,13 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         {children}
       </section>
       <style jsx>{`
+        .sidebar-section-label {
+          font-size: 0.74rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--text-muted);
+          padding: 0.75rem 0.5rem 0.35rem;
+        }
         .dashboard-page-header {
           display: flex;
           justify-content: space-between;
