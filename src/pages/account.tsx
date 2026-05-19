@@ -48,7 +48,7 @@ type AccountStats = {
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return 'Not set'
+  if (!value) return null
   return new Date(value).toLocaleDateString()
 }
 
@@ -59,7 +59,7 @@ function roleLabel(role?: string | null) {
 
 export default function AccountPage() {
   const router = useRouter()
-  const { locale, setLocale } = useI18n()
+  const { locale, setLocale, t } = useI18n()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [ownedBusinesses, setOwnedBusinesses] = useState<BusinessRow[]>([])
@@ -113,7 +113,7 @@ export default function AccountPage() {
       .single()
 
     if (profileError || !profileData) {
-      setError(profileError?.message || 'Could not load account profile.')
+      setError(profileError?.message || t('account.error.loadProfile'))
       setLoading(false)
       return
     }
@@ -257,7 +257,7 @@ export default function AccountPage() {
       return
     }
 
-    setMessage('Mirëbook account details updated.')
+    setMessage(t('account.saveSuccess'))
     await loadProfile()
   }
 
@@ -266,7 +266,7 @@ export default function AccountPage() {
   }
 
   function staffBusinessName() {
-    return staffProfile?.business_name || 'Linked business'
+    return staffProfile?.business_name || t('account.linkedBusiness')
   }
 
   async function logout() {
@@ -281,7 +281,7 @@ export default function AccountPage() {
       <section className="container" style={{ padding: '42px 24px 80px' }}>
         {loading && (
           <div className="card">
-            <p className="muted">Loading your Mirëbook account...</p>
+            <p className="muted">{t('account.loading')}</p>
           </div>
         )}
 
@@ -295,16 +295,16 @@ export default function AccountPage() {
           <div className="account-page-shell">
             <div className="account-header">
               <div>
-                <p className="small muted">Account settings</p>
-                <h1 className="page-title">Your profile</h1>
-                <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                  Manage your personal contact details and open the workspaces connected to this login. Operator, business, staff and customer areas stay separated.
-                </p>
+               <p className="small muted">{t('account.kicker')}</p>
+<h1 className="page-title">{t('account.title')}</h1>
+<p className="page-sub" style={{ marginTop: '0.5rem' }}>
+  {t('account.subtitle')}
+</p>
               </div>
 
               <div className="account-header-actions">
-                <Link href="/support" className="btn btn-ghost">Support</Link>
-                <button onClick={logout} className="btn btn-danger">Log out</button>
+              <Link href="/support" className="btn btn-ghost">{t('nav.support')}</Link>
+<button onClick={logout} className="btn btn-danger">{t('nav.logout')}</button>
               </div>
             </div>
 
@@ -393,34 +393,34 @@ export default function AccountPage() {
 
             <form onSubmit={saveProfile} className="card account-form-card">
               <div>
-                <h2 style={{ fontFamily: 'var(--font-display)' }}>Contact details</h2>
-                <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  Keep this simple. Role/admin access is controlled from the operator area, not from the account page.
-                </p>
+               <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('account.contactDetails')}</h2>
+<p className="small muted" style={{ marginTop: '0.4rem' }}>
+  {t('account.contactDetailsBody')}
+</p>
               </div>
 
               <div>
-                <label className="small muted">Full name</label>
+                <label className="small muted">{t('account.fullName')}</label>
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your full name"
+                  placeholder={t('account.fullNamePlaceholder')}
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
               </div>
 
               <div>
-                <label className="small muted">Phone number</label>
+                <label className="small muted">{t('common.phone')}</label>
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Your phone number"
+                  placeholder={t('account.phonePlaceholder')}
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
               </div>
 
               <div>
-                <label className="small muted">Preferred language</label>
+                <label className="small muted">{t('register.preferredLanguage')}</label>
                 <select
                   value={preferredLanguage}
                   onChange={(e) => {
@@ -434,12 +434,12 @@ export default function AccountPage() {
                   <option value="sq">Shqip</option>
                 </select>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  This is saved to your account and used when you sign in on another device.
+                  {t('account.languageBody')}
                 </p>
               </div>
 
               <button type="submit" disabled={saving} className="btn btn-accent">
-                {saving ? 'Saving...' : 'Save account details'}
+                {saving ? t('account.saving') : t('account.saveButton')}
               </button>
             </form>
 

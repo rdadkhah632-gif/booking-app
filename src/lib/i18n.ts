@@ -257,7 +257,22 @@ export const translations: Record<Locale, TranslationTree> = {
     'support.business.subject.account': 'Account or login issue',
     'support.business.subject.other': 'Other business issue',
     'support.staff.title': 'Staff support',
-    'support.staff.body': 'Get help with staff account linking, schedule access, availability problems or being connected to the wrong business.'
+    'support.staff.body': 'Get help with staff account linking, schedule access, availability problems or being connected to the wrong business.',
+    'account.loading': 'Loading your Mirëbook account...',
+    'account.error.loadProfile': 'Could not load account profile.',
+    'account.saveSuccess': 'Mirëbook account details updated.',
+    'account.linkedBusiness': 'Linked business',
+    'account.kicker': 'Account settings',
+    'account.title': 'Your profile',
+    'account.subtitle': 'Manage your personal contact details and open the workspaces connected to this login. Operator, business, staff and customer areas stay separated.',
+    'account.contactDetails': 'Contact details',
+    'account.contactDetailsBody': 'Keep this simple. Role/admin access is controlled from the operator area, not from the account page.',
+    'account.fullName': 'Full name',
+    'account.fullNamePlaceholder': 'Your full name',
+    'account.phonePlaceholder': 'Your phone number',
+    'account.languageBody': 'This is saved to your account and used when you sign in on another device.',
+    'account.saving': 'Saving...',
+    'account.saveButton': 'Save account details',
   },
 
   sq: {
@@ -510,7 +525,22 @@ export const translations: Record<Locale, TranslationTree> = {
     'support.business.subject.account': 'Problem me llogarinë ose hyrjen',
     'support.business.subject.other': 'Problem tjetër biznesi',
     'support.staff.title': 'Ndihmë për staf',
-    'support.staff.body': 'Merrni ndihmë për lidhjen e llogarisë së stafit, aksesin në orar, disponueshmërinë ose lidhjen me biznesin e gabuar.'
+    'support.staff.body': 'Merrni ndihmë për lidhjen e llogarisë së stafit, aksesin në orar, disponueshmërinë ose lidhjen me biznesin e gabuar.',
+    'account.loading': 'Duke ngarkuar llogarinë tënde Mirëbook...',
+    'account.error.loadProfile': 'Profili i llogarisë nuk u ngarkua.',
+    'account.saveSuccess': 'Detajet e llogarisë Mirëbook u përditësuan.',
+    'account.linkedBusiness': 'Biznes i lidhur',
+    'account.kicker': 'Cilësimet e llogarisë',
+    'account.title': 'Profili yt',
+    'account.subtitle': 'Menaxho detajet personale të kontaktit dhe hapësirat e punës të lidhura me këtë hyrje. Zonat e operatorit, biznesit, stafit dhe klientit qëndrojnë të ndara.',
+    'account.contactDetails': 'Detajet e kontaktit',
+    'account.contactDetailsBody': 'Mbaje të thjeshtë. Roli/aksesi admin kontrollohet nga zona e operatorit, jo nga faqja e llogarisë.',
+    'account.fullName': 'Emri i plotë',
+    'account.fullNamePlaceholder': 'Emri yt i plotë',
+    'account.phonePlaceholder': 'Numri yt i telefonit',
+    'account.languageBody': 'Kjo ruhet në llogarinë tënde dhe përdoret kur hyn nga një pajisje tjetër.',
+    'account.saving': 'Duke ruajtur...',
+    'account.saveButton': 'Ruaj detajet e llogarisë',
   }
 }
 
