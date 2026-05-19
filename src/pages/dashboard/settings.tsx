@@ -2,78 +2,22 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
+import BusinessSettingsActions from '@/components/dashboard-settings/BusinessSettingsActions'
+import BusinessSettingsBusinessPicker from '@/components/dashboard-settings/BusinessSettingsBusinessPicker'
+import BusinessSettingsHeader from '@/components/dashboard-settings/BusinessSettingsHeader'
+import BusinessSettingsSummary from '@/components/dashboard-settings/BusinessSettingsSummary'
+import BookingApprovalSettings from '@/components/dashboard-settings/BookingApprovalSettings'
+import BookingRuleSettings from '@/components/dashboard-settings/BookingRuleSettings'
+import PolicySettings from '@/components/dashboard-settings/PolicySettings'
+import RegionSettings from '@/components/dashboard-settings/RegionSettings'
+import { Business } from '@/components/dashboard-settings/dashboardSettingsTypes'
+import { defaultSettings } from '@/components/dashboard-settings/settingsOptions'
+import { useI18n } from '@/lib/useI18n'
 import { supabase } from '@/lib/supabaseClient'
-
-type Business = {
-  id: string
-  name: string
-  published?: boolean | null
-  auto_accept_bookings?: boolean | null
-  booking_interval_minutes?: number | null
-  min_notice_minutes?: number | null
-  max_advance_days?: number | null
-  buffer_before_minutes?: number | null
-  buffer_after_minutes?: number | null
-  cancellation_policy?: string | null
-  reschedule_policy?: string | null
-  timezone?: string | null
-  currency?: string | null
-}
-
-const INTERVAL_OPTIONS = [15, 30, 45, 60]
-const NOTICE_OPTIONS = [
-  { label: 'No minimum notice', value: 0 },
-  { label: '1 hour', value: 60 },
-  { label: '2 hours', value: 120 },
-  { label: '4 hours', value: 240 },
-  { label: '12 hours', value: 720 },
-  { label: '24 hours', value: 1440 },
-  { label: '48 hours', value: 2880 }
-]
-const ADVANCE_OPTIONS = [
-  { label: '2 weeks', value: 14 },
-  { label: '1 month', value: 30 },
-  { label: '2 months', value: 60 },
-  { label: '3 months', value: 90 },
-  { label: '6 months', value: 180 }
-]
-const BUFFER_OPTIONS = [0, 5, 10, 15, 30, 45, 60]
-const TIMEZONE_OPTIONS = [
-  'Europe/London',
-  'Europe/Tirane',
-  'Europe/Rome',
-  'Europe/Paris',
-  'Europe/Berlin'
-]
-const CURRENCY_OPTIONS = [
-  { label: 'GBP — British pound', value: 'GBP' },
-  { label: 'EUR — Euro', value: 'EUR' },
-  { label: 'ALL — Albanian lek', value: 'ALL' },
-  { label: 'USD — US dollar', value: 'USD' }
-]
-
-function defaultSettings(business: Business): Business {
-  return {
-    ...business,
-    auto_accept_bookings: business.auto_accept_bookings ?? false,
-    booking_interval_minutes: business.booking_interval_minutes ?? 30,
-    min_notice_minutes: business.min_notice_minutes ?? 120,
-    max_advance_days: business.max_advance_days ?? 60,
-    buffer_before_minutes: business.buffer_before_minutes ?? 0,
-    buffer_after_minutes: business.buffer_after_minutes ?? 0,
-    cancellation_policy:
-      business.cancellation_policy ||
-      'Customers can cancel by contacting the business. Online cancellation rules will be added soon.',
-    reschedule_policy:
-      business.reschedule_policy ||
-      'Customers can request a new time from My Bookings. The business can accept or decline the request.',
-    timezone: business.timezone || 'Europe/London',
-    currency: business.currency || 'GBP'
-  }
-}
 
 export default function DashboardSettingsPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [selectedBusinessId, setSelectedBusinessId] = useState('')
@@ -107,7 +51,9 @@ export default function DashboardSettingsPage() {
 
   const selectedBusinessPublicHref = settings ? `/explore/${settings.id}` : '/dashboard/businesses'
 
-  const approvalModeLabel = settings?.auto_accept_bookings ? 'Instant confirmation' : 'Manual approval'
+  const approvalModeLabel = settings?.auto_accept_bookings
+    ? t('dashboardSettings.approval.instantTitle', 'Instant confirmation')
+    : t('dashboardSettings.approval.manualTitle', 'Manual approval')
 
   async function loadSettings() {
     setLoading(true)
@@ -166,7 +112,7 @@ export default function DashboardSettingsPage() {
 
       setLoading(false)
     } catch (err: any) {
-      setError(err.message || 'Could not load business settings.')
+      setError(err.message || t('dashboardSettings.error.load', 'Could not load business settings.'))
       setLoading(false)
     }
   }
@@ -227,38 +173,44 @@ export default function DashboardSettingsPage() {
       return
     }
 
-    setSuccess(`${settings.name} settings saved. ${settings.auto_accept_bookings ? 'New bookings will confirm instantly.' : 'New bookings will go to Needs action for approval.'}`)
+    setSuccess(
+      `${settings.name} ${t('dashboardSettings.success.saved', 'settings saved.')} ${
+        settings.auto_accept_bookings
+          ? t('dashboardSettings.success.instant', 'New bookings will confirm instantly.')
+          : t('dashboardSettings.success.manual', 'New bookings will go to Needs action for approval.')
+      }`
+    )
     await loadSettings()
   }
 
   function settingSummary() {
-    if (!settings) return 'Choose a business to manage its booking settings.'
+    if (!settings) return t('dashboardSettings.chooseBusiness', 'Choose a business to manage its booking settings.')
 
-    return `${approvalModeLabel} · ${settings.booking_interval_minutes || 30} minute slots · ${settings.min_notice_minutes || 0} minute notice · ${settings.max_advance_days || 60} days ahead`
+    return `${approvalModeLabel} · ${settings.booking_interval_minutes || 30} ${t('dashboardSettings.summary.minuteSlots', 'minute slots')} · ${settings.min_notice_minutes || 0} ${t('dashboardSettings.summary.minuteNotice', 'minute notice')} · ${settings.max_advance_days || 60} ${t('dashboardSettings.summary.daysAhead', 'days ahead')}`
   }
 
   return (
     <DashboardLayout
-      title="Business settings"
-      subtitle={selectedBusiness ? `Control booking approval, rules and policies for ${selectedBusiness.name}.` : 'Control booking approval, rules and policies.'}
+      title={t('dashboardSettings.pageTitle', 'Business settings')}
+      subtitle={selectedBusiness ? `${t('dashboardSettings.subtitleSelected', 'Control booking approval, rules and policies for')} ${selectedBusiness.name}.` : t('dashboardSettings.subtitle', 'Control booking approval, rules and policies.')}
     >
       {loading && (
         <div className="card">
-          <p className="muted">Loading Mirëbook business settings...</p>
+          <p className="muted">{t('dashboardSettings.loading', 'Loading Mirëbook business settings...')}</p>
         </div>
       )}
 
       {!loading && businesses.length === 0 && (
         <div className="card">
-          <p className="small" style={{ color: 'var(--warning)' }}>No business profile found</p>
+          <p className="small" style={{ color: 'var(--warning)' }}>{t('dashboardSettings.empty.kicker', 'No business profile found')}</p>
           <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.35rem' }}>
-            Create a business first
+            {t('dashboardSettings.empty.title', 'Create a business first')}
           </h2>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Business settings become available after you create a Mirëbook business profile.
+            {t('dashboardSettings.empty.body', 'Business settings become available after you create a Mirëbook business profile.')}
           </p>
           <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-            Open setup hub
+            {t('dashboardSettings.setupHub', 'Open setup hub')}
           </Link>
         </div>
       )}
@@ -277,323 +229,56 @@ export default function DashboardSettingsPage() {
             </div>
           )}
 
-          <div className="settings-hero card">
-            <div>
-              <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook settings</p>
-              <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                Booking rules and customer policies
-              </h2>
-              <p className="muted" style={{ marginTop: '0.5rem' }}>
-                Set how bookings are approved, how far ahead customers can book, and what policy wording customers see before requesting changes.
-              </p>
-            </div>
+          <BusinessSettingsHeader
+            selectedBusiness={selectedBusiness}
+            publicHref={selectedBusinessPublicHref}
+            saving={saving}
+            onSave={saveSettings}
+          />
 
-            <div className="settings-hero-actions">
-              <Link href="/dashboard/businesses" className="btn btn-ghost">
-                Setup hub
-              </Link>
-              <Link href="/dashboard/notifications" className="btn btn-ghost">
-                Needs action
-              </Link>
-              <Link href="/dashboard/billing" className="btn btn-ghost">
-                Billing
-              </Link>
-              <Link href={selectedBusinessPublicHref} className="btn btn-ghost">
-                View public page
-              </Link>
-              <button className="btn btn-accent" onClick={saveSettings} disabled={saving}>
-                {saving ? 'Saving...' : 'Save settings'}
-              </button>
-            </div>
-          </div>
+          <BusinessSettingsSummary
+            selectedBusiness={selectedBusiness}
+            settings={settings}
+            settingsReadyScore={settingsReadyScore}
+            approvalModeLabel={approvalModeLabel}
+            settingSummary={settingSummary()}
+          />
 
-          <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
-            <div className="card">
-              <p className="small muted">Selected business</p>
-              <h3>{selectedBusiness?.name || 'Business'}</h3>
-              <p className="muted small">
-                {selectedBusiness?.published ? 'Published on Mirëbook' : 'Hidden / draft'}
-              </p>
-              <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                {approvalModeLabel}
-              </p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">Settings readiness</p>
-              <h3>{settingsReadyScore}%</h3>
-              <p className="muted small">Booking rules and policies filled in</p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">Current rules</p>
-              <h3 style={{ fontSize: '1rem' }}>{settingSummary()}</h3>
-              <p className="muted small">Used by public booking and reschedule flows</p>
-            </div>
-          </div>
-
-          {businesses.length > 1 && (
-            <div className="card" style={{ marginBottom: '1.5rem' }}>
-              <p className="small muted">Manage another business</p>
-              <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                Choose business settings
-              </h2>
-
-              <div className="settings-business-list">
-                {businesses.map((business) => (
-                  <button
-                    key={business.id}
-                    type="button"
-                    className={business.id === selectedBusinessId ? 'settings-business-card settings-business-card-active' : 'settings-business-card'}
-                    onClick={() => selectBusiness(business.id)}
-                  >
-                    <strong>{business.name}</strong>
-                    <span>{business.published ? 'Published' : 'Hidden / draft'}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <BusinessSettingsBusinessPicker
+            businesses={businesses}
+            selectedBusinessId={selectedBusinessId}
+            onSelectBusiness={selectBusiness}
+          />
 
           <div className="settings-grid">
-            <div className="card settings-card settings-approval-card">
-              <div>
-                <p className="small muted">Booking approval</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  Confirmation mode
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  Choose whether customers are confirmed instantly or whether each booking needs business approval first.
-                </p>
-              </div>
+            <BookingApprovalSettings
+              settings={settings}
+              approvalModeLabel={approvalModeLabel}
+              updateSetting={updateSetting}
+            />
 
-              <div className="settings-mode-grid" role="radiogroup" aria-label="Booking confirmation mode">
-                <button
-                  type="button"
-                  className={settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
-                  onClick={() => updateSetting('auto_accept_bookings', true)}
-                >
-                  <span className="settings-mode-title">Instant confirmation</span>
-                  <span className="small muted">Customers get a confirmed booking as soon as they pick an available slot.</span>
-                </button>
+            <BookingRuleSettings
+              settings={settings}
+              updateSetting={updateSetting}
+            />
 
-                <button
-                  type="button"
-                  className={!settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
-                  onClick={() => updateSetting('auto_accept_bookings', false)}
-                >
-                  <span className="settings-mode-title">Manual approval</span>
-                  <span className="small muted">New bookings appear in Needs action until the business accepts or declines them.</span>
-                </button>
-              </div>
-
-              <div className="settings-current-mode">
-                <p className="small muted">Current mode</p>
-                <strong>{approvalModeLabel}</strong>
-              </div>
-            </div>
-
-            <div className="card settings-card">
-              <div>
-                <p className="small muted">Slot interval</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  Booking slot size
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  This controls the time grid customers see when choosing appointment slots.
-                </p>
-              </div>
-
-              <select
-                value={settings.booking_interval_minutes || 30}
-                onChange={(e) => updateSetting('booking_interval_minutes', Number(e.target.value))}
-              >
-                {INTERVAL_OPTIONS.map((minutes) => (
-                  <option key={minutes} value={minutes}>{minutes} minutes</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="card settings-card">
-              <div>
-                <p className="small muted">Minimum notice</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  How soon customers can book
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  Prevents last-minute bookings if your business needs preparation time.
-                </p>
-              </div>
-
-              <select
-                value={settings.min_notice_minutes ?? 120}
-                onChange={(e) => updateSetting('min_notice_minutes', Number(e.target.value))}
-              >
-                {NOTICE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="card settings-card">
-              <div>
-                <p className="small muted">Advance booking window</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  How far ahead customers can book
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  Useful for businesses that only want to expose a limited future calendar.
-                </p>
-              </div>
-
-              <select
-                value={settings.max_advance_days ?? 60}
-                onChange={(e) => updateSetting('max_advance_days', Number(e.target.value))}
-              >
-                {ADVANCE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="card settings-card">
-              <div>
-                <p className="small muted">Buffers</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  Time around appointments
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  Buffers block extra time before or after appointments for clean-up, travel, admin or setup.
-                </p>
-              </div>
-
-              <div className="settings-two-column">
-                <label className="small muted">
-                  Before
-                  <select
-                    value={settings.buffer_before_minutes ?? 0}
-                    onChange={(e) => updateSetting('buffer_before_minutes', Number(e.target.value))}
-                    style={{ marginTop: '0.35rem' }}
-                  >
-                    {BUFFER_OPTIONS.map((minutes) => (
-                      <option key={minutes} value={minutes}>{minutes} minutes</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="small muted">
-                  After
-                  <select
-                    value={settings.buffer_after_minutes ?? 0}
-                    onChange={(e) => updateSetting('buffer_after_minutes', Number(e.target.value))}
-                    style={{ marginTop: '0.35rem' }}
-                  >
-                    {BUFFER_OPTIONS.map((minutes) => (
-                      <option key={minutes} value={minutes}>{minutes} minutes</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </div>
-
-            <div className="card settings-card">
-              <div>
-                <p className="small muted">Region settings</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  Timezone and currency
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  These defaults support UK, Albania and future international launches.
-                </p>
-              </div>
-
-              <div className="settings-two-column">
-                <label className="small muted">
-                  Timezone
-                  <select
-                    value={settings.timezone || 'Europe/London'}
-                    onChange={(e) => updateSetting('timezone', e.target.value)}
-                    style={{ marginTop: '0.35rem' }}
-                  >
-                    {TIMEZONE_OPTIONS.map((timezone) => (
-                      <option key={timezone} value={timezone}>{timezone}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="small muted">
-                  Currency
-                  <select
-                    value={settings.currency || 'GBP'}
-                    onChange={(e) => updateSetting('currency', e.target.value)}
-                    style={{ marginTop: '0.35rem' }}
-                  >
-                    {CURRENCY_OPTIONS.map((currency) => (
-                      <option key={currency.value} value={currency.value}>{currency.label}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </div>
+            <RegionSettings
+              settings={settings}
+              updateSetting={updateSetting}
+            />
           </div>
 
-          <div className="grid-2" style={{ marginTop: '1.5rem' }}>
-            <div className="card settings-card">
-              <div>
-                <p className="small muted">Cancellation policy</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  Customer cancellation wording
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  This wording can be shown on booking, confirmation and account pages.
-                </p>
-              </div>
+          <PolicySettings
+            settings={settings}
+            updateSetting={updateSetting}
+          />
 
-              <textarea
-                value={settings.cancellation_policy || ''}
-                onChange={(e) => updateSetting('cancellation_policy', e.target.value)}
-                rows={5}
-                placeholder="Example: Customers can cancel up to 24 hours before their appointment."
-              />
-            </div>
-
-            <div className="card settings-card">
-              <div>
-                <p className="small muted">Reschedule policy</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  Customer reschedule wording
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  Keep this clear so customers know whether requests need business approval.
-                </p>
-              </div>
-
-              <textarea
-                value={settings.reschedule_policy || ''}
-                onChange={(e) => updateSetting('reschedule_policy', e.target.value)}
-                rows={5}
-                placeholder="Example: Customers can request a new time. The business must approve the change."
-              />
-            </div>
-          </div>
-
-          <div className="settings-final-actions">
-            <Link href="/dashboard/businesses" className="btn btn-ghost">
-              Back to setup hub
-            </Link>
-
-            <Link href={selectedBusinessPublicHref} className="btn btn-ghost">
-              View public page
-            </Link>
-
-            <Link href="/dashboard/notifications" className="btn btn-ghost">
-              Needs action
-            </Link>
-
-            <button className="btn btn-accent" onClick={saveSettings} disabled={saving}>
-              {saving ? 'Saving...' : 'Save Mirëbook settings'}
-            </button>
-          </div>
+          <BusinessSettingsActions
+            selectedBusiness={selectedBusiness}
+            publicHref={selectedBusinessPublicHref}
+            saving={saving}
+            onSave={saveSettings}
+          />
         </>
       )}
 
