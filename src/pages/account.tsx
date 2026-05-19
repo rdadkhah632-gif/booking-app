@@ -47,11 +47,6 @@ type AccountStats = {
   pendingBusinessActions: number
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return null
-  return new Date(value).toLocaleDateString()
-}
-
 function roleLabel(role?: string | null) {
   if (!role) return 'Customer'
   return role.charAt(0).toUpperCase() + role.slice(1)
@@ -73,6 +68,7 @@ export default function AccountPage() {
     pendingCustomerBookings: 0,
     pendingBusinessActions: 0
   })
+
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [preferredLanguage, setPreferredLanguage] = useState<Locale>('en')
@@ -87,12 +83,12 @@ export default function AccountPage() {
 
   const workspaceLabel = useMemo(() => {
     const labels: string[] = []
-    if (isAdmin) labels.push('Operator')
-    if (ownsBusiness) labels.push('Business owner')
-    if (hasStaffAccess) labels.push('Staff')
-    labels.push('Customer')
+    if (isAdmin) labels.push(t('account.access.operator', 'Operator'))
+    if (ownsBusiness) labels.push(t('account.access.businessOwner', 'Business owner'))
+    if (hasStaffAccess) labels.push(t('account.access.staff', 'Staff'))
+    labels.push(t('account.access.customer', 'Customer'))
     return labels.join(' + ')
-  }, [isAdmin, ownsBusiness, hasStaffAccess])
+  }, [isAdmin, ownsBusiness, hasStaffAccess, t])
 
   async function loadProfile() {
     setLoading(true)
@@ -113,16 +109,17 @@ export default function AccountPage() {
       .single()
 
     if (profileError || !profileData) {
-      setError(profileError?.message || t('account.error.loadProfile'))
+      setError(profileError?.message || t('account.error.loadProfile', 'Could not load account profile.'))
       setLoading(false)
       return
     }
 
     const currentProfile = profileData as Profile
+    const profileLanguage: Locale = currentProfile.preferred_language === 'sq' ? 'sq' : 'en'
+
     setProfile(currentProfile)
     setFullName(currentProfile.full_name || '')
     setPhone(currentProfile.phone || '')
-    const profileLanguage = currentProfile.preferred_language === 'sq' ? 'sq' : 'en'
     setPreferredLanguage(profileLanguage)
     setLocale(profileLanguage)
 
@@ -160,9 +157,7 @@ export default function AccountPage() {
     }
 
     setStaffProfile(resolvedStaffProfile)
-
     await loadStats(session.user.id, loadedBusinesses.map((business) => business.id), !!currentProfile.is_admin)
-
     setLoading(false)
   }
 
@@ -250,14 +245,14 @@ export default function AccountPage() {
       .eq('id', profile.id)
 
     setSaving(false)
-    await setLocale(preferredLanguage)
+    setLocale(preferredLanguage)
 
     if (updateError) {
       setError(updateError.message)
       return
     }
 
-    setMessage(t('account.saveSuccess'))
+    setMessage(t('account.saveSuccess', 'Mirëbook account details updated.'))
     await loadProfile()
   }
 
@@ -266,7 +261,7 @@ export default function AccountPage() {
   }
 
   function staffBusinessName() {
-    return staffProfile?.business_name || t('account.linkedBusiness')
+    return staffProfile?.business_name || t('account.linkedBusiness', 'Linked business')
   }
 
   async function logout() {
@@ -281,7 +276,7 @@ export default function AccountPage() {
       <section className="container" style={{ padding: '42px 24px 80px' }}>
         {loading && (
           <div className="card">
-            <p className="muted">{t('account.loading')}</p>
+            <p className="muted">{t('account.loading', 'Loading your Mirëbook account...')}</p>
           </div>
         )}
 
@@ -295,16 +290,16 @@ export default function AccountPage() {
           <div className="account-page-shell">
             <div className="account-header">
               <div>
-               <p className="small muted">{t('account.kicker')}</p>
-<h1 className="page-title">{t('account.title')}</h1>
-<p className="page-sub" style={{ marginTop: '0.5rem' }}>
-  {t('account.subtitle')}
-</p>
+                <p className="small muted">{t('account.kicker', 'Account')}</p>
+                <h1 className="page-title">{t('account.pageTitle', 'Account settings')}</h1>
+                <p className="page-sub" style={{ marginTop: '0.5rem' }}>
+                  {t('account.pageSubtitle', 'Manage your personal account details, language preference and security. Business setup is managed separately in Business settings.')}
+                </p>
               </div>
 
               <div className="account-header-actions">
-              <Link href="/support" className="btn btn-ghost">{t('nav.support')}</Link>
-<button onClick={logout} className="btn btn-danger">{t('nav.logout')}</button>
+                <Link href="/support" className="btn btn-ghost">{t('nav.support', 'Support')}</Link>
+                <button onClick={logout} className="btn btn-danger">{t('auth.logout', 'Log out')}</button>
               </div>
             </div>
 
@@ -314,24 +309,35 @@ export default function AccountPage() {
               </div>
             )}
 
+            <div className="card" style={{ borderColor: 'rgba(255,107,53,0.25)' }}>
+              <p className="small muted">{t('account.businessSettingsKicker', 'Business settings are separate')}</p>
+              <h3 style={{ marginTop: '0.25rem' }}>{t('account.businessSettingsTitle', 'Need to change your business setup?')}</h3>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {t('account.businessSettingsBody', 'Use Business settings for booking rules, approval mode, policies, billing, services, staff and public business details.')}
+              </p>
+              <Link href="/dashboard/settings" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                {t('dashboardSettings.pageTitle', 'Business settings')}
+              </Link>
+            </div>
+
             {isAdmin && (
               <div className="card operator-account-card">
                 <div className="operator-account-row">
                   <div>
-                    <p className="small" style={{ color: 'var(--accent)' }}>Operator access</p>
+                    <p className="small" style={{ color: 'var(--accent)' }}>{t('account.operator.kicker', 'Operator access')}</p>
                     <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                      Mirëbook operator workspace
+                      {t('account.operator.title', 'Mirëbook operator tools')}
                     </h2>
                     <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                      Use this for business onboarding, trial access, pricing, account lookup and platform notifications. Normal customer and business dashboards are separate.
+                      {t('account.operator.body', 'Use this for business onboarding, trial access, pricing, account lookup and platform notifications. Customer and business dashboards are separate.')}
                     </p>
                   </div>
 
                   <div className="operator-account-actions">
-                    <Link href="/admin" className="btn btn-accent">Operator dashboard</Link>
-                    <Link href="/admin/businesses" className="btn btn-ghost">Businesses</Link>
-                    <Link href="/admin/users" className="btn btn-ghost">Users</Link>
-                    <Link href="/admin/notifications" className="btn btn-ghost">Notifications</Link>
+                    <Link href="/admin" className="btn btn-accent">{t('account.operator.dashboard', 'Operator dashboard')}</Link>
+                    <Link href="/admin/businesses" className="btn btn-ghost">{t('dashboardBusinesses.stats.businesses', 'Businesses')}</Link>
+                    <Link href="/admin/users" className="btn btn-ghost">{t('account.operator.users', 'Users')}</Link>
+                    <Link href="/admin/notifications" className="btn btn-ghost">{t('dashboardHome.openNotifications', 'Notifications')}</Link>
                   </div>
                 </div>
               </div>
@@ -339,88 +345,92 @@ export default function AccountPage() {
 
             <div className="grid-2 account-summary-grid">
               <div className="card">
-                <p className="small muted">Email</p>
+                <p className="small muted">{t('account.email', 'Email')}</p>
                 <strong>{profile.email}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  Used for login, booking confirmations, staff linking and future email notifications.
+                  {t('account.emailBody', 'Used for login, booking confirmations, staff linking and future email notifications.')}
                 </p>
               </div>
 
               <div className="card">
-                <p className="small muted">Connected workspaces</p>
+                <p className="small muted">{t('account.accessSummary', 'Access summary')}</p>
                 <strong>{workspaceLabel}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  Profile role: {roleLabel(profile.role)}. Access is decided by your linked customer, business, staff and operator records.
+                  {t('account.profileRole', 'Profile role')}: {roleLabel(profile.role)}. {t('account.accessBody', 'Access is decided by your linked customer, business, staff and operator records.')}
                 </p>
               </div>
 
               <div className="card" style={{ borderColor: ownsBusiness ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
-                <p className="small muted">Business access</p>
-                <strong>{ownsBusiness ? `${ownedBusinesses.length} business profile${ownedBusinesses.length === 1 ? '' : 's'}` : 'No business profile'}</strong>
+                <p className="small muted">{t('account.businessAccess', 'Business access')}</p>
+                <strong>
+                  {ownsBusiness
+                    ? `${ownedBusinesses.length} ${t('account.businessProfile', 'business profile')}${ownedBusinesses.length === 1 ? '' : 's'}`
+                    : t('account.noBusinessProfile', 'No business profile')}
+                </strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
                   {ownsBusiness
-                    ? `${stats.pendingBusinessActions} business action${stats.pendingBusinessActions === 1 ? '' : 's'} currently pending.`
-                    : 'Create or join a business workspace only when you are onboarding a business.'}
+                    ? `${stats.pendingBusinessActions} ${t('account.businessAction', 'business action')}${stats.pendingBusinessActions === 1 ? '' : 's'} ${t('account.currentlyPending', 'currently pending.')}`
+                    : t('account.noBusinessProfileBody', 'Create or join a business only when you are onboarding a real business.')}
                 </p>
               </div>
 
               <div className="card" style={{ borderColor: hasStaffAccess ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
-                <p className="small muted">Staff access</p>
-                <strong>{hasStaffAccess ? 'Linked staff profile' : 'Not linked'}</strong>
+                <p className="small muted">{t('account.staffAccess', 'Staff access')}</p>
+                <strong>{hasStaffAccess ? t('account.linkedStaffProfile', 'Linked staff profile') : t('dashboardStaff.card.notLinked', 'Not linked')}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
                   {hasStaffAccess
-                    ? `${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || 'Staff member'} at ${staffBusinessName()}`
-                    : 'Staff access appears here when a business links this login to a staff profile.'}
+                    ? `${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || t('account.access.staff', 'Staff')} ${t('account.at', 'at')} ${staffBusinessName()}`
+                    : t('account.staffAccessBody', 'Staff access appears here when a business links this login to a staff profile.')}
                 </p>
               </div>
 
               <div className="card">
-                <p className="small muted">Customer activity</p>
-                <strong>{stats.bookings} booking{stats.bookings === 1 ? '' : 's'}</strong>
+                <p className="small muted">{t('account.customerActivity', 'Customer activity')}</p>
+                <strong>{stats.bookings} {t('support.business.bookings', 'booking')}{stats.bookings === 1 ? '' : 's'}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {stats.pendingCustomerBookings} pending customer booking{stats.pendingCustomerBookings === 1 ? '' : 's'}.
+                  {stats.pendingCustomerBookings} {t('account.pendingCustomerBookings', 'pending customer booking')}{stats.pendingCustomerBookings === 1 ? '' : 's'}.
                 </p>
               </div>
 
               <div className="card">
-                <p className="small muted">Notifications</p>
-                <strong>{stats.unreadNotifications + stats.adminNotifications} unread</strong>
+                <p className="small muted">{t('dashboardHome.openNotifications', 'Notifications')}</p>
+                <strong>{stats.unreadNotifications + stats.adminNotifications} {t('account.unread', 'unread')}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {stats.businessNotifications} business notice{stats.businessNotifications === 1 ? '' : 's'} · {stats.adminNotifications} operator notice{stats.adminNotifications === 1 ? '' : 's'}.
+                  {stats.businessNotifications} {t('account.businessNotice', 'business notice')}{stats.businessNotifications === 1 ? '' : 's'} · {stats.adminNotifications} {t('account.operatorNotice', 'operator notice')}{stats.adminNotifications === 1 ? '' : 's'}.
                 </p>
               </div>
             </div>
 
             <form onSubmit={saveProfile} className="card account-form-card">
               <div>
-               <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('account.contactDetails')}</h2>
-<p className="small muted" style={{ marginTop: '0.4rem' }}>
-  {t('account.contactDetailsBody')}
-</p>
+                <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('account.personalDetails', 'Personal details')}</h2>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  {t('account.accountOnlyBody', 'These settings belong to your login account. They do not change your business profile, services, staff or booking rules.')}
+                </p>
               </div>
 
               <div>
-                <label className="small muted">{t('account.fullName')}</label>
+                <label className="small muted">{t('account.fullName', 'Full name')}</label>
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder={t('account.fullNamePlaceholder')}
+                  placeholder={t('account.fullNamePlaceholder', 'Your full name')}
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
               </div>
 
               <div>
-                <label className="small muted">{t('common.phone')}</label>
+                <label className="small muted">{t('common.phone', 'Phone')}</label>
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t('account.phonePlaceholder')}
+                  placeholder={t('account.phonePlaceholder', 'Phone number')}
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 />
               </div>
 
               <div>
-                <label className="small muted">{t('register.preferredLanguage')}</label>
+                <label className="small muted">{t('account.languagePreference', 'Language preference')}</label>
                 <select
                   value={preferredLanguage}
                   onChange={(e) => {
@@ -430,33 +440,32 @@ export default function AccountPage() {
                   }}
                   style={{ width: '100%', marginTop: '0.4rem' }}
                 >
-                  <option value="en">English</option>
-                  <option value="sq">Shqip</option>
+                  <option value="en">{t('language.english', 'English')}</option>
+                  <option value="sq">{t('language.albanian', 'Albanian')}</option>
                 </select>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  {t('account.languageBody')}
+                  {t('account.languageBody', 'This language is saved to your account and used across translated Mirëbook pages when you sign in.')}
                 </p>
               </div>
 
               <button type="submit" disabled={saving} className="btn btn-accent">
-                {saving ? t('account.saving') : t('account.saveButton')}
+                {saving ? t('account.saving', 'Saving...') : t('account.saveChanges', 'Save changes')}
               </button>
             </form>
 
-           
             <div className="card support-card">
               <div>
-                <p className="small muted">Help and language</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>Support</h2>
+                <p className="small muted">{t('account.helpKicker', 'Help and language')}</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>{t('nav.support', 'Support')}</h2>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  Customer, business and staff support routes are separated. Your preferred language is now saved above and will be used across translated Mirëbook pages when you sign in.
+                  {t('account.supportBody', 'Customer, business and staff support routes are separated. Your saved language preference will be used across translated Mirëbook pages.')}
                 </p>
               </div>
 
               <div className="workspace-actions">
-                <Link href="/support" className="btn btn-ghost">{t('account.contactSupport')}</Link>
-                <span className="language-pill" title="Saved account language">{preferredLanguage === 'sq' ? 'SQ' : 'EN'}</span>
-                <button onClick={logout} className="btn btn-danger">{t('nav.logout')}</button>
+                <Link href="/support" className="btn btn-ghost">{t('account.contactSupport', 'Contact support')}</Link>
+                <span className="language-pill" title={t('account.savedLanguage', 'Saved account language')}>{preferredLanguage === 'sq' ? 'SQ' : 'EN'}</span>
+                <button onClick={logout} className="btn btn-danger">{t('auth.logout', 'Log out')}</button>
               </div>
             </div>
           </div>
@@ -473,9 +482,6 @@ export default function AccountPage() {
 
         .account-header,
         .operator-account-row,
-        .workspace-card-header,
-        .workspace-section,
-        .business-row,
         .support-card {
           display: flex;
           justify-content: space-between;
@@ -507,26 +513,6 @@ export default function AccountPage() {
           gap: 1rem;
         }
 
-        .workspace-card,
-        .workspace-section-list,
-        .business-list {
-          display: grid;
-          gap: 1rem;
-        }
-
-        .workspace-section,
-        .business-row {
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          border-radius: var(--radius);
-          padding: 1rem;
-        }
-
-        .operator-section {
-          border-color: rgba(255,107,53,0.26);
-          background: rgba(255,107,53,0.06);
-        }
-
         .support-card {
           border-color: rgba(255,190,11,0.22);
         }
@@ -549,9 +535,6 @@ export default function AccountPage() {
         @media (max-width: 700px) {
           .account-header,
           .operator-account-row,
-          .workspace-card-header,
-          .workspace-section,
-          .business-row,
           .support-card {
             display: grid;
           }
