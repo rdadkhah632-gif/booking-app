@@ -4,46 +4,23 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import { uploadMirebookImage } from '@/lib/imageUpload'
-
-type Business = {
-  id: string
-  name: string
-}
-
-type Service = {
-  id: string
-  name: string
-  active: boolean
-}
-
-type StaffMember = {
-  id: string
-  business_id: string
-  name: string
-  role_title?: string | null
-  email?: string | null
-  phone?: string | null
-  image_url?: string | null
-  user_id?: string | null
-  invite_status?: 'not_invited' | 'invited' | 'linked' | string | null
-  permission_role?: 'staff' | 'manager' | 'reception' | string | null
-  active: boolean
-}
-
-type StaffService = {
-  staff_member_id: string
-  service_id: string
-}
-
-type StaffAvailability = {
-  id: string
-  staff_member_id: string
-  day_of_week: number
-  is_closed: boolean
-}
+import StaffBusinessPicker from '@/components/dashboard-staff/StaffBusinessPicker'
+import StaffSetupHero from '@/components/dashboard-staff/StaffSetupHero'
+import StaffStats from '@/components/dashboard-staff/StaffStats'
+import CreateStaffCard from '@/components/dashboard-staff/CreateStaffCard'
+import StaffProfileCard from '@/components/dashboard-staff/StaffProfileCard'
+import {
+  AvailabilityRow,
+  Business,
+  Service,
+  StaffMember,
+  StaffService
+} from '@/components/dashboard-staff/dashboardStaffTypes'
+import { useI18n } from '@/lib/useI18n'
 
 export default function StaffPage() {
   const router = useRouter()
+  const { t } = useI18n()
   const { businessId } = router.query
 
   const [businesses, setBusinesses] = useState<Business[]>([])
@@ -52,7 +29,7 @@ export default function StaffPage() {
   const [services, setServices] = useState<Service[]>([])
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [staffServices, setStaffServices] = useState<StaffService[]>([])
-  const [staffAvailability, setStaffAvailability] = useState<StaffAvailability[]>([])
+  const [staffAvailability, setStaffAvailability] = useState<AvailabilityRow[]>([])
 
   const [name, setName] = useState('')
   const [roleTitle, setRoleTitle] = useState('')
@@ -63,6 +40,7 @@ export default function StaffPage() {
   const [imagePreviewUrl, setImagePreviewUrl] = useState('')
   const [uploadingImage, setUploadingImage] = useState(false)
   const [permissionRole, setPermissionRole] = useState<'staff' | 'manager' | 'reception'>('staff')
+  const [formExpanded, setFormExpanded] = useState(false)
 
   const [editingStaffId, setEditingStaffId] = useState<string | null>(null)
   const [savingStaffId, setSavingStaffId] = useState<string | null>(null)
@@ -91,7 +69,7 @@ export default function StaffPage() {
       const selected = owned.find((b) => b.id === businessId)
 
       if (!selected) {
-        throw new Error('You do not have access to this business.')
+        throw new Error(t('dashboardStaff.error.noAccess', 'You do not have access to this business.'))
       }
 
       return selected
@@ -141,7 +119,7 @@ export default function StaffPage() {
 
       const { data: serviceData, error: serviceError } = await supabase
         .from('services')
-        .select('id, name, active')
+        .select('id, business_id, name, active, duration_minutes, price')
         .eq('business_id', selectedBusiness.id)
         .order('created_at', { ascending: false })
 
@@ -186,7 +164,7 @@ export default function StaffPage() {
 
       setPageLoading(false)
     } catch (err: any) {
-      setError(err.message || 'Could not load staff.')
+      setError(err.message || t('dashboardStaff.error.load', 'Could not load staff.'))
       setPageLoading(false)
     }
   }
@@ -195,25 +173,26 @@ export default function StaffPage() {
     if (!router.isReady) return
     loadPage()
   }, [router.isReady, businessId])
-
-  const staffStats = useMemo(() => {
+function assignedServicesForStaff(staffId: string) {
+    return services.filter((service) => staffCanDoService(staffId, service.id))
+  }
+    const staffStats = useMemo(() => {
     const activeStaff = staff.filter((member) => member.active).length
     const inactiveStaff = staff.length - activeStaff
     const staffWithServices = staff.filter((member) => assignedServicesForStaff(member.id).length > 0).length
     const staffWithoutServices = staff.length - staffWithServices
-    const staffWithHours = staff.filter((member) => openDaysForStaff(member.id) > 0).length
-    const staffWithoutHours = staff.length - staffWithHours
 
     return {
       total: staff.length,
-      activeStaff,
-      inactiveStaff,
-      staffWithServices,
-      staffWithoutServices,
-      staffWithHours,
-      staffWithoutHours
+      active: activeStaff,
+      inactive: inactiveStaff,
+      linkedAccounts: staff.filter((member) => !!member.user_id).length,
+      withEmail: staff.filter((member) => !!member.email).length,
+      assignedToServices: staffWithServices,
+      unassignedToServices: staffWithoutServices,
+      activeServices: services.filter((service) => service.active).length
     }
-  }, [staff, staffServices, staffAvailability])
+  }, [staff, staffServices, services])
 
   async function addStaff(e: React.FormEvent) {
     e.preventDefault()
@@ -221,7 +200,7 @@ export default function StaffPage() {
     if (!business) return
 
     if (!name.trim()) {
-      setError('Staff name is required.')
+      setError(t('dashboardStaff.error.nameRequired', 'Staff name is required.'))
       return
     }
 
@@ -261,6 +240,13 @@ export default function StaffPage() {
       return
     }
 
+    resetForm()
+    setFormExpanded(false)
+    setSuccess(t('dashboardStaff.create.success', 'Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.'))
+
+    await loadPage()
+  }
+  function resetForm() {
     setName('')
     setRoleTitle('')
     setEmail('')
@@ -269,12 +255,8 @@ export default function StaffPage() {
     setImageFile(null)
     setImagePreviewUrl('')
     setPermissionRole('staff')
-    setSuccess('Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.')
-
-    await loadPage()
   }
 
-  
   function handleCreateImageChange(file: File | null) {
     setError(null)
     setImageFile(file)
@@ -380,7 +362,7 @@ export default function StaffPage() {
 
   async function saveStaff(member: StaffMember) {
     if (!member.name.trim()) {
-      setError('Staff name is required.')
+      setError(t('dashboardStaff.error.nameRequired', 'Staff name is required.'))
       return
     }
 
@@ -477,9 +459,7 @@ export default function StaffPage() {
     )
   }
 
-  function assignedServicesForStaff(staffId: string) {
-    return services.filter((service) => staffCanDoService(staffId, service.id))
-  }
+ 
 
   function openDaysForStaff(staffId: string) {
     return staffAvailability.filter((row) => row.staff_member_id === staffId && row.is_closed !== true).length
@@ -568,7 +548,7 @@ export default function StaffPage() {
       </span>
     )
   }
-  const setupReady = staffStats.activeStaff > 0 && staffStats.staffWithServices > 0 && staffStats.staffWithHours > 0
+  
   return (
     <DashboardLayout
       title="Staff setup"
@@ -591,32 +571,7 @@ export default function StaffPage() {
           <p style={{ color: 'var(--danger)' }}>{error}</p>
         </div>
       )}
-{!pageLoading && business && (
-  <div className="card staff-readiness-panel">
-    <div>
-      <p className="small muted">Staff readiness</p>
-      <h3>{setupReady ? 'Staff setup is ready for booking' : 'Complete staff setup before publishing'}</h3>
-    <p className="small muted" style={{ marginTop: '0.4rem' }}>
-  A staff member becomes bookable when they are active, assigned to at least one active service, and have working hours set. Staff photos are optional polish and do not block publishing.
-</p>
-    </div>
 
-    <div className="staff-readiness-actions">
-      <Link href={`/dashboard/businesses?businessId=${business.id}`} className="btn btn-ghost">
-        Setup hub
-      </Link>
-      <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-ghost">
-        Services
-      </Link>
-      <Link href={`/explore/${business.id}`} className="btn btn-ghost">
-        View public page
-      </Link>
-<Link href="/support/business" className="btn btn-ghost">
-  Business support
-</Link>
-    </div>
-  </div>
-)}
       {!pageLoading && businesses.length === 0 && (
         <div className="card">
           <h3>No business found</h3>
@@ -667,125 +622,25 @@ export default function StaffPage() {
 
       {!pageLoading && business && (
         <>
-          <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-            <div className="card staff-summary-card">
-              <p className="small muted">Staff</p>
-              <h3>{staffStats.total}</h3>
-              <p className="muted small">Total staff profiles</p>
-            </div>
+         <StaffSetupHero business={business} />
 
-            <div className="card staff-summary-card">
-              <p className="small muted">Active</p>
-              <h3>{staffStats.activeStaff}</h3>
-              <p className="muted small">Active staff profiles</p>
-            </div>
+<StaffStats stats={staffStats} />
 
-            <div className="card staff-summary-card" style={{ borderColor: staffStats.staffWithoutServices > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
-              <p className="small muted">No services</p>
-              <h3>{staffStats.staffWithoutServices}</h3>
-              <p className="muted small">Staff without assigned services</p>
-            </div>
-
-            <div className="card staff-summary-card" style={{ borderColor: staffStats.staffWithoutHours > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
-              <p className="small muted">No hours</p>
-              <h3>{staffStats.staffWithoutHours}</h3>
-              <p className="muted small">Staff without working hours</p>
-            </div>
-          </div>
-
-          <form onSubmit={addStaff} className="card staff-form-card">
-            <div>
-              <p className="small muted">Create staff</p>
-              <h3>Add staff member</h3>
-              <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                Staff must be active, assigned to services and given working hours before customers can book them.
-              </p>
-            </div>
-
-            <div className="staff-form-grid">
-              <input
-                placeholder="Staff name e.g. Ali, Sara, Reza"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-
-              <input
-                placeholder="Role/title e.g. Senior barber"
-                value={roleTitle}
-                onChange={(e) => setRoleTitle(e.target.value)}
-              />
-
-              <input
-                type="email"
-                placeholder="Email optional"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <input
-                placeholder="Phone optional"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-
-              <div className="image-upload-box">
-                <div>
-                  <p className="small muted">Staff photo</p>
-                  <strong>Upload from your device</strong>
-                  <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                    Optional. JPG, PNG, WEBP or GIF up to 5MB. Staff photos help the public page look better but are not required for booking.
-                  </p>
-                </div>
-
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  onChange={(e) => handleCreateImageChange(e.target.files?.[0] || null)}
-                />
-
-                {(imagePreviewUrl || imageUrl) && (
-                  <div
-                    className="image-preview"
-                    style={{ backgroundImage: `url(${imagePreviewUrl || imageUrl})` }}
-                  />
-                )}
-
-                <div className="image-upload-actions">
-                  <button type="button" className="btn btn-ghost" onClick={uploadCreateImage} disabled={uploadingImage || !imageFile}>
-                    {uploadingImage ? 'Uploading...' : imageUrl ? 'Replace image' : 'Upload image'}
-                  </button>
-
-                  {(imageUrl || imagePreviewUrl) && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() => {
-                        setImageUrl('')
-                        setImageFile(null)
-                        setImagePreviewUrl('')
-                      }}
-                    >
-                      Remove image
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <select
-                value={permissionRole}
-                onChange={(e) => setPermissionRole(e.target.value as 'staff' | 'manager' | 'reception')}
-              >
-                <option value="staff">Staff</option>
-                <option value="reception">Reception</option>
-                <option value="manager">Manager</option>
-              </select>
-            </div>
-
-            <button type="submit" disabled={saving} className="btn btn-accent">
-              {saving ? 'Adding...' : 'Add staff member'}
-            </button>
-          </form>
+<CreateStaffCard
+  loading={saving}
+  formExpanded={formExpanded}
+  name={name}
+  roleTitle={roleTitle}
+  email={email}
+  phone={phone}
+  setFormExpanded={setFormExpanded}
+  setName={setName}
+  setRoleTitle={setRoleTitle}
+  setEmail={setEmail}
+  setPhone={setPhone}
+  resetForm={resetForm}
+  addStaff={addStaff}
+/>
 
           {services.length === 0 && (
             <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(255,190,11,0.35)' }}>

@@ -1,0 +1,272 @@
+import Link from 'next/link'
+import { useI18n } from '@/lib/useI18n'
+import {
+  AvailabilityRow,
+  Service,
+  StaffMember,
+  UpdateStaffField
+} from './dashboardStaffTypes'
+import StaffAvailabilitySummary from './StaffAvailabilitySummary'
+import StaffServiceAssignmentCard from './StaffServiceAssignmentCard'
+
+type Props = {
+  staff: StaffMember
+  services: Service[]
+  assignedServiceIds: string[]
+  availabilityRows: AvailabilityRow[]
+  isEditing: boolean
+  savingStaffId: string | null
+  savingAssignmentKey: string | null
+  updateLocalStaff: UpdateStaffField
+  saveStaff: (staff: StaffMember) => void
+  toggleStaffActive: (staff: StaffMember) => void
+  setEditingStaffId: (id: string | null) => void
+  loadData: () => void
+  toggleStaffService: (staffId: string, serviceId: string, currentlyAssigned: boolean) => void
+}
+
+export default function StaffProfileCard({
+  staff,
+  services,
+  assignedServiceIds,
+  availabilityRows,
+  isEditing,
+  savingStaffId,
+  savingAssignmentKey,
+  updateLocalStaff,
+  saveStaff,
+  toggleStaffActive,
+  setEditingStaffId,
+  loadData,
+  toggleStaffService
+}: Props) {
+  const { t } = useI18n()
+  const activeAssignedCount = services.filter(
+    (service) => service.active && assignedServiceIds.includes(service.id)
+  ).length
+
+  return (
+    <div
+      className="card staff-profile-card"
+      style={{
+        borderColor: !staff.active
+          ? 'rgba(255,190,11,0.25)'
+          : activeAssignedCount === 0
+            ? 'rgba(255,190,11,0.35)'
+            : 'rgba(45,212,191,0.18)'
+      }}
+    >
+      <div className="staff-card-top">
+        <div style={{ flex: 1, minWidth: 260 }}>
+          <div className="staff-title-row">
+            <strong>{staff.name || t('dashboardStaff.card.untitled', 'Untitled staff member')}</strong>
+
+            <span
+              className="small"
+              style={{
+                background: staff.active ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+                color: staff.active ? 'var(--success)' : 'var(--warning)',
+                padding: '0.2rem 0.55rem',
+                borderRadius: 999
+              }}
+            >
+              {staff.active ? t('dashboardStaff.card.active', 'Active') : t('dashboardStaff.card.inactive', 'Inactive')}
+            </span>
+
+            <span
+              className="small"
+              style={{
+                background: staff.user_id ? 'rgba(45,212,191,0.12)' : 'var(--surface-2)',
+                color: staff.user_id ? 'var(--success)' : 'var(--text-muted)',
+                padding: '0.2rem 0.55rem',
+                borderRadius: 999
+              }}
+            >
+              {staff.user_id ? t('dashboardStaff.card.accountLinked', 'Account linked') : t('dashboardStaff.card.notLinked', 'Not linked')}
+            </span>
+
+            <span
+              className="small"
+              style={{
+                background: activeAssignedCount > 0 ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+                color: activeAssignedCount > 0 ? 'var(--success)' : 'var(--warning)',
+                padding: '0.2rem 0.55rem',
+                borderRadius: 999
+              }}
+            >
+              {activeAssignedCount > 0
+                ? `${activeAssignedCount} ${t('dashboardStaff.card.servicesAssigned', 'services assigned')}`
+                : t('dashboardStaff.card.noServicesAssigned', 'No services assigned')}
+            </span>
+          </div>
+
+          {!isEditing && (
+            <>
+              <p className="small muted" style={{ marginTop: '0.45rem' }}>
+                {staff.role_title || t('dashboardStaff.card.noRole', 'No role title added')} · {staff.email || t('dashboardStaff.card.noEmail', 'No email')}
+              </p>
+
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {staff.phone || t('dashboardStaff.card.noPhone', 'No phone')}
+              </p>
+
+              {staff.email && !staff.user_id && (
+                <div className="card" style={{ background: 'var(--surface-2)', marginTop: '0.85rem', padding: '0.85rem', borderColor: 'rgba(255,190,11,0.25)' }}>
+                  <strong>{t('dashboardStaff.card.inviteReady', 'Ready for staff account linking')}</strong>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('dashboardStaff.card.inviteBody', 'If this person registers using this email as staff, Mirëbook can link their account to this staff profile.')}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {isEditing && (
+            <div className="staff-edit-grid">
+              <input
+                placeholder={t('dashboardStaff.create.namePlaceholder', 'Staff name')}
+                value={staff.name || ''}
+                onChange={(e) => updateLocalStaff(staff.id, 'name', e.target.value)}
+              />
+
+              <input
+                placeholder={t('dashboardStaff.create.rolePlaceholder', 'Role title')}
+                value={staff.role_title || ''}
+                onChange={(e) => updateLocalStaff(staff.id, 'role_title', e.target.value)}
+              />
+
+              <input
+                type="email"
+                placeholder={t('dashboardStaff.create.emailPlaceholder', 'Email')}
+                value={staff.email || ''}
+                onChange={(e) => updateLocalStaff(staff.id, 'email', e.target.value)}
+              />
+
+              <input
+                placeholder={t('common.phone', 'Phone')}
+                value={staff.phone || ''}
+                onChange={(e) => updateLocalStaff(staff.id, 'phone', e.target.value)}
+              />
+
+              <label className="card" style={{ background: 'var(--surface-2)', cursor: 'pointer', gridColumn: '1 / -1' }}>
+                <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={staff.active}
+                    onChange={(e) => updateLocalStaff(staff.id, 'active', e.target.checked)}
+                  />
+
+                  <div>
+                    <strong>{t('dashboardStaff.card.activeForBookings', 'Active for bookings')}</strong>
+                    <p className="small muted">
+                      {t('dashboardStaff.card.activeForBookingsBody', 'Inactive staff stay saved but should not be used for new customer bookings.')}
+                    </p>
+                  </div>
+                </div>
+              </label>
+            </div>
+          )}
+        </div>
+
+        <div className="staff-card-actions">
+          {isEditing ? (
+            <>
+              <button
+                onClick={() => saveStaff(staff)}
+                className="btn btn-accent"
+                disabled={savingStaffId === staff.id}
+              >
+                {savingStaffId === staff.id
+                  ? t('account.saving', 'Saving...')
+                  : t('dashboardStaff.card.saveStaff', 'Save staff')}
+              </button>
+
+              <button
+                onClick={() => {
+                  setEditingStaffId(null)
+                  loadData()
+                }}
+                className="btn btn-ghost"
+              >
+                {t('common.cancel', 'Cancel')}
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setEditingStaffId(staff.id)} className="btn btn-ghost">
+                {t('common.edit', 'Edit')}
+              </button>
+
+              <button onClick={() => toggleStaffActive(staff)} className={staff.active ? 'btn btn-ghost' : 'btn btn-accent'}>
+                {staff.active ? t('dashboardStaff.card.deactivate', 'Deactivate') : t('dashboardStaff.card.activate', 'Activate')}
+              </button>
+
+              <Link href={`/dashboard/availability?businessId=${staff.business_id}&staffId=${staff.id}`} className="btn btn-ghost">
+                {t('dashboardStaff.availability.openCta', 'Open availability')}
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="grid-2 staff-card-grid">
+        <StaffServiceAssignmentCard
+          staff={staff}
+          services={services}
+          assignedServiceIds={assignedServiceIds}
+          savingAssignmentKey={savingAssignmentKey}
+          onToggleAssignment={toggleStaffService}
+        />
+
+        <StaffAvailabilitySummary
+          staff={staff}
+          availabilityRows={availabilityRows}
+        />
+      </div>
+
+      <style jsx>{`
+        .staff-profile-card {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .staff-card-top {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+
+        .staff-title-row,
+        .staff-card-actions {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+
+        .staff-card-actions {
+          justify-content: flex-end;
+        }
+
+        .staff-edit-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 0.75rem;
+          margin-top: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+          .staff-card-actions,
+          .staff-card-actions :global(.btn),
+          .staff-card-actions a,
+          .staff-card-actions button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
+    </div>
+  )
+}
