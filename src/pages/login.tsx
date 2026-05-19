@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -145,7 +147,7 @@ export default function LoginPage() {
     const user = data.user
 
     if (!user) {
-      setError('Login failed')
+      setError(t('login.failed'))
       setLoading(false)
       return
     }
@@ -153,7 +155,7 @@ export default function LoginPage() {
     try {
       await redirectByRole(user.id, cleanEmail)
     } catch (err: any) {
-      setError(err.message || 'Could not load user profile')
+      setError(err.message || t('login.profileError'))
       setLoading(false)
       return
     }
@@ -167,7 +169,7 @@ export default function LoginPage() {
         <AuthNav />
         <section className="auth-wrap">
           <div className="card">
-            <p className="muted">Checking your Mirëbook session...</p>
+            <p className="muted">{t('login.checkingSession')}</p>
           </div>
         </section>
       </main>
@@ -202,11 +204,11 @@ export default function LoginPage() {
                 letterSpacing: '-0.03em',
                 marginBottom: 16
               }}>
-                Welcome back to your Mirëbook workspace.
+                {t('login.promoTitle')}
               </h1>
 
               <p className="muted">
-                Customers can manage appointments, businesses can manage bookings, and invited staff can access their own schedule from one account.
+                {t('login.promoBody')}
               </p>
             </div>
 
@@ -217,20 +219,20 @@ export default function LoginPage() {
               gap: 12
             }}>
               <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                ✓ Customer, business and staff routing
+                {t('login.proof.routing')}
               </div>
               <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                ✓ Smart booking availability
+                {t('login.proof.availability')}
               </div>
               <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                ✓ Approval, reschedule and notification workflows
+                {t('login.proof.workflows')}
               </div>
             </div>
           </div>
 
           <div className="login-form-panel">
             <p className="small muted" style={{ marginBottom: '0.5rem' }}>
-              Sign in
+              {t('login.kicker')}
             </p>
 
             <h2 style={{
@@ -238,17 +240,17 @@ export default function LoginPage() {
               fontSize: '2rem',
               marginBottom: 8
             }}>
-              Login to Mirëbook
+              {t('login.title')}
             </h2>
 
             <p className="muted" style={{ marginBottom: '2rem' }}>
-              Use your customer, business or invited staff account. Mirëbook will send you to the right workspace automatically.
+              {t('login.subtitle')}
             </p>
 
             <form onSubmit={onLogin} className="form-grid">
               <input
                 type="email"
-                placeholder="Email address"
+                placeholder={t('login.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -256,14 +258,14 @@ export default function LoginPage() {
 
               <input
                 type="password"
-                placeholder="Password"
+                placeholder={t('login.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
 
               <button type="submit" disabled={loading} className="btn btn-accent">
-                {loading ? 'Checking account...' : 'Login to Mirëbook'}
+                {loading ? t('login.loading') : t('login.submit')}
               </button>
             </form>
 
@@ -277,7 +279,7 @@ export default function LoginPage() {
             )}
 
             <p className="small muted" style={{ marginTop: '1.5rem' }}>
-              No account yet? <Link href="/register" style={{ color: 'var(--accent)' }}>Create a Mirëbook account</Link>
+              {t('login.noAccount')} <Link href="/register" style={{ color: 'var(--accent)' }}>{t('login.createAccount')}</Link>
             </p>
           </div>
         </div>
