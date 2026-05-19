@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type Profile = {
   id: string
@@ -21,24 +22,25 @@ type StaffProfile = {
   business_name?: string | null
 }
 
-const STAFF_SUBJECTS = [
-  'Cannot access staff account',
-  'Availability is wrong',
-  'Schedule or appointments issue',
-  'Linked to wrong business',
-  'Staff email/linking issue',
-  'Notifications issue',
-  'Other staff issue'
+const STAFF_SUBJECT_KEYS = [
+  'support.staff.subject.access',
+  'support.staff.subject.availability',
+  'support.staff.subject.schedule',
+  'support.staff.subject.wrongBusiness',
+  'support.staff.subject.email',
+  'support.staff.subject.notifications',
+  'support.staff.subject.other'
 ]
 
 export default function StaffSupportPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [subject, setSubject] = useState(STAFF_SUBJECTS[0])
+  const [subject, setSubject] = useState(STAFF_SUBJECT_KEYS[0])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -101,12 +103,12 @@ export default function StaffSupportPage() {
     e.preventDefault()
 
     if (!profile) {
-      setError('You need to be logged in to send a support message.')
+      setError(t('support.staff.loginRequired'))
       return
     }
 
     if (!subject.trim() || !message.trim()) {
-      setError('Choose a subject and write a message before sending.')
+      setError(t('support.staff.validation'))
       return
     }
 
@@ -122,10 +124,10 @@ export default function StaffSupportPage() {
         account_type: 'staff',
         name: name.trim() || staffProfile?.name || profile.full_name || null,
         email: email.trim() || staffProfile?.email || profile.email || null,
-        subject: subject.trim(),
+        subject: t(subject).trim(),
         message: message.trim(),
         status: 'open',
-        priority: subject.includes('Cannot access') || subject.includes('wrong business') ? 'high' : 'normal'
+        priority: subject === 'support.staff.subject.access' || subject === 'support.staff.subject.wrongBusiness' ? 'high' : 'normal'
       })
 
     setSending(false)
@@ -135,9 +137,9 @@ export default function StaffSupportPage() {
       return
     }
 
-    setSuccess('Your staff support request has been sent.')
+    setSuccess(t('support.staff.success'))
     setMessage('')
-    setSubject(STAFF_SUBJECTS[0])
+    setSubject(STAFF_SUBJECT_KEYS[0])
   }
 
   return (
@@ -147,16 +149,16 @@ export default function StaffSupportPage() {
       <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: 'var(--accent)' }}>Staff support</p>
-            <h1 className="page-title">Help with staff access and schedule issues</h1>
+            <p className="small" style={{ color: 'var(--accent)' }}>{t('support.staff.title')}</p>
+            <h1 className="page-title">{t('support.staff.heroTitle')}</h1>
             <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              Use this for staff login, linked account issues, availability problems, schedule visibility or being connected to the wrong business.
+              {t('support.staff.heroBody')}
             </p>
           </div>
 
           {loading && (
             <div className="card">
-              <p className="muted">Loading staff context...</p>
+              <p className="muted">{t('support.staff.loading')}</p>
             </div>
           )}
 
@@ -176,56 +178,56 @@ export default function StaffSupportPage() {
             <div className="support-grid">
               <form onSubmit={submitSupportMessage} className="card support-form-card">
                 <div>
-                  <p className="small muted">Support request</p>
-                  <h2>Send staff support message</h2>
+                  <p className="small muted">{t('support.staff.formKicker')}</p>
+                  <h2>{t('support.staff.formTitle')}</h2>
                 </div>
 
                 {staffProfile && (
                   <div className="staff-context-box">
-                    <p className="small muted">Linked staff profile</p>
-                    <strong>{staffProfile.name || name || 'Staff member'}</strong>
+                    <p className="small muted">{t('support.staff.linkedProfile')}</p>
+                    <strong>{staffProfile.name || name || t('support.staff.memberFallback')}</strong>
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      {staffProfile.role_title || staffProfile.permission_role || 'Staff'} · {staffProfile.business_name || 'Linked business'} · {staffProfile.active ? 'active' : 'hidden'}
+                      {staffProfile.role_title || staffProfile.permission_role || t('support.staff.roleFallback')} · {staffProfile.business_name || t('support.staff.businessFallback')} · {staffProfile.active ? t('support.staff.status.active') : t('support.staff.status.hidden')}
                     </p>
                   </div>
                 )}
 
                 {!staffProfile && (
                   <div className="staff-context-box warning">
-                    <p className="small muted">No linked staff profile found</p>
-                    <strong>This login is not currently linked to a staff profile.</strong>
+                    <p className="small muted">{t('support.staff.noProfile')}</p>
+                    <strong>{t('support.staff.noProfileTitle')}</strong>
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      Ask the business owner to add your email to their staff profile, or send this support request for help.
+                      {t('support.staff.noProfileBody')}
                     </p>
                   </div>
                 )}
 
                 <div className="support-form-grid">
                   <div>
-                    <label className="small muted">Name</label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t('common.name')}</label>
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('support.staff.namePlaceholder')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div>
-                    <label className="small muted">Email</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t('common.email')}</label>
+                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('support.staff.emailPlaceholder')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">What is this about?</label>
+                    <label className="small muted">{t('support.staff.subjectLabel')}</label>
                     <select value={subject} onChange={(e) => setSubject(e.target.value)} style={{ marginTop: '0.4rem' }}>
-                      {STAFF_SUBJECTS.map((item) => (
-                        <option key={item} value={item}>{item}</option>
+                      {STAFF_SUBJECT_KEYS.map((item) => (
+                        <option key={item} value={item}>{t(item)}</option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">Message</label>
+                    <label className="small muted">{t('support.staff.messageLabel')}</label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Explain the staff issue. Include business name, date/time or availability details if useful."
+                      placeholder={t('support.staff.messagePlaceholder')}
                       rows={7}
                       style={{ marginTop: '0.4rem' }}
                     />
@@ -233,43 +235,43 @@ export default function StaffSupportPage() {
                 </div>
 
                 <button type="submit" className="btn btn-accent" disabled={sending}>
-                  {sending ? 'Sending...' : 'Send staff support request'}
+                  {sending ? t('support.staff.sending') : t('support.staff.sendButton')}
                 </button>
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">Useful staff links</p>
-                <h2>Quick actions</h2>
+                <p className="small muted">{t('support.staff.linksKicker')}</p>
+                <h2>{t('support.staff.quickActions')}</h2>
 
                 <div className="support-link-list">
                   <Link href="/staff" className="support-link-row">
                     <span>
-                      <strong>Staff schedule</strong>
-                      <small>View assigned appointments and daily schedule.</small>
+                      <strong>{t('support.staff.schedule')}</strong>
+                      <small>{t('support.staff.scheduleBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/staff/availability" className="support-link-row">
                     <span>
-                      <strong>Availability</strong>
-                      <small>Update your staff working availability.</small>
+                      <strong>{t('support.staff.availability')}</strong>
+                      <small>{t('support.staff.availabilityBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/account" className="support-link-row">
                     <span>
-                      <strong>Account</strong>
-                      <small>Check your account details and linked workspaces.</small>
+                      <strong>{t('nav.account')}</strong>
+                      <small>{t('support.staff.accountBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/support/business" className="support-link-row">
                     <span>
-                      <strong>Business support</strong>
-                      <small>Use this if the issue belongs to the business owner setup.</small>
+                      <strong>{t('nav.businessSupport')}</strong>
+                      <small>{t('support.staff.businessSupportBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
