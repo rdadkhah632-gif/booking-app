@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
+import { useI18n } from '@/lib/useI18n'
 
 type RelatedBusiness = {
   name: string
@@ -89,39 +90,40 @@ function requestBooking(request: BookingRequest) {
   return firstRelation(request.bookings)
 }
 
-function businessName(value?: Booking | BookingRequest | RequestBooking | null) {
-  if (!value) return 'Business'
+function businessName(value?: Booking | BookingRequest | RequestBooking | null, fallback = 'Business') {
+  if (!value) return fallback
 
   if ('businesses' in value) {
-    return firstRelation(value.businesses)?.name || 'Business'
+    return firstRelation(value.businesses)?.name || fallback
   }
 
-  return 'Business'
+  return fallback
 }
 
-function serviceName(value?: Booking | RequestBooking | null) {
-  if (!value) return 'Service'
-  return firstRelation(value.services)?.name || 'Service'
+function serviceName(value?: Booking | RequestBooking | null, fallback = 'Service') {
+  if (!value) return fallback
+  return firstRelation(value.services)?.name || fallback
 }
 
-function staffName(value?: Booking | RequestBooking | null) {
-  if (!value) return 'Staff not recorded'
+function staffName(value?: Booking | RequestBooking | null, fallback = 'Staff not recorded') {
+  if (!value) return fallback
 
   const staff = firstRelation(value.staff_members)
-  if (!staff) return 'Staff not recorded'
+  if (!staff) return fallback
 
   return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
 }
 
-function requestedStaffName(request: BookingRequest) {
+function requestedStaffName(request: BookingRequest, fallback = 'Staff not recorded') {
   const staff = firstRelation(request.requested_staff)
-  if (!staff) return 'Staff not recorded'
+  if (!staff) return fallback
 
   return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
 }
 
 export default function BusinessNotifications() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -271,7 +273,7 @@ export default function BusinessNotifications() {
       setRequests(normalisedRequests as BookingRequest[])
       setLoading(false)
     } catch (err: any) {
-      setError(err.message || 'Could not load notifications.')
+      setError(err.message || t('dashboardNotifications.error.load', 'Could not load notifications.'))
       setLoading(false)
     }
   }
@@ -360,7 +362,7 @@ export default function BusinessNotifications() {
       .update({ read_at: readAt })
       .in('id', unread.map((notification) => notification.id))
 
-    setSuccess('Business notifications marked as read.')
+    setSuccess(t('dashboardNotifications.success.markedRead', 'Business notifications marked as read.'))
     await loadNotifications({ keepSuccess: true })
   }
 
@@ -389,7 +391,7 @@ export default function BusinessNotifications() {
   }
 
   async function acceptBooking(booking: Booking) {
-    const confirmed = confirm('Accept this booking request and confirm the appointment?')
+    const confirmed = confirm(t('dashboardBookings.confirm.accept', 'Accept this booking request and confirm the appointment?'))
     if (!confirmed) return
 
     setActionLoadingId(`booking-${booking.id}`)
@@ -418,17 +420,17 @@ export default function BusinessNotifications() {
       businessId: booking.business_id,
       bookingId: booking.id,
       type: 'booking_confirmed',
-      title: 'Booking accepted',
-      message: `Your booking for ${serviceName(booking)} has been accepted and confirmed for ${new Date(booking.start_at).toLocaleString()}.`,
+      title: t('dashboardBookings.notification.acceptedTitle', 'Booking accepted'),
+      message: t('dashboardBookings.notification.acceptedMessage', 'Your booking has been accepted and confirmed.'),
       actionUrl: `/booking-confirmation?id=${booking.id}`
     })
 
-    setSuccess('Booking accepted. The customer has been notified and the request is no longer pending.')
+    setSuccess(t('dashboardNotifications.success.bookingAccepted', 'Booking accepted. The customer has been notified and the request is no longer pending.'))
     await loadNotifications({ keepSuccess: true })
   }
 
   async function declineBooking(booking: Booking) {
-    const confirmed = confirm('Decline this booking request? The customer will see it as cancelled/not accepted.')
+    const confirmed = confirm(t('dashboardBookings.confirm.decline', 'Decline this booking request? The customer will see it as cancelled/not accepted.'))
     if (!confirmed) return
 
     setActionLoadingId(`booking-${booking.id}`)
@@ -457,17 +459,17 @@ export default function BusinessNotifications() {
       businessId: booking.business_id,
       bookingId: booking.id,
       type: 'booking_declined',
-      title: 'Booking declined',
-      message: `Your booking request for ${serviceName(booking)} on ${new Date(booking.start_at).toLocaleString()} was declined.`,
+      title: t('dashboardBookings.notification.declinedTitle', 'Booking declined'),
+      message: t('dashboardBookings.notification.declinedMessage', 'Your booking request was declined.'),
       actionUrl: '/my-bookings'
     })
 
-    setSuccess('Booking declined. The customer has been notified and the request is no longer pending.')
+    setSuccess(t('dashboardBookings.success.declined', 'Booking declined. The customer has been notified and the request is no longer pending.'))
     await loadNotifications({ keepSuccess: true })
   }
 
   async function acceptRequest(request: BookingRequest) {
-    const confirmed = confirm('Accept this reschedule request? The booking will be updated to the requested time.')
+    const confirmed = confirm(t('dashboardNotifications.confirm.acceptReschedule', 'Accept this reschedule request? The booking will be updated to the requested time.'))
     if (!confirmed) return
 
     setActionLoadingId(`request-${request.id}`)
@@ -495,7 +497,7 @@ export default function BusinessNotifications() {
       .from('booking_requests')
       .update({
         status: 'accepted',
-        response_message: 'Accepted by business',
+        response_message: t('dashboardNotifications.response.acceptedByBusiness', 'Accepted by business'),
         updated_at: new Date().toISOString()
       })
       .eq('id', request.id)
@@ -511,7 +513,7 @@ export default function BusinessNotifications() {
       .from('booking_requests')
       .update({
         status: 'cancelled',
-        response_message: 'Cancelled automatically because another reschedule request was accepted.',
+        response_message: t('dashboardNotifications.response.cancelledAutomatically', 'Cancelled automatically because another reschedule request was accepted.'),
         updated_at: new Date().toISOString()
       })
       .eq('booking_id', request.booking_id)
@@ -534,7 +536,7 @@ export default function BusinessNotifications() {
           return {
             ...item,
             status: 'accepted',
-            response_message: 'Accepted by business',
+            response_message: t('dashboardNotifications.response.acceptedByBusiness', 'Accepted by business'),
             updated_at: new Date().toISOString()
           }
         }
@@ -549,7 +551,7 @@ export default function BusinessNotifications() {
           return {
             ...item,
             status: 'cancelled',
-            response_message: 'Cancelled automatically because another reschedule request was accepted.',
+            response_message: t('dashboardNotifications.response.cancelledAutomatically', 'Cancelled automatically because another reschedule request was accepted.'),
             updated_at: new Date().toISOString()
           }
         }
@@ -577,17 +579,20 @@ export default function BusinessNotifications() {
       bookingId: request.booking_id,
       bookingRequestId: request.id,
       type: 'reschedule_accepted',
-      title: 'Reschedule accepted',
-      message: `Your reschedule request has been accepted for ${new Date(request.requested_start_at).toLocaleString()}.`,
+      title: t('dashboardNotifications.notification.rescheduleAcceptedTitle', 'Reschedule accepted'),
+      message: t('dashboardNotifications.notification.rescheduleAcceptedMessage', 'Your reschedule request has been accepted.'),
       actionUrl: `/booking-confirmation?id=${request.booking_id}`
     })
 
-    setSuccess('Reschedule accepted. The booking has been updated and the customer has been notified.')
+    setSuccess(t('dashboardNotifications.success.rescheduleAccepted', 'Reschedule accepted. The booking has been updated and the customer has been notified.'))
     await loadNotifications({ keepSuccess: true })
   }
 
   async function declineRequest(request: BookingRequest) {
-    const responseMessage = prompt('Optional message to customer:', 'Sorry, that time is not available.')
+    const responseMessage = prompt(
+      t('dashboardNotifications.prompt.optionalMessage', 'Optional message to customer:'),
+      t('dashboardNotifications.prompt.defaultDeclineMessage', 'Sorry, that time is not available.')
+    )
     if (responseMessage === null) return
 
     setActionLoadingId(`request-${request.id}`)
@@ -630,12 +635,12 @@ export default function BusinessNotifications() {
       bookingId: request.booking_id,
       bookingRequestId: request.id,
       type: 'reschedule_declined',
-      title: 'Reschedule declined',
-      message: responseMessage || 'Your reschedule request was declined. The original booking remains unchanged.',
+      title: t('dashboardNotifications.notification.rescheduleDeclinedTitle', 'Reschedule declined'),
+      message: responseMessage || t('dashboardNotifications.notification.rescheduleDeclinedMessage', 'Your reschedule request was declined. The original booking remains unchanged.'),
       actionUrl: '/my-bookings'
     })
 
-    setSuccess('Reschedule declined. The original booking remains unchanged and the customer has been notified.')
+    setSuccess(t('dashboardNotifications.success.rescheduleDeclined', 'Reschedule declined. The original booking remains unchanged and the customer has been notified.'))
     await loadNotifications({ keepSuccess: true })
   }
 
@@ -669,12 +674,12 @@ export default function BusinessNotifications() {
   const recentBusinessNotifications = notifications.slice(0, 10)
 
   function statusLabel(status: string) {
-    if (status === 'pending') return 'Pending approval'
-    if (status === 'confirmed') return 'Confirmed appointment'
-    if (status === 'accepted') return 'Accepted'
-    if (status === 'declined') return 'Declined'
-    if (status === 'cancelled') return 'Superseded / cancelled'
-    if (status === 'completed') return 'Completed appointment'
+    if (status === 'pending') return t('dashboardBookings.status.pendingApproval', 'Pending approval')
+    if (status === 'confirmed') return t('dashboardBookings.status.confirmedAppointment', 'Confirmed appointment')
+    if (status === 'accepted') return t('dashboardNotifications.status.accepted', 'Accepted')
+    if (status === 'declined') return t('dashboardNotifications.status.declined', 'Declined')
+    if (status === 'cancelled') return t('dashboardNotifications.status.supersededCancelled', 'Superseded / cancelled')
+    if (status === 'completed') return t('dashboardBookings.status.completedAppointment', 'Completed appointment')
     return status
   }
 
@@ -699,8 +704,8 @@ export default function BusinessNotifications() {
 
   return (
     <DashboardLayout
-      title="Needs action"
-      subtitle="Review Mirëbook booking approvals, customer reschedule requests and actions that need your attention."
+      title={t('account.needsAction', 'Needs action')}
+      subtitle={t('dashboardNotifications.pageSubtitle', 'Review Mirëbook booking approvals, customer reschedule requests and actions that need your attention.')}
     >
       {success && (
         <div
@@ -714,7 +719,7 @@ export default function BusinessNotifications() {
           <div className="business-notification-banner-row">
             <div>
               <p className="small" style={{ color: 'var(--success)' }}>
-                Action completed
+                {t('dashboardBookings.success.actionCompleted', 'Action completed')}
               </p>
               <strong>{success}</strong>
             </div>
@@ -724,7 +729,7 @@ export default function BusinessNotifications() {
               className="btn btn-ghost"
               onClick={() => setSuccess(null)}
             >
-              Dismiss
+              {t('common.dismiss', 'Dismiss')}
             </button>
           </div>
         </div>
@@ -732,12 +737,12 @@ export default function BusinessNotifications() {
 
       <div className="business-notification-toolbar">
         <p className="small muted">
-          Review customer booking approvals, reschedule requests and business notifications. Actions update this page immediately after completion.
+          {t('dashboardNotifications.toolbar.body', 'Review customer booking approvals, reschedule requests and business notifications. Actions update this page immediately after completion.')}
         </p>
 
         <div className="business-notification-toolbar-actions">
           <button onClick={() => loadNotifications()} className="btn btn-ghost" disabled={loading}>
-            {loading ? 'Refreshing...' : 'Refresh notifications'}
+            {loading ? t('dashboardNotifications.toolbar.refreshing', 'Refreshing...') : t('dashboardNotifications.toolbar.refresh', 'Refresh notifications')}
           </button>
 
           <button
@@ -746,44 +751,46 @@ export default function BusinessNotifications() {
             className="btn btn-ghost"
             disabled={unreadBusinessNotifications.length === 0}
           >
-            {unreadBusinessNotifications.length > 0 ? `Mark ${unreadBusinessNotifications.length} read` : 'All read'}
+            {unreadBusinessNotifications.length > 0
+              ? `${t('dashboardNotifications.toolbar.mark', 'Mark')} ${unreadBusinessNotifications.length} ${t('dashboardNotifications.toolbar.read', 'read')}`
+              : t('dashboardNotifications.toolbar.allRead', 'All read')}
           </button>
 
           <Link href="/dashboard/bookings?view=upcoming&status=pending" className="btn btn-accent">
-            Pending bookings
+            {t('dashboardNotifications.toolbar.pendingBookings', 'Pending bookings')}
           </Link>
         </div>
       </div>
 
       <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
         <div className="card" style={{ borderColor: pendingBookings.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-          <p className="small muted">Booking approvals</p>
+          <p className="small muted">{t('dashboardNotifications.summary.bookingApprovals', 'Booking approvals')}</p>
           <h3>{pendingBookings.length}</h3>
-          <p className="muted small">New bookings waiting for approval</p>
+          <p className="muted small">{t('dashboardNotifications.summary.bookingApprovalsBody', 'New bookings waiting for approval')}</p>
         </div>
 
         <div className="card" style={{ borderColor: pendingRequests.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-          <p className="small muted">Reschedule requests</p>
+          <p className="small muted">{t('dashboardNotifications.summary.rescheduleRequests', 'Reschedule requests')}</p>
           <h3>{pendingRequests.length}</h3>
-          <p className="muted small">Customer changes waiting for approval</p>
+          <p className="muted small">{t('dashboardNotifications.summary.rescheduleRequestsBody', 'Customer changes waiting for approval')}</p>
         </div>
 
         <div className="card" style={{ borderColor: actionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-          <p className="small muted">Total action required</p>
+          <p className="small muted">{t('dashboardNotifications.summary.totalAction', 'Total action required')}</p>
           <h3>{actionCount}</h3>
-          <p className="muted small">Items needing business review</p>
+          <p className="muted small">{t('dashboardNotifications.summary.totalActionBody', 'Items needing business review')}</p>
         </div>
 
         <div className="card" style={{ borderColor: unreadBusinessNotifications.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-          <p className="small muted">Unread updates</p>
+          <p className="small muted">{t('dashboardNotifications.summary.unreadUpdates', 'Unread updates')}</p>
           <h3>{unreadBusinessNotifications.length}</h3>
-          <p className="muted small">Real Mirëbook notification records</p>
+          <p className="muted small">{t('dashboardNotifications.summary.unreadUpdatesBody', 'Real Mirëbook notification records')}</p>
         </div>
       </div>
 
       {loading && (
         <div className="card">
-          <p className="muted">Loading Mirëbook notifications...</p>
+          <p className="muted">{t('dashboardNotifications.loading', 'Loading Mirëbook notifications...')}</p>
         </div>
       )}
 
@@ -795,22 +802,22 @@ export default function BusinessNotifications() {
 
       {!loading && actionCount === 0 && recentBusinessNotifications.length === 0 && (
         <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <h3>No pending actions</h3>
+          <h3>{t('dashboardNotifications.empty.title', 'No pending actions')}</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Booking approvals, customer reschedule requests and business notifications will appear here when they need your attention.
+            {t('dashboardNotifications.empty.body', 'Booking approvals, customer reschedule requests and business notifications will appear here when they need your attention.')}
           </p>
 
           <div className="business-notification-empty-actions">
             <Link href="/dashboard/bookings?view=today" className="btn btn-ghost">
-              Open today’s bookings
+              {t('dashboardNotifications.empty.openToday', 'Open today’s bookings')}
             </Link>
 
             <Link href="/dashboard/settings" className="btn btn-ghost">
-              Booking settings
+              {t('dashboardNotifications.empty.bookingSettings', 'Booking settings')}
             </Link>
 
             <Link href="/support/business" className="btn btn-ghost">
-              Business support
+              {t('nav.businessSupport', 'Business support')}
             </Link>
           </div>
         </div>
@@ -819,12 +826,12 @@ export default function BusinessNotifications() {
       {!loading && recentBusinessNotifications.length > 0 && (
         <div className="business-notification-section">
           <div>
-            <p className="small muted">Notification inbox</p>
+            <p className="small muted">{t('dashboardNotifications.inbox.kicker', 'Notification inbox')}</p>
             <h2 style={{ fontFamily: 'var(--font-display)' }}>
-              Recent business updates
+              {t('dashboardNotifications.inbox.title', 'Recent business updates')}
             </h2>
             <p className="muted small" style={{ marginTop: '0.35rem' }}>
-              These are real Mirëbook notification rows for your business account.
+              {t('dashboardNotifications.inbox.body', 'These are real Mirëbook notification rows for your business account.')}
             </p>
           </div>
 
@@ -852,7 +859,7 @@ export default function BusinessNotifications() {
                         border: '1px solid var(--border)'
                       }}
                     >
-                      {notification.read_at ? 'Read' : 'Unread'}
+                      {notification.read_at ? t('dashboardNotifications.status.read', 'Read') : t('dashboardNotifications.status.unread', 'Unread')}
                     </span>
                   </div>
 
@@ -861,7 +868,7 @@ export default function BusinessNotifications() {
                   )}
 
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                    {notification.created_at ? new Date(notification.created_at).toLocaleString() : 'Recently'}
+                    {notification.created_at ? new Date(notification.created_at).toLocaleString() : t('dashboardNotifications.inbox.recently', 'Recently')}
                   </p>
                 </div>
 
@@ -872,7 +879,7 @@ export default function BusinessNotifications() {
                       className="btn btn-accent"
                       onClick={() => markNotificationRead(notification)}
                     >
-                      Open
+                      {t('dashboardNotifications.actions.open', 'Open')}
                     </Link>
                   )}
 
@@ -882,7 +889,7 @@ export default function BusinessNotifications() {
                       className="btn btn-ghost"
                       onClick={() => markNotificationRead(notification)}
                     >
-                      Mark read
+                      {t('dashboardNotifications.actions.markRead', 'Mark read')}
                     </button>
                   )}
                 </div>
@@ -895,12 +902,12 @@ export default function BusinessNotifications() {
       {!loading && pendingBookings.length > 0 && (
         <div className="business-notification-section">
           <div>
-            <p className="small muted">Action required</p>
+            <p className="small muted">{t('dashboardNotifications.sections.actionRequired', 'Action required')}</p>
             <h2 style={{ fontFamily: 'var(--font-display)' }}>
-              Pending booking approvals
+              {t('dashboardNotifications.sections.pendingBookingApprovals', 'Pending booking approvals')}
             </h2>
             <p className="muted small" style={{ marginTop: '0.35rem' }}>
-              These customers requested bookings while manual approval was enabled. Accepting confirms the appointment.
+              {t('dashboardNotifications.sections.pendingBookingApprovalsBody', 'These customers requested bookings while manual approval was enabled. Accepting confirms the appointment.')}
             </p>
           </div>
 
@@ -913,7 +920,7 @@ export default function BusinessNotifications() {
                   <div style={{ flex: 1, minWidth: 280 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                       <p className="small" style={{ color: 'var(--accent)' }}>
-                        New booking request
+                        {t('dashboardNotifications.booking.newRequest', 'New booking request')}
                       </p>
 
                       <span
@@ -925,24 +932,24 @@ export default function BusinessNotifications() {
                           borderRadius: 999
                         }}
                       >
-                        Waiting approval
+                        {t('dashboardNotifications.status.waitingApproval', 'Waiting approval')}
                       </span>
                     </div>
 
                     <h3 style={{ marginTop: '0.25rem' }}>
-                      {booking.customer_name || 'Customer'}
+                      {booking.customer_name || t('dashboardBookings.card.customerFallback', 'Customer')}
                     </h3>
 
                     <p className="small muted">
-                      Business: {businessName(booking)}
+                      {t('dashboardNotifications.labels.business', 'Business')}: {businessName(booking, t('dashboardNotifications.labels.businessFallback', 'Business'))}
                     </p>
 
                     <p className="small muted">
-                      Service: {serviceName(booking)}
+                      {t('dashboardBookings.card.service', 'Service')}: {serviceName(booking, t('dashboardNotifications.labels.serviceFallback', 'Service'))}
                     </p>
 
                     <p className="small muted">
-                      Staff: {staffName(booking)}
+                      {t('support.business.staff', 'Staff')}: {staffName(booking, t('dashboardBookings.card.noStaff', 'Staff not recorded'))}
                     </p>
 
                     <div
@@ -954,23 +961,23 @@ export default function BusinessNotifications() {
                         border: '1px solid rgba(255,107,53,0.28)'
                       }}
                     >
-                      <p className="small muted">Requested appointment time</p>
+                      <p className="small muted">{t('dashboardBookings.card.requestedTime', 'Requested appointment time')}</p>
                       <strong>{new Date(booking.start_at).toLocaleString()}</strong>
                       <p className="small muted" style={{ marginTop: '0.3rem' }}>
-                        This time is reserved until you accept or decline the request.
+                        {t('dashboardNotifications.booking.reservedUntilAction', 'This time is reserved until you accept or decline the request.')}
                       </p>
                     </div>
 
                     <p className="small muted" style={{ marginTop: '0.75rem' }}>
-                      Duration: {booking.duration_minutes} minutes
+                      {t('dashboardNotifications.labels.duration', 'Duration')}: {booking.duration_minutes} {t('common.minutes', 'minutes')}
                     </p>
 
                     <p className="small muted">
-                      Email: {booking.customer_email || 'Not provided'}
+                      {t('account.email', 'Email')}: {booking.customer_email || t('dashboardNotifications.labels.notProvided', 'Not provided')}
                     </p>
 
                     <p className="small muted">
-                      Phone: {booking.customer_phone || 'Not provided'}
+                      {t('common.phone', 'Phone')}: {booking.customer_phone || t('dashboardNotifications.labels.notProvided', 'Not provided')}
                     </p>
                   </div>
 
@@ -980,7 +987,7 @@ export default function BusinessNotifications() {
                       disabled={isWorking}
                       className="btn btn-accent"
                     >
-                      {isWorking ? 'Working...' : 'Accept booking'}
+                      {isWorking ? t('dashboardBookings.actions.working', 'Working...') : t('dashboardBookings.actions.accept', 'Accept booking')}
                     </button>
 
                     <button
@@ -988,14 +995,14 @@ export default function BusinessNotifications() {
                       disabled={isWorking}
                       className="btn btn-danger"
                     >
-                      Decline booking
+                      {t('dashboardBookings.actions.decline', 'Decline booking')}
                     </button>
 
                     <Link
                       href={`/dashboard/bookings?businessId=${booking.business_id}&view=upcoming&status=pending`}
                       className="btn btn-ghost"
                     >
-                      View bookings
+                      {t('dashboardBookings.businessPicker.cta', 'View bookings')}
                     </Link>
                   </div>
                 </div>
