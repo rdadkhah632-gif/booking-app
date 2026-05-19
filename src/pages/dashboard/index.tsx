@@ -3,74 +3,29 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
-
-type Business = {
-  id: string
-  name: string
-  published: boolean
-  category?: string | null
-  city?: string | null
-}
-
-type Booking = {
-  id: string
-  business_id: string
-  customer_name: string
-  start_at: string
-  duration_minutes: number
-  service_id?: string | null
-  status: string
-  created_at?: string
-  businesses?: {
-    name: string
-  } | null
-  services?: {
-    id?: string
-    name: string
-    price?: number | null
-  } | null
-  staff_members?: {
-    name: string
-    role_title?: string | null
-  } | null
-}
-
-type BookingRequest = {
-  id: string
-  booking_id: string
-  business_id: string
-  status: string
-  created_at: string
-}
-
-type Service = {
-  id: string
-  business_id: string
-  active: boolean
-}
-
-type StaffMember = {
-  id: string
-  business_id: string
-  active: boolean
-}
-
-type AvailabilityRow = {
-  id: string
-  business_id: string
-  is_closed?: boolean | null
-}
-
-type ScheduleDay = {
-  date: Date
-  dateString: string
-  label: string
-  shortLabel: string
-  bookings: Booking[]
-}
+import DashboardHomeHeader from '@/components/dashboard-home/DashboardHomeHeader'
+import DashboardSummaryCards from '@/components/dashboard-home/DashboardSummaryCards'
+import PriorityQueueCard from '@/components/dashboard-home/PriorityQueueCard'
+import AnalyticsPreviewCard from '@/components/dashboard-home/AnalyticsPreviewCard'
+import SchedulePreviewCard from '@/components/dashboard-home/SchedulePreviewCard'
+import SetupReadinessCards from '@/components/dashboard-home/SetupReadinessCards'
+import SetupGuidanceList from '@/components/dashboard-home/SetupGuidanceList'
+import DashboardShortcuts from '@/components/dashboard-home/DashboardShortcuts'
+import {
+  AvailabilityRow,
+  Booking,
+  BookingRequest,
+  Business,
+  ScheduleDay,
+  Service,
+  SetupWarning,
+  StaffMember
+} from '@/components/dashboard-home/dashboardHomeTypes'
+import { useI18n } from '@/lib/useI18n'
 
 export default function DashboardHome() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -323,7 +278,7 @@ export default function DashboardHome() {
     }, 0)
 
     const serviceCounts = recentBookings.reduce<Record<string, { name: string; count: number; value: number }>>((acc, booking) => {
-      const serviceName = booking.services?.name || 'Unknown service'
+      const serviceName = booking.services?.name || t('dashboardHome.unknownService', 'Unknown service')
       const serviceKey = booking.services?.id || booking.service_id || serviceName
 
       if (!acc[serviceKey]) {
@@ -392,56 +347,56 @@ export default function DashboardHome() {
   }, [businesses, services, staffMembers, availabilityRows])
 
   const setupWarnings = useMemo(() => {
-    const warnings: { title: string; body: string; href: string; cta: string }[] = []
+    const warnings: SetupWarning[] = []
 
     if (businesses.length === 0) {
       warnings.push({
-        title: 'Create your business profile',
-        body: 'You need a business profile before customers can book through Mirëbook.',
+        title: t('dashboardHome.warnings.createProfile.title', 'Create your business profile'),
+        body: t('dashboardHome.warnings.createProfile.body', 'You need a business profile before customers can book through Mirëbook.'),
         href: '/dashboard/businesses',
-        cta: 'Create profile'
+        cta: t('dashboardHome.warnings.createProfile.cta', 'Create profile')
       })
       return warnings
     }
 
     if (activeServices === 0) {
       warnings.push({
-        title: 'Add customer-facing services',
-        body: 'Customers need at least one active service before they can book.',
+        title: t('dashboardHome.warnings.services.title', 'Add customer-facing services'),
+        body: t('dashboardHome.warnings.services.body', 'Customers need at least one active service before they can book.'),
         href: '/dashboard/services',
-        cta: 'Add services'
+        cta: t('dashboardHome.warnings.services.cta', 'Add services')
       })
     }
 
     if (activeStaff === 0) {
       warnings.push({
-        title: 'Add active staff',
-        body: 'Bookings need staff members assigned to services and working hours.',
+        title: t('dashboardHome.warnings.staff.title', 'Add active staff'),
+        body: t('dashboardHome.warnings.staff.body', 'Bookings need staff members assigned to services and working hours.'),
         href: '/dashboard/staff',
-        cta: 'Add staff'
+        cta: t('dashboardHome.warnings.staff.cta', 'Add staff')
       })
     }
 
     if (openWorkingDays === 0) {
       warnings.push({
-        title: 'Set working hours',
-        body: 'At least one open business day is recommended before publishing.',
+        title: t('dashboardHome.warnings.hours.title', 'Set working hours'),
+        body: t('dashboardHome.warnings.hours.body', 'At least one open business day is recommended before publishing.'),
         href: '/dashboard/availability',
-        cta: 'Set hours'
+        cta: t('dashboardHome.warnings.hours.cta', 'Set hours')
       })
     }
 
     if (publishedCount === 0 && businesses.length > 0) {
       warnings.push({
-        title: 'Publish when ready',
-        body: 'Hidden businesses do not appear in the marketplace.',
+        title: t('dashboardHome.warnings.publish.title', 'Publish when ready'),
+        body: t('dashboardHome.warnings.publish.body', 'Hidden businesses do not appear in the marketplace.'),
         href: '/dashboard/businesses',
-        cta: 'Review profile'
+        cta: t('dashboardHome.warnings.publish.cta', 'Review profile')
       })
     }
 
     return warnings
-  }, [businesses.length, activeServices, activeStaff, openWorkingDays, publishedCount])
+  }, [businesses.length, activeServices, activeStaff, openWorkingDays, publishedCount, t])
 
   const scheduleDays = useMemo<ScheduleDay[]>(() => {
     const today = startOfDay(new Date())
@@ -460,35 +415,12 @@ export default function DashboardHome() {
       return {
         date,
         dateString,
-        label: index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : date.toLocaleDateString(undefined, { weekday: 'short' }),
+        label: index === 0 ? t('dashboardHome.schedule.today', 'Today') : index === 1 ? t('dashboardHome.schedule.tomorrow', 'Tomorrow') : date.toLocaleDateString(undefined, { weekday: 'short' }),
         shortLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
         bookings: dayBookings
       }
     })
-  }, [bookings])
-
-  const selectedScheduleDay = useMemo(() => {
-    const existing = scheduleDays.find((day) => day.dateString === selectedScheduleDate)
-
-    if (existing) return existing
-
-    const selected = new Date(`${selectedScheduleDate}T12:00:00`)
-
-    const dayBookings = bookings
-      .filter((booking) => {
-        const bookingDate = new Date(booking.start_at)
-        return booking.status === 'confirmed' && bookingDate >= startOfDay(selected) && bookingDate <= endOfDay(selected)
-      })
-      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
-
-    return {
-      date: selected,
-      dateString: selectedScheduleDate,
-      label: selected.toLocaleDateString(undefined, { weekday: 'long' }),
-      shortLabel: selected.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
-      bookings: dayBookings
-    }
-  }, [scheduleDays, selectedScheduleDate, bookings])
+  }, [bookings, t])
 
   function bookingsLinkForDate(dateString: string, businessId?: string) {
     return `/dashboard/bookings?${new URLSearchParams({
@@ -505,39 +437,20 @@ export default function DashboardHome() {
     }).toString()}`
   }
 
-  function bookingTimeLabel(booking: Booking) {
-    const start = new Date(booking.start_at)
-    const end = new Date(start.getTime() + booking.duration_minutes * 60000)
-
-    return `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-  }
-
   if (loading) {
     return (
-      <DashboardLayout title="Loading...">
-        <p className="muted">Checking your account...</p>
+      <DashboardLayout title={t('common.loading', 'Loading...')}>
+        <p className="muted">{t('dashboardHome.checkingAccount', 'Checking your account...')}</p>
       </DashboardLayout>
     )
   }
 
   return (
     <DashboardLayout
-      title="Business overview"
-      subtitle="See today’s Mirëbook activity, customer actions, schedule previews and business performance in one place."
+      title={t('dashboardHome.title', 'Business overview')}
+      subtitle={t('dashboardHome.subtitle', 'See today’s Mirëbook activity, customer actions, schedule previews and business performance in one place.')}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <p className="small muted">
-          Mirëbook refreshes this dashboard when you return to the tab. Use refresh if a customer action does not appear straight away.
-        </p>
-
-        <button onClick={loadDashboard} className="btn btn-ghost" disabled={loading}>
-          {loading ? 'Refreshing...' : 'Refresh dashboard'}
-        </button>
-
-        <Link href="/dashboard/analytics" className="btn btn-accent">
-          View analytics
-        </Link>
-      </div>
+      <DashboardHomeHeader loading={loading} onRefresh={loadDashboard} />
 
       {error && (
         <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
@@ -547,359 +460,53 @@ export default function DashboardHome() {
 
       {businesses.length === 0 && (
         <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <h3>Create your first business</h3>
+          <h3>{t('dashboardHome.empty.title', 'Create your first business')}</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Add a business profile, then create services, staff and working hours before publishing it to Mirëbook customers.
+            {t('dashboardHome.empty.body', 'Add a business profile, then create services, staff and working hours before publishing it to Mirëbook customers.')}
           </p>
           <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-            Create business profile
+            {t('dashboardHome.empty.cta', 'Create business profile')}
           </Link>
         </div>
       )}
 
-      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-        <Link href={bookingsLinkForView('today')} className="card dashboard-summary-card">
-          <p className="small muted">Today</p>
-          <h3>{todayBookings.length}</h3>
-          <p className="muted small">Confirmed bookings today</p>
-        </Link>
+      <DashboardSummaryCards
+        todayCount={todayBookings.length}
+        pendingActionCount={pendingActionCount}
+        pendingBookingsCount={pendingBookings.length}
+        pendingRescheduleCount={pendingRescheduleCount}
+        analytics={dashboardAnalytics}
+        bookingsLinkForView={bookingsLinkForView}
+      />
 
-        <div className="card dashboard-summary-card" style={{ borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-          <p className="small muted">Action required</p>
-          <h3>{pendingActionCount}</h3>
-          <p className="muted small">
-            {pendingBookings.length} booking approval{pendingBookings.length === 1 ? '' : 's'} · {pendingRescheduleCount} reschedule request{pendingRescheduleCount === 1 ? '' : 's'}
-          </p>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-            <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}>
-              Open notifications
-            </Link>
-            <Link href={bookingsLinkForView('upcoming', 'pending')} className="btn btn-ghost">
-              Pending bookings
-            </Link>
-          </div>
-        </div>
+      <PriorityQueueCard
+        pendingActionCount={pendingActionCount}
+        bookingsLinkForView={bookingsLinkForView}
+      />
 
-        <Link href="/dashboard/analytics" className="card dashboard-summary-card">
-          <p className="small muted">Last 30 days</p>
-          <h3>{dashboardAnalytics.recentBookings.length}</h3>
-          <p className="muted small">Total booking activity</p>
-        </Link>
+      <AnalyticsPreviewCard
+        analytics={dashboardAnalytics}
+        completionRate={completionRate}
+      />
 
-        <Link href="/dashboard/analytics" className="card dashboard-summary-card" style={{ borderColor: 'rgba(45,212,191,0.25)' }}>
-          <p className="small muted">Estimated completed value</p>
-          <h3>£{dashboardAnalytics.estimatedRevenue.toFixed(2)}</h3>
-          <p className="muted small">Based on completed appointments in the last 30 days</p>
-        </Link>
-      </div>
+      <SchedulePreviewCard
+        scheduleDays={scheduleDays}
+        bookingsLinkForDate={bookingsLinkForDate}
+      />
 
-      <div className="card" style={{ marginBottom: '1.5rem', borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <p className="small muted">Priority queue</p>
-            <h3 style={{ marginTop: '0.25rem' }}>
-              {pendingActionCount > 0 ? 'You have customer actions to review' : 'No pending customer actions'}
-            </h3>
-            <p className="small muted" style={{ marginTop: '0.5rem' }}>
-              Pending booking approvals and reschedule requests should be handled quickly so customers know where they stand.
-            </p>
-          </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}>
-              Review notifications
-            </Link>
-            <Link href={bookingsLinkForView('upcoming')} className="btn btn-ghost">
-              Booking manager
-            </Link>
-          </div>
-        </div>
-      </div>
+      <SetupReadinessCards
+        setupScore={businesses.length > 0 ? Math.round((setupReadyBusinesses / businesses.length) * 100) : 0}
+        businessesCount={businesses.length}
+        publishedCount={publishedCount}
+        activeServicesCount={activeServices}
+        activeStaffCount={activeStaff}
+        openDaysCount={openWorkingDays}
+      />
 
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
-          <div>
-            <p className="small muted">Analytics preview</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Business performance snapshot</h3>
-            <p className="small muted" style={{ marginTop: '0.45rem' }}>
-              These figures are estimated from Mirëbook bookings and service prices. Payment revenue can replace this later when deposits/payments are added.
-            </p>
-          </div>
+      <SetupGuidanceList warnings={setupWarnings} />
 
-          <Link href="/dashboard/analytics" className="btn btn-accent">
-            Open full analytics
-          </Link>
-        </div>
-
-        <div className="grid-2">
-          <div className="card" style={{ background: 'var(--surface-2)' }}>
-            <p className="small muted">Completed rate</p>
-            <h3>{completionRate}%</h3>
-            <p className="small muted">Completed bookings / last 30 days activity</p>
-          </div>
-
-          <div className="card" style={{ background: 'var(--surface-2)' }}>
-            <p className="small muted">Upcoming value</p>
-            <h3>£{dashboardAnalytics.estimatedUpcomingValue.toFixed(2)}</h3>
-            <p className="small muted">Estimated value of confirmed upcoming appointments</p>
-          </div>
-
-          <div className="card" style={{ background: 'var(--surface-2)' }}>
-            <p className="small muted">Average booking value</p>
-            <h3>£{dashboardAnalytics.averageBookingValue.toFixed(2)}</h3>
-            <p className="small muted">Average listed service price in recent booking activity</p>
-          </div>
-
-          <div className="card" style={{ background: 'var(--surface-2)' }}>
-            <p className="small muted">Top service</p>
-            <h3>{dashboardAnalytics.topServices[0]?.name || 'No data yet'}</h3>
-            <p className="small muted">
-              {dashboardAnalytics.topServices[0]
-                ? `${dashboardAnalytics.topServices[0].count} booking${dashboardAnalytics.topServices[0].count === 1 ? '' : 's'} in recent activity`
-                : 'Add bookings to see your most popular service'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
-          <div>
-            <p className="small muted">Schedule preview</p>
-            <h3 style={{ marginTop: '0.25rem' }}>Upcoming calendar</h3>
-            <p className="small muted" style={{ marginTop: '0.45rem' }}>
-              Pick a day to preview confirmed appointments, then open the booking manager already filtered to that exact date.
-            </p>
-          </div>
-
-          <div className="dashboard-schedule-controls">
-            <input
-              type="date"
-              value={selectedScheduleDate}
-              onChange={(e) => setSelectedScheduleDate(e.target.value)}
-              style={{ minWidth: 180 }}
-            />
-
-            <Link href={bookingsLinkForDate(selectedScheduleDate)} className="btn btn-accent">
-              Open selected day
-            </Link>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-          {scheduleDays.map((day) => {
-            const isSelected = selectedScheduleDate === day.dateString
-
-            return (
-              <button
-                key={day.dateString}
-                type="button"
-                onClick={() => setSelectedScheduleDate(day.dateString)}
-                style={{
-                  textAlign: 'left',
-                  padding: '0.85rem',
-                  borderRadius: 'var(--radius)',
-                  border: isSelected ? '1px solid rgba(255,107,53,0.55)' : '1px solid var(--border)',
-                  background: isSelected ? 'var(--accent-dim)' : 'var(--surface-2)',
-                  color: 'var(--text)'
-                }}
-              >
-                <strong>{day.label}</strong>
-                <p className="small muted" style={{ marginTop: '0.2rem' }}>{day.shortLabel}</p>
-                <p className="small" style={{ color: day.bookings.length > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.45rem' }}>
-                  {day.bookings.length} booking{day.bookings.length === 1 ? '' : 's'}
-                </p>
-              </button>
-            )
-          })}
-        </div>
-
-        <div className="card" style={{ background: 'var(--surface-2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: selectedScheduleDay.bookings.length > 0 ? '1rem' : 0 }}>
-            <div>
-              <p className="small muted">Selected day</p>
-              <h3 style={{ marginTop: '0.25rem' }}>
-                {selectedScheduleDay.date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
-              </h3>
-            </div>
-
-            <Link href={bookingsLinkForDate(selectedScheduleDay.dateString, selectedScheduleDay.bookings[0]?.business_id)} className="btn btn-ghost">
-              View filtered day
-            </Link>
-          </div>
-
-          {selectedScheduleDay.bookings.length === 0 && (
-            <div>
-              <p className="muted">No confirmed appointments found for this day.</p>
-              <Link href={bookingsLinkForDate(selectedScheduleDay.dateString)} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
-                Open this date in bookings
-              </Link>
-            </div>
-          )}
-
-          {selectedScheduleDay.bookings.length > 0 && (
-            <div style={{ display: 'grid', gap: '0.75rem' }}>
-              {selectedScheduleDay.bookings.slice(0, 5).map((booking) => (
-                <Link
-                  key={booking.id}
-                  href={bookingsLinkForDate(selectedScheduleDay.dateString, booking.business_id)}
-                  className="card"
-                  style={{ background: 'var(--surface)', padding: '0.9rem' }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div>
-                      <strong>{bookingTimeLabel(booking)} · {booking.customer_name}</strong>
-                      <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                        {booking.businesses?.name || 'Business'} · {booking.services?.name || 'Service'}
-                      </p>
-                    </div>
-
-                    <p className="small muted">
-                      {booking.staff_members?.name || 'Staff not recorded'}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-
-              {selectedScheduleDay.bookings.length > 5 && (
-                <Link href={bookingsLinkForDate(selectedScheduleDay.dateString, selectedScheduleDay.bookings[0]?.business_id)} className="btn btn-ghost">
-                  View all {selectedScheduleDay.bookings.length} bookings
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-        <Link href={bookingsLinkForView('upcoming', 'confirmed')} className="card dashboard-summary-card">
-          <p className="small muted">Upcoming</p>
-          <h3>{upcomingBookings.length}</h3>
-          <p className="muted small">Confirmed future bookings</p>
-        </Link>
-
-        <Link href={bookingsLinkForView('history', 'completed')} className="card dashboard-summary-card">
-          <p className="small muted">Completed</p>
-          <h3>{completedBookings.length}</h3>
-          <p className="muted small">Appointments marked completed</p>
-        </Link>
-
-        <Link href={bookingsLinkForView('history', 'cancelled')} className="card dashboard-summary-card">
-          <p className="small muted">Cancelled</p>
-          <h3>{cancelledBookings.length}</h3>
-          <p className="muted small">Cancelled bookings</p>
-        </Link>
-
-        <Link href="/dashboard/businesses" className="card dashboard-summary-card">
-          <p className="small muted">Businesses</p>
-          <h3>{publishedCount}/{businesses.length}</h3>
-          <p className="muted small">
-            Published businesses{hiddenCount > 0 ? ` · ${hiddenCount} hidden` : ''}
-          </p>
-        </Link>
-      </div>
-
-      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-        <div className="card" style={{ borderColor: setupReadyBusinesses === businesses.length && businesses.length > 0 ? 'rgba(45,212,191,0.25)' : 'rgba(255,190,11,0.25)' }}>
-          <p className="small muted">Setup readiness</p>
-          <h3>{setupReadyBusinesses}/{businesses.length}</h3>
-          <p className="muted small">Businesses with active services, staff and working hours</p>
-        </div>
-
-        <div className="card">
-          <p className="small muted">Services</p>
-          <h3>{activeServices}</h3>
-          <p className="muted small">Active customer-facing services</p>
-        </div>
-
-        <div className="card">
-          <p className="small muted">Staff</p>
-          <h3>{activeStaff}</h3>
-          <p className="muted small">Active staff members</p>
-        </div>
-
-        <div className="card">
-          <p className="small muted">Open days</p>
-          <h3>{openWorkingDays}</h3>
-          <p className="muted small">Business working days configured</p>
-        </div>
-      </div>
-
-      {setupWarnings.length > 0 && (
-        <div style={{ display: 'grid', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div>
-            <p className="small muted">Setup guidance</p>
-            <h2 style={{ fontFamily: 'var(--font-display)' }}>Recommended next steps</h2>
-          </div>
-
-          {setupWarnings.map((warning) => (
-            <div key={warning.title} className="card" style={{ borderColor: 'rgba(255,190,11,0.25)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ flex: 1, minWidth: 260 }}>
-                  <strong>{warning.title}</strong>
-                  <p className="small muted" style={{ marginTop: '0.35rem' }}>{warning.body}</p>
-                </div>
-
-                <Link href={warning.href} className="btn btn-accent">
-                  {warning.cta}
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="card">
-        <p className="small muted">Workspace shortcuts</p>
-        <h3 style={{ marginTop: '0.25rem' }}>Keep the business moving</h3>
-        <p className="muted small" style={{ marginTop: '0.5rem' }}>
-          Setup tasks live inside Business profile. This overview keeps the main daily actions close: bookings, notifications, analytics and marketplace preview.
-        </p>
-
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-          <Link href={bookingsLinkForView('today')} className="btn btn-accent">
-            Today’s bookings
-          </Link>
-
-          <Link href="/dashboard/notifications" className="btn btn-ghost">
-            Notifications
-          </Link>
-
-          <Link href="/dashboard/analytics" className="btn btn-ghost">
-            Analytics
-          </Link>
-
-          <Link href="/explore" className="btn btn-ghost">
-            Preview Mirëbook
-          </Link>
-        </div>
-      </div>
-      <style jsx>{`
-        .dashboard-summary-card {
-          color: var(--text);
-          text-decoration: none;
-          cursor: pointer;
-        }
-
-        .dashboard-summary-card:hover {
-          border-color: rgba(255,107,53,0.35);
-          transform: translateY(-1px);
-        }
-
-        .dashboard-schedule-controls {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-
-        @media (max-width: 560px) {
-          .dashboard-schedule-controls,
-          .dashboard-schedule-controls :global(.btn),
-          .dashboard-schedule-controls input {
-            width: 100%;
-          }
-        }
-      `}</style>
+      <DashboardShortcuts />
     </DashboardLayout>
   )
 }
