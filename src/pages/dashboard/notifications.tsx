@@ -1015,9 +1015,9 @@ export default function BusinessNotifications() {
       {!loading && pendingRequests.length > 0 && (
         <div className="business-notification-section">
           <div>
-            <p className="small muted">Action required</p>
+            <p className="small muted">{t('dashboardNotifications.sections.actionRequired', 'Action required')}</p>
             <h2 style={{ fontFamily: 'var(--font-display)' }}>
-              Pending reschedule requests
+              {t('dashboardNotifications.sections.pendingRescheduleRequests', 'Pending reschedule requests')}
             </h2>
           </div>
 
@@ -1031,7 +1031,7 @@ export default function BusinessNotifications() {
                   <div style={{ flex: 1, minWidth: 280 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                       <p className="small" style={{ color: 'var(--accent)' }}>
-                        Latest pending reschedule request
+                        {t('dashboardNotifications.reschedule.latestPending', 'Latest pending reschedule request')}
                       </p>
 
                       <span
@@ -1043,20 +1043,20 @@ export default function BusinessNotifications() {
                           borderRadius: 999
                         }}
                       >
-                        Waiting approval
+                        {t('dashboardNotifications.status.waitingApproval', 'Waiting approval')}
                       </span>
                     </div>
 
                     <h3 style={{ marginTop: '0.25rem' }}>
-                      {linkedBooking?.customer_name || 'Customer'}
+                      {linkedBooking?.customer_name || t('dashboardBookings.card.customerFallback', 'Customer')}
                     </h3>
 
                     <p className="small muted">
-                      Business: {businessName(request)}
+                      {t('dashboardNotifications.labels.business', 'Business')}: {businessName(request, t('dashboardNotifications.labels.businessFallback', 'Business'))}
                     </p>
 
                     <p className="small muted">
-                      Service: {serviceName(linkedBooking)}
+                      {t('dashboardBookings.card.service', 'Service')}: {serviceName(linkedBooking, t('dashboardNotifications.labels.serviceFallback', 'Service'))}
                     </p>
 
                     <div className="business-notification-time-grid">
@@ -1068,13 +1068,13 @@ export default function BusinessNotifications() {
                           border: '1px solid var(--border)'
                         }}
                       >
-                        <p className="small muted">Current confirmed appointment</p>
+                        <p className="small muted">{t('dashboardNotifications.reschedule.currentAppointment', 'Current confirmed appointment')}</p>
                         <strong>
                           {request.current_start_at
                             ? new Date(request.current_start_at).toLocaleString()
                             : linkedBooking?.start_at
                               ? new Date(linkedBooking.start_at).toLocaleString()
-                              : 'Not recorded'}
+                              : t('dashboardNotifications.labels.notRecorded', 'Not recorded')}
                         </strong>
                       </div>
 
@@ -1086,23 +1086,23 @@ export default function BusinessNotifications() {
                           border: '1px solid rgba(255,107,53,0.35)'
                         }}
                       >
-                        <p className="small muted">Requested new appointment</p>
+                        <p className="small muted">{t('dashboardNotifications.reschedule.requestedAppointment', 'Requested new appointment')}</p>
                         <strong>{new Date(request.requested_start_at).toLocaleString()}</strong>
                       </div>
                     </div>
 
                     <p className="small muted" style={{ marginTop: '0.75rem' }}>
-                      Requested staff: {requestedStaffName(request)}
+                      {t('dashboardNotifications.labels.requestedStaff', 'Requested staff')}: {requestedStaffName(request, t('dashboardBookings.card.noStaff', 'Staff not recorded'))}
                     </p>
 
                     {request.message && (
                       <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                        Message: {request.message}
+                        {t('dashboardNotifications.labels.message', 'Message')}: {request.message}
                       </p>
                     )}
 
                     <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                      Requested: {new Date(request.created_at).toLocaleString()}
+                      {t('dashboardNotifications.labels.requested', 'Requested')}: {new Date(request.created_at).toLocaleString()}
                     </p>
                   </div>
 
@@ -1112,7 +1112,7 @@ export default function BusinessNotifications() {
                       disabled={isWorking}
                       className="btn btn-accent"
                     >
-                      {isWorking ? 'Working...' : 'Accept new time'}
+                      {isWorking ? t('dashboardBookings.actions.working', 'Working...') : t('dashboardNotifications.actions.acceptNewTime', 'Accept new time')}
                     </button>
 
                     <button
@@ -1120,14 +1120,14 @@ export default function BusinessNotifications() {
                       disabled={isWorking}
                       className="btn btn-danger"
                     >
-                      Decline request
+                      {t('dashboardNotifications.actions.declineRequest', 'Decline request')}
                     </button>
 
                     <Link
                       href={`/dashboard/bookings?businessId=${request.business_id}&view=upcoming`}
                       className="btn btn-ghost"
                     >
-                      View bookings
+                      {t('dashboardBookings.businessPicker.cta', 'View bookings')}
                     </Link>
                   </div>
                 </div>
@@ -1140,9 +1140,9 @@ export default function BusinessNotifications() {
       {!loading && pastRequests.length > 0 && (
         <div className="business-notification-section">
           <div>
-            <p className="small muted">History</p>
+            <p className="small muted">{t('dashboardBookings.summary.history', 'History')}</p>
             <h2 style={{ fontFamily: 'var(--font-display)' }}>
-              Previous reschedule requests
+              {t('dashboardNotifications.sections.previousRescheduleRequests', 'Previous reschedule requests')}
             </h2>
           </div>
 
@@ -1156,27 +1156,27 @@ export default function BusinessNotifications() {
                 style={{ opacity: request.status === 'cancelled' ? 0.65 : 0.85 }}
               >
                 <div style={{ flex: 1, minWidth: 260 }}>
-                  <strong>{linkedBooking?.customer_name || 'Customer'}</strong>
+                  <strong>{linkedBooking?.customer_name || t('dashboardBookings.card.customerFallback', 'Customer')}</strong>
 
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    Service: {serviceName(linkedBooking)}
+                    {t('dashboardBookings.card.service', 'Service')}: {serviceName(linkedBooking, t('dashboardNotifications.labels.serviceFallback', 'Service'))}
                   </p>
 
                   <p className="small muted">
-                    Requested time: {new Date(request.requested_start_at).toLocaleString()}
+                    {t('dashboardNotifications.labels.requestedTime', 'Requested time')}: {new Date(request.requested_start_at).toLocaleString()}
                   </p>
 
                   <p className="small muted">
-                    Requested: {new Date(request.created_at).toLocaleString()}
+                    {t('dashboardNotifications.labels.requested', 'Requested')}: {new Date(request.created_at).toLocaleString()}
                   </p>
 
                   <p className="small" style={{ color: statusColor(request.status) }}>
-                    Status: {statusLabel(request.status)}
+                    {t('dashboardBookings.filters.status', 'Status')}: {statusLabel(request.status)}
                   </p>
 
                   {request.response_message && (
                     <p className="small muted">
-                      Response: {request.response_message}
+                      {t('dashboardNotifications.labels.response', 'Response')}: {request.response_message}
                     </p>
                   )}
                 </div>
