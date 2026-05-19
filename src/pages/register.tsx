@@ -8,7 +8,7 @@ import { Locale } from '@/lib/i18n'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { locale, setLocale } = useI18n()
+  const { locale, setLocale, t } = useI18n()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -121,7 +121,7 @@ export default function RegisterPage() {
     const cleanEmail = email.trim().toLowerCase()
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
+      setError(t('register.passwordTooShort'))
       setLoading(false)
       return
     }
@@ -131,7 +131,7 @@ export default function RegisterPage() {
       : null
 
     if (role === 'staff' && !staffInvite) {
-      setError('No open staff invite was found for this email. Ask the business owner to add your email in their staff setup first.')
+      setError(t('register.noStaffInvite'))
       setLoading(false)
       return
     }
@@ -194,10 +194,10 @@ export default function RegisterPage() {
 
     setMessage(
       role === 'business'
-        ? 'Business account created. Taking you to your Mirëbook dashboard setup.'
+        ? t('register.success.business')
         : role === 'staff'
-          ? 'Staff account linked. Taking you to your staff schedule.'
-          : 'Customer account created. Taking you to your bookings.'
+          ? t('register.success.staff')
+          : t('register.success.customer')
     )
 
     setTimeout(() => {
@@ -211,7 +211,7 @@ export default function RegisterPage() {
         <AuthNav />
         <section className="auth-wrap">
           <div className="card">
-            <p className="muted">Checking your Mirëbook session...</p>
+            <p className="muted">{t('register.checkingSession')}</p>
           </div>
         </section>
       </main>
@@ -225,7 +225,7 @@ export default function RegisterPage() {
       <section className="auth-wrap">
         <div className="auth-card">
           <p className="small muted" style={{ marginBottom: '0.5rem' }}>
-            Create account
+            {t('register.kicker')}
           </p>
 
           <h1 style={{
@@ -233,11 +233,11 @@ export default function RegisterPage() {
             fontSize: '2rem',
             marginBottom: 8
           }}>
-            Join Mirëbook
+            {t('register.title')}
           </h1>
 
           <p className="muted" style={{ marginBottom: '1.5rem' }}>
-            Register as a customer to book appointments, as a business to manage services and staff, or as invited staff to access your own schedule.
+            {t('register.subtitle')}
           </p>
 
           <div className="register-role-grid">
@@ -253,8 +253,8 @@ export default function RegisterPage() {
                 textAlign: 'left'
               }}
             >
-              <strong>Customer</strong>
-              <p className="small muted">Book, reschedule and track appointments.</p>
+              <strong>{t('register.role.customer')}</strong>
+              <p className="small muted">{t('register.role.customerBody')}</p>
             </button>
 
             <button
@@ -269,8 +269,8 @@ export default function RegisterPage() {
                 textAlign: 'left'
               }}
             >
-              <strong>Business</strong>
-              <p className="small muted">Manage services, staff, availability and booking approvals.</p>
+              <strong>{t('register.role.business')}</strong>
+              <p className="small muted">{t('register.role.businessBody')}</p>
             </button>
 
             <button
@@ -285,26 +285,26 @@ export default function RegisterPage() {
                 textAlign: 'left'
               }}
             >
-              <strong>Staff</strong>
-              <p className="small muted">Join a business team using the email they added for you.</p>
+              <strong>{t('register.role.staff')}</strong>
+              <p className="small muted">{t('register.role.staffBody')}</p>
             </button>
           </div>
 
           {detectedStaffInvite && (
             <div className="card" style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.28)', marginBottom: '1rem' }}>
-              <p className="small" style={{ color: 'var(--success)' }}>Staff invite found</p>
+              <p className="small" style={{ color: 'var(--success)' }}>{t('register.staffInviteFound')}</p>
               <strong>{detectedStaffInvite.name}</strong>
               <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                This email is listed on a Mirëbook business staff profile. Registering as staff will link this account to that staff profile.
+                {t('register.staffInviteBody')}
               </p>
             </div>
           )}
 
           {role === 'staff' && !detectedStaffInvite && email.trim().includes('@') && (
             <div className="card" style={{ background: 'rgba(255,190,11,0.08)', borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
-              <p className="small" style={{ color: 'var(--warning)' }}>No staff invite found yet</p>
+              <p className="small" style={{ color: 'var(--warning)' }}>{t('register.noStaffInviteTitle')}</p>
               <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                Ask the business owner to add this email in their Staff setup page before creating a staff account.
+                {t('register.noStaffInviteBody')}
               </p>
             </div>
           )}
@@ -312,7 +312,7 @@ export default function RegisterPage() {
           <form onSubmit={onRegister} className="form-grid">
             <input
               type="email"
-              placeholder="Email address"
+              placeholder={t('register.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -320,14 +320,14 @@ export default function RegisterPage() {
 
             <input
               type="password"
-              placeholder="Password"
+              placeholder={t('register.passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
 
             <label className="small muted" style={{ display: 'grid', gap: '0.4rem' }}>
-              Preferred language
+              {t('register.preferredLanguage')}
               <select
                 value={preferredLanguage}
                 onChange={(e) => {
@@ -343,12 +343,12 @@ export default function RegisterPage() {
 
             <button type="submit" disabled={loading} className="btn btn-accent">
               {loading
-                ? 'Creating account...'
+                ? t('register.creating')
                 : role === 'business'
-                  ? 'Create business account'
+                  ? t('register.createBusiness')
                   : role === 'staff'
-                    ? 'Create staff account'
-                    : 'Create customer account'}
+                    ? t('register.createStaff')
+                    : t('register.createCustomer')}
             </button>
           </form>
 
@@ -365,7 +365,7 @@ export default function RegisterPage() {
           )}
 
           <p className="small muted" style={{ marginTop: '1.5rem' }}>
-            Already have an account? <Link href="/login" style={{ color: 'var(--accent)' }}>Login to Mirëbook</Link>
+            {t('register.alreadyHaveAccount')} <Link href="/login" style={{ color: 'var(--accent)' }}>{t('register.loginLink')}</Link>
           </p>
         </div>
       </section>
