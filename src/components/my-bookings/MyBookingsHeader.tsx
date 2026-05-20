@@ -68,7 +68,7 @@ export default function MyBookingsHeader({
               <strong>{success}</strong>
             </div>
             <button type="button" className="btn btn-ghost" onClick={onClearSuccess}>
-              {t('myBookings.dismiss', 'Dismiss')}
+              {t('common.dismiss', 'Dismiss')}
             </button>
           </div>
         </div>
@@ -76,15 +76,15 @@ export default function MyBookingsHeader({
 
       <div className="my-bookings-header-actions">
         <Link href="/account" className="btn btn-ghost">
-          {t('nav.account')}
+          {t('nav.account', 'Account')}
         </Link>
 
         <Link href="/notifications" className="btn btn-ghost">
-          {t('nav.notifications')}
+          {t('nav.notifications', 'Notifications')}
         </Link>
 
         <Link href="/support/customer" className="btn btn-ghost">
-          {t('nav.customerSupport')}
+          {t('nav.customerSupport', 'Customer support')}
         </Link>
 
         <button onClick={onRefresh} className="btn btn-ghost" disabled={loading}>
@@ -92,7 +92,7 @@ export default function MyBookingsHeader({
         </button>
 
         <Link href="/explore" className="btn btn-accent">
-          {t('home.cta.explore')}
+          {t('home.cta.explore', 'Explore businesses')}
         </Link>
       </div>
 

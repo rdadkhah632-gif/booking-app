@@ -100,8 +100,8 @@ export default function MyBookingCard({
             {lifecycleCopy(booking, pendingRequest)}
           </p>
 
-          <p className="small muted">{t('common.service')}: {serviceName(booking)}</p>
-          <p className="small muted">{t('common.staff')}: {staffName(booking)}</p>
+          <p className="small muted">{t('common.service', 'Service')}: {serviceName(booking)}</p>
+          <p className="small muted">{t('common.staff', 'Staff')}: {staffName(booking)}</p>
           <p className="small muted">{t('myBookings.card.price', 'Price')}: £{servicePrice(booking).toFixed(2)}</p>
 
           <div
@@ -141,7 +141,7 @@ export default function MyBookingCard({
           </div>
 
           <p className="small muted" style={{ marginTop: '0.65rem' }}>
-            {t('myBookings.card.duration', 'Duration')}: {booking.duration_minutes} minutes
+            {t('myBookings.card.duration', 'Duration')}: {booking.duration_minutes} {t('common.minutes', 'minutes')}
           </p>
 
           <p className="small" style={{ color: statusColor(booking.status), marginTop: '0.4rem' }}>
@@ -174,7 +174,7 @@ export default function MyBookingCard({
                 </p>
 
                 <p className="small muted">
-                  {t('myBookings.card.requestedDuration', 'Requested duration')}: {pendingRequest.requested_duration_minutes} minutes
+                  {t('myBookings.card.requestedDuration', 'Requested duration')}: {pendingRequest.requested_duration_minutes} {t('common.minutes', 'minutes')}
                 </p>
               </div>
 
@@ -193,7 +193,7 @@ export default function MyBookingCard({
               </Link>
 
               <button onClick={() => onCancel(booking)} className="btn btn-danger" disabled={isWorking}>
-                {isWorking ? t('common.working') : t('myBookings.card.cancelRequest', 'Cancel request')}
+                {isWorking ? t('common.working', 'Working...') : t('myBookings.card.cancelRequest', 'Cancel request')}
               </button>
             </>
           )}
@@ -211,7 +211,7 @@ export default function MyBookingCard({
               )}
 
               <button onClick={() => onCancel(booking)} className="btn btn-danger" disabled={isWorking}>
-                {isWorking ? t('common.working') : t('myBookings.card.cancelBooking', 'Cancel booking')}
+                {isWorking ? t('common.working', 'Working...') : t('myBookings.card.cancelBooking', 'Cancel booking')}
               </button>
             </>
           )}

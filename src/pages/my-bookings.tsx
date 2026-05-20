@@ -8,9 +8,11 @@ import MyBookingsEmptyState from '@/components/my-bookings/MyBookingsEmptyState'
 import MyBookingsSection from '@/components/my-bookings/MyBookingsSection'
 import MyBookingCard from '@/components/my-bookings/MyBookingCard'
 import { Booking, BookingRequest } from '@/components/my-bookings/myBookingsTypes'
+import { useI18n } from '@/lib/useI18n'
 
 export default function MyBookings() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [bookings, setBookings] = useState<Booking[]>([])
   const [requests, setRequests] = useState<BookingRequest[]>([])
@@ -139,7 +141,7 @@ export default function MyBookings() {
   }
 
   async function cancelBooking(booking: Booking) {
-    const confirmed = confirm('Cancel this booking?')
+    const confirmed = confirm(t('myBookings.confirm.cancel', 'Cancel this booking?'))
     if (!confirmed) return
 
     setActionLoadingId(booking.id)
@@ -165,22 +167,22 @@ export default function MyBookings() {
     await createBusinessNotification(
       booking,
       'booking_cancelled_by_customer',
-      'Customer cancelled booking',
-      `${booking.customer_name || 'A customer'} cancelled their booking for ${serviceName(booking)} on ${new Date(booking.start_at).toLocaleString()}.`
+      t('myBookings.notification.cancelledTitle', 'Customer cancelled booking'),
+      `${booking.customer_name || t('publicBusiness.customerFallback', 'A customer')} ${t('myBookings.notification.cancelledWord', 'cancelled their booking for')} ${serviceName(booking)} ${t('publicBusiness.notification.forWord', 'for')} ${new Date(booking.start_at).toLocaleString()}.`
     )
 
     setSuccess(booking.status === 'pending'
-      ? 'Booking request cancelled. It is no longer waiting for business approval.'
-      : 'Booking cancelled. The business has been notified and this booking is now locked as cancelled.'
+      ? t('myBookings.success.pendingCancelled', 'Booking request cancelled. It is no longer waiting for business approval.')
+      : t('myBookings.success.cancelled', 'Booking cancelled. The business has been notified and this booking is now locked as cancelled.')
     )
     await loadBookings({ keepSuccess: true })
   }
 
   function statusLabel(status: string) {
-    if (status === 'pending') return 'Waiting for approval'
-    if (status === 'confirmed') return 'Confirmed appointment'
-    if (status === 'completed') return 'Completed appointment'
-    if (status === 'cancelled') return 'Cancelled booking'
+    if (status === 'pending') return t('myBookings.status.waitingApproval', 'Waiting for approval')
+    if (status === 'confirmed') return t('dashboardBookings.status.confirmedAppointment', 'Confirmed appointment')
+    if (status === 'completed') return t('dashboardBookings.status.completedAppointment', 'Completed appointment')
+    if (status === 'cancelled') return t('dashboardBookings.status.cancelledBooking', 'Cancelled booking')
     return status
   }
 
@@ -247,11 +249,11 @@ export default function MyBookings() {
   }
 
   function businessName(booking: Booking) {
-    return firstRelation(booking.businesses)?.name || 'Business'
+    return firstRelation(booking.businesses)?.name || t('dashboardNotifications.labels.businessFallback', 'Business')
   }
 
   function serviceName(booking: Booking) {
-    return firstRelation(booking.services)?.name || 'Service not recorded'
+    return firstRelation(booking.services)?.name || t('myBookings.fallback.serviceNotRecorded', 'Service not recorded')
   }
 
   function servicePrice(booking: Booking) {
@@ -260,47 +262,47 @@ export default function MyBookings() {
 
   function staffName(booking: Booking) {
     const staff = firstRelation(booking.staff_members)
-    if (!staff) return 'Staff not recorded'
+    if (!staff) return t('dashboardBookings.card.noStaff', 'Staff not recorded')
     return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
   }
 
   function requestedStaffName(request: BookingRequest) {
     const staff = firstRelation(request.requested_staff)
-    if (!staff) return 'Staff not recorded'
+    if (!staff) return t('dashboardBookings.card.noStaff', 'Staff not recorded')
     return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
   }
 
   function lifecycleTitle(booking: Booking, pendingRequest?: BookingRequest) {
-    if (booking.status === 'pending') return 'Waiting for business approval'
-    if (pendingRequest && booking.status === 'confirmed') return 'Confirmed appointment with a pending change request'
-    if (booking.status === 'confirmed') return 'Confirmed appointment'
-    if (booking.status === 'completed') return 'Completed appointment'
-    if (booking.status === 'cancelled') return 'Cancelled booking'
+    if (booking.status === 'pending') return t('myBookings.lifecycle.waitingTitle', 'Waiting for business approval')
+    if (pendingRequest && booking.status === 'confirmed') return t('myBookings.lifecycle.pendingChangeTitle', 'Confirmed appointment with a pending change request')
+    if (booking.status === 'confirmed') return t('dashboardBookings.status.confirmedAppointment', 'Confirmed appointment')
+    if (booking.status === 'completed') return t('dashboardBookings.status.completedAppointment', 'Completed appointment')
+    if (booking.status === 'cancelled') return t('dashboardBookings.status.cancelledBooking', 'Cancelled booking')
     return statusLabel(booking.status)
   }
 
   function lifecycleCopy(booking: Booking, pendingRequest?: BookingRequest) {
     if (booking.status === 'pending') {
-      return 'This booking is not confirmed yet. The business needs to accept it before it becomes an appointment.'
+      return t('myBookings.lifecycle.waitingBody', 'This booking is not confirmed yet. The business needs to accept it before it becomes an appointment.')
     }
 
     if (pendingRequest && booking.status === 'confirmed') {
-      return 'Your original appointment is still confirmed. The new requested time will only replace it if the business accepts your request.'
+      return t('myBookings.lifecycle.pendingChangeBody', 'Your original appointment is still confirmed. The new requested time will only replace it if the business accepts your request.')
     }
 
     if (booking.status === 'confirmed') {
-      return 'This is your active appointment. You can request a new time or cancel it before it is completed.'
+      return t('myBookings.lifecycle.confirmedBody', 'This is your active appointment. You can request a new time or cancel it before it is completed.')
     }
 
     if (booking.status === 'completed') {
-      return 'This appointment is complete and locked. It stays here as part of your booking history.'
+      return t('myBookings.lifecycle.completedBody', 'This appointment is complete and locked. It stays here as part of your booking history.')
     }
 
     if (booking.status === 'cancelled') {
-      return 'This booking is cancelled and no longer active.'
+      return t('myBookings.lifecycle.cancelledBody', 'This booking is cancelled and no longer active.')
     }
 
-    return 'Booking details are shown below.'
+    return t('myBookings.lifecycle.defaultBody', 'Booking details are shown below.')
   }
 
   const pendingRequestByBookingId = useMemo(() => {
@@ -422,7 +424,7 @@ export default function MyBookings() {
 
         {loading && (
           <div className="card">
-            <p className="muted">Loading your Mirëbook bookings...</p>
+            <p className="muted">{t('myBookings.loading', 'Loading your Mirëbook bookings...')}</p>
           </div>
         )}
 
@@ -436,9 +438,9 @@ export default function MyBookings() {
             <MyBookingsSection
   sectionRef={pendingSectionRef}
   id="waiting-approval"
-  kicker="Action status"
-  title="Waiting for business approval"
-  body="These bookings are not confirmed yet. The business needs to accept them first."
+  kicker={t('myBookings.sections.actionStatus', 'Action status')}
+  title={t('myBookings.sections.waitingTitle', 'Waiting for business approval')}
+  body={t('myBookings.sections.waitingBody', 'These bookings are not confirmed yet. The business needs to accept them first.')}
 >
   {pendingBookings.map((booking) => renderBookingCard(booking, 'pending'))}
 </MyBookingsSection>
@@ -448,9 +450,9 @@ export default function MyBookings() {
              <MyBookingsSection
   sectionRef={changeRequestsSectionRef}
   id="change-requests"
-  kicker="Requested changes"
-  title="Pending reschedule requests"
-  body="These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time."
+  kicker={t('myBookings.sections.requestedChanges', 'Requested changes')}
+  title={t('dashboardNotifications.sections.pendingRescheduleRequests', 'Pending reschedule requests')}
+  body={t('myBookings.sections.changeRequestsBody', 'These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time.')}
 >
   {confirmedUpcomingBookings
     .filter((booking) => pendingRequestByBookingId[booking.id])
@@ -462,12 +464,12 @@ export default function MyBookings() {
               <MyBookingsSection
   sectionRef={upcomingSectionRef}
   id="upcoming-bookings"
-  kicker="Schedule"
-  title="Active confirmed appointments"
-  body="These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time."
+  kicker={t('myBookings.sections.schedule', 'Schedule')}
+  title={t('myBookings.sections.activeTitle', 'Active confirmed appointments')}
+  body={t('myBookings.sections.activeBody', 'These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time.')}
   action={pendingRescheduleCount > 0 ? (
     <button type="button" onClick={() => scrollToSection('changes')} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
-      View pending change requests
+      {t('myBookings.actions.viewPendingChanges', 'View pending change requests')}
     </button>
   ) : null}
 >
@@ -481,9 +483,9 @@ export default function MyBookings() {
             <MyBookingsSection
   sectionRef={historySectionRef}
   id="booking-history"
-  kicker="History"
-  title="History and locked bookings"
-  body="Completed, cancelled and past bookings are shown for your records only."
+  kicker={t('dashboardBookings.summary.history', 'History')}
+  title={t('myBookings.sections.historyTitle', 'History and locked bookings')}
+  body={t('myBookings.sections.historyBody', 'Completed, cancelled and past bookings are shown for your records only.')}
 >
   {historyBookings.map((booking) => renderBookingCard(booking, 'history'))}
 </MyBookingsSection>

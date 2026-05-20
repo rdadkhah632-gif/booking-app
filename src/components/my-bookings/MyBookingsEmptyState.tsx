@@ -13,11 +13,11 @@ export default function MyBookingsEmptyState() {
 
       <div className="my-booking-empty-actions">
         <Link href="/explore" className="btn btn-accent">
-          {t('home.cta.explore')}
+          {t('home.cta.explore', 'Explore businesses')}
         </Link>
 
         <Link href="/support/customer" className="btn btn-ghost">
-          {t('nav.customerSupport')}
+          {t('nav.customerSupport', 'Customer support')}
         </Link>
       </div>
     </div>
