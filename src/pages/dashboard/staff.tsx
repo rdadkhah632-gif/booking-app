@@ -6,7 +6,6 @@ import DashboardLayout from '@/components/DashboardLayout'
 import { uploadMirebookImage } from '@/lib/imageUpload'
 
 import StaffSetupHero from '@/components/dashboard-staff/StaffSetupHero'
-import StaffStats from '@/components/dashboard-staff/StaffStats'
 import CreateStaffCard from '@/components/dashboard-staff/CreateStaffCard'
 import StaffProfileCard from '@/components/dashboard-staff/StaffProfileCard'
 import {
@@ -76,8 +75,6 @@ export default function StaffPage() {
     }
 
     return owned[0]
-
-    return null
   }
 
   async function loadPage() {
@@ -169,30 +166,13 @@ export default function StaffPage() {
     }
   }
 
-  useEffect(() => {
+useEffect(() => {
     if (!router.isReady) return
     loadPage()
   }, [router.isReady, businessId])
 function assignedServicesForStaff(staffId: string) {
-    return services.filter((service) => staffCanDoService(staffId, service.id))
-  }
-    const staffStats = useMemo(() => {
-    const activeStaff = staff.filter((member) => member.active).length
-    const inactiveStaff = staff.length - activeStaff
-    const staffWithServices = staff.filter((member) => assignedServicesForStaff(member.id).length > 0).length
-    const staffWithoutServices = staff.length - staffWithServices
-
-    return {
-      total: staff.length,
-      active: activeStaff,
-      inactive: inactiveStaff,
-      linkedAccounts: staff.filter((member) => !!member.user_id).length,
-      withEmail: staff.filter((member) => !!member.email).length,
-      assignedToServices: staffWithServices,
-      unassignedToServices: staffWithoutServices,
-      activeServices: services.filter((service) => service.active).length
-    }
-  }, [staff, staffServices, services])
+  return services.filter((service) => staffCanDoService(staffId, service.id))
+}
 
   async function addStaff(e: React.FormEvent) {
     e.preventDefault()
@@ -271,7 +251,7 @@ function assignedServicesForStaff(staffId: string) {
 
   async function uploadCreateImage() {
     if (!imageFile) {
-      setError('Choose an image file first.')
+      setError(t('dashboardStaff.image.chooseFirst', 'Choose an image file first.'))
       return null
     }
 
@@ -288,10 +268,10 @@ function assignedServicesForStaff(staffId: string) {
       setImageUrl(uploaded.publicUrl)
       setImageFile(null)
       setImagePreviewUrl(uploaded.publicUrl)
-      setSuccess('Staff image uploaded.')
+      setSuccess(t('dashboardStaff.image.uploaded', 'Staff image uploaded.'))
       return uploaded.publicUrl
     } catch (err: any) {
-      setError(err.message || 'Could not upload image.')
+      setError(err.message || t('dashboardStaff.image.uploadError', 'Could not upload image.'))
       return null
     } finally {
       setUploadingImage(false)
@@ -320,16 +300,16 @@ function assignedServicesForStaff(staffId: string) {
       if (updateError) throw updateError
 
       updateLocalStaff(member.id, 'image_url', uploaded.publicUrl)
-      setSuccess(`${member.name} image uploaded.`)
+      setSuccess(`${member.name} ${t('dashboardStaff.image.uploadedLower', 'image uploaded.')}`)
       await loadPage()
     } catch (err: any) {
-      setError(err.message || 'Could not upload staff image.')
+      setError(err.message || t('dashboardStaff.image.uploadStaffError', 'Could not upload staff image.'))
     } finally {
       setUploadingStaffId(null)
     }
   }
   async function removeStaffImage(member: StaffMember) {
-    const confirmed = confirm('Remove this optional staff photo?')
+    const confirmed = confirm(t('dashboardStaff.image.confirmRemove', 'Remove this optional staff photo?'))
     if (!confirmed) return
 
     setUploadingStaffId(member.id)
@@ -349,7 +329,7 @@ function assignedServicesForStaff(staffId: string) {
     }
 
     updateLocalStaff(member.id, 'image_url', '')
-    setSuccess(`${member.name} photo removed.`)
+    setSuccess(`${member.name} ${t('dashboardStaff.image.removed', 'photo removed.')}`)
     await loadPage()
   }
   function updateLocalStaff(id: string, field: keyof StaffMember, value: string | boolean) {
@@ -391,13 +371,13 @@ function assignedServicesForStaff(staffId: string) {
     }
 
     setEditingStaffId(null)
-    setSuccess(`${member.name} saved.`)
+    setSuccess(`${member.name} ${t('dashboardStaff.save.saved', 'saved.')}`)
     await loadPage()
   }
 
   async function markStaffInvited(member: StaffMember) {
     if (!member.email) {
-      setError('Add an email before marking this staff member as invited.')
+      setError(t('dashboardStaff.invite.emailRequired', 'Add an email before marking this staff member as invited.'))
       return
     }
 
@@ -417,7 +397,7 @@ function assignedServicesForStaff(staffId: string) {
       return
     }
 
-    setSuccess(`${member.name} marked as invited. Ask them to register or log in with ${member.email}; Mirëbook will link the staff account when the email matches.`)
+    setSuccess(`${member.name} ${t('dashboardStaff.invite.marked', 'marked as invited. Ask them to register or log in with')} ${member.email}; ${t('dashboardStaff.invite.linkBody', 'Mirëbook will link the staff account when the email matches.')}`)
     await loadPage()
   }
 
@@ -430,7 +410,7 @@ function assignedServicesForStaff(staffId: string) {
     const openDays = openDaysForStaff(member.id)
 
     if (!member.active && (assignedServices.length === 0 || openDays === 0)) {
-      const confirmed = confirm('This staff member is missing assigned services or working hours. They may still not appear as bookable until both are complete. Show them anyway?')
+      const confirmed = confirm(t('dashboardStaff.active.confirmIncomplete', 'This staff member is missing assigned services or working hours. They may still not appear as bookable until both are complete. Show them anyway?'))
       if (!confirmed) {
         setActionLoadingKey(null)
         return
@@ -449,7 +429,7 @@ function assignedServicesForStaff(staffId: string) {
       return
     }
 
-    setSuccess(!member.active ? `${member.name} is now active for booking.` : `${member.name} is hidden from booking.`)
+    setSuccess(!member.active ? `${member.name} ${t('dashboardStaff.active.nowActive', 'is now active for booking.')}` : `${member.name} ${t('dashboardStaff.active.nowHidden', 'is hidden from booking.')}`)
     await loadPage()
   }
 
@@ -459,15 +439,12 @@ function assignedServicesForStaff(staffId: string) {
     )
   }
 
- 
-
   function openDaysForStaff(staffId: string) {
     return staffAvailability.filter((row) => row.staff_member_id === staffId && row.is_closed !== true).length
   }
 
-  
-async function toggleStaffService(staffId: string, serviceId: string, currentlyAssigned?: boolean) {
-  const exists = currentlyAssigned ?? staffCanDoService(staffId, serviceId)
+  async function toggleStaffService(staffId: string, serviceId: string, currentlyAssigned?: boolean) {
+    const exists = currentlyAssigned ?? staffCanDoService(staffId, serviceId)
 
     setActionLoadingKey(`service-${staffId}-${serviceId}`)
     setError(null)
@@ -521,19 +498,19 @@ async function toggleStaffService(staffId: string, serviceId: string, currentlyA
           borderRadius: 999
         }}
       >
-        {ready ? 'Bookable on Mirëbook' : 'Setup needed'}
+        {ready ? t('dashboardStaff.readiness.bookable', 'Bookable on Mirëbook') : t('dashboardStaff.readiness.setupNeeded', 'Setup needed')}
       </span>
     )
   }
   
   return (
     <DashboardLayout
-  title={t('dashboardStaff.pageTitle', 'Staff')}
-  subtitle={business ? `${t('dashboardStaff.pageSubtitleSelected', 'Manage staff, service assignments and booking readiness for')} ${business.name}.` : t('dashboardStaff.pageSubtitle', 'Create your business first, then add staff.')}
->
+      title={t('dashboardStaff.pageTitle', 'Staff')}
+      subtitle={business ? `${t('dashboardStaff.pageSubtitleSelected', 'Manage staff, service assignments and booking readiness for')} ${business.name}.` : t('dashboardStaff.pageSubtitle', 'Create your business first, then add staff.')}
+    >
       {pageLoading && (
         <div className="card">
-          <p className="muted">Loading Mirëbook staff setup...</p>
+          <p className="muted">{t('dashboardStaff.loading', 'Loading Mirëbook staff setup...')}</p>
         </div>
       )}
 
@@ -551,94 +528,111 @@ async function toggleStaffService(staffId: string, serviceId: string, currentlyA
 
       {!pageLoading && businesses.length === 0 && (
         <div className="card">
-          <h3>No business found</h3>
+          <h3>{t('dashboardStaff.noBusiness.title', 'No business found')}</h3>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Create a business profile first, then add staff.
+            {t('dashboardStaff.noBusiness.body', 'Create a business profile first, then add staff.')}
           </p>
           <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-            Create business
+            {t('dashboardStaff.noBusiness.cta', 'Create business')}
           </Link>
         </div>
       )}
 
+
       {!pageLoading && business && (
         <>
-{businesses.length > 1 && (
-  <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
-    <p className="small muted">
-      {t('dashboardStaff.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
-    </p>
-  </div>
-)}
-         <StaffSetupHero business={business} />
+          {businesses.length > 1 && (
+            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+              <p className="small muted">
+                {t('dashboardStaff.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+              </p>
+            </div>
+          )}
 
-<StaffStats stats={staffStats} />
+          <StaffSetupHero business={business} />
 
-<CreateStaffCard
-  loading={saving}
-  formExpanded={formExpanded}
-  name={name}
-  roleTitle={roleTitle}
-  email={email}
-  phone={phone}
-  setFormExpanded={setFormExpanded}
-  setName={setName}
-  setRoleTitle={setRoleTitle}
-  setEmail={setEmail}
-  setPhone={setPhone}
-  resetForm={resetForm}
-  addStaff={addStaff}
-/>
+          <CreateStaffCard
+            loading={saving}
+            formExpanded={formExpanded}
+            name={name}
+            roleTitle={roleTitle}
+            email={email}
+            phone={phone}
+            setFormExpanded={setFormExpanded}
+            setName={setName}
+            setRoleTitle={setRoleTitle}
+            setEmail={setEmail}
+            setPhone={setPhone}
+            resetForm={resetForm}
+            addStaff={addStaff}
+          />
 
           {services.length === 0 && (
             <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(255,190,11,0.35)' }}>
-              <h3>No services yet</h3>
+              <h3>{t('dashboardStaff.noServices.title', 'No services yet')}</h3>
               <p className="muted" style={{ marginTop: '0.5rem' }}>
-                Add services first, then assign staff to those services.
+                {t('dashboardStaff.noServices.body', 'Add services first, then assign staff to those services.')}
               </p>
-              <Link href={`/dashboard/services?businessId=${business.id}`} className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                Add services
+              <Link href="/dashboard/services" className="btn btn-accent" style={{ marginTop: '1rem' }}>
+                {t('dashboardStaff.noServices.cta', 'Add services')}
               </Link>
             </div>
           )}
 
-          <div className="staff-card-list">
-  {staff.length === 0 && (
-    <div className="card">
-      <h3>{t('dashboardStaff.empty.title', 'No staff yet')}</h3>
-      <p className="muted" style={{ marginTop: '0.5rem' }}>
-        {t('dashboardStaff.empty.body', 'Add your first staff member above. Then assign services and set their working hours.')}
-      </p>
-    </div>
-  )}
+          <div className="staff-section-heading">
+            <p className="small muted">{t('dashboardStaff.list.kicker', 'Staff list')}</p>
+            <h2>{t('dashboardStaff.list.title', 'Your staff')}</h2>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {t('dashboardStaff.list.body', 'Staff become bookable when they are active, assigned to services and have working hours set.')}
+            </p>
+          </div>
 
-  {staff.map((member) => (
-    <StaffProfileCard
-      key={member.id}
-      staff={member}
-      services={services}
-      assignedServiceIds={assignedServicesForStaff(member.id).map((service) => service.id)}
-      availabilityRows={staffAvailability}
-      isEditing={editingStaffId === member.id}
-      savingStaffId={savingStaffId}
-      savingAssignmentKey={actionLoadingKey?.startsWith(`service-${member.id}-`) ? actionLoadingKey.replace(`service-${member.id}-`, `${member.id}:`) : null}
-      updateLocalStaff={updateLocalStaff}
-      saveStaff={saveStaff}
-      toggleStaffActive={toggleStaffActive}
-      setEditingStaffId={setEditingStaffId}
-      loadData={loadPage}
-      toggleStaffService={toggleStaffService}
-    />
-  ))}
-</div>
+          <div className="staff-card-list">
+            {staff.length === 0 && (
+              <div className="card">
+                <h3>{t('dashboardStaff.empty.title', 'No staff yet')}</h3>
+                <p className="muted" style={{ marginTop: '0.5rem' }}>
+                  {t('dashboardStaff.empty.body', 'Add your first staff member above. Then assign services and set their working hours.')}
+                </p>
+              </div>
+            )}
+
+            {staff.map((member) => (
+              <StaffProfileCard
+                key={member.id}
+                staff={member}
+                services={services}
+                assignedServiceIds={assignedServicesForStaff(member.id).map((service) => service.id)}
+                availabilityRows={staffAvailability}
+                isEditing={editingStaffId === member.id}
+                savingStaffId={savingStaffId}
+                savingAssignmentKey={actionLoadingKey?.startsWith(`service-${member.id}-`) ? actionLoadingKey.replace(`service-${member.id}-`, `${member.id}:`) : null}
+                updateLocalStaff={updateLocalStaff}
+                saveStaff={saveStaff}
+                toggleStaffActive={toggleStaffActive}
+                setEditingStaffId={setEditingStaffId}
+                loadData={loadPage}
+                toggleStaffService={toggleStaffService}
+              />
+            ))}
+          </div>
         </>
       )}
       <style jsx>{`
-  .staff-card-list {
-    display: grid;
-    gap: 1rem;
-  }
-`}</style>
+        .staff-section-heading {
+          margin: 1.25rem 0 0.75rem;
+        }
+
+        .staff-section-heading h2 {
+          font-family: var(--font-display);
+          margin-top: 0.25rem;
+        }
+
+        .staff-card-list {
+          display: grid;
+          gap: 1rem;
+        }
+      `}</style>
     </DashboardLayout>
   )
 }

@@ -5,7 +5,6 @@ import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import { uploadMirebookImage } from '@/lib/imageUpload'
 import ServicesSetupHero from '@/components/dashboard-services/ServicesSetupHero'
-import ServicesStats from '@/components/dashboard-services/ServicesStats'
 import CreateServiceCard from '@/components/dashboard-services/CreateServiceCard'
 import ServiceCard from '@/components/dashboard-services/ServiceCard'
 import {
@@ -146,37 +145,6 @@ export default function Services() {
     loadData()
   }, [router.isReady, businessId])
 
-  const serviceStats = useMemo(() => {
-    const active = services.filter((service) => service.active).length
-    const inactive = services.length - active
-    const assigned = services.filter((service) => staffServices.some((link) => link.service_id === service.id)).length
-    const unassigned = services.length - assigned
-    const averagePrice = services.length > 0
-      ? services.reduce((total, service) => total + Number(service.price || 0), 0) / services.length
-      : 0
-    const averageDuration = services.length > 0
-      ? services.reduce((total, service) => total + Number(service.duration_minutes || 0), 0) / services.length
-      : 0
-    const bookable = services.filter((service) =>
-      service.active && staffServices.some((link) => link.service_id === service.id)
-    ).length
-
-    const withImages = services.filter((service) => Boolean(service.image_url?.trim())).length
-    const totalValue = services.reduce((total, service) => total + Number(service.price || 0), 0)
-
-    return {
-      total: services.length,
-      active,
-      inactive,
-      assigned,
-      unassigned,
-      averagePrice,
-      averageDuration,
-      bookable,
-      withImages,
-      totalValue
-    }
-  }, [services, staffServices])
 
   function assignedStaffForService(serviceId: string) {
     return staffMembers.filter((staff) =>
@@ -443,17 +411,6 @@ export default function Services() {
     return t('dashboardServices.readiness.ready', 'Ready for customers to book through Mirëbook.')
   }
 
-  function serviceLaunchWarning(service: Service) {
-    const warnings: string[] = []
-    const assignedStaff = assignedStaffForService(service.id)
-
-    if (!service.active) warnings.push('hidden')
-    if (assignedStaff.length === 0) warnings.push('no staff assigned')
-    if (!service.description?.trim()) warnings.push('no description')
-    if (!service.image_url?.trim()) warnings.push('no image')
-
-    return warnings
-  }
 
   function durationOptions() {
     return [15, 30, 45, 60, 75, 90, 120]
@@ -507,8 +464,6 @@ export default function Services() {
           )}
           <ServicesSetupHero business={business} />
 
-          <ServicesStats stats={serviceStats} />
-
           <CreateServiceCard
             formExpanded={formExpanded}
             loading={loading}
@@ -536,6 +491,14 @@ export default function Services() {
             resetForm={resetForm}
             addService={addService}
           />
+
+          <div className="services-section-heading">
+            <p className="small muted">{t('dashboardServices.list.kicker', 'Service list')}</p>
+            <h2>{t('dashboardServices.list.title', 'Your bookable services')}</h2>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {t('dashboardServices.list.body', 'Services become bookable when they are active and assigned to at least one staff member.')}
+            </p>
+          </div>
 
           <div className="services-list-grid">
             {services.length === 0 && (
@@ -572,6 +535,14 @@ export default function Services() {
         </>
       )}
       <style jsx>{`
+        .services-section-heading {
+          margin: 1.25rem 0 0.75rem;
+        }
+
+        .services-section-heading h2 {
+          font-family: var(--font-display);
+          margin-top: 0.25rem;
+        }
         .services-list-grid {
           display: grid;
           gap: 1rem;
