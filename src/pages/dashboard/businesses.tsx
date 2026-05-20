@@ -426,11 +426,12 @@ export default function Businesses() {
               <strong>{t('dashboardBusinesses.profileTools.preview', 'Preview public page')}</strong>
               <span>{t('dashboardBusinesses.setupHub.previewBody', 'See what customers see before you share your page.')}</span>
             </a>
+<a href="/support/business" className="business-setup-card">
+  <strong>{t('dashboardBusinesses.create.requestAnother', 'Request another business')}</strong>
+  <span>{t('dashboardBusinesses.setupHub.requestBody', 'Ask support to add another location or profile.')}</span>
+</a>
 
-            <a href="/support/business" className="business-setup-card">
-              <strong>{t('dashboardBusinesses.create.requestAnother', 'Request another business')}</strong>
-              <span>{t('dashboardBusinesses.setupHub.requestBody', 'Ask support to add another location or profile.')}</span>
-            </a>
+         
           </div>
         </div>
       )}
@@ -493,7 +494,7 @@ export default function Businesses() {
 
         .business-setup-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 0.75rem;
         }
 
@@ -512,6 +513,21 @@ export default function Businesses() {
           color: var(--text-muted);
           font-size: 0.85rem;
           line-height: 1.4;
+        }
+
+        .business-setup-support-row {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          align-items: center;
+          padding-top: 0.75rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .business-setup-support-row a {
+          color: var(--accent);
+          text-decoration: none;
+          font-weight: 700;
         }
 
         @media (max-width: 700px) {
