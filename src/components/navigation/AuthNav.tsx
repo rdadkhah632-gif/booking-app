@@ -255,8 +255,9 @@ export default function AuthNav() {
           display: flex;
           gap: 1rem;
           align-items: center;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           justify-content: flex-end;
+          min-width: 0;
         }
 
         .auth-nav-links :global(a),
@@ -305,7 +306,16 @@ export default function AuthNav() {
           .auth-nav-links {
             width: 100%;
             justify-content: flex-start;
-            gap: 0.7rem;
+            gap: 0.55rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 0.25rem;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+
+          .auth-nav-links::-webkit-scrollbar {
+            display: none;
           }
 
           :global(.nav-wide-only) {
@@ -316,8 +326,16 @@ export default function AuthNav() {
         @media (max-width: 540px) {
           .auth-nav-links :global(a),
           .auth-nav-links button {
-            width: 100%;
+            width: auto;
+            max-width: none;
             justify-content: center;
+            white-space: nowrap;
+          }
+
+          :global(.language-toggle),
+          :global(.account-mode-pill) {
+            width: auto;
+            flex: 0 0 auto;
           }
         }
       `}</style>
