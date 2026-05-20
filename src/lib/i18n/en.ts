@@ -563,11 +563,13 @@ export const en: TranslationTree = {
     'dashboardBusinesses.create.title': 'Add your business',
     'dashboardBusinesses.create.body': 'Create the business first, then add profile details, a business image, services, staff, working hours and publish when it is ready for customers.',
     'dashboardBusinesses.create.extraKicker': 'Additional business',
-    'dashboardBusinesses.create.extraTitle': 'Add another business',
-    'dashboardBusinesses.create.extraBody': 'Only add another business if it is a separate location, brand or trading profile. Most owners should manage one business profile.',
+    'dashboardBusinesses.create.extraTitle': 'Need another business or location?',
+
+'dashboardBusinesses.create.extraBody': 'Your account is currently set up for one business profile. If you need another location, brand or trading profile, contact Mirëbook support so it can be added properly.',
+
+'dashboardBusinesses.create.addAnother': 'Request another business',
     'dashboardBusinesses.create.placeholder': 'Business name',
     'dashboardBusinesses.create.adding': 'Adding...',
-    'dashboardBusinesses.create.addAnother': 'Add another business',
     'dashboardBusinesses.create.addFirst': 'Add business to Mirëbook',
     'dashboardBusinesses.create.success': 'Business created. Complete the setup hub, then publish it to Mirëbook.',
     'dashboardBusinesses.loading': 'Loading your Mirëbook businesses...',

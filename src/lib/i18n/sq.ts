@@ -551,11 +551,15 @@ export const sq: TranslationTree = {
     'dashboardBusinesses.create.title': 'Shto biznesin tënd',
     'dashboardBusinesses.create.body': 'Krijo biznesin fillimisht, pastaj shto detajet e profilit, imazhin, shërbimet, stafin, oraret dhe publikoje kur të jetë gati për klientët.',
     'dashboardBusinesses.create.extraKicker': 'Biznes shtesë',
-    'dashboardBusinesses.create.extraTitle': 'Shto një biznes tjetër',
-    'dashboardBusinesses.create.extraBody': 'Shto një biznes tjetër vetëm nëse është lokacion, markë ose profil tregtar i veçantë. Shumica e pronarëve duhet të menaxhojnë një profil biznesi.',
+    'dashboardBusinesses.create.extraTitle': 'Keni nevojë për një biznes ose lokacion tjetër?',
+
+'dashboardBusinesses.create.extraBody': 'Llogaria juaj aktualisht është e kufizuar në një profil biznesi. Nëse keni nevojë për një lokacion, markë ose profil tjetër biznesi, kontaktoni mbështetjen e Mirëbook që të shtohet siç duhet.',
+
+'dashboardBusinesses.create.addAnother': 'Kërko një biznes tjetër',
     'dashboardBusinesses.create.placeholder': 'Emri i biznesit',
     'dashboardBusinesses.create.adding': 'Duke shtuar...',
-    'dashboardBusinesses.create.addAnother': 'Shto një biznes tjetër',
+
+
     'dashboardBusinesses.create.addFirst': 'Shto biznes në Mirëbook',
     'dashboardBusinesses.create.success': 'Biznesi u krijua. Përfundo konfigurimin, pastaj publikoje në Mirëbook.',
     'dashboardBusinesses.loading': 'Duke ngarkuar bizneset e tua Mirëbook...',

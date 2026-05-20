@@ -199,40 +199,27 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             </p>
           </div>
 
-          <div className="dashboard-header-actions">
-            <Link href="/dashboard/businesses" className="btn btn-ghost dashboard-header-secondary">
-              {t('dashboardSettings.setupHub', 'Setup hub')}
-            </Link>
-
-            <Link href="/dashboard/settings" className="btn btn-ghost dashboard-header-secondary">
-              {t('dashboardSettings.pageTitle', 'Business settings')}
-            </Link>
-
-            <Link href={publicBusinessHref} className="btn btn-ghost dashboard-header-secondary">
-              {t('dashboardLayout.previewBusiness', 'Preview business page')}
-            </Link>
-
-            <Link
-              href="/dashboard/notifications"
-              className={pendingCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}
-              style={{
-                position: 'relative',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              <span aria-hidden="true">🔔</span>
-              <span>{pendingCount > 0 ? t('account.needsAction', 'Needs action') : t('dashboardLayout.noActions', 'No actions')}</span>
-
-              {pendingCount > 0 && (
+          {pendingCount > 0 && (
+            <div className="dashboard-header-actions">
+              <Link
+                href="/dashboard/notifications"
+                className="btn btn-accent"
+                style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <span aria-hidden="true">🔔</span>
+                <span>{t('account.needsAction', 'Needs action')}</span>
                 <span
                   style={{
                     minWidth: 22,
                     height: 22,
                     borderRadius: 999,
-                    background: 'var(--accent)',
-                    color: 'var(--bg)',
+                    background: 'var(--bg)',
+                    color: 'var(--accent)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -243,9 +230,9 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
                 >
                   {pendingCount > 9 ? '9+' : pendingCount}
                 </span>
-              )}
-            </Link>
-          </div>
+              </Link>
+            </div>
+          )}
         </div>
 
         {children}
@@ -275,9 +262,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           justify-content: flex-end;
         }
 
-        .dashboard-header-secondary {
-          flex-shrink: 0;
-        }
 
         @media (max-width: 720px) {
           .dashboard-page-header {
@@ -294,9 +278,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             justify-content: center;
           }
 
-          .dashboard-header-secondary {
-            display: none;
-          }
         }
       `}</style>
     </main>

@@ -142,6 +142,11 @@ export default function Businesses() {
 
     if (!newName.trim()) return
 
+    if (businesses.length > 0) {
+      setError(t('dashboardBusinesses.create.limitReached', 'Your account already has a business profile. To add another business or location, contact Mirëbook support.'))
+      return
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -369,8 +374,8 @@ export default function Businesses() {
   // readinessRow and setupCard functions deleted
   return (
     <DashboardLayout
-      title={t('dashboardBusinesses.pageTitle', 'Business setup hub')}
-      subtitle={t('dashboardBusinesses.pageSubtitle', 'Control your customer-facing profile, booking settings, services, staff and working hours from one place.')}
+      title={t('dashboardBusinesses.pageTitle', businesses.length > 0 ? 'Business profile' : 'Create your business')}
+      subtitle={t('dashboardBusinesses.pageSubtitle', businesses.length > 0 ? 'Manage the business customers see on Mirëbook. Services, staff and availability are managed from the sidebar.' : 'Create your first business profile, then add services, staff, availability and publish it to Mirëbook.')}
     >
       <BusinessSetupHero />
 
