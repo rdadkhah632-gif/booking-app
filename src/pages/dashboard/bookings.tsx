@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
-import BookingsBusinessPicker from '@/components/dashboard-bookings/BookingsBusinessPicker'
 import BookingsTopToolbar from '@/components/dashboard-bookings/BookingsTopToolbar'
 import BookingsSummaryCards from '@/components/dashboard-bookings/BookingsSummaryCards'
 import BookingsFilterPanel from '@/components/dashboard-bookings/BookingsFilterPanel'
@@ -139,13 +138,13 @@ export default function Bookings() {
 
     if (owned.length === 1) return owned[0]
 
-    return null
+    return owned[0]
   }
 
-  async function loadBookings(options?: { keepSuccess?: boolean }) {
+  async function loadBookings(options?: { keepSuccess?: boolean; silent?: boolean }) {
     setError(null)
     if (!options?.keepSuccess) setSuccess(null)
-    setPageLoading(true)
+    if (!options?.silent) setPageLoading(true)
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -219,12 +218,12 @@ export default function Bookings() {
     if (!router.isReady) return
 
     function refreshOnFocus() {
-      loadBookings()
+      loadBookings({ silent: true, keepSuccess: true })
     }
 
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
-        loadBookings()
+        loadBookings({ silent: true, keepSuccess: true })
       }
     }
 
@@ -236,6 +235,47 @@ export default function Bookings() {
       document.removeEventListener('visibilitychange', refreshWhenActive)
     }
   }, [router.isReady, businessId])
+
+  useEffect(() => {
+    if (!business?.id) return
+
+let refreshTimer: number | null = null
+    function queueRefresh() {
+      if (refreshTimer) window.clearTimeout(refreshTimer)
+      refreshTimer = window.setTimeout(() => {
+        loadBookings({ silent: true, keepSuccess: true })
+      }, 350)
+    }
+
+    const channel = supabase
+      .channel(`business-bookings-${business.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `business_id=eq.${business.id}`
+        },
+        queueRefresh
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'booking_requests',
+          filter: `business_id=eq.${business.id}`
+        },
+        queueRefresh
+      )
+      .subscribe()
+
+    return () => {
+      if (refreshTimer) window.clearTimeout(refreshTimer)
+      supabase.removeChannel(channel)
+    }
+  }, [business?.id])
 
   useEffect(() => {
     if (!router.isReady) return
@@ -329,7 +369,7 @@ export default function Bookings() {
     })
 
     setSuccess(t('dashboardBookings.success.accepted', 'Booking accepted. The customer has been notified and the appointment is now confirmed.'))
-    await loadBookings({ keepSuccess: true })
+    await loadBookings({ keepSuccess: true, silent: true })
   }
 
   async function declinePendingBooking(booking: Booking) {
@@ -364,7 +404,7 @@ export default function Bookings() {
     })
 
     setSuccess(t('dashboardBookings.success.declined', 'Booking declined. The customer has been notified and the request is no longer pending.'))
-    await loadBookings({ keepSuccess: true })
+    await loadBookings({ keepSuccess: true, silent: true })
   }
 
   async function cancelBooking(booking: Booking) {
@@ -399,7 +439,7 @@ export default function Bookings() {
     })
 
     setSuccess(t('dashboardBookings.success.cancelled', 'Booking cancelled. The customer has been notified and the booking is now locked as cancelled.'))
-    await loadBookings({ keepSuccess: true })
+    await loadBookings({ keepSuccess: true, silent: true })
   }
 
   async function completeBooking(booking: Booking) {
@@ -434,7 +474,7 @@ export default function Bookings() {
     })
 
     setSuccess(t('dashboardBookings.success.completed', 'Booking marked as completed. The customer has been notified and the booking is now locked in history.'))
-    await loadBookings({ keepSuccess: true })
+    await loadBookings({ keepSuccess: true, silent: true })
   }
 
   function statusLabel(value: string) {
@@ -583,11 +623,11 @@ export default function Bookings() {
   return (
     <DashboardLayout
       title={t('dashboardBookings.pageTitle', 'Bookings')}
-      subtitle={business ? `${t('dashboardBookings.pageSubtitleSelected', 'Manage Mirëbook bookings for')} ${business.name}` : t('dashboardBookings.pageSubtitle', 'Choose which business bookings to view.')}
+      subtitle={business ? `${t('dashboardBookings.pageSubtitleSelected', 'Manage appointments and booking requests for')} ${business.name}.` : t('dashboardBookings.pageSubtitle', 'Create your business first, then customer bookings will appear here.')}
     >
       <BookingsTopToolbar
         pageLoading={pageLoading}
-        onRefresh={() => loadBookings()}
+        onRefresh={() => loadBookings({ keepSuccess: true })}
       />
 
       {success && (
@@ -628,8 +668,12 @@ export default function Bookings() {
         <EmptyBookingsCard type="no-business" />
       )}
 
-      {!pageLoading && !business && businesses.length > 1 && (
-        <BookingsBusinessPicker businesses={businesses} />
+      {!pageLoading && business && businesses.length > 1 && (
+        <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+          <p className="small muted">
+            {t('dashboardBookings.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+          </p>
+        </div>
       )}
 
       {!pageLoading && business && bookings.length === 0 && (
@@ -673,7 +717,7 @@ export default function Bookings() {
             <section key={group.dateKey} style={{ display: 'grid', gap: '1rem' }}>
               <div>
                 <p className="small muted">
-                  {group.bookings.length} {t('support.business.bookings', 'booking')}{group.bookings.length === 1 ? '' : 's'}
+                  {group.bookings.length} {t('dashboardBookings.appointmentCount', 'appointment')}{group.bookings.length === 1 ? '' : 's'}
                 </p>
                 <h2 style={{ fontFamily: 'var(--font-display)' }}>{group.label}</h2>
               </div>

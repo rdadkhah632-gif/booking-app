@@ -27,8 +27,8 @@ export default function MyBookings() {
   const changeRequestsSectionRef = useRef<HTMLElement | null>(null)
   const historySectionRef = useRef<HTMLElement | null>(null)
 
-  async function loadBookings(options?: { keepSuccess?: boolean }) {
-    setLoading(true)
+  async function loadBookings(options?: { keepSuccess?: boolean; silent?: boolean }) {
+    if (!options?.silent) setLoading(true)
     setError(null)
     if (!options?.keepSuccess) setSuccess(null)
 
@@ -108,12 +108,12 @@ export default function MyBookings() {
 
   useEffect(() => {
     function refreshOnFocus() {
-      loadBookings()
+      loadBookings({ silent: true, keepSuccess: true })
     }
 
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
-        loadBookings()
+        loadBookings({ silent: true, keepSuccess: true })
       }
     }
 
@@ -123,6 +123,62 @@ export default function MyBookings() {
     return () => {
       window.removeEventListener('focus', refreshOnFocus)
       document.removeEventListener('visibilitychange', refreshWhenActive)
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    let refreshTimer: number | null = null
+
+    async function subscribeToBookingUpdates() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (cancelled || !session?.user?.id) return
+
+      function queueRefresh() {
+        if (refreshTimer) window.clearTimeout(refreshTimer)
+        refreshTimer = window.setTimeout(() => {
+          loadBookings({ silent: true, keepSuccess: true })
+        }, 350)
+      }
+
+      const channel = supabase
+        .channel(`customer-bookings-${session.user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `customer_user_id=eq.${session.user.id}`
+          },
+          queueRefresh
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'booking_requests',
+            filter: `customer_user_id=eq.${session.user.id}`
+          },
+          queueRefresh
+        )
+        .subscribe()
+
+      return channel
+    }
+
+    let channelRef: ReturnType<typeof supabase.channel> | null = null
+
+    subscribeToBookingUpdates().then((channel) => {
+      if (channel) channelRef = channel
+    })
+
+    return () => {
+      cancelled = true
+      if (refreshTimer) window.clearTimeout(refreshTimer)
+      if (channelRef) supabase.removeChannel(channelRef)
     }
   }, [])
 
