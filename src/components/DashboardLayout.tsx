@@ -14,12 +14,29 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
   const router = useRouter()
   const { t } = useI18n()
   const [pendingCount, setPendingCount] = useState(0)
+  const [checkingAccess, setCheckingAccess] = useState(true)
 
   useEffect(() => {
     async function loadPendingNotifications() {
+      setCheckingAccess(true)
+
       const { data: { session } } = await supabase.auth.getSession()
 
-      if (!session) return
+      if (!session) {
+        router.replace('/login')
+        return
+      }
+
+      const { data: linkedStaff } = await supabase
+        .from('staff_members')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .limit(1)
+
+      if (linkedStaff && linkedStaff.length > 0) {
+        router.replace('/staff')
+        return
+      }
 
       const { data: businesses } = await supabase
         .from('businesses')
@@ -30,6 +47,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
       if (businessIds.length === 0) {
         setPendingCount(0)
+        router.replace('/explore')
         return
       }
 
@@ -50,6 +68,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
       )
 
       setPendingCount((pendingBookingsCount || 0) + uniquePendingBookings.size)
+      setCheckingAccess(false)
     }
 
     loadPendingNotifications()
@@ -75,6 +94,18 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
   async function logout() {
     await supabase.auth.signOut()
     router.replace('/')
+  }
+
+  if (checkingAccess) {
+    return (
+      <main className="dashboard-layout">
+        <section className="dashboard-main">
+          <div className="card">
+            <p className="muted">{t('common.loading', 'Loading...')}</p>
+          </div>
+        </section>
+      </main>
+    )
   }
 
   return (
