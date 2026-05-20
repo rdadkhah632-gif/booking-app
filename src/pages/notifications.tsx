@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
+import { useI18n } from '@/lib/useI18n'
 import NotificationsHeader from '@/components/notifications/NotificationsHeader'
 import NotificationsStats from '@/components/notifications/NotificationsStats'
 import NotificationEmptyState from '@/components/notifications/NotificationEmptyState'
@@ -57,6 +58,7 @@ function requestedStaffName(request: BookingRequest) {
 
 export default function CustomerNotifications() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -66,8 +68,8 @@ export default function CustomerNotifications() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  async function loadNotifications() {
-    setLoading(true)
+  async function loadNotifications(options?: { silent?: boolean }) {
+    if (!options?.silent) setLoading(true)
     setError(null)
 
     try {
@@ -181,7 +183,7 @@ export default function CustomerNotifications() {
       setBookings(normalisedBookings as Booking[])
       setLoading(false)
     } catch (err: any) {
-      setError(err.message || 'Could not load notifications.')
+      setError(err.message || t('notifications.error.load', 'Could not load notifications.'))
       setLoading(false)
     }
   }
@@ -191,28 +193,40 @@ export default function CustomerNotifications() {
   }, [])
 
   useEffect(() => {
+    function refreshOnFocus() {
+      loadNotifications({ silent: true })
+    }
+
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
-        loadNotifications()
+        loadNotifications({ silent: true })
       }
     }
 
-    window.addEventListener('focus', loadNotifications)
+    window.addEventListener('focus', refreshOnFocus)
     document.addEventListener('visibilitychange', refreshWhenActive)
 
     return () => {
-      window.removeEventListener('focus', loadNotifications)
+      window.removeEventListener('focus', refreshOnFocus)
       document.removeEventListener('visibilitychange', refreshWhenActive)
     }
   }, [])
 
   function statusLabel(status: string, type?: 'booking' | 'reschedule') {
-    if (status === 'pending') return type === 'booking' ? 'Booking waiting approval' : 'Waiting for business approval'
-    if (status === 'accepted') return 'Reschedule accepted'
-    if (status === 'declined') return 'Reschedule declined'
-    if (status === 'cancelled') return type === 'booking' ? 'Booking cancelled / not accepted' : 'Superseded / replaced'
-    if (status === 'completed') return 'Appointment completed'
-    if (status === 'confirmed') return 'Confirmed appointment'
+    if (status === 'pending') {
+      return type === 'booking'
+        ? t('notifications.status.bookingWaitingApproval', 'Booking waiting approval')
+        : t('notifications.status.waitingApproval', 'Waiting for business approval')
+    }
+    if (status === 'accepted') return t('notifications.status.rescheduleAccepted', 'Reschedule accepted')
+    if (status === 'declined') return t('notifications.status.rescheduleDeclined', 'Reschedule declined')
+    if (status === 'cancelled') {
+      return type === 'booking'
+        ? t('notifications.status.bookingCancelled', 'Booking cancelled / not accepted')
+        : t('notifications.status.superseded', 'Superseded / replaced')
+    }
+    if (status === 'completed') return t('notifications.status.completed', 'Appointment completed')
+    if (status === 'confirmed') return t('notifications.status.confirmed', 'Confirmed appointment')
     return status
   }
 
@@ -347,7 +361,7 @@ export default function CustomerNotifications() {
           loading={loading}
           markingRead={markingRead}
           unreadCount={unreadCount}
-          onRefresh={loadNotifications}
+          onRefresh={() => loadNotifications()}
           onMarkAllRead={markAllNotificationsRead}
         />
 
@@ -365,7 +379,7 @@ export default function CustomerNotifications() {
 
         {loading && (
           <div className="card">
-            <p className="muted">Loading Mirëbook notifications...</p>
+            <p className="muted">{t('notifications.loading', 'Loading Mirëbook notifications...')}</p>
           </div>
         )}
 
