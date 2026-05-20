@@ -59,13 +59,22 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
   const mainLinks = [
     { href: '/dashboard', label: t('dashboardLayout.nav.home', 'Home') },
     { href: '/dashboard/bookings', label: t('support.business.bookings', 'Bookings') },
-    { href: '/dashboard/businesses', label: t('dashboardLayout.nav.setup', 'Setup') },
-    { href: '/dashboard/settings', label: t('dashboardSettings.pageTitle', 'Settings') }
+    { href: '/dashboard/analytics', label: t('dashboardHome.viewAnalytics', 'Analytics') }
+  ]
+
+  const lowerLinks = [
+    { href: '/dashboard/settings', label: t('dashboardSettings.pageTitle', 'Business settings') },
+    { href: '/account', label: t('dashboardLayout.nav.accountSettings', 'My account') }
   ]
 
 
   function isActiveLink(href: string) {
     return router.pathname === href || router.pathname.startsWith(`${href}/`)
+  }
+
+  async function logout() {
+    await supabase.auth.signOut()
+    router.replace('/')
   }
 
   return (
@@ -81,15 +90,37 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         </div>
 
         <nav className="sidebar-nav">
-          {mainLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''}`}
+          <div className="sidebar-main-links">
+            {mainLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''}`}
+              >
+                <span>{link.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="sidebar-lower-links">
+            {lowerLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''}`}
+              >
+                <span>{link.label}</span>
+              </Link>
+            ))}
+
+            <button
+              type="button"
+              onClick={logout}
+              className="sidebar-link sidebar-logout"
             >
-              <span>{link.label}</span>
-            </Link>
-          ))}
+              {t('auth.logout', 'Log out')}
+            </button>
+          </div>
         </nav>
       </aside>
 
@@ -155,6 +186,32 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         {children}
       </section>
       <style jsx>{`
+        .sidebar-nav {
+          display: flex;
+          flex-direction: column;
+          gap: 2.25rem;
+        }
+
+        .sidebar-main-links,
+        .sidebar-lower-links {
+          display: grid;
+          gap: 0.35rem;
+        }
+
+        .sidebar-lower-links {
+          margin-top: 1.25rem;
+          padding-top: 1.25rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .sidebar-logout {
+          width: 100%;
+          border: 0;
+          background: transparent;
+          text-align: left;
+          color: var(--text-muted);
+          cursor: pointer;
+        }
         .dashboard-page-header {
           display: flex;
           justify-content: space-between;

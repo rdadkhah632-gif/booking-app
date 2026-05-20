@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import BusinessSettingsActions from '@/components/dashboard-settings/BusinessSettingsActions'
-import BusinessSettingsBusinessPicker from '@/components/dashboard-settings/BusinessSettingsBusinessPicker'
 import BusinessSettingsHeader from '@/components/dashboard-settings/BusinessSettingsHeader'
 import BusinessSettingsSummary from '@/components/dashboard-settings/BusinessSettingsSummary'
 import BookingApprovalSettings from '@/components/dashboard-settings/BookingApprovalSettings'
@@ -122,14 +121,6 @@ export default function DashboardSettingsPage() {
     loadSettings()
   }, [router.isReady])
 
-  function selectBusiness(businessId: string) {
-    const business = businesses.find((item) => item.id === businessId)
-    if (!business) return
-
-    setSelectedBusinessId(business.id)
-    setSettings(defaultSettings(business))
-    router.replace(`/dashboard/settings?businessId=${business.id}`, undefined, { shallow: true })
-  }
 
   function updateSetting<K extends keyof Business>(key: K, value: Business[K]) {
     setSettings((current) => {
@@ -192,7 +183,7 @@ export default function DashboardSettingsPage() {
   return (
     <DashboardLayout
       title={t('dashboardSettings.pageTitle', 'Business settings')}
-      subtitle={selectedBusiness ? `${t('dashboardSettings.subtitleSelected', 'Control booking approval, rules and policies for')} ${selectedBusiness.name}.` : t('dashboardSettings.subtitle', 'Control booking approval, rules and policies.')}
+      subtitle={selectedBusiness ? `${t('dashboardSettings.subtitleSelected', 'Control booking approval, rules, policies and billing for')} ${selectedBusiness.name}.` : t('dashboardSettings.subtitle', 'Control booking approval, rules, policies and billing.')}
     >
       {loading && (
         <div className="card">
@@ -244,11 +235,13 @@ export default function DashboardSettingsPage() {
             settingSummary={settingSummary()}
           />
 
-          <BusinessSettingsBusinessPicker
-            businesses={businesses}
-            selectedBusinessId={selectedBusinessId}
-            onSelectBusiness={selectBusiness}
-          />
+          {businesses.length > 1 && (
+            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+              <p className="small muted">
+                {t('dashboardSettings.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+              </p>
+            </div>
+          )}
 
           <div className="card settings-tools-card">
             <div>
@@ -376,34 +369,6 @@ export default function DashboardSettingsPage() {
           gap: 0.75rem;
         }
 
-        .settings-business-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 0.75rem;
-          margin-top: 1rem;
-        }
-
-        .settings-business-card {
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text);
-          border-radius: var(--radius);
-          padding: 1rem;
-          text-align: left;
-          cursor: pointer;
-        }
-
-        .settings-business-card span {
-          display: block;
-          color: var(--text-muted);
-          font-size: 0.85rem;
-          margin-top: 0.25rem;
-        }
-
-        .settings-business-card-active {
-          border-color: rgba(255,107,53,0.45);
-          background: var(--accent-dim);
-        }
 
         .settings-approval-card {
           grid-column: 1 / -1;

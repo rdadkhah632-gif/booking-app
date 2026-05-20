@@ -291,9 +291,9 @@ export default function AccountPage() {
             <div className="account-header">
               <div>
                 <p className="small muted">{t('account.kicker', 'Account')}</p>
-                <h1 className="page-title">{t('account.pageTitle', 'Account settings')}</h1>
+                <h1 className="page-title">{t('account.pageTitle', 'My account')}</h1>
                 <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                  {t('account.pageSubtitle', 'Manage your personal account details, language preference and security. Business setup is managed separately in Business settings.')}
+                  {t('account.pageSubtitle', 'Manage your name, phone number and language preference. Business booking rules are managed separately in Business settings.')}
                 </p>
               </div>
 
@@ -308,6 +308,61 @@ export default function AccountPage() {
                 <p style={{ color: 'var(--success)' }}>{message}</p>
               </div>
             )}
+
+            <form onSubmit={saveProfile} className="card account-form-card account-primary-card">
+              <div>
+                <p className="small muted">{t('account.primaryKicker', 'Personal settings')}</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>{t('account.personalDetails', 'Personal details')}</h2>
+                <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                  {t('account.accountOnlyBody', 'These settings belong to your login account. They do not change your business profile, services, staff or booking rules.')}
+                </p>
+              </div>
+
+              <div className="account-form-grid">
+                <div>
+                  <label className="small muted">{t('account.fullName', 'Full name')}</label>
+                  <input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder={t('account.fullNamePlaceholder', 'Your full name')}
+                    style={{ width: '100%', marginTop: '0.4rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="small muted">{t('common.phone', 'Phone')}</label>
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder={t('account.phonePlaceholder', 'Phone number')}
+                    style={{ width: '100%', marginTop: '0.4rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="small muted">{t('account.languagePreference', 'Language preference')}</label>
+                  <select
+                    value={preferredLanguage}
+                    onChange={(e) => {
+                      const nextLanguage = e.target.value as Locale
+                      setPreferredLanguage(nextLanguage)
+                      setLocale(nextLanguage)
+                    }}
+                    style={{ width: '100%', marginTop: '0.4rem' }}
+                  >
+                    <option value="en">{t('language.english', 'English')}</option>
+                    <option value="sq">{t('language.albanian', 'Albanian')}</option>
+                  </select>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('account.languageBody', 'This language is saved to your account and used across translated Mirëbook pages when you sign in.')}
+                  </p>
+                </div>
+              </div>
+
+              <button type="submit" disabled={saving} className="btn btn-accent">
+                {saving ? t('account.saving', 'Saving...') : t('account.saveChanges', 'Save changes')}
+              </button>
+            </form>
 
             <div className="card" style={{ borderColor: 'rgba(255,107,53,0.25)' }}>
               <p className="small muted">{t('account.businessSettingsKicker', 'Business settings are separate')}</p>
@@ -401,57 +456,6 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <form onSubmit={saveProfile} className="card account-form-card">
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('account.personalDetails', 'Personal details')}</h2>
-                <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {t('account.accountOnlyBody', 'These settings belong to your login account. They do not change your business profile, services, staff or booking rules.')}
-                </p>
-              </div>
-
-              <div>
-                <label className="small muted">{t('account.fullName', 'Full name')}</label>
-                <input
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder={t('account.fullNamePlaceholder', 'Your full name')}
-                  style={{ width: '100%', marginTop: '0.4rem' }}
-                />
-              </div>
-
-              <div>
-                <label className="small muted">{t('common.phone', 'Phone')}</label>
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t('account.phonePlaceholder', 'Phone number')}
-                  style={{ width: '100%', marginTop: '0.4rem' }}
-                />
-              </div>
-
-              <div>
-                <label className="small muted">{t('account.languagePreference', 'Language preference')}</label>
-                <select
-                  value={preferredLanguage}
-                  onChange={(e) => {
-                    const nextLanguage = e.target.value as Locale
-                    setPreferredLanguage(nextLanguage)
-                    setLocale(nextLanguage)
-                  }}
-                  style={{ width: '100%', marginTop: '0.4rem' }}
-                >
-                  <option value="en">{t('language.english', 'English')}</option>
-                  <option value="sq">{t('language.albanian', 'Albanian')}</option>
-                </select>
-                <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  {t('account.languageBody', 'This language is saved to your account and used across translated Mirëbook pages when you sign in.')}
-                </p>
-              </div>
-
-              <button type="submit" disabled={saving} className="btn btn-accent">
-                {saving ? t('account.saving', 'Saving...') : t('account.saveChanges', 'Save changes')}
-              </button>
-            </form>
 
             <div className="card support-card">
               <div>
@@ -513,6 +517,17 @@ export default function AccountPage() {
           gap: 1rem;
         }
 
+        .account-primary-card {
+          border-color: rgba(45,212,191,0.25);
+        }
+
+        .account-form-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 1rem;
+          align-items: start;
+        }
+
         .support-card {
           border-color: rgba(255,190,11,0.22);
         }
@@ -551,6 +566,10 @@ export default function AccountPage() {
           .workspace-actions button {
             width: 100%;
             justify-content: center;
+          }
+
+          .account-form-grid {
+            grid-template-columns: 1fr;
           }
 
           .language-pill {
