@@ -64,30 +64,26 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
   }
 
   const mainLinks = [
-    { href: '/dashboard', label: t('dashboardLayout.nav.overview', 'Overview') },
-    { href: '/dashboard/bookings', label: t('support.business.bookings', 'Bookings') },
+    { href: '/dashboard', label: t('dashboardLayout.nav.home', 'Home') },
+    { href: '/dashboard/bookings', label: t('dashboardLayout.nav.calendar', 'Calendar') },
     {
       href: '/dashboard/notifications',
       label: pendingCount > 0
         ? `${t('account.needsAction', 'Needs action')} (${pendingCount})`
         : t('account.needsAction', 'Needs action'),
       highlight: pendingCount > 0
-    },
-    { href: '/dashboard/analytics', label: t('dashboardHome.viewAnalytics', 'Analytics') }
+    }
   ]
 
   const setupLinks = [
-    { href: '/dashboard/businesses', label: t('dashboardLayout.nav.setupHub', 'Business setup hub') },
+    { href: '/dashboard/businesses', label: t('dashboardLayout.nav.businessProfile', 'Business profile') },
     { href: '/dashboard/services', label: t('support.business.services', 'Services') },
     { href: '/dashboard/staff', label: t('support.business.staff', 'Staff') },
-    { href: '/dashboard/availability', label: t('dashboardBusinesses.workingHours', 'Working hours') },
-    { href: '/dashboard/settings', label: t('dashboardSettings.pageTitle', 'Business settings') },
-    { href: '/dashboard/billing', label: t('home.trust.billing', 'Billing') }
+    { href: '/dashboard/settings', label: t('dashboardSettings.pageTitle', 'Settings') }
   ]
 
   const accountLinks = [
-    { href: '/account', label: t('dashboardLayout.nav.accountSettings', 'Account settings') },
-    { href: '/support/business', label: t('nav.businessSupport', 'Business support') }
+    { href: '/account', label: t('dashboardLayout.nav.accountSettings', 'Account') }
   ]
 
   const publicBusinessHref = useMemo(() => {
@@ -155,10 +151,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         </nav>
 
         <div style={{ marginTop: 'auto', padding: '1rem 0.5rem' }}>
-          <Link href={publicBusinessHref} className="sidebar-link">
-            {t('dashboardLayout.previewBusiness', 'Preview business page')}
-          </Link>
-
           <button
             onClick={logout}
             className="sidebar-link"
@@ -166,7 +158,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               width: '100%',
               textAlign: 'left',
               border: 'none',
-              marginTop: '0.5rem',
               background: 'transparent',
               color: 'var(--text-muted)'
             }}
