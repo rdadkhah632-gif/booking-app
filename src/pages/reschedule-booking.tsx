@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
-
+import { useI18n } from '@/lib/useI18n'
 type Booking = {
   id: string
   business_id: string
@@ -96,6 +96,7 @@ type Role = 'customer' | 'business' | null
 export default function RescheduleBooking() {
   const router = useRouter()
   const { id } = router.query
+  const { t } = useI18n()
 
   const [booking, setBooking] = useState<Booking | null>(null)
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
@@ -664,45 +665,29 @@ export default function RescheduleBooking() {
         error = existingRequestError
       } else if (existingPendingRequest?.id) {
         const result = await supabase
-  .from('booking_requests')
-  .insert({
-    booking_id: booking.id,
-    business_id: booking.business_id,
-    customer_user_id: booking.customer_user_id,
-    requested_by: 'customer',
-    request_type: 'reschedule',
-    status: 'pending',
-    current_start_at: booking.start_at,
-    requested_start_at: newStartAt,
-    current_staff_member_id: booking.staff_member_id || null,
-    requested_staff_member_id: staffMemberIdForReschedule,
-    requested_duration_minutes: newDuration,
-    message: 'Customer requested a new appointment time.'
-  })
-  .select('id')
-  .single()
+          .from('booking_requests')
+          .update({
+            requested_start_at: newStartAt,
+            requested_staff_member_id: staffMemberIdForReschedule,
+            requested_duration_minutes: newDuration,
+            message: 'Customer updated their requested appointment time.',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingPendingRequest.id)
+          .select('id')
+          .single()
 
-error = result.error
+        error = result.error
 
-if (!error) {
-  await createBusinessNotification({
-    type: 'reschedule_requested',
-    title: 'New reschedule request',
-    message: `${booking.customer_name} requested to move ${serviceName()} from ${appointmentDateTime(booking.start_at)} to ${appointmentDateTime(newStartAt)}.`,
-    actionUrl: `/dashboard/notifications?businessId=${booking.business_id}`,
-    bookingRequestId: result.data?.id || null
-  })
-}
-
-if (!error) {
-  await createBusinessNotification({
-    type: 'reschedule_request_updated',
-    title: 'Reschedule request updated',
-    message: `${booking.customer_name} updated their reschedule request for ${serviceName()} to ${appointmentDateTime(newStartAt)}.`,
-    actionUrl: `/dashboard/notifications?businessId=${booking.business_id}`,
-    bookingRequestId: result.data?.id || existingPendingRequest.id
-  })
-}
+        if (!error) {
+          await createBusinessNotification({
+            type: 'reschedule_request_updated',
+            title: 'Reschedule request updated',
+            message: `${booking.customer_name} updated their reschedule request for ${serviceName()} to ${appointmentDateTime(newStartAt)}.`,
+            actionUrl: `/dashboard/notifications?businessId=${booking.business_id}`,
+            bookingRequestId: result.data?.id || existingPendingRequest.id
+          })
+        }
       } else {
         const result = await supabase
           .from('booking_requests')
@@ -720,8 +705,20 @@ if (!error) {
             requested_duration_minutes: newDuration,
             message: 'Customer requested a new appointment time.'
           })
+          .select('id')
+          .single()
 
         error = result.error
+
+        if (!error) {
+          await createBusinessNotification({
+            type: 'reschedule_requested',
+            title: 'New reschedule request',
+            message: `${booking.customer_name} requested to move ${serviceName()} from ${appointmentDateTime(booking.start_at)} to ${appointmentDateTime(newStartAt)}.`,
+            actionUrl: `/dashboard/notifications?businessId=${booking.business_id}`,
+            bookingRequestId: result.data?.id || null
+          })
+        }
       }
     } else {
       const result = await supabase
