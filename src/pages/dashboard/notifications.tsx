@@ -134,8 +134,8 @@ export default function BusinessNotifications() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  async function loadNotifications(options?: { keepSuccess?: boolean }) {
-    setLoading(true)
+  async function loadNotifications(options?: { keepSuccess?: boolean; silent?: boolean }) {
+    if (!options?.silent) setLoading(true)
     setError(null)
     if (!options?.keepSuccess) setSuccess(null)
 
@@ -282,14 +282,14 @@ export default function BusinessNotifications() {
     loadNotifications()
   }, [])
 
-   useEffect(() => {
+  useEffect(() => {
     function refreshOnFocus() {
-      loadNotifications()
+      loadNotifications({ silent: true, keepSuccess: true })
     }
 
     function refreshWhenActive() {
       if (document.visibilityState === 'visible') {
-        loadNotifications()
+        loadNotifications({ silent: true, keepSuccess: true })
       }
     }
 
@@ -341,7 +341,7 @@ export default function BusinessNotifications() {
       .update({ read_at: readAt })
       .eq('id', notification.id)
 
-    await loadNotifications({ keepSuccess: true })
+    await loadNotifications({ keepSuccess: true, silent: true })
   }
 
   async function markAllBusinessNotificationsRead() {
@@ -363,7 +363,7 @@ export default function BusinessNotifications() {
       .in('id', unread.map((notification) => notification.id))
 
     setSuccess(t('dashboardNotifications.success.markedRead', 'Business notifications marked as read.'))
-    await loadNotifications({ keepSuccess: true })
+    await loadNotifications({ keepSuccess: true, silent: true })
   }
 
   function notificationTone(notification: NotificationRow) {
@@ -426,7 +426,7 @@ export default function BusinessNotifications() {
     })
 
     setSuccess(t('dashboardNotifications.success.bookingAccepted', 'Booking accepted. The customer has been notified and the request is no longer pending.'))
-    await loadNotifications({ keepSuccess: true })
+    await loadNotifications({ keepSuccess: true, silent: true })
   }
 
   async function declineBooking(booking: Booking) {
@@ -465,7 +465,7 @@ export default function BusinessNotifications() {
     })
 
     setSuccess(t('dashboardBookings.success.declined', 'Booking declined. The customer has been notified and the request is no longer pending.'))
-    await loadNotifications({ keepSuccess: true })
+    await loadNotifications({ keepSuccess: true, silent: true })
   }
 
   async function acceptRequest(request: BookingRequest) {
@@ -705,7 +705,7 @@ export default function BusinessNotifications() {
   return (
     <DashboardLayout
       title={t('account.needsAction', 'Needs action')}
-      subtitle={t('dashboardNotifications.pageSubtitle', 'Review Mirëbook booking approvals, customer reschedule requests and actions that need your attention.')}
+      subtitle={t('dashboardNotifications.pageSubtitle', 'Review booking approvals and customer reschedule requests.')}
     >
       {success && (
         <div
@@ -737,14 +737,10 @@ export default function BusinessNotifications() {
 
       <div className="business-notification-toolbar">
         <p className="small muted">
-          {t('dashboardNotifications.toolbar.body', 'Review customer booking approvals, reschedule requests and business notifications. Actions update this page immediately after completion.')}
+          {t('dashboardNotifications.toolbar.body', 'Customer requests that need a business decision appear here.')}
         </p>
 
         <div className="business-notification-toolbar-actions">
-          <button onClick={() => loadNotifications()} className="btn btn-ghost" disabled={loading}>
-            {loading ? t('dashboardNotifications.toolbar.refreshing', 'Refreshing...') : t('dashboardNotifications.toolbar.refresh', 'Refresh notifications')}
-          </button>
-
           <button
             type="button"
             onClick={markAllBusinessNotificationsRead}
@@ -757,12 +753,12 @@ export default function BusinessNotifications() {
           </button>
 
           <Link href="/dashboard/bookings?view=upcoming&status=pending" className="btn btn-accent">
-            {t('dashboardNotifications.toolbar.pendingBookings', 'Pending bookings')}
+            {t('dashboardNotifications.toolbar.openBookings', 'Open bookings')}
           </Link>
         </div>
       </div>
 
-      <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
+      <div className="business-notification-summary-grid">
         <div className="card" style={{ borderColor: pendingBookings.length > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
           <p className="small muted">{t('dashboardNotifications.summary.bookingApprovals', 'Booking approvals')}</p>
           <h3>{pendingBookings.length}</h3>
@@ -1187,6 +1183,12 @@ export default function BusinessNotifications() {
       )}
 
       <style jsx>{`
+        .business-notification-summary-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
         .business-notification-toolbar {
           display: flex;
           justify-content: space-between;
@@ -1246,6 +1248,9 @@ export default function BusinessNotifications() {
         }
 
         @media (max-width: 640px) {
+          .business-notification-summary-grid {
+            grid-template-columns: 1fr;
+          }
           .business-notification-toolbar-actions,
           .business-notification-card-actions,
           .business-notification-banner-row,
