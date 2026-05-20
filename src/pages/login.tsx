@@ -147,7 +147,7 @@ export default function LoginPage() {
     const user = data.user
 
     if (!user) {
-      setError(t('login.failed'))
+      setError(t('login.failed', 'Login failed. Please try again.'))
       setLoading(false)
       return
     }
@@ -155,7 +155,7 @@ export default function LoginPage() {
     try {
       await redirectByRole(user.id, cleanEmail)
     } catch (err: any) {
-      setError(err.message || t('login.profileError'))
+      setError(err.message || t('login.profileError', 'Could not load your profile. Please try again.'))
       setLoading(false)
       return
     }
@@ -169,7 +169,7 @@ export default function LoginPage() {
         <AuthNav />
         <section className="auth-wrap">
           <div className="card">
-            <p className="muted">{t('login.checkingSession')}</p>
+            <p className="muted">{t('login.checkingSession', 'Checking your account...')}</p>
           </div>
         </section>
       </main>
@@ -193,7 +193,7 @@ export default function LoginPage() {
             }} />
 
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <div className="logo" style={{ marginBottom: '3rem' }}>
+              <div className="logo login-promo-logo">
                 Mirë<span>book</span>
               </div>
 
@@ -204,35 +204,30 @@ export default function LoginPage() {
                 letterSpacing: '-0.03em',
                 marginBottom: 16
               }}>
-                {t('login.promoTitle')}
+                {t('login.promoTitle', 'Welcome back to Mirëbook')}
               </h1>
 
               <p className="muted">
-                {t('login.promoBody')}
+                {t('login.promoBody', 'Sign in to manage bookings, services, staff and customer appointments from one place.')}
               </p>
             </div>
 
-            <div style={{
-              position: 'relative',
-              zIndex: 1,
-              display: 'grid',
-              gap: 12
-            }}>
+            <div className="login-proof-list">
               <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                {t('login.proof.routing')}
+                {t('login.proof.routing', 'Customers are routed to the right booking flow automatically.')}
               </div>
               <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                {t('login.proof.availability')}
+                {t('login.proof.availability', 'Availability, staff and services stay connected.')}
               </div>
               <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                {t('login.proof.workflows')}
+                {t('login.proof.workflows', 'Approval, reschedule and cancellation workflows are built in.')}
               </div>
             </div>
           </div>
 
           <div className="login-form-panel">
             <p className="small muted" style={{ marginBottom: '0.5rem' }}>
-              {t('login.kicker')}
+              {t('login.kicker', 'Sign in')}
             </p>
 
             <h2 style={{
@@ -240,17 +235,17 @@ export default function LoginPage() {
               fontSize: '2rem',
               marginBottom: 8
             }}>
-              {t('login.title')}
+              {t('login.title', 'Login to Mirëbook')}
             </h2>
 
             <p className="muted" style={{ marginBottom: '2rem' }}>
-              {t('login.subtitle')}
+              {t('login.subtitle', 'Use the same login for customer, business or staff access.')}
             </p>
 
             <form onSubmit={onLogin} className="form-grid">
               <input
                 type="email"
-                placeholder={t('login.emailPlaceholder')}
+                placeholder={t('login.emailPlaceholder', 'Email address')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -258,14 +253,14 @@ export default function LoginPage() {
 
               <input
                 type="password"
-                placeholder={t('login.passwordPlaceholder')}
+                placeholder={t('login.passwordPlaceholder', 'Password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
 
               <button type="submit" disabled={loading} className="btn btn-accent">
-                {loading ? t('login.loading') : t('login.submit')}
+                {loading ? t('login.loading', 'Signing in...') : t('login.submit', 'Sign in')}
               </button>
             </form>
 
@@ -279,7 +274,7 @@ export default function LoginPage() {
             )}
 
             <p className="small muted" style={{ marginTop: '1.5rem' }}>
-              {t('login.noAccount')} <Link href="/register" style={{ color: 'var(--accent)' }}>{t('login.createAccount')}</Link>
+              {t('login.noAccount', 'No account yet?')} <Link href="/register" style={{ color: 'var(--accent)' }}>{t('login.createAccount', 'Create account')}</Link>
             </p>
           </div>
         </div>
@@ -298,13 +293,24 @@ export default function LoginPage() {
 
         .login-promo-panel {
           background: linear-gradient(145deg, #13121e 0%, #1f1d30 100%);
-          padding: 56px 48px;
+          padding: 44px 40px;
           position: relative;
           overflow: hidden;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          min-height: 520px;
+          min-height: 480px;
+        }
+
+        .login-promo-logo {
+          margin-bottom: 2rem;
+        }
+
+        .login-proof-list {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          gap: 12px;
         }
 
         .login-form-panel {
@@ -316,16 +322,37 @@ export default function LoginPage() {
             grid-template-columns: 1fr;
           }
 
+          .login-form-panel {
+            order: 1;
+          }
+
           .login-promo-panel {
+            order: 2;
             min-height: auto;
-            padding: 36px 28px;
-            gap: 2rem;
+            padding: 24px 22px;
+            gap: 1rem;
+          }
+
+          .login-promo-logo {
+            display: none;
+          }
+
+          .login-proof-list {
+            display: none;
           }
         }
 
         @media (max-width: 520px) {
           .login-form-panel {
-            padding: 28px 20px;
+            padding: 24px 18px;
+          }
+
+          .login-form-panel h2 {
+            font-size: 1.65rem !important;
+          }
+
+          .login-form-panel p[style] {
+            margin-bottom: 1rem !important;
           }
         }
       `}</style>

@@ -12,7 +12,10 @@ export default function RegisterPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [preferredLanguage, setPreferredLanguage] = useState<Locale>('en')
+  const [preferredLanguage, setPreferredLanguage] = useState<Locale>(() => {
+    if (typeof navigator !== 'undefined' && navigator.language.toLowerCase().startsWith('sq')) return 'sq'
+    return 'en'
+  })
   const [role, setRole] = useState<'customer' | 'business' | 'staff'>('customer')
   const [detectedStaffInvite, setDetectedStaffInvite] = useState<{
     id: string
@@ -79,8 +82,16 @@ export default function RegisterPage() {
   }, [router.isReady])
 
   useEffect(() => {
-    setPreferredLanguage(locale)
-  }, [locale])
+    if (locale) {
+      setPreferredLanguage(locale)
+      return
+    }
+
+    if (navigator.language.toLowerCase().startsWith('sq')) {
+      setPreferredLanguage('sq')
+      setLocale('sq')
+    }
+  }, [locale, setLocale])
 
   useEffect(() => {
     async function checkStaffInvite() {
@@ -121,7 +132,7 @@ export default function RegisterPage() {
     const cleanEmail = email.trim().toLowerCase()
 
     if (password.length < 6) {
-      setError(t('register.passwordTooShort'))
+      setError(t('register.passwordTooShort', 'Password must be at least 6 characters.'))
       setLoading(false)
       return
     }
@@ -131,7 +142,7 @@ export default function RegisterPage() {
       : null
 
     if (role === 'staff' && !staffInvite) {
-      setError(t('register.noStaffInvite'))
+      setError(t('register.noStaffInvite', 'This staff account needs a valid staff invite before it can be created.'))
       setLoading(false)
       return
     }
@@ -194,10 +205,10 @@ export default function RegisterPage() {
 
     setMessage(
       role === 'business'
-        ? t('register.success.business')
+        ? t('register.success.business', 'Business account created. Redirecting to your dashboard...')
         : role === 'staff'
-          ? t('register.success.staff')
-          : t('register.success.customer')
+          ? t('register.success.staff', 'Staff account created. Redirecting to your staff area...')
+          : t('register.success.customer', 'Customer account created. Redirecting to your bookings...')
     )
 
     setTimeout(() => {
@@ -211,7 +222,7 @@ export default function RegisterPage() {
         <AuthNav />
         <section className="auth-wrap">
           <div className="card">
-            <p className="muted">{t('register.checkingSession')}</p>
+            <p className="muted">{t('register.checkingSession', 'Checking your account...')}</p>
           </div>
         </section>
       </main>
@@ -225,7 +236,7 @@ export default function RegisterPage() {
       <section className="auth-wrap">
         <div className="auth-card">
           <p className="small muted" style={{ marginBottom: '0.5rem' }}>
-            {t('register.kicker')}
+            {t('register.kicker', 'Create account')}
           </p>
 
           <h1 style={{
@@ -233,14 +244,14 @@ export default function RegisterPage() {
             fontSize: '2rem',
             marginBottom: 8
           }}>
-            {t('register.title')}
+            {t('register.title', 'Create your Mirëbook account')}
           </h1>
 
           <p className="muted" style={{ marginBottom: '1.5rem' }}>
-            {t('register.subtitle')}
+            {t('register.subtitle', 'Choose the account type that fits how you will use Mirëbook.')}
           </p>
 
-          <div className="register-role-grid">
+          <div className="register-role-grid register-role-grid-top">
             <button
               type="button"
               onClick={() => setRole('customer')}
@@ -253,8 +264,8 @@ export default function RegisterPage() {
                 textAlign: 'left'
               }}
             >
-              <strong>{t('register.role.customer')}</strong>
-              <p className="small muted">{t('register.role.customerBody')}</p>
+              <strong>{t('register.role.customer', 'Customer')}</strong>
+              <p className="small muted">{t('register.role.customerBody', 'Book and manage appointments.')}</p>
             </button>
 
             <button
@@ -269,8 +280,8 @@ export default function RegisterPage() {
                 textAlign: 'left'
               }}
             >
-              <strong>{t('register.role.business')}</strong>
-              <p className="small muted">{t('register.role.businessBody')}</p>
+              <strong>{t('register.role.business', 'Business')}</strong>
+              <p className="small muted">{t('register.role.businessBody', 'Create services, staff and bookings.')}</p>
             </button>
 
             <button
@@ -285,26 +296,26 @@ export default function RegisterPage() {
                 textAlign: 'left'
               }}
             >
-              <strong>{t('register.role.staff')}</strong>
-              <p className="small muted">{t('register.role.staffBody')}</p>
+              <strong>{t('register.role.staff', 'Staff')}</strong>
+              <p className="small muted">{t('register.role.staffBody', 'Join a business you have been invited to.')}</p>
             </button>
           </div>
 
           {detectedStaffInvite && (
             <div className="card" style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.28)', marginBottom: '1rem' }}>
-              <p className="small" style={{ color: 'var(--success)' }}>{t('register.staffInviteFound')}</p>
+              <p className="small" style={{ color: 'var(--success)' }}>{t('register.staffInviteFound', 'Staff invite found')}</p>
               <strong>{detectedStaffInvite.name}</strong>
               <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('register.staffInviteBody')}
+                {t('register.staffInviteBody', 'This email matches a staff invite. Your account will be linked after registration.')}
               </p>
             </div>
           )}
 
           {role === 'staff' && !detectedStaffInvite && email.trim().includes('@') && (
             <div className="card" style={{ background: 'rgba(255,190,11,0.08)', borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
-              <p className="small" style={{ color: 'var(--warning)' }}>{t('register.noStaffInviteTitle')}</p>
+              <p className="small" style={{ color: 'var(--warning)' }}>{t('register.noStaffInviteTitle', 'No staff invite found')}</p>
               <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('register.noStaffInviteBody')}
+                {t('register.noStaffInviteBody', 'Ask the business to add your email to their staff list first.')}
               </p>
             </div>
           )}
@@ -312,7 +323,7 @@ export default function RegisterPage() {
           <form onSubmit={onRegister} className="form-grid">
             <input
               type="email"
-              placeholder={t('register.emailPlaceholder')}
+              placeholder={t('register.emailPlaceholder', 'Email address')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -320,14 +331,25 @@ export default function RegisterPage() {
 
             <input
               type="password"
-              placeholder={t('register.passwordPlaceholder')}
+              placeholder={t('register.passwordPlaceholder', 'Password')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
 
+            <div className="register-role-mobile">
+              <label className="small muted" style={{ display: 'grid', gap: '0.4rem' }}>
+                {t('register.accountType', 'Account type')}
+                <select value={role} onChange={(e) => setRole(e.target.value as 'customer' | 'business' | 'staff')}>
+                  <option value="customer">{t('register.role.customer', 'Customer')}</option>
+                  <option value="business">{t('register.role.business', 'Business')}</option>
+                  <option value="staff">{t('register.role.staff', 'Staff')}</option>
+                </select>
+              </label>
+            </div>
+
             <label className="small muted" style={{ display: 'grid', gap: '0.4rem' }}>
-              {t('register.preferredLanguage')}
+              {t('register.preferredLanguage', 'Preferred language')}
               <select
                 value={preferredLanguage}
                 onChange={(e) => {
@@ -343,12 +365,12 @@ export default function RegisterPage() {
 
             <button type="submit" disabled={loading} className="btn btn-accent">
               {loading
-                ? t('register.creating')
+                ? t('register.creating', 'Creating account...')
                 : role === 'business'
-                  ? t('register.createBusiness')
+                  ? t('register.createBusiness', 'Create business account')
                   : role === 'staff'
-                    ? t('register.createStaff')
-                    : t('register.createCustomer')}
+                    ? t('register.createStaff', 'Create staff account')
+                    : t('register.createCustomer', 'Create customer account')}
             </button>
           </form>
 
@@ -365,7 +387,7 @@ export default function RegisterPage() {
           )}
 
           <p className="small muted" style={{ marginTop: '1.5rem' }}>
-            {t('register.alreadyHaveAccount')} <Link href="/login" style={{ color: 'var(--accent)' }}>{t('register.loginLink')}</Link>
+            {t('register.alreadyHaveAccount', 'Already have an account?')} <Link href="/login" style={{ color: 'var(--accent)' }}>{t('register.loginLink', 'Login')}</Link>
           </p>
         </div>
       </section>
@@ -377,9 +399,17 @@ export default function RegisterPage() {
           margin-bottom: 1.5rem;
         }
 
+        .register-role-mobile {
+          display: none;
+        }
+
         @media (max-width: 760px) {
-          .register-role-grid {
-            grid-template-columns: 1fr;
+          .register-role-grid-top {
+            display: none;
+          }
+
+          .register-role-mobile {
+            display: block;
           }
         }
       `}</style>
