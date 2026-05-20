@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import { uploadMirebookImage } from '@/lib/imageUpload'
-import ServicesBusinessPicker from '@/components/dashboard-services/ServicesBusinessPicker'
 import ServicesSetupHero from '@/components/dashboard-services/ServicesSetupHero'
 import ServicesStats from '@/components/dashboard-services/ServicesStats'
 import CreateServiceCard from '@/components/dashboard-services/CreateServiceCard'
@@ -70,9 +69,7 @@ export default function Services() {
       return selected
     }
 
-    if (owned.length === 1) return owned[0]
-
-    return null
+    return owned[0]
   }
 
   async function loadData() {
@@ -465,8 +462,8 @@ export default function Services() {
 
   return (
     <DashboardLayout
-      title={t('dashboardServices.pageTitle', 'Services setup')}
-      subtitle={business ? `${t('dashboardServices.pageSubtitleSelected', 'Create Mirëbook services, pricing and bookability rules for')} ${business.name}.` : t('dashboardServices.pageSubtitle', 'Choose which business services to manage.')}
+      title={t('dashboardServices.pageTitle', 'Services')}
+      subtitle={business ? `${t('dashboardServices.pageSubtitleSelected', 'Create and manage the services customers can book at')} ${business.name}.` : t('dashboardServices.pageSubtitle', 'Create your business first, then add services customers can book.')}
     >
       {pageLoading && (
         <div className="card">
@@ -498,12 +495,16 @@ export default function Services() {
         </div>
       )}
 
-      {!pageLoading && !business && businesses.length > 1 && (
-        <ServicesBusinessPicker businesses={businesses} />
-      )}
 
       {!pageLoading && business && (
         <>
+          {businesses.length > 1 && (
+            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+              <p className="small muted">
+                {t('dashboardServices.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+              </p>
+            </div>
+          )}
           <ServicesSetupHero business={business} />
 
           <ServicesStats stats={serviceStats} />

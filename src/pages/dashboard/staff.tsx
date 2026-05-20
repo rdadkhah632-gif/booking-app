@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import { uploadMirebookImage } from '@/lib/imageUpload'
-import StaffBusinessPicker from '@/components/dashboard-staff/StaffBusinessPicker'
+
 import StaffSetupHero from '@/components/dashboard-staff/StaffSetupHero'
 import StaffStats from '@/components/dashboard-staff/StaffStats'
 import CreateStaffCard from '@/components/dashboard-staff/CreateStaffCard'
@@ -75,7 +75,7 @@ export default function StaffPage() {
       return selected
     }
 
-    if (owned.length === 1) return owned[0]
+    return owned[0]
 
     return null
   }
@@ -528,9 +528,9 @@ async function toggleStaffService(staffId: string, serviceId: string, currentlyA
   
   return (
     <DashboardLayout
-      title="Staff setup"
-      subtitle={business ? `Manage staff, service assignments and booking readiness for ${business.name}` : 'Choose which business staff to manage.'}
-    >
+  title={t('dashboardStaff.pageTitle', 'Staff')}
+  subtitle={business ? `${t('dashboardStaff.pageSubtitleSelected', 'Manage staff, service assignments and booking readiness for')} ${business.name}.` : t('dashboardStaff.pageSubtitle', 'Create your business first, then add staff.')}
+>
       {pageLoading && (
         <div className="card">
           <p className="muted">Loading Mirëbook staff setup...</p>
@@ -561,44 +561,15 @@ async function toggleStaffService(staffId: string, serviceId: string, currentlyA
         </div>
       )}
 
-      {!pageLoading && !business && businesses.length > 1 && (
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ padding: '0.25rem 0 0.5rem' }}>
-            <p className="small muted" style={{ marginBottom: '0.35rem' }}>
-              Multiple businesses found
-            </p>
-            <h3 style={{ marginBottom: '0.35rem' }}>
-              Choose a business to continue
-            </h3>
-            <p className="muted">
-              Select one of the business cards below. Mirëbook will show the staff setup for that specific business.
-            </p>
-          </div>
-
-          {businesses.map((b) => (
-            <Link
-              key={b.id}
-              href={`/dashboard/staff?businessId=${b.id}`}
-              className="card"
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}
-            >
-              <div>
-                <strong>{b.name}</strong>
-                <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  Manage staff for this business.
-                </p>
-              </div>
-
-              <span className="btn btn-accent">
-                Manage staff
-              </span>
-            </Link>
-          ))}
-        </div>
-      )}
-
       {!pageLoading && business && (
         <>
+{businesses.length > 1 && (
+  <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+    <p className="small muted">
+      {t('dashboardStaff.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+    </p>
+  </div>
+)}
          <StaffSetupHero business={business} />
 
 <StaffStats stats={staffStats} />
