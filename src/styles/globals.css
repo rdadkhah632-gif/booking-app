@@ -796,9 +796,9 @@ select option {
   }
 
   .nav-simple-inner > div {
-    justify-content: center !important;
-    flex-wrap: wrap;
-  }
+  justify-content: flex-start !important;
+  flex-wrap: nowrap;
+}
 
   .dashboard-layout {
     grid-template-columns: 1fr;
@@ -922,6 +922,13 @@ select option {
     grid-template-columns: 1fr;
     width: 100%;
   }
+.nav-simple .auth-nav-links a,
+.nav-simple .auth-nav-links button,
+.nav-simple .auth-nav-links .btn {
+  width: auto;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
 
   .actions-row .btn,
   .actions-row-right .btn,
@@ -994,16 +1001,28 @@ select option {
     overflow-x: auto;
   }
 
-  .language-toggle,
-  .account-mode-pill {
-    width: 100%;
-    justify-content: space-between;
-  }
+ .language-toggle,
+.account-mode-pill {
+  width: 100%;
+  justify-content: space-between;
+}
 
-  .language-toggle button,
-  .account-mode-pill button {
-    flex: 1;
-  }
+.nav-simple .language-toggle,
+.nav-simple .account-mode-pill {
+  width: auto;
+  flex: 0 0 auto;
+  justify-content: flex-start;
+}
+
+.language-toggle button,
+.account-mode-pill button {
+  flex: 1;
+}
+
+.nav-simple .language-toggle button,
+.nav-simple .account-mode-pill button {
+  flex: 0 0 auto;
+}
 
   .home-hero {
     padding: 38px 0 30px;
@@ -1104,9 +1123,9 @@ select option {
     font-size: 1.4rem;
   }
 
-  .nav-simple {
-    padding: 12px 0;
-  }
+ .nav-simple {
+  padding: 8px 0;
+}
 
   .page-card,
   .auth-card {
