@@ -231,7 +231,7 @@ export default function MyBookings() {
       ? t('myBookings.success.pendingCancelled', 'Booking request cancelled. It is no longer waiting for business approval.')
       : t('myBookings.success.cancelled', 'Booking cancelled. The business has been notified and this booking is now locked as cancelled.')
     )
-    await loadBookings({ keepSuccess: true })
+    await loadBookings({ keepSuccess: true, silent: true })
   }
 
   function statusLabel(status: string) {
@@ -460,7 +460,7 @@ export default function MyBookings() {
           requestSent={router.query.requestSent}
           success={success}
           onClearSuccess={() => setSuccess(null)}
-          onRefresh={() => loadBookings()}
+          onRefresh={() => loadBookings({ keepSuccess: true })}
         />
 
         <MyBookingsStats
@@ -491,60 +491,60 @@ export default function MyBookings() {
         {!loading && bookings.length > 0 && (
           <div className="my-bookings-section-list">
             {pendingBookings.length > 0 && (
-            <MyBookingsSection
-  sectionRef={pendingSectionRef}
-  id="waiting-approval"
-  kicker={t('myBookings.sections.actionStatus', 'Action status')}
-  title={t('myBookings.sections.waitingTitle', 'Waiting for business approval')}
-  body={t('myBookings.sections.waitingBody', 'These bookings are not confirmed yet. The business needs to accept them first.')}
->
-  {pendingBookings.map((booking) => renderBookingCard(booking, 'pending'))}
-</MyBookingsSection>
+              <MyBookingsSection
+                sectionRef={pendingSectionRef}
+                id="waiting-approval"
+                kicker={t('myBookings.sections.actionStatus', 'Action status')}
+                title={t('myBookings.sections.waitingTitle', 'Waiting for business approval')}
+                body={t('myBookings.sections.waitingBody', 'These bookings are not confirmed yet. The business needs to accept them first.')}
+              >
+                {pendingBookings.map((booking) => renderBookingCard(booking, 'pending'))}
+              </MyBookingsSection>
             )}
 
             {pendingRescheduleCount > 0 && (
-             <MyBookingsSection
-  sectionRef={changeRequestsSectionRef}
-  id="change-requests"
-  kicker={t('myBookings.sections.requestedChanges', 'Requested changes')}
-  title={t('dashboardNotifications.sections.pendingRescheduleRequests', 'Pending reschedule requests')}
-  body={t('myBookings.sections.changeRequestsBody', 'These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time.')}
->
-  {confirmedUpcomingBookings
-    .filter((booking) => pendingRequestByBookingId[booking.id])
-    .map((booking) => renderBookingCard(booking, 'confirmed'))}
-</MyBookingsSection>
+              <MyBookingsSection
+                sectionRef={changeRequestsSectionRef}
+                id="change-requests"
+                kicker={t('myBookings.sections.requestedChanges', 'Requested changes')}
+                title={t('dashboardNotifications.sections.pendingRescheduleRequests', 'Pending reschedule requests')}
+                body={t('myBookings.sections.changeRequestsBody', 'These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time.')}
+              >
+                {confirmedUpcomingBookings
+                  .filter((booking) => pendingRequestByBookingId[booking.id])
+                  .map((booking) => renderBookingCard(booking, 'confirmed'))}
+              </MyBookingsSection>
             )}
 
             {confirmedUpcomingBookings.length > 0 && (
               <MyBookingsSection
-  sectionRef={upcomingSectionRef}
-  id="upcoming-bookings"
-  kicker={t('myBookings.sections.schedule', 'Schedule')}
-  title={t('myBookings.sections.activeTitle', 'Active confirmed appointments')}
-  body={t('myBookings.sections.activeBody', 'These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time.')}
-  action={pendingRescheduleCount > 0 ? (
-    <button type="button" onClick={() => scrollToSection('changes')} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
-      {t('myBookings.actions.viewPendingChanges', 'View pending change requests')}
-    </button>
-  ) : null}
->
-  {confirmedUpcomingBookings
-    .filter((booking) => !pendingRequestByBookingId[booking.id])
-    .map((booking) => renderBookingCard(booking, 'confirmed'))}
-</MyBookingsSection>
+                sectionRef={upcomingSectionRef}
+                id="upcoming-bookings"
+                kicker={t('myBookings.sections.schedule', 'Schedule')}
+                title={t('myBookings.sections.activeTitle', 'Active confirmed appointments')}
+                body={t('myBookings.sections.activeBody', 'These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time.')}
+                action={pendingRescheduleCount > 0 ? (
+                  <button type="button" onClick={() => scrollToSection('changes')} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                    {t('myBookings.actions.viewPendingChanges', 'View pending change requests')}
+                  </button>
+                ) : null}
+              >
+                {confirmedUpcomingBookings
+                  .filter((booking) => !pendingRequestByBookingId[booking.id])
+                  .map((booking) => renderBookingCard(booking, 'confirmed'))}
+              </MyBookingsSection>
             )}
 
             {historyBookings.length > 0 && (
-            <MyBookingsSection
-  sectionRef={historySectionRef}
-  id="booking-history"
-  kicker={t('dashboardBookings.summary.history', 'History')}
-  title={t('myBookings.sections.historyTitle', 'History and locked bookings')}
-  body={t('myBookings.sections.historyBody', 'Completed, cancelled and past bookings are shown for your records only.')}
->
-  {historyBookings.map((booking) => renderBookingCard(booking, 'history'))}
-</MyBookingsSection>
+              <MyBookingsSection
+                sectionRef={historySectionRef}
+                id="booking-history"
+                kicker={t('dashboardBookings.summary.history', 'History')}
+                title={t('myBookings.sections.historyTitle', 'History and locked bookings')}
+                body={t('myBookings.sections.historyBody', 'Completed, cancelled and past bookings are shown for your records only.')}
+              >
+                {historyBookings.map((booking) => renderBookingCard(booking, 'history'))}
+              </MyBookingsSection>
             )}
           </div>
         )}
