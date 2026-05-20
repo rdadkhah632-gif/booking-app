@@ -166,13 +166,14 @@ export default function StaffPage() {
     }
   }
 
-useEffect(() => {
+  useEffect(() => {
     if (!router.isReady) return
     loadPage()
   }, [router.isReady, businessId])
-function assignedServicesForStaff(staffId: string) {
-  return services.filter((service) => staffCanDoService(staffId, service.id))
-}
+
+  function assignedServicesForStaff(staffId: string) {
+    return services.filter((service) => staffCanDoService(staffId, service.id))
+  }
 
   async function addStaff(e: React.FormEvent) {
     e.preventDefault()
@@ -199,16 +200,18 @@ function assignedServicesForStaff(staffId: string) {
       finalImageUrl = uploadedUrl
     }
 
+    const cleanStaffEmail = email.trim().toLowerCase()
+
     const { error } = await supabase
       .from('staff_members')
       .insert({
         business_id: business.id,
         name: name.trim(),
         role_title: roleTitle.trim() || null,
-        email: email.trim() || null,
+        email: cleanStaffEmail || null,
         phone: phone.trim() || null,
         image_url: finalImageUrl,
-        invite_status: email.trim() ? 'not_invited' : 'not_invited',
+        invite_status: cleanStaffEmail ? 'invited' : 'not_invited',
         permission_role: permissionRole,
         active: true
       })
@@ -350,16 +353,19 @@ function assignedServicesForStaff(staffId: string) {
     setError(null)
     setSuccess(null)
 
+    const cleanStaffEmail = member.email?.trim().toLowerCase() || null
+
     const { error } = await supabase
       .from('staff_members')
       .update({
         name: member.name.trim(),
         role_title: member.role_title?.trim() || null,
-        email: member.email?.trim() || null,
+        email: cleanStaffEmail,
         phone: member.phone?.trim() || null,
         image_url: member.image_url?.trim() || null,
         permission_role: member.permission_role || 'staff',
-        active: member.active
+        active: member.active,
+        invite_status: cleanStaffEmail && member.invite_status === 'not_invited' ? 'invited' : member.invite_status
       })
       .eq('id', member.id)
 
@@ -381,13 +387,15 @@ function assignedServicesForStaff(staffId: string) {
       return
     }
 
+    const cleanStaffEmail = member.email.trim().toLowerCase()
+
     setActionLoadingKey(`invite-${member.id}`)
     setError(null)
     setSuccess(null)
 
     const { error } = await supabase
       .from('staff_members')
-      .update({ invite_status: 'invited' })
+      .update({ invite_status: 'invited', email: cleanStaffEmail })
       .eq('id', member.id)
 
     setActionLoadingKey(null)
@@ -397,7 +405,7 @@ function assignedServicesForStaff(staffId: string) {
       return
     }
 
-    setSuccess(`${member.name} ${t('dashboardStaff.invite.marked', 'marked as invited. Ask them to register or log in with')} ${member.email}; ${t('dashboardStaff.invite.linkBody', 'Mirëbook will link the staff account when the email matches.')}`)
+    setSuccess(`${member.name} ${t('dashboardStaff.invite.marked', 'marked as invited. Ask them to register or log in with')} ${cleanStaffEmail}; ${t('dashboardStaff.invite.linkBody', 'Mirëbook will link the staff account when the email matches.')}`)
     await loadPage()
   }
 
