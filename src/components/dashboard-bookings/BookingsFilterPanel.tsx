@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { useI18n } from '@/lib/useI18n'
 import { RangeFilter } from './dashboardBookingsTypes'
 import { useBookingStatusLabel } from './BookingStatusBadge'
@@ -40,7 +39,7 @@ export default function BookingsFilterPanel({
   ]
 
   return (
-    <div className="card">
+    <div className="card bookings-filter-card">
       <div className="booking-calendar-header">
         <div>
           <p className="small muted">{t('dashboardBookings.filters.calendarView', 'Calendar view')}</p>
@@ -52,10 +51,6 @@ export default function BookingsFilterPanel({
             )}
           </p>
         </div>
-
-        <Link href="/dashboard/analytics" className="btn btn-ghost">
-          {t('dashboardHome.viewAnalytics', 'View analytics')}
-        </Link>
       </div>
 
       <div className="booking-filter-button-row">
@@ -75,19 +70,19 @@ export default function BookingsFilterPanel({
         <label className="small muted">
           {t('dashboardBookings.filters.jumpDate', 'Jump to date')}
           <input
+            className="booking-filter-field"
             type="date"
             value={selectedDate}
             onChange={(e) => onUpdateView('custom', e.target.value)}
-            style={{ marginTop: '0.35rem' }}
           />
         </label>
 
         <label className="small muted">
           {t('dashboardBookings.filters.status', 'Status')}
           <select
+            className="booking-filter-field"
             value={statusFilter}
             onChange={(e) => onStatusChange(e.target.value)}
-            style={{ marginTop: '0.35rem', width: '100%' }}
           >
             <option value="all">{t('dashboardBookings.status.all', 'All statuses')}</option>
             <option value="pending">{statusLabel('pending')}</option>
@@ -100,10 +95,10 @@ export default function BookingsFilterPanel({
         <label className="small muted">
           {t('dashboardBookings.filters.searchLabel', 'Search customer/service/staff')}
           <input
+            className="booking-filter-field"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={t('dashboardBookings.filters.searchPlaceholder', 'Search bookings')}
-            style={{ marginTop: '0.35rem' }}
           />
         </label>
       </div>
@@ -122,26 +117,36 @@ export default function BookingsFilterPanel({
       </div>
 
       <style jsx>{`
+        .bookings-filter-card {
+          display: grid;
+          gap: 1rem;
+        }
+
         .booking-calendar-header {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
-          align-items: center;
+          align-items: flex-start;
           flex-wrap: wrap;
-          margin-bottom: 1rem;
         }
 
         .booking-filter-button-row {
           display: flex;
-          gap: 0.75rem;
+          gap: 0.65rem;
           flex-wrap: wrap;
-          margin-bottom: 1rem;
         }
 
         .booking-filter-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0.75rem;
+          align-items: end;
+        }
+
+        .booking-filter-field {
+          width: 100%;
+          margin-top: 0.35rem;
+          min-height: 44px;
         }
 
         .booking-active-filter-bar {
@@ -150,11 +155,16 @@ export default function BookingsFilterPanel({
           align-items: center;
           gap: 1rem;
           flex-wrap: wrap;
-          margin-top: 1rem;
           padding: 0.9rem;
           border-radius: var(--radius);
           background: var(--surface-2);
           border: 1px solid var(--border);
+        }
+
+        @media (max-width: 860px) {
+          .booking-filter-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         @media (max-width: 700px) {
@@ -166,8 +176,8 @@ export default function BookingsFilterPanel({
           .booking-filter-button-row,
           .booking-filter-button-row :global(.btn),
           .booking-filter-button-row button,
-          .booking-calendar-header :global(.btn),
-          .booking-calendar-header a {
+          .booking-active-filter-bar :global(.btn),
+          .booking-active-filter-bar button {
             width: 100%;
             justify-content: center;
           }

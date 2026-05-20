@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
-import BookingsTopToolbar from '@/components/dashboard-bookings/BookingsTopToolbar'
 import BookingsSummaryCards from '@/components/dashboard-bookings/BookingsSummaryCards'
 import BookingsFilterPanel from '@/components/dashboard-bookings/BookingsFilterPanel'
 import BookingCard from '@/components/dashboard-bookings/BookingCard'
@@ -239,7 +238,7 @@ export default function Bookings() {
   useEffect(() => {
     if (!business?.id) return
 
-let refreshTimer: number | null = null
+    let refreshTimer: number | null = null
     function queueRefresh() {
       if (refreshTimer) window.clearTimeout(refreshTimer)
       refreshTimer = window.setTimeout(() => {
@@ -625,10 +624,6 @@ let refreshTimer: number | null = null
       title={t('dashboardBookings.pageTitle', 'Bookings')}
       subtitle={business ? `${t('dashboardBookings.pageSubtitleSelected', 'Manage appointments and booking requests for')} ${business.name}.` : t('dashboardBookings.pageSubtitle', 'Create your business first, then customer bookings will appear here.')}
     >
-      <BookingsTopToolbar
-        pageLoading={pageLoading}
-        onRefresh={() => loadBookings({ keepSuccess: true })}
-      />
 
       {success && (
         <div
