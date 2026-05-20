@@ -6,11 +6,8 @@ import DashboardLayout from '@/components/DashboardLayout'
 import DashboardHomeHeader from '@/components/dashboard-home/DashboardHomeHeader'
 import DashboardSummaryCards from '@/components/dashboard-home/DashboardSummaryCards'
 import PriorityQueueCard from '@/components/dashboard-home/PriorityQueueCard'
-import AnalyticsPreviewCard from '@/components/dashboard-home/AnalyticsPreviewCard'
 import SchedulePreviewCard from '@/components/dashboard-home/SchedulePreviewCard'
-import SetupReadinessCards from '@/components/dashboard-home/SetupReadinessCards'
 import SetupGuidanceList from '@/components/dashboard-home/SetupGuidanceList'
-import DashboardShortcuts from '@/components/dashboard-home/DashboardShortcuts'
 import {
   AvailabilityRow,
   Booking,
@@ -252,13 +249,6 @@ export default function DashboardHome() {
     )
   }, [bookings])
 
-  const completedBookings = useMemo(() => {
-    return bookings.filter((booking) => booking.status === 'completed')
-  }, [bookings])
-
-  const cancelledBookings = useMemo(() => {
-    return bookings.filter((booking) => booking.status === 'cancelled')
-  }, [bookings])
 
   const dashboardAnalytics = useMemo(() => {
     const last30Days = new Date()
@@ -327,24 +317,10 @@ export default function DashboardHome() {
   const pendingActionCount = pendingBookings.length + pendingRescheduleCount
   const primaryBusinessId = businesses[0]?.id
   const publishedCount = businesses.filter((business) => business.published).length
-  const hiddenCount = businesses.length - publishedCount
   const activeServices = services.filter((service) => service.active).length
   const activeStaff = staffMembers.filter((staff) => staff.active).length
   const openWorkingDays = availabilityRows.filter((row) => row.is_closed !== true).length
 
-  const completionRate = dashboardAnalytics.recentBookings.length > 0
-    ? Math.round((dashboardAnalytics.recentCompleted.length / dashboardAnalytics.recentBookings.length) * 100)
-    : 0
-
-  const setupReadyBusinesses = useMemo(() => {
-    return businesses.filter((business) => {
-      const hasServices = services.some((service) => service.business_id === business.id && service.active)
-      const hasStaff = staffMembers.some((staff) => staff.business_id === business.id && staff.active)
-      const hasHours = availabilityRows.some((row) => row.business_id === business.id && row.is_closed !== true)
-
-      return hasServices && hasStaff && hasHours
-    }).length
-  }, [businesses, services, staffMembers, availabilityRows])
 
   const setupWarnings = useMemo(() => {
     const warnings: SetupWarning[] = []
@@ -448,7 +424,7 @@ export default function DashboardHome() {
   return (
     <DashboardLayout
       title={t('dashboardHome.title', 'Business overview')}
-      subtitle={t('dashboardHome.subtitle', 'See today’s Mirëbook activity, customer actions, schedule previews and business performance in one place.')}
+      subtitle={t('dashboardHome.subtitle', 'A quick view of today’s appointments, customer actions and setup reminders.')}
     >
       <DashboardHomeHeader loading={loading} onRefresh={loadDashboard} />
 
@@ -484,29 +460,12 @@ export default function DashboardHome() {
         bookingsLinkForView={bookingsLinkForView}
       />
 
-      <AnalyticsPreviewCard
-        analytics={dashboardAnalytics}
-        completionRate={completionRate}
-      />
 
       <SchedulePreviewCard
         scheduleDays={scheduleDays}
         bookingsLinkForDate={bookingsLinkForDate}
       />
-
-
-      <SetupReadinessCards
-        setupScore={businesses.length > 0 ? Math.round((setupReadyBusinesses / businesses.length) * 100) : 0}
-        businessesCount={businesses.length}
-        publishedCount={publishedCount}
-        activeServicesCount={activeServices}
-        activeStaffCount={activeStaff}
-        openDaysCount={openWorkingDays}
-      />
-
       <SetupGuidanceList warnings={setupWarnings} />
-
-      <DashboardShortcuts />
     </DashboardLayout>
   )
 }

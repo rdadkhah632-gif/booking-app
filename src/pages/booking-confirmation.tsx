@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import AuthNav from '@/components/AuthNav'
+import { useI18n } from '@/lib/useI18n'
 
 type Booking = {
   id: string
@@ -50,6 +51,7 @@ type Booking = {
 export default function BookingConfirmation() {
   const router = useRouter()
   const { id } = router.query
+  const { t } = useI18n()
 
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
@@ -114,7 +116,7 @@ export default function BookingConfirmation() {
       setRole(isBusinessOwner && !isCustomerOwner ? 'business' : 'customer')
 
       if (!isCustomerOwner && !isBusinessOwner) {
-        setError('You do not have permission to view this booking.')
+        setError(t('bookingConfirmation.error.noPermission', 'You do not have permission to view this booking.'))
         setLoading(false)
         return
       }
@@ -127,10 +129,10 @@ export default function BookingConfirmation() {
   }, [router.isReady, id])
 
   function statusLabel(status: string) {
-    if (status === 'pending') return 'Booking request sent'
-    if (status === 'confirmed') return 'Confirmed appointment'
-    if (status === 'completed') return 'Completed appointment'
-    if (status === 'cancelled') return 'Cancelled booking'
+    if (status === 'pending') return t('bookingConfirmation.status.pending', 'Booking request sent')
+    if (status === 'confirmed') return t('bookingConfirmation.status.confirmed', 'Confirmed appointment')
+    if (status === 'completed') return t('bookingConfirmation.status.completed', 'Completed appointment')
+    if (status === 'cancelled') return t('bookingConfirmation.status.cancelled', 'Cancelled booking')
     return status
   }
 
@@ -170,20 +172,29 @@ export default function BookingConfirmation() {
   }
 
   function businessName() {
-    return businessRelation()?.name || 'this business'
+    return businessRelation()?.name || t('bookingConfirmation.fallback.business', 'this business')
   }
 
   function serviceName() {
-    return serviceRelation()?.name || 'Service'
+    return serviceRelation()?.name || t('common.service', 'Service')
   }
 
   function servicePrice() {
-    return Number(serviceRelation()?.price || 0)
+    const value = serviceRelation()?.price
+    if (value === null || value === undefined) return null
+    const numericValue = Number(value)
+    return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : null
+  }
+
+  function priceLabel() {
+    const price = servicePrice()
+    if (price === null) return t('bookingConfirmation.priceNotSet', 'Price not shown')
+    return `£${price.toFixed(2)}`
   }
 
   function staffName() {
     const staff = staffRelation()
-    if (!staff) return 'Any available staff'
+    if (!staff) return t('publicBusiness.anyAvailableStaff', 'Any available staff')
     return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
   }
 
@@ -191,35 +202,35 @@ export default function BookingConfirmation() {
     const business = businessRelation()
     return [business?.address, business?.city, business?.country]
       .filter(Boolean)
-      .join(', ') || 'Location not added'
+      .join(', ') || t('bookingConfirmation.locationNotAdded', 'Location not added')
   }
 
   function primaryHeading() {
-    if (booking?.status === 'pending') return 'Your booking request was sent.'
-    if (booking?.status === 'confirmed') return 'Your appointment is confirmed.'
-    if (booking?.status === 'completed') return 'This appointment is completed.'
-    if (booking?.status === 'cancelled') return 'This booking is cancelled.'
-    return 'Booking received.'
+    if (booking?.status === 'pending') return t('bookingConfirmation.heading.pending', 'Your booking request was sent.')
+    if (booking?.status === 'confirmed') return t('bookingConfirmation.heading.confirmed', 'Your appointment is confirmed.')
+    if (booking?.status === 'completed') return t('bookingConfirmation.heading.completed', 'This appointment is completed.')
+    if (booking?.status === 'cancelled') return t('bookingConfirmation.heading.cancelled', 'This booking is cancelled.')
+    return t('bookingConfirmation.heading.received', 'Booking received.')
   }
 
   function leadCopy() {
     if (booking?.status === 'pending') {
-      return `Your request has been sent to ${businessName()} for approval. Your appointment is not confirmed until the business accepts it.`
+      return `${t('bookingConfirmation.lead.pendingStart', 'Your request has been sent to')} ${businessName()} ${t('bookingConfirmation.lead.pendingEnd', 'for approval. Your appointment is not confirmed until the business accepts it.')}`
     }
 
     if (booking?.status === 'confirmed') {
-      return `Your booking is confirmed with ${businessName()}. You can view, cancel or request a reschedule from My Bookings.`
+      return `${t('bookingConfirmation.lead.confirmedStart', 'Your booking is confirmed with')} ${businessName()}. ${t('bookingConfirmation.lead.confirmedEnd', 'You can view, cancel or request a reschedule from My Bookings.')}`
     }
 
     if (booking?.status === 'completed') {
-      return 'This appointment has been marked as completed. You can still view it in your booking history.'
+      return t('bookingConfirmation.lead.completed', 'This appointment has been marked as completed. You can still view it in your booking history.')
     }
 
     if (booking?.status === 'cancelled') {
-      return 'This booking is no longer active. You can explore other available services on Mirëbook.'
+      return t('bookingConfirmation.lead.cancelled', 'This booking is no longer active. You can explore other available services on Mirëbook.')
     }
 
-    return 'Your booking details are below.'
+    return t('bookingConfirmation.lead.default', 'Your booking details are below.')
   }
 
   function isPendingApproval() {
@@ -233,16 +244,16 @@ export default function BookingConfirmation() {
       <section className="container" style={{ padding: '42px 24px 80px' }}>
         {loading && (
           <div className="card">
-            <p className="muted">Loading your Mirëbook booking confirmation...</p>
+            <p className="muted">{t('bookingConfirmation.loading', 'Loading your Mirëbook booking confirmation...')}</p>
           </div>
         )}
 
         {error && (
           <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)' }}>
-            <h1 className="page-title">Could not load booking</h1>
+            <h1 className="page-title">{t('bookingConfirmation.error.title', 'Could not load booking')}</h1>
             <p style={{ color: 'var(--danger)', marginTop: '0.75rem' }}>{error}</p>
             <Link href="/my-bookings" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-              Go to my bookings
+              {t('bookingConfirmation.actions.goToMyBookings', 'Go to my bookings')}
             </Link>
           </div>
         )}
@@ -302,21 +313,21 @@ export default function BookingConfirmation() {
                 <div>
                   <strong>
                     {booking.status === 'pending'
-                      ? 'Waiting for business approval'
+                      ? t('bookingConfirmation.note.pendingTitle', 'Waiting for business approval')
                       : booking.status === 'confirmed'
-                        ? 'What happens next?'
+                        ? t('bookingConfirmation.note.confirmedTitle', 'What happens next?')
                         : booking.status === 'completed'
-                          ? 'Appointment completed'
-                          : 'Booking no longer active'}
+                          ? t('bookingConfirmation.note.completedTitle', 'Appointment completed')
+                          : t('bookingConfirmation.note.cancelledTitle', 'Booking no longer active')}
                   </strong>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
                     {booking.status === 'pending'
-                      ? 'The business needs to approve this booking request before it becomes a confirmed appointment. You can track the request from My Bookings or Notifications.'
+                      ? t('bookingConfirmation.note.pendingBody', 'The business needs to approve this booking request before it becomes a confirmed appointment. You can track the request from My Bookings or Notifications.')
                       : booking.status === 'confirmed'
-                        ? 'This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.'
+                        ? t('bookingConfirmation.note.confirmedBody', 'This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.')
                         : booking.status === 'completed'
-                          ? 'This appointment is locked as completed and will stay in your booking history.'
-                          : 'This booking is cancelled and cannot be changed. You can browse the marketplace to book another appointment.'}
+                          ? t('bookingConfirmation.note.completedBody', 'This appointment is locked as completed and will stay in your booking history.')
+                          : t('bookingConfirmation.note.cancelledBody', 'This booking is cancelled and cannot be changed. You can browse the marketplace to book another appointment.')}
                   </p>
                 </div>
               </div>
@@ -325,7 +336,7 @@ export default function BookingConfirmation() {
             <div className="card">
               <div className="booking-confirmation-details-header">
                 <h2 style={{ fontFamily: 'var(--font-display)' }}>
-                  Appointment details
+                  {t('bookingConfirmation.details.title', 'Appointment details')}
                 </h2>
 
                 <span
@@ -343,16 +354,16 @@ export default function BookingConfirmation() {
 
               <div className="booking-confirmation-details-grid">
                 <div>
-                  <p className="small muted">Business</p>
+                  <p className="small muted">{t('common.business', 'Business')}</p>
                   <strong>{businessName()}</strong>
                 </div>
 
                 <div>
-                  <p className="small muted">Service</p>
+                  <p className="small muted">{t('common.service', 'Service')}</p>
                   <strong>{serviceName()}</strong>
                 </div>
                 <div>
-                  <p className="small muted">Staff member</p>
+                  <p className="small muted">{t('bookingConfirmation.details.staffMember', 'Staff member')}</p>
                   <strong>{staffName()}</strong>
                 </div>
 
@@ -364,22 +375,22 @@ export default function BookingConfirmation() {
                     border: '1px solid var(--border)'
                   }}
                 >
-                  <p className="small muted">{isPendingApproval() ? 'Requested date and time' : 'Confirmed date and time'}</p>
+                  <p className="small muted">{isPendingApproval() ? t('bookingConfirmation.details.requestedDateTime', 'Requested date and time') : t('bookingConfirmation.details.confirmedDateTime', 'Confirmed date and time')}</p>
                   <strong>{new Date(booking.start_at).toLocaleString()}</strong>
                 </div>
 
                 <div>
-                  <p className="small muted">Duration</p>
-                  <strong>{booking.duration_minutes} minutes</strong>
+                  <p className="small muted">{t('bookingConfirmation.details.duration', 'Duration')}</p>
+                  <strong>{booking.duration_minutes} {t('common.minutes', 'minutes')}</strong>
                 </div>
 
                 <div>
-                  <p className="small muted">Price</p>
-                  <strong>£{servicePrice().toFixed(2)}</strong>
+                  <p className="small muted">{t('bookingConfirmation.details.price', 'Price')}</p>
+                  <strong>{priceLabel()}</strong>
                 </div>
 
                 <div>
-                  <p className="small muted">Customer</p>
+                  <p className="small muted">{t('bookingConfirmation.details.customer', 'Customer')}</p>
                   <strong>{booking.customer_name}</strong>
                   <p className="small muted">{booking.customer_email}</p>
                   {booking.customer_phone && (
@@ -388,19 +399,19 @@ export default function BookingConfirmation() {
                 </div>
 
                 <div>
-                  <p className="small muted">Location</p>
+                  <p className="small muted">{t('bookingConfirmation.details.location', 'Location')}</p>
                   <strong>{businessLocation()}</strong>
                 </div>
 
                 {businessRelation()?.phone && (
                   <div>
-                    <p className="small muted">Business phone</p>
+                    <p className="small muted">{t('bookingConfirmation.details.businessPhone', 'Business phone')}</p>
                     <strong>{businessRelation()?.phone}</strong>
                   </div>
                 )}
 
                 <div>
-                  <p className="small muted">Status</p>
+                  <p className="small muted">{t('bookingConfirmation.details.status', 'Status')}</p>
                   <strong style={{ color: statusColor(booking.status) }}>
                     {statusLabel(booking.status)}
                   </strong>
@@ -410,20 +421,22 @@ export default function BookingConfirmation() {
 
             <div className="booking-confirmation-actions">
               <Link href="/my-bookings" className="btn btn-accent">
-                {isPendingApproval() ? 'Track booking request' : 'View or manage this booking'}
+                {isPendingApproval()
+                  ? t('bookingConfirmation.actions.trackRequest', 'Track booking request')
+                  : t('bookingConfirmation.actions.manageBooking', 'View or manage this booking')}
               </Link>
 
               <Link href="/notifications" className="btn btn-ghost">
-                Notifications
+                {t('nav.notifications', 'Notifications')}
               </Link>
 
               <Link href="/explore" className="btn btn-ghost">
-                Explore Mirëbook
+                {t('bookingConfirmation.actions.explore', 'Explore Mirëbook')}
               </Link>
 
               {role === 'business' && booking.business_id && (
                 <Link href={`/dashboard/bookings?businessId=${booking.business_id}&date=${booking.start_at.slice(0, 10)}`} className="btn btn-ghost">
-                  Business bookings
+                  {t('bookingConfirmation.actions.businessBookings', 'Business bookings')}
                 </Link>
               )}
             </div>
@@ -472,6 +485,7 @@ export default function BookingConfirmation() {
 
         .booking-confirmation-details-grid {
           display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 0.85rem;
         }
 
@@ -483,6 +497,9 @@ export default function BookingConfirmation() {
         }
 
         @media (max-width: 640px) {
+          .booking-confirmation-details-grid {
+            grid-template-columns: 1fr;
+          }
           .booking-confirmation-hero {
             padding: 1.5rem;
           }
