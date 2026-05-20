@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
 
+
 type StaffMember = {
   id: string
   business_id: string
@@ -25,6 +26,20 @@ type StaffMember = {
     city?: string | null
     category?: string | null
   }[] | null
+}
+
+type Service = {
+  id: string
+  name: string
+  duration_minutes?: number | null
+  price?: number | null
+  active?: boolean | null
+}
+
+type StaffService = {
+  staff_member_id: string
+  service_id: string
+  services?: Service | Service[] | null
 }
 
 type Booking = {
@@ -165,6 +180,7 @@ export default function StaffDashboardPage() {
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [requests, setRequests] = useState<BookingRequest[]>([])
+  const [assignedServices, setAssignedServices] = useState<Service[]>([])
   const [selectedDate, setSelectedDate] = useState(formatDateInputValue(new Date()))
   const [statusFilter, setStatusFilter] = useState('active')
   const [loading, setLoading] = useState(true)
@@ -263,11 +279,35 @@ export default function StaffDashboardPage() {
         setStaffProfile(null)
         setBookings([])
         setRequests([])
+        setAssignedServices([])
         setLoading(false)
         return
       }
 
       setStaffProfile(linkedStaff as unknown as StaffMember)
+
+      const { data: assignedServiceData, error: assignedServiceError } = await supabase
+        .from('staff_services')
+        .select(`
+          staff_member_id,
+          service_id,
+          services (
+            id,
+            name,
+            duration_minutes,
+            price,
+            active
+          )
+        `)
+        .eq('staff_member_id', linkedStaff.id)
+
+      if (assignedServiceError) throw assignedServiceError
+
+      const normalisedAssignedServices = (assignedServiceData || [])
+        .map((row: any) => Array.isArray(row.services) ? row.services[0] : row.services)
+        .filter(Boolean)
+
+      setAssignedServices(normalisedAssignedServices as Service[])
 
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
@@ -596,6 +636,37 @@ export default function StaffDashboardPage() {
         {staffProfile && (
           <>
             <div className="staff-hero-card card">
+            <div className="card staff-assigned-services-card">
+              <div>
+                <p className="small muted">Assigned services</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+                  What you can be booked for
+                </h2>
+                <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                  These services are controlled by the business owner. Your availability affects when customers can book you for them.
+                </p>
+              </div>
+
+              {assignedServices.length === 0 ? (
+                <div className="card" style={{ background: 'var(--surface-2)', marginTop: '1rem' }}>
+                  <p className="small muted">
+                    No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.
+                  </p>
+                </div>
+              ) : (
+                <div className="staff-assigned-services-grid">
+                  {assignedServices.map((service) => (
+                    <div key={service.id} className="staff-assigned-service-pill">
+                      <strong>{service.name}</strong>
+                      <span>
+                        {service.duration_minutes ? `${service.duration_minutes} min` : 'Duration not set'}
+                        {service.price ? ` · £${Number(service.price).toFixed(2)}` : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
               <div className="staff-profile-row">
                 <div className="staff-avatar">
                   {staffProfile.image_url ? (
@@ -811,6 +882,31 @@ export default function StaffDashboardPage() {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
+        }
+
+        .staff-assigned-services-card {
+          margin-bottom: 1.5rem;
+        }
+
+        .staff-assigned-services-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+          gap: 0.75rem;
+          margin-top: 1rem;
+        }
+
+        .staff-assigned-service-pill {
+          display: grid;
+          gap: 0.25rem;
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+        }
+
+        .staff-assigned-service-pill span {
+          color: var(--text-muted);
+          font-size: 0.85rem;
         }
 
         .staff-summary-button {

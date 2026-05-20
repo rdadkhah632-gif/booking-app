@@ -267,9 +267,6 @@ export default function StaffAvailabilityPage() {
   const closedDays = useMemo(() => {
     return availability.filter((row) => row.is_closed).length
   }, [availability])
-  const hasUnsavedChangesHint = useMemo(() => {
-    return availability.length > 0
-  }, [availability])
   const totalWeeklyHours = useMemo(() => {
     return availability.reduce((total, row) => {
       if (row.is_closed) return total
@@ -445,13 +442,13 @@ export default function StaffAvailabilityPage() {
                 </button>
               </div>
             </div>
-<div className="card staff-availability-note">
-  <p className="small muted">Staff workspace</p>
-  <h3>These hours only control your own bookable staff availability.</h3>
-  <p className="muted small" style={{ marginTop: '0.45rem' }}>
-    Customers can only book you when the business is published, the service is active, the service is assigned to you, and both business and staff availability allow the selected time. Existing bookings are not moved automatically when you change these hours.
-  </p>
-</div>
+            <div className="card staff-availability-note">
+              <p className="small muted">Staff workspace</p>
+              <h3>These hours only control your own bookable staff availability.</h3>
+              <p className="muted small" style={{ marginTop: '0.45rem' }}>
+                Customers can only book you when the business is published, the service is active, the service is assigned to you, and both business and staff availability allow the selected time. Existing bookings are not moved automatically when you change these hours.
+              </p>
+            </div>
             {error && (
               <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
                 <p style={{ color: 'var(--danger)' }}>{error}</p>
@@ -593,11 +590,11 @@ export default function StaffAvailabilityPage() {
                       {serviceName(booking)} · {new Date(booking.start_at).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · {formatTimeRange(booking)}
                     </p>
                     <p className="small muted">Status: {booking.status}</p>
-{booking.status === 'pending' && (
-  <p className="small muted" style={{ marginTop: '0.25rem' }}>
-    Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.
-  </p>
-)}
+                    {booking.status === 'pending' && (
+                      <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                        Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
