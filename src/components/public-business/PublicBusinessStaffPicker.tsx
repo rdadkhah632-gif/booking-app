@@ -18,10 +18,10 @@ export default function PublicBusinessStaffPicker({
   return (
     <div className="card">
       <div>
-        <p className="small muted">{t('publicBusiness.staff.step')}</p>
-        <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('publicBusiness.staff.title')}</h2>
+        <p className="small muted">{t('publicBusiness.staff.step', 'Step 2')}</p>
+        <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('publicBusiness.staff.title', 'Choose staff')}</h2>
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
-          {t('publicBusiness.staff.subtitle')}
+          {t('publicBusiness.staff.subtitle', 'Choose a specific staff member, or let the business assign anyone available for the selected time.')}
         </p>
       </div>
 
@@ -36,9 +36,9 @@ export default function PublicBusinessStaffPicker({
           }}
         >
           <div>
-            <strong>{t('publicBusiness.staff.any')}</strong>
+            <strong>{t('publicBusiness.staff.any', 'Any available staff')}</strong>
             <p className="small muted" style={{ marginTop: '0.25rem' }}>
-              {t('publicBusiness.staff.anyBody')}
+              {t('publicBusiness.staff.anyBody', 'Mirëbook will use any staff member assigned to this service who is available at the chosen time.')}
             </p>
           </div>
         </button>
@@ -65,14 +65,14 @@ export default function PublicBusinessStaffPicker({
             <div>
               <strong>{staff.name}</strong>
               <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                {staff.role_title || t('publicBusiness.staff.memberFallback')}
+                {staff.role_title || t('publicBusiness.staff.memberFallback', 'Staff member')}
               </p>
             </div>
           </button>
         ))}
 
         {staffMembers.length === 0 && (
-          <p className="small muted">{t('publicBusiness.staff.none')}</p>
+          <p className="small muted">{t('publicBusiness.staff.none', 'No active staff are available for this service yet.')}</p>
         )}
       </div>
     </div>

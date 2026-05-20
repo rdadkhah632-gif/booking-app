@@ -9,6 +9,7 @@ import PublicBusinessServices from '@/components/public-business/PublicBusinessS
 import PublicBusinessStaffPicker from '@/components/public-business/PublicBusinessStaffPicker'
 import PublicBusinessAvailability from '@/components/public-business/PublicBusinessAvailability'
 import PublicBusinessSummary from '@/components/public-business/PublicBusinessSummary'
+import { useI18n } from '@/lib/useI18n'
 
 type Service = {
   id: string
@@ -47,6 +48,8 @@ type BusinessAvailability = {
 
 type Business = {
   id: string
+  user_id?: string | null
+  published?: boolean | null
   name: string
   description?: string | null
   category?: string | null
@@ -102,6 +105,7 @@ type CalendarDay = {
 
 export default function BusinessBookingPage() {
   const router = useRouter()
+  const { t } = useI18n()
   const { businessId } = router.query
 
   const [business, setBusiness] = useState<Business | null>(null)
@@ -116,6 +120,7 @@ export default function BusinessBookingPage() {
   const [customerUserId, setCustomerUserId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<UserRole>(null)
   const [authChecked, setAuthChecked] = useState(false)
+  const [isOwnerPreview, setIsOwnerPreview] = useState(false)
 
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
@@ -171,19 +176,23 @@ export default function BusinessBookingPage() {
     setPageLoading(true)
     setError(null)
 
+    const { data: { session } } = await supabase.auth.getSession()
+
     const { data: businessData, error: businessError } = await supabase
       .from('businesses')
       .select('*')
       .eq('id', businessId)
-      .eq('published', true)
       .single()
 
-    if (businessError) {
-      setError('This business is not currently available for public booking.')
+    const ownerPreview = !!session?.user?.id && businessData?.user_id === session.user.id
+
+    if (businessError || !businessData || (!businessData.published && !ownerPreview)) {
+      setError(t('publicBusiness.error.notAvailable', 'This business is not currently available for public booking.'))
       setPageLoading(false)
       return
     }
 
+    setIsOwnerPreview(ownerPreview)
     setBusiness(businessData)
 
     const { data: servicesData, error: servicesError } = await supabase
@@ -365,7 +374,7 @@ export default function BusinessBookingPage() {
   function locationLabel() {
     return [business?.address, business?.city, business?.country]
       .filter(Boolean)
-      .join(', ') || 'Location details coming soon'
+      .join(', ') || t('publicBusiness.locationComingSoon', 'Location details coming soon')
   }
 
   function heroBackgroundImage() {
@@ -379,25 +388,25 @@ export default function BusinessBookingPage() {
   }
 
   function bookingModeText() {
-    return business?.auto_accept_bookings === false ? 'Booking request' : 'Instant booking'
+    return business?.auto_accept_bookings === false ? t('publicBusiness.bookingMode.request', 'Booking request') : t('publicBusiness.bookingMode.instant', 'Instant booking')
   }
 
   function bookingModeDescription() {
     return business?.auto_accept_bookings === false
-      ? 'This business reviews new booking requests before confirming them.'
-      : 'This business confirms new bookings instantly when you choose an available slot.'
+      ? t('publicBusiness.bookingMode.requestBody', 'This business reviews new booking requests before confirming them.')
+      : t('publicBusiness.bookingMode.instantBody', 'This business confirms new bookings instantly when you choose an available slot.')
   }
 
   function businessTimezoneLabel() {
-    return business?.timezone || 'local business time'
+    return business?.timezone || t('publicBusiness.localBusinessTime', 'local business time')
   }
 
   function cancellationPolicyText() {
-    return business?.cancellation_policy?.trim() || 'Cancellation policy has not been added by this business yet.'
+    return business?.cancellation_policy?.trim() || t('publicBusiness.cancellationFallback', 'Cancellation policy has not been added by this business yet.')
   }
 
   function reschedulePolicyText() {
-    return business?.reschedule_policy?.trim() || 'Reschedule requests can be managed from My Bookings when available.'
+    return business?.reschedule_policy?.trim() || t('publicBusiness.rescheduleFallback', 'Reschedule requests can be managed from My Bookings when available.')
   }
 
   async function createBookingNotifications(bookingId: string | null, bookingStatus: string, startAt: string, staffMemberId: string) {
@@ -405,7 +414,7 @@ export default function BusinessBookingPage() {
 
     const appointmentTime = new Date(startAt).toLocaleString()
     const staff = staffMembers.find((member) => member.id === staffMemberId)
-    const staffLabel = staff ? staff.name : 'Any available staff'
+    const staffLabel = staff ? staff.name : t('publicBusiness.staff.anyAvailable', 'Any available staff')
 
     await supabase.from('notifications').insert([
       {
@@ -414,10 +423,10 @@ export default function BusinessBookingPage() {
         booking_id: bookingId,
         audience: 'customer',
         type: bookingStatus === 'pending' ? 'booking_requested' : 'booking_confirmed',
-        title: bookingStatus === 'pending' ? 'Booking request sent' : 'Booking confirmed',
+        
         message: bookingStatus === 'pending'
-          ? `${business.name} will review your ${selectedService.name} booking request for ${appointmentTime}.`
-          : `Your ${selectedService.name} booking with ${business.name} is confirmed for ${appointmentTime}.`,
+  ? `${business.name} ${t('publicBusiness.notification.customerPendingMessage', 'will review your booking request for')} ${selectedService.name} ${t('publicBusiness.notification.forWord', 'for')} ${appointmentTime}.`
+  : `${t('publicBusiness.notification.customerConfirmedPrefix', 'Your booking is confirmed for')} ${selectedService.name} ${t('publicBusiness.notification.withBusiness', 'with')} ${business.name} ${t('publicBusiness.notification.forWord', 'for')} ${appointmentTime}.`,
         action_url: bookingId ? `/booking-confirmation?id=${bookingId}` : '/my-bookings'
       },
       {
@@ -425,8 +434,8 @@ export default function BusinessBookingPage() {
         booking_id: bookingId,
         audience: 'business',
         type: bookingStatus === 'pending' ? 'booking_needs_approval' : 'booking_created',
-        title: bookingStatus === 'pending' ? 'New booking needs approval' : 'New booking created',
-        message: `${customerName.trim() || 'A customer'} booked ${selectedService.name} for ${appointmentTime} with ${staffLabel}.`,
+        title: bookingStatus === 'pending' ? t('publicBusiness.notification.needsApprovalTitle', 'New booking needs approval') : t('publicBusiness.notification.createdTitle', 'New booking created'),
+        message: `${customerName.trim() || t('publicBusiness.customerFallback', 'A customer')} ${t('publicBusiness.notification.bookedWord', 'booked')} ${selectedService.name} ${t('publicBusiness.notification.forWord', 'for')} ${appointmentTime} ${t('publicBusiness.notification.withWord', 'with')} ${staffLabel}.`,
         action_url: `/dashboard/bookings?businessId=${businessId}&date=${selectedDate}`
       }
     ])
@@ -634,10 +643,10 @@ const visibleServices = useMemo(() => {
 const setupIssueMessages = useMemo(() => {
   const issues: string[] = []
 
-  if (services.length === 0) issues.push('No active services are available yet.')
-  if (staffMembers.length === 0) issues.push('No active staff are available yet.')
-  if (availability.filter((row) => row.is_closed !== true).length === 0) issues.push('No working hours are available yet.')
-  if (bookableServiceCount === 0 && services.length > 0) issues.push('Services are visible but not assigned to staff yet.')
+  if (services.length === 0) issues.push(t('publicBusiness.setupIssue.noServices', 'No active services are available yet.'))
+  if (staffMembers.length === 0) issues.push(t('publicBusiness.setupIssue.noStaff', 'No active staff are available yet.'))
+  if (availability.filter((row) => row.is_closed !== true).length === 0) issues.push(t('publicBusiness.setupIssue.noHours', 'No working hours are available yet.'))
+  if (bookableServiceCount === 0 && services.length > 0) issues.push(t('publicBusiness.setupIssue.servicesNotAssigned', 'Services are visible but not assigned to staff yet.'))
 
   return issues
 }, [services, staffMembers, availability, bookableServiceCount])
@@ -686,21 +695,21 @@ const setupIssueMessages = useMemo(() => {
 
   function selectedStaffSummary() {
     if (!selectedTime) {
-      if (staffFilter === 'any') return 'Staff choice appears after choosing a time'
-      return selectedFilterStaff ? `Only showing slots with ${selectedFilterStaff.name}` : 'Choose a time to pick staff'
+      if (staffFilter === 'any') return t('publicBusiness.staff.chooseTimeFirst', 'Staff choice appears after choosing a time')
+      return selectedFilterStaff ? `${t('publicBusiness.staff.onlyShowing', 'Only showing slots with')} ${selectedFilterStaff.name}` : t('publicBusiness.staff.chooseTimeToPick', 'Choose a time to pick staff')
     }
 
     const staffForSelectedSlot = staffForSlot(selectedTime)
 
     if (selectedStaffChoice === 'any') {
-      if (staffForSelectedSlot.length === 0) return 'Any available staff'
+      if (staffForSelectedSlot.length === 0) return t('publicBusiness.staff.anyAvailable', 'Any available staff')
 
       return staffForSelectedSlot.length === 1
-        ? `Assigned automatically: ${staffForSelectedSlot[0].name}`
-        : `Any available staff · ${staffForSelectedSlot.length} staff can do this time`
+        ? `${t('publicBusiness.staff.assignedAutomatically', 'Assigned automatically')}: ${staffForSelectedSlot[0].name}`
+        : `${t('publicBusiness.staff.anyAvailable', 'Any available staff')} · ${staffForSelectedSlot.length} ${t('support.business.staff', 'staff')} ${t('publicBusiness.staff.canDoThisTime', 'can do this time')}`
     }
 
-    return selectedStaff ? `Staff: ${selectedStaff.name}` : 'No staff selected'
+    return selectedStaff ? `${t('support.business.staff', 'Staff')}: ${selectedStaff.name}` : t('publicBusiness.staff.noneSelected', 'No staff selected')
   }
 
   async function createBooking(e: React.FormEvent) {
@@ -709,7 +718,7 @@ const setupIssueMessages = useMemo(() => {
     if (!authChecked) return
 
     if (!customerUserId || userRole !== 'customer') {
-      setError(`Please login or create a customer account to book with ${business?.name || 'this business'}.`)
+      setError(`${t('publicBusiness.error.loginToBook', 'Please login or create a customer account to book with')} ${business?.name || t('publicBusiness.thisBusiness', 'this business')}.`)
       return
     }
 
@@ -718,7 +727,7 @@ const setupIssueMessages = useMemo(() => {
     const staffMemberIdForBooking = resolveStaffForBooking()
 
     if (!staffMemberIdForBooking) {
-      setError('Please choose Any available staff or one of the staff available for this time.')
+      setError(t('publicBusiness.error.chooseStaff', 'Please choose Any available staff or one of the staff available for this time.'))
       return
     }
 
@@ -729,7 +738,7 @@ const setupIssueMessages = useMemo(() => {
 
     if (!freshSlots.includes(selectedTime)) {
       setLoading(false)
-      setError('This time is no longer available. Please choose another slot.')
+      setError(t('publicBusiness.error.slotUnavailable', 'This time is no longer available. Please choose another slot.'))
       setSelectedTime('')
       return
     }
@@ -759,7 +768,7 @@ const setupIssueMessages = useMemo(() => {
 
     if (error) {
       if (error.message.includes('prevent_overlapping_bookings')) {
-        setError('This time slot has just been booked. Please choose another.')
+        setError(t('publicBusiness.error.slotJustBooked', 'This time slot has just been booked. Please choose another.'))
       } else {
         setError(error.message)
       }
@@ -781,7 +790,7 @@ const setupIssueMessages = useMemo(() => {
         <AuthNav />
         <section className="page-shell">
           <div className="container">
-            <p className="muted">Loading Mirëbook booking page...</p>
+            <p className="muted">{t('publicBusiness.loading', 'Loading Mirëbook booking page...')}</p>
           </div>
         </section>
       </main>
@@ -794,14 +803,14 @@ const setupIssueMessages = useMemo(() => {
         <AuthNav />
         <section className="page-shell">
           <div className="container">
-            <h1 className="page-title">Business not found</h1>
-            <p className="page-sub">This business may be hidden, unpublished or unavailable.</p>
+            <h1 className="page-title">{t('publicBusiness.notFound.title', 'Business not found')}</h1>
+            <p className="page-sub">{t('publicBusiness.notFound.body', 'This business may be hidden, unpublished or unavailable.')}</p>
             <Link href="/explore" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-              Back to Mirëbook marketplace
+              {t('publicBusiness.notFound.backMarketplace', 'Back to Mirëbook marketplace')}
             </Link>
 
             <Link href="/support/customer" className="btn btn-ghost" style={{ marginTop: '1rem', marginLeft: '0.75rem' }}>
-              Customer support
+              {t('support.customer.title', 'Customer support')}
             </Link>
           </div>
         </section>
@@ -842,8 +851,28 @@ const setupIssueMessages = useMemo(() => {
 
       <section className="container" style={{ padding: '36px 24px 70px' }}>
         <Link href="/explore" className="muted small">
-          ← Back to results
+          ← {t('publicBusiness.backToResults', 'Back to results')}
         </Link>
+
+        {isOwnerPreview && (
+          <div className="card" style={{ marginTop: '1rem', borderColor: 'rgba(255,107,53,0.35)', background: 'rgba(255,107,53,0.07)' }}>
+            <p className="small" style={{ color: 'var(--accent)' }}>{t('publicBusiness.preview.kicker', 'Owner preview')}</p>
+            <h3 style={{ marginTop: '0.25rem' }}>{t('publicBusiness.preview.title', 'You are previewing your own business page')}</h3>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {business.published
+                ? t('publicBusiness.preview.publishedBody', 'This is the public page customers can use to book. Changes should be made from your dashboard.')
+                : t('publicBusiness.preview.draftBody', 'This page is hidden from customers because the business is not published yet. You can still preview it as the owner.')}
+            </p>
+            <div className="booking-action-row compact">
+              <Link href="/dashboard/businesses" className="btn btn-ghost">
+                {t('dashboardSettings.setupHub', 'Setup hub')}
+              </Link>
+              <Link href="/dashboard/settings" className="btn btn-ghost">
+                {t('dashboardSettings.pageTitle', 'Business settings')}
+              </Link>
+            </div>
+          </div>
+        )}
 
             {error && (
               <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginTop: '1rem' }}>
@@ -852,11 +881,11 @@ const setupIssueMessages = useMemo(() => {
                 {(!customerUserId || userRole !== 'customer') && (
                   <div className="booking-action-row">
                     <Link href="/login" className="btn btn-accent">
-                      Login to book
+                      {t('publicBusiness.auth.loginToBook', 'Login to book')}
                     </Link>
 
                     <Link href="/register" className="btn btn-ghost">
-                      Create customer account
+                      {t('publicBusiness.auth.createCustomerAccount', 'Create customer account')}
                     </Link>
                   </div>
                 )}
@@ -873,7 +902,7 @@ const setupIssueMessages = useMemo(() => {
           />
 
           <p className="small muted" style={{ marginTop: '0.75rem' }}>
-            Times shown in {businessTimezoneLabel()} · {bookingIntervalMinutes()} minute slot grid
+            {t('publicBusiness.timesShownIn', 'Times shown in')} {businessTimezoneLabel()} · {bookingIntervalMinutes()} {t('publicBusiness.minuteSlotGrid', 'minute slot grid')}
           </p>
         </div>
 
@@ -910,16 +939,16 @@ const setupIssueMessages = useMemo(() => {
                     setSelectedTime('')
                   }}
                 >
-                  Change service
+                  {t('publicBusiness.actions.changeService', 'Change service')}
                 </button>
               </div>
             )}
 
             {services.length > 0 && bookableServiceCount === 0 && (
               <div className="card" style={{ background: 'rgba(255,190,11,0.06)', borderColor: 'rgba(255,190,11,0.22)', marginTop: '1rem' }}>
-                <p className="small" style={{ color: 'var(--warning)' }}>Services not bookable yet</p>
+                <p className="small" style={{ color: 'var(--warning)' }}>{t('publicBusiness.services.notBookableTitle', 'Services not bookable yet')}</p>
                 <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                  This business has active services, but staff have not been assigned to them yet.
+                  {t('publicBusiness.services.notBookableBody', 'This business has active services, but staff have not been assigned to them yet.')}
                 </p>
               </div>
             )}

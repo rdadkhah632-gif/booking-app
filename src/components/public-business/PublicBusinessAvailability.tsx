@@ -22,15 +22,15 @@ export default function PublicBusinessAvailability({
   return (
     <div className="card">
       <div>
-        <p className="small muted">{t('publicBusiness.availability.step')}</p>
-        <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('publicBusiness.availability.title')}</h2>
+        <p className="small muted">{t('publicBusiness.availability.step', 'Step 3')}</p>
+        <h2 style={{ fontFamily: 'var(--font-display)' }}>{t('publicBusiness.availability.title', 'Choose a time')}</h2>
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
-          {t('publicBusiness.availability.subtitle')}
+          {t('publicBusiness.availability.subtitle', 'Pick a date and choose one of the available booking times.')}
         </p>
       </div>
 
       <label className="small muted" style={{ display: 'block', marginTop: '1rem' }}>
-        {t('publicBusiness.availability.date')}
+        {t('publicBusiness.availability.date', 'Date')}
         <input
           type="date"
           value={selectedDate}
@@ -41,12 +41,12 @@ export default function PublicBusinessAvailability({
 
       <div className="public-business-slot-grid">
         {loadingSlots && (
-          <p className="small muted">{t('publicBusiness.availability.loading')}</p>
+          <p className="small muted">{t('publicBusiness.availability.loading', 'Checking available times...')}</p>
         )}
 
         {!loadingSlots && availableSlots.length === 0 && (
           <div className="card" style={{ background: 'var(--surface-2)', gridColumn: '1 / -1' }}>
-            <p className="muted">{t('publicBusiness.availability.none')}</p>
+            <p className="muted">{t('publicBusiness.availability.none', 'No available times for this date. Try another date or staff member.')}</p>
           </div>
         )}
 

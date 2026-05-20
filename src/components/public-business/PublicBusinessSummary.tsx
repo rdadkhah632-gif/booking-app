@@ -59,7 +59,7 @@ export default function PublicBusinessSummary({
   return (
     <aside className="card booking-summary-panel">
       <div>
-        <p className="small muted">{t('publicBusiness.summary.title')}</p>
+        <p className="small muted">{t('publicBusiness.summary.title', 'Booking summary')}</p>
         <h2 style={{ fontFamily: 'var(--font-display)' }}>{bookingModeText()}</h2>
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
           {bookingModeDescription()}
@@ -67,45 +67,45 @@ export default function PublicBusinessSummary({
       </div>
 
       <div className="public-business-summary-box">
-        <p className="small muted">{t('common.business')}</p>
+        <p className="small muted">{t('common.business', 'Business')}</p>
         <strong>{business.name}</strong>
 
-        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.service')}</p>
-        <strong>{selectedService ? selectedService.name : t('publicBusiness.summary.chooseService')}</strong>
+        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.service', 'Service')}</p>
+        <strong>{selectedService ? selectedService.name : t('publicBusiness.summary.chooseService', 'Choose a service')}</strong>
 
         {selectedService && (
           <p className="small muted" style={{ marginTop: '0.25rem' }}>
-            {selectedService.duration_minutes} minutes · {formatServicePrice(selectedService.price)}
+            {selectedService.duration_minutes} {t('common.minutes', 'minutes')} · {formatServicePrice(selectedService.price)}
           </p>
         )}
 
-        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.staff')}</p>
+        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.staff', 'Staff')}</p>
         <strong>{selectedStaffSummary()}</strong>
 
-        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.time')}</p>
-        <strong>{selectedSlot ? new Date(selectedSlot.startAt).toLocaleString() : t('publicBusiness.summary.chooseTime')}</strong>
+        <p className="small muted" style={{ marginTop: '0.75rem' }}>{t('common.time', 'Time')}</p>
+        <strong>{selectedSlot ? new Date(selectedSlot.startAt).toLocaleString() : t('publicBusiness.summary.chooseTime', 'Choose a time')}</strong>
 
         <p className="small muted" style={{ marginTop: '0.75rem' }}>
-          {business.auto_accept_bookings === false ? t('publicBusiness.summary.requestNotice') : t('publicBusiness.summary.instantNotice')}
+          {business.auto_accept_bookings === false ? t('publicBusiness.summary.requestNotice', 'This booking will be sent as a request for the business to review.') : t('publicBusiness.summary.instantNotice', 'This booking will be confirmed instantly when submitted.')}
         </p>
       </div>
 
       {!customerUserId && (
         <div className="public-business-summary-box" style={{ borderColor: 'rgba(255,107,53,0.28)', background: 'rgba(255,107,53,0.06)' }}>
-          <p className="small" style={{ color: 'var(--accent)' }}>{t('publicBusiness.summary.loginRequired')}</p>
-          <h3 style={{ marginTop: '0.25rem' }}>{t('publicBusiness.summary.signIn')}</h3>
+          <p className="small" style={{ color: 'var(--accent)' }}>{t('publicBusiness.summary.loginRequired', 'Login required')}</p>
+          <h3 style={{ marginTop: '0.25rem' }}>{t('publicBusiness.summary.signIn', 'Sign in to book')}</h3>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            {t('publicBusiness.summary.signInBody')}
+            {t('publicBusiness.summary.signInBody', 'Create or use a customer account so your booking can be linked to your profile.')}
           </p>
           <div className="booking-action-row compact">
             <Link href={loginHref} className="btn btn-accent">
-              {t('nav.login')}
+              {t('nav.login', 'Login')}
             </Link>
             <Link href="/register" className="btn btn-ghost">
-              {t('publicBusiness.summary.createAccount')}
+              {t('publicBusiness.summary.createAccount', 'Create account')}
             </Link>
             <Link href="/support/customer" className="btn btn-ghost">
-              {t('common.help')}
+              {t('common.help', 'Help')}
             </Link>
           </div>
         </div>
@@ -113,17 +113,17 @@ export default function PublicBusinessSummary({
 
       {blockedByRole && (
         <div className="public-business-summary-box" style={{ borderColor: 'rgba(255,190,11,0.28)', background: 'rgba(255,190,11,0.06)' }}>
-          <p className="small" style={{ color: 'var(--warning)' }}>{t('publicBusiness.summary.customerRequired')}</p>
-          <h3 style={{ marginTop: '0.25rem' }}>{t('publicBusiness.summary.customerRequiredTitle')}</h3>
+          <p className="small" style={{ color: 'var(--warning)' }}>{t('publicBusiness.summary.customerRequired', 'Customer account required')}</p>
+          <h3 style={{ marginTop: '0.25rem' }}>{t('publicBusiness.summary.customerRequiredTitle', 'Use a customer account to book')}</h3>
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            {t('publicBusiness.summary.customerRequiredBody')}
+            {t('publicBusiness.summary.customerRequiredBody', 'Business, staff and operator accounts cannot place customer bookings from this page.')}
           </p>
           <div className="booking-action-row compact">
             <Link href="/account" className="btn btn-ghost">
-              {t('nav.account')}
+              {t('nav.account', 'Account')}
             </Link>
             <Link href="/support/customer" className="btn btn-ghost">
-              {t('nav.customerSupport')}
+              {t('nav.customerSupport', 'Customer support')}
             </Link>
           </div>
         </div>
@@ -131,23 +131,23 @@ export default function PublicBusinessSummary({
 
       <form onSubmit={onSubmit} className="public-business-form">
         <label className="small muted">
-          {t('common.name')}
-          <input value={customerName} onChange={(e) => onCustomerNameChange(e.target.value)} placeholder={t('publicBusiness.summary.namePlaceholder')} style={{ marginTop: '0.35rem' }} />
+          {t('common.name', 'Name')}
+          <input value={customerName} onChange={(e) => onCustomerNameChange(e.target.value)} placeholder={t('publicBusiness.summary.namePlaceholder', 'Your name')} style={{ marginTop: '0.35rem' }} />
         </label>
 
         <label className="small muted">
-          {t('common.email')}
-          <input value={customerEmail} onChange={(e) => onCustomerEmailChange(e.target.value)} placeholder={t('publicBusiness.summary.emailPlaceholder')} style={{ marginTop: '0.35rem' }} />
+          {t('common.email', 'Email')}
+          <input value={customerEmail} onChange={(e) => onCustomerEmailChange(e.target.value)} placeholder={t('publicBusiness.summary.emailPlaceholder', 'Your email')} style={{ marginTop: '0.35rem' }} />
         </label>
 
         <label className="small muted">
-          {t('common.phone')}
-          <input value={customerPhone} onChange={(e) => onCustomerPhoneChange(e.target.value)} placeholder={t('publicBusiness.summary.phonePlaceholder')} style={{ marginTop: '0.35rem' }} />
+          {t('common.phone', 'Phone')}
+          <input value={customerPhone} onChange={(e) => onCustomerPhoneChange(e.target.value)} placeholder={t('publicBusiness.summary.phonePlaceholder', 'Phone number')} style={{ marginTop: '0.35rem' }} />
         </label>
 
         <label className="small muted">
-          {t('common.notes')}
-          <textarea value={customerNotes} onChange={(e) => onCustomerNotesChange(e.target.value)} placeholder={t('publicBusiness.summary.notesPlaceholder')} rows={4} style={{ marginTop: '0.35rem' }} />
+          {t('common.notes', 'Notes')}
+          <textarea value={customerNotes} onChange={(e) => onCustomerNotesChange(e.target.value)} placeholder={t('publicBusiness.summary.notesPlaceholder', 'Anything the business should know?')} rows={4} style={{ marginTop: '0.35rem' }} />
         </label>
 
         {error && (
@@ -158,13 +158,13 @@ export default function PublicBusinessSummary({
 
         <button type="submit" className="btn btn-accent" disabled={submitting || !canSubmit}>
           {submitting
-            ? t('common.working')
-            : business.auto_accept_bookings === false ? t('publicBusiness.summary.sendRequest') : t('publicBusiness.summary.confirmAppointment')}
+            ? t('common.working', 'Working...')
+            : business.auto_accept_bookings === false ? t('publicBusiness.summary.sendRequest', 'Send booking request') : t('publicBusiness.summary.confirmAppointment', 'Confirm appointment')}
         </button>
       </form>
 
       <div className="public-business-summary-box">
-        <p className="small muted">{t('publicBusiness.summary.policies')}</p>
+        <p className="small muted">{t('publicBusiness.summary.policies', 'Booking policies')}</p>
         <p className="small muted" style={{ marginTop: '0.25rem' }}>{reschedulePolicyText()}</p>
         {business.cancellation_policy && (
           <p className="small muted" style={{ marginTop: '0.45rem' }}>{business.cancellation_policy}</p>
@@ -172,7 +172,7 @@ export default function PublicBusinessSummary({
       </div>
 
       <Link href="/support/customer" className="btn btn-ghost">
-        {t('common.needHelp')}
+        {t('common.needHelp', 'Need help?')}
       </Link>
     </aside>
   )
