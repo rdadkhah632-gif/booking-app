@@ -374,8 +374,8 @@ export default function Businesses() {
   // readinessRow and setupCard functions deleted
   return (
     <DashboardLayout
-      title={t('dashboardBusinesses.pageTitle', businesses.length > 0 ? 'Business profile' : 'Create your business')}
-      subtitle={t('dashboardBusinesses.pageSubtitle', businesses.length > 0 ? 'Manage the public profile customers see when they book with you.' : 'Create your first business profile, then add services, staff, availability and publish it to Mirëbook.')}
+      title={t('dashboardBusinesses.pageTitle', businesses.length > 0 ? 'Setup' : 'Create your business')}
+      subtitle={t('dashboardBusinesses.pageSubtitle', businesses.length > 0 ? 'Manage the parts of your business customers rely on before they book.' : 'Create your first business profile, then add services, staff, availability and publish it to Mirëbook.')}
     >
       {businesses.length === 0 && <BusinessSetupHero />}
 
@@ -392,21 +392,44 @@ export default function Businesses() {
       )}
 
       {businesses.length > 0 && (
-        <div className="card business-profile-actions">
+        <div className="card business-setup-hub">
           <div>
-            <p className="small muted">{t('dashboardBusinesses.profileTools.kicker', 'Business tools')}</p>
-            <h3>{t('dashboardBusinesses.profileTools.title', 'Profile and public page')}</h3>
+            <p className="small muted">{t('dashboardBusinesses.setupHub.kicker', 'Setup')}</p>
+            <h3>{t('dashboardBusinesses.setupHub.title', 'Finish and manage your business setup')}</h3>
             <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardBusinesses.profileTools.body', 'Keep your profile accurate, preview what customers see, or contact support if you need another business or location added to your account.')}
+              {t('dashboardBusinesses.setupHub.body', 'Keep your public profile, services, staff and availability ready so customers can book without confusion.')}
             </p>
           </div>
 
-          <div className="business-profile-action-buttons">
-            <a href={`/explore/${businesses[0].id}`} className="btn btn-accent">
-              {t('dashboardBusinesses.profileTools.preview', 'Preview public page')}
+          <div className="business-setup-grid">
+            <a href="#business-profile" className="business-setup-card">
+              <strong>{t('dashboardBusinesses.setupHub.profile', 'Business profile')}</strong>
+              <span>{t('dashboardBusinesses.setupHub.profileBody', 'Edit public details, image, category and publish status.')}</span>
             </a>
-            <a href="/support/business" className="btn btn-ghost">
-              {t('dashboardBusinesses.create.requestAnother', 'Request another business')}
+
+            <a href="/dashboard/services" className="business-setup-card">
+              <strong>{t('support.business.services', 'Services')}</strong>
+              <span>{t('dashboardBusinesses.setupHub.servicesBody', 'Create the services customers can book.')}</span>
+            </a>
+
+            <a href="/dashboard/staff" className="business-setup-card">
+              <strong>{t('support.business.staff', 'Staff')}</strong>
+              <span>{t('dashboardBusinesses.setupHub.staffBody', 'Add staff and assign services to them.')}</span>
+            </a>
+
+            <a href="/dashboard/availability" className="business-setup-card">
+              <strong>{t('dashboardBusinesses.setupHub.availability', 'Availability')}</strong>
+              <span>{t('dashboardBusinesses.setupHub.availabilityBody', 'Set the days and hours customers can book.')}</span>
+            </a>
+
+            <a href={`/explore/${businesses[0].id}`} className="business-setup-card">
+              <strong>{t('dashboardBusinesses.profileTools.preview', 'Preview public page')}</strong>
+              <span>{t('dashboardBusinesses.setupHub.previewBody', 'See what customers see before you share your page.')}</span>
+            </a>
+
+            <a href="/support/business" className="business-setup-card">
+              <strong>{t('dashboardBusinesses.create.requestAnother', 'Request another business')}</strong>
+              <span>{t('dashboardBusinesses.setupHub.requestBody', 'Ask support to add another location or profile.')}</span>
             </a>
           </div>
         </div>
@@ -439,7 +462,7 @@ export default function Businesses() {
         </div>
       )}
 
-      <div className="business-profile-list">
+      <div id="business-profile" className="business-profile-list">
         {businesses.map((business) => (
           <BusinessProfileCard
             key={business.id}
@@ -462,31 +485,38 @@ export default function Businesses() {
           gap: 1.25rem;
         }
 
-        .business-profile-actions {
-          display: flex;
-          justify-content: space-between;
+        .business-setup-hub {
+          display: grid;
           gap: 1rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
           margin-bottom: 1rem;
         }
 
-        .business-profile-action-buttons {
-          display: flex;
+        .business-setup-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
+        }
+
+        .business-setup-card {
+          display: grid;
+          gap: 0.35rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        .business-setup-card span {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          line-height: 1.4;
         }
 
         @media (max-width: 700px) {
-          .business-profile-actions {
-            display: grid;
-          }
-
-          .business-profile-action-buttons,
-          .business-profile-action-buttons :global(.btn) {
-            width: 100%;
-            justify-content: center;
+          .business-setup-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>

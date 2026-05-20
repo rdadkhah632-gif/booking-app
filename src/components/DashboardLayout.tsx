@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
@@ -14,7 +14,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
   const router = useRouter()
   const { t } = useI18n()
   const [pendingCount, setPendingCount] = useState(0)
-  const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadPendingNotifications() {
@@ -28,11 +27,9 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         .eq('user_id', session.user.id)
 
       const businessIds = (businesses || []).map((business) => business.id)
-      setPrimaryBusinessId(businessIds[0] || null)
 
       if (businessIds.length === 0) {
         setPendingCount(0)
-        setPrimaryBusinessId(null)
         return
       }
 
@@ -58,10 +55,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     loadPendingNotifications()
   }, [router.pathname])
 
-  async function logout() {
-    await supabase.auth.signOut()
-    router.replace('/')
-  }
 
   const mainLinks = [
     { href: '/dashboard', label: t('dashboardLayout.nav.home', 'Home') },
@@ -70,9 +63,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     { href: '/dashboard/settings', label: t('dashboardSettings.pageTitle', 'Settings') }
   ]
 
-  const publicBusinessHref = useMemo(() => {
-    return primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
-  }, [primaryBusinessId])
 
   function isActiveLink(href: string) {
     return router.pathname === href || router.pathname.startsWith(`${href}/`)
