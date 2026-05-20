@@ -1158,4 +1158,74 @@ export const en: TranslationTree = {
     'dashboardAnalytics.recent.kicker': 'Recent activity',
     'dashboardAnalytics.recent.title': 'Latest bookings in this filter',
     'dashboardAnalytics.recent.openManager': 'Open appointment manager',
+    'publicBusiness.error.notAvailable': 'This business is not currently available for public booking.',
+    'publicBusiness.locationComingSoon': 'Location details coming soon',
+    'publicBusiness.bookingMode.request': 'Booking request',
+    'publicBusiness.bookingMode.instant': 'Instant booking',
+    'publicBusiness.bookingMode.requestBody': 'This business reviews new booking requests before confirming them.',
+    'publicBusiness.bookingMode.instantBody': 'This business confirms new bookings instantly when you choose an available slot.',
+    'publicBusiness.localBusinessTime': 'local business time',
+    'publicBusiness.cancellationFallback': 'Cancellation policy has not been added by this business yet.',
+    'publicBusiness.rescheduleFallback': 'Reschedule requests can be managed from My Bookings when available.',
+    'publicBusiness.customerFallback': 'A customer',
+    'publicBusiness.thisBusiness': 'this business',
+    'publicBusiness.loading': 'Loading Mirëbook booking page...',
+    'publicBusiness.backToResults': 'Back to results',
+    'publicBusiness.timesShownIn': 'Times shown in',
+    'publicBusiness.minuteSlotGrid': 'minute slot grid',
+
+    'publicBusiness.preview.kicker': 'Owner preview',
+    'publicBusiness.preview.title': 'You are previewing your own business page',
+    'publicBusiness.preview.publishedBody': 'This is the public page customers can use to book. Changes should be made from your dashboard.',
+    'publicBusiness.preview.draftBody': 'This page is hidden from customers because the business is not published yet. You can still preview it as the owner.',
+
+    'publicBusiness.notFound.title': 'Business not found',
+    'publicBusiness.notFound.body': 'This business may be hidden, unpublished or unavailable.',
+    'publicBusiness.notFound.backMarketplace': 'Back to Mirëbook marketplace',
+
+    'publicBusiness.auth.loginToBook': 'Login to book',
+    'publicBusiness.auth.createCustomerAccount': 'Create customer account',
+
+    'publicBusiness.actions.changeService': 'Change service',
+
+    'publicBusiness.services.notBookableTitle': 'Services not bookable yet',
+    'publicBusiness.services.notBookableBody': 'This business has active services, but staff have not been assigned to them yet.',
+
+    'publicBusiness.setupIssue.noServices': 'No active services are available yet.',
+    'publicBusiness.setupIssue.noStaff': 'No active staff are available yet.',
+    'publicBusiness.setupIssue.noHours': 'No working hours are available yet.',
+    'publicBusiness.setupIssue.servicesNotAssigned': 'Services are visible but not assigned to staff yet.',
+
+    'publicBusiness.error.loginToBook': 'Please login or create a customer account to book with',
+    'publicBusiness.error.chooseStaff': 'Please choose Any available staff or one of the staff available for this time.',
+    'publicBusiness.error.slotJustBooked': 'This time slot has just been booked. Please choose another.',
+    'publicBusiness.error.slotUnavailable': 'This time is no longer available. Please choose another slot.',
+
+    'publicBusiness.notification.requestSentTitle': 'Booking request sent',
+    'publicBusiness.notification.confirmedTitle': 'Booking confirmed',
+    'publicBusiness.notification.needsApprovalTitle': 'New booking needs approval',
+    'publicBusiness.notification.createdTitle': 'New booking created',
+    'publicBusiness.notification.bookedWord': 'booked',
+    'publicBusiness.notification.forWord': 'for',
+    'publicBusiness.notification.withWord': 'with',
+    'publicBusiness.notification.withBusiness': 'with',
+    'publicBusiness.notification.customerPendingMessage': 'will review your booking request for',
+    'publicBusiness.notification.customerConfirmedPrefix': 'Your booking is confirmed for',
+
+    'publicBusiness.staff.chooseTimeFirst': 'Staff choice appears after choosing a time',
+    'publicBusiness.staff.onlyShowing': 'Only showing slots with',
+    'publicBusiness.staff.chooseTimeToPick': 'Choose a time to pick staff',
+    'publicBusiness.staff.assignedAutomatically': 'Assigned automatically',
+    'publicBusiness.staff.canDoThisTime': 'can do this time',
+    'publicBusiness.staff.noneSelected': 'No staff selected',
+
+
+
+
+
+
+
+
+
+    'publicBusiness.staff.anyAvailable': 'Any available staff',
   }

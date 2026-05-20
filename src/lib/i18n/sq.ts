@@ -190,13 +190,6 @@ export const sq: TranslationTree = {
     'publicBusiness.services.title': 'Zgjidh një shërbim',
     'publicBusiness.services.bookableCount': 'mund të rezervohen aktualisht',
     'publicBusiness.services.none': 'Nuk ka ende shërbime aktive të disponueshme.',
-    'publicBusiness.staff.step': 'Hapi 2',
-    'publicBusiness.staff.title': 'Zgjidh stafin',
-    'publicBusiness.staff.subtitle': 'Zgjidh Çdo staf të disponueshëm ose një person specifik.',
-    'publicBusiness.staff.any': 'Çdo staf i disponueshëm',
-    'publicBusiness.staff.anyBody': 'Mirëbook do të shfaqë orare për këdo që mund ta kryejë shërbimin e zgjedhur.',
-    'publicBusiness.staff.memberFallback': 'Anëtar stafi',
-    'publicBusiness.staff.none': 'Nuk ka ende staf aktiv të disponueshëm.',
     'publicBusiness.availability.step': 'Hapi 3',
     'publicBusiness.availability.title': 'Zgjidh një orar',
     'publicBusiness.availability.subtitle': 'Shfaqen vetëm oraret e disponueshme për rezervim.',
@@ -1158,4 +1151,82 @@ export const sq: TranslationTree = {
     'dashboardAnalytics.recent.kicker': 'Aktiviteti i fundit',
     'dashboardAnalytics.recent.title': 'Rezervimet më të fundit në këtë filtër',
     'dashboardAnalytics.recent.openManager': 'Hap menaxherin e takimeve',
+    'publicBusiness.error.notAvailable': 'Ky biznes nuk është aktualisht i disponueshëm për rezervime publike.',
+    'publicBusiness.locationComingSoon': 'Detajet e vendndodhjes do të shtohen së shpejti',
+    'publicBusiness.bookingMode.request': 'Kërkesë rezervimi',
+    'publicBusiness.bookingMode.instant': 'Rezervim i menjëhershëm',
+    'publicBusiness.bookingMode.requestBody': 'Ky biznes i shqyrton kërkesat e reja të rezervimit para se t’i konfirmojë.',
+    'publicBusiness.bookingMode.instantBody': 'Ky biznes i konfirmon rezervimet menjëherë kur zgjedh një orar të disponueshëm.',
+    'publicBusiness.localBusinessTime': 'ora lokale e biznesit',
+    'publicBusiness.cancellationFallback': 'Ky biznes nuk ka shtuar ende politikë anulimi.',
+    'publicBusiness.rescheduleFallback': 'Kërkesat për ndryshim orari mund të menaxhohen nga Rezervimet e Mia kur është e disponueshme.',
+    'publicBusiness.customerFallback': 'Një klient',
+    'publicBusiness.thisBusiness': 'këtë biznes',
+    'publicBusiness.loading': 'Duke ngarkuar faqen e rezervimit Mirëbook...',
+    'publicBusiness.backToResults': 'Kthehu te rezultatet',
+    'publicBusiness.timesShownIn': 'Orët shfaqen në',
+    'publicBusiness.minuteSlotGrid': 'minuta interval rezervimi',
+
+    'publicBusiness.preview.kicker': 'Pamje paraprake e pronarit',
+    'publicBusiness.preview.title': 'Po shikon faqen tënde të biznesit',
+    'publicBusiness.preview.publishedBody': 'Kjo është faqja publike që klientët mund të përdorin për të rezervuar. Ndryshimet duhet të bëhen nga dashboard-i.',
+    'publicBusiness.preview.draftBody': 'Kjo faqe është e fshehur nga klientët sepse biznesi nuk është publikuar ende. Ti mund ta shikosh si pronar.',
+
+    'publicBusiness.notFound.title': 'Biznesi nuk u gjet',
+    'publicBusiness.notFound.body': 'Ky biznes mund të jetë i fshehur, i papublikuar ose i padisponueshëm.',
+    'publicBusiness.notFound.backMarketplace': 'Kthehu te marketplace Mirëbook',
+
+    'publicBusiness.auth.loginToBook': 'Hyr për të rezervuar',
+    'publicBusiness.auth.createCustomerAccount': 'Krijo llogari klienti',
+
+    'publicBusiness.actions.changeService': 'Ndrysho shërbimin',
+
+    'publicBusiness.services.notBookableTitle': 'Shërbimet nuk janë ende të rezervueshme',
+    'publicBusiness.services.notBookableBody': 'Ky biznes ka shërbime aktive, por stafi nuk është caktuar ende te ato shërbime.',
+
+    'publicBusiness.setupIssue.noServices': 'Nuk ka ende shërbime aktive të disponueshme.',
+    'publicBusiness.setupIssue.noStaff': 'Nuk ka ende staf aktiv të disponueshëm.',
+    'publicBusiness.setupIssue.noHours': 'Nuk ka ende orare pune të disponueshme.',
+    'publicBusiness.setupIssue.servicesNotAssigned': 'Shërbimet janë të dukshme, por nuk janë caktuar ende te stafi.',
+
+    'publicBusiness.error.loginToBook': 'Të lutem hyr ose krijo një llogari klienti për të rezervuar me',
+    'publicBusiness.error.chooseStaff': 'Zgjidh “Çdo staf i disponueshëm” ose një nga anëtarët e stafit të disponueshëm për këtë orar.',
+    'publicBusiness.error.slotJustBooked': 'Ky orar sapo u rezervua. Zgjidh një tjetër.',
+    'publicBusiness.error.slotUnavailable': 'Ky orar nuk është më i disponueshëm. Zgjidh një tjetër.',
+
+    'publicBusiness.notification.requestSentTitle': 'Kërkesa e rezervimit u dërgua',
+    'publicBusiness.notification.confirmedTitle': 'Rezervimi u konfirmua',
+    'publicBusiness.notification.needsApprovalTitle': 'Rezervim i ri kërkon miratim',
+    'publicBusiness.notification.createdTitle': 'Rezervim i ri u krijua',
+    'publicBusiness.notification.bookedWord': 'rezervoi',
+    'publicBusiness.notification.forWord': 'për',
+    'publicBusiness.notification.withWord': 'me',
+    'publicBusiness.notification.withBusiness': 'me',
+    'publicBusiness.notification.customerPendingMessage': 'do ta shqyrtojë kërkesën tënde të rezervimit për',
+    'publicBusiness.notification.customerConfirmedPrefix': 'Rezervimi yt është konfirmuar për',
+
+    'publicBusiness.staff.step': 'Hapi 2',
+    'publicBusiness.staff.title': 'Zgjidh stafin',
+    'publicBusiness.staff.subtitle': 'Zgjidh një anëtar specifik stafi, ose lejo biznesin të caktojë këdo që është i disponueshëm në orarin e zgjedhur.',
+    'publicBusiness.staff.any': 'Çdo staf i disponueshëm',
+    'publicBusiness.staff.anyAvailable': 'Çdo staf i disponueshëm',
+    'publicBusiness.staff.anyBody': 'Mirëbook do të përdorë çdo anëtar stafi të caktuar te ky shërbim që është i disponueshëm në orarin e zgjedhur.',
+    'publicBusiness.staff.memberFallback': 'Anëtar stafi',
+    'publicBusiness.staff.none': 'Nuk ka staf aktiv të disponueshëm për këtë shërbim ende.',
+    'publicBusiness.staff.chooseTimeFirst': 'Zgjedhja e stafit shfaqet pasi zgjedh një orar',
+    'publicBusiness.staff.onlyShowing': 'Po shfaqen vetëm oraret me',
+    'publicBusiness.staff.chooseTimeToPick': 'Zgjidh një orar për të zgjedhur stafin',
+    'publicBusiness.staff.assignedAutomatically': 'Caktuar automatikisht',
+    'publicBusiness.staff.canDoThisTime': 'mund ta bëjë këtë orar',
+    'publicBusiness.staff.noneSelected': 'Nuk është zgjedhur staf',
+
+
+
+
+
+
+
+
+
+
   }
