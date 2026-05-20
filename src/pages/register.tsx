@@ -22,13 +22,6 @@ export default function RegisterPage() {
   const [businessCategory, setBusinessCategory] = useState('')
   const [businessCity, setBusinessCity] = useState('')
   const [businessCountry, setBusinessCountry] = useState('Albania')
-  const [detectedStaffInvite, setDetectedStaffInvite] = useState<{
-    id: string
-    business_id: string
-    name: string
-    email: string | null
-    invite_status?: string | null
-  } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -98,34 +91,6 @@ export default function RegisterPage() {
     }
   }, [locale, setLocale])
 
-  useEffect(() => {
-    async function checkStaffInvite() {
-      const cleanEmail = email.trim().toLowerCase()
-
-      if (!cleanEmail || !cleanEmail.includes('@')) {
-        setDetectedStaffInvite(null)
-        return
-      }
-
-      const { data } = await supabase
-        .from('staff_members')
-        .select('id, business_id, name, email, invite_status')
-        .eq('email', cleanEmail)
-        .is('user_id', null)
-        .limit(1)
-        .maybeSingle()
-
-      if (data) {
-        setDetectedStaffInvite(data)
-        setRole('staff')
-      } else {
-        setDetectedStaffInvite(null)
-      }
-    }
-
-    const timeout = window.setTimeout(checkStaffInvite, 350)
-    return () => window.clearTimeout(timeout)
-  }, [email])
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault()
@@ -142,15 +107,6 @@ export default function RegisterPage() {
       return
     }
 
-    const staffInvite = role === 'staff'
-      ? detectedStaffInvite
-      : null
-
-    if (role === 'staff' && !staffInvite) {
-      setError(t('register.noStaffInvite', 'This staff account needs a valid staff invite before it can be created.'))
-      setLoading(false)
-      return
-    }
 
     if (role === 'business') {
       if (!businessName.trim()) {
@@ -221,14 +177,34 @@ export default function RegisterPage() {
         return
       }
 
-      if (staffInvite) {
+      if (role === 'staff') {
+        const { data: matchingStaff, error: staffLookupError } = await supabase
+          .from('staff_members')
+          .select('id, business_id, name, email, invite_status')
+          .eq('email', cleanEmail)
+          .is('user_id', null)
+          .limit(1)
+          .maybeSingle()
+
+        if (staffLookupError) {
+          setError(staffLookupError.message)
+          setLoading(false)
+          return
+        }
+
+        if (!matchingStaff) {
+          setError(t('register.noStaffInvite', 'No staff profile was found for this email. Ask the business to add this exact email to their staff list, then try again.'))
+          setLoading(false)
+          return
+        }
+
         const { error: staffLinkError } = await supabase
           .from('staff_members')
           .update({
             user_id: data.user.id,
             invite_status: 'linked'
           })
-          .eq('id', staffInvite.id)
+          .eq('id', matchingStaff.id)
 
         if (staffLinkError) {
           setError(staffLinkError.message)
@@ -358,21 +334,12 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          {detectedStaffInvite && (
-            <div className="card" style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.28)', marginBottom: '1rem' }}>
-              <p className="small" style={{ color: 'var(--success)' }}>{t('register.staffInviteFound', 'Staff invite found')}</p>
-              <strong>{detectedStaffInvite.name}</strong>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('register.staffInviteBody', 'This email matches a staff invite. Your account will be linked after registration.')}
-              </p>
-            </div>
-          )}
 
-          {role === 'staff' && !detectedStaffInvite && email.trim().includes('@') && (
+          {role === 'staff' && (
             <div className="card" style={{ background: 'rgba(255,190,11,0.08)', borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
-              <p className="small" style={{ color: 'var(--warning)' }}>{t('register.noStaffInviteTitle', 'No staff invite found')}</p>
+              <p className="small" style={{ color: 'var(--warning)' }}>{t('register.staffNotice.title', 'Staff account linking')}</p>
               <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('register.noStaffInviteBody', 'Ask the business to add your email to their staff list first.')}
+                {t('register.staffNotice.body', 'Use the exact email your business added to their staff list. Mirëbook will check and link your staff profile after your account is created.')}
               </p>
             </div>
           )}
