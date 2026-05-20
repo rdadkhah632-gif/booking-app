@@ -17,6 +17,11 @@ export default function RegisterPage() {
     return 'en'
   })
   const [role, setRole] = useState<'customer' | 'business' | 'staff'>('customer')
+  const [businessName, setBusinessName] = useState('')
+  const [businessPhone, setBusinessPhone] = useState('')
+  const [businessCategory, setBusinessCategory] = useState('')
+  const [businessCity, setBusinessCity] = useState('')
+  const [businessCountry, setBusinessCountry] = useState('Albania')
   const [detectedStaffInvite, setDetectedStaffInvite] = useState<{
     id: string
     business_id: string
@@ -147,6 +152,38 @@ export default function RegisterPage() {
       return
     }
 
+    if (role === 'business') {
+      if (!businessName.trim()) {
+        setError(t('register.business.nameRequired', 'Business name is required.'))
+        setLoading(false)
+        return
+      }
+
+      if (!businessPhone.trim()) {
+        setError(t('register.business.phoneRequired', 'Business phone is required.'))
+        setLoading(false)
+        return
+      }
+
+      if (!businessCategory.trim()) {
+        setError(t('register.business.categoryRequired', 'Business category is required.'))
+        setLoading(false)
+        return
+      }
+
+      if (!businessCity.trim()) {
+        setError(t('register.business.cityRequired', 'Business city is required.'))
+        setLoading(false)
+        return
+      }
+
+      if (!businessCountry.trim()) {
+        setError(t('register.business.countryRequired', 'Business country is required.'))
+        setLoading(false)
+        return
+      }
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
       password,
@@ -195,6 +232,26 @@ export default function RegisterPage() {
 
         if (staffLinkError) {
           setError(staffLinkError.message)
+          setLoading(false)
+          return
+        }
+      }
+
+      if (role === 'business') {
+        const { error: businessError } = await supabase
+          .from('businesses')
+          .insert({
+            user_id: data.user.id,
+            name: businessName.trim(),
+            phone: businessPhone.trim(),
+            category: businessCategory.trim(),
+            city: businessCity.trim(),
+            country: businessCountry.trim(),
+            published: false
+          })
+
+        if (businessError) {
+          setError(businessError.message)
           setLoading(false)
           return
         }
@@ -363,6 +420,63 @@ export default function RegisterPage() {
               </select>
             </label>
 
+            {role === 'business' && (
+              <div className="register-business-fields">
+                <div>
+                  <p className="small muted">{t('register.business.kicker', 'Business quick setup')}</p>
+                  <h3>{t('register.business.title', 'Tell us about your business')}</h3>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('register.business.body', 'These details create your starter business profile. You can complete services, staff, images and opening hours after signing in.')}
+                  </p>
+                </div>
+
+                <input
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  placeholder={t('register.business.namePlaceholder', 'Business name')}
+                  required={role === 'business'}
+                />
+
+                <input
+                  value={businessPhone}
+                  onChange={(e) => setBusinessPhone(e.target.value)}
+                  placeholder={t('register.business.phonePlaceholder', 'Business phone')}
+                  required={role === 'business'}
+                />
+
+                <select
+                  value={businessCategory}
+                  onChange={(e) => setBusinessCategory(e.target.value)}
+                  required={role === 'business'}
+                >
+                  <option value="">{t('register.business.categoryPlaceholder', 'Choose business category')}</option>
+                  <option value="Barber">{t('categories.barber', 'Barber')}</option>
+                  <option value="Hair salon">{t('categories.hairSalon', 'Hair salon')}</option>
+                  <option value="Nails">{t('categories.nails', 'Nails')}</option>
+                  <option value="Beauty">{t('categories.beauty', 'Beauty')}</option>
+                  <option value="Tattoo">{t('categories.tattoo', 'Tattoo')}</option>
+                  <option value="Pet grooming">{t('categories.petGrooming', 'Pet grooming')}</option>
+                  <option value="Other">{t('categories.other', 'Other')}</option>
+                </select>
+
+                <div className="register-business-location-grid">
+                  <input
+                    value={businessCity}
+                    onChange={(e) => setBusinessCity(e.target.value)}
+                    placeholder={t('register.business.cityPlaceholder', 'City')}
+                    required={role === 'business'}
+                  />
+
+                  <input
+                    value={businessCountry}
+                    onChange={(e) => setBusinessCountry(e.target.value)}
+                    placeholder={t('register.business.countryPlaceholder', 'Country')}
+                    required={role === 'business'}
+                  />
+                </div>
+              </div>
+            )}
+
             <button type="submit" disabled={loading} className="btn btn-accent">
               {loading
                 ? t('register.creating', 'Creating account...')
@@ -403,6 +517,25 @@ export default function RegisterPage() {
           display: none;
         }
 
+        .register-business-fields {
+          display: grid;
+          gap: 0.85rem;
+          padding: 1rem;
+          border: 1px solid rgba(255,107,53,0.22);
+          border-radius: var(--radius);
+          background: rgba(255,107,53,0.06);
+        }
+
+        .register-business-fields h3 {
+          font-family: var(--font-display);
+        }
+
+        .register-business-location-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
         @media (max-width: 760px) {
           .register-role-grid-top {
             display: none;
@@ -410,6 +543,10 @@ export default function RegisterPage() {
 
           .register-role-mobile {
             display: block;
+          }
+
+          .register-business-location-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
