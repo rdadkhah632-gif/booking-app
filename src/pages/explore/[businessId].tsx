@@ -952,6 +952,37 @@ const setupIssueMessages = useMemo(() => {
                 </p>
               </div>
             )}
+{selectedService && (
+  <div className="booking-step-stack">
+    <PublicBusinessStaffPicker
+      staffMembers={staffMembers}
+      selectedStaffId={staffFilter}
+      onSelectStaff={(staffId) => {
+        setStaffFilter(staffId)
+        setSelectedDate('')
+        setSelectedTime('')
+        setSelectedStaffChoice('any')
+      }}
+      availableStaffForSelectedService={selectableStaff}
+    />
+
+    <PublicBusinessAvailability
+      selectedDate={selectedDate}
+      availableSlots={timeSlotsForComponents}
+      selectedSlot={selectedSlotForComponents}
+      loadingSlots={false}
+      onDateChange={(date) => {
+        setSelectedDate(date)
+        setSelectedTime('')
+        setSelectedStaffChoice('any')
+      }}
+      onSelectSlot={(slot) => {
+        setSelectedTime(slot.label)
+        setSelectedStaffChoice(slot.staffMemberId || 'any')
+      }}
+    />
+  </div>
+)}
           </section>
 
           <PublicBusinessSummary
@@ -1216,6 +1247,11 @@ const setupIssueMessages = useMemo(() => {
     .booking-summary-panel .btn {
       width: 100%;
     }
+.booking-step-stack {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
   }
 `}</style>
 </main>
