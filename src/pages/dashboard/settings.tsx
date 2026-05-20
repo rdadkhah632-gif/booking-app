@@ -250,6 +250,33 @@ export default function DashboardSettingsPage() {
             onSelectBusiness={selectBusiness}
           />
 
+          <div className="card settings-tools-card">
+            <div>
+              <p className="small muted">{t('dashboardSettings.tools.kicker', 'Business tools')}</p>
+              <h3>{t('dashboardSettings.tools.title', 'More business controls')}</h3>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {t('dashboardSettings.tools.body', 'Manage availability, billing and support from here without crowding the main sidebar.')}
+              </p>
+            </div>
+
+            <div className="settings-tools-grid">
+              <Link href="/dashboard/availability" className="settings-tool-link">
+                <strong>{t('dashboardSettings.tools.availability', 'Availability')}</strong>
+                <span>{t('dashboardSettings.tools.availabilityBody', 'Set business-wide opening days and hours.')}</span>
+              </Link>
+
+              <Link href="/dashboard/billing" className="settings-tool-link">
+                <strong>{t('dashboardSettings.tools.billing', 'Billing')}</strong>
+                <span>{t('dashboardSettings.tools.billingBody', 'View plan, trial and payment settings.')}</span>
+              </Link>
+
+              <Link href="/support/business" className="settings-tool-link">
+                <strong>{t('dashboardSettings.tools.support', 'Business support')}</strong>
+                <span>{t('dashboardSettings.tools.supportBody', 'Get help with setup, bookings or account changes.')}</span>
+              </Link>
+            </div>
+          </div>
+
           <div className="settings-grid">
             <BookingApprovalSettings
               settings={settings}
@@ -300,6 +327,35 @@ export default function DashboardSettingsPage() {
           gap: 0.75rem;
           flex-wrap: wrap;
           justify-content: flex-end;
+        }
+
+        .settings-tools-card {
+          display: grid;
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .settings-tools-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .settings-tool-link {
+          display: grid;
+          gap: 0.35rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        .settings-tool-link span {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          line-height: 1.4;
         }
 
         .settings-grid {
@@ -396,8 +452,10 @@ export default function DashboardSettingsPage() {
         @media (max-width: 640px) {
           .settings-hero,
           .settings-final-actions,
-          .settings-mode-grid {
+          .settings-mode-grid,
+          .settings-tools-grid {
             display: grid;
+            grid-template-columns: 1fr;
           }
 
           .settings-hero-actions,

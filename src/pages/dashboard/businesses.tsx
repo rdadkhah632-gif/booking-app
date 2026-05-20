@@ -375,19 +375,42 @@ export default function Businesses() {
   return (
     <DashboardLayout
       title={t('dashboardBusinesses.pageTitle', businesses.length > 0 ? 'Business profile' : 'Create your business')}
-      subtitle={t('dashboardBusinesses.pageSubtitle', businesses.length > 0 ? 'Manage the business customers see on Mirëbook. Services, staff and availability are managed from the sidebar.' : 'Create your first business profile, then add services, staff, availability and publish it to Mirëbook.')}
+      subtitle={t('dashboardBusinesses.pageSubtitle', businesses.length > 0 ? 'Manage the public profile customers see when they book with you.' : 'Create your first business profile, then add services, staff, availability and publish it to Mirëbook.')}
     >
-      <BusinessSetupHero />
+      {businesses.length === 0 && <BusinessSetupHero />}
 
-      <BusinessSetupStats stats={dashboardStats} />
+      {businesses.length === 0 && <BusinessSetupStats stats={dashboardStats} />}
 
-      <CreateBusinessCard
-        value={newName}
-        loading={loading}
-        existingBusinessCount={businesses.length}
-        onChange={setNewName}
-        onSubmit={createBusiness}
-      />
+      {businesses.length === 0 && (
+        <CreateBusinessCard
+          value={newName}
+          loading={loading}
+          existingBusinessCount={businesses.length}
+          onChange={setNewName}
+          onSubmit={createBusiness}
+        />
+      )}
+
+      {businesses.length > 0 && (
+        <div className="card business-profile-actions">
+          <div>
+            <p className="small muted">{t('dashboardBusinesses.profileTools.kicker', 'Business tools')}</p>
+            <h3>{t('dashboardBusinesses.profileTools.title', 'Profile and public page')}</h3>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {t('dashboardBusinesses.profileTools.body', 'Keep your profile accurate, preview what customers see, or contact support if you need another business or location added to your account.')}
+            </p>
+          </div>
+
+          <div className="business-profile-action-buttons">
+            <a href={`/explore/${businesses[0].id}`} className="btn btn-accent">
+              {t('dashboardBusinesses.profileTools.preview', 'Preview public page')}
+            </a>
+            <a href="/support/business" className="btn btn-ghost">
+              {t('dashboardBusinesses.create.requestAnother', 'Request another business')}
+            </a>
+          </div>
+        </div>
+      )}
 
       {success && (
         <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
@@ -437,6 +460,34 @@ export default function Businesses() {
         .business-profile-list {
           display: grid;
           gap: 1.25rem;
+        }
+
+        .business-profile-actions {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+        }
+
+        .business-profile-action-buttons {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 700px) {
+          .business-profile-actions {
+            display: grid;
+          }
+
+          .business-profile-action-buttons,
+          .business-profile-action-buttons :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
         }
       `}</style>
     </DashboardLayout>
