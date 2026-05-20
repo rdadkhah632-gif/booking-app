@@ -243,31 +243,12 @@ export default function DashboardSettingsPage() {
             </div>
           )}
 
-          <div className="card settings-tools-card">
-            <div>
-              <p className="small muted">{t('dashboardSettings.tools.kicker', 'Business tools')}</p>
-              <h3>{t('dashboardSettings.tools.title', 'More business controls')}</h3>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('dashboardSettings.tools.body', 'Manage availability, billing and support from here without crowding the main sidebar.')}
-              </p>
-            </div>
-
-            <div className="settings-tools-grid">
-              <Link href="/dashboard/availability" className="settings-tool-link">
-                <strong>{t('dashboardSettings.tools.availability', 'Availability')}</strong>
-                <span>{t('dashboardSettings.tools.availabilityBody', 'Set business-wide opening days and hours.')}</span>
-              </Link>
-
-              <Link href="/dashboard/billing" className="settings-tool-link">
-                <strong>{t('dashboardSettings.tools.billing', 'Billing')}</strong>
-                <span>{t('dashboardSettings.tools.billingBody', 'View plan, trial and payment settings.')}</span>
-              </Link>
-
-              <Link href="/support/business" className="settings-tool-link">
-                <strong>{t('dashboardSettings.tools.support', 'Business support')}</strong>
-                <span>{t('dashboardSettings.tools.supportBody', 'Get help with setup, bookings or account changes.')}</span>
-              </Link>
-            </div>
+          <div className="settings-section-heading">
+            <p className="small muted">{t('dashboardSettings.bookingSection.kicker', 'Booking settings')}</p>
+            <h2>{t('dashboardSettings.bookingSection.title', 'Rules and policies')}</h2>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {t('dashboardSettings.bookingSection.body', 'Control how customers book, how far ahead they can book, and what happens when they need to cancel or reschedule.')}
+            </p>
           </div>
 
           <div className="settings-grid">
@@ -293,6 +274,34 @@ export default function DashboardSettingsPage() {
             updateSetting={updateSetting}
           />
 
+          <div className="card settings-tools-card">
+            <div>
+              <p className="small muted">{t('dashboardSettings.tools.kicker', 'Related settings')}</p>
+              <h3>{t('dashboardSettings.tools.title', 'Other business controls')}</h3>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {t('dashboardSettings.tools.body', 'Use these when you need to adjust opening times, billing or business support.')}
+              </p>
+            </div>
+
+            <div className="settings-tools-grid">
+              <Link href="/dashboard/availability" className="settings-tool-link">
+                <strong>{t('dashboardSettings.tools.availability', 'Availability')}</strong>
+                <span>{t('dashboardSettings.tools.availabilityBody', 'Set business-wide opening days and hours.')}</span>
+              </Link>
+
+              <Link href="/dashboard/billing" className="settings-tool-link">
+                <strong>{t('dashboardSettings.tools.billing', 'Billing')}</strong>
+                <span>{t('dashboardSettings.tools.billingBody', 'View plan, trial and payment settings.')}</span>
+              </Link>
+
+              <Link href="/support/business" className="settings-tool-link">
+                <strong>{t('dashboardSettings.tools.support', 'Business support')}</strong>
+                <span>{t('dashboardSettings.tools.supportBody', 'Get help with setup, bookings or account changes.')}</span>
+              </Link>
+            </div>
+          </div>
+
+
           <BusinessSettingsActions
             selectedBusiness={selectedBusiness}
             publicHref={selectedBusinessPublicHref}
@@ -303,6 +312,14 @@ export default function DashboardSettingsPage() {
       )}
 
       <style jsx>{`
+        .settings-section-heading {
+          margin: 1.25rem 0 0.75rem;
+        }
+
+        .settings-section-heading h2 {
+          font-family: var(--font-display);
+          margin-top: 0.25rem;
+        }
         .settings-hero {
           display: flex;
           justify-content: space-between;
@@ -325,7 +342,7 @@ export default function DashboardSettingsPage() {
         .settings-tools-card {
           display: grid;
           gap: 1rem;
-          margin-bottom: 1rem;
+          margin: 1rem 0;
         }
 
         .settings-tools-grid {

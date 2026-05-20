@@ -506,79 +506,7 @@ export default function DashboardHome() {
 
       <SetupGuidanceList warnings={setupWarnings} />
 
-      <div className="card" style={{ marginTop: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <div>
-            <p className="small muted">{t('dashboardHome.moreTools.kicker', 'More tools')}</p>
-            <h3>{t('dashboardHome.moreTools.title', 'Manage the rest of your business')}</h3>
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardHome.moreTools.body', 'Quick access to business tools that do not need to sit in the main sidebar every day.')}
-            </p>
-          </div>
-        </div>
-
-        <div className="dashboard-more-tools-grid">
-          <Link href="/dashboard/analytics" className="dashboard-more-tool">
-            <strong>{t('dashboardHome.moreTools.insights', 'Insights')}</strong>
-            <span>{t('dashboardHome.moreTools.insightsBody', 'Review booking activity, service performance and estimated value.')}</span>
-          </Link>
-
-          <Link href="/dashboard/availability" className="dashboard-more-tool">
-            <strong>{t('dashboardHome.moreTools.availability', 'Availability')}</strong>
-            <span>{t('dashboardHome.moreTools.availabilityBody', 'Set business-wide working days and opening times.')}</span>
-          </Link>
-
-          <Link href="/dashboard/billing" className="dashboard-more-tool">
-            <strong>{t('dashboardHome.moreTools.billing', 'Billing')}</strong>
-            <span>{t('dashboardHome.moreTools.billingBody', 'Manage plan, trial and payment settings when billing is enabled.')}</span>
-          </Link>
-
-          <Link href={primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'} className="dashboard-more-tool">
-            <strong>{t('dashboardHome.moreTools.preview', 'Preview page')}</strong>
-            <span>{t('dashboardHome.moreTools.previewBody', 'See the public page customers use to book your business.')}</span>
-          </Link>
-        </div>
-      </div>
-
       <DashboardShortcuts />
-
-      <style jsx>{`
-        .dashboard-more-tools-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 0.75rem;
-          margin-top: 1rem;
-        }
-
-        .dashboard-more-tool {
-          display: grid;
-          gap: 0.35rem;
-          padding: 1rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: var(--surface-2);
-          color: var(--text);
-          text-decoration: none;
-        }
-
-        .dashboard-more-tool span {
-          color: var(--text-muted);
-          font-size: 0.85rem;
-          line-height: 1.4;
-        }
-
-        @media (max-width: 960px) {
-          .dashboard-more-tools-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-
-        @media (max-width: 620px) {
-          .dashboard-more-tools-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </DashboardLayout>
   )
 }
