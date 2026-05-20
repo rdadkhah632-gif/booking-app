@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { useI18n } from '@/lib/useI18n'
+import LanguageToggle from './LanguageToggle'
 import { NavProps, notificationLabel } from './navTypes'
 
 export default function BusinessNav({ notificationCount, primaryBusinessId, onLogout }: NavProps) {
@@ -41,6 +42,8 @@ export default function BusinessNav({ notificationCount, primaryBusinessId, onLo
       <Link href="/support/business" className="muted nav-wide-only">
         {t('nav.businessSupport')}
       </Link>
+
+      <LanguageToggle />
 
       <Link href="/account" className="muted">
         {t('nav.account')}
