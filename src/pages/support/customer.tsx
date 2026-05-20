@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type Profile = {
   id: string
@@ -11,23 +12,24 @@ type Profile = {
   phone?: string | null
 }
 
-const CUSTOMER_SUBJECTS = [
-  'Booking is pending',
-  'Need to cancel or reschedule',
-  'Business has not responded',
-  'Wrong booking details',
-  'Account or login issue',
-  'Notifications issue',
-  'Other customer issue'
+const CUSTOMER_SUBJECT_KEYS = [
+  'support.customer.subject.pending',
+  'support.customer.subject.cancel',
+  'support.customer.subject.noResponse',
+  'support.customer.subject.wrongDetails',
+  'support.customer.subject.account',
+  'support.customer.subject.notifications',
+  'support.customer.subject.other'
 ]
 
 export default function CustomerSupportPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [subject, setSubject] = useState(CUSTOMER_SUBJECTS[0])
+  const [subject, setSubject] = useState(CUSTOMER_SUBJECT_KEYS[0])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -67,12 +69,12 @@ export default function CustomerSupportPage() {
     e.preventDefault()
 
     if (!profile) {
-      setError('You need to be logged in to send a support message.')
+      setError(t('support.customer.loginRequired'))
       return
     }
 
     if (!subject.trim() || !message.trim()) {
-      setError('Choose a subject and write a message before sending.')
+      setError(t('support.customer.validation'))
       return
     }
 
@@ -87,10 +89,10 @@ export default function CustomerSupportPage() {
         account_type: 'customer',
         name: name.trim() || profile.full_name || null,
         email: email.trim() || profile.email || null,
-        subject: subject.trim(),
+        subject: t(subject).trim(),
         message: message.trim(),
         status: 'open',
-        priority: subject.includes('Business has not responded') ? 'high' : 'normal'
+        priority: subject === 'support.customer.subject.noResponse' ? 'high' : 'normal'
       })
 
     setSending(false)
@@ -100,9 +102,9 @@ export default function CustomerSupportPage() {
       return
     }
 
-    setSuccess('Your customer support request has been sent. You can continue using Mirëbook while it is reviewed.')
+    setSuccess(t('support.customer.success'))
     setMessage('')
-    setSubject(CUSTOMER_SUBJECTS[0])
+    setSubject(CUSTOMER_SUBJECT_KEYS[0])
   }
 
   return (
@@ -112,16 +114,16 @@ export default function CustomerSupportPage() {
       <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: 'var(--accent)' }}>Customer support</p>
-            <h1 className="page-title">Help with bookings and your customer account</h1>
+            <p className="small" style={{ color: 'var(--accent)' }}>{t('nav.customerSupport')}</p>
+            <h1 className="page-title">{t('support.customer.heroTitle')}</h1>
             <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              Use this form for booking requests, pending approvals, cancellations, reschedules, business contact issues and customer notifications.
+              {t('support.customer.heroBody')}
             </p>
           </div>
 
           {loading && (
             <div className="card">
-              <p className="muted">Loading your account...</p>
+              <p className="muted">{t('support.customer.loading')}</p>
             </div>
           )}
 
@@ -141,36 +143,36 @@ export default function CustomerSupportPage() {
             <div className="support-grid">
               <form onSubmit={submitSupportMessage} className="card support-form-card">
                 <div>
-                  <p className="small muted">Support request</p>
-                  <h2>Send customer support message</h2>
+                  <p className="small muted">{t('support.customer.formKicker')}</p>
+                  <h2>{t('support.customer.formTitle')}</h2>
                 </div>
 
                 <div className="support-form-grid">
                   <div>
-                    <label className="small muted">Name</label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t('common.name')}</label>
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('support.customer.namePlaceholder')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div>
-                    <label className="small muted">Email</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t('common.email')}</label>
+                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('support.customer.emailPlaceholder')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">What is this about?</label>
+                    <label className="small muted">{t('support.customer.subjectLabel')}</label>
                     <select value={subject} onChange={(e) => setSubject(e.target.value)} style={{ marginTop: '0.4rem' }}>
-                      {CUSTOMER_SUBJECTS.map((item) => (
-                        <option key={item} value={item}>{item}</option>
+                      {CUSTOMER_SUBJECT_KEYS.map((item) => (
+                        <option key={item} value={item}>{t(item)}</option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">Message</label>
+                    <label className="small muted">{t('support.customer.messageLabel')}</label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Explain what happened. Include booking time, business name or anything useful."
+                      placeholder={t('support.customer.messagePlaceholder')}
                       rows={7}
                       style={{ marginTop: '0.4rem' }}
                     />
@@ -178,43 +180,43 @@ export default function CustomerSupportPage() {
                 </div>
 
                 <button type="submit" className="btn btn-accent" disabled={sending}>
-                  {sending ? 'Sending...' : 'Send customer support request'}
+                  {sending ? t('support.customer.sending') : t('support.customer.sendButton')}
                 </button>
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">Useful customer links</p>
-                <h2>Quick actions</h2>
+                <p className="small muted">{t('support.customer.linksKicker')}</p>
+                <h2>{t('support.customer.quickActions')}</h2>
 
                 <div className="support-link-list">
                   <Link href="/my-bookings" className="support-link-row">
                     <span>
-                      <strong>My bookings</strong>
-                      <small>Track bookings, pending approvals and reschedules.</small>
+                      <strong>{t('nav.myBookings')}</strong>
+                      <small>{t('support.customer.bookingsBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/notifications" className="support-link-row">
                     <span>
-                      <strong>Notifications</strong>
-                      <small>View customer notices and booking updates.</small>
+                      <strong>{t('nav.notifications')}</strong>
+                      <small>{t('support.customer.notificationsBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/explore" className="support-link-row">
                     <span>
-                      <strong>Explore</strong>
-                      <small>Find businesses and make new bookings.</small>
+                      <strong>{t('nav.explore')}</strong>
+                      <small>{t('support.customer.exploreBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/account" className="support-link-row">
                     <span>
-                      <strong>Account</strong>
-                      <small>Update your name and phone number.</small>
+                      <strong>{t('nav.account')}</strong>
+                      <small>{t('support.customer.accountBody')}</small>
                     </span>
                     <span>→</span>
                   </Link>

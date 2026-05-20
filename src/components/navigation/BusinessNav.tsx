@@ -4,16 +4,15 @@ import { NavProps, notificationLabel } from './navTypes'
 
 export default function BusinessNav({ notificationCount, primaryBusinessId, onLogout }: NavProps) {
   const { t } = useI18n()
-  const publicBusinessHref = primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
 
   return (
     <>
       <Link href="/dashboard" className="muted">
-        Dashboard
+        {t('account.dashboard')}
       </Link>
 
       <Link href="/dashboard/bookings" className="muted">
-        Bookings
+        {t('support.business.bookings')}
       </Link>
 
       <Link
@@ -24,23 +23,19 @@ export default function BusinessNav({ notificationCount, primaryBusinessId, onLo
       </Link>
 
       <Link href="/dashboard/businesses" className="muted">
-        Setup
+        {t('account.setup')}
       </Link>
 
       <Link href="/dashboard/services" className="muted nav-wide-only">
-        Services
+        {t('support.business.services')}
       </Link>
 
       <Link href="/dashboard/staff" className="muted nav-wide-only">
-        Staff
+        {t('support.business.staff')}
       </Link>
 
       <Link href="/dashboard/settings" className="muted nav-wide-only">
-        Settings
-      </Link>
-
-      <Link href={publicBusinessHref} className="muted nav-wide-only">
-        Public page
+        {t('nav.settings')}
       </Link>
 
       <Link href="/support/business" className="muted nav-wide-only">

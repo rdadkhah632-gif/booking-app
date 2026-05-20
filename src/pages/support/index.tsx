@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import AuthNav from '@/components/AuthNav'
+import { useI18n } from '@/lib/useI18n'
 
 export default function SupportPage() {
+  const { t } = useI18n()
+
   return (
     <main>
       <AuthNav />
@@ -10,43 +13,43 @@ export default function SupportPage() {
         <div className="support-shell">
           <div className="card support-hero">
             <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook support</p>
-            <h1 className="page-title">What do you need help with?</h1>
+            <h1 className="page-title">{t('support.title')}</h1>
             <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              Choose the support route that matches your account type. Customer, business and staff issues are handled separately so the help flow stays focused.
+              {t('support.subtitle')}
             </p>
           </div>
 
           <div className="support-route-grid">
             <Link href="/support/customer" className="card support-route-card">
               <p className="small muted">Customers</p>
-              <h2>Booking support</h2>
+              <h2>{t('support.customer.title')}</h2>
               <p className="muted small" style={{ marginTop: '0.5rem' }}>
-                Get help with booking requests, confirmations, cancellations, reschedules, notifications and account issues as a customer.
+                {t('support.customer.body')}
               </p>
               <span className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                Customer support
+                {t('nav.customerSupport')}
               </span>
             </Link>
 
             <Link href="/support/business" className="card support-route-card">
               <p className="small muted">Businesses</p>
-              <h2>Business support</h2>
+              <h2>{t('support.business.title')}</h2>
               <p className="muted small" style={{ marginTop: '0.5rem' }}>
-                Get help with business setup, publishing, services, staff, working hours, booking approval, trials and subscription access.
+                {t('support.business.body')}
               </p>
               <span className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                Business support
+                {t('nav.businessSupport')}
               </span>
             </Link>
 
             <Link href="/support/staff" className="card support-route-card">
               <p className="small muted">Staff</p>
-              <h2>Staff support</h2>
+              <h2>{t('support.staff.title')}</h2>
               <p className="muted small" style={{ marginTop: '0.5rem' }}>
-                Get help with staff account linking, schedule access, availability problems or being connected to the wrong business.
+                {t('support.staff.body')}
               </p>
               <span className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                Staff support
+                {t('support.staff.title')}
               </span>
             </Link>
           </div>
@@ -61,7 +64,7 @@ export default function SupportPage() {
               <div className="support-link-list">
                 <Link href="/my-bookings" className="support-link-row">
                   <span>
-                    <strong>My bookings</strong>
+                    <strong>{t('nav.myBookings')}</strong>
                     <small>Track customer appointments, pending requests and reschedules.</small>
                   </span>
                   <span>→</span>
@@ -85,7 +88,7 @@ export default function SupportPage() {
 
                 <Link href="/account" className="support-link-row">
                   <span>
-                    <strong>Account settings</strong>
+                    <strong>{t('nav.account')}</strong>
                     <small>Update name, phone and open your connected workspaces.</small>
                   </span>
                   <span>→</span>
@@ -107,15 +110,15 @@ export default function SupportPage() {
 
               <div className="support-contact-actions">
                 <Link href="/privacy" className="btn btn-ghost">
-                  Privacy policy
+                  {t('common.privacy')}
                 </Link>
 
                 <Link href="/terms" className="btn btn-ghost">
-                  Terms of service
+                  {t('common.terms')}
                 </Link>
 
                 <Link href="/explore" className="btn btn-accent">
-                  Explore Mirëbook
+                  {t('home.cta.explore')}
                 </Link>
               </div>
             </div>
