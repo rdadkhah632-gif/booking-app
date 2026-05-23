@@ -103,12 +103,12 @@ export default function StaffSupportPage() {
     e.preventDefault()
 
     if (!profile) {
-      setError(t('support.staff.loginRequired'))
+      setError(t('support.staff.loginRequired', 'You need to be logged in as staff to contact staff support.'))
       return
     }
 
     if (!subject.trim() || !message.trim()) {
-      setError(t('support.staff.validation'))
+      setError(t('support.staff.validation', 'Choose a subject and write a message before sending.'))
       return
     }
 
@@ -124,7 +124,7 @@ export default function StaffSupportPage() {
         account_type: 'staff',
         name: name.trim() || staffProfile?.name || profile.full_name || null,
         email: email.trim() || staffProfile?.email || profile.email || null,
-        subject: t(subject).trim(),
+        subject: staffSubjectLabel(subject).trim(),
         message: message.trim(),
         status: 'open',
         priority: subject === 'support.staff.subject.access' || subject === 'support.staff.subject.wrongBusiness' ? 'high' : 'normal'
@@ -137,9 +137,23 @@ export default function StaffSupportPage() {
       return
     }
 
-    setSuccess(t('support.staff.success'))
+    setSuccess(t('support.staff.success', 'Your support message has been sent.'))
     setMessage('')
     setSubject(STAFF_SUBJECT_KEYS[0])
+  }
+
+  function staffSubjectLabel(key: string) {
+    const fallback: Record<string, string> = {
+      'support.staff.subject.access': 'Account access or login issue',
+      'support.staff.subject.availability': 'Availability or working hours',
+      'support.staff.subject.schedule': 'Schedule or booking question',
+      'support.staff.subject.wrongBusiness': 'Wrong business or staff profile',
+      'support.staff.subject.email': 'Email or profile details',
+      'support.staff.subject.notifications': 'Notifications issue',
+      'support.staff.subject.other': 'Other staff support request'
+    }
+
+    return t(key, fallback[key] || 'Staff support request')
   }
 
   return (
@@ -149,16 +163,16 @@ export default function StaffSupportPage() {
       <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: 'var(--accent)' }}>{t('support.staff.title')}</p>
-            <h1 className="page-title">{t('support.staff.heroTitle')}</h1>
+            <p className="small" style={{ color: 'var(--accent)' }}>{t('support.staff.title', 'Staff support')}</p>
+            <h1 className="page-title">{t('support.staff.heroTitle', 'Get help with your staff account')}</h1>
             <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              {t('support.staff.heroBody')}
+              {t('support.staff.heroBody', 'Contact support about staff access, availability, bookings, notifications or your linked business profile.')}
             </p>
           </div>
 
           {loading && (
             <div className="card">
-              <p className="muted">{t('support.staff.loading')}</p>
+              <p className="muted">{t('support.staff.loading', 'Loading staff support...')}</p>
             </div>
           )}
 
@@ -178,26 +192,26 @@ export default function StaffSupportPage() {
             <div className="support-grid">
               <form onSubmit={submitSupportMessage} className="card support-form-card">
                 <div>
-                  <p className="small muted">{t('support.staff.formKicker')}</p>
-                  <h2>{t('support.staff.formTitle')}</h2>
+                  <p className="small muted">{t('support.staff.formKicker', 'Support request')}</p>
+                  <h2>{t('support.staff.formTitle', 'Send a message to support')}</h2>
                 </div>
 
                 {staffProfile && (
                   <div className="staff-context-box">
-                    <p className="small muted">{t('support.staff.linkedProfile')}</p>
-                    <strong>{staffProfile.name || name || t('support.staff.memberFallback')}</strong>
+                    <p className="small muted">{t('support.staff.linkedProfile', 'Linked staff profile')}</p>
+                    <strong>{staffProfile.name || name || t('support.staff.memberFallback', 'Staff member')}</strong>
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      {staffProfile.role_title || staffProfile.permission_role || t('support.staff.roleFallback')} · {staffProfile.business_name || t('support.staff.businessFallback')} · {staffProfile.active ? t('support.staff.status.active') : t('support.staff.status.hidden')}
+                      {staffProfile.role_title || staffProfile.permission_role || t('support.staff.roleFallback', 'Staff role')} · {staffProfile.business_name || t('support.staff.businessFallback', 'Business not shown')} · {staffProfile.active ? t('support.staff.status.active', 'Active') : t('support.staff.status.hidden', 'Hidden')}
                     </p>
                   </div>
                 )}
 
                 {!staffProfile && (
                   <div className="staff-context-box warning">
-                    <p className="small muted">{t('support.staff.noProfile')}</p>
-                    <strong>{t('support.staff.noProfileTitle')}</strong>
+                    <p className="small muted">{t('support.staff.noProfile', 'No linked staff profile')}</p>
+                    <strong>{t('support.staff.noProfileTitle', 'Your account is not linked to a staff profile yet')}</strong>
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      {t('support.staff.noProfileBody')}
+                      {t('support.staff.noProfileBody', 'Ask the business owner to add your exact email address to their staff list, then log in again.')}
                     </p>
                   </div>
                 )}
@@ -205,29 +219,29 @@ export default function StaffSupportPage() {
                 <div className="support-form-grid">
                   <div>
                     <label className="small muted">{t('common.name')}</label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('support.staff.namePlaceholder')} style={{ marginTop: '0.4rem' }} />
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('support.staff.namePlaceholder', 'Your name')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div>
                     <label className="small muted">{t('common.email')}</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('support.staff.emailPlaceholder')} style={{ marginTop: '0.4rem' }} />
+                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('support.staff.emailPlaceholder', 'Your email')} style={{ marginTop: '0.4rem' }} />
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">{t('support.staff.subjectLabel')}</label>
+                    <label className="small muted">{t('support.staff.subjectLabel', 'Subject')}</label>
                     <select value={subject} onChange={(e) => setSubject(e.target.value)} style={{ marginTop: '0.4rem' }}>
                       {STAFF_SUBJECT_KEYS.map((item) => (
-                        <option key={item} value={item}>{t(item)}</option>
+                        <option key={item} value={item}>{staffSubjectLabel(item)}</option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">{t('support.staff.messageLabel')}</label>
+                    <label className="small muted">{t('support.staff.messageLabel', 'Message')}</label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder={t('support.staff.messagePlaceholder')}
+                      placeholder={t('support.staff.messagePlaceholder', 'Tell us what you need help with...')}
                       rows={7}
                       style={{ marginTop: '0.4rem' }}
                     />
@@ -235,27 +249,27 @@ export default function StaffSupportPage() {
                 </div>
 
                 <button type="submit" className="btn btn-accent" disabled={sending}>
-                  {sending ? t('support.staff.sending') : t('support.staff.sendButton')}
+                  {sending ? t('support.staff.sending', 'Sending...') : t('support.staff.sendButton', 'Send support message')}
                 </button>
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">{t('support.staff.linksKicker')}</p>
-                <h2>{t('support.staff.quickActions')}</h2>
+                <p className="small muted">{t('support.staff.linksKicker', 'Quick links')}</p>
+                <h2>{t('support.staff.quickActions', 'Staff actions')}</h2>
 
                 <div className="support-link-list">
                   <Link href="/staff" className="support-link-row">
                     <span>
-                      <strong>{t('support.staff.schedule')}</strong>
-                      <small>{t('support.staff.scheduleBody')}</small>
+                      <strong>{t('support.staff.schedule', 'Schedule')}</strong>
+                      <small>{t('support.staff.scheduleBody', 'View your upcoming staff bookings.')}</small>
                     </span>
                     <span>→</span>
                   </Link>
 
                   <Link href="/staff/availability" className="support-link-row">
                     <span>
-                      <strong>{t('support.staff.availability')}</strong>
-                      <small>{t('support.staff.availabilityBody')}</small>
+                      <strong>{t('support.staff.availability', 'Availability')}</strong>
+                      <small>{t('support.staff.availabilityBody', 'Update your working days and hours.')}</small>
                     </span>
                     <span>→</span>
                   </Link>
@@ -263,7 +277,7 @@ export default function StaffSupportPage() {
                   <Link href="/account" className="support-link-row">
                     <span>
                       <strong>{t('nav.account')}</strong>
-                      <small>{t('support.staff.accountBody')}</small>
+                      <small>{t('support.staff.accountBody', 'Update your personal account details.')}</small>
                     </span>
                     <span>→</span>
                   </Link>
@@ -271,7 +285,7 @@ export default function StaffSupportPage() {
                   <Link href="/support/business" className="support-link-row">
                     <span>
                       <strong>{t('nav.businessSupport')}</strong>
-                      <small>{t('support.staff.businessSupportBody')}</small>
+                      <small>{t('support.staff.businessSupportBody', 'Contact the business support route if you manage the business account.')}</small>
                     </span>
                     <span>→</span>
                   </Link>
