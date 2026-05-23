@@ -16,6 +16,7 @@ type BusinessRow = {
 
 type StaffRow = {
   id: string
+  business_id?: string | null
 }
 
 type ProfileRow = {
@@ -77,7 +78,7 @@ export default function AuthNav() {
 
       const { data: linkedStaff } = await supabase
         .from('staff_members')
-        .select('id')
+        .select('id, business_id')
         .eq('user_id', session.user.id)
         .limit(1)
         .returns<StaffRow[]>()
@@ -93,10 +94,10 @@ export default function AuthNav() {
 
       if (adminUser) {
         setRole('admin')
-      } else if (profile?.role === 'business' || ownsBusiness) {
-        setRole('business')
       } else if (hasStaffProfile) {
         setRole('staff')
+      } else if (profile?.role === 'business' || ownsBusiness) {
+        setRole('business')
       } else {
         setRole('customer')
       }
@@ -106,6 +107,8 @@ export default function AuthNav() {
         activePath: router.pathname,
         adminUser,
         ownsBusiness,
+        hasStaffProfile,
+        staffId: linkedStaff?.[0]?.id || null,
         businessIds: (ownedBusinesses || []).map((business) => business.id)
       })
 
@@ -124,6 +127,8 @@ export default function AuthNav() {
     activePath: string
     adminUser: boolean
     ownsBusiness: boolean
+    hasStaffProfile: boolean
+    staffId: string | null
     businessIds: string[]
   }) {
     if (params.adminUser && isAdminRoute(params.activePath)) {
@@ -134,6 +139,24 @@ export default function AuthNav() {
         .is('read_at', null)
 
       setNotificationCount(unreadAdminCount || 0)
+      return
+    }
+
+    if (params.hasStaffProfile && params.staffId) {
+      const { count: unreadStaffNotifications } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', params.userId)
+        .in('audience', ['staff', 'general'])
+        .is('read_at', null)
+
+      const { count: staffPendingBookings } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('staff_member_id', params.staffId)
+        .eq('status', 'pending')
+
+      setNotificationCount((unreadStaffNotifications || 0) + (staffPendingBookings || 0))
       return
     }
 
