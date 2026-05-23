@@ -1,19 +1,19 @@
 import Link from 'next/link'
 import { NavProps, notificationLabel } from './navTypes'
 
-export default function StaffNav({ onLogout }: NavProps) {
+export default function StaffNav({ notificationCount, onLogout }: NavProps) {
   return (
     <>
       <Link href="/staff" className="muted">
-        Schedule
+        My schedule
       </Link>
 
       <Link href="/staff/availability" className="muted">
-        Availability
+        My availability
       </Link>
 
-      <Link href="/notifications" className="muted nav-wide-only">
-        {notificationLabel('staff', 0)}
+      <Link href="/staff/notifications" className="muted nav-wide-only">
+        {notificationLabel('staff', notificationCount)}
       </Link>
 
       <Link href="/support/staff" className="muted nav-wide-only">
@@ -21,7 +21,7 @@ export default function StaffNav({ onLogout }: NavProps) {
       </Link>
 
       <Link href="/account" className="muted">
-        Account
+        My account
       </Link>
 
       <button onClick={onLogout} className="btn btn-ghost">
