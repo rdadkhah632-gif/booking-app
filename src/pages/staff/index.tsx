@@ -636,37 +636,6 @@ export default function StaffDashboardPage() {
         {staffProfile && (
           <>
             <div className="staff-hero-card card">
-            <div className="card staff-assigned-services-card">
-              <div>
-                <p className="small muted">Assigned services</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  What you can be booked for
-                </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  These services are controlled by the business owner. Your availability affects when customers can book you for them.
-                </p>
-              </div>
-
-              {assignedServices.length === 0 ? (
-                <div className="card" style={{ background: 'var(--surface-2)', marginTop: '1rem' }}>
-                  <p className="small muted">
-                    No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.
-                  </p>
-                </div>
-              ) : (
-                <div className="staff-assigned-services-grid">
-                  {assignedServices.map((service) => (
-                    <div key={service.id} className="staff-assigned-service-pill">
-                      <strong>{service.name}</strong>
-                      <span>
-                        {service.duration_minutes ? `${service.duration_minutes} min` : 'Duration not set'}
-                        {service.price ? ` · £${Number(service.price).toFixed(2)}` : ''}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
               <div className="staff-profile-row">
                 <div className="staff-avatar">
                   {staffProfile.image_url ? (
@@ -708,6 +677,38 @@ export default function StaffDashboardPage() {
                   Account
                 </Link>
               </div>
+            </div>
+
+            <div className="card staff-assigned-services-card">
+              <div>
+                <p className="small muted">Assigned services</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+                  What you can be booked for
+                </h2>
+                <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                  These services are controlled by the business owner. Your availability affects when customers can book you for them.
+                </p>
+              </div>
+
+              {assignedServices.length === 0 ? (
+                <div className="card" style={{ background: 'var(--surface-2)', marginTop: '1rem' }}>
+                  <p className="small muted">
+                    No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.
+                  </p>
+                </div>
+              ) : (
+                <div className="staff-assigned-services-grid">
+                  {assignedServices.map((service) => (
+                    <div key={service.id} className="staff-assigned-service-pill">
+                      <strong>{service.name}</strong>
+                      <span>
+                        {service.duration_minutes ? `${service.duration_minutes} min` : 'Duration not set'}
+                        {service.price ? ` · £${Number(service.price).toFixed(2)}` : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {success && (
@@ -779,15 +780,27 @@ export default function StaffDashboardPage() {
                     Your appointments
                   </h2>
                   <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    Mirëbook shows only appointments assigned to your staff profile. Service pricing, business profile and customer approvals stay with the business owner.
+                    Mirëbook shows only appointments assigned to your staff profile. Use the date picker to look further ahead than the quick 7-day view.
                   </p>
                 </div>
 
                 <div className="staff-filter-controls">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => {
+                      setSelectedDate(formatDateInputValue(new Date()))
+                      setStatusFilter('active')
+                    }}
+                  >
+                    Today
+                  </button>
+
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
+                    aria-label="Choose schedule date"
                   />
 
                   <select
@@ -827,9 +840,9 @@ export default function StaffDashboardPage() {
             <div className="staff-booking-list">
               {selectedDateBookings.length === 0 && (
                 <div className="card">
-                  <h3>No appointments in this view</h3>
+                  <h3>No appointments for this date</h3>
                   <p className="muted" style={{ marginTop: '0.5rem' }}>
-                    Try another date or status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.
+                    Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.
                   </p>
                 </div>
               )}
