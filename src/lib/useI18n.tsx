@@ -118,18 +118,26 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       setStoredLocale(nextLocale)
       setLocaleState(nextLocale)
 
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('mirebook:locale-changed'))
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
 
       if (session) {
-        await supabase
+        const { error } = await supabase
           .from('profiles')
           .update({ preferred_language: nextLocale })
           .eq('id', session.user.id)
+
+        if (error) {
+          console.error('Could not save language preference', error)
+        }
       }
     }
 
     function toggleLocale() {
-      setLocale(locale === 'en' ? 'sq' : 'en')
+      void setLocale(locale === 'en' ? 'sq' : 'en')
     }
 
     function t(key: string, fallback?: string) {
