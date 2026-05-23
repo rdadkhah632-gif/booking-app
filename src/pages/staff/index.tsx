@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 
 type StaffMember = {
@@ -123,13 +124,6 @@ function formatDateInputValue(date: Date) {
   return `${yyyy}-${mm}-${dd}`
 }
 
-function statusLabel(status: string) {
-  if (status === 'pending') return 'Pending approval'
-  if (status === 'confirmed') return 'Confirmed'
-  if (status === 'completed') return 'Completed'
-  if (status === 'cancelled') return 'Cancelled'
-  return status
-}
 
 function statusColor(status: string) {
   if (status === 'pending') return 'var(--accent)'
@@ -176,6 +170,15 @@ function firstRequestServiceName(request: BookingRequest) {
 
 export default function StaffDashboardPage() {
   const router = useRouter()
+  const { t } = useI18n()
+  function statusLabel(status: string) {
+    if (status === 'pending') return t('staff.status.pending', 'Pending approval')
+    if (status === 'confirmed') return t('staff.status.confirmed', 'Confirmed')
+    if (status === 'completed') return t('staff.status.completed', 'Completed')
+    if (status === 'cancelled') return t('staff.status.cancelled', 'Cancelled')
+    return status
+  }
+
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -376,7 +379,7 @@ export default function StaffDashboardPage() {
 
       setLoading(false)
     } catch (err: any) {
-      setError(err.message || 'Could not load your staff dashboard.')
+      setError(err.message || t('staff.error.loadDashboard', 'Could not load your staff dashboard.'))
       setLoading(false)
     }
   }
@@ -450,9 +453,9 @@ export default function StaffDashboardPage() {
         date,
         dateString,
         label: index === 0
-          ? 'Today'
+          ? t('staff.schedule.today', 'Today')
           : index === 1
-            ? 'Tomorrow'
+            ? t('staff.schedule.tomorrow', 'Tomorrow')
             : date.toLocaleDateString(undefined, { weekday: 'short' }),
         subLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
         count
@@ -484,7 +487,7 @@ export default function StaffDashboardPage() {
     return new Date(booking.start_at).toLocaleString()
   }
   async function markBookingComplete(booking: Booking) {
-    const confirmed = confirm('Mark this appointment as completed?')
+    const confirmed = confirm(t('staff.booking.confirmComplete', 'Mark this appointment as completed?'))
     if (!confirmed) return
 
     setActionLoadingId(booking.id)
@@ -506,11 +509,11 @@ export default function StaffDashboardPage() {
     await createCustomerNotification({
       booking,
       type: 'booking_completed',
-      title: 'Appointment completed',
-      message: `Your appointment for ${firstServiceName(booking) || 'your appointment'} on ${appointmentDateTime(booking)} has been marked as completed by staff.`,
+      title: t('staff.notification.completedTitle', 'Appointment completed'),
+      message: `${t('staff.notification.completedStart', 'Your appointment for')} ${firstServiceName(booking) || t('staff.fallback.appointment', 'your appointment')} ${t('staff.notification.completedMiddle', 'on')} ${appointmentDateTime(booking)} ${t('staff.notification.completedEnd', 'has been marked as completed by staff.')}`,
       actionUrl: '/my-bookings'
     })
-    setSuccess('Appointment marked as completed.')
+    setSuccess(t('staff.booking.completedSuccess', 'Appointment marked as completed.'))
     await loadStaffDashboard()
   }
 
@@ -528,7 +531,7 @@ export default function StaffDashboardPage() {
         <div className="staff-booking-card-inner">
           <div>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <h3>{booking.customer_name || 'Customer'}</h3>
+              <h3>{booking.customer_name || t('common.customer', 'Customer')}</h3>
               <span
                 className="small"
                 style={{
@@ -543,7 +546,7 @@ export default function StaffDashboardPage() {
             </div>
 
             <p className="muted small" style={{ marginTop: '0.35rem' }}>
-              {firstServiceName(booking) || 'Service'} · {booking.duration_minutes} minutes
+              {firstServiceName(booking) || t('common.service', 'Service')} · {booking.duration_minutes} {t('common.minutes', 'minutes')}
             </p>
 
             <p className="small muted" style={{ marginTop: '0.35rem' }}>
@@ -559,14 +562,14 @@ export default function StaffDashboardPage() {
               <div className="staff-notes-box">
                 {booking.customer_notes && (
                   <>
-                    <p className="small muted">Customer note</p>
+                    <p className="small muted">{t('staff.booking.customerNote', 'Customer note')}</p>
                     <p className="small">{booking.customer_notes}</p>
                   </>
                 )}
 
                 {booking.internal_notes && (
                   <>
-                    <p className="small muted" style={{ marginTop: booking.customer_notes ? '0.65rem' : 0 }}>Internal note</p>
+                    <p className="small muted" style={{ marginTop: booking.customer_notes ? '0.65rem' : 0 }}>{t('staff.booking.internalNote', 'Internal note')}</p>
                     <p className="small">{booking.internal_notes}</p>
                   </>
                 )}
@@ -577,13 +580,13 @@ export default function StaffDashboardPage() {
           <div className="staff-booking-actions">
            {booking.customer_email && (
   <a href={`mailto:${booking.customer_email}`} className="btn btn-ghost">
-    Email customer
+    {t('staff.booking.emailCustomer', 'Email customer')}
   </a>
 )}
 
 {!booking.customer_email && booking.customer_phone && (
   <a href={`tel:${booking.customer_phone}`} className="btn btn-ghost">
-    Call customer
+    {t('staff.booking.callCustomer', 'Call customer')}
   </a>
 )}
 
@@ -594,7 +597,7 @@ export default function StaffDashboardPage() {
                 disabled={isWorking}
                 onClick={() => markBookingComplete(booking)}
               >
-                {isWorking ? 'Saving...' : 'Mark complete'}
+                {isWorking ? t('common.saving', 'Saving...') : t('staff.booking.markComplete', 'Mark complete')}
               </button>
             )}
           </div>
@@ -609,7 +612,7 @@ export default function StaffDashboardPage() {
         <AuthNav />
         <section className="container" style={{ paddingTop: 40, paddingBottom: 48 }}>
           <div className="card">
-            <p className="muted">Loading your Mirëbook staff schedule...</p>
+            <p className="muted">{t('staff.loadingSchedule', 'Loading your Mirëbook staff schedule...')}</p>
           </div>
         </section>
       </main>
@@ -623,19 +626,19 @@ export default function StaffDashboardPage() {
       <section className="container" style={{ paddingTop: 32, paddingBottom: 48 }}>
         {!staffProfile && (
           <div className="card">
-            <p className="small" style={{ color: 'var(--warning)' }}>No staff profile linked</p>
+            <p className="small" style={{ color: 'var(--warning)' }}>{t('staff.noProfile.kicker', 'No staff profile linked')}</p>
             <h1 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-              Ask the business owner to invite you
+              {t('staff.noProfile.title', 'Ask the business owner to invite you')}
             </h1>
             <p className="muted" style={{ marginTop: '0.75rem' }}>
-              This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.
+              {t('staff.noProfile.body', 'This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.')}
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               <Link href="/support/staff" className="btn btn-ghost">
-  Staff support
-</Link>
+                {t('nav.staffSupport', 'Staff support')}
+              </Link>
               <Link href="/account" className="btn btn-accent">
-                Account settings
+                {t('account.title', 'Account settings')}
               </Link>
             </div>
           </div>
@@ -663,45 +666,45 @@ export default function StaffDashboardPage() {
 
                 <div>
                   <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
-                    Staff workspace
+                    {t('staff.workspace.kicker', 'Staff workspace')}
                   </p>
                   <h1 className="page-title">
-                    Hi {staffProfile.name}
+                    {t('staff.workspace.greeting', 'Hi')} {staffProfile.name}
                   </h1>
                   <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                    {(Array.isArray(staffProfile.businesses) ? staffProfile.businesses[0]?.name : staffProfile.businesses?.name) || 'Your business'} · {staffProfile.role_title || staffProfile.permission_role || 'Staff member'} · Staff-only workspace
+                    {(Array.isArray(staffProfile.businesses) ? staffProfile.businesses[0]?.name : staffProfile.businesses?.name) || t('staff.fallback.business', 'Your business')} · {staffProfile.role_title || staffProfile.permission_role || t('staff.fallback.member', 'Staff member')} · {t('staff.workspace.staffOnly', 'Staff-only workspace')}
                   </p>
                 </div>
               </div>
 
               <div className="staff-hero-actions">
                 <Link href="/staff/availability" className="btn btn-accent">
-                  Update availability
+                  {t('staff.actions.updateAvailability', 'Update availability')}
                 </Link>
-            <Link href="/support/staff" className="btn btn-ghost">
-  Staff support
-</Link>
+                <Link href="/support/staff" className="btn btn-ghost">
+                  {t('nav.staffSupport', 'Staff support')}
+                </Link>
                 <Link href="/account" className="btn btn-ghost">
-                  Account
+                  {t('nav.account', 'Account')}
                 </Link>
               </div>
             </div>
 
             <div className="card staff-assigned-services-card">
               <div>
-                <p className="small muted">Assigned services</p>
+                <p className="small muted">{t('staff.assignedServices.kicker', 'Assigned services')}</p>
                 <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  What you can be booked for
+                  {t('staff.assignedServices.title', 'What you can be booked for')}
                 </h2>
                 <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  These services are controlled by the business owner. Your availability affects when customers can book you for them.
+                  {t('staff.assignedServices.body', 'These services are controlled by the business owner. Your availability affects when customers can book you for them.')}
                 </p>
               </div>
 
               {assignedServices.length === 0 ? (
                 <div className="card" style={{ background: 'var(--surface-2)', marginTop: '1rem' }}>
                   <p className="small muted">
-                    No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.
+                    {t('staff.assignedServices.empty', 'No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.')}
                   </p>
                 </div>
               ) : (
@@ -710,7 +713,7 @@ export default function StaffDashboardPage() {
                     <div key={service.id} className="staff-assigned-service-pill">
                       <strong>{service.name}</strong>
                       <span>
-                        {service.duration_minutes ? `${service.duration_minutes} min` : 'Duration not set'}
+                        {service.duration_minutes ? `${service.duration_minutes} min` : t('staff.assignedServices.durationNotSet', 'Duration not set')}
                         {service.price ? ` · £${Number(service.price).toFixed(2)}` : ''}
                       </span>
                     </div>
@@ -736,42 +739,42 @@ export default function StaffDashboardPage() {
                 setSelectedDate(formatDateInputValue(new Date()))
                 setStatusFilter('active')
               }}>
-                <p className="small muted">Today</p>
+                <p className="small muted">{t('staff.summary.today', 'Today')}</p>
                 <h3>{todayBookings.length}</h3>
-                <p className="small muted">Assigned appointments today</p>
+                <p className="small muted">{t('staff.summary.todayBody', 'Assigned appointments today')}</p>
               </button>
 
               <button type="button" className="card staff-summary-button" onClick={() => setStatusFilter('active')}>
-                <p className="small muted">Upcoming</p>
+                <p className="small muted">{t('staff.summary.upcoming', 'Upcoming')}</p>
                 <h3>{upcomingBookings.length}</h3>
-                <p className="small muted">Pending and confirmed future bookings</p>
+                <p className="small muted">{t('staff.summary.upcomingBody', 'Pending and confirmed future bookings')}</p>
               </button>
 
               <button type="button" className="card staff-summary-button" onClick={() => setStatusFilter('history')}>
-                <p className="small muted">Completed</p>
+                <p className="small muted">{t('staff.summary.completed', 'Completed')}</p>
                 <h3>{completedBookings.length}</h3>
-                <p className="small muted">Appointments you have completed</p>
+                <p className="small muted">{t('staff.summary.completedBody', 'Appointments you have completed')}</p>
               </button>
             </div>
 
             {requests.length > 0 && (
               <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,107,53,0.35)' }}>
-                <p className="small" style={{ color: 'var(--accent)' }}>Customer actions</p>
-                <h3 style={{ marginTop: '0.25rem' }}>{requests.length} pending request{requests.length === 1 ? '' : 's'}</h3>
+                <p className="small" style={{ color: 'var(--accent)' }}>{t('staff.requests.kicker', 'Customer actions')}</p>
+                <h3 style={{ marginTop: '0.25rem' }}>{requests.length} {requests.length === 1 ? t('staff.requests.pendingSingle', 'pending request') : t('staff.requests.pendingPlural', 'pending requests')}</h3>
                 <p className="muted small" style={{ marginTop: '0.4rem' }}>
-                  These requests are visible here for awareness. Business owners or managers approve or decline them from the business dashboard; staff can prepare around likely schedule changes.
+                  {t('staff.requests.body', 'These requests are visible here for awareness. Business owners or managers approve or decline them from the business dashboard; staff can prepare around likely schedule changes.')}
                 </p>
 
                 <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
                   {requests.slice(0, 3).map((request) => (
                     <div key={request.id} className="card" style={{ background: 'var(--surface-2)' }}>
-                      <strong>{firstRequestBooking(request)?.customer_name || 'Customer'}</strong>
+                      <strong>{firstRequestBooking(request)?.customer_name || t('common.customer', 'Customer')}</strong>
                       <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                        {request.request_type} · {firstRequestServiceName(request) || 'Service'}
+                        {request.request_type} · {firstRequestServiceName(request) || t('common.service', 'Service')}
                       </p>
                       {request.requested_start_at && (
                         <p className="small muted">
-                          Requested: {new Date(request.requested_start_at).toLocaleString()}
+                          {t('staff.requests.requested', 'Requested:')} {new Date(request.requested_start_at).toLocaleString()}
                         </p>
                       )}
                     </div>
@@ -783,12 +786,12 @@ export default function StaffDashboardPage() {
             <div className="card" style={{ marginBottom: '1.5rem' }}>
               <div className="staff-schedule-header">
                 <div>
-                  <p className="small muted">Schedule</p>
+                  <p className="small muted">{t('staff.schedule.kicker', 'Schedule')}</p>
                   <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                    Your appointments
+                    {t('staff.schedule.title', 'Your appointments')}
                   </h2>
                   <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    Mirëbook shows only appointments assigned to your staff profile. Use the date picker to look further ahead than the quick 7-day view.
+                    {t('staff.schedule.body', 'Mirëbook shows only appointments assigned to your staff profile. Use the date picker to look further ahead than the quick 7-day view.')}
                   </p>
                 </div>
 
@@ -801,7 +804,7 @@ export default function StaffDashboardPage() {
                       setStatusFilter('active')
                     }}
                   >
-                    Today
+                    {t('staff.schedule.today', 'Today')}
                   </button>
 
                   <input
@@ -815,13 +818,13 @@ export default function StaffDashboardPage() {
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                   >
-                    <option value="active">Active</option>
-                    <option value="all">All statuses</option>
-                    <option value="pending">Pending approval</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="history">History</option>
+                    <option value="active">{t('staff.filter.active', 'Active')}</option>
+                    <option value="all">{t('staff.filter.all', 'All statuses')}</option>
+                    <option value="pending">{t('staff.status.pending', 'Pending approval')}</option>
+                    <option value="confirmed">{t('staff.status.confirmed', 'Confirmed')}</option>
+                    <option value="completed">{t('staff.status.completed', 'Completed')}</option>
+                    <option value="cancelled">{t('staff.status.cancelled', 'Cancelled')}</option>
+                    <option value="history">{t('staff.filter.history', 'History')}</option>
                   </select>
                 </div>
               </div>
@@ -839,7 +842,7 @@ export default function StaffDashboardPage() {
                   >
                     <strong>{day.label}</strong>
                     <span>{day.subLabel}</span>
-                    <small>{day.count} active</small>
+                    <small>{day.count} {t('staff.filter.activeLower', 'active')}</small>
                   </button>
                 ))}
               </div>
@@ -848,9 +851,9 @@ export default function StaffDashboardPage() {
             <div className="staff-booking-list">
               {selectedDateBookings.length === 0 && (
                 <div className="card">
-                  <h3>No appointments for this date</h3>
+                  <h3>{t('staff.empty.title', 'No appointments for this date')}</h3>
                   <p className="muted" style={{ marginTop: '0.5rem' }}>
-                    Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.
+                    {t('staff.empty.body', 'Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.')}
                   </p>
                 </div>
               )}

@@ -2,6 +2,7 @@ import AuthNav from '@/components/AuthNav'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type Notification = {
   id: string
@@ -14,6 +15,7 @@ type Notification = {
 }
 
 export default function StaffNotificationsPage() {
+  const { t } = useI18n()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -96,27 +98,27 @@ export default function StaffNotificationsPage() {
       <section className="page-shell">
         <div className="page-header-row" style={{ marginBottom: '1.5rem' }}>
           <div>
-            <p className="small muted">Staff notifications</p>
-            <h1 className="page-title">Updates</h1>
+            <p className="small muted">{t('staffNotifications.kicker', 'Staff notifications')}</p>
+            <h1 className="page-title">{t('staffNotifications.title', 'Updates')}</h1>
             <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-              Staff-only updates for your schedule, profile and assigned bookings.
+              {t('staffNotifications.body', 'Staff-only updates for your schedule, profile and assigned bookings.')}
             </p>
           </div>
 
           <div className="page-header-actions">
             <Link href="/staff" className="btn btn-ghost">
-              My schedule
+              {t('staff.schedule.title', 'My schedule')}
             </Link>
 
             <button type="button" onClick={markAllRead} disabled={unreadCount === 0} className="btn btn-accent">
-              {unreadCount > 0 ? `Mark ${unreadCount} read` : 'All read'}
+              {unreadCount > 0 ? `${t('staffNotifications.mark', 'Mark')} ${unreadCount} ${t('staffNotifications.read', 'read')}` : t('staffNotifications.allRead', 'All read')}
             </button>
           </div>
         </div>
 
         {loading && (
           <div className="card">
-            <p className="muted">Loading staff notifications...</p>
+            <p className="muted">{t('staffNotifications.loading', 'Loading staff notifications...')}</p>
           </div>
         )}
 
@@ -128,9 +130,9 @@ export default function StaffNotificationsPage() {
 
         {!loading && !error && notifications.length === 0 && (
           <div className="card">
-            <h3>No staff notifications yet</h3>
+            <h3>{t('staffNotifications.empty.title', 'No staff notifications yet')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Booking updates, schedule changes and staff account messages will appear here.
+              {t('staffNotifications.empty.body', 'Booking updates, schedule changes and staff account messages will appear here.')}
             </p>
           </div>
         )}
@@ -141,12 +143,12 @@ export default function StaffNotificationsPage() {
               <div key={item.id} className="card staff-notification-card">
                 <div>
                   <div className="staff-notification-title-row">
-                    <strong>{item.title || 'Staff update'}</strong>
-                    {!item.read_at && <span className="badge badge-accent">New</span>}
+                    <strong>{item.title || t('staffNotifications.fallback.title', 'Staff update')}</strong>
+                    {!item.read_at && <span className="badge badge-accent">{t('common.new', 'New')}</span>}
                   </div>
 
                   <p className="muted" style={{ marginTop: '0.4rem' }}>
-                    {item.message || 'You have a new staff update.'}
+                    {item.message || t('staffNotifications.fallback.message', 'You have a new staff update.')}
                   </p>
 
                   <p className="small muted" style={{ marginTop: '0.55rem' }}>
@@ -157,13 +159,13 @@ export default function StaffNotificationsPage() {
                 <div className="staff-notification-actions">
                   {item.action_url && item.action_url.startsWith('/staff') && (
                     <Link href={item.action_url} className="btn btn-ghost">
-                      Open
+                      {t('common.open', 'Open')}
                     </Link>
                   )}
 
                   {!item.read_at && (
                     <button type="button" onClick={() => markRead(item.id)} className="btn btn-ghost">
-                      Mark read
+                      {t('staffNotifications.markRead', 'Mark read')}
                     </button>
                   )}
                 </div>

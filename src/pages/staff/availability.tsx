@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type StaffMember = {
   id: string
@@ -74,18 +75,18 @@ function defaultAvailabilityRow(staff: StaffMember, day: number): StaffAvailabil
   }
 }
 
-function businessName(staff: StaffMember | null) {
-  if (!staff?.businesses) return 'Your business'
+function businessName(staff: StaffMember | null, fallback = 'Your business') {
+  if (!staff?.businesses) return fallback
   return Array.isArray(staff.businesses)
-    ? staff.businesses[0]?.name || 'Your business'
-    : staff.businesses.name || 'Your business'
+    ? staff.businesses[0]?.name || fallback
+    : staff.businesses.name || fallback
 }
 
-function serviceName(booking: Booking) {
-  if (!booking.services) return 'Service'
+function serviceName(booking: Booking, fallback = 'Service') {
+  if (!booking.services) return fallback
   return Array.isArray(booking.services)
-    ? booking.services[0]?.name || 'Service'
-    : booking.services.name || 'Service'
+    ? booking.services[0]?.name || fallback
+    : booking.services.name || fallback
 }
 
 function addMinutes(date: Date, minutes: number) {
@@ -103,6 +104,7 @@ function formatTimeRange(booking: Booking) {
 
 export default function StaffAvailabilityPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null)
   const [availability, setAvailability] = useState<StaffAvailability[]>([])
@@ -250,7 +252,7 @@ export default function StaffAvailabilityPage() {
       setUpcomingBookings((bookingData || []) as unknown as Booking[])
       setLoading(false)
     } catch (err: any) {
-      setError(err.message || 'Could not load staff availability.')
+      setError(err.message || t('staffAvailability.error.load', 'Could not load staff availability.'))
       setLoading(false)
     }
   }
@@ -339,7 +341,7 @@ export default function StaffAvailabilityPage() {
     })
 
     if (invalidRow) {
-      setError('Each open day needs a valid start and end time. End time must be after start time.')
+      setError(t('staffAvailability.error.invalidTime', 'Each open day needs a valid start and end time. End time must be after start time.'))
       setSuccess(null)
       return
     }
@@ -370,7 +372,7 @@ export default function StaffAvailabilityPage() {
       return
     }
 
-    setSuccess('Availability saved. Mirëbook will use these staff hours when customers book with you.')
+    setSuccess(t('staffAvailability.success.saved', 'Availability saved. Mirëbook will use these staff hours when customers book with you.'))
     await loadPage()
   }
 
@@ -380,7 +382,7 @@ export default function StaffAvailabilityPage() {
         <AuthNav />
         <section className="container" style={{ paddingTop: 40 }}>
           <div className="card">
-            <p className="muted">Loading your Mirëbook availability...</p>
+            <p className="muted">{t('staffAvailability.loading', 'Loading your Mirëbook availability...')}</p>
           </div>
         </section>
       </main>
@@ -394,22 +396,22 @@ export default function StaffAvailabilityPage() {
       <section className="container" style={{ paddingTop: 32, paddingBottom: 48 }}>
         {!staffProfile && (
           <div className="card">
-            <p className="small" style={{ color: 'var(--warning)' }}>No staff profile linked</p>
+            <p className="small" style={{ color: 'var(--warning)' }}>{t('staff.noProfile.kicker', 'No staff profile linked')}</p>
             <h1 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-              Staff availability is not available yet
+              {t('staffAvailability.noProfile.title', 'Staff availability is not available yet')}
             </h1>
             <p className="muted" style={{ marginTop: '0.75rem' }}>
-              Ask the business owner to add your email in their Staff setup page, then log in again. Staff accounts can manage their own schedule and availability, but business profile, services and pricing stay with the business owner.
+              {t('staffAvailability.noProfile.body', 'Ask the business owner to add your email in their Staff setup page, then log in again. Staff accounts can manage their own schedule and availability, but business profile, services and pricing stay with the business owner.')}
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               <Link href="/staff" className="btn btn-accent">
-                Back to staff dashboard
+                {t('staff.actions.backToDashboard', 'Back to staff dashboard')}
               </Link>
               <Link href="/account" className="btn btn-ghost">
-                Account settings
+                {t('account.title', 'Account settings')}
               </Link>
-              <Link href="/support" className="btn btn-ghost">
-                Staff support
+              <Link href="/support/staff" className="btn btn-ghost">
+                {t('nav.staffSupport', 'Staff support')}
               </Link>
             </div>
           </div>
@@ -420,33 +422,33 @@ export default function StaffAvailabilityPage() {
             <div className="staff-availability-hero card">
               <div>
                 <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
-                  Staff availability
+                  {t('staffAvailability.kicker', 'Staff availability')}
                 </p>
                 <h1 className="page-title">
-                  Your working hours
+                  {t('staffAvailability.title', 'Your working hours')}
                 </h1>
                 <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                  {staffProfile.name} · {businessName(staffProfile)} · Staff-only availability
+                  {staffProfile.name} · {businessName(staffProfile, t('staff.fallback.business', 'Your business'))} · {t('staffAvailability.staffOnly', 'Staff-only availability')}
                 </p>
               </div>
 
               <div className="staff-availability-actions">
                 <Link href="/staff" className="btn btn-ghost">
-                  Staff dashboard
+                  {t('staff.actions.dashboard', 'Staff dashboard')}
                 </Link>
                 <Link href="/account" className="btn btn-ghost">
-                  Account
+                  {t('nav.account', 'Account')}
                 </Link>
                 <button type="button" className="btn btn-accent" onClick={saveAvailability} disabled={saving}>
-                  {saving ? 'Saving...' : 'Save availability'}
+                  {saving ? t('common.saving', 'Saving...') : t('staffAvailability.actions.saveAvailability', 'Save availability')}
                 </button>
               </div>
             </div>
             <div className="card staff-availability-note">
-              <p className="small muted">Staff workspace</p>
-              <h3>These hours only control your own bookable staff availability.</h3>
+              <p className="small muted">{t('staff.workspace.kicker', 'Staff workspace')}</p>
+              <h3>{t('staffAvailability.note.title', 'These hours only control your own bookable staff availability.')}</h3>
               <p className="muted small" style={{ marginTop: '0.45rem' }}>
-                Customers can only book you when the business is published, the service is active, the service is assigned to you, and both business and staff availability allow the selected time. Existing bookings are not moved automatically when you change these hours.
+                {t('staffAvailability.note.body', 'Customers can only book you when the business is published, the service is active, the service is assigned to you, and both business and staff availability allow the selected time. Existing bookings are not moved automatically when you change these hours.')}
               </p>
             </div>
             {error && (
@@ -463,45 +465,45 @@ export default function StaffAvailabilityPage() {
 
             <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
               <div className="card">
-                <p className="small muted">Open days</p>
+                <p className="small muted">{t('staffAvailability.summary.openDays', 'Open days')}</p>
                 <h3>{openDays}</h3>
-                <p className="small muted">Days customers can book you if assigned services are active</p>
+                <p className="small muted">{t('staffAvailability.summary.openDaysBody', 'Days customers can book you if assigned services are active')}</p>
               </div>
 
               <div className="card">
-                <p className="small muted">Closed days</p>
+                <p className="small muted">{t('staffAvailability.summary.closedDays', 'Closed days')}</p>
                 <h3>{closedDays}</h3>
-                <p className="small muted">Days hidden from booking</p>
+                <p className="small muted">{t('staffAvailability.summary.closedDaysBody', 'Days hidden from booking')}</p>
               </div>
 
               <div className="card">
-                <p className="small muted">Weekly hours</p>
+                <p className="small muted">{t('staffAvailability.summary.weeklyHours', 'Weekly hours')}</p>
                 <h3>{totalWeeklyHours.toFixed(1)}</h3>
-                <p className="small muted">Estimated weekly staff availability</p>
+                <p className="small muted">{t('staffAvailability.summary.weeklyHoursBody', 'Estimated weekly staff availability')}</p>
               </div>
             </div>
 
             <div className="card" style={{ marginBottom: '1.5rem' }}>
               <div className="staff-template-header">
                 <div>
-                  <p className="small muted">Quick templates</p>
+                  <p className="small muted">{t('staffAvailability.templates.kicker', 'Quick templates')}</p>
                   <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                    Start with a common schedule
+                    {t('staffAvailability.templates.title', 'Start with a common schedule')}
                   </h2>
                   <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    Templates only update the form. Press Save availability to apply changes.
+                    {t('staffAvailability.templates.body', 'Templates only update the form. Press Save availability to apply changes.')}
                   </p>
                 </div>
 
                 <div className="staff-template-actions">
                   <button type="button" className="btn btn-ghost" onClick={applyWeekdayTemplate}>
-                    Mon-Fri 9-5
+                    {t('staffAvailability.templates.weekday', 'Mon-Fri 9-5')}
                   </button>
                   <button type="button" className="btn btn-ghost" onClick={applyExtendedTemplate}>
-                    Mon-Sat 9-7
+                    {t('staffAvailability.templates.extended', 'Mon-Sat 9-7')}
                   </button>
                   <button type="button" className="btn btn-accent" onClick={saveAvailability} disabled={saving}>
-                    {saving ? 'Saving...' : 'Save changes'}
+                    {saving ? t('common.saving', 'Saving...') : t('common.saveChanges', 'Save changes')}
                   </button>
                 </div>
               </div>
@@ -525,14 +527,14 @@ export default function StaffAvailabilityPage() {
                           checked={!row.is_closed}
                           onChange={(e) => updateAvailabilityRow(day.day, 'is_closed', !e.target.checked)}
                         />
-                        <span>{row.is_closed ? 'Closed' : 'Open'}</span>
+                        <span>{row.is_closed ? t('staffAvailability.day.closed', 'Closed') : t('staffAvailability.day.open', 'Open')}</span>
                       </label>
                     </div>
 
                     {!row.is_closed ? (
                       <div className="staff-time-grid">
                         <label className="small muted">
-                          Start
+                          {t('staffAvailability.day.start', 'Start')}
                           <input
                             type="time"
                             value={row.start_time}
@@ -542,7 +544,7 @@ export default function StaffAvailabilityPage() {
                         </label>
 
                         <label className="small muted">
-                          End
+                          {t('staffAvailability.day.end', 'End')}
                           <input
                             type="time"
                             value={row.end_time}
@@ -553,7 +555,7 @@ export default function StaffAvailabilityPage() {
                       </div>
                     ) : (
                       <p className="muted small" style={{ marginTop: '0.85rem' }}>
-                        Customers cannot book you on this day unless the business reschedules an existing appointment manually.
+                        {t('staffAvailability.day.closedBody', 'Customers cannot book you on this day unless the business reschedules an existing appointment manually.')}
                       </p>
                     )}
                   </div>
@@ -564,35 +566,35 @@ export default function StaffAvailabilityPage() {
             <div className="card" style={{ marginTop: '1.5rem' }}>
               <div className="staff-template-header">
                 <div>
-                  <p className="small muted">Upcoming assigned bookings</p>
+                  <p className="small muted">{t('staffAvailability.upcoming.kicker', 'Upcoming assigned bookings')}</p>
                   <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                    Check existing appointments before changing hours
+                    {t('staffAvailability.upcoming.title', 'Check existing appointments before changing hours')}
                   </h2>
                   <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    Changing your availability affects new booking slots. Existing bookings stay in place unless the business reschedules them.
+                    {t('staffAvailability.upcoming.body', 'Changing your availability affects new booking slots. Existing bookings stay in place unless the business reschedules them.')}
                   </p>
                 </div>
 
                 <Link href="/staff" className="btn btn-ghost">
-                  View schedule
+                  {t('staffAvailability.upcoming.viewSchedule', 'View schedule')}
                 </Link>
               </div>
 
               <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
                 {upcomingBookings.length === 0 && (
-                  <p className="muted">No upcoming assigned bookings found. If you expected appointments here, ask the business owner to check staff assignment for each service.</p>
+                  <p className="muted">{t('staffAvailability.upcoming.empty', 'No upcoming assigned bookings found. If you expected appointments here, ask the business owner to check staff assignment for each service.')}</p>
                 )}
 
                 {upcomingBookings.map((booking) => (
                   <div key={booking.id} className="card" style={{ background: 'var(--surface-2)' }}>
                     <strong>{booking.customer_name}</strong>
                     <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                      {serviceName(booking)} · {new Date(booking.start_at).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · {formatTimeRange(booking)}
+                      {serviceName(booking, t('common.service', 'Service'))} · {new Date(booking.start_at).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · {formatTimeRange(booking)}
                     </p>
-                    <p className="small muted">Status: {booking.status}</p>
+                    <p className="small muted">{t('common.status', 'Status')}: {booking.status}</p>
                     {booking.status === 'pending' && (
                       <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                        Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.
+                        {t('staffAvailability.upcoming.pendingBody', 'Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.')}
                       </p>
                     )}
                   </div>
