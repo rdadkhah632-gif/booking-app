@@ -575,9 +575,17 @@ export default function StaffDashboardPage() {
           </div>
 
           <div className="staff-booking-actions">
-            <Link href={`/dashboard/customers/by-email?email=${encodeURIComponent(booking.customer_email || '')}&businessId=${booking.business_id}`} className="btn btn-ghost">
-              Customer
-            </Link>
+           {booking.customer_email && (
+  <a href={`mailto:${booking.customer_email}`} className="btn btn-ghost">
+    Email customer
+  </a>
+)}
+
+{!booking.customer_email && booking.customer_phone && (
+  <a href={`tel:${booking.customer_phone}`} className="btn btn-ghost">
+    Call customer
+  </a>
+)}
 
             {canComplete && (
               <button
@@ -623,9 +631,9 @@ export default function StaffDashboardPage() {
               This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-              <Link href="/support" className="btn btn-ghost">
-                Staff support
-              </Link>
+              <Link href="/support/staff" className="btn btn-ghost">
+  Staff support
+</Link>
               <Link href="/account" className="btn btn-accent">
                 Account settings
               </Link>
@@ -670,9 +678,9 @@ export default function StaffDashboardPage() {
                 <Link href="/staff/availability" className="btn btn-accent">
                   Update availability
                 </Link>
-                <Link href="/notifications" className="btn btn-ghost">
-                  Updates
-                </Link>
+            <Link href="/support/staff" className="btn btn-ghost">
+  Staff support
+</Link>
                 <Link href="/account" className="btn btn-ghost">
                   Account
                 </Link>
