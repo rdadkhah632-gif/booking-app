@@ -8,12 +8,16 @@ export default function StaffNav({ notificationCount, onLogout }: NavProps) {
         My schedule
       </Link>
 
+      <Link href="/staff/calendar" className="muted">
+        Calendar
+      </Link>
+
       <Link href="/staff/availability" className="muted">
         My availability
       </Link>
 
-      <Link href="/staff/notifications" className="muted nav-wide-only">
-        {notificationLabel('staff', notificationCount)}
+      <Link href="/staff/notifications" className="muted nav-wide-only" aria-label="Staff notifications">
+        🔔{notificationCount > 0 ? ` ${notificationCount}` : ''}
       </Link>
 
       <Link href="/support/staff" className="muted nav-wide-only">
