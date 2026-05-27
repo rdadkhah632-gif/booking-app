@@ -1444,6 +1444,15 @@ export const en: TranslationTree = {
 'nav.role.staff': 'Staff',
 'nav.role.customer': 'Customer',
 'nav.checkingAccount': 'Checking account...',
+'staff.today.kicker': 'Today’s workflow',
+'staff.today.titleWithBookings': 'You have appointments today',
+'staff.today.titleEmpty': 'No appointments today',
+'staff.today.nextPrefix': 'Next appointment',
+'staff.today.noUpcoming': 'No upcoming assigned appointments are waiting in your schedule.',
+'staff.today.viewToday': 'View today',
+'staff.booking.upcomingHint': 'Upcoming appointment',
+'staff.filter.activeSingle': 'active booking',
+'staff.filter.activePlural': 'active bookings',
 
 
 

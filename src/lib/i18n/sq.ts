@@ -1449,6 +1449,15 @@ export const sq: TranslationTree = {
 'nav.role.staff': 'Staf',
 'nav.role.customer': 'Klient',
 'nav.checkingAccount': 'Duke kontrolluar llogarinë...',
+'staff.today.kicker': 'Rrjedha e sotme',
+'staff.today.titleWithBookings': 'Ke takime sot',
+'staff.today.titleEmpty': 'Nuk ke takime sot',
+'staff.today.nextPrefix': 'Takimi i radhës',
+'staff.today.noUpcoming': 'Nuk ka takime të ardhshme të caktuara në orarin tënd.',
+'staff.today.viewToday': 'Shiko sot',
+'staff.booking.upcomingHint': 'Takim i ardhshëm',
+'staff.filter.activeSingle': 'rezervim aktiv',
+'staff.filter.activePlural': 'rezervime aktive',
 
 
 
