@@ -1427,8 +1427,18 @@ export const en: TranslationTree = {
 'staff.requests.requested': 'Requested:',
 'staff.empty.title': 'No appointments for this date',
 'staff.empty.body': 'Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.',
-
-
+'dashboardBusinesses.ownerStaff.title': 'Do you take appointments?',
+'dashboardBusinesses.ownerStaff.body': 'Add yourself as bookable staff only if customers can book appointments with you. You can close days you do not work later.',
+'dashboardBusinesses.ownerStaff.creating': 'Adding you as staff...',
+'dashboardBusinesses.ownerStaff.success': 'You have been added as bookable staff. Assign services and set your working hours from the Staff page.',
+'dashboardBusinesses.ownerStaff.alreadyLinked': 'You already have a staff profile for this business. Use the Staff page to manage your services and hours.',
+'dashboardBusinesses.ownerStaff.linkedTitle': 'You are bookable staff',
+'dashboardBusinesses.ownerStaff.linkedBody': 'Your owner account is linked to a staff profile. Manage your services and working hours from Staff.',
+'dashboardBusinesses.ownerStaff.defaultName': 'Business owner',
+'dashboardBusinesses.ownerStaff.roleTitle': 'Owner',
+'dashboardStaff.ownerAsStaff.kicker': 'Owner and staff roles',
+'dashboardStaff.ownerAsStaff.title': 'Only add people who can be booked by customers',
+'dashboardStaff.ownerAsStaff.body': 'Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.',
 
 
 

@@ -1432,6 +1432,18 @@ export const sq: TranslationTree = {
 'staff.requests.requested': 'Kërkuar:',
 'staff.empty.title': 'Nuk ka takime për këtë datë',
 'staff.empty.body': 'Provo një datë tjetër me zgjedhësin e datës, ose ndrysho filtrin e statusit. Nëse prisje takime këtu, kërkoji pronarit të kontrollojë caktimin e stafit për shërbimin.',
+'dashboardBusinesses.ownerStaff.title': 'A merrni rezervime?',
+'dashboardBusinesses.ownerStaff.body': 'Shto veten si staf i rezervueshëm vetëm nëse klientët mund të rezervojnë takime me ty. Mund t’i mbyllësh ditët kur nuk punon më vonë.',
+'dashboardBusinesses.ownerStaff.creating': 'Duke të shtuar si staf...',
+'dashboardBusinesses.ownerStaff.success': 'Je shtuar si staf i rezervueshëm. Cakto shërbimet dhe orarin tënd nga faqja e stafit.',
+'dashboardBusinesses.ownerStaff.alreadyLinked': 'Ti tashmë ke një profil stafi për këtë biznes. Përdor faqen e stafit për të menaxhuar shërbimet dhe orarin.',
+'dashboardBusinesses.ownerStaff.linkedTitle': 'Je staf i rezervueshëm',
+'dashboardBusinesses.ownerStaff.linkedBody': 'Llogaria jote e pronarit është lidhur me një profil stafi. Menaxho shërbimet dhe orarin nga faqja e stafit.',
+'dashboardBusinesses.ownerStaff.defaultName': 'Pronari i biznesit',
+'dashboardBusinesses.ownerStaff.roleTitle': 'Pronari',
+'dashboardStaff.ownerAsStaff.kicker': 'Rolet e pronarit dhe stafit',
+'dashboardStaff.ownerAsStaff.title': 'Shto vetëm personat që mund të rezervohen nga klientët',
+'dashboardStaff.ownerAsStaff.body': 'Pronarët e biznesit mund ta menaxhojnë biznesin pa qenë staf i rezervueshëm. Nëse pronari merr edhe takime, shtoje ose lidhe si anëtar stafi, cakto shërbimet dhe më pas vendos orarin. Nëse vetëm menaxhon biznesin, lëre vetëm si pronar.',
 
 
 

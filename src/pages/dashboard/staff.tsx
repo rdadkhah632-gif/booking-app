@@ -96,9 +96,9 @@ export default function StaffPage() {
         .single()
 
       if (!profile || profile.role !== 'business') {
-        router.replace(profile?.is_admin ? '/admin' : '/explore')
-        return
-      }
+  router.replace(profile?.is_admin ? '/admin' : '/account')
+  return
+}
 
       const selectedBusiness = await getBusinessContext(session.user.id)
 
@@ -558,6 +558,13 @@ export default function StaffPage() {
           )}
 
           <StaffSetupHero business={business} />
+<div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(45,212,191,0.24)' }}>
+  <p className="small muted">{t('dashboardStaff.ownerAsStaff.kicker', 'Owner and staff roles')}</p>
+  <h3 style={{ marginTop: '0.25rem' }}>{t('dashboardStaff.ownerAsStaff.title', 'Only add people who can be booked by customers')}</h3>
+  <p className="small muted" style={{ marginTop: '0.4rem' }}>
+    {t('dashboardStaff.ownerAsStaff.body', 'Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.')}
+  </p>
+</div>
 
           <CreateStaffCard
             loading={saving}
@@ -591,7 +598,7 @@ export default function StaffPage() {
             <p className="small muted">{t('dashboardStaff.list.kicker', 'Staff list')}</p>
             <h2>{t('dashboardStaff.list.title', 'Your staff')}</h2>
             <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardStaff.list.body', 'Staff become bookable when they are active, assigned to services and have working hours set.')}
+              {t('dashboardStaff.list.body', 'Staff become bookable only when they are active, assigned to services, and have working hours set. Owner-only users do not need to appear here unless customers can book them.')}
             </p>
           </div>
 
@@ -600,7 +607,7 @@ export default function StaffPage() {
               <div className="card">
                 <h3>{t('dashboardStaff.empty.title', 'No staff yet')}</h3>
                 <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  {t('dashboardStaff.empty.body', 'Add your first staff member above. Then assign services and set their working hours.')}
+                  {t('dashboardStaff.empty.body', 'Add your first bookable staff member above, or add the owner only if they personally take appointments. Then assign services and set working hours.')}
                 </p>
               </div>
             )}
