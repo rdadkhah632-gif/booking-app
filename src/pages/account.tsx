@@ -81,14 +81,18 @@ export default function AccountPage() {
   const hasStaffAccess = !!staffProfile
   const isAdmin = !!profile?.is_admin
 
-  const workspaceLabel = useMemo(() => {
-    const labels: string[] = []
-    if (isAdmin) labels.push(t('account.access.operator', 'Operator'))
-    if (ownsBusiness) labels.push(t('account.access.businessOwner', 'Business owner'))
-    if (hasStaffAccess) labels.push(t('account.access.staff', 'Staff'))
-    labels.push(t('account.access.customer', 'Customer'))
-    return labels.join(' + ')
+  const primaryAccountMode = useMemo(() => {
+    if (isAdmin) return t('account.access.operator', 'Operator')
+    if (ownsBusiness) return t('account.access.businessOwner', 'Business owner')
+    if (hasStaffAccess) return t('account.access.staff', 'Staff member')
+    return t('account.access.customer', 'Customer')
   }, [isAdmin, ownsBusiness, hasStaffAccess, t])
+
+  const secondaryAccessSummary = useMemo(() => {
+    if (ownsBusiness) return t('account.access.businessManagement', 'Business management access')
+    if (hasStaffAccess) return t('account.access.staffSchedule', 'Staff schedule access')
+    return t('account.access.customerBookings', 'Customer booking access')
+  }, [ownsBusiness, hasStaffAccess, t])
 
   async function loadProfile() {
     setLoading(true)
@@ -364,16 +368,18 @@ export default function AccountPage() {
               </button>
             </form>
 
-            <div className="card" style={{ borderColor: 'rgba(255,107,53,0.25)' }}>
-              <p className="small muted">{t('account.businessSettingsKicker', 'Business settings are separate')}</p>
-              <h3 style={{ marginTop: '0.25rem' }}>{t('account.businessSettingsTitle', 'Need to change your business setup?')}</h3>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('account.businessSettingsBody', 'Use Business settings for booking rules, approval mode, policies, billing, services, staff and public business details.')}
-              </p>
-              <Link href="/dashboard/settings" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
-                {t('dashboardSettings.pageTitle', 'Business settings')}
-              </Link>
-            </div>
+            {ownsBusiness && (
+              <div className="card" style={{ borderColor: 'rgba(255,107,53,0.25)' }}>
+                <p className="small muted">{t('account.businessSettingsKicker', 'Business settings are separate')}</p>
+                <h3 style={{ marginTop: '0.25rem' }}>{t('account.businessSettingsTitle', 'Need to change your business setup?')}</h3>
+                <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                  {t('account.businessSettingsBody', 'Use Business settings for booking rules, approval mode, policies, billing, services, staff and public business details.')}
+                </p>
+                <Link href="/dashboard/settings" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                  {t('dashboardSettings.pageTitle', 'Business settings')}
+                </Link>
+              </div>
+            )}
 
             {isAdmin && (
               <div className="card operator-account-card">
@@ -409,9 +415,9 @@ export default function AccountPage() {
 
               <div className="card">
                 <p className="small muted">{t('account.accessSummary', 'Access summary')}</p>
-                <strong>{workspaceLabel}</strong>
+                <strong>{primaryAccountMode}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {t('account.profileRole', 'Profile role')}: {roleLabel(profile.role)}. {t('account.accessBody', 'Access is decided by your linked customer, business, staff and operator records.')}
+                  {secondaryAccessSummary}
                 </p>
               </div>
 
@@ -439,19 +445,26 @@ export default function AccountPage() {
                 </p>
               </div>
 
-              <div className="card">
-                <p className="small muted">{t('account.customerActivity', 'Customer activity')}</p>
-                <strong>{stats.bookings} {t('support.business.bookings', 'booking')}{stats.bookings === 1 ? '' : 's'}</strong>
-                <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {stats.pendingCustomerBookings} {t('account.pendingCustomerBookings', 'pending customer booking')}{stats.pendingCustomerBookings === 1 ? '' : 's'}.
-                </p>
-              </div>
+              {!ownsBusiness && !hasStaffAccess && (
+                <div className="card">
+                  <p className="small muted">{t('account.customerActivity', 'Customer activity')}</p>
+                  <strong>{stats.bookings} {t('support.business.bookings', 'booking')}{stats.bookings === 1 ? '' : 's'}</strong>
+                  <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                    {stats.pendingCustomerBookings} {t('account.pendingCustomerBookings', 'pending customer booking')}{stats.pendingCustomerBookings === 1 ? '' : 's'}.
+                  </p>
+                </div>
+              )}
 
               <div className="card">
                 <p className="small muted">{t('dashboardHome.openNotifications', 'Notifications')}</p>
                 <strong>{stats.unreadNotifications + stats.adminNotifications} {t('account.unread', 'unread')}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {stats.businessNotifications} {t('account.businessNotice', 'business notice')}{stats.businessNotifications === 1 ? '' : 's'} · {stats.adminNotifications} {t('account.operatorNotice', 'operator notice')}{stats.adminNotifications === 1 ? '' : 's'}.
+                  {ownsBusiness
+                    ? `${stats.businessNotifications} ${t('account.businessNotice', 'business notice')}${stats.businessNotifications === 1 ? '' : 's'}`
+                    : hasStaffAccess
+                      ? t('account.staffNotificationsBody', 'Staff booking and schedule updates appear here.')
+                      : t('account.customerNotificationsBody', 'Customer booking updates appear here.')}
+                  {isAdmin ? ` · ${stats.adminNotifications} ${t('account.operatorNotice', 'operator notice')}${stats.adminNotifications === 1 ? '' : 's'}.` : '.'}
                 </p>
               </div>
             </div>
