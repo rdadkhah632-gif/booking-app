@@ -1444,6 +1444,11 @@ export const sq: TranslationTree = {
 'dashboardStaff.ownerAsStaff.kicker': 'Rolet e pronarit dhe stafit',
 'dashboardStaff.ownerAsStaff.title': 'Shto vetëm personat që mund të rezervohen nga klientët',
 'dashboardStaff.ownerAsStaff.body': 'Pronarët e biznesit mund ta menaxhojnë biznesin pa qenë staf i rezervueshëm. Nëse pronari merr edhe takime, shtoje ose lidhe si anëtar stafi, cakto shërbimet dhe më pas vendos orarin. Nëse vetëm menaxhon biznesin, lëre vetëm si pronar.',
+'nav.role.operator': 'Operator',
+'nav.role.business': 'Biznes',
+'nav.role.staff': 'Staf',
+'nav.role.customer': 'Klient',
+'nav.checkingAccount': 'Duke kontrolluar llogarinë...',
 
 
 

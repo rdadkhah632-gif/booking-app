@@ -1439,6 +1439,11 @@ export const en: TranslationTree = {
 'dashboardStaff.ownerAsStaff.kicker': 'Owner and staff roles',
 'dashboardStaff.ownerAsStaff.title': 'Only add people who can be booked by customers',
 'dashboardStaff.ownerAsStaff.body': 'Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.',
+'nav.role.operator': 'Operator',
+'nav.role.business': 'Business',
+'nav.role.staff': 'Staff',
+'nav.role.customer': 'Customer',
+'nav.checkingAccount': 'Checking account...',
 
 
 

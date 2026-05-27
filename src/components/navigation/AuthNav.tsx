@@ -7,6 +7,7 @@ import CustomerNav from './CustomerNav'
 import BusinessNav from './BusinessNav'
 import StaffNav from './StaffNav'
 import AdminNav from './AdminNav'
+import { useI18n } from '@/lib/useI18n'
 import { Role } from './navTypes'
 
 type BusinessRow = {
@@ -38,6 +39,7 @@ function isStaffRoute(pathname: string) {
 
 export default function AuthNav() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [loading, setLoading] = useState(true)
   const [role, setRole] = useState<Role>(null)
@@ -224,17 +226,25 @@ export default function AuthNav() {
     return '/'
   }, [role])
 
+  const roleBadge = useMemo(() => {
+    if (role === 'admin') return t('nav.role.operator', 'Operator')
+    if (role === 'business') return t('nav.role.business', 'Business')
+    if (role === 'staff') return t('nav.role.staff', 'Staff')
+    if (role === 'customer') return t('nav.role.customer', 'Customer')
+    return null
+  }, [role, t])
+
   return (
     <nav className={role === 'admin' ? 'nav-simple nav-operator' : 'nav-simple'}>
       <div className="nav-simple-inner">
         <Link href={logoHref} className="logo">
           Mirë<span>book</span>
-          {role === 'admin' && <em>Operator</em>}
+          {roleBadge && <em>{roleBadge}</em>}
         </Link>
 
         <div className="auth-nav-links">
           {loading && (
-            <span className="muted small">Checking account...</span>
+            <span className="muted small">{t('nav.checkingAccount', 'Checking account...')}</span>
           )}
 
           {!loading && !role && <PublicNav />}
@@ -310,6 +320,13 @@ export default function AuthNav() {
           background: linear-gradient(180deg, rgba(255,107,53,0.07), rgba(11,18,32,0));
         }
 
+        :global(.nav-simple) {
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          backdrop-filter: blur(14px);
+        }
+
         :global(.language-pill) {
           display: inline-flex;
           align-items: center;
@@ -329,10 +346,10 @@ export default function AuthNav() {
           .auth-nav-links {
             width: 100%;
             justify-content: flex-start;
-            gap: 0.55rem;
+            gap: 0.5rem;
             overflow-x: auto;
             overflow-y: hidden;
-            padding-bottom: 0.25rem;
+            padding: 0.15rem 0 0.3rem;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
           }
@@ -344,6 +361,11 @@ export default function AuthNav() {
           :global(.nav-wide-only) {
             display: none;
           }
+
+          .logo em {
+            font-size: 0.66rem;
+            padding: 0.18rem 0.4rem;
+          }
         }
 
         @media (max-width: 540px) {
@@ -352,6 +374,17 @@ export default function AuthNav() {
             width: auto;
             max-width: none;
             justify-content: center;
+            white-space: nowrap;
+          }
+
+          .logo {
+            font-size: 1rem;
+          }
+
+          .logo em {
+            max-width: 5.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
           }
 
