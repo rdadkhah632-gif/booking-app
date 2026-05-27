@@ -436,8 +436,8 @@ export default function StaffAvailabilityPage() {
                 <Link href="/staff" className="btn btn-ghost">
                   {t('staff.actions.dashboard', 'Staff dashboard')}
                 </Link>
-                <Link href="/account" className="btn btn-ghost">
-                  {t('nav.account', 'Account')}
+                <Link href="/staff/calendar" className="btn btn-ghost">
+                  {t('staffCalendar.title', 'Calendar view')}
                 </Link>
                 <button type="button" className="btn btn-accent" onClick={saveAvailability} disabled={saving}>
                   {saving ? t('common.saving', 'Saving...') : t('staffAvailability.actions.saveAvailability', 'Save availability')}
@@ -575,9 +575,14 @@ export default function StaffAvailabilityPage() {
                   </p>
                 </div>
 
-                <Link href="/staff" className="btn btn-ghost">
-                  {t('staffAvailability.upcoming.viewSchedule', 'View schedule')}
-                </Link>
+                <div className="staff-template-actions">
+                  <Link href="/staff" className="btn btn-ghost">
+                    {t('staffAvailability.upcoming.viewSchedule', 'View schedule')}
+                  </Link>
+                  <Link href="/staff/calendar" className="btn btn-ghost">
+                    {t('staffCalendar.title', 'Calendar view')}
+                  </Link>
+                </div>
               </div>
 
               <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
@@ -628,14 +633,6 @@ export default function StaffAvailabilityPage() {
           background: rgba(255,107,53,0.06);
         }
 
-        .staff-save-strip {
-          margin-top: 1.5rem;
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          flex-wrap: wrap;
-        }
 
         .staff-template-header {
           display: flex;
@@ -685,19 +682,14 @@ export default function StaffAvailabilityPage() {
           }
 
           .staff-availability-actions,
-          .staff-template-actions,
-          .staff-save-strip {
+          .staff-template-actions {
             display: grid;
           }
 
           .staff-availability-actions,
           .staff-template-actions,
-          .staff-save-strip,
           .staff-availability-actions :global(.btn),
-          .staff-template-actions :global(.btn),
-          .staff-save-strip :global(.btn),
-          .staff-save-strip button,
-          .staff-save-strip a {
+          .staff-template-actions :global(.btn) {
             width: 100%;
             justify-content: center;
           }
