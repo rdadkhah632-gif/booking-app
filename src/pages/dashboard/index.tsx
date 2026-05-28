@@ -78,7 +78,7 @@ export default function DashboardHome() {
       .single()
 
     if (!profile || profile.role !== 'business') {
-      router.replace('/explore')
+      router.replace('/account')
       return
     }
 
@@ -217,7 +217,7 @@ export default function DashboardHome() {
     }
   }, [])
 
-  const now = new Date()
+  const now = useMemo(() => new Date(), [bookings])
 
   const pendingBookings = useMemo(() => {
     return bookings.filter((booking) => booking.status === 'pending')
@@ -238,16 +238,16 @@ export default function DashboardHome() {
   }, [bookings])
 
   const nextBooking = useMemo(() => {
-    return bookings.find((booking) =>
-      booking.status === 'confirmed' && new Date(booking.start_at) >= now
-    )
-  }, [bookings])
+    return bookings
+      .filter((booking) => booking.status === 'confirmed' && new Date(booking.start_at) >= now)
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())[0] || null
+  }, [bookings, now])
 
   const upcomingBookings = useMemo(() => {
-    return bookings.filter((booking) =>
-      booking.status === 'confirmed' && new Date(booking.start_at) >= now
-    )
-  }, [bookings])
+    return bookings
+      .filter((booking) => booking.status === 'confirmed' && new Date(booking.start_at) >= now)
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+  }, [bookings, now])
 
 
   const dashboardAnalytics = useMemo(() => {
@@ -320,6 +320,9 @@ export default function DashboardHome() {
   const activeServices = services.filter((service) => service.active).length
   const activeStaff = staffMembers.filter((staff) => staff.active).length
   const openWorkingDays = availabilityRows.filter((row) => row.is_closed !== true).length
+
+
+  const businessSetupReady = businesses.length > 0 && activeServices > 0 && activeStaff > 0 && openWorkingDays > 0 && publishedCount > 0
 
 
   const setupWarnings = useMemo(() => {
@@ -413,6 +416,16 @@ export default function DashboardHome() {
     }).toString()}`
   }
 
+  function formatBookingTime(booking: Booking) {
+    return new Date(booking.start_at).toLocaleString(undefined, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   if (loading) {
     return (
       <DashboardLayout title={t('common.loading', 'Loading...')}>
@@ -431,6 +444,44 @@ export default function DashboardHome() {
       {error && (
         <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
           <p style={{ color: 'var(--danger)' }}>{error}</p>
+        </div>
+      )}
+
+      {businesses.length > 0 && (
+        <div className="card dashboard-owner-command-card">
+          <div>
+            <p className="small muted">{t('dashboardHome.ownerCommand.kicker', 'Owner command centre')}</p>
+            <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+              {pendingActionCount > 0
+                ? t('dashboardHome.ownerCommand.actionTitle', 'Customer actions need review')
+                : todayBookings.length > 0
+                  ? t('dashboardHome.ownerCommand.todayTitle', 'Today’s business schedule is active')
+                  : t('dashboardHome.ownerCommand.readyTitle', 'Your business dashboard is ready')}
+            </h2>
+            <p className="small muted" style={{ marginTop: '0.4rem' }}>
+              {pendingActionCount > 0
+                ? t('dashboardHome.ownerCommand.actionBody', 'Review pending bookings and customer requests before they affect the schedule.')
+                : nextBooking
+                  ? `${t('dashboardHome.ownerCommand.nextBooking', 'Next confirmed booking')}: ${nextBooking.customer_name || t('common.customer', 'Customer')} · ${formatBookingTime(nextBooking)}`
+                  : t('dashboardHome.ownerCommand.noNextBooking', 'No confirmed upcoming bookings are waiting. Keep setup and availability up to date for new customers.')}
+            </p>
+          </div>
+
+          <div className="dashboard-owner-command-actions">
+            <Link href={bookingsLinkForView('needs-action', 'pending')} className="btn btn-accent">
+              {pendingActionCount > 0
+                ? t('dashboardHome.ownerCommand.reviewActions', 'Review actions')
+                : t('dashboardHome.ownerCommand.viewBookings', 'View bookings')}
+            </Link>
+            <Link href="/dashboard/businesses" className="btn btn-ghost">
+              {businessSetupReady
+                ? t('dashboardHome.ownerCommand.manageSetup', 'Manage setup')
+                : t('dashboardHome.ownerCommand.finishSetup', 'Finish setup')}
+            </Link>
+            <Link href="/dashboard/staff" className="btn btn-ghost">
+              {t('support.business.staff', 'Staff')}
+            </Link>
+          </div>
         </div>
       )}
 
@@ -455,17 +506,135 @@ export default function DashboardHome() {
         bookingsLinkForView={bookingsLinkForView}
       />
 
+      {businesses.length > 0 && (
+        <div className="dashboard-readiness-strip">
+          <div className={activeServices > 0 ? 'dashboard-readiness-item ready' : 'dashboard-readiness-item'}>
+            <strong>{activeServices}</strong>
+            <span>{t('dashboardHome.readiness.services', 'active services')}</span>
+          </div>
+          <div className={activeStaff > 0 ? 'dashboard-readiness-item ready' : 'dashboard-readiness-item'}>
+            <strong>{activeStaff}</strong>
+            <span>{t('dashboardHome.readiness.staff', 'active staff')}</span>
+          </div>
+          <div className={openWorkingDays > 0 ? 'dashboard-readiness-item ready' : 'dashboard-readiness-item'}>
+            <strong>{openWorkingDays}</strong>
+            <span>{t('dashboardHome.readiness.workingDays', 'open working days')}</span>
+          </div>
+          <div className={publishedCount > 0 ? 'dashboard-readiness-item ready' : 'dashboard-readiness-item'}>
+            <strong>{publishedCount}</strong>
+            <span>{t('dashboardHome.readiness.published', 'published profiles')}</span>
+          </div>
+        </div>
+      )}
+
       <PriorityQueueCard
         pendingActionCount={pendingActionCount}
         bookingsLinkForView={bookingsLinkForView}
       />
 
-
       <SchedulePreviewCard
         scheduleDays={scheduleDays}
         bookingsLinkForDate={bookingsLinkForDate}
       />
+
+      {businesses.length > 0 && (
+        <div className="card dashboard-owner-staff-note">
+          <div>
+            <p className="small muted">{t('dashboardHome.ownerStaffNote.kicker', 'Owner vs bookable staff')}</p>
+            <h3>{t('dashboardHome.ownerStaffNote.title', 'Only add yourself to Staff if customers can book you')}</h3>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {t('dashboardHome.ownerStaffNote.body', 'You can manage the business as the owner without being bookable. If you also take appointments, add yourself as staff, assign services, and set your own working hours.')}
+            </p>
+          </div>
+          <Link href="/dashboard/staff" className="btn btn-ghost">
+            {t('dashboardHome.ownerStaffNote.cta', 'Manage staff setup')}
+          </Link>
+        </div>
+      )}
+
       <SetupGuidanceList warnings={setupWarnings} />
+
+      <style jsx>{`
+        .dashboard-owner-command-card {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          border-color: rgba(255,107,53,0.24);
+          background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(11,18,32,0));
+        }
+
+        .dashboard-owner-command-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .dashboard-readiness-strip {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 0.75rem;
+          margin: 0 0 1.5rem;
+        }
+
+        .dashboard-readiness-item {
+          border: 1px solid rgba(255,190,11,0.28);
+          border-radius: 1rem;
+          padding: 0.9rem;
+          background: rgba(255,190,11,0.06);
+          display: grid;
+          gap: 0.25rem;
+        }
+
+        .dashboard-readiness-item.ready {
+          border-color: rgba(45,212,191,0.28);
+          background: rgba(45,212,191,0.06);
+        }
+
+        .dashboard-readiness-item strong {
+          font-size: 1.25rem;
+        }
+
+        .dashboard-readiness-item span {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        .dashboard-owner-staff-note {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          margin: 1.5rem 0;
+          border-color: rgba(45,212,191,0.22);
+        }
+
+        @media (max-width: 760px) {
+          .dashboard-owner-command-card,
+          .dashboard-owner-staff-note {
+            display: grid;
+          }
+
+          .dashboard-owner-command-actions,
+          .dashboard-owner-command-actions :global(.btn),
+          .dashboard-owner-staff-note :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .dashboard-readiness-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 480px) {
+          .dashboard-readiness-strip {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   )
 }
