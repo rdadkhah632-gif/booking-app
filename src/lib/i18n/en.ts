@@ -1511,7 +1511,16 @@ export const en: TranslationTree = {
 'myBookings.command.viewUpcoming': 'View upcoming',
 'myBookings.command.viewHistory': 'View history',
 'myBookings.command.bookAgain': 'Book another service',
-
+'dashboardBusinesses.status.live': 'Live on Mirëbook',
+'dashboardBusinesses.status.ready': 'Ready to publish',
+'dashboardBusinesses.status.draft': 'Draft setup',
+'dashboardBusinesses.status.liveBody': 'Customers can find and book this business.',
+'dashboardBusinesses.status.readyBody': 'Everything needed is complete. Publish when you are ready.',
+'dashboardBusinesses.status.draftBody': 'Complete the missing setup items before going live.',
+'dashboardBusinesses.readiness.assignments': 'Assignments',
+'dashboardBusinesses.missingSetup.kicker': 'Missing before launch',
+'dashboardBusinesses.missingSetup.title': 'Finish these items before publishing',
+'dashboardBusinesses.missingSetup.cta': 'Review profile',
 
 
 

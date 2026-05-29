@@ -1516,7 +1516,16 @@ export const sq: TranslationTree = {
 'myBookings.command.viewUpcoming': 'Shiko të ardhshmet',
 'myBookings.command.viewHistory': 'Shiko historikun',
 'myBookings.command.bookAgain': 'Rezervo një shërbim tjetër',
-
+'dashboardBusinesses.status.live': 'Live në Mirëbook',
+'dashboardBusinesses.status.ready': 'Gati për publikim',
+'dashboardBusinesses.status.draft': 'Konfigurim draft',
+'dashboardBusinesses.status.liveBody': 'Klientët mund ta gjejnë dhe rezervojnë këtë biznes.',
+'dashboardBusinesses.status.readyBody': 'Çdo gjë e nevojshme është plotësuar. Publikoje kur të jesh gati.',
+'dashboardBusinesses.status.draftBody': 'Plotëso elementet që mungojnë para se të dalësh live.',
+'dashboardBusinesses.readiness.assignments': 'Caktimet',
+'dashboardBusinesses.missingSetup.kicker': 'Mungon para lançimit',
+'dashboardBusinesses.missingSetup.title': 'Përfundo këto pika para publikimit',
+'dashboardBusinesses.missingSetup.cta': 'Rishiko profilin',
 
 
 

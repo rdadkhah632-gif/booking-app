@@ -26,6 +26,7 @@ export default function Businesses() {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
   const [staffServices, setStaffServices] = useState<StaffService[]>([])
   const [availabilityRows, setAvailabilityRows] = useState<AvailabilityRow[]>([])
+  const [currentUser, setCurrentUser] = useState<{ id: string; email: string | null } | null>(null)
 
   const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,6 +34,7 @@ export default function Businesses() {
   const [savingBusinessId, setSavingBusinessId] = useState<string | null>(null)
   const [publishingBusinessId, setPublishingBusinessId] = useState<string | null>(null)
   const [uploadingBusinessId, setUploadingBusinessId] = useState<string | null>(null)
+  const [creatingOwnerStaffId, setCreatingOwnerStaffId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -47,20 +49,24 @@ export default function Businesses() {
       return
     }
 
+    setCurrentUser({
+      id: session.user.id,
+      email: session.user.email?.trim().toLowerCase() || null
+    })
 
-    const { data, error } = await supabase
+    const { data: businessData, error: businessError } = await supabase
       .from('businesses')
       .select('*')
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      setError(error.message)
+    if (businessError) {
+      setError(businessError.message)
       setPageLoading(false)
       return
     }
 
-    const ownedBusinesses = data || []
+    const ownedBusinesses = businessData || []
     setBusinesses(ownedBusinesses)
 
     const businessIds = ownedBusinesses.map((business) => business.id)
@@ -87,7 +93,7 @@ export default function Businesses() {
 
     const { data: staffData, error: staffError } = await supabase
       .from('staff_members')
-      .select('id, business_id, active')
+      .select('id, business_id, user_id, email, active')
       .in('business_id', businessIds)
 
     if (staffError) {
@@ -136,6 +142,63 @@ export default function Businesses() {
   useEffect(() => {
     loadBusinesses()
   }, [])
+
+
+  function ownerStaffProfileForBusiness(businessId: string) {
+    if (!currentUser) return null
+
+    return staffMembers.find((staff: any) =>
+      staff.business_id === businessId &&
+      (staff.user_id === currentUser.id || (currentUser.email && staff.email?.toLowerCase() === currentUser.email))
+    ) || null
+  }
+
+  async function addOwnerAsStaff(business: Business) {
+    if (!currentUser) return
+
+    const existingOwnerStaff = ownerStaffProfileForBusiness(business.id)
+
+    if (existingOwnerStaff) {
+      setSuccess(t('dashboardBusinesses.ownerStaff.alreadyLinked', 'You already have a staff profile for this business. Use the Staff page to manage your services and hours.'))
+      return
+    }
+
+    setCreatingOwnerStaffId(business.id)
+    setError(null)
+    setSuccess(null)
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, phone')
+      .eq('id', currentUser.id)
+      .maybeSingle()
+
+    const fallbackName = profile?.full_name?.trim() || business.name?.trim() || t('dashboardBusinesses.ownerStaff.defaultName', 'Business owner')
+
+    const { error } = await supabase
+      .from('staff_members')
+      .insert({
+        business_id: business.id,
+        user_id: currentUser.id,
+        name: fallbackName,
+        role_title: t('dashboardBusinesses.ownerStaff.roleTitle', 'Owner'),
+        email: currentUser.email,
+        phone: profile?.phone || business.phone || null,
+        invite_status: 'linked',
+        permission_role: 'manager',
+        active: true
+      })
+
+    setCreatingOwnerStaffId(null)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    setSuccess(t('dashboardBusinesses.ownerStaff.success', 'You have been added as bookable staff. Assign services and set your working hours from the Staff page.'))
+    await loadBusinesses()
+  }
 
   async function createBusiness(e: React.FormEvent) {
     e.preventDefault()
@@ -241,7 +304,7 @@ export default function Businesses() {
     updateLocalBusiness(business.id, 'image_url', '')
     setSuccess(`${business.name || t('common.business', 'Business')} ${t('dashboardBusinesses.image.removed', 'image removed.')}`)
     await loadBusinesses()
-}
+  }
   function getReadiness(business: Business): Readiness {
     const activeServices = services.filter((service) => service.business_id === business.id && service.active).length
     const activeStaff = staffMembers.filter((staff) => staff.business_id === business.id && staff.active).length
@@ -286,7 +349,7 @@ export default function Businesses() {
       hasActiveServices,
       hasActiveStaff,
       hasStaffServiceAssignments,
-           hasWorkingHours,
+      hasWorkingHours,
       hasBusinessImage,
       readyToPublish: profileComplete && hasBusinessImage && hasActiveServices && hasActiveStaff && hasStaffServiceAssignments && hasWorkingHours,
       activeServices,
@@ -310,6 +373,10 @@ export default function Businesses() {
       incompletePublished
     }
   }, [businesses, services, staffMembers, staffServices, availabilityRows])
+
+  const primaryBusiness = businesses[0] || null
+  const primaryReadiness = primaryBusiness ? getReadiness(primaryBusiness) : null
+  const ownerStaffProfile = primaryBusiness ? ownerStaffProfileForBusiness(primaryBusiness.id) : null
 
   async function saveBusiness(business: Business) {
     setSavingBusinessId(business.id)
@@ -393,13 +460,63 @@ export default function Businesses() {
 
       {businesses.length > 0 && (
         <div className="card business-setup-hub">
-          <div>
-            <p className="small muted">{t('dashboardBusinesses.setupHub.kicker', 'Setup')}</p>
-            <h3>{t('dashboardBusinesses.setupHub.title', 'Finish and manage your business setup')}</h3>
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardBusinesses.setupHub.body', 'Keep your public profile, services, staff and availability ready so customers can book without confusion.')}
-            </p>
+          <div className="business-setup-hub-header">
+            <div>
+              <p className="small muted">{t('dashboardBusinesses.setupHub.kicker', 'Setup')}</p>
+              <h3>{t('dashboardBusinesses.setupHub.title', 'Finish and manage your business setup')}</h3>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {t('dashboardBusinesses.setupHub.body', 'Keep your public profile, services, staff and availability ready so customers can book without confusion.')}
+              </p>
+            </div>
+
+            {primaryBusiness && primaryReadiness && (
+              <div className={primaryBusiness.published ? 'business-live-pill' : 'business-draft-pill'}>
+                <strong>
+                  {primaryBusiness.published
+                    ? t('dashboardBusinesses.status.live', 'Live on Mirëbook')
+                    : primaryReadiness.readyToPublish
+                      ? t('dashboardBusinesses.status.ready', 'Ready to publish')
+                      : t('dashboardBusinesses.status.draft', 'Draft setup')}
+                </strong>
+                <span>
+                  {primaryBusiness.published
+                    ? t('dashboardBusinesses.status.liveBody', 'Customers can find and book this business.')
+                    : primaryReadiness.readyToPublish
+                      ? t('dashboardBusinesses.status.readyBody', 'Everything needed is complete. Publish when you are ready.')
+                      : t('dashboardBusinesses.status.draftBody', 'Complete the missing setup items before going live.')}
+                </span>
+              </div>
+            )}
           </div>
+
+          {primaryBusiness && primaryReadiness && (
+            <div className="business-readiness-strip">
+              <div className={primaryReadiness.profileComplete ? 'business-readiness-item ready' : 'business-readiness-item'}>
+                <strong>{primaryReadiness.profileComplete ? '✓' : '!'}</strong>
+                <span>{t('dashboardBusinesses.readiness.profile', 'Profile')}</span>
+              </div>
+              <div className={primaryReadiness.hasBusinessImage ? 'business-readiness-item ready' : 'business-readiness-item'}>
+                <strong>{primaryReadiness.hasBusinessImage ? '✓' : '!'}</strong>
+                <span>{t('dashboardBusinesses.readiness.image', 'Image')}</span>
+              </div>
+              <div className={primaryReadiness.hasActiveServices ? 'business-readiness-item ready' : 'business-readiness-item'}>
+                <strong>{primaryReadiness.activeServices}</strong>
+                <span>{t('dashboardBusinesses.readiness.services', 'Services')}</span>
+              </div>
+              <div className={primaryReadiness.hasActiveStaff ? 'business-readiness-item ready' : 'business-readiness-item'}>
+                <strong>{primaryReadiness.activeStaff}</strong>
+                <span>{t('dashboardBusinesses.readiness.staff', 'Staff')}</span>
+              </div>
+              <div className={primaryReadiness.hasStaffServiceAssignments ? 'business-readiness-item ready' : 'business-readiness-item'}>
+                <strong>{primaryReadiness.staffServiceAssignments}</strong>
+                <span>{t('dashboardBusinesses.readiness.assignments', 'Assignments')}</span>
+              </div>
+              <div className={primaryReadiness.hasWorkingHours ? 'business-readiness-item ready' : 'business-readiness-item'}>
+                <strong>{primaryReadiness.workingDays}</strong>
+                <span>{t('dashboardBusinesses.readiness.hours', 'Working days')}</span>
+              </div>
+            </div>
+          )}
 
           <div className="business-setup-grid">
             <a href="#business-profile" className="business-setup-card">
@@ -417,6 +534,26 @@ export default function Businesses() {
               <span>{t('dashboardBusinesses.setupHub.staffBody', 'Add staff and assign services to them.')}</span>
             </a>
 
+            <button
+              type="button"
+              className="business-setup-card business-setup-card-button"
+              onClick={() => addOwnerAsStaff(businesses[0])}
+              disabled={!!ownerStaffProfile || creatingOwnerStaffId === businesses[0].id}
+            >
+              <strong>
+                {ownerStaffProfile
+                  ? t('dashboardBusinesses.ownerStaff.linkedTitle', 'You are bookable staff')
+                  : t('dashboardBusinesses.ownerStaff.title', 'Do you take appointments?')}
+              </strong>
+              <span>
+                {ownerStaffProfile
+                  ? t('dashboardBusinesses.ownerStaff.linkedBody', 'Your owner account is linked to a staff profile. Manage your services, assigned appointments and working hours from Staff.')
+                  : creatingOwnerStaffId === businesses[0].id
+                    ? t('dashboardBusinesses.ownerStaff.creating', 'Adding you as staff...')
+                    : t('dashboardBusinesses.ownerStaff.body', 'Add yourself as bookable staff only if customers can book appointments with you. If you only manage the business, leave yourself owner-only.')}
+              </span>
+            </button>
+
             <a href="/dashboard/availability" className="business-setup-card">
               <strong>{t('dashboardBusinesses.setupHub.availability', 'Availability')}</strong>
               <span>{t('dashboardBusinesses.setupHub.availabilityBody', 'Set the days and hours customers can book.')}</span>
@@ -426,13 +563,26 @@ export default function Businesses() {
               <strong>{t('dashboardBusinesses.profileTools.preview', 'Preview public page')}</strong>
               <span>{t('dashboardBusinesses.setupHub.previewBody', 'See what customers see before you share your page.')}</span>
             </a>
-<a href="/support/business" className="business-setup-card">
-  <strong>{t('dashboardBusinesses.create.requestAnother', 'Request another business')}</strong>
-  <span>{t('dashboardBusinesses.setupHub.requestBody', 'Ask support to add another location or profile.')}</span>
-</a>
-
-         
+            <a href="/support/business" className="business-setup-card">
+              <strong>{t('dashboardBusinesses.create.requestAnother', 'Request another business')}</strong>
+              <span>{t('dashboardBusinesses.setupHub.requestBody', 'Ask support to add another location or profile.')}</span>
+            </a>
           </div>
+        </div>
+      )}
+
+      {primaryBusiness && primaryReadiness && !primaryReadiness.readyToPublish && (
+        <div className="card business-missing-card">
+          <div>
+            <p className="small muted">{t('dashboardBusinesses.missingSetup.kicker', 'Missing before launch')}</p>
+            <h3>{t('dashboardBusinesses.missingSetup.title', 'Finish these items before publishing')}</h3>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {primaryReadiness.missingItems.join(', ')}
+            </p>
+          </div>
+          <a href="#business-profile" className="btn btn-ghost">
+            {t('dashboardBusinesses.missingSetup.cta', 'Review profile')}
+          </a>
         </div>
       )}
 
@@ -492,6 +642,71 @@ export default function Businesses() {
           margin-bottom: 1rem;
         }
 
+        .business-setup-hub-header {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+
+        .business-live-pill,
+        .business-draft-pill {
+          display: grid;
+          gap: 0.25rem;
+          min-width: 12rem;
+          border-radius: 1rem;
+          padding: 0.85rem;
+          border: 1px solid rgba(255,190,11,0.28);
+          background: rgba(255,190,11,0.06);
+        }
+
+        .business-live-pill {
+          border-color: rgba(45,212,191,0.28);
+          background: rgba(45,212,191,0.06);
+        }
+
+        .business-live-pill span,
+        .business-draft-pill span {
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          line-height: 1.35;
+        }
+
+        .business-readiness-strip {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 0.6rem;
+        }
+
+        .business-readiness-item {
+          border: 1px solid rgba(255,190,11,0.28);
+          border-radius: 0.85rem;
+          background: rgba(255,190,11,0.06);
+          padding: 0.75rem;
+          display: grid;
+          gap: 0.2rem;
+        }
+
+        .business-readiness-item.ready {
+          border-color: rgba(45,212,191,0.28);
+          background: rgba(45,212,191,0.06);
+        }
+
+        .business-readiness-item span {
+          color: var(--text-muted);
+          font-size: 0.76rem;
+        }
+
+        .business-missing-card {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          margin-bottom: 1rem;
+          border-color: rgba(255,190,11,0.28);
+          background: rgba(255,190,11,0.06);
+        }
+
         .business-setup-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -515,6 +730,19 @@ export default function Businesses() {
           line-height: 1.4;
         }
 
+        .business-setup-card-button {
+          appearance: none;
+          width: 100%;
+          text-align: left;
+          font: inherit;
+          cursor: pointer;
+        }
+
+        .business-setup-card-button:disabled {
+          cursor: default;
+          opacity: 0.78;
+        }
+
         .business-setup-support-row {
           display: flex;
           gap: 0.5rem;
@@ -531,6 +759,18 @@ export default function Businesses() {
         }
 
         @media (max-width: 700px) {
+          .business-setup-hub-header,
+          .business-missing-card {
+            display: grid;
+          }
+
+          .business-live-pill,
+          .business-draft-pill,
+          .business-missing-card :global(.btn) {
+            width: 100%;
+          }
+
+          .business-readiness-strip,
           .business-setup-grid {
             grid-template-columns: 1fr;
           }
