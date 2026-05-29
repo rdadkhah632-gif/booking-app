@@ -208,19 +208,22 @@ export default function LoginPage() {
               </h1>
 
               <p className="muted">
-                {t('login.promoBody', 'Sign in to manage bookings, services, staff and customer appointments from one place.')}
+                {t('login.promoBody', 'Sign in and Mirëbook will take you to the right workspace for your account: customer, staff, business or operator.')}
               </p>
             </div>
 
             <div className="login-proof-list">
-              <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                {t('login.proof.routing', 'Customers are routed to the right booking flow automatically.')}
+              <div className="card login-proof-card">
+                <strong>{t('login.proof.customerTitle', 'Customers')}</strong>
+                <span>{t('login.proof.customerBody', 'View bookings, requests and appointment history.')}</span>
               </div>
-              <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                {t('login.proof.availability', 'Availability, staff and services stay connected.')}
+              <div className="card login-proof-card">
+                <strong>{t('login.proof.staffTitle', 'Staff')}</strong>
+                <span>{t('login.proof.staffBody', 'Open your schedule, calendar, availability and updates.')}</span>
               </div>
-              <div className="card" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                {t('login.proof.workflows', 'Approval, reschedule and cancellation workflows are built in.')}
+              <div className="card login-proof-card">
+                <strong>{t('login.proof.businessTitle', 'Businesses')}</strong>
+                <span>{t('login.proof.businessBody', 'Manage setup, services, staff, bookings and publishing.')}</span>
               </div>
             </div>
           </div>
@@ -238,9 +241,15 @@ export default function LoginPage() {
               {t('login.title', 'Login to Mirëbook')}
             </h2>
 
-            <p className="muted" style={{ marginBottom: '2rem' }}>
-              {t('login.subtitle', 'Use the same login for customer, business or staff access.')}
+            <p className="muted login-subtitle">
+              {t('login.subtitle', 'Use one login. Mirëbook detects whether this account is a customer, staff member, business owner or operator.')}
             </p>
+
+            <div className="login-role-strip">
+              <span>{t('nav.role.customer', 'Customer')}</span>
+              <span>{t('nav.role.staff', 'Staff')}</span>
+              <span>{t('nav.role.business', 'Business')}</span>
+            </div>
 
             <form onSubmit={onLogin} className="form-grid">
               <input
@@ -259,7 +268,7 @@ export default function LoginPage() {
                 required
               />
 
-              <button type="submit" disabled={loading} className="btn btn-accent">
+              <button type="submit" disabled={loading} className="btn btn-accent login-submit-button">
                 {loading ? t('login.loading', 'Signing in...') : t('login.submit', 'Sign in')}
               </button>
             </form>
@@ -273,22 +282,28 @@ export default function LoginPage() {
               </p>
             )}
 
-            <p className="small muted" style={{ marginTop: '1.5rem' }}>
-              {t('login.noAccount', 'No account yet?')} <Link href="/register" style={{ color: 'var(--accent)' }}>{t('login.createAccount', 'Create account')}</Link>
-            </p>
+            <div className="login-bottom-actions">
+              <p className="small muted">
+                {t('login.noAccount', 'No account yet?')} <Link href="/register" style={{ color: 'var(--accent)' }}>{t('login.createAccount', 'Create account')}</Link>
+              </p>
+              <p className="small muted">
+                {t('login.staffHint', 'Staff invited by a business should sign in or register using the invited email address.')}
+              </p>
+            </div>
           </div>
         </div>
       </section>
       <style jsx>{`
         .login-shell {
           display: grid;
-          grid-template-columns: 1fr 480px;
-          max-width: 960px;
+          grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
+          max-width: 980px;
           width: 100%;
           background: var(--surface);
           border: 1px solid var(--border);
           border-radius: 24px;
           overflow: hidden;
+          box-shadow: 0 22px 70px rgba(0,0,0,0.22);
         }
 
         .login-promo-panel {
@@ -299,7 +314,7 @@ export default function LoginPage() {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          min-height: 480px;
+          min-height: 500px;
         }
 
         .login-promo-logo {
@@ -313,13 +328,62 @@ export default function LoginPage() {
           gap: 12px;
         }
 
+        .login-proof-card {
+          background: rgba(255,255,255,0.04);
+          display: grid;
+          gap: 0.25rem;
+        }
+
+        .login-proof-card strong {
+          color: var(--text);
+        }
+
+        .login-proof-card span {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          line-height: 1.4;
+        }
+
         .login-form-panel {
           padding: 40px;
+          align-self: center;
+        }
+
+        .login-subtitle {
+          margin-bottom: 1rem;
+        }
+
+        .login-role-strip {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          margin-bottom: 1.5rem;
+        }
+
+        .login-role-strip span {
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          padding: 0.25rem 0.6rem;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          background: var(--surface-2);
+        }
+
+        .login-submit-button {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .login-bottom-actions {
+          display: grid;
+          gap: 0.65rem;
+          margin-top: 1.5rem;
         }
 
         @media (max-width: 860px) {
           .login-shell {
             grid-template-columns: 1fr;
+            max-width: 560px;
           }
 
           .login-form-panel {
@@ -329,8 +393,8 @@ export default function LoginPage() {
           .login-promo-panel {
             order: 2;
             min-height: auto;
-            padding: 24px 22px;
-            gap: 1rem;
+            padding: 20px 22px;
+            gap: 0.75rem;
           }
 
           .login-promo-logo {
@@ -343,16 +407,24 @@ export default function LoginPage() {
         }
 
         @media (max-width: 520px) {
+          .login-shell {
+            border-radius: 18px;
+          }
+
           .login-form-panel {
-            padding: 24px 18px;
+            padding: 22px 18px;
           }
 
           .login-form-panel h2 {
-            font-size: 1.65rem !important;
+            font-size: 1.55rem !important;
           }
 
-          .login-form-panel p[style] {
-            margin-bottom: 1rem !important;
+          .login-role-strip {
+            margin-bottom: 1rem;
+          }
+
+          .login-promo-panel {
+            display: none;
           }
         }
       `}</style>

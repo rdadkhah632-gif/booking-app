@@ -1526,7 +1526,13 @@ export const sq: TranslationTree = {
 'dashboardBusinesses.missingSetup.kicker': 'Mungon para lançimit',
 'dashboardBusinesses.missingSetup.title': 'Përfundo këto pika para publikimit',
 'dashboardBusinesses.missingSetup.cta': 'Rishiko profilin',
-
+'login.proof.customerTitle': 'Klientët',
+'login.proof.customerBody': 'Shiko rezervimet, kërkesat dhe historikun e takimeve.',
+'login.proof.staffTitle': 'Stafi',
+'login.proof.staffBody': 'Hap orarin, kalendarin, disponueshmërinë dhe përditësimet.',
+'login.proof.businessTitle': 'Bizneset',
+'login.proof.businessBody': 'Menaxho konfigurimin, shërbimet, stafin, rezervimet dhe publikimin.',
+'login.staffHint': 'Stafi i ftuar nga një biznes duhet të hyjë ose regjistrohet me email-in e ftuar.',
 
 
 

@@ -1521,7 +1521,13 @@ export const en: TranslationTree = {
 'dashboardBusinesses.missingSetup.kicker': 'Missing before launch',
 'dashboardBusinesses.missingSetup.title': 'Finish these items before publishing',
 'dashboardBusinesses.missingSetup.cta': 'Review profile',
-
+'login.proof.customerTitle': 'Customers',
+'login.proof.customerBody': 'View bookings, requests and appointment history.',
+'login.proof.staffTitle': 'Staff',
+'login.proof.staffBody': 'Open your schedule, calendar, availability and updates.',
+'login.proof.businessTitle': 'Businesses',
+'login.proof.businessBody': 'Manage setup, services, staff, bookings and publishing.',
+'login.staffHint': 'Staff invited by a business should sign in or register using the invited email address.',
 
 
 
