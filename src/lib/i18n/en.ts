@@ -1500,6 +1500,17 @@ export const en: TranslationTree = {
 'dashboardHome.ownerStaffNote.title': 'Only add yourself to Staff if customers can book you',
 'dashboardHome.ownerStaffNote.body': 'You can manage the business as the owner without being bookable. If you also take appointments, add yourself as staff, assign services, and set your own working hours.',
 'dashboardHome.ownerStaffNote.cta': 'Manage staff setup',
+'myBookings.command.kicker': 'Customer booking hub',
+'myBookings.command.actionTitle': 'You have booking updates to track',
+'myBookings.command.nextTitle': 'Your next appointment is coming up',
+'myBookings.command.historyTitle': 'Your bookings are up to date',
+'myBookings.command.pendingBody': 'Some booking requests are waiting for the business to approve them.',
+'myBookings.command.changeBody': 'You have requested booking changes waiting for business approval.',
+'myBookings.command.noActiveBody': 'No active customer action is needed right now. Your older bookings remain in history.',
+'myBookings.command.viewPending': 'View pending requests',
+'myBookings.command.viewUpcoming': 'View upcoming',
+'myBookings.command.viewHistory': 'View history',
+'myBookings.command.bookAgain': 'Book another service',
 
 
 

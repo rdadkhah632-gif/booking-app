@@ -386,6 +386,13 @@ export default function MyBookings() {
     )
   }, [bookings])
 
+  const nextConfirmedBooking = useMemo(() => {
+    return [...confirmedUpcomingBookings]
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())[0] || null
+  }, [confirmedUpcomingBookings])
+
+  const hasCustomerActions = pendingBookings.length > 0 || pendingRescheduleCount > 0
+
   const historyBookings = useMemo(() => {
     return bookings.filter((booking) =>
       booking.status === 'cancelled' ||
@@ -484,6 +491,47 @@ export default function MyBookings() {
           </div>
         )}
 
+        {!loading && bookings.length > 0 && (
+          <div className="card my-bookings-command-card">
+            <div>
+              <p className="small muted">{t('myBookings.command.kicker', 'Customer booking hub')}</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+                {hasCustomerActions
+                  ? t('myBookings.command.actionTitle', 'You have booking updates to track')
+                  : nextConfirmedBooking
+                    ? t('myBookings.command.nextTitle', 'Your next appointment is coming up')
+                    : t('myBookings.command.historyTitle', 'Your bookings are up to date')}
+              </h2>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                {pendingBookings.length > 0
+                  ? t('myBookings.command.pendingBody', 'Some booking requests are waiting for the business to approve them.')
+                  : pendingRescheduleCount > 0
+                    ? t('myBookings.command.changeBody', 'You have requested booking changes waiting for business approval.')
+                    : nextConfirmedBooking
+                      ? `${businessName(nextConfirmedBooking)} · ${serviceName(nextConfirmedBooking)} · ${new Date(nextConfirmedBooking.start_at).toLocaleString()}`
+                      : t('myBookings.command.noActiveBody', 'No active customer action is needed right now. Your older bookings remain in history.')}
+              </p>
+            </div>
+
+            <div className="my-bookings-command-actions">
+              <button
+                type="button"
+                className="btn btn-accent"
+                onClick={() => scrollToSection(pendingBookings.length > 0 ? 'pending' : nextConfirmedBooking ? 'upcoming' : 'history')}
+              >
+                {pendingBookings.length > 0
+                  ? t('myBookings.command.viewPending', 'View pending requests')
+                  : nextConfirmedBooking
+                    ? t('myBookings.command.viewUpcoming', 'View upcoming')
+                    : t('myBookings.command.viewHistory', 'View history')}
+              </button>
+              <a href="/explore" className="btn btn-ghost">
+                {t('myBookings.command.bookAgain', 'Book another service')}
+              </a>
+            </div>
+          </div>
+        )}
+
         {!loading && bookings.length === 0 && (
           <MyBookingsEmptyState />
         )}
@@ -496,7 +544,7 @@ export default function MyBookings() {
                 id="waiting-approval"
                 kicker={t('myBookings.sections.actionStatus', 'Action status')}
                 title={t('myBookings.sections.waitingTitle', 'Waiting for business approval')}
-                body={t('myBookings.sections.waitingBody', 'These bookings are not confirmed yet. The business needs to accept them first.')}
+                body={t('myBookings.sections.waitingBody', 'These booking requests are not confirmed appointments yet. The business must accept them first, and you can cancel the request while it is still pending.')}
               >
                 {pendingBookings.map((booking) => renderBookingCard(booking, 'pending'))}
               </MyBookingsSection>
@@ -522,7 +570,7 @@ export default function MyBookings() {
                 id="upcoming-bookings"
                 kicker={t('myBookings.sections.schedule', 'Schedule')}
                 title={t('myBookings.sections.activeTitle', 'Active confirmed appointments')}
-                body={t('myBookings.sections.activeBody', 'These are your active bookings. If a change request is pending, your original appointment still remains confirmed until the business accepts the new time.')}
+                body={t('myBookings.sections.activeBody', 'These are your confirmed customer appointments. You can request a different time or cancel before the appointment is completed.')}
                 action={pendingRescheduleCount > 0 ? (
                   <button type="button" onClick={() => scrollToSection('changes')} className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
                     {t('myBookings.actions.viewPendingChanges', 'View pending change requests')}
@@ -541,7 +589,7 @@ export default function MyBookings() {
                 id="booking-history"
                 kicker={t('dashboardBookings.summary.history', 'History')}
                 title={t('myBookings.sections.historyTitle', 'History and locked bookings')}
-                body={t('myBookings.sections.historyBody', 'Completed, cancelled and past bookings are shown for your records only.')}
+                body={t('myBookings.sections.historyBody', 'Completed, cancelled and past bookings stay here for your customer records. They cannot be changed from this page.')}
               >
                 {historyBookings.map((booking) => renderBookingCard(booking, 'history'))}
               </MyBookingsSection>
@@ -550,6 +598,23 @@ export default function MyBookings() {
         )}
       </section>
       <style jsx>{`
+        .my-bookings-command-card {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          border-color: rgba(255,107,53,0.24);
+          background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(31,28,44,0.72));
+        }
+
+        .my-bookings-command-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
         .my-bookings-header-actions,
         .my-booking-empty-actions {
           display: flex;
@@ -632,6 +697,14 @@ export default function MyBookings() {
         }
 
         @media (max-width: 640px) {
+          .my-bookings-command-card {
+            display: grid;
+          }
+
+          .my-bookings-command-actions,
+          .my-bookings-command-actions :global(.btn),
+          .my-bookings-command-actions button,
+          .my-bookings-command-actions a,
           .my-bookings-header-actions :global(.btn),
           .my-bookings-header-actions button,
           .my-bookings-header-actions a,

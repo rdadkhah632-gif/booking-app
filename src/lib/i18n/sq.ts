@@ -1505,6 +1505,17 @@ export const sq: TranslationTree = {
 'dashboardHome.ownerStaffNote.title': 'Shto veten te Stafi vetëm nëse klientët mund të të rezervojnë',
 'dashboardHome.ownerStaffNote.body': 'Mund ta menaxhosh biznesin si pronar pa qenë i rezervueshëm. Nëse merr edhe takime, shto veten si staf, cakto shërbimet dhe vendos orarin tënd.',
 'dashboardHome.ownerStaffNote.cta': 'Menaxho konfigurimin e stafit',
+'myBookings.command.kicker': 'Qendra e rezervimeve të klientit',
+'myBookings.command.actionTitle': 'Ke përditësime rezervimesh për të ndjekur',
+'myBookings.command.nextTitle': 'Takimi yt i radhës po afron',
+'myBookings.command.historyTitle': 'Rezervimet e tua janë të përditësuara',
+'myBookings.command.pendingBody': 'Disa kërkesa rezervimi po presin miratim nga biznesi.',
+'myBookings.command.changeBody': 'Ke kërkuar ndryshime rezervimi që presin miratim nga biznesi.',
+'myBookings.command.noActiveBody': 'Nuk nevojitet asnjë veprim nga klienti tani. Rezervimet e vjetra mbeten në historik.',
+'myBookings.command.viewPending': 'Shiko kërkesat në pritje',
+'myBookings.command.viewUpcoming': 'Shiko të ardhshmet',
+'myBookings.command.viewHistory': 'Shiko historikun',
+'myBookings.command.bookAgain': 'Rezervo një shërbim tjetër',
 
 
 
