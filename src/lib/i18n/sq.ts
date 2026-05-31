@@ -2261,4 +2261,9 @@ export const sq: TranslationTree = {
   "notifications.types.bookingRequested.title": "Kërkesa për rezervim u dërgua",
   "notifications.types.bookingRequested.message":
     "Kërkesa jote për rezervim iu dërgua biznesit për shqyrtim.",
+'billing.currentPlan': 'Plani aktual',
+'billing.subscriptionStatus': 'Statusi i abonimit',
+'billing.trialActive': 'Periudha provuese aktive',
+'billing.trialEndsOn': 'Periudha provuese përfundon',
+'billing.noTrialConfigured': 'Nuk është caktuar datë për periudhën provuese.',
 };
