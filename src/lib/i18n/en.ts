@@ -2196,4 +2196,11 @@ export const en: TranslationTree = {
   "notifications.types.staffProfile.title": "Staff profile update",
   "notifications.types.staffProfile.message":
     "Your staff profile or access has been updated.",
+  "notifications.types.bookingRescheduledByBusiness.title":
+    "Booking rescheduled",
+  "notifications.types.bookingRescheduledByBusiness.message":
+    "Your booking was moved to a new appointment time by the business.",
+  "notifications.types.bookingRequested.title": "Booking request sent",
+  "notifications.types.bookingRequested.message":
+    "Your booking request has been sent to the business for review.",
 };

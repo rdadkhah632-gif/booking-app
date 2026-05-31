@@ -1,213 +1,232 @@
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import AuthNav from '@/components/AuthNav'
-import { supabase } from '@/lib/supabaseClient'
-import { useI18n } from '@/lib/useI18n'
-
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import AuthNav from "@/components/AuthNav";
+import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/useI18n";
 
 type StaffMember = {
-  id: string
-  business_id: string
-  user_id?: string | null
-  name: string
-  role_title?: string | null
-  email?: string | null
-  phone?: string | null
-  image_url?: string | null
-  invite_status?: string | null
-  permission_role?: string | null
-  active: boolean
-  businesses?: {
-    name: string
-    city?: string | null
-    category?: string | null
-  } | {
-    name: string
-    city?: string | null
-    category?: string | null
-  }[] | null
-}
+  id: string;
+  business_id: string;
+  user_id?: string | null;
+  name: string;
+  role_title?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  image_url?: string | null;
+  invite_status?: string | null;
+  permission_role?: string | null;
+  active: boolean;
+  businesses?:
+    | {
+        name: string;
+        city?: string | null;
+        category?: string | null;
+      }
+    | {
+        name: string;
+        city?: string | null;
+        category?: string | null;
+      }[]
+    | null;
+};
 
 type Service = {
-  id: string
-  name: string
-  duration_minutes?: number | null
-  price?: number | null
-  active?: boolean | null
-}
+  id: string;
+  name: string;
+  duration_minutes?: number | null;
+  price?: number | null;
+  active?: boolean | null;
+};
 
 type StaffService = {
-  staff_member_id: string
-  service_id: string
-  services?: Service | Service[] | null
-}
+  staff_member_id: string;
+  service_id: string;
+  services?: Service | Service[] | null;
+};
 
 type Booking = {
-  id: string
-  business_id: string
-  service_id?: string | null
-  staff_member_id?: string | null
-  customer_user_id?: string | null
-  customer_name: string
-  customer_email?: string | null
-  customer_phone?: string | null
-  customer_notes?: string | null
-  internal_notes?: string | null
-  start_at: string
-  end_at?: string | null
-  duration_minutes: number
-  status: string
-  services?: {
-    name: string
-    price?: number | null
-  } | {
-    name: string
-    price?: number | null
-  }[] | null
-  businesses?: {
-    name: string
-  } | {
-    name: string
-  }[] | null
-}
+  id: string;
+  business_id: string;
+  service_id?: string | null;
+  staff_member_id?: string | null;
+  customer_user_id?: string | null;
+  customer_name: string;
+  customer_email?: string | null;
+  customer_phone?: string | null;
+  customer_notes?: string | null;
+  internal_notes?: string | null;
+  start_at: string;
+  end_at?: string | null;
+  duration_minutes: number;
+  status: string;
+  services?:
+    | {
+        name: string;
+        price?: number | null;
+      }
+    | {
+        name: string;
+        price?: number | null;
+      }[]
+    | null;
+  businesses?:
+    | {
+        name: string;
+      }
+    | {
+        name: string;
+      }[]
+    | null;
+};
 
 type BookingRequest = {
-  id: string
-  booking_id: string
-  business_id: string
-  request_type: string
-  requested_by: string
-  status: string
-  current_start_at?: string | null
-  requested_start_at?: string | null
-  message?: string | null
-  bookings?: {
-    customer_name: string
-    services?: {
-      name: string
-    } | {
-      name: string
-    }[] | null
-  } | {
-    customer_name: string
-    services?: {
-      name: string
-    } | {
-      name: string
-    }[] | null
-  }[] | null
-}
+  id: string;
+  booking_id: string;
+  business_id: string;
+  request_type: string;
+  requested_by: string;
+  status: string;
+  current_start_at?: string | null;
+  requested_start_at?: string | null;
+  message?: string | null;
+  bookings?:
+    | {
+        customer_name: string;
+        services?:
+          | {
+              name: string;
+            }
+          | {
+              name: string;
+            }[]
+          | null;
+      }
+    | {
+        customer_name: string;
+        services?:
+          | {
+              name: string;
+            }
+          | {
+              name: string;
+            }[]
+          | null;
+      }[]
+    | null;
+};
 
 function startOfDay(date: Date) {
-  const copy = new Date(date)
-  copy.setHours(0, 0, 0, 0)
-  return copy
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
 }
 
 function endOfDay(date: Date) {
-  const copy = new Date(date)
-  copy.setHours(23, 59, 59, 999)
-  return copy
+  const copy = new Date(date);
+  copy.setHours(23, 59, 59, 999);
+  return copy;
 }
 
 function addDays(date: Date, days: number) {
-  const copy = new Date(date)
-  copy.setDate(copy.getDate() + days)
-  return copy
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() + days);
+  return copy;
 }
 
 function formatDateInputValue(date: Date) {
-  const yyyy = date.getFullYear()
-  const mm = String(date.getMonth() + 1).padStart(2, '0')
-  const dd = String(date.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
-
 function statusColor(status: string) {
-  if (status === 'pending') return 'var(--accent)'
-  if (status === 'confirmed') return 'var(--success)'
-  if (status === 'completed') return 'var(--success)'
-  if (status === 'cancelled') return 'var(--warning)'
-  return 'var(--text-muted)'
+  if (status === "pending") return "var(--accent)";
+  if (status === "confirmed") return "var(--success)";
+  if (status === "completed") return "var(--success)";
+  if (status === "cancelled") return "var(--warning)";
+  return "var(--text-muted)";
 }
 
 function statusBackground(status: string) {
-  if (status === 'pending') return 'rgba(255,107,53,0.12)'
-  if (status === 'confirmed') return 'rgba(45,212,191,0.12)'
-  if (status === 'completed') return 'rgba(45,212,191,0.12)'
-  if (status === 'cancelled') return 'rgba(255,190,11,0.12)'
-  return 'var(--surface-2)'
+  if (status === "pending") return "rgba(255,107,53,0.12)";
+  if (status === "confirmed") return "rgba(45,212,191,0.12)";
+  if (status === "completed") return "rgba(45,212,191,0.12)";
+  if (status === "cancelled") return "rgba(255,190,11,0.12)";
+  return "var(--surface-2)";
 }
 
 function firstServiceName(booking: Booking) {
   return Array.isArray(booking.services)
     ? booking.services[0]?.name
-    : booking.services?.name
+    : booking.services?.name;
 }
 
 function firstBusinessName(booking: Booking) {
   return Array.isArray(booking.businesses)
     ? booking.businesses[0]?.name
-    : booking.businesses?.name
+    : booking.businesses?.name;
 }
 
 function firstRequestBooking(request: BookingRequest) {
   return Array.isArray(request.bookings)
     ? request.bookings[0]
-    : request.bookings
+    : request.bookings;
 }
 
 function firstRequestServiceName(request: BookingRequest) {
-  const requestBooking = firstRequestBooking(request)
-  const services = requestBooking?.services
+  const requestBooking = firstRequestBooking(request);
+  const services = requestBooking?.services;
 
-  return Array.isArray(services)
-    ? services[0]?.name
-    : services?.name
+  return Array.isArray(services) ? services[0]?.name : services?.name;
 }
 
 export default function StaffDashboardPage() {
-  const router = useRouter()
-  const { t } = useI18n()
+  const router = useRouter();
+  const { t } = useI18n();
   function statusLabel(status: string) {
-    if (status === 'pending') return t('staff.status.pending', 'Pending approval')
-    if (status === 'confirmed') return t('staff.status.confirmed', 'Confirmed')
-    if (status === 'completed') return t('staff.status.completed', 'Completed')
-    if (status === 'cancelled') return t('staff.status.cancelled', 'Cancelled')
-    return status
+    if (status === "pending")
+      return t("staff.status.pending", "Pending approval");
+    if (status === "confirmed") return t("staff.status.confirmed", "Confirmed");
+    if (status === "completed") return t("staff.status.completed", "Completed");
+    if (status === "cancelled") return t("staff.status.cancelled", "Cancelled");
+    return status;
   }
 
-
-  const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null)
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [requests, setRequests] = useState<BookingRequest[]>([])
-  const [assignedServices, setAssignedServices] = useState<Service[]>([])
-  const [selectedDate, setSelectedDate] = useState(formatDateInputValue(new Date()))
-  const [statusFilter, setStatusFilter] = useState('active')
-  const [loading, setLoading] = useState(true)
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [requests, setRequests] = useState<BookingRequest[]>([]);
+  const [assignedServices, setAssignedServices] = useState<Service[]>([]);
+  const [selectedDate, setSelectedDate] = useState(
+    formatDateInputValue(new Date()),
+  );
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function loadStaffDashboard() {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace('/login?redirectTo=/staff')
-        return
+        router.replace("/login?redirectTo=/staff");
+        return;
       }
 
-      const userEmail = session.user.email?.trim().toLowerCase() || ''
+      const userEmail = session.user.email?.trim().toLowerCase() || "";
 
       let { data: linkedStaff, error: linkedStaffError } = await supabase
-        .from('staff_members')
-        .select(`
+        .from("staff_members")
+        .select(
+          `
           id,
           business_id,
           user_id,
@@ -224,17 +243,19 @@ export default function StaffDashboardPage() {
             city,
             category
           )
-        `)
-        .eq('user_id', session.user.id)
+        `,
+        )
+        .eq("user_id", session.user.id)
         .limit(1)
-        .maybeSingle()
+        .maybeSingle();
 
-      if (linkedStaffError) throw linkedStaffError
+      if (linkedStaffError) throw linkedStaffError;
 
       if (!linkedStaff && userEmail) {
         const { data: inviteMatch, error: inviteMatchError } = await supabase
-          .from('staff_members')
-          .select(`
+          .from("staff_members")
+          .select(
+            `
             id,
             business_id,
             user_id,
@@ -251,47 +272,50 @@ export default function StaffDashboardPage() {
               city,
               category
             )
-          `)
-          .eq('email', userEmail)
-          .is('user_id', null)
+          `,
+          )
+          .eq("email", userEmail)
+          .is("user_id", null)
           .limit(1)
-          .maybeSingle()
+          .maybeSingle();
 
-        if (inviteMatchError) throw inviteMatchError
+        if (inviteMatchError) throw inviteMatchError;
 
         if (inviteMatch?.id) {
           const { error: linkError } = await supabase
-            .from('staff_members')
+            .from("staff_members")
             .update({
               user_id: session.user.id,
-              invite_status: 'linked'
+              invite_status: "linked",
             })
-            .eq('id', inviteMatch.id)
+            .eq("id", inviteMatch.id);
 
-          if (linkError) throw linkError
+          if (linkError) throw linkError;
 
           linkedStaff = {
             ...inviteMatch,
             user_id: session.user.id,
-            invite_status: 'linked'
-          }
+            invite_status: "linked",
+          };
         }
       }
 
       if (!linkedStaff) {
-        setStaffProfile(null)
-        setBookings([])
-        setRequests([])
-        setAssignedServices([])
-        setLoading(false)
-        return
+        setStaffProfile(null);
+        setBookings([]);
+        setRequests([]);
+        setAssignedServices([]);
+        setLoading(false);
+        return;
       }
 
-      setStaffProfile(linkedStaff as unknown as StaffMember)
+      setStaffProfile(linkedStaff as unknown as StaffMember);
 
-      const { data: assignedServiceData, error: assignedServiceError } = await supabase
-        .from('staff_services')
-        .select(`
+      const { data: assignedServiceData, error: assignedServiceError } =
+        await supabase
+          .from("staff_services")
+          .select(
+            `
           staff_member_id,
           service_id,
           services (
@@ -301,20 +325,24 @@ export default function StaffDashboardPage() {
             price,
             active
           )
-        `)
-        .eq('staff_member_id', linkedStaff.id)
+        `,
+          )
+          .eq("staff_member_id", linkedStaff.id);
 
-      if (assignedServiceError) throw assignedServiceError
+      if (assignedServiceError) throw assignedServiceError;
 
       const normalisedAssignedServices = (assignedServiceData || [])
-        .map((row: any) => Array.isArray(row.services) ? row.services[0] : row.services)
-        .filter(Boolean)
+        .map((row: any) =>
+          Array.isArray(row.services) ? row.services[0] : row.services,
+        )
+        .filter(Boolean);
 
-      setAssignedServices(normalisedAssignedServices as Service[])
+      setAssignedServices(normalisedAssignedServices as Service[]);
 
       const { data: bookingData, error: bookingError } = await supabase
-        .from('bookings')
-        .select(`
+        .from("bookings")
+        .select(
+          `
           id,
           business_id,
           service_id,
@@ -336,20 +364,22 @@ export default function StaffDashboardPage() {
           businesses (
             name
           )
-        `)
-        .eq('staff_member_id', linkedStaff.id)
-        .order('start_at', { ascending: true })
+        `,
+        )
+        .eq("staff_member_id", linkedStaff.id)
+        .order("start_at", { ascending: true });
 
-      if (bookingError) throw bookingError
+      if (bookingError) throw bookingError;
 
-      setBookings((bookingData || []) as unknown as Booking[])
+      setBookings((bookingData || []) as unknown as Booking[]);
 
-      const bookingIds = (bookingData || []).map((booking: any) => booking.id)
+      const bookingIds = (bookingData || []).map((booking: any) => booking.id);
 
       if (bookingIds.length > 0) {
         const { data: requestData, error: requestError } = await supabase
-          .from('booking_requests')
-          .select(`
+          .from("booking_requests")
+          .select(
+            `
             id,
             booking_id,
             business_id,
@@ -365,238 +395,302 @@ export default function StaffDashboardPage() {
                 name
               )
             )
-          `)
-          .in('booking_id', bookingIds)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
+          `,
+          )
+          .in("booking_id", bookingIds)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
 
-        if (requestError) throw requestError
+        if (requestError) throw requestError;
 
-        setRequests((requestData || []) as unknown as BookingRequest[])
+        setRequests((requestData || []) as unknown as BookingRequest[]);
       } else {
-        setRequests([])
+        setRequests([]);
       }
 
-      setLoading(false)
+      setLoading(false);
     } catch (err: any) {
-      setError(err.message || t('staff.error.loadDashboard', 'Could not load your staff dashboard.'))
-      setLoading(false)
+      setError(
+        err.message ||
+          t(
+            "staff.error.loadDashboard",
+            "Could not load your staff dashboard.",
+          ),
+      );
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-    if (!router.isReady) return
-    loadStaffDashboard()
-  }, [router.isReady])
+    if (!router.isReady) return;
+    loadStaffDashboard();
+  }, [router.isReady]);
 
-  const now = useMemo(() => new Date(), [bookings])
+  const now = useMemo(() => new Date(), [bookings]);
 
   const todayBookings = useMemo(() => {
-    const start = startOfDay(new Date())
-    const end = endOfDay(new Date())
+    const start = startOfDay(new Date());
+    const end = endOfDay(new Date());
 
     return bookings.filter((booking) => {
-      const startAt = new Date(booking.start_at)
-      return startAt >= start && startAt <= end
-    })
-  }, [bookings])
+      const startAt = new Date(booking.start_at);
+      return startAt >= start && startAt <= end;
+    });
+  }, [bookings]);
 
   const upcomingBookings = useMemo(() => {
-    return bookings.filter((booking) =>
-      ['pending', 'confirmed'].includes(booking.status) &&
-      new Date(booking.start_at) >= now
-    )
-  }, [bookings, now])
+    return bookings.filter(
+      (booking) =>
+        ["pending", "confirmed"].includes(booking.status) &&
+        new Date(booking.start_at) >= now,
+    );
+  }, [bookings, now]);
 
   const completedBookings = useMemo(() => {
-    return bookings.filter((booking) => booking.status === 'completed')
-  }, [bookings])
+    return bookings.filter((booking) => booking.status === "completed");
+  }, [bookings]);
 
   const nextBooking = useMemo(() => {
-    return [...upcomingBookings].sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())[0] || null
-  }, [upcomingBookings])
+    return (
+      [...upcomingBookings].sort(
+        (a, b) =>
+          new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
+      )[0] || null
+    );
+  }, [upcomingBookings]);
 
   const pendingBookings = useMemo(() => {
-    return bookings.filter((booking) => booking.status === 'pending')
-  }, [bookings])
+    return bookings.filter((booking) => booking.status === "pending");
+  }, [bookings]);
 
   const confirmedUpcomingBookings = useMemo(() => {
-    return upcomingBookings.filter((booking) => booking.status === 'confirmed')
-  }, [upcomingBookings])
+    return upcomingBookings.filter((booking) => booking.status === "confirmed");
+  }, [upcomingBookings]);
 
   const selectedDateLabel = useMemo(() => {
     return new Date(`${selectedDate}T12:00:00`).toLocaleDateString(undefined, {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    })
-  }, [selectedDate])
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  }, [selectedDate]);
 
   const selectedDateBookings = useMemo(() => {
-    const selected = new Date(`${selectedDate}T12:00:00`)
-    const start = startOfDay(selected)
-    const end = endOfDay(selected)
+    const selected = new Date(`${selectedDate}T12:00:00`);
+    const start = startOfDay(selected);
+    const end = endOfDay(selected);
 
     return bookings.filter((booking) => {
-      const startAt = new Date(booking.start_at)
-      const matchesDate = startAt >= start && startAt <= end
+      const startAt = new Date(booking.start_at);
+      const matchesDate = startAt >= start && startAt <= end;
 
-      if (!matchesDate) return false
+      if (!matchesDate) return false;
 
-      if (statusFilter === 'active') {
-        return booking.status === 'pending' || booking.status === 'confirmed'
+      if (statusFilter === "active") {
+        return booking.status === "pending" || booking.status === "confirmed";
       }
 
-      if (statusFilter === 'history') {
-        return booking.status === 'completed' || booking.status === 'cancelled'
+      if (statusFilter === "history") {
+        return booking.status === "completed" || booking.status === "cancelled";
       }
 
-      if (statusFilter === 'all') return true
+      if (statusFilter === "all") return true;
 
-      return booking.status === statusFilter
-    })
-  }, [bookings, selectedDate, statusFilter])
+      return booking.status === statusFilter;
+    });
+  }, [bookings, selectedDate, statusFilter]);
 
   const nextSevenDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(new Date(), index)
-      const dateString = formatDateInputValue(date)
-      const start = startOfDay(date)
-      const end = endOfDay(date)
+      const date = addDays(new Date(), index);
+      const dateString = formatDateInputValue(date);
+      const start = startOfDay(date);
+      const end = endOfDay(date);
 
       const count = bookings.filter((booking) => {
-        const startAt = new Date(booking.start_at)
-        return startAt >= start && startAt <= end && ['pending', 'confirmed'].includes(booking.status)
-      }).length
+        const startAt = new Date(booking.start_at);
+        return (
+          startAt >= start &&
+          startAt <= end &&
+          ["pending", "confirmed"].includes(booking.status)
+        );
+      }).length;
 
       return {
         date,
         dateString,
-        label: index === 0
-          ? t('staff.schedule.today', 'Today')
-          : index === 1
-            ? t('staff.schedule.tomorrow', 'Tomorrow')
-            : date.toLocaleDateString(undefined, { weekday: 'short' }),
-        subLabel: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
-        count
-      }
-    })
-  }, [bookings])
+        label:
+          index === 0
+            ? t("staff.schedule.today", "Today")
+            : index === 1
+              ? t("staff.schedule.tomorrow", "Tomorrow")
+              : date.toLocaleDateString(undefined, { weekday: "short" }),
+        subLabel: date.toLocaleDateString(undefined, {
+          day: "numeric",
+          month: "short",
+        }),
+        count,
+      };
+    });
+  }, [bookings]);
   async function createCustomerNotification(params: {
-    booking: Booking
-    type: string
-    title: string
-    message: string
-    actionUrl: string
+    booking: Booking;
+    type: string;
+    title: string;
+    message: string;
+    actionUrl: string;
   }) {
-    if (!params.booking.customer_user_id) return
+    if (!params.booking.customer_user_id) return;
 
-    await supabase.from('notifications').insert({
+    await supabase.from("notifications").insert({
       user_id: params.booking.customer_user_id,
       business_id: params.booking.business_id,
       booking_id: params.booking.id,
-      audience: 'customer',
+      audience: "customer",
       type: params.type,
       title: params.title,
       message: params.message,
-      action_url: params.actionUrl
-    })
+      action_url: params.actionUrl,
+    });
   }
 
   function appointmentDateTime(booking: Booking) {
-    return new Date(booking.start_at).toLocaleString()
+    return new Date(booking.start_at).toLocaleString();
   }
   async function markBookingComplete(booking: Booking) {
-    const confirmed = confirm(t('staff.booking.confirmComplete', 'Mark this appointment as completed?'))
-    if (!confirmed) return
+    const confirmed = confirm(
+      t("staff.booking.confirmComplete", "Mark this appointment as completed?"),
+    );
+    if (!confirmed) return;
 
-    setActionLoadingId(booking.id)
-    setError(null)
-    setSuccess(null)
+    setActionLoadingId(booking.id);
+    setError(null);
+    setSuccess(null);
 
     const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'completed' })
-      .eq('id', booking.id)
-      .eq('staff_member_id', staffProfile?.id || '')
+      .from("bookings")
+      .update({ status: "completed" })
+      .eq("id", booking.id)
+      .eq("staff_member_id", staffProfile?.id || "");
 
-    setActionLoadingId(null)
+    setActionLoadingId(null);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
     await createCustomerNotification({
       booking,
-      type: 'booking_completed',
-      title: t('staff.notification.completedTitle', 'Appointment completed'),
-      message: `${t('staff.notification.completedStart', 'Your appointment for')} ${firstServiceName(booking) || t('staff.fallback.appointment', 'your appointment')} ${t('staff.notification.completedMiddle', 'on')} ${appointmentDateTime(booking)} ${t('staff.notification.completedEnd', 'has been marked as completed by staff.')}`,
-      actionUrl: '/my-bookings'
-    })
-    setSuccess(t('staff.booking.completedSuccess', 'Appointment marked as completed.'))
-    await loadStaffDashboard()
+      type: "booking_completed",
+      title: t("staff.notification.completedTitle", "Appointment completed"),
+      message: `${t("staff.notification.completedStart", "Your appointment for")} ${firstServiceName(booking) || t("staff.fallback.appointment", "your appointment")} ${t("staff.notification.completedMiddle", "on")} ${appointmentDateTime(booking)} ${t("staff.notification.completedEnd", "has been marked as completed by staff.")}`,
+      actionUrl: "/my-bookings",
+    });
+    setSuccess(
+      t("staff.booking.completedSuccess", "Appointment marked as completed."),
+    );
+    await loadStaffDashboard();
   }
 
   function renderBookingCard(booking: Booking) {
-    const start = new Date(booking.start_at)
+    const start = new Date(booking.start_at);
     const end = booking.end_at
       ? new Date(booking.end_at)
-      : new Date(start.getTime() + booking.duration_minutes * 60000)
+      : new Date(start.getTime() + booking.duration_minutes * 60000);
 
-    const isWorking = actionLoadingId === booking.id
-    const canComplete = booking.status === 'confirmed' && start <= new Date()
-    const isUpcoming = ['pending', 'confirmed'].includes(booking.status) && start >= new Date()
+    const isWorking = actionLoadingId === booking.id;
+    const canComplete = booking.status === "confirmed" && start <= new Date();
+    const isUpcoming =
+      ["pending", "confirmed"].includes(booking.status) && start >= new Date();
 
     return (
       <div key={booking.id} className="card staff-booking-card">
         <div className="staff-booking-card-inner">
           <div>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <h3>{booking.customer_name || t('common.customer', 'Customer')}</h3>
+            <div
+              style={{
+                display: "flex",
+                gap: "0.5rem",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <h3>
+                {booking.customer_name || t("common.customer", "Customer")}
+              </h3>
               <span
                 className="small"
                 style={{
                   background: statusBackground(booking.status),
                   color: statusColor(booking.status),
-                  padding: '0.2rem 0.55rem',
-                  borderRadius: 999
+                  padding: "0.2rem 0.55rem",
+                  borderRadius: 999,
                 }}
               >
                 {statusLabel(booking.status)}
               </span>
             </div>
 
-            <p className="muted small" style={{ marginTop: '0.35rem' }}>
-              {firstServiceName(booking) || t('common.service', 'Service')} · {booking.duration_minutes} {t('common.minutes', 'minutes')}
+            <p className="muted small" style={{ marginTop: "0.35rem" }}>
+              {firstServiceName(booking) || t("common.service", "Service")} ·{" "}
+              {booking.duration_minutes} {t("common.minutes", "minutes")}
             </p>
 
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {start.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <p className="small muted" style={{ marginTop: "0.35rem" }}>
+              {start.toLocaleDateString(undefined, {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}{" "}
+              ·{" "}
+              {start.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}{" "}
+              -{" "}
+              {end.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
 
             {isUpcoming && (
-              <p className="small" style={{ color: 'var(--accent)', marginTop: '0.35rem' }}>
-                {t('staff.booking.upcomingHint', 'Upcoming appointment')}
+              <p
+                className="small"
+                style={{ color: "var(--accent)", marginTop: "0.35rem" }}
+              >
+                {t("staff.booking.upcomingHint", "Upcoming appointment")}
               </p>
             )}
 
             {(booking.customer_email || booking.customer_phone) && (
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {[booking.customer_email, booking.customer_phone].filter(Boolean).join(' · ')}
+              <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                {[booking.customer_email, booking.customer_phone]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
             )}
             {(booking.customer_notes || booking.internal_notes) && (
               <div className="staff-notes-box">
                 {booking.customer_notes && (
                   <>
-                    <p className="small muted">{t('staff.booking.customerNote', 'Customer note')}</p>
+                    <p className="small muted">
+                      {t("staff.booking.customerNote", "Customer note")}
+                    </p>
                     <p className="small">{booking.customer_notes}</p>
                   </>
                 )}
 
                 {booking.internal_notes && (
                   <>
-                    <p className="small muted" style={{ marginTop: booking.customer_notes ? '0.65rem' : 0 }}>{t('staff.booking.internalNote', 'Internal note')}</p>
+                    <p
+                      className="small muted"
+                      style={{
+                        marginTop: booking.customer_notes ? "0.65rem" : 0,
+                      }}
+                    >
+                      {t("staff.booking.internalNote", "Internal note")}
+                    </p>
                     <p className="small">{booking.internal_notes}</p>
                   </>
                 )}
@@ -606,14 +700,20 @@ export default function StaffDashboardPage() {
 
           <div className="staff-booking-actions">
             {booking.customer_email && (
-              <a href={`mailto:${booking.customer_email}`} className="btn btn-ghost">
-                {t('staff.booking.emailCustomer', 'Email customer')}
+              <a
+                href={`mailto:${booking.customer_email}`}
+                className="btn btn-ghost"
+              >
+                {t("staff.booking.emailCustomer", "Email customer")}
               </a>
             )}
 
             {!booking.customer_email && booking.customer_phone && (
-              <a href={`tel:${booking.customer_phone}`} className="btn btn-ghost">
-                {t('staff.booking.callCustomer', 'Call customer')}
+              <a
+                href={`tel:${booking.customer_phone}`}
+                className="btn btn-ghost"
+              >
+                {t("staff.booking.callCustomer", "Call customer")}
               </a>
             )}
 
@@ -624,48 +724,81 @@ export default function StaffDashboardPage() {
                 disabled={isWorking}
                 onClick={() => markBookingComplete(booking)}
               >
-                {isWorking ? t('common.saving', 'Saving...') : t('staff.booking.markComplete', 'Mark complete')}
+                {isWorking
+                  ? t("common.saving", "Saving...")
+                  : t("staff.booking.markComplete", "Mark complete")}
               </button>
             )}
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (loading) {
     return (
       <main>
         <AuthNav />
-        <section className="container" style={{ paddingTop: 40, paddingBottom: 48 }}>
+        <section
+          className="container"
+          style={{ paddingTop: 40, paddingBottom: 48 }}
+        >
           <div className="card">
-            <p className="muted">{t('staff.loadingSchedule', 'Loading your Mirëbook staff schedule...')}</p>
+            <p className="muted">
+              {t(
+                "staff.loadingSchedule",
+                "Loading your Mirëbook staff schedule...",
+              )}
+            </p>
           </div>
         </section>
       </main>
-    )
+    );
   }
 
   return (
     <main>
       <AuthNav />
 
-      <section className="container" style={{ paddingTop: 32, paddingBottom: 48 }}>
+      <section
+        className="container"
+        style={{ paddingTop: 32, paddingBottom: 48 }}
+      >
         {!staffProfile && (
           <div className="card">
-            <p className="small" style={{ color: 'var(--warning)' }}>{t('staff.noProfile.kicker', 'No staff profile linked')}</p>
-            <h1 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-              {t('staff.noProfile.title', 'Ask the business owner to invite you')}
-            </h1>
-            <p className="muted" style={{ marginTop: '0.75rem' }}>
-              {t('staff.noProfile.body', 'This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.')}
+            <p className="small" style={{ color: "var(--warning)" }}>
+              {t("staff.noProfile.kicker", "No staff profile linked")}
             </p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                marginTop: "0.25rem",
+              }}
+            >
+              {t(
+                "staff.noProfile.title",
+                "Ask the business owner to invite you",
+              )}
+            </h1>
+            <p className="muted" style={{ marginTop: "0.75rem" }}>
+              {t(
+                "staff.noProfile.body",
+                "This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.",
+              )}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: "0.75rem",
+                flexWrap: "wrap",
+                marginTop: "1rem",
+              }}
+            >
               <Link href="/support/staff" className="btn btn-ghost">
-                {t('nav.staffSupport', 'Staff support')}
+                {t("nav.staffSupport", "Staff support")}
               </Link>
               <Link href="/account" className="btn btn-accent">
-                {t('account.title', 'Account settings')}
+                {t("account.title", "Account settings")}
               </Link>
             </div>
           </div>
@@ -681,70 +814,111 @@ export default function StaffDashboardPage() {
                   ) : (
                     <span>
                       {staffProfile.name
-                        .split(' ')
+                        .split(" ")
                         .map((part) => part[0])
                         .filter(Boolean)
-                        .join('')
+                        .join("")
                         .slice(0, 2)
-                        .toUpperCase() || 'MB'}
+                        .toUpperCase() || "MB"}
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
-                    {t('staff.workspace.kicker', 'Staff workspace')}
+                  <p
+                    className="small"
+                    style={{ color: "var(--accent)", marginBottom: "0.35rem" }}
+                  >
+                    {t("staff.workspace.kicker", "Staff workspace")}
                   </p>
                   <h1 className="page-title">
-                    {t('staff.workspace.greeting', 'Hi')} {staffProfile.name}
+                    {t("staff.workspace.greeting", "Hi")} {staffProfile.name}
                   </h1>
-                  <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                    {(Array.isArray(staffProfile.businesses) ? staffProfile.businesses[0]?.name : staffProfile.businesses?.name) || t('staff.fallback.business', 'Your business')} · {staffProfile.role_title || staffProfile.permission_role || t('staff.fallback.member', 'Staff member')} · {t('staff.workspace.staffOnly', 'Staff-only workspace')}
+                  <p className="page-sub" style={{ marginTop: "0.5rem" }}>
+                    {(Array.isArray(staffProfile.businesses)
+                      ? staffProfile.businesses[0]?.name
+                      : staffProfile.businesses?.name) ||
+                      t("staff.fallback.business", "Your business")}{" "}
+                    ·{" "}
+                    {staffProfile.role_title ||
+                      staffProfile.permission_role ||
+                      t("staff.fallback.member", "Staff member")}{" "}
+                    · {t("staff.workspace.staffOnly", "Staff-only workspace")}
                   </p>
                 </div>
               </div>
 
               <div className="staff-hero-actions">
                 <Link href="/staff/calendar" className="btn btn-accent">
-                  {t('staffCalendar.title', 'Calendar view')}
+                  {t("staffCalendar.title", "Calendar view")}
                 </Link>
                 <Link href="/staff/availability" className="btn btn-ghost">
-                  {t('staff.actions.updateAvailability', 'Update availability')}
+                  {t("staff.actions.updateAvailability", "Update availability")}
                 </Link>
                 <Link href="/staff/notifications" className="btn btn-ghost">
-                  {t('staffNotifications.title', 'Updates')}
+                  {t("staffNotifications.title", "Updates")}
                 </Link>
               </div>
             </div>
 
             <div className="card staff-assigned-services-card">
               <div>
-                <p className="small muted">{t('staff.assignedServices.kicker', 'Assigned services')}</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                  {t('staff.assignedServices.title', 'What you can be booked for')}
+                <p className="small muted">
+                  {t("staff.assignedServices.kicker", "Assigned services")}
+                </p>
+                <h2
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    marginTop: "0.25rem",
+                  }}
+                >
+                  {t(
+                    "staff.assignedServices.title",
+                    "What you can be booked for",
+                  )}
                 </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                  {t('staff.assignedServices.body', 'These services are controlled by the business owner. Your availability affects when customers can book you for them.')}
+                <p className="muted small" style={{ marginTop: "0.35rem" }}>
+                  {t(
+                    "staff.assignedServices.body",
+                    "These services are controlled by the business owner. Your availability affects when customers can book you for them.",
+                  )}
                 </p>
               </div>
 
               {assignedServices.length === 0 ? (
                 <div className="card staff-empty-action-card">
                   <p className="small muted">
-                    {t('staff.assignedServices.empty', 'No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.')}
+                    {t(
+                      "staff.assignedServices.empty",
+                      "No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.",
+                    )}
                   </p>
-                  <Link href="/support/staff" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
-                    {t('nav.staffSupport', 'Staff support')}
+                  <Link
+                    href="/support/staff"
+                    className="btn btn-ghost"
+                    style={{ marginTop: "0.75rem" }}
+                  >
+                    {t("nav.staffSupport", "Staff support")}
                   </Link>
                 </div>
               ) : (
                 <div className="staff-assigned-services-grid">
                   {assignedServices.map((service) => (
-                    <div key={service.id} className="staff-assigned-service-pill">
+                    <div
+                      key={service.id}
+                      className="staff-assigned-service-pill"
+                    >
                       <strong>{service.name}</strong>
                       <span>
-                        {service.duration_minutes ? `${service.duration_minutes} min` : t('staff.assignedServices.durationNotSet', 'Duration not set')}
-                        {service.price ? ` · £${Number(service.price).toFixed(2)}` : ''}
+                        {service.duration_minutes
+                          ? `${service.duration_minutes} min`
+                          : t(
+                              "staff.assignedServices.durationNotSet",
+                              "Duration not set",
+                            )}
+                        {service.price
+                          ? ` · £${Number(service.price).toFixed(2)}`
+                          : ""}
                       </span>
                     </div>
                   ))}
@@ -753,29 +927,55 @@ export default function StaffDashboardPage() {
             </div>
 
             {success && (
-              <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
-                <p style={{ color: 'var(--success)' }}>{success}</p>
+              <div
+                className="card"
+                style={{
+                  borderColor: "rgba(45,212,191,0.35)",
+                  background: "rgba(45,212,191,0.06)",
+                  marginBottom: "1rem",
+                }}
+              >
+                <p style={{ color: "var(--success)" }}>{success}</p>
               </div>
             )}
 
             {error && (
-              <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
-                <p style={{ color: 'var(--danger)' }}>{error}</p>
+              <div
+                className="card"
+                style={{
+                  borderColor: "rgba(255,77,109,0.35)",
+                  marginBottom: "1rem",
+                }}
+              >
+                <p style={{ color: "var(--danger)" }}>{error}</p>
               </div>
             )}
 
             <div className="card staff-today-card">
               <div>
-                <p className="small muted">{t('staff.today.kicker', 'Today’s workflow')}</p>
-                <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
+                <p className="small muted">
+                  {t("staff.today.kicker", "Today’s workflow")}
+                </p>
+                <h2
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    marginTop: "0.25rem",
+                  }}
+                >
                   {todayBookings.length > 0
-                    ? t('staff.today.titleWithBookings', 'You have appointments today')
-                    : t('staff.today.titleEmpty', 'No appointments today')}
+                    ? t(
+                        "staff.today.titleWithBookings",
+                        "You have appointments today",
+                      )
+                    : t("staff.today.titleEmpty", "No appointments today")}
                 </h2>
-                <p className="muted small" style={{ marginTop: '0.35rem' }}>
+                <p className="muted small" style={{ marginTop: "0.35rem" }}>
                   {nextBooking
-                    ? `${t('staff.today.nextPrefix', 'Next appointment')}: ${nextBooking.customer_name || t('common.customer', 'Customer')} · ${new Date(nextBooking.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                    : t('staff.today.noUpcoming', 'No upcoming assigned appointments are waiting in your schedule.')}
+                    ? `${t("staff.today.nextPrefix", "Next appointment")}: ${nextBooking.customer_name || t("common.customer", "Customer")} · ${new Date(nextBooking.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                    : t(
+                        "staff.today.noUpcoming",
+                        "No upcoming assigned appointments are waiting in your schedule.",
+                      )}
                 </p>
               </div>
 
@@ -784,79 +984,150 @@ export default function StaffDashboardPage() {
                   type="button"
                   className="btn btn-accent"
                   onClick={() => {
-                    setSelectedDate(formatDateInputValue(new Date()))
-                    setStatusFilter('active')
+                    setSelectedDate(formatDateInputValue(new Date()));
+                    setStatusFilter("active");
                   }}
                 >
-                  {t('staff.today.viewToday', 'View today')}
+                  {t("staff.today.viewToday", "View today")}
                 </button>
                 <Link href="/staff/calendar" className="btn btn-ghost">
-                  {t('staffCalendar.title', 'Calendar view')}
+                  {t("staffCalendar.title", "Calendar view")}
                 </Link>
                 <Link href="/staff/availability" className="btn btn-ghost">
-                  {t('staff.actions.updateAvailability', 'Update availability')}
+                  {t("staff.actions.updateAvailability", "Update availability")}
                 </Link>
               </div>
             </div>
 
-            <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
-              <button type="button" className="card staff-summary-button" onClick={() => {
-                setSelectedDate(formatDateInputValue(new Date()))
-                setStatusFilter('active')
-              }}>
-                <p className="small muted">{t('staff.summary.today', 'Today')}</p>
-                <h3>{todayBookings.length}</h3>
-                <p className="small muted">{t('staff.summary.todayBody', 'Assigned appointments today')}</p>
-              </button>
-
-              <button type="button" className="card staff-summary-button" onClick={() => setStatusFilter('active')}>
-                <p className="small muted">{t('staff.summary.upcoming', 'Upcoming')}</p>
-                <h3>{upcomingBookings.length}</h3>
+            <div className="grid-3" style={{ marginBottom: "1.5rem" }}>
+              <button
+                type="button"
+                className="card staff-summary-button"
+                onClick={() => {
+                  setSelectedDate(formatDateInputValue(new Date()));
+                  setStatusFilter("active");
+                }}
+              >
                 <p className="small muted">
-                  {confirmedUpcomingBookings.length} {t('staff.summary.confirmedShort', 'confirmed')} · {pendingBookings.length} {t('staff.summary.pendingShort', 'pending')}
+                  {t("staff.summary.today", "Today")}
+                </p>
+                <h3>{todayBookings.length}</h3>
+                <p className="small muted">
+                  {t("staff.summary.todayBody", "Assigned appointments today")}
                 </p>
               </button>
 
-              <button type="button" className="card staff-summary-button" onClick={() => setStatusFilter('history')}>
-                <p className="small muted">{t('staff.summary.completed', 'Completed')}</p>
+              <button
+                type="button"
+                className="card staff-summary-button"
+                onClick={() => setStatusFilter("active")}
+              >
+                <p className="small muted">
+                  {t("staff.summary.upcoming", "Upcoming")}
+                </p>
+                <h3>{upcomingBookings.length}</h3>
+                <p className="small muted">
+                  {confirmedUpcomingBookings.length}{" "}
+                  {t("staff.summary.confirmedShort", "confirmed")} ·{" "}
+                  {pendingBookings.length}{" "}
+                  {t("staff.summary.pendingShort", "pending")}
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className="card staff-summary-button"
+                onClick={() => setStatusFilter("history")}
+              >
+                <p className="small muted">
+                  {t("staff.summary.completed", "Completed")}
+                </p>
                 <h3>{completedBookings.length}</h3>
-                <p className="small muted">{t('staff.summary.completedBody', 'Appointments you have completed')}</p>
+                <p className="small muted">
+                  {t(
+                    "staff.summary.completedBody",
+                    "Appointments you have completed",
+                  )}
+                </p>
               </button>
             </div>
 
             {pendingBookings.length > 0 && (
               <div className="card staff-pending-card">
                 <div>
-                  <p className="small muted">{t('staff.pending.kicker', 'Pending bookings')}</p>
-                  <h3>{pendingBookings.length} {pendingBookings.length === 1 ? t('staff.requests.pendingSingle', 'pending request') : t('staff.requests.pendingPlural', 'pending requests')}</h3>
-                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    {t('staff.pending.body', 'These bookings are assigned to you but still need business approval before they become confirmed appointments.')}
+                  <p className="small muted">
+                    {t("staff.pending.kicker", "Pending bookings")}
+                  </p>
+                  <h3>
+                    {pendingBookings.length}{" "}
+                    {pendingBookings.length === 1
+                      ? t("staff.requests.pendingSingle", "pending request")
+                      : t("staff.requests.pendingPlural", "pending requests")}
+                  </h3>
+                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                    {t(
+                      "staff.pending.body",
+                      "These bookings are assigned to you but still need business approval before they become confirmed appointments.",
+                    )}
                   </p>
                 </div>
                 <Link href="/staff/calendar" className="btn btn-ghost">
-                  {t('staffCalendar.title', 'Calendar view')}
+                  {t("staffCalendar.title", "Calendar view")}
                 </Link>
               </div>
             )}
 
             {requests.length > 0 && (
-              <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,107,53,0.35)' }}>
-                <p className="small" style={{ color: 'var(--accent)' }}>{t('staff.requests.kicker', 'Customer actions')}</p>
-                <h3 style={{ marginTop: '0.25rem' }}>{requests.length} {requests.length === 1 ? t('staff.requests.pendingSingle', 'pending request') : t('staff.requests.pendingPlural', 'pending requests')}</h3>
-                <p className="muted small" style={{ marginTop: '0.4rem' }}>
-                  {t('staff.requests.body', 'These requests are visible here for awareness. Business owners or managers approve or decline them from the business dashboard; staff can prepare around likely schedule changes.')}
+              <div
+                className="card"
+                style={{
+                  marginBottom: "1.5rem",
+                  borderColor: "rgba(255,107,53,0.35)",
+                }}
+              >
+                <p className="small" style={{ color: "var(--accent)" }}>
+                  {t("staff.requests.kicker", "Customer actions")}
+                </p>
+                <h3 style={{ marginTop: "0.25rem" }}>
+                  {requests.length}{" "}
+                  {requests.length === 1
+                    ? t("staff.requests.pendingSingle", "pending request")
+                    : t("staff.requests.pendingPlural", "pending requests")}
+                </h3>
+                <p className="muted small" style={{ marginTop: "0.4rem" }}>
+                  {t(
+                    "staff.requests.body",
+                    "These requests are visible here for awareness. Business owners or managers approve or decline them from the business dashboard; staff can prepare around likely schedule changes.",
+                  )}
                 </p>
 
-                <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
+                <div
+                  style={{ display: "grid", gap: "0.75rem", marginTop: "1rem" }}
+                >
                   {requests.slice(0, 3).map((request) => (
-                    <div key={request.id} className="card" style={{ background: 'var(--surface-2)' }}>
-                      <strong>{firstRequestBooking(request)?.customer_name || t('common.customer', 'Customer')}</strong>
-                      <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                        {request.request_type} · {firstRequestServiceName(request) || t('common.service', 'Service')}
+                    <div
+                      key={request.id}
+                      className="card"
+                      style={{ background: "var(--surface-2)" }}
+                    >
+                      <strong>
+                        {firstRequestBooking(request)?.customer_name ||
+                          t("common.customer", "Customer")}
+                      </strong>
+                      <p
+                        className="small muted"
+                        style={{ marginTop: "0.25rem" }}
+                      >
+                        {request.request_type} ·{" "}
+                        {firstRequestServiceName(request) ||
+                          t("common.service", "Service")}
                       </p>
                       {request.requested_start_at && (
                         <p className="small muted">
-                          {t('staff.requests.requested', 'Requested:')} {new Date(request.requested_start_at).toLocaleString()}
+                          {t("staff.requests.requested", "Requested:")}{" "}
+                          {new Date(
+                            request.requested_start_at,
+                          ).toLocaleString()}
                         </p>
                       )}
                     </div>
@@ -865,15 +1136,26 @@ export default function StaffDashboardPage() {
               </div>
             )}
 
-            <div className="card" style={{ marginBottom: '1.5rem' }}>
+            <div className="card" style={{ marginBottom: "1.5rem" }}>
               <div className="staff-schedule-header">
                 <div>
-                  <p className="small muted">{t('staff.schedule.kicker', 'Schedule')}</p>
-                  <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-                    {t('staff.schedule.title', 'Your appointments')} · {selectedDateLabel}
+                  <p className="small muted">
+                    {t("staff.schedule.kicker", "Schedule")}
+                  </p>
+                  <h2
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      marginTop: "0.25rem",
+                    }}
+                  >
+                    {t("staff.schedule.title", "Your appointments")} ·{" "}
+                    {selectedDateLabel}
                   </h2>
-                  <p className="muted small" style={{ marginTop: '0.35rem' }}>
-                    {t('staff.schedule.body', 'Mirëbook shows only appointments assigned to your staff profile. Use the date picker to look further ahead than the quick 7-day view.')}
+                  <p className="muted small" style={{ marginTop: "0.35rem" }}>
+                    {t(
+                      "staff.schedule.body",
+                      "Mirëbook shows only appointments assigned to your staff profile. Use the date picker to look further ahead than the quick 7-day view.",
+                    )}
                   </p>
                 </div>
 
@@ -882,35 +1164,52 @@ export default function StaffDashboardPage() {
                     type="button"
                     className="btn btn-ghost"
                     onClick={() => {
-                      setSelectedDate(formatDateInputValue(new Date()))
-                      setStatusFilter('active')
+                      setSelectedDate(formatDateInputValue(new Date()));
+                      setStatusFilter("active");
                     }}
                   >
-                    {t('staff.schedule.today', 'Today')}
+                    {t("staff.schedule.today", "Today")}
                   </button>
 
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    aria-label={t('staff.schedule.chooseDate', 'Choose schedule date')}
+                    aria-label={t(
+                      "staff.schedule.chooseDate",
+                      "Choose schedule date",
+                    )}
                   />
 
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                   >
-                    <option value="active">{t('staff.filter.active', 'Active')}</option>
-                    <option value="all">{t('staff.filter.all', 'All statuses')}</option>
-                    <option value="pending">{t('staff.status.pending', 'Pending approval')}</option>
-                    <option value="confirmed">{t('staff.status.confirmed', 'Confirmed')}</option>
-                    <option value="completed">{t('staff.status.completed', 'Completed')}</option>
-                    <option value="cancelled">{t('staff.status.cancelled', 'Cancelled')}</option>
-                    <option value="history">{t('staff.filter.history', 'History')}</option>
+                    <option value="active">
+                      {t("staff.filter.active", "Active")}
+                    </option>
+                    <option value="all">
+                      {t("staff.filter.all", "All statuses")}
+                    </option>
+                    <option value="pending">
+                      {t("staff.status.pending", "Pending approval")}
+                    </option>
+                    <option value="confirmed">
+                      {t("staff.status.confirmed", "Confirmed")}
+                    </option>
+                    <option value="completed">
+                      {t("staff.status.completed", "Completed")}
+                    </option>
+                    <option value="cancelled">
+                      {t("staff.status.cancelled", "Cancelled")}
+                    </option>
+                    <option value="history">
+                      {t("staff.filter.history", "History")}
+                    </option>
                   </select>
 
                   <Link href="/staff/calendar" className="btn btn-ghost">
-                    {t('staffCalendar.title', 'Calendar view')}
+                    {t("staffCalendar.title", "Calendar view")}
                   </Link>
                 </div>
               </div>
@@ -921,14 +1220,23 @@ export default function StaffDashboardPage() {
                     key={day.dateString}
                     type="button"
                     onClick={() => {
-                      setSelectedDate(day.dateString)
-                      setStatusFilter('active')
+                      setSelectedDate(day.dateString);
+                      setStatusFilter("active");
                     }}
-                    className={selectedDate === day.dateString ? 'staff-day-tab-active' : ''}
+                    className={
+                      selectedDate === day.dateString
+                        ? "staff-day-tab-active"
+                        : ""
+                    }
                   >
                     <strong>{day.label}</strong>
                     <span>{day.subLabel}</span>
-                    <small>{day.count} {day.count === 1 ? t('staff.filter.activeSingle', 'active booking') : t('staff.filter.activePlural', 'active bookings')}</small>
+                    <small>
+                      {day.count}{" "}
+                      {day.count === 1
+                        ? t("staff.filter.activeSingle", "active booking")
+                        : t("staff.filter.activePlural", "active bookings")}
+                    </small>
                   </button>
                 ))}
               </div>
@@ -937,16 +1245,24 @@ export default function StaffDashboardPage() {
             <div className="staff-booking-list">
               {selectedDateBookings.length === 0 && (
                 <div className="card staff-empty-action-card">
-                  <h3>{t('staff.empty.title', 'No appointments for this date')}</h3>
-                  <p className="muted" style={{ marginTop: '0.5rem' }}>
-                    {t('staff.empty.body', 'Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.')}
+                  <h3>
+                    {t("staff.empty.title", "No appointments for this date")}
+                  </h3>
+                  <p className="muted" style={{ marginTop: "0.5rem" }}>
+                    {t(
+                      "staff.empty.body",
+                      "Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.",
+                    )}
                   </p>
                   <div className="staff-empty-actions">
                     <Link href="/staff/calendar" className="btn btn-ghost">
-                      {t('staffCalendar.title', 'Calendar view')}
+                      {t("staffCalendar.title", "Calendar view")}
                     </Link>
                     <Link href="/staff/availability" className="btn btn-ghost">
-                      {t('staff.actions.updateAvailability', 'Update availability')}
+                      {t(
+                        "staff.actions.updateAvailability",
+                        "Update availability",
+                      )}
                     </Link>
                   </div>
                 </div>
@@ -1008,8 +1324,12 @@ export default function StaffDashboardPage() {
           gap: 1rem;
           align-items: center;
           margin-bottom: 1.5rem;
-          border-color: rgba(255,107,53,0.24);
-          background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(11,18,32,0));
+          border-color: rgba(255, 107, 53, 0.24);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 107, 53, 0.08),
+            rgba(11, 18, 32, 0)
+          );
         }
 
         .staff-today-actions {
@@ -1025,8 +1345,8 @@ export default function StaffDashboardPage() {
           gap: 1rem;
           align-items: center;
           margin-bottom: 1.5rem;
-          border-color: rgba(255,190,11,0.28);
-          background: rgba(255,190,11,0.06);
+          border-color: rgba(255, 190, 11, 0.28);
+          background: rgba(255, 190, 11, 0.06);
         }
 
         .staff-empty-action-card {
@@ -1074,7 +1394,7 @@ export default function StaffDashboardPage() {
         }
 
         .staff-summary-button:hover {
-          border-color: rgba(255,107,53,0.35);
+          border-color: rgba(255, 107, 53, 0.35);
           transform: translateY(-1px);
         }
 
@@ -1118,7 +1438,7 @@ export default function StaffDashboardPage() {
         }
 
         .staff-day-tabs button.staff-day-tab-active {
-          border-color: rgba(255,107,53,0.5);
+          border-color: rgba(255, 107, 53, 0.5);
           background: var(--accent-dim);
         }
 
@@ -1193,5 +1513,5 @@ export default function StaffDashboardPage() {
         }
       `}</style>
     </main>
-  )
+  );
 }

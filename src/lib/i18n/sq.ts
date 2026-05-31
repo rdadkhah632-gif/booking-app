@@ -2254,4 +2254,11 @@ export const sq: TranslationTree = {
   "notifications.types.staffProfile.title": "Përditësim profili stafi",
   "notifications.types.staffProfile.message":
     "Profili ose aksesi yt si staf është përditësuar.",
+  "notifications.types.bookingRescheduledByBusiness.title":
+    "Rezervimi u riplanifikua",
+  "notifications.types.bookingRescheduledByBusiness.message":
+    "Rezervimi yt u zhvendos në një orar të ri nga biznesi.",
+  "notifications.types.bookingRequested.title": "Kërkesa për rezervim u dërgua",
+  "notifications.types.bookingRequested.message":
+    "Kërkesa jote për rezervim iu dërgua biznesit për shqyrtim.",
 };

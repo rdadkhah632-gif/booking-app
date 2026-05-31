@@ -15,6 +15,21 @@ function notificationText(
 ) {
   const type = String((notification as any).type || "");
 
+  if (type === "booking_requested") {
+    return {
+      title: t(
+        "notifications.types.bookingRequested.title",
+        "Booking request sent",
+      ),
+      message:
+        notification.message ||
+        t(
+          "notifications.types.bookingRequested.message",
+          "Your booking request has been sent to the business for review.",
+        ),
+    };
+  }
+
   if (type === "booking_accepted") {
     return {
       title: t("notifications.types.bookingAccepted.title", "Booking accepted"),
@@ -84,6 +99,21 @@ function notificationText(
         "notifications.types.rescheduleDeclined.message",
         "Your reschedule request was declined. The original booking remains unchanged.",
       ),
+    };
+  }
+
+  if (type === "booking_rescheduled_by_business") {
+    return {
+      title: t(
+        "notifications.types.bookingRescheduledByBusiness.title",
+        "Booking rescheduled",
+      ),
+      message:
+        notification.message ||
+        t(
+          "notifications.types.bookingRescheduledByBusiness.message",
+          "Your booking was moved to a new appointment time by the business.",
+        ),
     };
   }
 
