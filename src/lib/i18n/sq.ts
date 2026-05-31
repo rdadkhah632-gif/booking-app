@@ -2132,4 +2132,31 @@ export const sq: TranslationTree = {
   "support.messages.requestFallback": "Kërkesë suporti",
   "support.messages.noPreview": "Nuk ka përmbledhje mesazhi.",
   "support.messages.created": "Krijuar",
+  "support.priority.normal": "Normal",
+  "support.priority.high": "I lartë",
+  "support.priority.urgent": "Urgjent",
+  "support.thread.notFound": "Biseda e suportit nuk u gjet.",
+  "support.thread.replySent":
+    "Përgjigjja u dërgua. Suporti i Mirëbook është njoftuar.",
+  "support.thread.loading": "Duke ngarkuar bisedën e suportit...",
+  "support.thread.kicker": "Bisedë suporti",
+  "support.thread.subtitle":
+    "Shiko përgjigjet nga suporti i Mirëbook dhe dërgo informacion shtesë në të njëjtën bisedë.",
+  "support.thread.allMessages": "Të gjitha mesazhet",
+  "support.thread.status": "Statusi",
+  "support.thread.priority": "Prioriteti",
+  "support.thread.originalMessage": "Mesazhi yt fillestar",
+  "support.thread.noMessageBody": "Nuk ka trup mesazhi.",
+  "support.thread.mirebookSupport": "Suporti i Mirëbook",
+  "support.thread.you": "Ti",
+  "support.thread.resolvedConversation": "Bisedë e zgjidhur",
+  "support.thread.replyToSupport": "Përgjigju suportit",
+  "support.thread.resolvedTitle": "Ky ticket është shënuar si i zgjidhur",
+  "support.thread.resolvedBody":
+    "Fillo një kërkesë të re suporti nëse të duhet ndihmë për një çështje tjetër.",
+  "support.thread.startNewRequest": "Fillo kërkesë të re suporti",
+  "support.thread.replyPlaceholder":
+    "Shto më shumë detaje ose përgjigju suportit të Mirëbook...",
+  "support.thread.sending": "Duke dërguar...",
+  "support.thread.sendReply": "Dërgo përgjigjen",
 };
