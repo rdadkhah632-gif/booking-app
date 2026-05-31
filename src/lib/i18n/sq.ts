@@ -2266,4 +2266,7 @@ export const sq: TranslationTree = {
 'billing.trialActive': 'Periudha provuese aktive',
 'billing.trialEndsOn': 'Periudha provuese përfundon',
 'billing.noTrialConfigured': 'Nuk është caktuar datë për periudhën provuese.',
+'nav.operatorNotices': 'Njoftime operatori',
+'nav.needsAction': 'Kërkon veprim',
+'nav.updates': 'Përditësime',
 };

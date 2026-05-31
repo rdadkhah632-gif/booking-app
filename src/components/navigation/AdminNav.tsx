@@ -1,36 +1,43 @@
-import Link from 'next/link'
-import { NavProps, notificationLabel } from './navTypes'
+import Link from "next/link";
+import { NavProps, notificationLabel } from "./navTypes";
 
-export default function AdminNav({ notificationCount, onLogout }: NavProps) {
+export default function AdminNav({
+  notificationCount,
+  onLogout,
+  t = (key, fallback) => fallback || key,
+}: NavProps) {
   return (
     <>
       <Link href="/admin" className="btn btn-accent">
-        Operator
+        {t("nav.operator", "Operator")}
       </Link>
 
       <Link href="/admin/businesses" className="muted">
-        Businesses
+        {t("nav.businesses", "Businesses")}
       </Link>
 
       <Link href="/admin/users" className="muted">
-        Users
+        {t("nav.users", "Users")}
       </Link>
 
-      <Link href="/admin/notifications" className={notificationCount > 0 ? 'btn btn-accent' : 'muted'}>
-        {notificationLabel('admin', notificationCount)}
+      <Link
+        href="/admin/notifications"
+        className={notificationCount > 0 ? "btn btn-accent" : "muted"}
+      >
+        {notificationLabel("admin", notificationCount, t)}
       </Link>
 
       <Link href="/support" className="muted nav-wide-only">
-        Support
+        {t("nav.support", "Support")}
       </Link>
 
       <Link href="/account" className="muted">
-        Account
+        {t("nav.account", "Account")}
       </Link>
 
       <button onClick={onLogout} className="btn btn-ghost">
-        Log out
+        {t("auth.logout", "Log out")}
       </button>
     </>
-  )
+  );
 }

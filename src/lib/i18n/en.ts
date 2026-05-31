@@ -2224,4 +2224,7 @@ export const en: TranslationTree = {
 'billing.planCustom': 'Custom',
 'billing.planCustomTitle': 'Enterprise',
 'billing.planCustomBody': 'Multi-location and tailored solutions.',
+'nav.operatorNotices': 'Operator notices',
+'nav.needsAction': 'Needs action',
+'nav.updates': 'Updates',
 };

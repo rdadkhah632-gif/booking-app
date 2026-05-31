@@ -1,107 +1,111 @@
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { supabase } from '@/lib/supabaseClient'
-import PublicNav from './PublicNav'
-import CustomerNav from './CustomerNav'
-import BusinessNav from './BusinessNav'
-import StaffNav from './StaffNav'
-import AdminNav from './AdminNav'
-import { useI18n } from '@/lib/useI18n'
-import { Role } from './navTypes'
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { supabase } from "@/lib/supabaseClient";
+import PublicNav from "./PublicNav";
+import CustomerNav from "./CustomerNav";
+import BusinessNav from "./BusinessNav";
+import StaffNav from "./StaffNav";
+import AdminNav from "./AdminNav";
+import { useI18n } from "@/lib/useI18n";
+import { Role } from "./navTypes";
 
 type BusinessRow = {
-  id: string
-  published?: boolean | null
-}
+  id: string;
+  published?: boolean | null;
+};
 
 type StaffRow = {
-  id: string
-  business_id?: string | null
-}
+  id: string;
+  business_id?: string | null;
+};
 
 type ProfileRow = {
-  role?: 'customer' | 'business' | 'staff' | string | null
-  is_admin?: boolean | null
-}
+  role?: "customer" | "business" | "staff" | string | null;
+  is_admin?: boolean | null;
+};
 
 function isAdminRoute(pathname: string) {
-  return pathname.startsWith('/admin')
+  return pathname.startsWith("/admin");
 }
 
 function isBusinessRoute(pathname: string) {
-  return pathname.startsWith('/dashboard')
+  return pathname.startsWith("/dashboard");
 }
 
 function isStaffRoute(pathname: string) {
-  return pathname.startsWith('/staff')
+  return pathname.startsWith("/staff");
 }
 
 export default function AuthNav() {
-  const router = useRouter()
-  const { t } = useI18n()
+  const router = useRouter();
+  const { t } = useI18n();
 
-  const [loading, setLoading] = useState(true)
-  const [role, setRole] = useState<Role>(null)
-  const [notificationCount, setNotificationCount] = useState(0)
-  const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<Role>(null);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function loadUser() {
-      setLoading(true)
+      setLoading(true);
 
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (cancelled) return
+      if (cancelled) return;
 
       if (!session) {
-        setRole(null)
-        setNotificationCount(0)
-        setPrimaryBusinessId(null)
-        setLoading(false)
-        return
+        setRole(null);
+        setNotificationCount(0);
+        setPrimaryBusinessId(null);
+        setLoading(false);
+        return;
       }
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, is_admin')
-        .eq('id', session.user.id)
-        .single<ProfileRow>()
+        .from("profiles")
+        .select("role, is_admin")
+        .eq("id", session.user.id)
+        .single<ProfileRow>();
 
       const { data: ownedBusinesses } = await supabase
-        .from('businesses')
-        .select('id, published')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
+        .from("businesses")
+        .select("id, published")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
         .limit(10)
-        .returns<BusinessRow[]>()
+        .returns<BusinessRow[]>();
 
       const { data: linkedStaff } = await supabase
-        .from('staff_members')
-        .select('id, business_id')
-        .eq('user_id', session.user.id)
+        .from("staff_members")
+        .select("id, business_id")
+        .eq("user_id", session.user.id)
         .limit(1)
-        .returns<StaffRow[]>()
+        .returns<StaffRow[]>();
 
-      if (cancelled) return
+      if (cancelled) return;
 
-      const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0
-      const primaryBusiness = ownedBusinesses?.[0] || null
-      const hasStaffProfile = !!linkedStaff && linkedStaff.length > 0
-      const adminUser = !!profile?.is_admin
+      const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0;
+      const primaryBusiness = ownedBusinesses?.[0] || null;
+      const hasStaffProfile = !!linkedStaff && linkedStaff.length > 0;
+      const adminUser = !!profile?.is_admin;
 
-      setPrimaryBusinessId(primaryBusiness?.id || null)
+      setPrimaryBusinessId(primaryBusiness?.id || null);
 
       if (adminUser) {
-        setRole('admin')
+        setRole("admin");
       } else if (hasStaffProfile) {
-        setRole('staff')
-      } else if (profile?.role === 'business' || ownsBusiness) {
-        setRole('business')
+        setRole("staff");
+      } else if (profile?.role === "business" || ownsBusiness) {
+        setRole("business");
       } else {
-        setRole('customer')
+        setRole("customer");
       }
 
       await loadNotificationCounts({
@@ -111,131 +115,151 @@ export default function AuthNav() {
         ownsBusiness,
         hasStaffProfile,
         staffId: linkedStaff?.[0]?.id || null,
-        businessIds: (ownedBusinesses || []).map((business) => business.id)
-      })
+        businessIds: (ownedBusinesses || []).map((business) => business.id),
+      });
 
-      if (!cancelled) setLoading(false)
+      if (!cancelled) setLoading(false);
     }
 
-    loadUser()
+    loadUser();
 
     return () => {
-      cancelled = true
-    }
-  }, [router.pathname])
+      cancelled = true;
+    };
+  }, [router.pathname]);
 
   async function loadNotificationCounts(params: {
-    userId: string
-    activePath: string
-    adminUser: boolean
-    ownsBusiness: boolean
-    hasStaffProfile: boolean
-    staffId: string | null
-    businessIds: string[]
+    userId: string;
+    activePath: string;
+    adminUser: boolean;
+    ownsBusiness: boolean;
+    hasStaffProfile: boolean;
+    staffId: string | null;
+    businessIds: string[];
   }) {
     if (params.adminUser && isAdminRoute(params.activePath)) {
       const { count: unreadAdminCount } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('audience', 'admin')
-        .is('read_at', null)
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("audience", "admin")
+        .is("read_at", null);
 
-      setNotificationCount(unreadAdminCount || 0)
-      return
+      setNotificationCount(unreadAdminCount || 0);
+      return;
     }
 
     if (params.hasStaffProfile && params.staffId) {
       const { count: unreadStaffNotifications } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', params.userId)
-        .in('audience', ['staff', 'general'])
-        .is('read_at', null)
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", params.userId)
+        .in("audience", ["staff", "general"])
+        .is("read_at", null);
 
       const { count: staffPendingBookings } = await supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('staff_member_id', params.staffId)
-        .eq('status', 'pending')
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("staff_member_id", params.staffId)
+        .eq("status", "pending");
 
-      setNotificationCount((unreadStaffNotifications || 0) + (staffPendingBookings || 0))
-      return
+      setNotificationCount(
+        (unreadStaffNotifications || 0) + (staffPendingBookings || 0),
+      );
+      return;
     }
 
-    if ((params.ownsBusiness || isBusinessRoute(params.activePath)) && !isStaffRoute(params.activePath) && params.businessIds.length > 0) {
+    if (
+      (params.ownsBusiness || isBusinessRoute(params.activePath)) &&
+      !isStaffRoute(params.activePath) &&
+      params.businessIds.length > 0
+    ) {
       const { count: pendingBookingsCount } = await supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .in('business_id', params.businessIds)
-        .eq('status', 'pending')
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .in("business_id", params.businessIds)
+        .eq("status", "pending");
 
       const { data: pendingRequests } = await supabase
-        .from('booking_requests')
-        .select('booking_id')
-        .in('business_id', params.businessIds)
-        .eq('status', 'pending')
+        .from("booking_requests")
+        .select("booking_id")
+        .in("business_id", params.businessIds)
+        .eq("status", "pending");
 
       const { count: unreadBusinessNotifications } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', params.userId)
-        .eq('audience', 'business')
-        .is('read_at', null)
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", params.userId)
+        .eq("audience", "business")
+        .is("read_at", null);
 
-      const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
-      setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules + (unreadBusinessNotifications || 0))
-      return
+      const uniquePendingReschedules = new Set(
+        (pendingRequests || []).map((request) => request.booking_id),
+      ).size;
+      setNotificationCount(
+        (pendingBookingsCount || 0) +
+          uniquePendingReschedules +
+          (unreadBusinessNotifications || 0),
+      );
+      return;
     }
 
     const { count: pendingBookingsCount } = await supabase
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .eq('customer_user_id', params.userId)
-      .eq('status', 'pending')
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("customer_user_id", params.userId)
+      .eq("status", "pending");
 
     const { data: pendingRequests } = await supabase
-      .from('booking_requests')
-      .select('booking_id')
-      .eq('customer_user_id', params.userId)
-      .eq('status', 'pending')
+      .from("booking_requests")
+      .select("booking_id")
+      .eq("customer_user_id", params.userId)
+      .eq("status", "pending");
 
     const { count: unreadCustomerNotifications } = await supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', params.userId)
-      .in('audience', ['general', 'customer'])
-      .is('read_at', null)
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", params.userId)
+      .in("audience", ["general", "customer"])
+      .is("read_at", null);
 
-    const uniquePendingReschedules = new Set((pendingRequests || []).map((request) => request.booking_id)).size
-    setNotificationCount((pendingBookingsCount || 0) + uniquePendingReschedules + (unreadCustomerNotifications || 0))
+    const uniquePendingReschedules = new Set(
+      (pendingRequests || []).map((request) => request.booking_id),
+    ).size;
+    setNotificationCount(
+      (pendingBookingsCount || 0) +
+        uniquePendingReschedules +
+        (unreadCustomerNotifications || 0),
+    );
   }
 
   async function logout() {
-    await supabase.auth.signOut()
-    setRole(null)
-    setNotificationCount(0)
-    setPrimaryBusinessId(null)
-    router.replace('/')
+    await supabase.auth.signOut();
+    setRole(null);
+    setNotificationCount(0);
+    setPrimaryBusinessId(null);
+    router.replace("/");
   }
 
   const logoHref = useMemo(() => {
-    if (role === 'admin') return '/admin'
-    if (role === 'business') return '/dashboard'
-    if (role === 'staff') return '/staff'
-    if (role === 'customer') return '/explore'
-    return '/'
-  }, [role])
+    if (role === "admin") return "/admin";
+    if (role === "business") return "/dashboard";
+    if (role === "staff") return "/staff";
+    if (role === "customer") return "/explore";
+    return "/";
+  }, [role]);
 
   const roleBadge = useMemo(() => {
-    if (role === 'admin') return t('nav.role.operator', 'Operator')
-    if (role === 'business') return t('nav.role.business', 'Business')
-    if (role === 'staff') return t('nav.role.staff', 'Staff')
-    if (role === 'customer') return t('nav.role.customer', 'Customer')
-    return null
-  }, [role, t])
+    if (role === "admin") return t("nav.role.operator", "Operator");
+    if (role === "business") return t("nav.role.business", "Business");
+    if (role === "staff") return t("nav.role.staff", "Staff");
+    if (role === "customer") return t("nav.role.customer", "Customer");
+    return null;
+  }, [role, t]);
 
   return (
-    <nav className={role === 'admin' ? 'nav-simple nav-operator' : 'nav-simple'}>
+    <nav
+      className={role === "admin" ? "nav-simple nav-operator" : "nav-simple"}
+    >
       <div className="nav-simple-inner">
         <Link href={logoHref} className="logo">
           Mirë<span>book</span>
@@ -244,40 +268,46 @@ export default function AuthNav() {
 
         <div className="auth-nav-links">
           {loading && (
-            <span className="muted small">{t('nav.checkingAccount', 'Checking account...')}</span>
+            <span className="muted small">
+              {t("nav.checkingAccount", "Checking account...")}
+            </span>
           )}
 
           {!loading && !role && <PublicNav />}
 
-          {!loading && role === 'admin' && (
+          {!loading && role === "admin" && (
             <AdminNav
               notificationCount={notificationCount}
               primaryBusinessId={primaryBusinessId}
               onLogout={logout}
+              t={t}
             />
           )}
 
-          {!loading && role === 'customer' && (
+          {!loading && role === "customer" && (
             <CustomerNav
               notificationCount={notificationCount}
               primaryBusinessId={primaryBusinessId}
               onLogout={logout}
+              t={t}
             />
           )}
 
-          {!loading && role === 'business' && (
+          {!loading && role === "business" && (
             <BusinessNav
               notificationCount={notificationCount}
               primaryBusinessId={primaryBusinessId}
               onLogout={logout}
+              t={t}
             />
           )}
 
-          {!loading && role === 'staff' && (
+          {!loading && role === "staff" && (
             <StaffNav
               notificationCount={notificationCount}
               primaryBusinessId={primaryBusinessId}
               onLogout={logout}
+              t={t}
             />
           )}
         </div>
@@ -312,12 +342,16 @@ export default function AuthNav() {
           border-radius: 999px;
           color: var(--accent);
           background: var(--accent-dim);
-          border: 1px solid rgba(255,107,53,0.24);
+          border: 1px solid rgba(255, 107, 53, 0.24);
         }
 
         .nav-operator {
-          border-bottom-color: rgba(255,107,53,0.24);
-          background: linear-gradient(180deg, rgba(255,107,53,0.07), rgba(11,18,32,0));
+          border-bottom-color: rgba(255, 107, 53, 0.24);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 107, 53, 0.07),
+            rgba(11, 18, 32, 0)
+          );
         }
 
         :global(.nav-simple) {
@@ -396,5 +430,5 @@ export default function AuthNav() {
         }
       `}</style>
     </nav>
-  )
+  );
 }
