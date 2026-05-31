@@ -18,6 +18,10 @@ type Business = {
   subscription_status?: string | null
 }
 
+type AdminProfile = {
+  id: string
+}
+
 const BUSINESS_SUBJECT_KEYS = [
   'support.business.subject.setup',
   'support.business.subject.services',
@@ -44,6 +48,7 @@ export default function BusinessSupportPage() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null)
 
   useEffect(() => {
     loadContext()
@@ -84,6 +89,27 @@ export default function BusinessSupportPage() {
     setLoading(false)
   }
 
+  async function notifyAdmins(ticketId: string, title: string, body: string) {
+    const { data: admins } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('is_admin', true)
+
+    if (!admins || admins.length === 0) return
+
+    await supabase
+      .from('notifications')
+      .insert(
+        admins.map((admin: AdminProfile) => ({
+          user_id: admin.id,
+          title,
+          body,
+          type: 'support_request_business',
+          action_url: '/admin/support'
+        }))
+      )
+  }
+
   async function submitSupportMessage(e: React.FormEvent) {
     e.preventDefault()
 
@@ -100,8 +126,14 @@ export default function BusinessSupportPage() {
     setSending(true)
     setError(null)
     setSuccess(null)
+    setCreatedTicketId(null)
 
-    const { error: insertError } = await supabase
+    const selectedBusiness = businesses.find((business) => business.id === businessId) || null
+    const ticketSubject = t(subject).trim()
+    const ticketMessage = message.trim()
+    const ticketPriority = subject === 'support.business.subject.approval' || subject === 'support.business.subject.subscription' ? 'high' : 'normal'
+
+    const { data: insertedTicket, error: insertError } = await supabase
       .from('support_messages')
       .insert({
         user_id: profile.id,
@@ -109,17 +141,31 @@ export default function BusinessSupportPage() {
         account_type: 'business',
         name: name.trim() || profile.full_name || null,
         email: email.trim() || profile.email || null,
-        subject: t(subject).trim(),
-        message: message.trim(),
+        category: 'business_support',
+        subject: ticketSubject,
+        message: ticketMessage,
         status: 'open',
-        priority: subject === 'support.business.subject.approval' || subject === 'support.business.subject.subscription' ? 'high' : 'normal'
+        priority: ticketPriority
       })
+      .select('id')
+      .single()
 
     setSending(false)
 
     if (insertError) {
       setError(insertError.message)
       return
+    }
+
+    const ticketId = insertedTicket?.id || null
+    setCreatedTicketId(ticketId)
+
+    if (ticketId) {
+      await notifyAdmins(
+        ticketId,
+        'New business support request',
+        `${ticketSubject} · ${selectedBusiness?.name || name.trim() || profile.email || 'Business owner'}`
+      )
     }
 
     setSuccess(t('support.business.success'))
@@ -137,8 +183,16 @@ export default function BusinessSupportPage() {
             <p className="small" style={{ color: 'var(--accent)' }}>{t('nav.businessSupport')}</p>
             <h1 className="page-title">{t('support.business.heroTitle')}</h1>
             <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              {t('support.business.heroBody')}
+              {t('support.business.heroBody', 'Get help with business setup, services, staff, bookings, publishing, billing or account access.')}
             </p>
+            <div className="support-hero-actions">
+              <Link href="/support/messages" className="btn btn-accent">
+                {t('support.business.myMessages', 'Business support messages')}
+              </Link>
+              <Link href="/dashboard" className="btn btn-ghost">
+                {t('dashboardHome.title', 'Business overview')}
+              </Link>
+            </div>
           </div>
 
           {loading && (
@@ -154,8 +208,21 @@ export default function BusinessSupportPage() {
           )}
 
           {success && (
-            <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)' }}>
+            <div className="card support-success-card">
               <p style={{ color: 'var(--success)' }}>{success}</p>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                {t('support.business.successBody', 'Your message is now saved as a business support conversation. Mirëbook support will reply there.')}
+              </p>
+              <div className="support-success-actions">
+                {createdTicketId && (
+                  <Link href={`/support/messages/${createdTicketId}`} className="btn btn-accent">
+                    {t('support.business.viewConversation', 'View conversation')}
+                  </Link>
+                )}
+                <Link href="/support/messages" className="btn btn-ghost">
+                  {t('support.business.allConversations', 'All support messages')}
+                </Link>
+              </div>
             </div>
           )}
 
@@ -165,6 +232,9 @@ export default function BusinessSupportPage() {
                 <div>
                   <p className="small muted">{t('support.business.formKicker')}</p>
                   <h2>{t('support.business.formTitle')}</h2>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('support.business.formBody', 'This creates a business-owner support conversation. Replies from Mirëbook support will appear in your support messages.')}
+                  </p>
                 </div>
 
                 <div className="support-form-grid">
@@ -211,6 +281,13 @@ export default function BusinessSupportPage() {
                   </div>
                 </div>
 
+                <div className="support-submit-note">
+                  <p className="small muted">{t('support.business.beforeSending.kicker', 'Before sending')}</p>
+                  <p className="small muted">
+                    {t('support.business.beforeSending.body', 'Include the affected business, service, staff member, booking date or setup area so support can trace it faster.')}
+                  </p>
+                </div>
+
                 <button type="submit" className="btn btn-accent" disabled={sending}>
                   {sending ? t('support.business.sending') : t('support.business.sendButton')}
                 </button>
@@ -252,6 +329,40 @@ export default function BusinessSupportPage() {
                     </span>
                     <span>→</span>
                   </Link>
+
+                  <Link href="/support/messages" className="support-link-row">
+                    <span>
+                      <strong>{t('support.business.myMessages', 'Business support messages')}</strong>
+                      <small>{t('support.business.myMessagesBody', 'Read support replies and continue business support conversations.')}</small>
+                    </span>
+                    <span>→</span>
+                  </Link>
+
+                  <Link href="/admin/support" className="support-link-row support-admin-only-link">
+                    <span>
+                      <strong>{t('support.business.operatorInbox', 'Operator support inbox')}</strong>
+                      <small>{t('support.business.operatorInboxBody', 'Visible only if your account is also an admin/operator account.')}</small>
+                    </span>
+                    <span>→</span>
+                  </Link>
+                </div>
+
+                <div className="support-business-guide">
+                  <p className="small muted">{t('support.business.guide.kicker', 'Business support guide')}</p>
+                  <div className="support-guide-list">
+                    <div>
+                      <strong>{t('support.business.guide.setupTitle', 'Setup or publishing issue')}</strong>
+                      <p className="small muted">{t('support.business.guide.setupBody', 'Check your business profile, services, staff assignments and working hours before raising a setup issue.')}</p>
+                    </div>
+                    <div>
+                      <strong>{t('support.business.guide.bookingTitle', 'Customer booking issue')}</strong>
+                      <p className="small muted">{t('support.business.guide.bookingBody', 'Include the customer name, service, date and current booking status so support can trace the problem.')}</p>
+                    </div>
+                    <div>
+                      <strong>{t('support.business.guide.billingTitle', 'Billing or trial question')}</strong>
+                      <p className="small muted">{t('support.business.guide.billingBody', 'Mention your business name, trial/subscription state and what you expected to happen.')}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -270,6 +381,19 @@ export default function BusinessSupportPage() {
         .support-hero {
           background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08));
           border-color: rgba(255,107,53,0.25);
+        }
+
+        .support-hero-actions,
+        .support-success-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
+        }
+
+        .support-success-card {
+          border-color: rgba(45,212,191,0.35);
+          background: rgba(45,212,191,0.06);
         }
 
         .support-grid {
@@ -295,6 +419,13 @@ export default function BusinessSupportPage() {
           grid-column: 1 / -1;
         }
 
+        .support-submit-note {
+          border: 1px solid rgba(45,212,191,0.2);
+          border-radius: var(--radius);
+          padding: 0.85rem;
+          background: rgba(45,212,191,0.06);
+        }
+
         .support-link-list {
           display: grid;
           gap: 0.75rem;
@@ -318,10 +449,44 @@ export default function BusinessSupportPage() {
           line-height: 1.5;
         }
 
+        .support-admin-only-link {
+          border-color: rgba(255,190,11,0.24);
+          background: rgba(255,190,11,0.05);
+        }
+
+        .support-business-guide {
+          border-top: 1px solid var(--border);
+          padding-top: 1rem;
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .support-guide-list {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .support-guide-list div {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 0.85rem;
+        }
+
         @media (max-width: 860px) {
           .support-grid,
           .support-form-grid {
             grid-template-columns: 1fr;
+          }
+
+          .support-hero-actions,
+          .support-hero-actions :global(.btn),
+          .support-success-actions,
+          .support-success-actions :global(.btn),
+          .support-form-card button,
+          .support-link-row {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

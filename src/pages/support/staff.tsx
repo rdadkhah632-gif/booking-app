@@ -22,6 +22,10 @@ type StaffProfile = {
   business_name?: string | null
 }
 
+type AdminProfile = {
+  id: string
+}
+
 const STAFF_SUBJECT_KEYS = [
   'support.staff.subject.access',
   'support.staff.subject.availability',
@@ -46,6 +50,7 @@ export default function StaffSupportPage() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null)
 
   useEffect(() => {
     loadContext()
@@ -99,6 +104,27 @@ export default function StaffSupportPage() {
     setLoading(false)
   }
 
+  async function notifyAdmins(ticketId: string, title: string, body: string) {
+    const { data: admins } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('is_admin', true)
+
+    if (!admins || admins.length === 0) return
+
+    await supabase
+      .from('notifications')
+      .insert(
+        admins.map((admin: AdminProfile) => ({
+          user_id: admin.id,
+          title,
+          body,
+          type: 'support_request_staff',
+          action_url: '/admin/support'
+        }))
+      )
+  }
+
   async function submitSupportMessage(e: React.FormEvent) {
     e.preventDefault()
 
@@ -115,8 +141,13 @@ export default function StaffSupportPage() {
     setSending(true)
     setError(null)
     setSuccess(null)
+    setCreatedTicketId(null)
 
-    const { error: insertError } = await supabase
+    const ticketSubject = staffSubjectLabel(subject).trim()
+    const ticketMessage = message.trim()
+    const ticketPriority = subject === 'support.staff.subject.access' || subject === 'support.staff.subject.wrongBusiness' ? 'high' : 'normal'
+
+    const { data: insertedTicket, error: insertError } = await supabase
       .from('support_messages')
       .insert({
         user_id: profile.id,
@@ -124,17 +155,31 @@ export default function StaffSupportPage() {
         account_type: 'staff',
         name: name.trim() || staffProfile?.name || profile.full_name || null,
         email: email.trim() || staffProfile?.email || profile.email || null,
-        subject: staffSubjectLabel(subject).trim(),
-        message: message.trim(),
+        category: 'staff_support',
+        subject: ticketSubject,
+        message: ticketMessage,
         status: 'open',
-        priority: subject === 'support.staff.subject.access' || subject === 'support.staff.subject.wrongBusiness' ? 'high' : 'normal'
+        priority: ticketPriority
       })
+      .select('id')
+      .single()
 
     setSending(false)
 
     if (insertError) {
       setError(insertError.message)
       return
+    }
+
+    const ticketId = insertedTicket?.id || null
+    setCreatedTicketId(ticketId)
+
+    if (ticketId) {
+      await notifyAdmins(
+        ticketId,
+        'New staff support request',
+        `${ticketSubject} · ${staffProfile?.business_name || staffProfile?.name || name.trim() || profile.email || 'Staff member'}`
+      )
     }
 
     setSuccess(t('support.staff.success', 'Your support message has been sent.'))
@@ -178,6 +223,9 @@ export default function StaffSupportPage() {
               <Link href="/staff/availability" className="btn btn-ghost">
                 {t('staff.actions.updateAvailability', 'Update availability')}
               </Link>
+              <Link href="/support/messages" className="btn btn-ghost">
+                {t('support.staff.myMessages', 'My support messages')}
+              </Link>
             </div>
           </div>
 
@@ -194,8 +242,21 @@ export default function StaffSupportPage() {
           )}
 
           {success && (
-            <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)' }}>
+            <div className="card support-success-card">
               <p style={{ color: 'var(--success)' }}>{success}</p>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                {t('support.staff.successBody', 'Your message is now saved as a staff support conversation. Mirëbook support will reply there.')}
+              </p>
+              <div className="support-success-actions">
+                {createdTicketId && (
+                  <Link href={`/support/messages/${createdTicketId}`} className="btn btn-accent">
+                    {t('support.staff.viewConversation', 'View conversation')}
+                  </Link>
+                )}
+                <Link href="/support/messages" className="btn btn-ghost">
+                  {t('support.staff.allConversations', 'All support messages')}
+                </Link>
+              </div>
             </div>
           )}
 
@@ -205,6 +266,9 @@ export default function StaffSupportPage() {
                 <div>
                   <p className="small muted">{t('support.staff.formKicker', 'Support request')}</p>
                   <h2>{t('support.staff.formTitle', 'Send a message to support')}</h2>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('support.staff.formBody', 'This creates a staff support conversation. Replies from Mirëbook support will appear in your support messages.')}
+                  </p>
                 </div>
 
                 {staffProfile && (
@@ -317,6 +381,14 @@ export default function StaffSupportPage() {
                     <span>→</span>
                   </Link>
 
+                  <Link href="/support/messages" className="support-link-row">
+                    <span>
+                      <strong>{t('support.staff.myMessages', 'My support messages')}</strong>
+                      <small>{t('support.staff.myMessagesBody', 'Read support replies and continue staff support conversations.')}</small>
+                    </span>
+                    <span>→</span>
+                  </Link>
+
                   <Link href="/account" className="support-link-row">
                     <span>
                       <strong>{t('nav.account')}</strong>
@@ -376,6 +448,18 @@ export default function StaffSupportPage() {
           gap: 0.75rem;
           flex-wrap: wrap;
           margin-top: 1rem;
+        }
+
+        .support-success-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
+        }
+
+        .support-success-card {
+          border-color: rgba(45,212,191,0.35);
+          background: rgba(45,212,191,0.06);
         }
 
         .support-grid {
@@ -478,6 +562,8 @@ export default function StaffSupportPage() {
 
           .support-hero-actions,
           .support-hero-actions :global(.btn),
+          .support-success-actions,
+          .support-success-actions :global(.btn),
           .support-form-card button,
           .support-link-row {
             width: 100%;
