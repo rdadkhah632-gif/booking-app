@@ -1,99 +1,134 @@
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { supabase } from '@/lib/supabaseClient'
-import { useI18n } from '@/lib/useI18n'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/useI18n";
 
 type Props = {
-  children: React.ReactNode
-  title?: string
-  subtitle?: string
-}
+  children: React.ReactNode;
+  title?: string;
+  subtitle?: string;
+};
 
 export default function DashboardLayout({ children, title, subtitle }: Props) {
-  const router = useRouter()
-  const { t } = useI18n()
-  const [pendingCount, setPendingCount] = useState(0)
-  const [checkingAccess, setCheckingAccess] = useState(true)
+  const router = useRouter();
+  const { t } = useI18n();
+  const [pendingCount, setPendingCount] = useState(0);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   useEffect(() => {
     async function loadPendingNotifications() {
-      setCheckingAccess(true)
+      setCheckingAccess(true);
 
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace('/login')
-        return
+        router.replace("/login");
+        return;
       }
 
       const { data: linkedStaff } = await supabase
-        .from('staff_members')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .limit(1)
+        .from("staff_members")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .limit(1);
 
       if (linkedStaff && linkedStaff.length > 0) {
-        router.replace('/staff')
-        return
+        router.replace("/staff");
+        return;
       }
 
       const { data: businesses } = await supabase
-        .from('businesses')
-        .select('id')
-        .eq('user_id', session.user.id)
+        .from("businesses")
+        .select("id")
+        .eq("user_id", session.user.id);
 
-      const businessIds = (businesses || []).map((business) => business.id)
+      const businessIds = (businesses || []).map((business) => business.id);
 
       if (businessIds.length === 0) {
-        setPendingCount(0)
-        router.replace('/explore')
-        return
+        setPendingCount(0);
+        router.replace("/explore");
+        return;
       }
 
       const { count: pendingBookingsCount } = await supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .in('business_id', businessIds)
-        .eq('status', 'pending')
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .in("business_id", businessIds)
+        .eq("status", "pending");
 
       const { data: pendingRequests } = await supabase
-        .from('booking_requests')
-        .select('booking_id')
-        .in('business_id', businessIds)
-        .eq('status', 'pending')
+        .from("booking_requests")
+        .select("booking_id")
+        .in("business_id", businessIds)
+        .eq("status", "pending");
 
       const uniquePendingBookings = new Set(
-        (pendingRequests || []).map((request) => request.booking_id)
-      )
+        (pendingRequests || []).map((request) => request.booking_id),
+      );
 
-      setPendingCount((pendingBookingsCount || 0) + uniquePendingBookings.size)
-      setCheckingAccess(false)
+      setPendingCount((pendingBookingsCount || 0) + uniquePendingBookings.size);
+      setCheckingAccess(false);
     }
 
-    loadPendingNotifications()
-  }, [router.pathname])
-
+    loadPendingNotifications();
+  }, [router.pathname]);
 
   const mainLinks = [
-    { href: '/dashboard', label: t('dashboardLayout.nav.home', 'Home') },
-    { href: '/dashboard/bookings', label: t('support.business.bookings', 'Bookings') },
-    { href: '/dashboard/analytics', label: t('dashboardHome.viewAnalytics', 'Analytics') }
-  ]
+    { href: "/dashboard", label: t("dashboardLayout.nav.home", "Home") },
+    ...(pendingCount > 0
+      ? [
+          {
+            href: "/dashboard/notifications",
+            label: `${t("account.needsAction", "Needs action")} (${pendingCount > 9 ? "9+" : pendingCount})`,
+            urgent: true,
+          },
+        ]
+      : []),
+    {
+      href: "/dashboard/bookings",
+      label: t("support.business.bookings", "Bookings"),
+    },
+    {
+      href: "/dashboard/services",
+      label: t("dashboardServices.pageTitle", "Services"),
+    },
+    { href: "/dashboard/staff", label: t("dashboardStaff.pageTitle", "Staff") },
+    {
+      href: "/dashboard/analytics",
+      label: t("dashboardHome.viewAnalytics", "Analytics"),
+    },
+  ];
 
   const lowerLinks = [
-    { href: '/dashboard/settings', label: t('dashboardSettings.pageTitle', 'Business settings') },
-    { href: '/account', label: t('dashboardLayout.nav.accountSettings', 'My account') }
-  ]
-
+    {
+      href: "/dashboard/availability",
+      label: t("dashboardAvailability.pageTitle", "Availability"),
+    },
+    {
+      href: "/dashboard/settings",
+      label: t("dashboardSettings.pageTitle", "Business settings"),
+    },
+    { href: "/dashboard/billing", label: t("billing.pageTitle", "Billing") },
+    {
+      href: "/support/business",
+      label: t("nav.businessSupport", "Business support"),
+    },
+    {
+      href: "/account",
+      label: t("dashboardLayout.nav.accountSettings", "My account"),
+    },
+  ];
 
   function isActiveLink(href: string) {
-    return router.pathname === href || router.pathname.startsWith(`${href}/`)
+    return router.pathname === href || router.pathname.startsWith(`${href}/`);
   }
 
   async function logout() {
-    await supabase.auth.signOut()
-    router.replace('/')
+    await supabase.auth.signOut();
+    router.replace("/");
   }
 
   if (checkingAccess) {
@@ -101,11 +136,11 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
       <main className="dashboard-layout">
         <section className="dashboard-main">
           <div className="card">
-            <p className="muted">{t('common.loading', 'Loading...')}</p>
+            <p className="muted">{t("common.loading", "Loading...")}</p>
           </div>
         </section>
       </main>
-    )
+    );
   }
 
   return (
@@ -115,9 +150,6 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           <Link href="/dashboard" className="logo">
             Mirë<span>book</span>
           </Link>
-          <p className="small muted" style={{ marginTop: '0.35rem' }}>
-            {t('dashboardLayout.controlCentre', 'Business control centre')}
-          </p>
         </div>
 
         <nav className="sidebar-nav">
@@ -126,7 +158,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''}`}
+                className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""} ${"urgent" in link && link.urgent ? "urgent" : ""}`}
               >
                 <span>{link.label}</span>
               </Link>
@@ -138,7 +170,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`sidebar-link ${isActiveLink(link.href) ? 'active' : ''}`}
+                className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""}`}
               >
                 <span>{link.label}</span>
               </Link>
@@ -149,7 +181,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               onClick={logout}
               className="sidebar-link sidebar-logout"
             >
-              {t('auth.logout', 'Log out')}
+              {t("auth.logout", "Log out")}
             </button>
           </div>
         </nav>
@@ -161,9 +193,9 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             {title && (
               <h1
                 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '2rem',
-                  marginBottom: '0.25rem'
+                  fontFamily: "var(--font-display)",
+                  fontSize: "2rem",
+                  marginBottom: "0.25rem",
                 }}
               >
                 {title}
@@ -171,47 +203,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             )}
 
             {subtitle && <p className="muted">{subtitle}</p>}
-            {pendingCount > 0 && (
-              <p className="small muted" style={{ marginTop: '0.45rem' }}>
-                {`${pendingCount} ${t('dashboardLayout.pendingItems', 'Mirëbook item')}${pendingCount === 1 ? '' : 's'} ${t('dashboardLayout.needAttention', 'need your attention.')}`}
-              </p>
-            )}
           </div>
-
-          {pendingCount > 0 && (
-            <div className="dashboard-header-actions">
-              <Link
-                href="/dashboard/notifications"
-                className="btn btn-accent"
-                style={{
-                  position: 'relative',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <span aria-hidden="true">🔔</span>
-                <span>{t('account.needsAction', 'Needs action')}</span>
-                <span
-                  style={{
-                    minWidth: 22,
-                    height: 22,
-                    borderRadius: 999,
-                    background: 'var(--bg)',
-                    color: 'var(--accent)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    marginLeft: '0.15rem'
-                  }}
-                >
-                  {pendingCount > 9 ? '9+' : pendingCount}
-                </span>
-              </Link>
-            </div>
-          )}
         </div>
 
         {children}
@@ -220,18 +212,18 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         .sidebar-nav {
           display: flex;
           flex-direction: column;
-          gap: 2.25rem;
+          gap: 1.4rem;
         }
 
         .sidebar-main-links,
         .sidebar-lower-links {
           display: grid;
-          gap: 0.35rem;
+          gap: 0.3rem;
         }
 
         .sidebar-lower-links {
-          margin-top: 1.25rem;
-          padding-top: 1.25rem;
+          margin-top: 0.25rem;
+          padding-top: 1rem;
           border-top: 1px solid var(--border);
         }
 
@@ -243,41 +235,28 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           color: var(--text-muted);
           cursor: pointer;
         }
+
+        .sidebar-link.urgent {
+          border-color: rgba(255, 107, 53, 0.45);
+          background: rgba(255, 107, 53, 0.1);
+          color: var(--accent);
+        }
+
         .dashboard-page-header {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
           align-items: flex-start;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
           flex-wrap: wrap;
         }
-
-        .dashboard-header-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          align-items: center;
-          justify-content: flex-end;
-        }
-
 
         @media (max-width: 720px) {
           .dashboard-page-header {
             display: grid;
           }
-
-          .dashboard-header-actions {
-            width: 100%;
-            justify-content: stretch;
-          }
-
-          .dashboard-header-actions :global(.btn) {
-            width: 100%;
-            justify-content: center;
-          }
-
         }
       `}</style>
     </main>
-  )
+  );
 }

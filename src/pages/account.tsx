@@ -469,13 +469,10 @@ export default function AccountPage() {
               className="card account-form-card account-primary-card"
             >
               <div>
-                <p className="small muted">
-                  {t("account.primaryKicker", "Personal settings")}
-                </p>
                 <h2
                   style={{
                     fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
+                    marginTop: 0,
                   }}
                 >
                   {t("account.personalDetails", "Personal details")}
@@ -638,13 +635,7 @@ export default function AccountPage() {
                 className="card"
                 style={{ borderColor: "rgba(255,107,53,0.25)" }}
               >
-                <p className="small muted">
-                  {t(
-                    "account.businessSettingsKicker",
-                    "Business settings are separate",
-                  )}
-                </p>
-                <h3 style={{ marginTop: "0.25rem" }}>
+                <h3>
                   {t(
                     "account.businessSettingsTitle",
                     "Need to change your business setup?",
@@ -670,13 +661,10 @@ export default function AccountPage() {
               <div className="card operator-account-card">
                 <div className="operator-account-row">
                   <div>
-                    <p className="small" style={{ color: "var(--accent)" }}>
-                      {t("account.operator.kicker", "Operator access")}
-                    </p>
                     <h2
                       style={{
                         fontFamily: "var(--font-display)",
-                        marginTop: "0.25rem",
+                        marginTop: 0,
                       }}
                     >
                       {t("account.operator.title", "Mirëbook operator tools")}
@@ -709,11 +697,8 @@ export default function AccountPage() {
 
             <div className="grid-2 account-summary-grid">
               <div className="card account-role-card">
-                <p className="small muted">
-                  {t("account.accessSummary", "Access summary")}
-                </p>
                 <strong>{primaryAccountMode}</strong>
-                <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                <p className="small muted">
                   {isAdmin
                     ? t(
                         "account.operatorSummaryBody",
@@ -738,9 +723,6 @@ export default function AccountPage() {
 
               {isCustomerOnly && (
                 <div className="card">
-                  <p className="small muted">
-                    {t("account.customerActivity", "Customer activity")}
-                  </p>
                   <strong>
                     {pluralLabel(
                       stats.bookings,
@@ -748,7 +730,7 @@ export default function AccountPage() {
                       t("account.bookingPlural", "bookings"),
                     )}
                   </strong>
-                  <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                  <p className="small muted">
                     {pluralLabel(
                       stats.pendingCustomerBookings,
                       t("account.pendingBookingSingular", "pending booking"),
@@ -771,16 +753,13 @@ export default function AccountPage() {
                   className="card"
                   style={{ borderColor: "rgba(45,212,191,0.25)" }}
                 >
-                  <p className="small muted">
-                    {t("account.businessAccess", "Business access")}
-                  </p>
                   <strong>
                     {pluralLabel(
                       ownedBusinesses.length,
                       t("account.businessProfile", "business profile"),
                     )}
                   </strong>
-                  <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                  <p className="small muted">
                     {pluralLabel(
                       stats.pendingBusinessActions,
                       t("account.businessAction", "business action"),
@@ -806,13 +785,10 @@ export default function AccountPage() {
                   className="card"
                   style={{ borderColor: "rgba(45,212,191,0.25)" }}
                 >
-                  <p className="small muted">
-                    {t("account.staffAccess", "Staff access")}
-                  </p>
                   <strong>
                     {t("account.linkedStaffProfile", "Linked staff profile")}
                   </strong>
-                  <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                  <p className="small muted">
                     {`${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || t("account.access.staff", "Staff")} ${t("account.at", "at")} ${staffBusinessName()}`}
                   </p>
                   <div className="account-card-actions">
@@ -831,13 +807,10 @@ export default function AccountPage() {
 
               {!hasStaffAccess && !isCustomerOnly && (
                 <div className="card">
-                  <p className="small muted">
-                    {t("account.staffAccess", "Staff access")}
-                  </p>
                   <strong>
                     {t("dashboardStaff.card.notLinked", "Not linked")}
                   </strong>
-                  <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                  <p className="small muted">
                     {t(
                       "account.staffAccessBody",
                       "Staff access appears here only when a business links this login to a staff profile.",
@@ -847,14 +820,11 @@ export default function AccountPage() {
               )}
 
               <div className="card">
-                <p className="small muted">
-                  {t("dashboardHome.openNotifications", "Notifications")}
-                </p>
                 <strong>
                   {stats.unreadNotifications + stats.adminNotifications}{" "}
                   {t("account.unread", "unread")}
                 </strong>
-                <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                <p className="small muted">
                   {isAdmin
                     ? `${stats.adminNotifications} ${t("account.operatorNotice", "operator notice")}${stats.adminNotifications === 1 ? "" : "s"}.`
                     : ownsBusiness
@@ -881,13 +851,10 @@ export default function AccountPage() {
 
             <div className="card support-card">
               <div>
-                <p className="small muted">
-                  {t("account.helpKicker", "Help and language")}
-                </p>
                 <h2
                   style={{
                     fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
+                    marginTop: 0,
                   }}
                 >
                   {t("nav.support", "Support")}
@@ -930,7 +897,7 @@ export default function AccountPage() {
           max-width: 1040px;
           margin: 0 auto;
           display: grid;
-          gap: 1rem;
+          gap: 1.1rem;
         }
 
         .account-header,
@@ -965,7 +932,20 @@ export default function AccountPage() {
         .account-region-card,
         .account-role-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.75rem;
+        }
+
+        .account-summary-grid :global(.card),
+        .account-settings-grid :global(.card) {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .account-summary-grid p,
+        .account-settings-grid p,
+        .support-card p,
+        .account-form-card p {
+          margin-top: 0;
         }
 
         .account-region-grid {

@@ -855,21 +855,15 @@ export default function StaffDashboardPage() {
                 <Link href="/staff/availability" className="btn btn-ghost">
                   {t("staff.actions.updateAvailability", "Update availability")}
                 </Link>
-                <Link href="/staff/notifications" className="btn btn-ghost">
-                  {t("staffNotifications.title", "Updates")}
-                </Link>
               </div>
             </div>
 
             <div className="card staff-assigned-services-card">
               <div>
-                <p className="small muted">
-                  {t("staff.assignedServices.kicker", "Assigned services")}
-                </p>
                 <h2
                   style={{
                     fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
+                    marginTop: 0,
                   }}
                 >
                   {t(
@@ -953,13 +947,10 @@ export default function StaffDashboardPage() {
 
             <div className="card staff-today-card">
               <div>
-                <p className="small muted">
-                  {t("staff.today.kicker", "Today’s workflow")}
-                </p>
                 <h2
                   style={{
                     fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
+                    marginTop: 0,
                   }}
                 >
                   {todayBookings.length > 0
@@ -990,12 +981,6 @@ export default function StaffDashboardPage() {
                 >
                   {t("staff.today.viewToday", "View today")}
                 </button>
-                <Link href="/staff/calendar" className="btn btn-ghost">
-                  {t("staffCalendar.title", "Calendar view")}
-                </Link>
-                <Link href="/staff/availability" className="btn btn-ghost">
-                  {t("staff.actions.updateAvailability", "Update availability")}
-                </Link>
               </div>
             </div>
 
@@ -1008,9 +993,6 @@ export default function StaffDashboardPage() {
                   setStatusFilter("active");
                 }}
               >
-                <p className="small muted">
-                  {t("staff.summary.today", "Today")}
-                </p>
                 <h3>{todayBookings.length}</h3>
                 <p className="small muted">
                   {t("staff.summary.todayBody", "Assigned appointments today")}
@@ -1022,9 +1004,6 @@ export default function StaffDashboardPage() {
                 className="card staff-summary-button"
                 onClick={() => setStatusFilter("active")}
               >
-                <p className="small muted">
-                  {t("staff.summary.upcoming", "Upcoming")}
-                </p>
                 <h3>{upcomingBookings.length}</h3>
                 <p className="small muted">
                   {confirmedUpcomingBookings.length}{" "}
@@ -1039,9 +1018,6 @@ export default function StaffDashboardPage() {
                 className="card staff-summary-button"
                 onClick={() => setStatusFilter("history")}
               >
-                <p className="small muted">
-                  {t("staff.summary.completed", "Completed")}
-                </p>
                 <h3>{completedBookings.length}</h3>
                 <p className="small muted">
                   {t(
@@ -1055,25 +1031,19 @@ export default function StaffDashboardPage() {
             {pendingBookings.length > 0 && (
               <div className="card staff-pending-card">
                 <div>
-                  <p className="small muted">
-                    {t("staff.pending.kicker", "Pending bookings")}
-                  </p>
                   <h3>
                     {pendingBookings.length}{" "}
                     {pendingBookings.length === 1
                       ? t("staff.requests.pendingSingle", "pending request")
                       : t("staff.requests.pendingPlural", "pending requests")}
                   </h3>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                  <p className="small muted">
                     {t(
                       "staff.pending.body",
                       "These bookings are assigned to you but still need business approval before they become confirmed appointments.",
                     )}
                   </p>
                 </div>
-                <Link href="/staff/calendar" className="btn btn-ghost">
-                  {t("staffCalendar.title", "Calendar view")}
-                </Link>
               </div>
             )}
 
@@ -1085,10 +1055,7 @@ export default function StaffDashboardPage() {
                   borderColor: "rgba(255,107,53,0.35)",
                 }}
               >
-                <p className="small" style={{ color: "var(--accent)" }}>
-                  {t("staff.requests.kicker", "Customer actions")}
-                </p>
-                <h3 style={{ marginTop: "0.25rem" }}>
+                <h3>
                   {requests.length}{" "}
                   {requests.length === 1
                     ? t("staff.requests.pendingSingle", "pending request")
@@ -1139,13 +1106,10 @@ export default function StaffDashboardPage() {
             <div className="card" style={{ marginBottom: "1.5rem" }}>
               <div className="staff-schedule-header">
                 <div>
-                  <p className="small muted">
-                    {t("staff.schedule.kicker", "Schedule")}
-                  </p>
                   <h2
                     style={{
                       fontFamily: "var(--font-display)",
-                      marginTop: "0.25rem",
+                      marginTop: 0,
                     }}
                   >
                     {t("staff.schedule.title", "Your appointments")} ·{" "}
@@ -1207,10 +1171,6 @@ export default function StaffDashboardPage() {
                       {t("staff.filter.history", "History")}
                     </option>
                   </select>
-
-                  <Link href="/staff/calendar" className="btn btn-ghost">
-                    {t("staffCalendar.title", "Calendar view")}
-                  </Link>
                 </div>
               </div>
 
@@ -1255,15 +1215,16 @@ export default function StaffDashboardPage() {
                     )}
                   </p>
                   <div className="staff-empty-actions">
-                    <Link href="/staff/calendar" className="btn btn-ghost">
-                      {t("staffCalendar.title", "Calendar view")}
-                    </Link>
-                    <Link href="/staff/availability" className="btn btn-ghost">
-                      {t(
-                        "staff.actions.updateAvailability",
-                        "Update availability",
-                      )}
-                    </Link>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        setSelectedDate(formatDateInputValue(new Date()));
+                        setStatusFilter("active");
+                      }}
+                    >
+                      {t("staff.schedule.today", "Today")}
+                    </button>
                   </div>
                 </div>
               )}
@@ -1322,7 +1283,7 @@ export default function StaffDashboardPage() {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
-          align-items: center;
+          align-items: flex-start;
           margin-bottom: 1.5rem;
           border-color: rgba(255, 107, 53, 0.24);
           background: linear-gradient(
@@ -1343,7 +1304,7 @@ export default function StaffDashboardPage() {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
-          align-items: center;
+          align-items: flex-start;
           margin-bottom: 1.5rem;
           border-color: rgba(255, 190, 11, 0.28);
           background: rgba(255, 190, 11, 0.06);
@@ -1363,6 +1324,22 @@ export default function StaffDashboardPage() {
 
         .staff-assigned-services-card {
           margin-bottom: 1.5rem;
+        }
+
+        .staff-assigned-services-card,
+        .staff-today-card,
+        .staff-pending-card,
+        .staff-summary-button,
+        .staff-booking-card {
+          gap: 0.75rem;
+        }
+
+        .staff-assigned-services-card p,
+        .staff-today-card p,
+        .staff-pending-card p,
+        .staff-summary-button p,
+        .staff-booking-card p {
+          margin-top: 0;
         }
 
         .staff-assigned-services-grid {
@@ -1389,6 +1366,8 @@ export default function StaffDashboardPage() {
         .staff-summary-button {
           width: 100%;
           text-align: left;
+          display: grid;
+          gap: 0.5rem;
           color: var(--text);
           cursor: pointer;
         }

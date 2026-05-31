@@ -208,9 +208,6 @@ export default function StaffNotificationsPage() {
       <section className="page-shell">
         <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
           <div>
-            <p className="small muted">
-              {t("staffNotifications.kicker", "Staff notifications")}
-            </p>
             <h1 className="page-title">
               {t("staffNotifications.title", "Updates")}
             </h1>
@@ -223,9 +220,6 @@ export default function StaffNotificationsPage() {
           </div>
 
           <div className="page-header-actions">
-            <Link href="/staff" className="btn btn-ghost">
-              {t("staff.schedule.title", "My schedule")}
-            </Link>
 
             <button
               type="button"
@@ -243,9 +237,6 @@ export default function StaffNotificationsPage() {
         {!loading && !error && (
           <div className="staff-notification-toolbar card">
             <div>
-              <p className="small muted">
-                {t("staffNotifications.inbox.kicker", "Inbox status")}
-              </p>
               <strong>
                 {unreadCount > 0
                   ? `${unreadCount} ${unreadCount === 1 ? t("staffNotifications.unreadSingle", "unread update") : t("staffNotifications.unreadPlural", "unread updates")}`
@@ -254,7 +245,7 @@ export default function StaffNotificationsPage() {
                       "All staff updates are read",
                     )}
               </strong>
-              <p className="small muted" style={{ marginTop: "0.35rem" }}>
+              <p className="small muted">
                 {t(
                   "staffNotifications.inbox.body",
                   "This inbox only shows updates linked to your staff workspace.",
@@ -315,7 +306,7 @@ export default function StaffNotificationsPage() {
                     "No staff notifications yet",
                   )}
             </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
+            <p className="muted">
               {filter === "unread"
                 ? t(
                     "staffNotifications.empty.unreadBody",
@@ -349,11 +340,11 @@ export default function StaffNotificationsPage() {
                       </span>
                     </div>
 
-                    <p className="muted" style={{ marginTop: "0.4rem" }}>
+                    <p className="muted">
                       {displayNotification.message}
                     </p>
 
-                    <p className="small muted" style={{ marginTop: "0.55rem" }}>
+                    <p className="small muted">
                       {new Date(item.created_at).toLocaleString()}
                     </p>
                   </div>
@@ -366,11 +357,6 @@ export default function StaffNotificationsPage() {
                         </Link>
                       )}
 
-                    {!item.action_url && (
-                      <Link href="/staff" className="btn btn-ghost">
-                        {t("staff.schedule.title", "My schedule")}
-                      </Link>
-                    )}
 
                     {!item.read_at && (
                       <button
@@ -394,8 +380,7 @@ export default function StaffNotificationsPage() {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
-          align-items: center;
-          margin-bottom: 1.5rem;
+          align-items: flex-start;
           border-color: rgba(255, 107, 53, 0.22);
         }
 
@@ -414,6 +399,16 @@ export default function StaffNotificationsPage() {
         .staff-notification-list {
           display: grid;
           gap: 1rem;
+        }
+
+        .staff-notification-toolbar,
+        .staff-notification-card {
+          gap: 0.75rem;
+        }
+
+        .staff-notification-toolbar p,
+        .staff-notification-card p {
+          margin-top: 0;
         }
 
         .staff-notification-card {
@@ -435,6 +430,7 @@ export default function StaffNotificationsPage() {
           gap: 0.65rem;
           flex-wrap: wrap;
           justify-content: flex-end;
+          align-items: flex-start;
         }
 
         @media (max-width: 700px) {
@@ -453,6 +449,12 @@ export default function StaffNotificationsPage() {
           .staff-notification-actions :global(.btn),
           .staff-notification-actions button {
             width: 100%;
+          }
+
+          .page-header-actions :global(.btn),
+          .page-header-actions button {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>
