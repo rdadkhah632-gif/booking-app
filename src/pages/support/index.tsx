@@ -1,56 +1,65 @@
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import AuthNav from '@/components/AuthNav'
-import { useI18n } from '@/lib/useI18n'
-import { supabase } from '@/lib/supabaseClient'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import AuthNav from "@/components/AuthNav";
+import { useI18n } from "@/lib/useI18n";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SupportPage() {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [checkingAdmin, setCheckingAdmin] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
 
   useEffect(() => {
-    checkAdminStatus()
-  }, [])
+    checkAdminStatus();
+  }, []);
 
   async function checkAdminStatus() {
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session) {
-      setCheckingAdmin(false)
-      return
+      setCheckingAdmin(false);
+      return;
     }
 
     const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', session.user.id)
-      .maybeSingle()
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", session.user.id)
+      .maybeSingle();
 
-    setIsAdmin(Boolean(profile?.is_admin))
-    setCheckingAdmin(false)
+    setIsAdmin(Boolean(profile?.is_admin));
+    setCheckingAdmin(false);
   }
 
   return (
     <main>
       <AuthNav />
 
-      <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
+      <section
+        className="container"
+        style={{ paddingTop: 42, paddingBottom: 72 }}
+      >
         <div className="support-shell">
           {checkingAdmin && (
             <div className="card">
-              <p className="muted">{t('common.loading', 'Loading...')}</p>
+              <p className="muted">{t("common.loading", "Loading...")}</p>
             </div>
           )}
 
           {!checkingAdmin && isAdmin && (
             <>
               <div className="card support-operator-hero">
-                <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook operator</p>
+                <p className="small" style={{ color: "var(--accent)" }}>
+                  Mirëbook operator
+                </p>
                 <h1 className="page-title">Support inbox</h1>
-                <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-                  Review customer, staff and business help requests from the admin inbox. This view is for operator support work, not normal customer support.
+                <p className="page-sub" style={{ marginTop: "0.6rem" }}>
+                  Review customer, staff and business help requests from the
+                  admin inbox. This view is for operator support work, not
+                  normal customer support.
                 </p>
                 <div className="support-operator-actions">
                   <Link href="/admin/support" className="btn btn-accent">
@@ -66,27 +75,39 @@ export default function SupportPage() {
               </div>
 
               <div className="grid-3">
-                <Link href="/admin/support" className="card support-operator-card">
+                <Link
+                  href="/admin/support"
+                  className="card support-operator-card"
+                >
                   <p className="small muted">Inbox</p>
                   <h2>Support requests</h2>
-                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                    Read, reply, prioritise and resolve customer, staff and business support tickets.
+                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                    Read, reply, prioritise and resolve customer, staff and
+                    business support tickets.
                   </p>
                 </Link>
 
-                <Link href="/admin/users" className="card support-operator-card">
+                <Link
+                  href="/admin/users"
+                  className="card support-operator-card"
+                >
                   <p className="small muted">Context</p>
                   <h2>User lookup</h2>
-                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                    Check the user account, role, business links and staff links before replying.
+                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                    Check the user account, role, business links and staff links
+                    before replying.
                   </p>
                 </Link>
 
-                <Link href="/admin/notifications" className="card support-operator-card">
+                <Link
+                  href="/admin/notifications"
+                  className="card support-operator-card"
+                >
                   <p className="small muted">Follow-up</p>
                   <h2>Operator notices</h2>
-                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
-                    Send platform notices or follow-up updates when a support issue affects a user group.
+                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                    Send platform notices or follow-up updates when a support
+                    issue affects a user group.
                   </p>
                 </Link>
               </div>
@@ -94,8 +115,10 @@ export default function SupportPage() {
               <div className="card support-operator-note">
                 <p className="small muted">Production reminder</p>
                 <h2>Support notifications should go to admin</h2>
-                <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  The next step is updating the customer, staff and business support forms so every new support request creates an operator notification and appears in the admin support inbox.
+                <p className="muted" style={{ marginTop: "0.5rem" }}>
+                  The next step is updating the customer, staff and business
+                  support forms so every new support request creates an operator
+                  notification and appears in the admin support inbox.
                 </p>
               </div>
             </>
@@ -103,169 +126,286 @@ export default function SupportPage() {
 
           {!checkingAdmin && !isAdmin && (
             <>
-          <div className="card support-hero">
-            <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook support</p>
-            <h1 className="page-title">{t('support.title')}</h1>
-            <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              {t('support.subtitle')}
-            </p>
-          </div>
-
-          <div className="support-route-grid">
-            <Link href="/support/customer" className="card support-route-card">
-              <p className="small muted">Customers</p>
-              <h2>{t('support.customer.title')}</h2>
-              <p className="muted small" style={{ marginTop: '0.5rem' }}>
-                {t('support.customer.body')}
-              </p>
-              <span className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                {t('nav.customerSupport')}
-              </span>
-            </Link>
-
-            <Link href="/support/business" className="card support-route-card">
-              <p className="small muted">Businesses</p>
-              <h2>{t('support.business.title')}</h2>
-              <p className="muted small" style={{ marginTop: '0.5rem' }}>
-                {t('support.business.body')}
-              </p>
-              <span className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                {t('nav.businessSupport')}
-              </span>
-            </Link>
-
-            <Link href="/support/staff" className="card support-route-card">
-              <p className="small muted">Staff</p>
-              <h2>{t('support.staff.title')}</h2>
-              <p className="muted small" style={{ marginTop: '0.5rem' }}>
-                {t('support.staff.body')}
-              </p>
-              <span className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                {t('support.staff.title')}
-              </span>
-            </Link>
-          </div>
-
-          <div className="grid-2">
-            <div className="card support-content">
-              <div>
-                <p className="small muted">Common account routes</p>
-                <h2>Quick links</h2>
+              <div className="card support-hero">
+                <p className="small" style={{ color: "var(--accent)" }}>
+                  {t("support.kicker", "Mirëbook support")}
+                </p>
+                <h1 className="page-title">{t("support.title")}</h1>
+                <p className="page-sub" style={{ marginTop: "0.6rem" }}>
+                  {t("support.subtitle")}
+                </p>
               </div>
 
-              <div className="support-link-list">
-                <Link href="/my-bookings" className="support-link-row">
-                  <span>
-                    <strong>{t('nav.myBookings')}</strong>
-                    <small>Track customer appointments, pending requests and reschedules.</small>
+              <div className="support-route-grid">
+                <Link
+                  href="/support/customer"
+                  className="card support-route-card"
+                >
+                  <p className="small muted">
+                    {t("support.customer.kicker", "Customers")}
+                  </p>
+                  <h2>{t("support.customer.title")}</h2>
+                  <p className="muted small" style={{ marginTop: "0.5rem" }}>
+                    {t("support.customer.body")}
+                  </p>
+                  <span
+                    className="btn btn-accent"
+                    style={{ marginTop: "1rem" }}
+                  >
+                    {t("nav.customerSupport")}
                   </span>
-                  <span>→</span>
                 </Link>
 
-                <Link href="/dashboard/businesses" className="support-link-row">
-                  <span>
-                    <strong>Business setup</strong>
-                    <small>Manage business profile, services, staff, hours and publishing.</small>
+                <Link
+                  href="/support/business"
+                  className="card support-route-card"
+                >
+                  <p className="small muted">
+                    {t("support.business.kicker", "Businesses")}
+                  </p>
+                  <h2>{t("support.business.title")}</h2>
+                  <p className="muted small" style={{ marginTop: "0.5rem" }}>
+                    {t("support.business.body")}
+                  </p>
+                  <span
+                    className="btn btn-accent"
+                    style={{ marginTop: "1rem" }}
+                  >
+                    {t("nav.businessSupport")}
                   </span>
-                  <span>→</span>
                 </Link>
 
-                <Link href="/staff" className="support-link-row">
-                  <span>
-                    <strong>Staff workspace</strong>
-                    <small>View staff schedule and access staff availability tools.</small>
+                <Link href="/support/staff" className="card support-route-card">
+                  <p className="small muted">
+                    {t("support.staff.kicker", "Staff")}
+                  </p>
+                  <h2>{t("support.staff.title")}</h2>
+                  <p className="muted small" style={{ marginTop: "0.5rem" }}>
+                    {t("support.staff.body")}
+                  </p>
+                  <span
+                    className="btn btn-accent"
+                    style={{ marginTop: "1rem" }}
+                  >
+                    {t("support.staff.title")}
                   </span>
-                  <span>→</span>
-                </Link>
-
-                <Link href="/account" className="support-link-row">
-                  <span>
-                    <strong>{t('nav.account')}</strong>
-                    <small>Update name, phone and open your connected workspaces.</small>
-                  </span>
-                  <span>→</span>
                 </Link>
               </div>
-            </div>
 
-            <div className="card support-content">
-              <div>
-                <p className="small muted">Before launch</p>
-                <h2>Support inbox status</h2>
+              <div className="grid-2">
+                <div className="card support-content">
+                  <div>
+                    <p className="small muted">
+                      {t("support.quickLinks.kicker", "Common account routes")}
+                    </p>
+                    <h2>{t("support.quickLinks.title", "Quick links")}</h2>
+                  </div>
+
+                  <div className="support-link-list">
+                    <Link href="/my-bookings" className="support-link-row">
+                      <span>
+                        <strong>{t("nav.myBookings")}</strong>
+                        <small>
+                          {t(
+                            "support.quickLinks.myBookingsBody",
+                            "Track customer appointments, pending requests and reschedules.",
+                          )}
+                        </small>
+                      </span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+
+                    <Link
+                      href="/dashboard/businesses"
+                      className="support-link-row"
+                    >
+                      <span>
+                        <strong>
+                          {t(
+                            "support.quickLinks.businessSetup",
+                            "Business setup",
+                          )}
+                        </strong>
+                        <small>
+                          {t(
+                            "support.quickLinks.businessSetupBody",
+                            "Manage business profile, services, staff, hours and publishing.",
+                          )}
+                        </small>
+                      </span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+
+                    <Link href="/staff" className="support-link-row">
+                      <span>
+                        <strong>
+                          {t(
+                            "support.quickLinks.staffWorkspace",
+                            "Staff workspace",
+                          )}
+                        </strong>
+                        <small>
+                          {t(
+                            "support.quickLinks.staffWorkspaceBody",
+                            "View staff schedule and access staff availability tools.",
+                          )}
+                        </small>
+                      </span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+
+                    <Link href="/account" className="support-link-row">
+                      <span>
+                        <strong>{t("nav.account")}</strong>
+                        <small>
+                          {t(
+                            "support.quickLinks.accountBody",
+                            "Update name, phone and open your connected workspaces.",
+                          )}
+                        </small>
+                      </span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="card support-content">
+                  <div>
+                    <p className="small muted">
+                      {t("support.inboxStatus.kicker", "Before launch")}
+                    </p>
+                    <h2>
+                      {t("support.inboxStatus.title", "Support inbox status")}
+                    </h2>
+                  </div>
+
+                  <div className="support-note-box">
+                    <p>
+                      {t(
+                        "support.inboxStatus.body",
+                        "Mirëbook support is split into role-specific flows. New support forms create tickets that can be reviewed, replied to and closed from the admin area.",
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="support-contact-actions">
+                    <Link href="/privacy" className="btn btn-ghost">
+                      {t("common.privacy")}
+                    </Link>
+
+                    <Link href="/terms" className="btn btn-ghost">
+                      {t("common.terms")}
+                    </Link>
+
+                    <Link href="/explore" className="btn btn-accent">
+                      {t("home.cta.explore")}
+                    </Link>
+                  </div>
+                </div>
               </div>
 
-              <div className="support-note-box">
-                <p>
-                  Mirëbook support is being split into role-specific flows. The next production step is connecting these support forms into an operator inbox so messages can be reviewed, replied to and closed from the admin area.
-                </p>
+              <div className="card support-faq-card">
+                <div>
+                  <p className="small muted">
+                    {t("support.faq.kicker", "Common questions")}
+                  </p>
+                  <h2>
+                    {t("support.faq.title", "Frequently asked questions")}
+                  </h2>
+                </div>
+
+                <div className="support-faq-list">
+                  <div className="support-faq-item">
+                    <h3>
+                      {t(
+                        "support.faq.pendingTitle",
+                        "My booking is pending. What does that mean?",
+                      )}
+                    </h3>
+                    <p>
+                      {t(
+                        "support.faq.pendingBody",
+                        "Some businesses use manual approval. Your booking request has been sent to the business and is not confirmed until they accept it. You can track it from My Bookings or Notifications.",
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="support-faq-item">
+                    <h3>
+                      {t(
+                        "support.faq.paymentsTitle",
+                        "Can customers pay through Mirëbook?",
+                      )}
+                    </h3>
+                    <p>
+                      {t(
+                        "support.faq.paymentsBody",
+                        "Not currently. Customers use Mirëbook to book and manage appointments. The first commercial billing model is business subscription billing, where businesses pay a monthly fee to use the platform.",
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="support-faq-item">
+                    <h3>
+                      {t(
+                        "support.faq.businessReadyTitle",
+                        "How does a business get ready for customers?",
+                      )}
+                    </h3>
+                    <p>
+                      {t(
+                        "support.faq.businessReadyBody",
+                        "A business should complete its profile, add services, assign staff, set working hours and choose booking settings before publishing. The setup hub shows what still needs attention.",
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="support-faq-item">
+                    <h3>
+                      {t(
+                        "support.faq.staffAccessTitle",
+                        "How does staff access work?",
+                      )}
+                    </h3>
+                    <p>
+                      {t(
+                        "support.faq.staffAccessBody",
+                        "A business owner adds a staff member and their email. When that person registers or logs in with the same email, Mirëbook can link their account to the staff profile.",
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="support-faq-item">
+                    <h3>
+                      {t(
+                        "support.faq.countriesTitle",
+                        "Will Mirëbook support Albania and other countries?",
+                      )}
+                    </h3>
+                    <p>
+                      {t(
+                        "support.faq.countriesBody",
+                        "Yes. Mirëbook is being prepared for Albanian and international markets. Region, currency and language support will expand as the platform moves closer to launch.",
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="support-faq-item">
+                    <h3>
+                      {t(
+                        "support.faq.mobileAppTitle",
+                        "Will there be a mobile app?",
+                      )}
+                    </h3>
+                    <p>
+                      {t(
+                        "support.faq.mobileAppBody",
+                        "The current product is being built as a web platform first, with future app-store readiness in mind. The goal is to make the routes, layout, account flow and settings suitable for a later app version.",
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
-
-              <div className="support-contact-actions">
-                <Link href="/privacy" className="btn btn-ghost">
-                  {t('common.privacy')}
-                </Link>
-
-                <Link href="/terms" className="btn btn-ghost">
-                  {t('common.terms')}
-                </Link>
-
-                <Link href="/explore" className="btn btn-accent">
-                  {t('home.cta.explore')}
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="card support-faq-card">
-            <div>
-              <p className="small muted">Common questions</p>
-              <h2>Frequently asked questions</h2>
-            </div>
-
-            <div className="support-faq-list">
-              <div className="support-faq-item">
-                <h3>My booking is pending. What does that mean?</h3>
-                <p>
-                  Some businesses use manual approval. Your booking request has been sent to the business and is not confirmed until they accept it. You can track it from My Bookings or Notifications.
-                </p>
-              </div>
-
-              <div className="support-faq-item">
-                <h3>Can customers pay through Mirëbook?</h3>
-                <p>
-                  Not currently. Customers use Mirëbook to book and manage appointments. The first commercial billing model is business subscription billing, where businesses pay a monthly fee to use the platform.
-                </p>
-              </div>
-
-              <div className="support-faq-item">
-                <h3>How does a business get ready for customers?</h3>
-                <p>
-                  A business should complete its profile, add services, assign staff, set working hours and choose booking settings before publishing. The setup hub shows what still needs attention.
-                </p>
-              </div>
-
-              <div className="support-faq-item">
-                <h3>How does staff access work?</h3>
-                <p>
-                  A business owner adds a staff member and their email. When that person registers or logs in with the same email, Mirëbook can link their account to the staff profile.
-                </p>
-              </div>
-
-              <div className="support-faq-item">
-                <h3>Will Mirëbook support Albania and other countries?</h3>
-                <p>
-                  Yes. Mirëbook is being prepared for Albanian and international markets. Region, currency and language support will expand as the platform moves closer to launch.
-                </p>
-              </div>
-
-              <div className="support-faq-item">
-                <h3>Will there be a mobile app?</h3>
-                <p>
-                  The current product is being built as a web platform first, with future app-store readiness in mind. The goal is to make the routes, layout, account flow and settings suitable for a later app version.
-                </p>
-              </div>
-            </div>
-          </div>
             </>
           )}
         </div>
@@ -280,13 +420,21 @@ export default function SupportPage() {
         }
 
         .support-hero {
-          background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08));
-          border-color: rgba(255,107,53,0.25);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 107, 53, 0.12),
+            rgba(45, 212, 191, 0.08)
+          );
+          border-color: rgba(255, 107, 53, 0.25);
         }
 
         .support-operator-hero {
-          border-color: rgba(45,212,191,0.28);
-          background: linear-gradient(135deg, rgba(45,212,191,0.1), rgba(255,107,53,0.08));
+          border-color: rgba(45, 212, 191, 0.28);
+          background: linear-gradient(
+            135deg,
+            rgba(45, 212, 191, 0.1),
+            rgba(255, 107, 53, 0.08)
+          );
         }
 
         .support-operator-actions {
@@ -297,17 +445,19 @@ export default function SupportPage() {
         }
 
         .support-operator-card {
-          transition: border-color 0.2s, transform 0.2s;
+          transition:
+            border-color 0.2s,
+            transform 0.2s;
         }
 
         .support-operator-card:hover {
-          border-color: rgba(45,212,191,0.35);
+          border-color: rgba(45, 212, 191, 0.35);
           transform: translateY(-1px);
         }
 
         .support-operator-note {
-          border-color: rgba(255,190,11,0.28);
-          background: rgba(255,190,11,0.06);
+          border-color: rgba(255, 190, 11, 0.28);
+          background: rgba(255, 190, 11, 0.06);
         }
 
         .support-route-grid {
@@ -320,12 +470,14 @@ export default function SupportPage() {
           display: flex;
           flex-direction: column;
           min-height: 240px;
-          transition: transform 0.2s, border-color 0.2s;
+          transition:
+            transform 0.2s,
+            border-color 0.2s;
         }
 
         .support-route-card:hover {
           transform: translateY(-2px);
-          border-color: rgba(255,107,53,0.35);
+          border-color: rgba(255, 107, 53, 0.35);
         }
 
         .support-content,
@@ -394,6 +546,10 @@ export default function SupportPage() {
           .support-route-card {
             min-height: auto;
           }
+
+          .support-link-row {
+            width: 100%;
+          }
         }
 
         @media (max-width: 640px) {
@@ -409,5 +565,5 @@ export default function SupportPage() {
         }
       `}</style>
     </main>
-  )
+  );
 }

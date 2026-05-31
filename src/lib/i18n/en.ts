@@ -2103,4 +2103,47 @@ export const en: TranslationTree = {
     "Add more details or reply to Mirëbook support...",
   "support.thread.sending": "Sending...",
   "support.thread.sendReply": "Send reply",
+  "support.customer.adminNotificationTitle": "New customer support request",
+  "support.kicker": "Mirëbook support",
+  "support.customer.kicker": "Customers",
+  "support.business.kicker": "Businesses",
+  "support.staff.kicker": "Staff",
+  "support.quickLinks.kicker": "Common account routes",
+  "support.quickLinks.title": "Quick links",
+  "support.quickLinks.myBookingsBody":
+    "Track customer appointments, pending requests and reschedules.",
+  "support.quickLinks.businessSetup": "Business setup",
+  "support.quickLinks.businessSetupBody":
+    "Manage business profile, services, staff, hours and publishing.",
+  "support.quickLinks.staffWorkspace": "Staff workspace",
+  "support.quickLinks.staffWorkspaceBody":
+    "View staff schedule and access staff availability tools.",
+  "support.quickLinks.accountBody":
+    "Update name, phone and open your connected workspaces.",
+  "support.inboxStatus.kicker": "Before launch",
+  "support.inboxStatus.title": "Support inbox status",
+  "support.inboxStatus.body":
+    "Mirëbook support is split into role-specific flows. New support forms create tickets that can be reviewed, replied to and closed from the admin area.",
+  "support.faq.kicker": "Common questions",
+  "support.faq.title": "Frequently asked questions",
+  "support.faq.pendingTitle": "My booking is pending. What does that mean?",
+  "support.faq.pendingBody":
+    "Some businesses use manual approval. Your booking request has been sent to the business and is not confirmed until they accept it. You can track it from My Bookings or Notifications.",
+  "support.faq.paymentsTitle": "Can customers pay through Mirëbook?",
+  "support.faq.paymentsBody":
+    "Not currently. Customers use Mirëbook to book and manage appointments. The first commercial billing model is business subscription billing, where businesses pay a monthly fee to use the platform.",
+  "support.faq.businessReadyTitle":
+    "How does a business get ready for customers?",
+  "support.faq.businessReadyBody":
+    "A business should complete its profile, add services, assign staff, set working hours and choose booking settings before publishing. The setup hub shows what still needs attention.",
+  "support.faq.staffAccessTitle": "How does staff access work?",
+  "support.faq.staffAccessBody":
+    "A business owner adds a staff member and their email. When that person registers or logs in with the same email, Mirëbook can link their account to the staff profile.",
+  "support.faq.countriesTitle":
+    "Will Mirëbook support Albania and other countries?",
+  "support.faq.countriesBody":
+    "Yes. Mirëbook is being prepared for Albanian and international markets. Region, currency and language support will expand as the platform moves closer to launch.",
+  "support.faq.mobileAppTitle": "Will there be a mobile app?",
+  "support.faq.mobileAppBody":
+    "The current product is being built as a web platform first, with future app-store readiness in mind. The goal is to make the routes, layout, account flow and settings suitable for a later app version.",
 };

@@ -1,226 +1,254 @@
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import AuthNav from '@/components/AuthNav'
-import { supabase } from '@/lib/supabaseClient'
-import { useI18n } from '@/lib/useI18n'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import AuthNav from "@/components/AuthNav";
+import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/useI18n";
 
 type Profile = {
-  id: string
-  email?: string | null
-  full_name?: string | null
-}
+  id: string;
+  email?: string | null;
+  full_name?: string | null;
+};
 
 type Business = {
-  id: string
-  name: string
-  published?: boolean | null
-  subscription_status?: string | null
-}
+  id: string;
+  name: string;
+  published?: boolean | null;
+  subscription_status?: string | null;
+};
 
 type AdminProfile = {
-  id: string
-}
+  id: string;
+};
 
 const BUSINESS_SUBJECT_KEYS = [
-  'support.business.subject.setup',
-  'support.business.subject.services',
-  'support.business.subject.approval',
-  'support.business.subject.customerBooking',
-  'support.business.subject.subscription',
-  'support.business.subject.imageUpload',
-  'support.business.subject.account',
-  'support.business.subject.other'
-]
+  "support.business.subject.setup",
+  "support.business.subject.services",
+  "support.business.subject.approval",
+  "support.business.subject.customerBooking",
+  "support.business.subject.subscription",
+  "support.business.subject.imageUpload",
+  "support.business.subject.account",
+  "support.business.subject.other",
+];
 
 export default function BusinessSupportPage() {
-  const router = useRouter()
-  const { t } = useI18n()
+  const router = useRouter();
+  const { t } = useI18n();
 
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [businessId, setBusinessId] = useState('')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [subject, setSubject] = useState(BUSINESS_SUBJECT_KEYS[0])
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businessId, setBusinessId] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState(BUSINESS_SUBJECT_KEYS[0]);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadContext()
-  }, [])
+    loadContext();
+  }, []);
 
   async function loadContext() {
-    setLoading(true)
+    setLoading(true);
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace('/login?redirectTo=/support/business')
-      return
+      router.replace("/login?redirectTo=/support/business");
+      return;
     }
 
     const { data: profileData } = await supabase
-      .from('profiles')
-      .select('id, email, full_name')
-      .eq('id', session.user.id)
-      .single()
+      .from("profiles")
+      .select("id, email, full_name")
+      .eq("id", session.user.id)
+      .single();
 
     if (profileData) {
-      setProfile(profileData)
-      setName(profileData.full_name || '')
-      setEmail(profileData.email || '')
+      setProfile(profileData);
+      setName(profileData.full_name || "");
+      setEmail(profileData.email || "");
     }
 
     const { data: businessData } = await supabase
-      .from('businesses')
-      .select('id, name, published, subscription_status')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false })
+      .from("businesses")
+      .select("id, name, published, subscription_status")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false });
 
-    const rows = (businessData || []) as Business[]
-    setBusinesses(rows)
-    setBusinessId(rows[0]?.id || '')
+    const rows = (businessData || []) as Business[];
+    setBusinesses(rows);
+    setBusinessId(rows[0]?.id || "");
 
-    setLoading(false)
+    setLoading(false);
   }
 
   async function notifyAdmins(ticketId: string, title: string, body: string) {
     const { data: admins } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('is_admin', true)
+      .from("profiles")
+      .select("id")
+      .eq("is_admin", true);
 
-    if (!admins || admins.length === 0) return
+    if (!admins || admins.length === 0) return;
 
-    await supabase
-      .from('notifications')
-      .insert(
-        admins.map((admin: AdminProfile) => ({
-          user_id: admin.id,
-          title,
-          body,
-          type: 'support_request_business',
-          action_url: '/admin/support'
-        }))
-      )
+    await supabase.from("notifications").insert(
+      admins.map((admin: AdminProfile) => ({
+        user_id: admin.id,
+        title,
+        body,
+        type: "support_request_business",
+        action_url: "/admin/support",
+      })),
+    );
   }
 
   async function submitSupportMessage(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!profile) {
-      setError(t('support.business.loginRequired'))
-      return
+      setError(t("support.business.loginRequired"));
+      return;
     }
 
     if (!subject.trim() || !message.trim()) {
-      setError(t('support.business.validation'))
-      return
+      setError(t("support.business.validation"));
+      return;
     }
 
-    setSending(true)
-    setError(null)
-    setSuccess(null)
-    setCreatedTicketId(null)
+    setSending(true);
+    setError(null);
+    setSuccess(null);
+    setCreatedTicketId(null);
 
-    const selectedBusiness = businesses.find((business) => business.id === businessId) || null
-    const ticketSubject = t(subject).trim()
-    const ticketMessage = message.trim()
-    const ticketPriority = subject === 'support.business.subject.approval' || subject === 'support.business.subject.subscription' ? 'high' : 'normal'
+    const selectedBusiness =
+      businesses.find((business) => business.id === businessId) || null;
+    const ticketSubject = t(subject).trim();
+    const ticketMessage = message.trim();
+    const ticketPriority =
+      subject === "support.business.subject.approval" ||
+      subject === "support.business.subject.subscription"
+        ? "high"
+        : "normal";
 
     const { data: insertedTicket, error: insertError } = await supabase
-      .from('support_messages')
+      .from("support_messages")
       .insert({
         user_id: profile.id,
         business_id: businessId || null,
-        account_type: 'business',
+        account_type: "business",
         name: name.trim() || profile.full_name || null,
         email: email.trim() || profile.email || null,
-        category: 'business_support',
+        category: "business_support",
         subject: ticketSubject,
         message: ticketMessage,
-        status: 'open',
-        priority: ticketPriority
+        status: "open",
+        priority: ticketPriority,
       })
-      .select('id')
-      .single()
+      .select("id")
+      .single();
 
-    setSending(false)
+    setSending(false);
 
     if (insertError) {
-      setError(insertError.message)
-      return
+      setError(insertError.message);
+      return;
     }
 
-    const ticketId = insertedTicket?.id || null
-    setCreatedTicketId(ticketId)
+    const ticketId = insertedTicket?.id || null;
+    setCreatedTicketId(ticketId);
 
     if (ticketId) {
       await notifyAdmins(
         ticketId,
-        'New business support request',
-        `${ticketSubject} · ${selectedBusiness?.name || name.trim() || profile.email || 'Business owner'}`
-      )
+        "New business support request",
+        `${ticketSubject} · ${selectedBusiness?.name || name.trim() || profile.email || "Business owner"}`,
+      );
     }
 
-    setSuccess(t('support.business.success'))
-    setMessage('')
-    setSubject(BUSINESS_SUBJECT_KEYS[0])
+    setSuccess(t("support.business.success"));
+    setMessage("");
+    setSubject(BUSINESS_SUBJECT_KEYS[0]);
   }
 
   return (
     <main>
       <AuthNav />
 
-      <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
+      <section
+        className="container"
+        style={{ paddingTop: 42, paddingBottom: 72 }}
+      >
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: 'var(--accent)' }}>{t('nav.businessSupport')}</p>
-            <h1 className="page-title">{t('support.business.heroTitle')}</h1>
-            <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              {t('support.business.heroBody', 'Get help with business setup, services, staff, bookings, publishing, billing or account access.')}
+            <p className="small" style={{ color: "var(--accent)" }}>
+              {t("nav.businessSupport")}
+            </p>
+            <h1 className="page-title">{t("support.business.heroTitle")}</h1>
+            <p className="page-sub" style={{ marginTop: "0.6rem" }}>
+              {t(
+                "support.business.heroBody",
+                "Get help with business setup, services, staff, bookings, publishing, billing or account access.",
+              )}
             </p>
             <div className="support-hero-actions">
               <Link href="/support/messages" className="btn btn-accent">
-                {t('support.business.myMessages', 'Business support messages')}
+                {t("support.business.myMessages", "Business support messages")}
               </Link>
               <Link href="/dashboard" className="btn btn-ghost">
-                {t('dashboardHome.title', 'Business overview')}
+                {t("dashboardHome.title", "Business overview")}
               </Link>
             </div>
           </div>
 
           {loading && (
             <div className="card">
-              <p className="muted">{t('support.business.loading')}</p>
+              <p className="muted">{t("support.business.loading")}</p>
             </div>
           )}
 
           {error && (
-            <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)' }}>
-              <p style={{ color: 'var(--danger)' }}>{error}</p>
+            <div
+              className="card"
+              style={{ borderColor: "rgba(255,77,109,0.35)" }}
+            >
+              <p style={{ color: "var(--danger)" }}>{error}</p>
             </div>
           )}
 
           {success && (
             <div className="card support-success-card">
-              <p style={{ color: 'var(--success)' }}>{success}</p>
-              <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                {t('support.business.successBody', 'Your message is now saved as a business support conversation. Mirëbook support will reply there.')}
+              <p style={{ color: "var(--success)" }}>{success}</p>
+              <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                {t(
+                  "support.business.successBody",
+                  "Your message is now saved as a business support conversation. Mirëbook support will reply there.",
+                )}
               </p>
               <div className="support-success-actions">
                 {createdTicketId && (
-                  <Link href={`/support/messages/${createdTicketId}`} className="btn btn-accent">
-                    {t('support.business.viewConversation', 'View conversation')}
+                  <Link
+                    href={`/support/messages/${createdTicketId}`}
+                    className="btn btn-accent"
+                  >
+                    {t(
+                      "support.business.viewConversation",
+                      "View conversation",
+                    )}
                   </Link>
                 )}
                 <Link href="/support/messages" className="btn btn-ghost">
-                  {t('support.business.allConversations', 'All support messages')}
+                  {t(
+                    "support.business.allConversations",
+                    "All support messages",
+                  )}
                 </Link>
               </div>
             </div>
@@ -228,139 +256,239 @@ export default function BusinessSupportPage() {
 
           {!loading && (
             <div className="support-grid">
-              <form onSubmit={submitSupportMessage} className="card support-form-card">
+              <form
+                onSubmit={submitSupportMessage}
+                className="card support-form-card"
+              >
                 <div>
-                  <p className="small muted">{t('support.business.formKicker')}</p>
-                  <h2>{t('support.business.formTitle')}</h2>
-                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    {t('support.business.formBody', 'This creates a business-owner support conversation. Replies from Mirëbook support will appear in your support messages.')}
+                  <p className="small muted">
+                    {t("support.business.formKicker")}
+                  </p>
+                  <h2>{t("support.business.formTitle")}</h2>
+                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                    {t(
+                      "support.business.formBody",
+                      "This creates a business-owner support conversation. Replies from Mirëbook support will appear in your support messages.",
+                    )}
                   </p>
                 </div>
 
                 <div className="support-form-grid">
                   <div>
-                    <label className="small muted">{t('common.name')}</label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('support.business.namePlaceholder')} style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t("common.name")}</label>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={t("support.business.namePlaceholder")}
+                      style={{ marginTop: "0.4rem" }}
+                    />
                   </div>
 
                   <div>
-                    <label className="small muted">{t('common.email')}</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('support.business.emailPlaceholder')} style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t("common.email")}</label>
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t("support.business.emailPlaceholder")}
+                      style={{ marginTop: "0.4rem" }}
+                    />
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">{t('common.business')}</label>
-                    <select value={businessId} onChange={(e) => setBusinessId(e.target.value)} style={{ marginTop: '0.4rem' }}>
-                      {businesses.length === 0 && <option value="">{t('support.business.noBusiness')}</option>}
+                    <label className="small muted">
+                      {t("common.business")}
+                    </label>
+                    <select
+                      value={businessId}
+                      onChange={(e) => setBusinessId(e.target.value)}
+                      style={{ marginTop: "0.4rem" }}
+                    >
+                      {businesses.length === 0 && (
+                        <option value="">
+                          {t("support.business.noBusiness")}
+                        </option>
+                      )}
                       {businesses.map((business) => (
                         <option key={business.id} value={business.id}>
-                          {business.name} · {business.published ? t('support.business.status.published') : t('support.business.status.draft')} · {business.subscription_status || t('support.business.status.trial')}
+                          {business.name} ·{" "}
+                          {business.published
+                            ? t("support.business.status.published")
+                            : t("support.business.status.draft")}{" "}
+                          ·{" "}
+                          {business.subscription_status ||
+                            t("support.business.status.trial")}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">{t('support.business.subjectLabel')}</label>
-                    <select value={subject} onChange={(e) => setSubject(e.target.value)} style={{ marginTop: '0.4rem' }}>
+                    <label className="small muted">
+                      {t("support.business.subjectLabel")}
+                    </label>
+                    <select
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      style={{ marginTop: "0.4rem" }}
+                    >
                       {BUSINESS_SUBJECT_KEYS.map((item) => (
-                        <option key={item} value={item}>{t(item)}</option>
+                        <option key={item} value={item}>
+                          {t(item)}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">{t('support.business.messageLabel')}</label>
+                    <label className="small muted">
+                      {t("support.business.messageLabel")}
+                    </label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder={t('support.business.messagePlaceholder')}
+                      placeholder={t("support.business.messagePlaceholder")}
                       rows={7}
-                      style={{ marginTop: '0.4rem' }}
+                      style={{ marginTop: "0.4rem" }}
                     />
                   </div>
                 </div>
 
                 <div className="support-submit-note">
-                  <p className="small muted">{t('support.business.beforeSending.kicker', 'Before sending')}</p>
                   <p className="small muted">
-                    {t('support.business.beforeSending.body', 'Include the affected business, service, staff member, booking date or setup area so support can trace it faster.')}
+                    {t(
+                      "support.business.beforeSending.kicker",
+                      "Before sending",
+                    )}
+                  </p>
+                  <p className="small muted">
+                    {t(
+                      "support.business.beforeSending.body",
+                      "Include the affected business, service, staff member, booking date or setup area so support can trace it faster.",
+                    )}
                   </p>
                 </div>
 
-                <button type="submit" className="btn btn-accent" disabled={sending}>
-                  {sending ? t('support.business.sending') : t('support.business.sendButton')}
+                <button
+                  type="submit"
+                  className="btn btn-accent"
+                  disabled={sending}
+                >
+                  {sending
+                    ? t("support.business.sending")
+                    : t("support.business.sendButton")}
                 </button>
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">{t('support.business.linksKicker')}</p>
-                <h2>{t('support.business.quickActions')}</h2>
+                <p className="small muted">
+                  {t("support.business.linksKicker")}
+                </p>
+                <h2>{t("support.business.quickActions")}</h2>
 
                 <div className="support-link-list">
-                  <Link href="/dashboard/businesses" className="support-link-row">
+                  <Link
+                    href="/dashboard/businesses"
+                    className="support-link-row"
+                  >
                     <span>
-                      <strong>{t('support.business.setupHub')}</strong>
-                      <small>{t('support.business.setupHubBody')}</small>
+                      <strong>{t("support.business.setupHub")}</strong>
+                      <small>{t("support.business.setupHubBody")}</small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/dashboard/bookings" className="support-link-row">
                     <span>
-                      <strong>{t('support.business.bookings')}</strong>
-                      <small>{t('support.business.bookingsBody')}</small>
+                      <strong>{t("support.business.bookings")}</strong>
+                      <small>{t("support.business.bookingsBody")}</small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/dashboard/services" className="support-link-row">
                     <span>
-                      <strong>{t('support.business.services')}</strong>
-                      <small>{t('support.business.servicesBody')}</small>
+                      <strong>{t("support.business.services")}</strong>
+                      <small>{t("support.business.servicesBody")}</small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/dashboard/staff" className="support-link-row">
                     <span>
-                      <strong>{t('support.business.staff')}</strong>
-                      <small>{t('support.business.staffBody')}</small>
+                      <strong>{t("support.business.staff")}</strong>
+                      <small>{t("support.business.staffBody")}</small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/support/messages" className="support-link-row">
                     <span>
-                      <strong>{t('support.business.myMessages', 'Business support messages')}</strong>
-                      <small>{t('support.business.myMessagesBody', 'Read support replies and continue business support conversations.')}</small>
+                      <strong>
+                        {t(
+                          "support.business.myMessages",
+                          "Business support messages",
+                        )}
+                      </strong>
+                      <small>
+                        {t(
+                          "support.business.myMessagesBody",
+                          "Read support replies and continue business support conversations.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
-                  </Link>
-
-                  <Link href="/admin/support" className="support-link-row support-admin-only-link">
-                    <span>
-                      <strong>{t('support.business.operatorInbox', 'Operator support inbox')}</strong>
-                      <small>{t('support.business.operatorInboxBody', 'Visible only if your account is also an admin/operator account.')}</small>
-                    </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
                 </div>
 
                 <div className="support-business-guide">
-                  <p className="small muted">{t('support.business.guide.kicker', 'Business support guide')}</p>
+                  <p className="small muted">
+                    {t(
+                      "support.business.guide.kicker",
+                      "Business support guide",
+                    )}
+                  </p>
                   <div className="support-guide-list">
                     <div>
-                      <strong>{t('support.business.guide.setupTitle', 'Setup or publishing issue')}</strong>
-                      <p className="small muted">{t('support.business.guide.setupBody', 'Check your business profile, services, staff assignments and working hours before raising a setup issue.')}</p>
+                      <strong>
+                        {t(
+                          "support.business.guide.setupTitle",
+                          "Setup or publishing issue",
+                        )}
+                      </strong>
+                      <p className="small muted">
+                        {t(
+                          "support.business.guide.setupBody",
+                          "Check your business profile, services, staff assignments and working hours before raising a setup issue.",
+                        )}
+                      </p>
                     </div>
                     <div>
-                      <strong>{t('support.business.guide.bookingTitle', 'Customer booking issue')}</strong>
-                      <p className="small muted">{t('support.business.guide.bookingBody', 'Include the customer name, service, date and current booking status so support can trace the problem.')}</p>
+                      <strong>
+                        {t(
+                          "support.business.guide.bookingTitle",
+                          "Customer booking issue",
+                        )}
+                      </strong>
+                      <p className="small muted">
+                        {t(
+                          "support.business.guide.bookingBody",
+                          "Include the customer name, service, date and current booking status so support can trace the problem.",
+                        )}
+                      </p>
                     </div>
                     <div>
-                      <strong>{t('support.business.guide.billingTitle', 'Billing or trial question')}</strong>
-                      <p className="small muted">{t('support.business.guide.billingBody', 'Mention your business name, trial/subscription state and what you expected to happen.')}</p>
+                      <strong>
+                        {t(
+                          "support.business.guide.billingTitle",
+                          "Billing or trial question",
+                        )}
+                      </strong>
+                      <p className="small muted">
+                        {t(
+                          "support.business.guide.billingBody",
+                          "Mention your business name, trial/subscription state and what you expected to happen.",
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -379,8 +507,12 @@ export default function BusinessSupportPage() {
         }
 
         .support-hero {
-          background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08));
-          border-color: rgba(255,107,53,0.25);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 107, 53, 0.12),
+            rgba(45, 212, 191, 0.08)
+          );
+          border-color: rgba(255, 107, 53, 0.25);
         }
 
         .support-hero-actions,
@@ -392,8 +524,8 @@ export default function BusinessSupportPage() {
         }
 
         .support-success-card {
-          border-color: rgba(45,212,191,0.35);
-          background: rgba(45,212,191,0.06);
+          border-color: rgba(45, 212, 191, 0.35);
+          background: rgba(45, 212, 191, 0.06);
         }
 
         .support-grid {
@@ -420,10 +552,10 @@ export default function BusinessSupportPage() {
         }
 
         .support-submit-note {
-          border: 1px solid rgba(45,212,191,0.2);
+          border: 1px solid rgba(45, 212, 191, 0.2);
           border-radius: var(--radius);
           padding: 0.85rem;
-          background: rgba(45,212,191,0.06);
+          background: rgba(45, 212, 191, 0.06);
         }
 
         .support-link-list {
@@ -447,11 +579,6 @@ export default function BusinessSupportPage() {
           margin-top: 0.2rem;
           color: var(--text-muted);
           line-height: 1.5;
-        }
-
-        .support-admin-only-link {
-          border-color: rgba(255,190,11,0.24);
-          background: rgba(255,190,11,0.05);
         }
 
         .support-business-guide {
@@ -491,5 +618,5 @@ export default function BusinessSupportPage() {
         }
       `}</style>
     </main>
-  )
+  );
 }

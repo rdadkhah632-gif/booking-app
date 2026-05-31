@@ -2159,4 +2159,47 @@ export const sq: TranslationTree = {
     "Shto më shumë detaje ose përgjigju suportit të Mirëbook...",
   "support.thread.sending": "Duke dërguar...",
   "support.thread.sendReply": "Dërgo përgjigjen",
+  "support.customer.adminNotificationTitle": "Kërkesë e re suporti nga klienti",
+  "support.kicker": "Suporti i Mirëbook",
+  "support.customer.kicker": "Klientët",
+  "support.business.kicker": "Bizneset",
+  "support.staff.kicker": "Stafi",
+  "support.quickLinks.kicker": "Rrugë të zakonshme të llogarisë",
+  "support.quickLinks.title": "Lidhje të shpejta",
+  "support.quickLinks.myBookingsBody":
+    "Ndiq takimet e klientit, kërkesat në pritje dhe riplanifikimet.",
+  "support.quickLinks.businessSetup": "Konfigurimi i biznesit",
+  "support.quickLinks.businessSetupBody":
+    "Menaxho profilin e biznesit, shërbimet, stafin, oraret dhe publikimin.",
+  "support.quickLinks.staffWorkspace": "Hapësira e stafit",
+  "support.quickLinks.staffWorkspaceBody":
+    "Shiko orarin e stafit dhe hap mjetet e disponueshmërisë.",
+  "support.quickLinks.accountBody":
+    "Përditëso emrin, telefonin dhe hap hapësirat e lidhura.",
+  "support.inboxStatus.kicker": "Para lançimit",
+  "support.inboxStatus.title": "Statusi i inbox-it të suportit",
+  "support.inboxStatus.body":
+    "Suporti i Mirëbook është ndarë në rrjedha sipas rolit. Formularët e rinj krijojnë ticket-e që mund të shqyrtohen, përgjigjen dhe mbyllen nga zona e adminit.",
+  "support.faq.kicker": "Pyetje të zakonshme",
+  "support.faq.title": "Pyetje të shpeshta",
+  "support.faq.pendingTitle":
+    "Rezervimi im është në pritje. Çfarë do të thotë?",
+  "support.faq.pendingBody":
+    "Disa biznese përdorin miratim manual. Kërkesa jote i është dërguar biznesit dhe nuk konfirmohet derisa ata ta pranojnë. Mund ta ndjekësh te Rezervimet e mia ose Njoftimet.",
+  "support.faq.paymentsTitle": "A mund të paguajnë klientët përmes Mirëbook?",
+  "support.faq.paymentsBody":
+    "Jo aktualisht. Klientët përdorin Mirëbook për të rezervuar dhe menaxhuar takime. Modeli i parë komercial është abonimi i bizneseve, ku bizneset paguajnë një tarifë mujore për platformën.",
+  "support.faq.businessReadyTitle": "Si bëhet gati një biznes për klientët?",
+  "support.faq.businessReadyBody":
+    "Një biznes duhet të plotësojë profilin, të shtojë shërbimet, të caktojë stafin, të vendosë oraret dhe të zgjedhë cilësimet e rezervimit para publikimit. Qendra e konfigurimit tregon çfarë mungon ende.",
+  "support.faq.staffAccessTitle": "Si funksionon aksesi i stafit?",
+  "support.faq.staffAccessBody":
+    "Pronari i biznesit shton një anëtar stafi dhe emailin e tij. Kur ai person regjistrohet ose hyn me të njëjtin email, Mirëbook mund ta lidhë llogarinë me profilin e stafit.",
+  "support.faq.countriesTitle":
+    "A do të mbështesë Mirëbook Shqipërinë dhe vende të tjera?",
+  "support.faq.countriesBody":
+    "Po. Mirëbook po përgatitet për tregun shqiptar dhe tregje ndërkombëtare. Mbështetja për rajonin, monedhën dhe gjuhën do të zgjerohet ndërsa platforma afrohet me lançimin.",
+  "support.faq.mobileAppTitle": "A do të ketë aplikacion mobil?",
+  "support.faq.mobileAppBody":
+    "Produkti aktual po ndërtohet fillimisht si platformë web, me gatishmëri për aplikacion në të ardhmen. Qëllimi është që rrugët, faqosja, rrjedha e llogarisë dhe cilësimet të jenë të përshtatshme për një version aplikacioni më vonë.",
 };

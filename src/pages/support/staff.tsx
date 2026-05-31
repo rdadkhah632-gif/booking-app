@@ -1,260 +1,299 @@
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import AuthNav from '@/components/AuthNav'
-import { supabase } from '@/lib/supabaseClient'
-import { useI18n } from '@/lib/useI18n'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import AuthNav from "@/components/AuthNav";
+import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/useI18n";
 
 type Profile = {
-  id: string
-  email?: string | null
-  full_name?: string | null
-}
+  id: string;
+  email?: string | null;
+  full_name?: string | null;
+};
 
 type StaffProfile = {
-  id: string
-  business_id?: string | null
-  name?: string | null
-  email?: string | null
-  role_title?: string | null
-  permission_role?: string | null
-  active?: boolean | null
-  business_name?: string | null
-}
+  id: string;
+  business_id?: string | null;
+  name?: string | null;
+  email?: string | null;
+  role_title?: string | null;
+  permission_role?: string | null;
+  active?: boolean | null;
+  business_name?: string | null;
+};
 
 type AdminProfile = {
-  id: string
-}
+  id: string;
+};
 
 const STAFF_SUBJECT_KEYS = [
-  'support.staff.subject.access',
-  'support.staff.subject.availability',
-  'support.staff.subject.schedule',
-  'support.staff.subject.wrongBusiness',
-  'support.staff.subject.email',
-  'support.staff.subject.notifications',
-  'support.staff.subject.other'
-]
+  "support.staff.subject.access",
+  "support.staff.subject.availability",
+  "support.staff.subject.schedule",
+  "support.staff.subject.wrongBusiness",
+  "support.staff.subject.email",
+  "support.staff.subject.notifications",
+  "support.staff.subject.other",
+];
 
 export default function StaffSupportPage() {
-  const router = useRouter()
-  const { t } = useI18n()
+  const router = useRouter();
+  const { t } = useI18n();
 
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [subject, setSubject] = useState(STAFF_SUBJECT_KEYS[0])
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState(STAFF_SUBJECT_KEYS[0]);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadContext()
-  }, [])
+    loadContext();
+  }, []);
 
   async function loadContext() {
-    setLoading(true)
+    setLoading(true);
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace('/login?redirectTo=/support/staff')
-      return
+      router.replace("/login?redirectTo=/support/staff");
+      return;
     }
 
     const { data: profileData } = await supabase
-      .from('profiles')
-      .select('id, email, full_name')
-      .eq('id', session.user.id)
-      .single()
+      .from("profiles")
+      .select("id, email, full_name")
+      .eq("id", session.user.id)
+      .single();
 
     if (profileData) {
-      setProfile(profileData)
-      setName(profileData.full_name || '')
-      setEmail(profileData.email || '')
+      setProfile(profileData);
+      setName(profileData.full_name || "");
+      setEmail(profileData.email || "");
     }
 
     const { data: staffData } = await supabase
-      .from('staff_members')
-      .select('id, business_id, name, email, role_title, permission_role, active')
-      .eq('user_id', session.user.id)
+      .from("staff_members")
+      .select(
+        "id, business_id, name, email, role_title, permission_role, active",
+      )
+      .eq("user_id", session.user.id)
       .limit(1)
-      .maybeSingle()
+      .maybeSingle();
 
-    let resolvedStaff = staffData as StaffProfile | null
+    let resolvedStaff = staffData as StaffProfile | null;
 
     if (resolvedStaff?.business_id) {
       const { data: businessData } = await supabase
-        .from('businesses')
-        .select('id, name')
-        .eq('id', resolvedStaff.business_id)
-        .maybeSingle()
+        .from("businesses")
+        .select("id, name")
+        .eq("id", resolvedStaff.business_id)
+        .maybeSingle();
 
       resolvedStaff = {
         ...resolvedStaff,
-        business_name: businessData?.name || null
-      }
+        business_name: businessData?.name || null,
+      };
     }
 
-    setStaffProfile(resolvedStaff)
-    setLoading(false)
+    setStaffProfile(resolvedStaff);
+    setLoading(false);
   }
 
   async function notifyAdmins(ticketId: string, title: string, body: string) {
     const { data: admins } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('is_admin', true)
+      .from("profiles")
+      .select("id")
+      .eq("is_admin", true);
 
-    if (!admins || admins.length === 0) return
+    if (!admins || admins.length === 0) return;
 
-    await supabase
-      .from('notifications')
-      .insert(
-        admins.map((admin: AdminProfile) => ({
-          user_id: admin.id,
-          title,
-          body,
-          type: 'support_request_staff',
-          action_url: '/admin/support'
-        }))
-      )
+    await supabase.from("notifications").insert(
+      admins.map((admin: AdminProfile) => ({
+        user_id: admin.id,
+        title,
+        body,
+        type: "support_request_staff",
+        action_url: "/admin/support",
+      })),
+    );
   }
 
   async function submitSupportMessage(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!profile) {
-      setError(t('support.staff.loginRequired', 'You need to be logged in as staff to contact staff support.'))
-      return
+      setError(
+        t(
+          "support.staff.loginRequired",
+          "You need to be logged in as staff to contact staff support.",
+        ),
+      );
+      return;
     }
 
     if (!subject.trim() || !message.trim()) {
-      setError(t('support.staff.validation', 'Choose a subject and write a message before sending.'))
-      return
+      setError(
+        t(
+          "support.staff.validation",
+          "Choose a subject and write a message before sending.",
+        ),
+      );
+      return;
     }
 
-    setSending(true)
-    setError(null)
-    setSuccess(null)
-    setCreatedTicketId(null)
+    setSending(true);
+    setError(null);
+    setSuccess(null);
+    setCreatedTicketId(null);
 
-    const ticketSubject = staffSubjectLabel(subject).trim()
-    const ticketMessage = message.trim()
-    const ticketPriority = subject === 'support.staff.subject.access' || subject === 'support.staff.subject.wrongBusiness' ? 'high' : 'normal'
+    const ticketSubject = staffSubjectLabel(subject).trim();
+    const ticketMessage = message.trim();
+    const ticketPriority =
+      subject === "support.staff.subject.access" ||
+      subject === "support.staff.subject.wrongBusiness"
+        ? "high"
+        : "normal";
 
     const { data: insertedTicket, error: insertError } = await supabase
-      .from('support_messages')
+      .from("support_messages")
       .insert({
         user_id: profile.id,
         business_id: staffProfile?.business_id || null,
-        account_type: 'staff',
+        account_type: "staff",
         name: name.trim() || staffProfile?.name || profile.full_name || null,
         email: email.trim() || staffProfile?.email || profile.email || null,
-        category: 'staff_support',
+        category: "staff_support",
         subject: ticketSubject,
         message: ticketMessage,
-        status: 'open',
-        priority: ticketPriority
+        status: "open",
+        priority: ticketPriority,
       })
-      .select('id')
-      .single()
+      .select("id")
+      .single();
 
-    setSending(false)
+    setSending(false);
 
     if (insertError) {
-      setError(insertError.message)
-      return
+      setError(insertError.message);
+      return;
     }
 
-    const ticketId = insertedTicket?.id || null
-    setCreatedTicketId(ticketId)
+    const ticketId = insertedTicket?.id || null;
+    setCreatedTicketId(ticketId);
 
     if (ticketId) {
       await notifyAdmins(
         ticketId,
-        'New staff support request',
-        `${ticketSubject} · ${staffProfile?.business_name || staffProfile?.name || name.trim() || profile.email || 'Staff member'}`
-      )
+        t("support.staff.adminNotificationTitle", "New staff support request"),
+        `${ticketSubject} · ${staffProfile?.business_name || staffProfile?.name || name.trim() || profile.email || "Staff member"}`,
+      );
     }
 
-    setSuccess(t('support.staff.success', 'Your support message has been sent.'))
-    setMessage('')
-    setSubject(STAFF_SUBJECT_KEYS[0])
+    setSuccess(
+      t("support.staff.success", "Your support message has been sent."),
+    );
+    setMessage("");
+    setSubject(STAFF_SUBJECT_KEYS[0]);
   }
 
   function staffSubjectLabel(key: string) {
     const fallback: Record<string, string> = {
-      'support.staff.subject.access': 'Account access or login issue',
-      'support.staff.subject.availability': 'Availability or working hours',
-      'support.staff.subject.schedule': 'Schedule or booking question',
-      'support.staff.subject.wrongBusiness': 'Wrong business or staff profile',
-      'support.staff.subject.email': 'Email or profile details',
-      'support.staff.subject.notifications': 'Notifications issue',
-      'support.staff.subject.other': 'Other staff support request'
-    }
+      "support.staff.subject.access": "Account access or login issue",
+      "support.staff.subject.availability": "Availability or working hours",
+      "support.staff.subject.schedule": "Schedule or booking question",
+      "support.staff.subject.wrongBusiness": "Wrong business or staff profile",
+      "support.staff.subject.email": "Email or profile details",
+      "support.staff.subject.notifications": "Notifications issue",
+      "support.staff.subject.other": "Other staff support request",
+    };
 
-    return t(key, fallback[key] || 'Staff support request')
+    return t(key, fallback[key] || "Staff support request");
   }
 
   return (
     <main>
       <AuthNav />
 
-      <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
+      <section
+        className="container"
+        style={{ paddingTop: 42, paddingBottom: 72 }}
+      >
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: 'var(--accent)' }}>{t('support.staff.title', 'Staff support')}</p>
-            <h1 className="page-title">{t('support.staff.heroTitle', 'Get help with your staff account')}</h1>
-            <p className="page-sub" style={{ marginTop: '0.6rem' }}>
-              {t('support.staff.heroBody', 'Contact support about staff access, availability, bookings, notifications or your linked business profile.')}
+            <p className="small" style={{ color: "var(--accent)" }}>
+              {t("support.staff.title", "Staff support")}
+            </p>
+            <h1 className="page-title">
+              {t("support.staff.heroTitle", "Get help with your staff account")}
+            </h1>
+            <p className="page-sub" style={{ marginTop: "0.6rem" }}>
+              {t(
+                "support.staff.heroBody",
+                "Contact support about staff access, availability, bookings, notifications or your linked business profile.",
+              )}
             </p>
             <div className="support-hero-actions">
               <Link href="/staff" className="btn btn-accent">
-                {t('staff.schedule.title', 'My schedule')}
+                {t("staff.schedule.title", "My schedule")}
               </Link>
               <Link href="/staff/calendar" className="btn btn-ghost">
-                {t('staffCalendar.title', 'Calendar view')}
+                {t("staffCalendar.title", "Calendar view")}
               </Link>
               <Link href="/staff/availability" className="btn btn-ghost">
-                {t('staff.actions.updateAvailability', 'Update availability')}
+                {t("staff.actions.updateAvailability", "Update availability")}
               </Link>
               <Link href="/support/messages" className="btn btn-ghost">
-                {t('support.staff.myMessages', 'My support messages')}
+                {t("support.staff.myMessages", "My support messages")}
               </Link>
             </div>
           </div>
 
           {loading && (
             <div className="card">
-              <p className="muted">{t('support.staff.loading', 'Loading staff support...')}</p>
+              <p className="muted">
+                {t("support.staff.loading", "Loading staff support...")}
+              </p>
             </div>
           )}
 
           {error && (
-            <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)' }}>
-              <p style={{ color: 'var(--danger)' }}>{error}</p>
+            <div
+              className="card"
+              style={{ borderColor: "rgba(255,77,109,0.35)" }}
+            >
+              <p style={{ color: "var(--danger)" }}>{error}</p>
             </div>
           )}
 
           {success && (
             <div className="card support-success-card">
-              <p style={{ color: 'var(--success)' }}>{success}</p>
-              <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                {t('support.staff.successBody', 'Your message is now saved as a staff support conversation. Mirëbook support will reply there.')}
+              <p style={{ color: "var(--success)" }}>{success}</p>
+              <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                {t(
+                  "support.staff.successBody",
+                  "Your message is now saved as a staff support conversation. Mirëbook support will reply there.",
+                )}
               </p>
               <div className="support-success-actions">
                 {createdTicketId && (
-                  <Link href={`/support/messages/${createdTicketId}`} className="btn btn-accent">
-                    {t('support.staff.viewConversation', 'View conversation')}
+                  <Link
+                    href={`/support/messages/${createdTicketId}`}
+                    className="btn btn-accent"
+                  >
+                    {t("support.staff.viewConversation", "View conversation")}
                   </Link>
                 )}
                 <Link href="/support/messages" className="btn btn-ghost">
-                  {t('support.staff.allConversations', 'All support messages')}
+                  {t("support.staff.allConversations", "All support messages")}
                 </Link>
               </div>
             </div>
@@ -262,165 +301,352 @@ export default function StaffSupportPage() {
 
           {!loading && (
             <div className="support-grid">
-              <form onSubmit={submitSupportMessage} className="card support-form-card">
+              <form
+                onSubmit={submitSupportMessage}
+                className="card support-form-card"
+              >
                 <div>
-                  <p className="small muted">{t('support.staff.formKicker', 'Support request')}</p>
-                  <h2>{t('support.staff.formTitle', 'Send a message to support')}</h2>
-                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    {t('support.staff.formBody', 'This creates a staff support conversation. Replies from Mirëbook support will appear in your support messages.')}
+                  <p className="small muted">
+                    {t("support.staff.formKicker", "Support request")}
+                  </p>
+                  <h2>
+                    {t("support.staff.formTitle", "Send a message to support")}
+                  </h2>
+                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                    {t(
+                      "support.staff.formBody",
+                      "This creates a staff support conversation. Replies from Mirëbook support will appear in your support messages.",
+                    )}
                   </p>
                 </div>
 
                 {staffProfile && (
                   <div className="staff-context-box">
-                    <p className="small muted">{t('support.staff.linkedProfile', 'Linked staff profile')}</p>
-                    <strong>{staffProfile.name || name || t('support.staff.memberFallback', 'Staff member')}</strong>
-                    <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      {staffProfile.role_title || staffProfile.permission_role || t('support.staff.roleFallback', 'Staff role')} · {staffProfile.business_name || t('support.staff.businessFallback', 'Business not shown')} · {staffProfile.active ? t('support.staff.status.active', 'Active') : t('support.staff.status.hidden', 'Hidden')}
+                    <p className="small muted">
+                      {t("support.staff.linkedProfile", "Linked staff profile")}
                     </p>
-                    <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      {t('support.staff.profileHelpText', 'If services, bookings or availability look wrong, ask the business owner to check your staff setup and assigned services.')}
+                    <strong>
+                      {staffProfile.name ||
+                        name ||
+                        t("support.staff.memberFallback", "Staff member")}
+                    </strong>
+                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                      {staffProfile.role_title ||
+                        staffProfile.permission_role ||
+                        t("support.staff.roleFallback", "Staff role")}{" "}
+                      ·{" "}
+                      {staffProfile.business_name ||
+                        t(
+                          "support.staff.businessFallback",
+                          "Business not shown",
+                        )}{" "}
+                      ·{" "}
+                      {staffProfile.active
+                        ? t("support.staff.status.active", "Active")
+                        : t("support.staff.status.hidden", "Hidden")}
+                    </p>
+                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                      {t(
+                        "support.staff.profileHelpText",
+                        "If services, bookings or availability look wrong, ask the business owner to check your staff setup and assigned services.",
+                      )}
                     </p>
                   </div>
                 )}
 
                 {!staffProfile && (
                   <div className="staff-context-box warning">
-                    <p className="small muted">{t('support.staff.noProfile', 'No linked staff profile')}</p>
-                    <strong>{t('support.staff.noProfileTitle', 'Your account is not linked to a staff profile yet')}</strong>
-                    <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                      {t('support.staff.noProfileBody', 'Ask the business owner to add your exact email address to their staff list, then log in again.')}
+                    <p className="small muted">
+                      {t("support.staff.noProfile", "No linked staff profile")}
+                    </p>
+                    <strong>
+                      {t(
+                        "support.staff.noProfileTitle",
+                        "Your account is not linked to a staff profile yet",
+                      )}
+                    </strong>
+                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                      {t(
+                        "support.staff.noProfileBody",
+                        "Ask the business owner to add your exact email address to their staff list, then log in again.",
+                      )}
                     </p>
                     <ol className="support-step-list">
-                      <li>{t('support.staff.noProfileStep1', 'Check you registered with the same email the business added.')}</li>
-                      <li>{t('support.staff.noProfileStep2', 'Ask the business owner to open Staff setup and confirm your email is listed.')}</li>
-                      <li>{t('support.staff.noProfileStep3', 'Log out and log back in after the owner updates your staff profile.')}</li>
+                      <li>
+                        {t(
+                          "support.staff.noProfileStep1",
+                          "Check you registered with the same email the business added.",
+                        )}
+                      </li>
+                      <li>
+                        {t(
+                          "support.staff.noProfileStep2",
+                          "Ask the business owner to open Staff setup and confirm your email is listed.",
+                        )}
+                      </li>
+                      <li>
+                        {t(
+                          "support.staff.noProfileStep3",
+                          "Log out and log back in after the owner updates your staff profile.",
+                        )}
+                      </li>
                     </ol>
                   </div>
                 )}
 
                 <div className="support-form-grid">
                   <div>
-                    <label className="small muted">{t('common.name')}</label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('support.staff.namePlaceholder', 'Your name')} style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t("common.name")}</label>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={t(
+                        "support.staff.namePlaceholder",
+                        "Your name",
+                      )}
+                      style={{ marginTop: "0.4rem" }}
+                    />
                   </div>
 
                   <div>
-                    <label className="small muted">{t('common.email')}</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('support.staff.emailPlaceholder', 'Your email')} style={{ marginTop: '0.4rem' }} />
+                    <label className="small muted">{t("common.email")}</label>
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t(
+                        "support.staff.emailPlaceholder",
+                        "Your email",
+                      )}
+                      style={{ marginTop: "0.4rem" }}
+                    />
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">{t('support.staff.subjectLabel', 'Subject')}</label>
-                    <select value={subject} onChange={(e) => setSubject(e.target.value)} style={{ marginTop: '0.4rem' }}>
+                    <label className="small muted">
+                      {t("support.staff.subjectLabel", "Subject")}
+                    </label>
+                    <select
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      style={{ marginTop: "0.4rem" }}
+                    >
                       {STAFF_SUBJECT_KEYS.map((item) => (
-                        <option key={item} value={item}>{staffSubjectLabel(item)}</option>
+                        <option key={item} value={item}>
+                          {staffSubjectLabel(item)}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div className="full-span">
-                    <label className="small muted">{t('support.staff.messageLabel', 'Message')}</label>
+                    <label className="small muted">
+                      {t("support.staff.messageLabel", "Message")}
+                    </label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder={t('support.staff.messagePlaceholder', 'Tell us what you need help with...')}
+                      placeholder={t(
+                        "support.staff.messagePlaceholder",
+                        "Tell us what you need help with...",
+                      )}
                       rows={7}
-                      style={{ marginTop: '0.4rem' }}
+                      style={{ marginTop: "0.4rem" }}
                     />
                   </div>
                 </div>
 
                 <div className="support-submit-note">
-                  <p className="small muted">{t('support.staff.beforeSending.kicker', 'Before sending')}</p>
+                  <p className="small muted">
+                    {t("support.staff.beforeSending.kicker", "Before sending")}
+                  </p>
                   <p className="small muted">
                     {staffProfile
-                      ? t('support.staff.beforeSending.linked', 'Include the affected booking, date, service or availability day so support can trace the issue faster.')
-                      : t('support.staff.beforeSending.unlinked', 'Include the business name and the email address the owner added to their staff list.')}
+                      ? t(
+                          "support.staff.beforeSending.linked",
+                          "Include the affected booking, date, service or availability day so support can trace the issue faster.",
+                        )
+                      : t(
+                          "support.staff.beforeSending.unlinked",
+                          "Include the business name and the email address the owner added to their staff list.",
+                        )}
                   </p>
                 </div>
-                <button type="submit" className="btn btn-accent" disabled={sending}>
-                  {sending ? t('support.staff.sending', 'Sending...') : t('support.staff.sendButton', 'Send support message')}
+                <button
+                  type="submit"
+                  className="btn btn-accent"
+                  disabled={sending}
+                >
+                  {sending
+                    ? t("support.staff.sending", "Sending...")
+                    : t("support.staff.sendButton", "Send support message")}
                 </button>
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">{t('support.staff.linksKicker', 'Quick links')}</p>
-                <h2>{t('support.staff.quickActions', 'Staff actions')}</h2>
+                <p className="small muted">
+                  {t("support.staff.linksKicker", "Quick links")}
+                </p>
+                <h2>{t("support.staff.quickActions", "Staff actions")}</h2>
 
                 <div className="support-link-list">
                   <Link href="/staff" className="support-link-row">
                     <span>
-                      <strong>{t('support.staff.schedule', 'Schedule')}</strong>
-                      <small>{t('support.staff.scheduleBody', 'View your upcoming staff bookings.')}</small>
+                      <strong>{t("support.staff.schedule", "Schedule")}</strong>
+                      <small>
+                        {t(
+                          "support.staff.scheduleBody",
+                          "View your upcoming staff bookings.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/staff/calendar" className="support-link-row">
                     <span>
-                      <strong>{t('staffCalendar.title', 'Calendar view')}</strong>
-                      <small>{t('support.staff.calendarBody', 'Look ahead across your assigned bookings by month.')}</small>
+                      <strong>
+                        {t("staffCalendar.title", "Calendar view")}
+                      </strong>
+                      <small>
+                        {t(
+                          "support.staff.calendarBody",
+                          "Look ahead across your assigned bookings by month.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/staff/availability" className="support-link-row">
                     <span>
-                      <strong>{t('support.staff.availability', 'Availability')}</strong>
-                      <small>{t('support.staff.availabilityBody', 'Update your working days and hours.')}</small>
+                      <strong>
+                        {t("support.staff.availability", "Availability")}
+                      </strong>
+                      <small>
+                        {t(
+                          "support.staff.availabilityBody",
+                          "Update your working days and hours.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
-                  <Link href="/staff/notifications" className="support-link-row">
+                  <Link
+                    href="/staff/notifications"
+                    className="support-link-row"
+                  >
                     <span>
-                      <strong>{t('staffNotifications.title', 'Updates')}</strong>
-                      <small>{t('support.staff.notificationsBody', 'Check staff booking, schedule and profile updates.')}</small>
+                      <strong>
+                        {t("staffNotifications.title", "Updates")}
+                      </strong>
+                      <small>
+                        {t(
+                          "support.staff.notificationsBody",
+                          "Check staff booking, schedule and profile updates.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/support/messages" className="support-link-row">
                     <span>
-                      <strong>{t('support.staff.myMessages', 'My support messages')}</strong>
-                      <small>{t('support.staff.myMessagesBody', 'Read support replies and continue staff support conversations.')}</small>
+                      <strong>
+                        {t("support.staff.myMessages", "My support messages")}
+                      </strong>
+                      <small>
+                        {t(
+                          "support.staff.myMessagesBody",
+                          "Read support replies and continue staff support conversations.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/account" className="support-link-row">
                     <span>
-                      <strong>{t('nav.account')}</strong>
-                      <small>{t('support.staff.accountBody', 'Update your personal account details.')}</small>
+                      <strong>{t("nav.account")}</strong>
+                      <small>
+                        {t(
+                          "support.staff.accountBody",
+                          "Update your personal account details.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <Link href="/support/business" className="support-link-row">
                     <span>
-                      <strong>{t('nav.businessSupport')}</strong>
-                      <small>{t('support.staff.businessSupportBody', 'Contact the business support route if you manage the business account.')}</small>
+                      <strong>{t("nav.businessSupport")}</strong>
+                      <small>
+                        {t(
+                          "support.staff.businessSupportBody",
+                          "Contact the business support route if you manage the business account.",
+                        )}
+                      </small>
                     </span>
-                    <span>→</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
                 </div>
 
                 <div className="support-troubleshooting-card">
-                  <p className="small muted">{t('support.staff.troubleshooting.kicker', 'Quick troubleshooting')}</p>
-                  <h3>{t('support.staff.troubleshooting.title', 'Common staff setup checks')}</h3>
+                  <p className="small muted">
+                    {t(
+                      "support.staff.troubleshooting.kicker",
+                      "Quick troubleshooting",
+                    )}
+                  </p>
+                  <h3>
+                    {t(
+                      "support.staff.troubleshooting.title",
+                      "Common staff setup checks",
+                    )}
+                  </h3>
                   <div className="support-check-list">
                     <div>
-                      <strong>{t('support.staff.troubleshooting.accessTitle', 'Cannot access staff workspace')}</strong>
-                      <p className="small muted">{t('support.staff.troubleshooting.accessBody', 'The business owner must add the same email address you use to log in.')}</p>
+                      <strong>
+                        {t(
+                          "support.staff.troubleshooting.accessTitle",
+                          "Cannot access staff workspace",
+                        )}
+                      </strong>
+                      <p className="small muted">
+                        {t(
+                          "support.staff.troubleshooting.accessBody",
+                          "The business owner must add the same email address you use to log in.",
+                        )}
+                      </p>
                     </div>
                     <div>
-                      <strong>{t('support.staff.troubleshooting.servicesTitle', 'No services shown')}</strong>
-                      <p className="small muted">{t('support.staff.troubleshooting.servicesBody', 'The owner must assign services to your staff profile before customers can book you.')}</p>
+                      <strong>
+                        {t(
+                          "support.staff.troubleshooting.servicesTitle",
+                          "No services shown",
+                        )}
+                      </strong>
+                      <p className="small muted">
+                        {t(
+                          "support.staff.troubleshooting.servicesBody",
+                          "The owner must assign services to your staff profile before customers can book you.",
+                        )}
+                      </p>
                     </div>
                     <div>
-                      <strong>{t('support.staff.troubleshooting.availabilityTitle', 'No bookable times')}</strong>
-                      <p className="small muted">{t('support.staff.troubleshooting.availabilityBody', 'Check that your availability is open and that the business itself also has working hours.')}</p>
+                      <strong>
+                        {t(
+                          "support.staff.troubleshooting.availabilityTitle",
+                          "No bookable times",
+                        )}
+                      </strong>
+                      <p className="small muted">
+                        {t(
+                          "support.staff.troubleshooting.availabilityBody",
+                          "Check that your availability is open and that the business itself also has working hours.",
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -439,8 +665,12 @@ export default function StaffSupportPage() {
         }
 
         .support-hero {
-          background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08));
-          border-color: rgba(255,107,53,0.25);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 107, 53, 0.12),
+            rgba(45, 212, 191, 0.08)
+          );
+          border-color: rgba(255, 107, 53, 0.25);
         }
 
         .support-hero-actions {
@@ -458,8 +688,8 @@ export default function StaffSupportPage() {
         }
 
         .support-success-card {
-          border-color: rgba(45,212,191,0.35);
-          background: rgba(45,212,191,0.06);
+          border-color: rgba(45, 212, 191, 0.35);
+          background: rgba(45, 212, 191, 0.06);
         }
 
         .support-grid {
@@ -493,8 +723,8 @@ export default function StaffSupportPage() {
         }
 
         .staff-context-box.warning {
-          border-color: rgba(255,190,11,0.28);
-          background: rgba(255,190,11,0.06);
+          border-color: rgba(255, 190, 11, 0.28);
+          background: rgba(255, 190, 11, 0.06);
         }
 
         .support-step-list {
@@ -506,10 +736,10 @@ export default function StaffSupportPage() {
         }
 
         .support-submit-note {
-          border: 1px solid rgba(45,212,191,0.2);
+          border: 1px solid rgba(45, 212, 191, 0.2);
           border-radius: var(--radius);
           padding: 0.85rem;
-          background: rgba(45,212,191,0.06);
+          background: rgba(45, 212, 191, 0.06);
         }
 
         .support-link-list {
@@ -564,13 +794,16 @@ export default function StaffSupportPage() {
           .support-hero-actions :global(.btn),
           .support-success-actions,
           .support-success-actions :global(.btn),
-          .support-form-card button,
-          .support-link-row {
+          .support-form-card button {
             width: 100%;
             justify-content: center;
+          }
+
+          .support-link-row {
+            width: 100%;
           }
         }
       `}</style>
     </main>
-  )
+  );
 }
