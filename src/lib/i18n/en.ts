@@ -608,9 +608,9 @@ export const en: TranslationTree = {
   "dashboardSettings.reschedule.body":
     "Keep this clear so customers know whether requests need business approval.",
   "dashboardSettings.reschedule.placeholder":
-    "Example: Customers can request a new time. The business must approve the change.",
+    "Keep this clear so customers know whether requests need business approval.",
   "dashboardSettings.multiBusinessNotice":
-    "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
+  "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
   "dashboardSettings.bookingSection.kicker": "Booking settings",
   "dashboardSettings.bookingSection.title": "Rules and policies",
   "dashboardSettings.bookingSection.body":
@@ -2244,4 +2244,10 @@ export const en: TranslationTree = {
   "calendar.days.4": "Thursday",
   "calendar.days.5": "Friday",
   "calendar.days.6": "Saturday",
+  "explore.filters.searchLabel": "Search",
+  "explore.filters.categoryLabel": "Category",
+  "explore.filters.cityLabel": "City",
+  "explore.filters.sortLabel": "Sort",
+  "explore.filters.clearButton": "Clear filters",
+  "explore.filters.refreshButton": "Refresh results",
 };

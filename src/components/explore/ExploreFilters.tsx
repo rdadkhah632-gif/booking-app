@@ -1,22 +1,22 @@
-import { SortOption } from './exploreTypes'
-import { useI18n } from '@/lib/useI18n'
+import { SortOption } from "./exploreTypes";
+import { useI18n } from "@/lib/useI18n";
 
 type Props = {
-  search: string
-  city: string
-  category: string
-  sortBy: SortOption
-  cities: string[]
-  categories: string[]
-  loading: boolean
-  onSearchChange: (value: string) => void
-  onCityChange: (value: string) => void
-  onCategoryChange: (value: string) => void
-  onSortChange: (value: SortOption) => void
-  onApplyFilters: () => void
-  onClearFilters: () => void
-  onRefresh: () => void
-}
+  search: string;
+  city: string;
+  category: string;
+  sortBy: SortOption;
+  cities: string[];
+  categories: string[];
+  loading: boolean;
+  onSearchChange: (value: string) => void;
+  onCityChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
+  onSortChange: (value: SortOption) => void;
+  onApplyFilters: () => void;
+  onClearFilters: () => void;
+  onRefresh: () => void;
+};
 
 export default function ExploreFilters({
   search,
@@ -32,37 +32,41 @@ export default function ExploreFilters({
   onSortChange,
   onApplyFilters,
   onClearFilters,
-  onRefresh
+  onRefresh,
 }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
   return (
     <aside className="card explore-filter-panel">
-      <h3 style={{ marginBottom: '0.35rem' }}>
-        {t('explore.filters.title')}
+      <h3 style={{ marginBottom: "0.35rem", marginTop: 0 }}>
+        {t("explore.filters.title")}
       </h3>
-      <p className="small muted" style={{ marginBottom: '1rem' }}>
-        {t('explore.filters.subtitle')}
+      <p className="small muted" style={{ marginBottom: "1rem" }}>
+        {t("explore.filters.subtitle")}
       </p>
 
-      <div style={{ display: 'grid', gap: '1rem' }}>
+      <div style={{ display: "grid", gap: "1rem" }}>
         <div>
-          <label className="small muted">Search</label>
+          <label className="small muted">
+            {t("explore.filters.searchLabel", "Search")}
+          </label>
           <input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t('explore.search.placeholder')}
-            style={{ width: '100%', marginTop: '0.4rem' }}
+            placeholder={t("explore.search.placeholder")}
+            style={{ width: "100%", marginTop: "0.4rem" }}
           />
         </div>
 
         <div>
-          <label className="small muted">Category</label>
+          <label className="small muted">
+            {t("explore.filters.categoryLabel", "Category")}
+          </label>
           <input
             value={category}
             onChange={(e) => onCategoryChange(e.target.value)}
-            placeholder={t('explore.category.placeholder')}
+            placeholder={t("explore.category.placeholder")}
             list="category-options"
-            style={{ width: '100%', marginTop: '0.4rem' }}
+            style={{ width: "100%", marginTop: "0.4rem" }}
           />
 
           <datalist id="category-options">
@@ -73,13 +77,15 @@ export default function ExploreFilters({
         </div>
 
         <div>
-          <label className="small muted">City</label>
+          <label className="small muted">
+            {t("explore.filters.cityLabel", "City")}
+          </label>
           <input
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
-            placeholder={t('explore.city.placeholder')}
+            placeholder={t("explore.city.placeholder")}
             list="city-options"
-            style={{ width: '100%', marginTop: '0.4rem' }}
+            style={{ width: "100%", marginTop: "0.4rem" }}
           />
 
           <datalist id="city-options">
@@ -90,31 +96,45 @@ export default function ExploreFilters({
         </div>
 
         <div>
-          <label className="small muted">Sort</label>
+          <label className="small muted">
+            {t("explore.filters.sortLabel", "Sort")}
+          </label>
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
-            style={{ width: '100%', marginTop: '0.4rem' }}
+            style={{ width: "100%", marginTop: "0.4rem" }}
           >
-            <option value="newest">Newest first</option>
-            <option value="name">Business name</option>
-            <option value="city">City</option>
-            <option value="services">Most services</option>
+            <option value="newest">
+              {t("explore.sort.newest", "Newest first")}
+            </option>
+            <option value="name">
+              {t("explore.sort.name", "Business name")}
+            </option>
+            <option value="city">{t("explore.sort.city", "City")}</option>
+            <option value="services">
+              {t("explore.sort.services", "Most services")}
+            </option>
           </select>
         </div>
 
         <button className="btn btn-accent" onClick={onApplyFilters}>
-          Search Mirëbook
+          {t("explore.filters.searchButton", "Search Mirëbook")}
         </button>
 
         <button className="btn btn-ghost" onClick={onClearFilters}>
-          Clear filters
+          {t("explore.filters.clearButton", "Clear filters")}
         </button>
 
-        <button className="btn btn-ghost" onClick={onRefresh} disabled={loading}>
-          {loading ? 'Refreshing...' : 'Refresh results'}
+        <button
+          className="btn btn-ghost"
+          onClick={onRefresh}
+          disabled={loading}
+        >
+          {loading
+            ? t("explore.filters.refreshing", "Refreshing...")
+            : t("explore.filters.refreshButton", "Refresh results")}
         </button>
       </div>
     </aside>
-  )
+  );
 }

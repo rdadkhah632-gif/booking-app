@@ -614,7 +614,7 @@ export const sq: TranslationTree = {
   "dashboardSettings.reschedule.body":
     "Mbaje të qartë që klientët të dinë nëse kërkesat kanë nevojë për miratim nga biznesi.",
   "dashboardSettings.reschedule.placeholder":
-    "Shembull: Klientët mund të kërkojnë një orar të ri. Biznesi duhet ta miratojë ndryshimin.",
+    "Mbaje të qartë që klientët të dinë nëse kërkesat kanë nevojë për miratim nga biznesi.",
   "dashboardSettings.multiBusinessNotice":
     "Kjo llogari ka më shumë se një biznes. Për këtë version lançimi, Mirëbook po përdor biznesin kryesor. Kontakto suportin nëse duhet ndryshuar.",
   "dashboardSettings.bookingSection.kicker": "Cilësimet e rezervimit",
@@ -2283,4 +2283,10 @@ export const sq: TranslationTree = {
   "calendar.days.4": "E enjte",
   "calendar.days.5": "E premte",
   "calendar.days.6": "E shtunë",
+  "explore.filters.searchLabel": "Kërko",
+  "explore.filters.categoryLabel": "Kategoria",
+  "explore.filters.cityLabel": "Qyteti",
+  "explore.filters.sortLabel": "Rendit",
+  "explore.filters.clearButton": "Pastro filtrat",
+  "explore.filters.refreshButton": "Rifresko rezultatet",
 };
