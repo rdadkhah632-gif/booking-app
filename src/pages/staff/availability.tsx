@@ -103,6 +103,10 @@ function formatTimeRange(booking: Booking) {
   return `${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+function formatHours(value: number) {
+  return Number.isInteger(value) ? `${value}` : value.toFixed(1);
+}
+
 export default function StaffAvailabilityPage() {
   const router = useRouter();
   const { t } = useI18n();
@@ -544,46 +548,61 @@ export default function StaffAvailabilityPage() {
               className="grid-3 staff-summary-grid"
               style={{ marginBottom: "1.5rem" }}
             >
-              <div className="card">
+              <div className="card staff-summary-card">
                 <h3>{openDays}</h3>
+                <strong>
+                  {t("staffAvailability.summary.openDays", "Open days")}
+                </strong>
                 <p className="small muted">
                   {t(
                     "staffAvailability.summary.openDaysBody",
-                    "Days customers can book you if assigned services are active",
+                    "Customers can book assigned active services on these days.",
                   )}
                 </p>
               </div>
 
-              <div className="card">
+              <div className="card staff-summary-card">
                 <h3>{closedDays}</h3>
+                <strong>
+                  {t("staffAvailability.summary.closedDays", "Closed days")}
+                </strong>
                 <p className="small muted">
                   {t(
                     "staffAvailability.summary.closedDaysBody",
-                    "Days hidden from booking",
+                    "Hidden from new customer bookings.",
                   )}
                 </p>
               </div>
 
-              <div className="card">
-                <h3>{totalWeeklyHours.toFixed(1)}</h3>
+              <div className="card staff-summary-card">
+                <h3>{formatHours(totalWeeklyHours)} hrs</h3>
+                <strong>
+                  {t(
+                    "staffAvailability.summary.weeklyHours",
+                    "Weekly availability",
+                  )}
+                </strong>
                 <p className="small muted">
                   {t(
                     "staffAvailability.summary.weeklyHoursBody",
-                    "Estimated weekly staff availability",
+                    "Estimated bookable staff time.",
                   )}
                 </p>
               </div>
             </div>
 
-            <div className="card" style={{ marginBottom: "1.5rem" }}>
+            <div
+              className="card staff-template-card"
+              style={{ marginBottom: "1.5rem" }}
+            >
               <div className="staff-template-header">
                 <div>
                   <h2
                     style={{ fontFamily: "var(--font-display)", marginTop: 0 }}
                   >
                     {t(
-                      "staffAvailability.templates.title",
-                      "Start with a common schedule",
+                      "staffAvailability.templates.compactTitle",
+                      "Quick templates",
                     )}
                   </h2>
                   <p className="muted small">
@@ -649,7 +668,9 @@ export default function StaffAvailabilityPage() {
                         </h3>
                       </div>
 
-                      <label className="staff-toggle-row">
+                      <label
+                        className={`staff-toggle-row ${row.is_closed ? "closed" : "open"}`}
+                      >
                         <input
                           type="checkbox"
                           checked={!row.is_closed}
@@ -670,44 +691,47 @@ export default function StaffAvailabilityPage() {
                     </div>
 
                     {!row.is_closed ? (
-                      <div className="staff-time-grid">
-                        <label className="small muted">
-                          {t("staffAvailability.day.start", "Start")}
-                          <input
-                            type="time"
-                            value={row.start_time}
-                            onChange={(e) =>
-                              updateAvailabilityRow(
-                                day,
-                                "start_time",
-                                e.target.value,
-                              )
-                            }
-                            style={{ marginTop: "0.35rem" }}
-                          />
-                        </label>
+                      <div className="staff-time-editor">
+                        <div className="staff-time-range">
+                          <span>{row.start_time}</span>
+                          <span aria-hidden="true">→</span>
+                          <span>{row.end_time}</span>
+                        </div>
 
-                        <label className="small muted">
-                          {t("staffAvailability.day.end", "End")}
-                          <input
-                            type="time"
-                            value={row.end_time}
-                            onChange={(e) =>
-                              updateAvailabilityRow(
-                                day,
-                                "end_time",
-                                e.target.value,
-                              )
-                            }
-                            style={{ marginTop: "0.35rem" }}
-                          />
-                        </label>
+                        <div className="staff-time-grid">
+                          <label className="small muted">
+                            {t("staffAvailability.day.start", "Start")}
+                            <input
+                              type="time"
+                              value={row.start_time}
+                              onChange={(e) =>
+                                updateAvailabilityRow(
+                                  day,
+                                  "start_time",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </label>
+
+                          <label className="small muted">
+                            {t("staffAvailability.day.end", "End")}
+                            <input
+                              type="time"
+                              value={row.end_time}
+                              onChange={(e) =>
+                                updateAvailabilityRow(
+                                  day,
+                                  "end_time",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </label>
+                        </div>
                       </div>
                     ) : (
-                      <p
-                        className="muted small"
-                        style={{ marginTop: "0.85rem" }}
-                      >
+                      <p className="muted small staff-closed-copy">
                         {t(
                           "staffAvailability.day.closedBody",
                           "Customers cannot book you on this day unless the business reschedules an existing appointment manually.",
@@ -842,28 +866,72 @@ export default function StaffAvailabilityPage() {
 
         .staff-availability-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
           gap: 1rem;
         }
 
         .staff-day-card {
           display: grid;
-          gap: 0.9rem;
+          gap: 1rem;
+          align-content: start;
+          min-height: 185px;
         }
 
         .staff-day-card-header {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
-          align-items: flex-start;
+          align-items: center;
         }
 
         .staff-toggle-row {
           display: inline-flex;
           gap: 0.45rem;
           align-items: center;
+          justify-content: center;
           color: var(--text-muted);
-          font-size: 0.9rem;
+          font-size: 0.85rem;
+          line-height: 1;
+          white-space: nowrap;
+          min-width: 92px;
+          padding: 0.45rem 0.65rem;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--surface-2);
+        }
+
+        .staff-toggle-row.open {
+          color: var(--success);
+          border-color: rgba(45, 212, 191, 0.35);
+          background: rgba(45, 212, 191, 0.08);
+        }
+
+        .staff-toggle-row.closed {
+          color: var(--text-muted);
+        }
+
+        .staff-toggle-row input {
+          width: 1rem;
+          height: 1rem;
+          flex: 0 0 auto;
+        }
+
+        .staff-time-editor {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .staff-time-range {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.55rem;
+          width: fit-content;
+          padding: 0.45rem 0.7rem;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--surface-2);
+          color: var(--text);
+          font-weight: 800;
         }
 
         .staff-time-grid {
@@ -872,10 +940,19 @@ export default function StaffAvailabilityPage() {
           gap: 0.75rem;
         }
 
+        .staff-time-grid input {
+          margin-top: 0.35rem;
+          width: 100%;
+        }
+
+        .staff-closed-copy {
+          margin-top: 0;
+          max-width: 32ch;
+        }
+
         @media (max-width: 620px) {
           .staff-availability-hero,
-          .staff-template-header,
-          .staff-day-card-header {
+          .staff-template-header {
             display: grid;
           }
 
@@ -894,6 +971,10 @@ export default function StaffAvailabilityPage() {
 
           .staff-time-grid {
             grid-template-columns: 1fr;
+          }
+
+          .staff-day-card-header {
+            align-items: center;
           }
         }
       `}</style>

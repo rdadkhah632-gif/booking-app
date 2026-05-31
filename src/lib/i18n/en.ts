@@ -610,7 +610,7 @@ export const en: TranslationTree = {
   "dashboardSettings.reschedule.placeholder":
     "Keep this clear so customers know whether requests need business approval.",
   "dashboardSettings.multiBusinessNotice":
-  "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
+    "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
   "dashboardSettings.bookingSection.kicker": "Booking settings",
   "dashboardSettings.bookingSection.title": "Rules and policies",
   "dashboardSettings.bookingSection.body":
@@ -2250,4 +2250,5 @@ export const en: TranslationTree = {
   "explore.filters.sortLabel": "Sort",
   "explore.filters.clearButton": "Clear filters",
   "explore.filters.refreshButton": "Refresh results",
+  "staffAvailability.templates.compactTitle": "Quick templates",
 };
