@@ -147,6 +147,17 @@ export default function BusinessNotifications() {
         return
       }
 
+      const { data: linkedStaff } = await supabase
+        .from('staff_members')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .limit(1)
+
+      if (linkedStaff && linkedStaff.length > 0) {
+        router.replace('/staff')
+        return
+      }
+
       const { data: ownedBusinesses, error: businessesError } = await supabase
         .from('businesses')
         .select('id')
@@ -705,7 +716,7 @@ export default function BusinessNotifications() {
   return (
     <DashboardLayout
       title={t('account.needsAction', 'Needs action')}
-      subtitle={t('dashboardNotifications.pageSubtitle', 'Review booking approvals and customer reschedule requests.')}
+      subtitle={t('dashboardNotifications.pageSubtitle', 'Review booking approvals, customer changes and business activity updates.')}
     >
       {success && (
         <div
@@ -811,10 +822,6 @@ export default function BusinessNotifications() {
             <Link href="/dashboard/settings" className="btn btn-ghost">
               {t('dashboardNotifications.empty.bookingSettings', 'Booking settings')}
             </Link>
-
-            <Link href="/support/business" className="btn btn-ghost">
-              {t('nav.businessSupport', 'Business support')}
-            </Link>
           </div>
         </div>
       )}
@@ -827,7 +834,7 @@ export default function BusinessNotifications() {
               {t('dashboardNotifications.inbox.title', 'Recent business updates')}
             </h2>
             <p className="muted small" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardNotifications.inbox.body', 'These are real Mirëbook notification rows for your business account.')}
+              {t('dashboardNotifications.inbox.body', 'These are live business account notifications from bookings, approvals and customer actions.')}
             </p>
           </div>
 

@@ -433,6 +433,10 @@ export default function AdminIndexPage() {
                 Notifications
               </Link>
 
+              <Link href="/admin/support" className="btn btn-ghost">
+                Support
+              </Link>
+
               <button type="button" className="btn btn-ghost" onClick={loadAdmin}>
                 Refresh
               </button>
@@ -490,11 +494,11 @@ export default function AdminIndexPage() {
               <p className="small muted">Across loaded notification records</p>
             </div>
 
-            <div className="card admin-metric-card">
-              <p className="small muted">Admin messages</p>
-              <h2>{notificationSummary.adminSent}</h2>
-              <p className="small muted">{notificationSummary.supportNotice} support notices</p>
-            </div>
+            <Link href="/admin/support" className="card admin-metric-card admin-metric-link-card">
+              <p className="small muted">Support inbox</p>
+              <h2>{notificationSummary.supportNotice}</h2>
+              <p className="small muted">Support notices and user help requests</p>
+            </Link>
           </div>
 
           <div className="grid-3">
@@ -519,6 +523,14 @@ export default function AdminIndexPage() {
               <h3>Notifications and promotions</h3>
               <p className="small muted" style={{ marginTop: '0.4rem' }}>
                 Send user, business-owner, admin-only or bulk operational notices with safer targeting.
+              </p>
+            </Link>
+
+            <Link href="/admin/support" className="card admin-control-card admin-support-control-card">
+              <p className="small muted">Support operations</p>
+              <h3>Support inbox and replies</h3>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                Review customer, staff and business help requests, then reply from the operator workspace.
               </p>
             </Link>
           </div>
@@ -707,7 +719,7 @@ export default function AdminIndexPage() {
             <p className="small muted">Launch readiness note</p>
             <h3 style={{ marginTop: '0.25rem' }}>This is the internal Mirëbook operator workspace.</h3>
             <p className="small muted" style={{ marginTop: '0.5rem' }}>
-              Business controls, user lookup, platform notifications, trial management and future support inbox features should stay here rather than inside customer, staff or business-owner workspaces.
+              Business controls, user lookup, platform notifications, trial management and support inbox features should stay here rather than inside customer, staff or business-owner workspaces.
             </p>
           </div>
         </div>
@@ -748,6 +760,17 @@ export default function AdminIndexPage() {
 
         .admin-metric-card {
           min-height: 118px;
+        }
+
+        .admin-metric-link-card {
+          display: block;
+          transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .admin-metric-link-card:hover,
+        .admin-support-control-card:hover {
+          border-color: rgba(45,212,191,0.35);
+          transform: translateY(-1px);
         }
 
         .admin-control-card {

@@ -280,9 +280,15 @@ export default function RegisterPage() {
             {t('register.title', 'Create your Mirëbook account')}
           </h1>
 
-          <p className="muted" style={{ marginBottom: '1.5rem' }}>
-            {t('register.subtitle', 'Choose the account type that fits how you will use Mirëbook.')}
+          <p className="muted register-subtitle">
+            {t('register.subtitle', 'Choose how you will use Mirëbook. Customers book services, staff manage assigned appointments, and businesses manage setup and bookings.')}
           </p>
+
+          <div className="register-context-strip">
+            <span>{t('nav.role.customer', 'Customer')}</span>
+            <span>{t('nav.role.staff', 'Staff')}</span>
+            <span>{t('nav.role.business', 'Business')}</span>
+          </div>
 
           <div className="register-role-grid register-role-grid-top">
             <button
@@ -298,7 +304,7 @@ export default function RegisterPage() {
               }}
             >
               <strong>{t('register.role.customer', 'Customer')}</strong>
-              <p className="small muted">{t('register.role.customerBody', 'Book and manage appointments.')}</p>
+              <p className="small muted">{t('register.role.customerBody', 'Book services and manage your own appointments.')}</p>
             </button>
 
             <button
@@ -314,7 +320,7 @@ export default function RegisterPage() {
               }}
             >
               <strong>{t('register.role.business', 'Business')}</strong>
-              <p className="small muted">{t('register.role.businessBody', 'Create services, staff and bookings.')}</p>
+              <p className="small muted">{t('register.role.businessBody', 'Create your business profile, services, staff and booking setup.')}</p>
             </button>
 
             <button
@@ -330,16 +336,37 @@ export default function RegisterPage() {
               }}
             >
               <strong>{t('register.role.staff', 'Staff')}</strong>
-              <p className="small muted">{t('register.role.staffBody', 'Join a business you have been invited to.')}</p>
+              <p className="small muted">{t('register.role.staffBody', 'Join a business that has already added your email to its staff list.')}</p>
             </button>
+          </div>
+
+          <div className="card register-role-explainer">
+            <p className="small muted">{t('register.roleExplainer.kicker', 'Account type guide')}</p>
+            <strong>
+              {role === 'business'
+                ? t('register.roleExplainer.businessTitle', 'Business owner account')
+                : role === 'staff'
+                  ? t('register.roleExplainer.staffTitle', 'Staff account')
+                  : t('register.roleExplainer.customerTitle', 'Customer account')}
+            </strong>
+            <p className="small muted" style={{ marginTop: '0.35rem' }}>
+              {role === 'business'
+                ? t('register.roleExplainer.businessBody', 'Use this if you own or manage a business and need to set up services, staff, availability and customer bookings.')
+                : role === 'staff'
+                  ? t('register.roleExplainer.staffBody', 'Use this only if a business has already added this exact email to their staff list. Otherwise choose Customer or ask the business owner to invite you first.')
+                  : t('register.roleExplainer.customerBody', 'Use this if you want to find businesses, book services and manage your appointments.')}
+            </p>
           </div>
 
 
           {role === 'staff' && (
-            <div className="card" style={{ background: 'rgba(255,190,11,0.08)', borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+            <div className="card register-staff-notice">
               <p className="small" style={{ color: 'var(--warning)' }}>{t('register.staffNotice.title', 'Staff account linking')}</p>
               <p className="small muted" style={{ marginTop: '0.35rem' }}>
                 {t('register.staffNotice.body', 'Use the exact email your business added to their staff list. Mirëbook will check and link your staff profile after your account is created.')}
+              </p>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {t('register.staffNotice.noInvite', 'If no staff profile is found, ask the business owner to add your email first, then register again.')}
               </p>
             </div>
           )}
@@ -444,7 +471,18 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn btn-accent">
+            <div className="register-next-step-card">
+              <p className="small muted">{t('register.nextStep.kicker', 'After registration')}</p>
+              <p className="small muted">
+                {role === 'business'
+                  ? t('register.nextStep.business', 'You will go to your business dashboard to finish services, staff, availability and publishing.')
+                  : role === 'staff'
+                    ? t('register.nextStep.staff', 'If your email matches an invited staff profile, you will go to your staff workspace.')
+                    : t('register.nextStep.customer', 'You will go to your bookings page and can start exploring services.')}
+              </p>
+            </div>
+
+            <button type="submit" disabled={loading} className="btn btn-accent register-submit-button">
               {loading
                 ? t('register.creating', 'Creating account...')
                 : role === 'business'
@@ -467,12 +505,42 @@ export default function RegisterPage() {
             </p>
           )}
 
-          <p className="small muted" style={{ marginTop: '1.5rem' }}>
-            {t('register.alreadyHaveAccount', 'Already have an account?')} <Link href="/login" style={{ color: 'var(--accent)' }}>{t('register.loginLink', 'Login')}</Link>
-          </p>
+          <div className="register-bottom-actions">
+            <p className="small muted">
+              {t('register.alreadyHaveAccount', 'Already have an account?')} <Link href="/login" style={{ color: 'var(--accent)' }}>{t('register.loginLink', 'Login')}</Link>
+            </p>
+            <p className="small muted">
+              {t('register.helperText', 'Not sure which account type to choose? Customers book services, businesses manage the platform setup, and staff need an invite from a business.')}
+            </p>
+          </div>
         </div>
       </section>
       <style jsx>{`
+        .auth-card {
+          max-width: 760px;
+          margin: 0 auto;
+        }
+
+        .register-subtitle {
+          margin-bottom: 1rem;
+        }
+
+        .register-context-strip {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          margin-bottom: 1.25rem;
+        }
+
+        .register-context-strip span {
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          padding: 0.25rem 0.6rem;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          background: var(--surface-2);
+        }
+
         .register-role-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -503,17 +571,66 @@ export default function RegisterPage() {
           gap: 0.75rem;
         }
 
+        .register-role-explainer {
+          margin-bottom: 1rem;
+          background: var(--surface-2);
+          border-color: rgba(255,107,53,0.18);
+        }
+
+        .register-staff-notice {
+          background: rgba(255,190,11,0.08);
+          border-color: rgba(255,190,11,0.28);
+          margin-bottom: 1rem;
+        }
+
+        .register-next-step-card {
+          border: 1px solid rgba(45,212,191,0.2);
+          border-radius: var(--radius);
+          padding: 0.85rem;
+          background: rgba(45,212,191,0.06);
+        }
+
+        .register-submit-button {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .register-bottom-actions {
+          display: grid;
+          gap: 0.65rem;
+          margin-top: 1.5rem;
+        }
+
         @media (max-width: 760px) {
           .register-role-grid-top {
             display: none;
+          }
+
+          .auth-card {
+            padding: 1.1rem;
+          }
+
+          .auth-card h1 {
+            font-size: 1.55rem !important;
           }
 
           .register-role-mobile {
             display: block;
           }
 
+          .register-role-explainer,
+          .register-staff-notice,
+          .register-business-fields,
+          .register-next-step-card {
+            padding: 0.85rem;
+          }
+
           .register-business-location-grid {
             grid-template-columns: 1fr;
+          }
+
+          .register-submit-button {
+            width: 100%;
           }
         }
       `}</style>

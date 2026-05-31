@@ -19,6 +19,7 @@ export default function StaffNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'unread'>('all')
 
   useEffect(() => {
     loadNotifications()
@@ -91,6 +92,19 @@ export default function StaffNotificationsPage() {
     return notifications.filter((item) => !item.read_at).length
   }, [notifications])
 
+  const filteredNotifications = useMemo(() => {
+    if (filter === 'unread') return notifications.filter((item) => !item.read_at)
+    return notifications
+  }, [filter, notifications])
+
+  function notificationTypeLabel(type?: string | null) {
+    if (!type) return t('staffNotifications.type.general', 'General')
+    if (type.includes('booking')) return t('staffNotifications.type.booking', 'Booking')
+    if (type.includes('schedule') || type.includes('availability')) return t('staffNotifications.type.schedule', 'Schedule')
+    if (type.includes('profile') || type.includes('staff')) return t('staffNotifications.type.profile', 'Profile')
+    return t('staffNotifications.type.general', 'General')
+  }
+
   return (
     <main>
       <AuthNav />
@@ -116,6 +130,39 @@ export default function StaffNotificationsPage() {
           </div>
         </div>
 
+        {!loading && !error && (
+          <div className="staff-notification-toolbar card">
+            <div>
+              <p className="small muted">{t('staffNotifications.inbox.kicker', 'Inbox status')}</p>
+              <strong>
+                {unreadCount > 0
+                  ? `${unreadCount} ${unreadCount === 1 ? t('staffNotifications.unreadSingle', 'unread update') : t('staffNotifications.unreadPlural', 'unread updates')}`
+                  : t('staffNotifications.inboxClear', 'All staff updates are read')}
+              </strong>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {t('staffNotifications.inbox.body', 'This inbox only shows updates linked to your staff workspace.')}
+              </p>
+            </div>
+
+            <div className="staff-notification-filters">
+              <button
+                type="button"
+                className={filter === 'all' ? 'btn btn-accent' : 'btn btn-ghost'}
+                onClick={() => setFilter('all')}
+              >
+                {t('staffNotifications.filter.all', 'All')}
+              </button>
+              <button
+                type="button"
+                className={filter === 'unread' ? 'btn btn-accent' : 'btn btn-ghost'}
+                onClick={() => setFilter('unread')}
+              >
+                {t('staffNotifications.filter.unread', 'Unread')}
+              </button>
+            </div>
+          </div>
+        )}
+
         {loading && (
           <div className="card">
             <p className="muted">{t('staffNotifications.loading', 'Loading staff notifications...')}</p>
@@ -128,23 +175,26 @@ export default function StaffNotificationsPage() {
           </div>
         )}
 
-        {!loading && !error && notifications.length === 0 && (
+        {!loading && !error && filteredNotifications.length === 0 && (
           <div className="card">
-            <h3>{t('staffNotifications.empty.title', 'No staff notifications yet')}</h3>
+            <h3>{filter === 'unread' ? t('staffNotifications.empty.unreadTitle', 'No unread updates') : t('staffNotifications.empty.title', 'No staff notifications yet')}</h3>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              {t('staffNotifications.empty.body', 'Booking updates, schedule changes and staff account messages will appear here.')}
+              {filter === 'unread'
+                ? t('staffNotifications.empty.unreadBody', 'Everything in your staff inbox has been read.')
+                : t('staffNotifications.empty.body', 'Booking updates, schedule changes and staff account messages will appear here.')}
             </p>
           </div>
         )}
 
-        {!loading && !error && notifications.length > 0 && (
+        {!loading && !error && filteredNotifications.length > 0 && (
           <div className="staff-notification-list">
-            {notifications.map((item) => (
+            {filteredNotifications.map((item) => (
               <div key={item.id} className="card staff-notification-card">
                 <div>
                   <div className="staff-notification-title-row">
                     <strong>{item.title || t('staffNotifications.fallback.title', 'Staff update')}</strong>
                     {!item.read_at && <span className="badge badge-accent">{t('common.new', 'New')}</span>}
+                    <span className="badge badge-muted">{notificationTypeLabel(item.type)}</span>
                   </div>
 
                   <p className="muted" style={{ marginTop: '0.4rem' }}>
@@ -163,6 +213,12 @@ export default function StaffNotificationsPage() {
                     </Link>
                   )}
 
+                  {!item.action_url && (
+                    <Link href="/staff" className="btn btn-ghost">
+                      {t('staff.schedule.title', 'My schedule')}
+                    </Link>
+                  )}
+
                   {!item.read_at && (
                     <button type="button" onClick={() => markRead(item.id)} className="btn btn-ghost">
                       {t('staffNotifications.markRead', 'Mark read')}
@@ -176,6 +232,27 @@ export default function StaffNotificationsPage() {
       </section>
 
       <style jsx>{`
+        .staff-notification-toolbar {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          border-color: rgba(255,107,53,0.22);
+        }
+
+        .staff-notification-filters {
+          display: flex;
+          gap: 0.65rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        :global(.badge-muted) {
+          background: var(--surface-2);
+          color: var(--text-muted);
+        }
+
         .staff-notification-list {
           display: grid;
           gap: 1rem;
@@ -203,14 +280,18 @@ export default function StaffNotificationsPage() {
         }
 
         @media (max-width: 700px) {
+          .staff-notification-toolbar,
           .staff-notification-card {
             display: grid;
           }
 
+          .staff-notification-filters,
           .staff-notification-actions {
             justify-content: stretch;
           }
 
+          .staff-notification-filters :global(.btn),
+          .staff-notification-filters button,
           .staff-notification-actions :global(.btn),
           .staff-notification-actions button {
             width: 100%;

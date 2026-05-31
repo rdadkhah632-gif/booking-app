@@ -391,7 +391,7 @@ export default function MyBookings() {
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())[0] || null
   }, [confirmedUpcomingBookings])
 
-  const hasCustomerActions = pendingBookings.length > 0 || pendingRescheduleCount > 0
+
 
   const historyBookings = useMemo(() => {
     return bookings.filter((booking) =>
@@ -402,6 +402,8 @@ export default function MyBookings() {
   }, [bookings])
 
   const pendingRescheduleCount = Object.keys(pendingRequestByBookingId).length
+
+const hasCustomerActions = pendingBookings.length > 0 || pendingRescheduleCount > 0
 
   function scrollToSection(section: 'pending' | 'upcoming' | 'changes' | 'history') {
     const sectionMap = {

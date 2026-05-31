@@ -1,9 +1,36 @@
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import AuthNav from '@/components/AuthNav'
 import { useI18n } from '@/lib/useI18n'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function SupportPage() {
   const { t } = useI18n()
+
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [checkingAdmin, setCheckingAdmin] = useState(true)
+
+  useEffect(() => {
+    checkAdminStatus()
+  }, [])
+
+  async function checkAdminStatus() {
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (!session) {
+      setCheckingAdmin(false)
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .maybeSingle()
+
+    setIsAdmin(Boolean(profile?.is_admin))
+    setCheckingAdmin(false)
+  }
 
   return (
     <main>
@@ -11,6 +38,71 @@ export default function SupportPage() {
 
       <section className="container" style={{ paddingTop: 42, paddingBottom: 72 }}>
         <div className="support-shell">
+          {checkingAdmin && (
+            <div className="card">
+              <p className="muted">{t('common.loading', 'Loading...')}</p>
+            </div>
+          )}
+
+          {!checkingAdmin && isAdmin && (
+            <>
+              <div className="card support-operator-hero">
+                <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook operator</p>
+                <h1 className="page-title">Support inbox</h1>
+                <p className="page-sub" style={{ marginTop: '0.6rem' }}>
+                  Review customer, staff and business help requests from the admin inbox. This view is for operator support work, not normal customer support.
+                </p>
+                <div className="support-operator-actions">
+                  <Link href="/admin/support" className="btn btn-accent">
+                    Open support inbox
+                  </Link>
+                  <Link href="/admin/users" className="btn btn-ghost">
+                    User lookup
+                  </Link>
+                  <Link href="/admin/notifications" className="btn btn-ghost">
+                    Operator notices
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid-3">
+                <Link href="/admin/support" className="card support-operator-card">
+                  <p className="small muted">Inbox</p>
+                  <h2>Support requests</h2>
+                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    Read, reply, prioritise and resolve customer, staff and business support tickets.
+                  </p>
+                </Link>
+
+                <Link href="/admin/users" className="card support-operator-card">
+                  <p className="small muted">Context</p>
+                  <h2>User lookup</h2>
+                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    Check the user account, role, business links and staff links before replying.
+                  </p>
+                </Link>
+
+                <Link href="/admin/notifications" className="card support-operator-card">
+                  <p className="small muted">Follow-up</p>
+                  <h2>Operator notices</h2>
+                  <p className="small muted" style={{ marginTop: '0.5rem' }}>
+                    Send platform notices or follow-up updates when a support issue affects a user group.
+                  </p>
+                </Link>
+              </div>
+
+              <div className="card support-operator-note">
+                <p className="small muted">Production reminder</p>
+                <h2>Support notifications should go to admin</h2>
+                <p className="muted" style={{ marginTop: '0.5rem' }}>
+                  The next step is updating the customer, staff and business support forms so every new support request creates an operator notification and appears in the admin support inbox.
+                </p>
+              </div>
+            </>
+          )}
+
+          {!checkingAdmin && !isAdmin && (
+            <>
           <div className="card support-hero">
             <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook support</p>
             <h1 className="page-title">{t('support.title')}</h1>
@@ -174,6 +266,8 @@ export default function SupportPage() {
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -188,6 +282,32 @@ export default function SupportPage() {
         .support-hero {
           background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08));
           border-color: rgba(255,107,53,0.25);
+        }
+
+        .support-operator-hero {
+          border-color: rgba(45,212,191,0.28);
+          background: linear-gradient(135deg, rgba(45,212,191,0.1), rgba(255,107,53,0.08));
+        }
+
+        .support-operator-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
+        }
+
+        .support-operator-card {
+          transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .support-operator-card:hover {
+          border-color: rgba(45,212,191,0.35);
+          transform: translateY(-1px);
+        }
+
+        .support-operator-note {
+          border-color: rgba(255,190,11,0.28);
+          background: rgba(255,190,11,0.06);
         }
 
         .support-route-grid {
@@ -277,6 +397,9 @@ export default function SupportPage() {
         }
 
         @media (max-width: 640px) {
+          .support-operator-actions,
+          .support-operator-actions :global(.btn),
+          .support-operator-actions a,
           .support-contact-actions,
           .support-contact-actions :global(.btn),
           .support-contact-actions a {

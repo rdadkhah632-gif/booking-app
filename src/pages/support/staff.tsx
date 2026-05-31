@@ -168,6 +168,17 @@ export default function StaffSupportPage() {
             <p className="page-sub" style={{ marginTop: '0.6rem' }}>
               {t('support.staff.heroBody', 'Contact support about staff access, availability, bookings, notifications or your linked business profile.')}
             </p>
+            <div className="support-hero-actions">
+              <Link href="/staff" className="btn btn-accent">
+                {t('staff.schedule.title', 'My schedule')}
+              </Link>
+              <Link href="/staff/calendar" className="btn btn-ghost">
+                {t('staffCalendar.title', 'Calendar view')}
+              </Link>
+              <Link href="/staff/availability" className="btn btn-ghost">
+                {t('staff.actions.updateAvailability', 'Update availability')}
+              </Link>
+            </div>
           </div>
 
           {loading && (
@@ -203,6 +214,9 @@ export default function StaffSupportPage() {
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
                       {staffProfile.role_title || staffProfile.permission_role || t('support.staff.roleFallback', 'Staff role')} · {staffProfile.business_name || t('support.staff.businessFallback', 'Business not shown')} · {staffProfile.active ? t('support.staff.status.active', 'Active') : t('support.staff.status.hidden', 'Hidden')}
                     </p>
+                    <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                      {t('support.staff.profileHelpText', 'If services, bookings or availability look wrong, ask the business owner to check your staff setup and assigned services.')}
+                    </p>
                   </div>
                 )}
 
@@ -213,6 +227,11 @@ export default function StaffSupportPage() {
                     <p className="small muted" style={{ marginTop: '0.35rem' }}>
                       {t('support.staff.noProfileBody', 'Ask the business owner to add your exact email address to their staff list, then log in again.')}
                     </p>
+                    <ol className="support-step-list">
+                      <li>{t('support.staff.noProfileStep1', 'Check you registered with the same email the business added.')}</li>
+                      <li>{t('support.staff.noProfileStep2', 'Ask the business owner to open Staff setup and confirm your email is listed.')}</li>
+                      <li>{t('support.staff.noProfileStep3', 'Log out and log back in after the owner updates your staff profile.')}</li>
+                    </ol>
                   </div>
                 )}
 
@@ -248,6 +267,14 @@ export default function StaffSupportPage() {
                   </div>
                 </div>
 
+                <div className="support-submit-note">
+                  <p className="small muted">{t('support.staff.beforeSending.kicker', 'Before sending')}</p>
+                  <p className="small muted">
+                    {staffProfile
+                      ? t('support.staff.beforeSending.linked', 'Include the affected booking, date, service or availability day so support can trace the issue faster.')
+                      : t('support.staff.beforeSending.unlinked', 'Include the business name and the email address the owner added to their staff list.')}
+                  </p>
+                </div>
                 <button type="submit" className="btn btn-accent" disabled={sending}>
                   {sending ? t('support.staff.sending', 'Sending...') : t('support.staff.sendButton', 'Send support message')}
                 </button>
@@ -266,10 +293,26 @@ export default function StaffSupportPage() {
                     <span>→</span>
                   </Link>
 
+                  <Link href="/staff/calendar" className="support-link-row">
+                    <span>
+                      <strong>{t('staffCalendar.title', 'Calendar view')}</strong>
+                      <small>{t('support.staff.calendarBody', 'Look ahead across your assigned bookings by month.')}</small>
+                    </span>
+                    <span>→</span>
+                  </Link>
+
                   <Link href="/staff/availability" className="support-link-row">
                     <span>
                       <strong>{t('support.staff.availability', 'Availability')}</strong>
                       <small>{t('support.staff.availabilityBody', 'Update your working days and hours.')}</small>
+                    </span>
+                    <span>→</span>
+                  </Link>
+
+                  <Link href="/staff/notifications" className="support-link-row">
+                    <span>
+                      <strong>{t('staffNotifications.title', 'Updates')}</strong>
+                      <small>{t('support.staff.notificationsBody', 'Check staff booking, schedule and profile updates.')}</small>
                     </span>
                     <span>→</span>
                   </Link>
@@ -290,6 +333,25 @@ export default function StaffSupportPage() {
                     <span>→</span>
                   </Link>
                 </div>
+
+                <div className="support-troubleshooting-card">
+                  <p className="small muted">{t('support.staff.troubleshooting.kicker', 'Quick troubleshooting')}</p>
+                  <h3>{t('support.staff.troubleshooting.title', 'Common staff setup checks')}</h3>
+                  <div className="support-check-list">
+                    <div>
+                      <strong>{t('support.staff.troubleshooting.accessTitle', 'Cannot access staff workspace')}</strong>
+                      <p className="small muted">{t('support.staff.troubleshooting.accessBody', 'The business owner must add the same email address you use to log in.')}</p>
+                    </div>
+                    <div>
+                      <strong>{t('support.staff.troubleshooting.servicesTitle', 'No services shown')}</strong>
+                      <p className="small muted">{t('support.staff.troubleshooting.servicesBody', 'The owner must assign services to your staff profile before customers can book you.')}</p>
+                    </div>
+                    <div>
+                      <strong>{t('support.staff.troubleshooting.availabilityTitle', 'No bookable times')}</strong>
+                      <p className="small muted">{t('support.staff.troubleshooting.availabilityBody', 'Check that your availability is open and that the business itself also has working hours.')}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -307,6 +369,13 @@ export default function StaffSupportPage() {
         .support-hero {
           background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08));
           border-color: rgba(255,107,53,0.25);
+        }
+
+        .support-hero-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
         }
 
         .support-grid {
@@ -344,6 +413,21 @@ export default function StaffSupportPage() {
           background: rgba(255,190,11,0.06);
         }
 
+        .support-step-list {
+          margin: 0.75rem 0 0;
+          padding-left: 1.1rem;
+          color: var(--text-muted);
+          font-size: 0.86rem;
+          line-height: 1.55;
+        }
+
+        .support-submit-note {
+          border: 1px solid rgba(45,212,191,0.2);
+          border-radius: var(--radius);
+          padding: 0.85rem;
+          background: rgba(45,212,191,0.06);
+        }
+
         .support-link-list {
           display: grid;
           gap: 0.75rem;
@@ -367,10 +451,37 @@ export default function StaffSupportPage() {
           line-height: 1.5;
         }
 
+        .support-troubleshooting-card {
+          border-top: 1px solid var(--border);
+          padding-top: 1rem;
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .support-check-list {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .support-check-list div {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 0.85rem;
+        }
+
         @media (max-width: 860px) {
           .support-grid,
           .support-form-grid {
             grid-template-columns: 1fr;
+          }
+
+          .support-hero-actions,
+          .support-hero-actions :global(.btn),
+          .support-form-card button,
+          .support-link-row {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>
