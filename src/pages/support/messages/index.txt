@@ -2,6 +2,7 @@ import AuthNav from '@/components/AuthNav'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type SupportMessage = {
   id: string
@@ -14,17 +15,25 @@ type SupportMessage = {
   updated_at?: string | null
 }
 
-function statusLabel(status?: string | null) {
-  if (!status) return 'Open'
-  return status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+function statusLabel(status: string | null | undefined, t: (key: string, fallback?: string) => string) {
+  const value = String(status || 'open').toLowerCase()
+
+  if (value === 'open') return t('support.status.open', 'Open')
+  if (value === 'waiting') return t('support.status.waiting', 'Waiting')
+  if (value === 'in_review') return t('support.status.inReview', 'In review')
+  if (value === 'resolved') return t('support.status.resolved', 'Resolved')
+  if (value === 'closed') return t('support.status.closed', 'Closed')
+
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return 'Unknown date'
+function formatDate(value: string | null | undefined, fallback: string) {
+  if (!value) return fallback
   return new Date(value).toLocaleString()
 }
 
 export default function SupportMessagesPage() {
+  const { t } = useI18n()
   const [messages, setMessages] = useState<SupportMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -64,6 +73,8 @@ export default function SupportMessagesPage() {
     return messages.filter((message) => !['resolved', 'closed'].includes(String(message.status || 'open')))
   }, [messages])
 
+  const unknownDate = t('support.messages.unknownDate', 'Unknown date')
+
   return (
     <main>
       <AuthNav />
@@ -72,23 +83,23 @@ export default function SupportMessagesPage() {
         <div className="support-messages-shell">
           <div className="support-messages-header">
             <div>
-              <p className="small" style={{ color: 'var(--accent)' }}>Support conversations</p>
-              <h1 className="page-title">My support messages</h1>
+              <p className="small" style={{ color: 'var(--accent)' }}>{t('support.messages.kicker', 'Support conversations')}</p>
+              <h1 className="page-title">{t('support.messages.title', 'My support messages')}</h1>
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Track replies from Mirëbook support and continue conversations when more information is needed.
+                {t('support.messages.subtitle', 'Track replies from Mirëbook support and continue conversations when more information is needed.')}
               </p>
             </div>
 
             <div className="support-messages-actions">
-              <Link href="/support" className="btn btn-ghost">Support hub</Link>
-              <Link href="/my-bookings" className="btn btn-ghost">My bookings</Link>
-              <button type="button" className="btn btn-accent" onClick={loadMessages}>Refresh</button>
+              <Link href="/support" className="btn btn-ghost">{t('support.messages.supportHub', 'Support hub')}</Link>
+              <Link href="/my-bookings" className="btn btn-ghost">{t('nav.myBookings', 'My bookings')}</Link>
+              <button type="button" className="btn btn-accent" onClick={loadMessages}>{t('common.refresh', 'Refresh')}</button>
             </div>
           </div>
 
           {loading && (
             <div className="card">
-              <p className="muted">Loading your support conversations...</p>
+              <p className="muted">{t('support.messages.loading', 'Loading your support conversations...')}</p>
             </div>
           )}
 
@@ -102,30 +113,30 @@ export default function SupportMessagesPage() {
             <>
               <div className="grid-3">
                 <div className="card">
-                  <p className="small muted">Open conversations</p>
+                  <p className="small muted">{t('support.messages.openConversations', 'Open conversations')}</p>
                   <h2>{openMessages.length}</h2>
-                  <p className="small muted">Waiting, open or in review</p>
+                  <p className="small muted">{t('support.messages.openConversationsBody', 'Waiting, open or in review')}</p>
                 </div>
                 <div className="card">
-                  <p className="small muted">Total conversations</p>
+                  <p className="small muted">{t('support.messages.totalConversations', 'Total conversations')}</p>
                   <h2>{messages.length}</h2>
-                  <p className="small muted">All support requests you have sent</p>
+                  <p className="small muted">{t('support.messages.totalConversationsBody', 'All support requests you have sent')}</p>
                 </div>
                 <div className="card support-help-card">
-                  <p className="small muted">Need help?</p>
-                  <h2>Start from Support</h2>
-                  <p className="small muted">Choose customer, staff or business support to send a new message.</p>
+                  <p className="small muted">{t('common.needHelp', 'Need help?')}</p>
+                  <h2>{t('support.messages.startFromSupport', 'Start from Support')}</h2>
+                  <p className="small muted">{t('support.messages.startFromSupportBody', 'Choose customer, staff or business support to send a new message.')}</p>
                 </div>
               </div>
 
               {messages.length === 0 ? (
                 <div className="card support-empty-card">
-                  <h2>No support conversations yet</h2>
+                  <h2>{t('support.messages.emptyTitle', 'No support conversations yet')}</h2>
                   <p className="muted" style={{ marginTop: '0.5rem' }}>
-                    When you send a support request, replies from Mirëbook support will appear here.
+                    {t('support.messages.emptyBody', 'When you send a support request, replies from Mirëbook support will appear here.')}
                   </p>
                   <Link href="/support" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                    Go to support hub
+                    {t('support.messages.goToSupportHub', 'Go to support hub')}
                   </Link>
                 </div>
               ) : (
@@ -134,17 +145,17 @@ export default function SupportMessagesPage() {
                     <Link key={message.id} href={`/support/messages/${message.id}`} className="card support-message-card">
                       <div>
                         <div className="support-message-title-row">
-                          <strong>{message.subject || message.category || 'Support request'}</strong>
-                          <span className="support-pill">{statusLabel(message.status)}</span>
+                          <strong>{message.subject || message.category || t('support.messages.requestFallback', 'Support request')}</strong>
+                          <span className="support-pill">{statusLabel(message.status, t)}</span>
                         </div>
                         <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                          {message.message || 'No message preview available.'}
+                          {message.message || t('support.messages.noPreview', 'No message preview available.')}
                         </p>
                         <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                          Created {formatDate(message.created_at)}
+                          {t('support.messages.created', 'Created')} {formatDate(message.created_at, unknownDate)}
                         </p>
                       </div>
-                      <span>→</span>
+                      <span aria-hidden="true">→</span>
                     </Link>
                   ))}
                 </div>
