@@ -47,9 +47,39 @@ type AccountStats = {
   pendingBusinessActions: number
 }
 
+type RegionInfo = {
+  timezone: string
+  country: string
+  currency: string
+  locale: string
+}
+
 function roleLabel(role?: string | null) {
   if (!role) return 'Customer'
   return role.charAt(0).toUpperCase() + role.slice(1)
+}
+
+function detectRegion(): RegionInfo {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown'
+  const browserLocale = typeof navigator !== 'undefined' ? navigator.language : 'en-GB'
+
+  if (timezone === 'Europe/London' || browserLocale.toLowerCase().includes('gb')) {
+    return { timezone, country: 'United Kingdom', currency: 'GBP', locale: browserLocale }
+  }
+
+  if (timezone === 'Europe/Tirane' || browserLocale.toLowerCase().includes('sq')) {
+    return { timezone, country: 'Albania', currency: 'ALL', locale: browserLocale }
+  }
+
+  if (timezone === 'Europe/Rome' || browserLocale.toLowerCase().includes('it')) {
+    return { timezone, country: 'Italy', currency: 'EUR', locale: browserLocale }
+  }
+
+  return { timezone, country: 'Auto-detected', currency: 'Auto', locale: browserLocale }
+}
+
+function pluralLabel(count: number, singular: string, plural?: string) {
+  return `${count} ${count === 1 ? singular : (plural || `${singular}s`)}`
 }
 
 export default function AccountPage() {
@@ -76,10 +106,13 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [resettingPassword, setResettingPassword] = useState(false)
+  const [regionInfo, setRegionInfo] = useState<RegionInfo>({ timezone: 'Unknown', country: 'Auto-detected', currency: 'Auto', locale: 'en-GB' })
 
   const ownsBusiness = ownedBusinesses.length > 0
   const hasStaffAccess = !!staffProfile
   const isAdmin = !!profile?.is_admin
+  const isCustomerOnly = !ownsBusiness && !hasStaffAccess && !isAdmin
 
   const primaryAccountMode = useMemo(() => {
     if (isAdmin) return t('account.access.operator', 'Operator')
@@ -88,16 +121,11 @@ export default function AccountPage() {
     return t('account.access.customer', 'Customer')
   }, [isAdmin, ownsBusiness, hasStaffAccess, t])
 
-  const secondaryAccessSummary = useMemo(() => {
-    if (ownsBusiness) return t('account.access.businessManagement', 'Business management access')
-    if (hasStaffAccess) return t('account.access.staffSchedule', 'Staff schedule access')
-    return t('account.access.customerBookings', 'Customer booking access')
-  }, [ownsBusiness, hasStaffAccess, t])
-
   async function loadProfile() {
     setLoading(true)
     setError(null)
     setMessage(null)
+    setRegionInfo(detectRegion())
 
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -260,6 +288,28 @@ export default function AccountPage() {
     await loadProfile()
   }
 
+  
+  async function sendPasswordReset() {
+    if (!profile?.email) return
+
+    setResettingPassword(true)
+    setError(null)
+    setMessage(null)
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(profile.email, {
+      redirectTo: `${window.location.origin}/login`
+    })
+
+    setResettingPassword(false)
+
+    if (resetError) {
+      setError(resetError.message)
+      return
+    }
+
+    setMessage(t('account.passwordResetSent', 'Password reset email sent. Check your inbox to continue.'))
+  }
+
   function publicBusinessHref() {
     return primaryBusinessId ? `/explore/${primaryBusinessId}` : '/dashboard/businesses'
   }
@@ -297,7 +347,7 @@ export default function AccountPage() {
                 <p className="small muted">{t('account.kicker', 'Account')}</p>
                 <h1 className="page-title">{t('account.pageTitle', 'My account')}</h1>
                 <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                  {t('account.pageSubtitle', 'Manage your name, phone number and language preference. Business booking rules are managed separately in Business settings.')}
+                  {t('account.pageSubtitle', 'Manage your login details, language, security and account-specific Mirëbook settings.')}
                 </p>
               </div>
 
@@ -318,7 +368,11 @@ export default function AccountPage() {
                 <p className="small muted">{t('account.primaryKicker', 'Personal settings')}</p>
                 <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>{t('account.personalDetails', 'Personal details')}</h2>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {t('account.accountOnlyBody', 'These settings belong to your login account. They do not change your business profile, services, staff or booking rules.')}
+                  {ownsBusiness
+                    ? t('account.accountOnlyBusinessBody', 'These settings belong to your owner login. Business profile details, services, staff and booking rules stay in Business settings.')
+                    : hasStaffAccess
+                      ? t('account.accountOnlyStaffBody', 'These settings belong to your personal login. Staff services, assigned bookings and working hours are managed separately.')
+                      : t('account.accountOnlyCustomerBody', 'These settings belong to your customer login and are used for bookings, notifications and support conversations.')}
                 </p>
               </div>
 
@@ -341,6 +395,18 @@ export default function AccountPage() {
                     placeholder={t('account.phonePlaceholder', 'Phone number')}
                     style={{ width: '100%', marginTop: '0.4rem' }}
                   />
+                </div>
+
+                <div>
+                  <label className="small muted">{t('account.email', 'Email')}</label>
+                  <input
+                    value={profile.email}
+                    disabled
+                    style={{ width: '100%', marginTop: '0.4rem' }}
+                  />
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('account.emailChangeBody', 'Email changes require confirmation. Use password reset or contact support if this email is wrong.')}
+                  </p>
                 </div>
 
                 <div>
@@ -367,6 +433,38 @@ export default function AccountPage() {
                 {saving ? t('account.saving', 'Saving...') : t('account.saveChanges', 'Save changes')}
               </button>
             </form>
+
+            </form>
+
+            <div className="grid-2 account-settings-grid">
+              <div className="card account-security-card">
+                <div>
+                  <p className="small muted">{t('account.security.kicker', 'Security')}</p>
+                  <h3>{t('account.security.title', 'Password and login')}</h3>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('account.security.body', 'Send a password reset email to your login address. This is safer than changing passwords directly inside the account page.')}
+                  </p>
+                </div>
+                <button type="button" className="btn btn-ghost" onClick={sendPasswordReset} disabled={resettingPassword}>
+                  {resettingPassword ? t('account.security.sending', 'Sending reset...') : t('account.security.resetPassword', 'Send password reset')}
+                </button>
+              </div>
+
+              <div className="card account-region-card">
+                <div>
+                  <p className="small muted">{t('account.region.kicker', 'Detected region')}</p>
+                  <h3>{regionInfo.country}</h3>
+                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                    {t('account.region.body', 'Mirëbook uses your browser region as a smart default for timezone, currency and future localisation features.')}
+                  </p>
+                </div>
+                <div className="account-region-grid">
+                  <span>{regionInfo.timezone}</span>
+                  <span>{regionInfo.currency}</span>
+                  <span>{regionInfo.locale}</span>
+                </div>
+              </div>
+            </div>
 
             {ownsBusiness && (
               <div className="card" style={{ borderColor: 'rgba(255,107,53,0.25)' }}>
@@ -405,52 +503,67 @@ export default function AccountPage() {
             )}
 
             <div className="grid-2 account-summary-grid">
-              <div className="card">
-                <p className="small muted">{t('account.email', 'Email')}</p>
-                <strong>{profile.email}</strong>
-                <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {t('account.emailBody', 'Used for login, booking confirmations, staff linking and future email notifications.')}
-                </p>
-              </div>
-
-              <div className="card">
+              <div className="card account-role-card">
                 <p className="small muted">{t('account.accessSummary', 'Access summary')}</p>
                 <strong>{primaryAccountMode}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {secondaryAccessSummary}
+                  {isAdmin
+                    ? t('account.operatorSummaryBody', 'Operator access is for platform management, support inbox, business onboarding and account lookup.')
+                    : ownsBusiness
+                      ? t('account.businessSummaryBody', 'Owner access lets you manage business setup, bookings, services, staff, publishing and support conversations.')
+                      : hasStaffAccess
+                        ? t('account.staffSummaryBody', 'Staff access lets you view assigned bookings, calendar, availability, notifications and support conversations.')
+                        : t('account.customerSummaryBody', 'Customer access lets you book services, manage appointments, receive notifications and contact support.')}
                 </p>
               </div>
 
-              <div className="card" style={{ borderColor: ownsBusiness ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
-                <p className="small muted">{t('account.businessAccess', 'Business access')}</p>
-                <strong>
-                  {ownsBusiness
-                    ? `${ownedBusinesses.length} ${t('account.businessProfile', 'business profile')}${ownedBusinesses.length === 1 ? '' : 's'}`
-                    : t('account.noBusinessProfile', 'No business profile')}
-                </strong>
-                <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {ownsBusiness
-                    ? `${stats.pendingBusinessActions} ${t('account.businessAction', 'business action')}${stats.pendingBusinessActions === 1 ? '' : 's'} ${t('account.currentlyPending', 'currently pending.')}`
-                    : t('account.noBusinessProfileBody', 'Create or join a business only when you are onboarding a real business.')}
-                </p>
-              </div>
-
-              <div className="card" style={{ borderColor: hasStaffAccess ? 'rgba(45,212,191,0.25)' : 'var(--border)' }}>
-                <p className="small muted">{t('account.staffAccess', 'Staff access')}</p>
-                <strong>{hasStaffAccess ? t('account.linkedStaffProfile', 'Linked staff profile') : t('dashboardStaff.card.notLinked', 'Not linked')}</strong>
-                <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {hasStaffAccess
-                    ? `${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || t('account.access.staff', 'Staff')} ${t('account.at', 'at')} ${staffBusinessName()}`
-                    : t('account.staffAccessBody', 'Staff access appears here when a business links this login to a staff profile.')}
-                </p>
-              </div>
-
-              {!ownsBusiness && !hasStaffAccess && (
+              {isCustomerOnly && (
                 <div className="card">
                   <p className="small muted">{t('account.customerActivity', 'Customer activity')}</p>
-                  <strong>{stats.bookings} {t('support.business.bookings', 'booking')}{stats.bookings === 1 ? '' : 's'}</strong>
+                  <strong>{pluralLabel(stats.bookings, t('account.bookingSingular', 'booking'), t('account.bookingPlural', 'bookings'))}</strong>
                   <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                    {stats.pendingCustomerBookings} {t('account.pendingCustomerBookings', 'pending customer booking')}{stats.pendingCustomerBookings === 1 ? '' : 's'}.
+                    {pluralLabel(stats.pendingCustomerBookings, t('account.pendingBookingSingular', 'pending booking'), t('account.pendingBookingPlural', 'pending bookings'))}.
+                  </p>
+                  <Link href="/my-bookings" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                    {t('nav.myBookings', 'My bookings')}
+                  </Link>
+                </div>
+              )}
+
+              {ownsBusiness && (
+                <div className="card" style={{ borderColor: 'rgba(45,212,191,0.25)' }}>
+                  <p className="small muted">{t('account.businessAccess', 'Business access')}</p>
+                  <strong>{pluralLabel(ownedBusinesses.length, t('account.businessProfile', 'business profile'))}</strong>
+                  <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                    {pluralLabel(stats.pendingBusinessActions, t('account.businessAction', 'business action'))} {t('account.currentlyPending', 'currently pending.')}
+                  </p>
+                  <div className="account-card-actions">
+                    <Link href="/dashboard" className="btn btn-accent">{t('dashboardHome.title', 'Business overview')}</Link>
+                    <Link href="/dashboard/businesses" className="btn btn-ghost">{t('account.manageBusinessProfiles', 'Manage businesses')}</Link>
+                  </div>
+                </div>
+              )}
+
+              {hasStaffAccess && (
+                <div className="card" style={{ borderColor: 'rgba(45,212,191,0.25)' }}>
+                  <p className="small muted">{t('account.staffAccess', 'Staff access')}</p>
+                  <strong>{t('account.linkedStaffProfile', 'Linked staff profile')}</strong>
+                  <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                    {`${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || t('account.access.staff', 'Staff')} ${t('account.at', 'at')} ${staffBusinessName()}`}
+                  </p>
+                  <div className="account-card-actions">
+                    <Link href="/staff" className="btn btn-accent">{t('staff.schedule.title', 'My schedule')}</Link>
+                    <Link href="/staff/availability" className="btn btn-ghost">{t('staff.actions.updateAvailability', 'Update availability')}</Link>
+                  </div>
+                </div>
+              )}
+
+              {!hasStaffAccess && !isCustomerOnly && (
+                <div className="card">
+                  <p className="small muted">{t('account.staffAccess', 'Staff access')}</p>
+                  <strong>{t('dashboardStaff.card.notLinked', 'Not linked')}</strong>
+                  <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                    {t('account.staffAccessBody', 'Staff access appears here only when a business links this login to a staff profile.')}
                   </p>
                 </div>
               )}
@@ -459,13 +572,17 @@ export default function AccountPage() {
                 <p className="small muted">{t('dashboardHome.openNotifications', 'Notifications')}</p>
                 <strong>{stats.unreadNotifications + stats.adminNotifications} {t('account.unread', 'unread')}</strong>
                 <p className="small muted" style={{ marginTop: '0.4rem' }}>
-                  {ownsBusiness
-                    ? `${stats.businessNotifications} ${t('account.businessNotice', 'business notice')}${stats.businessNotifications === 1 ? '' : 's'}`
-                    : hasStaffAccess
-                      ? t('account.staffNotificationsBody', 'Staff booking and schedule updates appear here.')
-                      : t('account.customerNotificationsBody', 'Customer booking updates appear here.')}
-                  {isAdmin ? ` · ${stats.adminNotifications} ${t('account.operatorNotice', 'operator notice')}${stats.adminNotifications === 1 ? '' : 's'}.` : '.'}
+                  {isAdmin
+                    ? `${stats.adminNotifications} ${t('account.operatorNotice', 'operator notice')}${stats.adminNotifications === 1 ? '' : 's'}.`
+                    : ownsBusiness
+                      ? `${stats.businessNotifications} ${t('account.businessNotice', 'business notice')}${stats.businessNotifications === 1 ? '' : 's'}.`
+                      : hasStaffAccess
+                        ? t('account.staffNotificationsBody', 'Staff booking and schedule updates appear here.')
+                        : t('account.customerNotificationsBody', 'Customer booking updates appear here.')}
                 </p>
+                <Link href="/notifications" className="btn btn-ghost" style={{ marginTop: '0.75rem' }}>
+                  {t('nav.notifications', 'Notifications')}
+                </Link>
               </div>
             </div>
 
@@ -481,6 +598,7 @@ export default function AccountPage() {
 
               <div className="workspace-actions">
                 <Link href="/support" className="btn btn-ghost">{t('account.contactSupport', 'Contact support')}</Link>
+                <Link href="/support/messages" className="btn btn-ghost">{t('support.customer.allConversations', 'All support messages')}</Link>
                 <span className="language-pill" title={t('account.savedLanguage', 'Saved account language')}>{preferredLanguage === 'sq' ? 'SQ' : 'EN'}</span>
                 <button onClick={logout} className="btn btn-danger">{t('auth.logout', 'Log out')}</button>
               </div>
@@ -509,7 +627,8 @@ export default function AccountPage() {
 
         .account-header-actions,
         .operator-account-actions,
-        .workspace-actions {
+        .workspace-actions,
+        .account-card-actions {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
@@ -518,6 +637,33 @@ export default function AccountPage() {
 
         .account-summary-grid {
           align-items: stretch;
+        }
+
+        .account-settings-grid {
+          align-items: stretch;
+        }
+
+        .account-security-card,
+        .account-region-card,
+        .account-role-card {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .account-region-grid {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+
+        .account-region-grid span {
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface-2);
+          color: var(--text-muted);
+          padding: 0.25rem 0.65rem;
+          font-size: 0.8rem;
+          font-weight: 700;
         }
 
         .operator-account-card {
@@ -570,13 +716,17 @@ export default function AccountPage() {
           .account-header-actions,
           .operator-account-actions,
           .workspace-actions,
+          .account-card-actions,
           .account-header-actions :global(.btn),
           .operator-account-actions :global(.btn),
           .workspace-actions :global(.btn),
+          .account-card-actions :global(.btn),
           .account-header-actions button,
           .operator-account-actions a,
           .workspace-actions a,
-          .workspace-actions button {
+          .workspace-actions button,
+          .account-card-actions a,
+          .account-security-card button {
             width: 100%;
             justify-content: center;
           }
