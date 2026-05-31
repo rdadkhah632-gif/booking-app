@@ -114,11 +114,56 @@ function staffName(value?: Booking | RequestBooking | null, fallback = 'Staff no
   return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
 }
 
+
 function requestedStaffName(request: BookingRequest, fallback = 'Staff not recorded') {
   const staff = firstRelation(request.requested_staff)
   if (!staff) return fallback
 
   return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ''}`
+}
+
+function businessNotificationText(notification: NotificationRow, t: (key: string, fallback?: string) => string) {
+  const type = String(notification.type || '')
+
+  if (type === 'booking_created' || type === 'booking_requested' || type === 'booking_approval_requested') {
+    return {
+      title: t('notifications.types.businessBookingRequest.title', 'New booking request'),
+      message: notification.message || t('notifications.types.businessBookingRequest.message', 'A customer has sent a booking request that needs review.')
+    }
+  }
+
+  if (type === 'booking_confirmed' || type === 'booking_accepted') {
+    return {
+      title: t('notifications.types.businessBookingConfirmed.title', 'Booking confirmed'),
+      message: notification.message || t('notifications.types.businessBookingConfirmed.message', 'A booking has been confirmed.')
+    }
+  }
+
+  if (type === 'booking_cancelled') {
+    return {
+      title: t('notifications.types.businessBookingCancelled.title', 'Booking cancelled'),
+      message: notification.message || t('notifications.types.businessBookingCancelled.message', 'A booking has been cancelled.')
+    }
+  }
+
+  if (type === 'reschedule_requested' || type === 'booking_reschedule_requested') {
+    return {
+      title: t('notifications.types.businessRescheduleRequested.title', 'Reschedule request'),
+      message: notification.message || t('notifications.types.businessRescheduleRequested.message', 'A customer has requested a new appointment time.')
+    }
+  }
+
+  if (type === 'support_reply_user') {
+    return {
+      title: t('notifications.types.supportReplyUser.title', 'User replied to support ticket'),
+      message: notification.message || t('notifications.types.supportReplyUser.message', 'Open the support inbox to review the latest reply.')
+    }
+  }
+
+  return {
+    title: notification.title || t('notifications.types.generic.title', 'Mirëbook update'),
+    message: notification.message || ''
+  }
 }
 
 export default function BusinessNotifications() {
@@ -430,7 +475,7 @@ export default function BusinessNotifications() {
       userId: booking.customer_user_id,
       businessId: booking.business_id,
       bookingId: booking.id,
-      type: 'booking_confirmed',
+      type: 'booking_accepted',
       title: t('dashboardBookings.notification.acceptedTitle', 'Booking accepted'),
       message: t('dashboardBookings.notification.acceptedMessage', 'Your booking has been accepted and confirmed.'),
       actionUrl: `/booking-confirmation?id=${booking.id}`
@@ -838,7 +883,10 @@ export default function BusinessNotifications() {
             </p>
           </div>
 
-          {recentBusinessNotifications.map((notification) => (
+          {recentBusinessNotifications.map((notification) => {
+            const displayNotification = businessNotificationText(notification, t)
+
+            return (
             <div
               key={notification.id}
               className="card"
@@ -850,7 +898,7 @@ export default function BusinessNotifications() {
               <div className="business-notification-card-row">
                 <div style={{ flex: 1, minWidth: 260 }}>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                    <strong>{notification.title}</strong>
+                    <strong>{displayNotification.title}</strong>
 
                     <span
                       className="small"
@@ -866,8 +914,8 @@ export default function BusinessNotifications() {
                     </span>
                   </div>
 
-                  {notification.message && (
-                    <p className="small muted">{notification.message}</p>
+                  {displayNotification.message && (
+                    <p className="small muted">{displayNotification.message}</p>
                   )}
 
                   <p className="small muted" style={{ marginTop: '0.5rem' }}>
@@ -898,7 +946,8 @@ export default function BusinessNotifications() {
                 </div>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

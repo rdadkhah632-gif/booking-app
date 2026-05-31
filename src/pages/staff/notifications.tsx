@@ -1,108 +1,204 @@
-import AuthNav from '@/components/AuthNav'
-import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
-import { useI18n } from '@/lib/useI18n'
+import AuthNav from "@/components/AuthNav";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/useI18n";
 
 type Notification = {
-  id: string
-  title: string | null
-  message: string | null
-  type: string | null
-  action_url: string | null
-  read_at: string | null
-  created_at: string
+  id: string;
+  title: string | null;
+  message: string | null;
+  type: string | null;
+  action_url: string | null;
+  read_at: string | null;
+  created_at: string;
+};
+
+function staffNotificationText(
+  notification: Notification,
+  t: (key: string, fallback?: string) => string,
+) {
+  const type = String(notification.type || "");
+
+  if (type.includes("booking")) {
+    return {
+      title: t(
+        "notifications.types.staffBooking.title",
+        "Staff booking update",
+      ),
+      message:
+        notification.message ||
+        t(
+          "notifications.types.staffBooking.message",
+          "One of your assigned bookings has been updated.",
+        ),
+    };
+  }
+
+  if (type.includes("schedule") || type.includes("availability")) {
+    return {
+      title: t("notifications.types.staffSchedule.title", "Schedule update"),
+      message:
+        notification.message ||
+        t(
+          "notifications.types.staffSchedule.message",
+          "Your staff schedule or availability has been updated.",
+        ),
+    };
+  }
+
+  if (type.includes("profile") || type.includes("staff")) {
+    return {
+      title: t(
+        "notifications.types.staffProfile.title",
+        "Staff profile update",
+      ),
+      message:
+        notification.message ||
+        t(
+          "notifications.types.staffProfile.message",
+          "Your staff profile or access has been updated.",
+        ),
+    };
+  }
+
+  if (type === "support_reply_admin") {
+    return {
+      title: t(
+        "notifications.types.supportReplyAdmin.title",
+        "Mirëbook support replied",
+      ),
+      message:
+        notification.message ||
+        t(
+          "notifications.types.supportReplyAdmin.message",
+          "Open your support conversation to read the latest reply.",
+        ),
+    };
+  }
+
+  if (type === "support_resolved") {
+    return {
+      title: t(
+        "notifications.types.supportResolved.title",
+        "Support ticket resolved",
+      ),
+      message:
+        notification.message ||
+        t(
+          "notifications.types.supportResolved.message",
+          "Your support conversation has been marked as resolved.",
+        ),
+    };
+  }
+
+  return {
+    title:
+      notification.title ||
+      t("staffNotifications.fallback.title", "Staff update"),
+    message:
+      notification.message ||
+      t("staffNotifications.fallback.message", "You have a new staff update."),
+  };
 }
 
 export default function StaffNotificationsPage() {
-  const { t } = useI18n()
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const { t } = useI18n();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "unread">("all");
 
   useEffect(() => {
-    loadNotifications()
-  }, [])
+    loadNotifications();
+  }, []);
 
   async function loadNotifications() {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session) {
-      window.location.href = '/login'
-      return
+      window.location.href = "/login";
+      return;
     }
 
     const { data: linkedStaff } = await supabase
-      .from('staff_members')
-      .select('id')
-      .eq('user_id', session.user.id)
+      .from("staff_members")
+      .select("id")
+      .eq("user_id", session.user.id)
       .limit(1)
-      .maybeSingle()
+      .maybeSingle();
 
     if (!linkedStaff) {
-      window.location.href = '/my-bookings'
-      return
+      window.location.href = "/my-bookings";
+      return;
     }
 
     const { data, error } = await supabase
-      .from('notifications')
-      .select('id, title, message, type, action_url, read_at, created_at')
-      .eq('user_id', session.user.id)
-      .in('audience', ['staff', 'general'])
-      .order('created_at', { ascending: false })
-      .limit(50)
+      .from("notifications")
+      .select("id, title, message, type, action_url, read_at, created_at")
+      .eq("user_id", session.user.id)
+      .in("audience", ["staff", "general"])
+      .order("created_at", { ascending: false })
+      .limit(50);
 
     if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
+      setError(error.message);
+      setLoading(false);
+      return;
     }
 
-    setNotifications(data || [])
-    setLoading(false)
+    setNotifications(data || []);
+    setLoading(false);
   }
 
   async function markRead(id: string) {
     await supabase
-      .from('notifications')
+      .from("notifications")
       .update({ read_at: new Date().toISOString() })
-      .eq('id', id)
+      .eq("id", id);
 
-    await loadNotifications()
+    await loadNotifications();
   }
 
   async function markAllRead() {
-    const unreadIds = notifications.filter((item) => !item.read_at).map((item) => item.id)
+    const unreadIds = notifications
+      .filter((item) => !item.read_at)
+      .map((item) => item.id);
 
-    if (unreadIds.length === 0) return
+    if (unreadIds.length === 0) return;
 
     await supabase
-      .from('notifications')
+      .from("notifications")
       .update({ read_at: new Date().toISOString() })
-      .in('id', unreadIds)
+      .in("id", unreadIds);
 
-    await loadNotifications()
+    await loadNotifications();
   }
 
   const unreadCount = useMemo(() => {
-    return notifications.filter((item) => !item.read_at).length
-  }, [notifications])
+    return notifications.filter((item) => !item.read_at).length;
+  }, [notifications]);
 
   const filteredNotifications = useMemo(() => {
-    if (filter === 'unread') return notifications.filter((item) => !item.read_at)
-    return notifications
-  }, [filter, notifications])
+    if (filter === "unread")
+      return notifications.filter((item) => !item.read_at);
+    return notifications;
+  }, [filter, notifications]);
 
   function notificationTypeLabel(type?: string | null) {
-    if (!type) return t('staffNotifications.type.general', 'General')
-    if (type.includes('booking')) return t('staffNotifications.type.booking', 'Booking')
-    if (type.includes('schedule') || type.includes('availability')) return t('staffNotifications.type.schedule', 'Schedule')
-    if (type.includes('profile') || type.includes('staff')) return t('staffNotifications.type.profile', 'Profile')
-    return t('staffNotifications.type.general', 'General')
+    if (!type) return t("staffNotifications.type.general", "General");
+    if (type.includes("booking"))
+      return t("staffNotifications.type.booking", "Booking");
+    if (type.includes("schedule") || type.includes("availability"))
+      return t("staffNotifications.type.schedule", "Schedule");
+    if (type.includes("profile") || type.includes("staff"))
+      return t("staffNotifications.type.profile", "Profile");
+    return t("staffNotifications.type.general", "General");
   }
 
   return (
@@ -110,22 +206,36 @@ export default function StaffNotificationsPage() {
       <AuthNav />
 
       <section className="page-shell">
-        <div className="page-header-row" style={{ marginBottom: '1.5rem' }}>
+        <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
           <div>
-            <p className="small muted">{t('staffNotifications.kicker', 'Staff notifications')}</p>
-            <h1 className="page-title">{t('staffNotifications.title', 'Updates')}</h1>
-            <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-              {t('staffNotifications.body', 'Staff-only updates for your schedule, profile and assigned bookings.')}
+            <p className="small muted">
+              {t("staffNotifications.kicker", "Staff notifications")}
+            </p>
+            <h1 className="page-title">
+              {t("staffNotifications.title", "Updates")}
+            </h1>
+            <p className="page-sub" style={{ marginTop: "0.5rem" }}>
+              {t(
+                "staffNotifications.body",
+                "Staff-only updates for your schedule, profile and assigned bookings.",
+              )}
             </p>
           </div>
 
           <div className="page-header-actions">
             <Link href="/staff" className="btn btn-ghost">
-              {t('staff.schedule.title', 'My schedule')}
+              {t("staff.schedule.title", "My schedule")}
             </Link>
 
-            <button type="button" onClick={markAllRead} disabled={unreadCount === 0} className="btn btn-accent">
-              {unreadCount > 0 ? `${t('staffNotifications.mark', 'Mark')} ${unreadCount} ${t('staffNotifications.read', 'read')}` : t('staffNotifications.allRead', 'All read')}
+            <button
+              type="button"
+              onClick={markAllRead}
+              disabled={unreadCount === 0}
+              className="btn btn-accent"
+            >
+              {unreadCount > 0
+                ? `${t("staffNotifications.mark", "Mark")} ${unreadCount} ${t("staffNotifications.read", "read")}`
+                : t("staffNotifications.allRead", "All read")}
             </button>
           </div>
         </div>
@@ -133,31 +243,43 @@ export default function StaffNotificationsPage() {
         {!loading && !error && (
           <div className="staff-notification-toolbar card">
             <div>
-              <p className="small muted">{t('staffNotifications.inbox.kicker', 'Inbox status')}</p>
+              <p className="small muted">
+                {t("staffNotifications.inbox.kicker", "Inbox status")}
+              </p>
               <strong>
                 {unreadCount > 0
-                  ? `${unreadCount} ${unreadCount === 1 ? t('staffNotifications.unreadSingle', 'unread update') : t('staffNotifications.unreadPlural', 'unread updates')}`
-                  : t('staffNotifications.inboxClear', 'All staff updates are read')}
+                  ? `${unreadCount} ${unreadCount === 1 ? t("staffNotifications.unreadSingle", "unread update") : t("staffNotifications.unreadPlural", "unread updates")}`
+                  : t(
+                      "staffNotifications.inboxClear",
+                      "All staff updates are read",
+                    )}
               </strong>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('staffNotifications.inbox.body', 'This inbox only shows updates linked to your staff workspace.')}
+              <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                {t(
+                  "staffNotifications.inbox.body",
+                  "This inbox only shows updates linked to your staff workspace.",
+                )}
               </p>
             </div>
 
             <div className="staff-notification-filters">
               <button
                 type="button"
-                className={filter === 'all' ? 'btn btn-accent' : 'btn btn-ghost'}
-                onClick={() => setFilter('all')}
+                className={
+                  filter === "all" ? "btn btn-accent" : "btn btn-ghost"
+                }
+                onClick={() => setFilter("all")}
               >
-                {t('staffNotifications.filter.all', 'All')}
+                {t("staffNotifications.filter.all", "All")}
               </button>
               <button
                 type="button"
-                className={filter === 'unread' ? 'btn btn-accent' : 'btn btn-ghost'}
-                onClick={() => setFilter('unread')}
+                className={
+                  filter === "unread" ? "btn btn-accent" : "btn btn-ghost"
+                }
+                onClick={() => setFilter("unread")}
               >
-                {t('staffNotifications.filter.unread', 'Unread')}
+                {t("staffNotifications.filter.unread", "Unread")}
               </button>
             </div>
           </div>
@@ -165,68 +287,104 @@ export default function StaffNotificationsPage() {
 
         {loading && (
           <div className="card">
-            <p className="muted">{t('staffNotifications.loading', 'Loading staff notifications...')}</p>
+            <p className="muted">
+              {t(
+                "staffNotifications.loading",
+                "Loading staff notifications...",
+              )}
+            </p>
           </div>
         )}
 
         {error && (
-          <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)' }}>
-            <p style={{ color: 'var(--danger)' }}>{error}</p>
+          <div
+            className="card"
+            style={{ borderColor: "rgba(255,77,109,0.35)" }}
+          >
+            <p style={{ color: "var(--danger)" }}>{error}</p>
           </div>
         )}
 
         {!loading && !error && filteredNotifications.length === 0 && (
           <div className="card">
-            <h3>{filter === 'unread' ? t('staffNotifications.empty.unreadTitle', 'No unread updates') : t('staffNotifications.empty.title', 'No staff notifications yet')}</h3>
-            <p className="muted" style={{ marginTop: '0.5rem' }}>
-              {filter === 'unread'
-                ? t('staffNotifications.empty.unreadBody', 'Everything in your staff inbox has been read.')
-                : t('staffNotifications.empty.body', 'Booking updates, schedule changes and staff account messages will appear here.')}
+            <h3>
+              {filter === "unread"
+                ? t("staffNotifications.empty.unreadTitle", "No unread updates")
+                : t(
+                    "staffNotifications.empty.title",
+                    "No staff notifications yet",
+                  )}
+            </h3>
+            <p className="muted" style={{ marginTop: "0.5rem" }}>
+              {filter === "unread"
+                ? t(
+                    "staffNotifications.empty.unreadBody",
+                    "Everything in your staff inbox has been read.",
+                  )
+                : t(
+                    "staffNotifications.empty.body",
+                    "Booking updates, schedule changes and staff account messages will appear here.",
+                  )}
             </p>
           </div>
         )}
 
         {!loading && !error && filteredNotifications.length > 0 && (
           <div className="staff-notification-list">
-            {filteredNotifications.map((item) => (
-              <div key={item.id} className="card staff-notification-card">
-                <div>
-                  <div className="staff-notification-title-row">
-                    <strong>{item.title || t('staffNotifications.fallback.title', 'Staff update')}</strong>
-                    {!item.read_at && <span className="badge badge-accent">{t('common.new', 'New')}</span>}
-                    <span className="badge badge-muted">{notificationTypeLabel(item.type)}</span>
+            {filteredNotifications.map((item) => {
+              const displayNotification = staffNotificationText(item, t);
+
+              return (
+                <div key={item.id} className="card staff-notification-card">
+                  <div>
+                    <div className="staff-notification-title-row">
+                      <strong>{displayNotification.title}</strong>
+                      {!item.read_at && (
+                        <span className="badge badge-accent">
+                          {t("common.new", "New")}
+                        </span>
+                      )}
+                      <span className="badge badge-muted">
+                        {notificationTypeLabel(item.type)}
+                      </span>
+                    </div>
+
+                    <p className="muted" style={{ marginTop: "0.4rem" }}>
+                      {displayNotification.message}
+                    </p>
+
+                    <p className="small muted" style={{ marginTop: "0.55rem" }}>
+                      {new Date(item.created_at).toLocaleString()}
+                    </p>
                   </div>
 
-                  <p className="muted" style={{ marginTop: '0.4rem' }}>
-                    {item.message || t('staffNotifications.fallback.message', 'You have a new staff update.')}
-                  </p>
+                  <div className="staff-notification-actions">
+                    {item.action_url &&
+                      item.action_url.startsWith("/staff") && (
+                        <Link href={item.action_url} className="btn btn-ghost">
+                          {t("common.open", "Open")}
+                        </Link>
+                      )}
 
-                  <p className="small muted" style={{ marginTop: '0.55rem' }}>
-                    {new Date(item.created_at).toLocaleString()}
-                  </p>
+                    {!item.action_url && (
+                      <Link href="/staff" className="btn btn-ghost">
+                        {t("staff.schedule.title", "My schedule")}
+                      </Link>
+                    )}
+
+                    {!item.read_at && (
+                      <button
+                        type="button"
+                        onClick={() => markRead(item.id)}
+                        className="btn btn-ghost"
+                      >
+                        {t("staffNotifications.markRead", "Mark read")}
+                      </button>
+                    )}
+                  </div>
                 </div>
-
-                <div className="staff-notification-actions">
-                  {item.action_url && item.action_url.startsWith('/staff') && (
-                    <Link href={item.action_url} className="btn btn-ghost">
-                      {t('common.open', 'Open')}
-                    </Link>
-                  )}
-
-                  {!item.action_url && (
-                    <Link href="/staff" className="btn btn-ghost">
-                      {t('staff.schedule.title', 'My schedule')}
-                    </Link>
-                  )}
-
-                  {!item.read_at && (
-                    <button type="button" onClick={() => markRead(item.id)} className="btn btn-ghost">
-                      {t('staffNotifications.markRead', 'Mark read')}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -238,7 +396,7 @@ export default function StaffNotificationsPage() {
           gap: 1rem;
           align-items: center;
           margin-bottom: 1.5rem;
-          border-color: rgba(255,107,53,0.22);
+          border-color: rgba(255, 107, 53, 0.22);
         }
 
         .staff-notification-filters {
@@ -299,5 +457,5 @@ export default function StaffNotificationsPage() {
         }
       `}</style>
     </main>
-  )
+  );
 }

@@ -2202,4 +2202,56 @@ export const sq: TranslationTree = {
   "support.faq.mobileAppTitle": "A do të ketë aplikacion mobil?",
   "support.faq.mobileAppBody":
     "Produkti aktual po ndërtohet fillimisht si platformë web, me gatishmëri për aplikacion në të ardhmen. Qëllimi është që rrugët, faqosja, rrjedha e llogarisë dhe cilësimet të jenë të përshtatshme për një version aplikacioni më vonë.",
+  "notifications.types.bookingAccepted.title": "Rezervimi u pranua",
+  "notifications.types.bookingAccepted.message":
+    "Rezervimi yt u pranua dhe u konfirmua.",
+  "notifications.types.bookingDeclined.title": "Rezervimi u refuzua",
+  "notifications.types.bookingDeclined.message":
+    "Kërkesa jote për rezervim u refuzua.",
+  "notifications.types.bookingCancelled.title": "Rezervimi u anulua",
+  "notifications.types.bookingCancelled.message":
+    "Rezervimi yt u anulua nga biznesi.",
+  "notifications.types.bookingCompleted.title": "Takimi u përfundua",
+  "notifications.types.bookingCompleted.message":
+    "Takimi yt është shënuar si i përfunduar.",
+  "notifications.types.rescheduleAccepted.title": "Riplanifikimi u pranua",
+  "notifications.types.rescheduleAccepted.message":
+    "Kërkesa jote për riplanifikim u pranua.",
+  "notifications.types.rescheduleDeclined.title": "Riplanifikimi u refuzua",
+  "notifications.types.rescheduleDeclined.message":
+    "Kërkesa jote për riplanifikim u refuzua. Rezervimi origjinal mbetet i pandryshuar.",
+  "notifications.types.supportReplyAdmin.title":
+    "Suporti i Mirëbook u përgjigj",
+  "notifications.types.supportReplyAdmin.message":
+    "Hap bisedën e suportit për të lexuar përgjigjen e fundit.",
+  "notifications.types.supportResolved.title": "Ticket-i i suportit u zgjidh",
+  "notifications.types.supportResolved.message":
+    "Biseda jote e suportit është shënuar si e zgjidhur.",
+  "notifications.types.generic.title": "Përditësim nga Mirëbook",
+  "notifications.types.businessBookingRequest.title": "Kërkesë e re rezervimi",
+  "notifications.types.businessBookingRequest.message":
+    "Një klient ka dërguar një kërkesë rezervimi që duhet shqyrtuar.",
+  "notifications.types.businessBookingConfirmed.title": "Rezervimi u konfirmua",
+  "notifications.types.businessBookingConfirmed.message":
+    "Një rezervim është konfirmuar.",
+  "notifications.types.businessBookingCancelled.title": "Rezervimi u anulua",
+  "notifications.types.businessBookingCancelled.message":
+    "Një rezervim është anuluar.",
+  "notifications.types.businessRescheduleRequested.title":
+    "Kërkesë për riplanifikim",
+  "notifications.types.businessRescheduleRequested.message":
+    "Një klient ka kërkuar një orar të ri takimi.",
+  "notifications.types.supportReplyUser.title":
+    "Përdoruesi iu përgjigj ticket-it të suportit",
+  "notifications.types.supportReplyUser.message":
+    "Hap inbox-in e suportit për të shqyrtuar përgjigjen e fundit.",
+  "notifications.types.staffBooking.title": "Përditësim rezervimi për staf",
+  "notifications.types.staffBooking.message":
+    "Një nga rezervimet e tua të caktuara është përditësuar.",
+  "notifications.types.staffSchedule.title": "Përditësim orari",
+  "notifications.types.staffSchedule.message":
+    "Orari ose disponueshmëria jote si staf është përditësuar.",
+  "notifications.types.staffProfile.title": "Përditësim profili stafi",
+  "notifications.types.staffProfile.message":
+    "Profili ose aksesi yt si staf është përditësuar.",
 };

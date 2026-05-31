@@ -2146,4 +2146,54 @@ export const en: TranslationTree = {
   "support.faq.mobileAppTitle": "Will there be a mobile app?",
   "support.faq.mobileAppBody":
     "The current product is being built as a web platform first, with future app-store readiness in mind. The goal is to make the routes, layout, account flow and settings suitable for a later app version.",
+  "notifications.types.bookingAccepted.title": "Booking accepted",
+  "notifications.types.bookingAccepted.message":
+    "Your booking has been accepted and confirmed.",
+  "notifications.types.bookingDeclined.title": "Booking declined",
+  "notifications.types.bookingDeclined.message":
+    "Your booking request was declined.",
+  "notifications.types.bookingCancelled.title": "Booking cancelled",
+  "notifications.types.bookingCancelled.message":
+    "Your booking was cancelled by the business.",
+  "notifications.types.bookingCompleted.title": "Appointment completed",
+  "notifications.types.bookingCompleted.message":
+    "Your appointment has been marked as completed.",
+  "notifications.types.rescheduleAccepted.title": "Reschedule accepted",
+  "notifications.types.rescheduleAccepted.message":
+    "Your reschedule request has been accepted.",
+  "notifications.types.rescheduleDeclined.title": "Reschedule declined",
+  "notifications.types.rescheduleDeclined.message":
+    "Your reschedule request was declined. The original booking remains unchanged.",
+  "notifications.types.supportReplyAdmin.title": "Mirëbook support replied",
+  "notifications.types.supportReplyAdmin.message":
+    "Open your support conversation to read the latest reply.",
+  "notifications.types.supportResolved.title": "Support ticket resolved",
+  "notifications.types.supportResolved.message":
+    "Your support conversation has been marked as resolved.",
+  "notifications.types.generic.title": "Mirëbook update",
+  "notifications.types.businessBookingRequest.title": "New booking request",
+  "notifications.types.businessBookingRequest.message":
+    "A customer has sent a booking request that needs review.",
+  "notifications.types.businessBookingConfirmed.title": "Booking confirmed",
+  "notifications.types.businessBookingConfirmed.message":
+    "A booking has been confirmed.",
+  "notifications.types.businessBookingCancelled.title": "Booking cancelled",
+  "notifications.types.businessBookingCancelled.message":
+    "A booking has been cancelled.",
+  "notifications.types.businessRescheduleRequested.title": "Reschedule request",
+  "notifications.types.businessRescheduleRequested.message":
+    "A customer has requested a new appointment time.",
+  "notifications.types.supportReplyUser.title":
+    "User replied to support ticket",
+  "notifications.types.supportReplyUser.message":
+    "Open the support inbox to review the latest reply.",
+  "notifications.types.staffBooking.title": "Staff booking update",
+  "notifications.types.staffBooking.message":
+    "One of your assigned bookings has been updated.",
+  "notifications.types.staffSchedule.title": "Schedule update",
+  "notifications.types.staffSchedule.message":
+    "Your staff schedule or availability has been updated.",
+  "notifications.types.staffProfile.title": "Staff profile update",
+  "notifications.types.staffProfile.message":
+    "Your staff profile or access has been updated.",
 };
