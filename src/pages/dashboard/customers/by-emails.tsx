@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabaseClient'
 import DashboardLayout from '@/components/DashboardLayout'
+import { getAccountCapabilities } from '@/lib/accountCapabilities'
 
 type Business = {
   id: string
@@ -54,14 +55,13 @@ export default function CustomerByEmailPage() {
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single()
+      const capabilities = await getAccountCapabilities(
+        session.user.id,
+        session.user.email,
+      )
 
-      if (!profile || profile.role !== 'business') {
-        router.replace('/explore')
+      if (!capabilities.canUseBusiness) {
+        router.replace(capabilities.defaultRoute)
         return
       }
 

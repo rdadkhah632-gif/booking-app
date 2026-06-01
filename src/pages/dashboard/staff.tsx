@@ -16,6 +16,7 @@ import {
   StaffService,
 } from "@/components/dashboard-staff/dashboardStaffTypes";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 export default function StaffPage() {
   const router = useRouter();
@@ -100,14 +101,13 @@ export default function StaffPage() {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, is_admin")
-        .eq("id", session.user.id)
-        .single();
+      const capabilities = await getAccountCapabilities(
+        session.user.id,
+        session.user.email,
+      );
 
-      if (!profile || profile.role !== "business") {
-        router.replace(profile?.is_admin ? "/admin" : "/account");
+      if (!capabilities.canUseBusiness) {
+        router.replace(capabilities.defaultRoute);
         return;
       }
 
