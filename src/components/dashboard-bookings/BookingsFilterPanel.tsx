@@ -1,19 +1,19 @@
-import { useI18n } from '@/lib/useI18n'
-import { RangeFilter } from './dashboardBookingsTypes'
-import { useBookingStatusLabel } from './BookingStatusBadge'
+import { useI18n } from "@/lib/useI18n";
+import { RangeFilter } from "./dashboardBookingsTypes";
+import { useBookingStatusLabel } from "./BookingStatusBadge";
 
 type Props = {
-  selectedRangeLabel: string
-  rangeFilter: RangeFilter
-  selectedDate: string
-  statusFilter: string
-  searchTerm: string
-  activeFilterSummary: string
-  onUpdateView: (filter: RangeFilter, date?: string) => void
-  onStatusChange: (status: string) => void
-  onSearchChange: (value: string) => void
-  onReset: () => void
-}
+  selectedRangeLabel: string;
+  rangeFilter: RangeFilter;
+  selectedDate: string;
+  statusFilter: string;
+  searchTerm: string;
+  activeFilterSummary: string;
+  onUpdateView: (filter: RangeFilter, date?: string) => void;
+  onStatusChange: (status: string) => void;
+  onSearchChange: (value: string) => void;
+  onReset: () => void;
+};
 
 export default function BookingsFilterPanel({
   selectedRangeLabel,
@@ -25,29 +25,37 @@ export default function BookingsFilterPanel({
   onUpdateView,
   onStatusChange,
   onSearchChange,
-  onReset
+  onReset,
 }: Props) {
-  const { t } = useI18n()
-  const statusLabel = useBookingStatusLabel()
+  const { t } = useI18n();
+  const statusLabel = useBookingStatusLabel();
 
   const rangeButtons: { key: RangeFilter; label: string }[] = [
-    { key: 'today', label: t('dashboardHome.summary.today', 'Today') },
-    { key: 'tomorrow', label: t('dashboardBookings.range.tomorrow', 'Tomorrow') },
-    { key: 'week', label: t('dashboardHome.schedule.title', 'Next 7 days') },
-    { key: 'upcoming', label: t('dashboardBookings.range.upcoming', 'All upcoming') },
-    { key: 'history', label: t('dashboardBookings.summary.history', 'History') }
-  ]
+    { key: "today", label: t("dashboardHome.summary.today", "Today") },
+    {
+      key: "tomorrow",
+      label: t("dashboardBookings.range.tomorrow", "Tomorrow"),
+    },
+    { key: "week", label: t("dashboardHome.schedule.title", "Next 7 days") },
+    {
+      key: "upcoming",
+      label: t("dashboardBookings.range.upcoming", "All upcoming"),
+    },
+    {
+      key: "history",
+      label: t("dashboardBookings.summary.history", "History"),
+    },
+  ];
 
   return (
     <div className="card bookings-filter-card">
       <div className="booking-calendar-header">
         <div>
-          <p className="small muted">{t('dashboardBookings.filters.calendarView', 'Calendar view')}</p>
           <h3>{selectedRangeLabel}</h3>
-          <p className="small muted" style={{ marginTop: '0.35rem' }}>
+          <p className="small muted">
             {t(
-              'dashboardBookings.filters.body',
-              'Start with today, jump to a specific date, or open a filtered Mirëbook view from the dashboard calendar.'
+              "dashboardBookings.filters.body",
+              "Start with today, jump to a specific date, or open a filtered Mirëbook view from the dashboard calendar.",
             )}
           </p>
         </div>
@@ -59,7 +67,9 @@ export default function BookingsFilterPanel({
             key={item.key}
             type="button"
             onClick={() => onUpdateView(item.key)}
-            className={rangeFilter === item.key ? 'btn btn-accent' : 'btn btn-ghost'}
+            className={
+              rangeFilter === item.key ? "btn btn-accent" : "btn btn-ghost"
+            }
           >
             {item.label}
           </button>
@@ -68,50 +78,65 @@ export default function BookingsFilterPanel({
 
       <div className="booking-filter-grid">
         <label className="small muted">
-          {t('dashboardBookings.filters.jumpDate', 'Jump to date')}
+          {t("dashboardBookings.filters.jumpDate", "Jump to date")}
           <input
             className="booking-filter-field"
             type="date"
             value={selectedDate}
-            onChange={(e) => onUpdateView('custom', e.target.value)}
+            onChange={(e) => onUpdateView("custom", e.target.value)}
           />
         </label>
 
         <label className="small muted">
-          {t('dashboardBookings.filters.status', 'Status')}
+          {t("dashboardBookings.filters.status", "Status")}
           <select
             className="booking-filter-field"
             value={statusFilter}
             onChange={(e) => onStatusChange(e.target.value)}
           >
-            <option value="all">{t('dashboardBookings.status.all', 'All statuses')}</option>
-            <option value="pending">{statusLabel('pending')}</option>
-            <option value="confirmed">{t('dashboardBookings.status.confirmed', 'Confirmed')}</option>
-            <option value="completed">{t('dashboardBookings.status.completed', 'Completed')}</option>
-            <option value="cancelled">{t('dashboardBookings.status.cancelled', 'Cancelled')}</option>
+            <option value="all">
+              {t("dashboardBookings.status.all", "All statuses")}
+            </option>
+            <option value="pending">{statusLabel("pending")}</option>
+            <option value="confirmed">
+              {t("dashboardBookings.status.confirmed", "Confirmed")}
+            </option>
+            <option value="completed">
+              {t("dashboardBookings.status.completed", "Completed")}
+            </option>
+            <option value="cancelled">
+              {t("dashboardBookings.status.cancelled", "Cancelled")}
+            </option>
           </select>
         </label>
 
         <label className="small muted">
-          {t('dashboardBookings.filters.searchLabel', 'Search customer/service/staff')}
+          {t(
+            "dashboardBookings.filters.searchLabel",
+            "Search customer/service/staff",
+          )}
           <input
             className="booking-filter-field"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t('dashboardBookings.filters.searchPlaceholder', 'Search bookings')}
+            placeholder={t(
+              "dashboardBookings.filters.searchPlaceholder",
+              "Search bookings",
+            )}
           />
         </label>
       </div>
 
       <div className="booking-active-filter-bar">
         <div>
-          <p className="small muted">{t('dashboardBookings.filters.activeView', 'Active view')}</p>
           <strong>{activeFilterSummary}</strong>
         </div>
 
-        {(statusFilter !== 'all' || searchTerm.trim() || rangeFilter !== 'today') && (
+        {(statusFilter !== "all" ||
+          searchTerm.trim() ||
+          rangeFilter !== "today") && (
           <button type="button" className="btn btn-ghost" onClick={onReset}>
-            {t('dashboardBookings.filters.reset', 'Reset filters')}
+            {t("dashboardBookings.filters.reset", "Reset filters")}
           </button>
         )}
       </div>
@@ -128,6 +153,12 @@ export default function BookingsFilterPanel({
           gap: 1rem;
           align-items: flex-start;
           flex-wrap: wrap;
+        }
+
+        .booking-calendar-header h3,
+        .booking-calendar-header p,
+        .booking-active-filter-bar p {
+          margin-top: 0;
         }
 
         .booking-filter-button-row {
@@ -155,7 +186,7 @@ export default function BookingsFilterPanel({
           align-items: center;
           gap: 1rem;
           flex-wrap: wrap;
-          padding: 0.9rem;
+          padding: 0.85rem;
           border-radius: var(--radius);
           background: var(--surface-2);
           border: 1px solid var(--border);
@@ -184,5 +215,5 @@ export default function BookingsFilterPanel({
         }
       `}</style>
     </div>
-  )
+  );
 }
