@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type StaffMember = {
   id: string;
@@ -112,6 +113,7 @@ export default function StaffAvailabilityPage() {
   const { t } = useI18n();
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
+  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
   const [availability, setAvailability] = useState<StaffAvailability[]>([]);
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,9 +135,22 @@ export default function StaffAvailabilityPage() {
         return;
       }
 
-      const userEmail = session.user.email?.trim().toLowerCase() || "";
+      const capabilities = await getAccountCapabilities(
+        session.user.id,
+        session.user.email,
+      );
 
-      let { data: linkedStaff, error: staffError } = await supabase
+      setHasBusinessWorkspace(capabilities.canUseBusiness);
+
+      if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
+        setStaffProfile(null);
+        setAvailability([]);
+        setUpcomingBookings([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: linkedStaff, error: staffError } = await supabase
         .from("staff_members")
         .select(
           `
@@ -157,60 +172,11 @@ export default function StaffAvailabilityPage() {
           )
         `,
         )
+        .eq("id", capabilities.primaryStaffId)
         .eq("user_id", session.user.id)
-        .limit(1)
         .maybeSingle();
 
       if (staffError) throw staffError;
-
-      if (!linkedStaff && userEmail) {
-        const { data: inviteMatch, error: inviteError } = await supabase
-          .from("staff_members")
-          .select(
-            `
-            id,
-            business_id,
-            user_id,
-            name,
-            role_title,
-            email,
-            phone,
-            image_url,
-            invite_status,
-            permission_role,
-            active,
-            businesses (
-              name,
-              city,
-              category
-            )
-          `,
-          )
-          .eq("email", userEmail)
-          .is("user_id", null)
-          .limit(1)
-          .maybeSingle();
-
-        if (inviteError) throw inviteError;
-
-        if (inviteMatch?.id) {
-          const { error: linkError } = await supabase
-            .from("staff_members")
-            .update({
-              user_id: session.user.id,
-              invite_status: "linked",
-            })
-            .eq("id", inviteMatch.id);
-
-          if (linkError) throw linkError;
-
-          linkedStaff = {
-            ...inviteMatch,
-            user_id: session.user.id,
-            invite_status: "linked",
-          };
-        }
-      }
 
       if (!linkedStaff) {
         setStaffProfile(null);
@@ -380,6 +346,7 @@ export default function StaffAvailabilityPage() {
     setSuccess(null);
 
     const rowsToSave = availability.map((row) => ({
+      id: row.id,
       staff_member_id: staffProfile.id,
       business_id: staffProfile.business_id,
       day_of_week: row.day_of_week,
@@ -482,7 +449,15 @@ export default function StaffAvailabilityPage() {
                     t("staff.fallback.business", "Your business"),
                   )}{" "}
                   ·{" "}
-                  {t("staffAvailability.staffOnly", "Staff-only availability")}
+                  {hasBusinessWorkspace
+                    ? t(
+                        "staffAvailability.ownerStaffAvailability",
+                        "Staff availability linked to your owner account",
+                      )
+                    : t(
+                        "staffAvailability.staffOnly",
+                        "Staff-only availability",
+                      )}
                 </p>
               </div>
 
@@ -490,6 +465,11 @@ export default function StaffAvailabilityPage() {
                 <Link href="/staff/calendar" className="btn btn-ghost">
                   {t("staffCalendar.title", "Calendar view")}
                 </Link>
+                {hasBusinessWorkspace && (
+                  <Link href="/dashboard" className="btn btn-ghost">
+                    {t("staff.actions.businessDashboard", "Business dashboard")}
+                  </Link>
+                )}
                 <button
                   type="button"
                   className="btn btn-accent"

@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type StaffMember = {
   id: string;
@@ -195,6 +196,7 @@ export default function StaffDashboardPage() {
   }
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
+  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [assignedServices, setAssignedServices] = useState<Service[]>([]);
@@ -221,9 +223,23 @@ export default function StaffDashboardPage() {
         return;
       }
 
-      const userEmail = session.user.email?.trim().toLowerCase() || "";
+      const capabilities = await getAccountCapabilities(
+        session.user.id,
+        session.user.email,
+      );
 
-      let { data: linkedStaff, error: linkedStaffError } = await supabase
+      setHasBusinessWorkspace(capabilities.canUseBusiness);
+
+      if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
+        setStaffProfile(null);
+        setBookings([]);
+        setRequests([]);
+        setAssignedServices([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: linkedStaff, error: linkedStaffError } = await supabase
         .from("staff_members")
         .select(
           `
@@ -245,60 +261,11 @@ export default function StaffDashboardPage() {
           )
         `,
         )
+        .eq("id", capabilities.primaryStaffId)
         .eq("user_id", session.user.id)
-        .limit(1)
         .maybeSingle();
 
       if (linkedStaffError) throw linkedStaffError;
-
-      if (!linkedStaff && userEmail) {
-        const { data: inviteMatch, error: inviteMatchError } = await supabase
-          .from("staff_members")
-          .select(
-            `
-            id,
-            business_id,
-            user_id,
-            name,
-            role_title,
-            email,
-            phone,
-            image_url,
-            invite_status,
-            permission_role,
-            active,
-            businesses (
-              name,
-              city,
-              category
-            )
-          `,
-          )
-          .eq("email", userEmail)
-          .is("user_id", null)
-          .limit(1)
-          .maybeSingle();
-
-        if (inviteMatchError) throw inviteMatchError;
-
-        if (inviteMatch?.id) {
-          const { error: linkError } = await supabase
-            .from("staff_members")
-            .update({
-              user_id: session.user.id,
-              invite_status: "linked",
-            })
-            .eq("id", inviteMatch.id);
-
-          if (linkError) throw linkError;
-
-          linkedStaff = {
-            ...inviteMatch,
-            user_id: session.user.id,
-            invite_status: "linked",
-          };
-        }
-      }
 
       if (!linkedStaff) {
         setStaffProfile(null);
@@ -843,7 +810,13 @@ export default function StaffDashboardPage() {
                     {staffProfile.role_title ||
                       staffProfile.permission_role ||
                       t("staff.fallback.member", "Staff member")}{" "}
-                    · {t("staff.workspace.staffOnly", "Staff-only workspace")}
+                    ·{" "}
+                    {hasBusinessWorkspace
+                      ? t(
+                          "staff.workspace.ownerStaffWorkspace",
+                          "Staff workspace linked to your owner account",
+                        )
+                      : t("staff.workspace.staffOnly", "Staff-only workspace")}
                   </p>
                 </div>
               </div>
@@ -855,6 +828,11 @@ export default function StaffDashboardPage() {
                 <Link href="/staff/availability" className="btn btn-ghost">
                   {t("staff.actions.updateAvailability", "Update availability")}
                 </Link>
+                {hasBusinessWorkspace && (
+                  <Link href="/dashboard" className="btn btn-ghost">
+                    {t("staff.actions.businessDashboard", "Business dashboard")}
+                  </Link>
+                )}
               </div>
             </div>
 
