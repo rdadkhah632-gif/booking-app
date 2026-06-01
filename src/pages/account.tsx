@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
 import { Locale } from "@/lib/i18n";
@@ -53,11 +54,6 @@ type RegionInfo = {
   currency: string;
   locale: string;
 };
-
-function roleLabel(role?: string | null) {
-  if (!role) return "Customer";
-  return role.charAt(0).toUpperCase() + role.slice(1);
-}
 
 function detectRegion(): RegionInfo {
   const timezone =
@@ -190,6 +186,11 @@ export default function AccountPage() {
       return;
     }
 
+    const capabilities = await getAccountCapabilities(
+      session.user.id,
+      session.user.email,
+    );
+
     const currentProfile = profileData as Profile;
     const profileLanguage: Locale =
       currentProfile.preferred_language === "sq" ? "sq" : "en";
@@ -198,45 +199,13 @@ export default function AccountPage() {
     setFullName(currentProfile.full_name || "");
     setPhone(currentProfile.phone || "");
     setPreferredLanguage(profileLanguage);
-    setLocale(profileLanguage);
 
-    const { data: businessData } = await supabase
-      .from("businesses")
-      .select(
-        "id, name, published, subscription_status, subscription_plan, trial_ends_at",
-      )
-      .eq("user_id", session.user.id)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    const loadedBusinesses = (businessData || []) as BusinessRow[];
+    const loadedBusinesses = capabilities.ownedBusinesses as BusinessRow[];
     setOwnedBusinesses(loadedBusinesses);
-    setPrimaryBusinessId(loadedBusinesses[0]?.id || null);
-
-    const { data: staffData } = await supabase
-      .from("staff_members")
-      .select(
-        "id, business_id, name, email, role_title, permission_role, invite_status",
-      )
-      .eq("user_id", session.user.id)
-      .limit(1)
-      .maybeSingle();
+    setPrimaryBusinessId(capabilities.primaryBusinessId);
 
     let resolvedStaffProfile: StaffProfile | null =
-      staffData as StaffProfile | null;
-
-    if (resolvedStaffProfile?.business_id) {
-      const { data: staffBusiness } = await supabase
-        .from("businesses")
-        .select("id, name")
-        .eq("id", resolvedStaffProfile.business_id)
-        .maybeSingle();
-
-      resolvedStaffProfile = {
-        ...resolvedStaffProfile,
-        business_name: staffBusiness?.name || null,
-      };
-    }
+      (capabilities.linkedStaffProfiles[0] as StaffProfile | undefined) || null;
 
     setStaffProfile(resolvedStaffProfile);
     await loadStats(
@@ -342,16 +311,16 @@ export default function AccountPage() {
       })
       .eq("id", profile.id);
 
-    setSaving(false);
-    setLocale(preferredLanguage);
-
     if (updateError) {
+      setSaving(false);
       setError(updateError.message);
       return;
     }
 
+    await setLocale(preferredLanguage);
     setMessage(t("account.saveSuccess", "Mirëbook account details updated."));
     await loadProfile();
+    setSaving(false);
   }
 
   async function sendPasswordReset() {
@@ -430,11 +399,10 @@ export default function AccountPage() {
           <div className="account-page-shell">
             <div className="account-header">
               <div>
-                <p className="small muted">{t("account.kicker", "Account")}</p>
                 <h1 className="page-title">
                   {t("account.pageTitle", "My account")}
                 </h1>
-                <p className="page-sub" style={{ marginTop: "0.5rem" }}>
+                <p className="page-sub account-header-subtitle">
                   {t(
                     "account.pageSubtitle",
                     "Manage your login details, language, security and account-specific Mirëbook settings.",
@@ -468,16 +436,9 @@ export default function AccountPage() {
               onSubmit={saveProfile}
               className="card account-form-card account-primary-card"
             >
-              <div>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: 0,
-                  }}
-                >
-                  {t("account.personalDetails", "Personal details")}
-                </h2>
-                <p className="small muted" style={{ marginTop: "0.4rem" }}>
+              <div className="account-card-heading">
+                <h2>{t("account.personalDetails", "Personal details")}</h2>
+                <p className="small muted">
                   {ownsBusiness
                     ? t(
                         "account.accountOnlyBusinessBody",
@@ -507,7 +468,6 @@ export default function AccountPage() {
                       "account.fullNamePlaceholder",
                       "Your full name",
                     )}
-                    style={{ width: "100%", marginTop: "0.4rem" }}
                   />
                 </div>
 
@@ -519,7 +479,6 @@ export default function AccountPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder={t("account.phonePlaceholder", "Phone number")}
-                    style={{ width: "100%", marginTop: "0.4rem" }}
                   />
                 </div>
 
@@ -527,12 +486,8 @@ export default function AccountPage() {
                   <label className="small muted">
                     {t("account.email", "Email")}
                   </label>
-                  <input
-                    value={profile.email}
-                    disabled
-                    style={{ width: "100%", marginTop: "0.4rem" }}
-                  />
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                  <input value={profile.email} disabled />
+                  <p className="small muted account-field-help">
                     {t(
                       "account.emailChangeBody",
                       "Email changes require confirmation. Use password reset or contact support if this email is wrong.",
@@ -546,12 +501,9 @@ export default function AccountPage() {
                   </label>
                   <select
                     value={preferredLanguage}
-                    onChange={(e) => {
-                      const nextLanguage = e.target.value as Locale;
-                      setPreferredLanguage(nextLanguage);
-                      setLocale(nextLanguage);
-                    }}
-                    style={{ width: "100%", marginTop: "0.4rem" }}
+                    onChange={(e) =>
+                      setPreferredLanguage(e.target.value as Locale)
+                    }
                   >
                     <option value="en">
                       {t("language.english", "English")}
@@ -560,7 +512,7 @@ export default function AccountPage() {
                       {t("language.albanian", "Albanian")}
                     </option>
                   </select>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                  <p className="small muted account-field-help">
                     {t(
                       "account.languageBody",
                       "This language is saved to your account and used across translated Mirëbook pages when you sign in.",
@@ -572,7 +524,7 @@ export default function AccountPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="btn btn-accent"
+                className="btn btn-accent account-save-button"
               >
                 {saving
                   ? t("account.saving", "Saving...")
@@ -582,12 +534,12 @@ export default function AccountPage() {
 
             <div className="grid-2 account-settings-grid">
               <div className="card account-security-card">
-                <div>
+                <div className="account-card-heading">
                   <p className="small muted">
                     {t("account.security.kicker", "Security")}
                   </p>
                   <h3>{t("account.security.title", "Password and login")}</h3>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                  <p className="small muted">
                     {t(
                       "account.security.body",
                       "Send a password reset email to your login address. This is safer than changing passwords directly inside the account page.",
@@ -610,12 +562,12 @@ export default function AccountPage() {
               </div>
 
               <div className="card account-region-card">
-                <div>
+                <div className="account-card-heading">
                   <p className="small muted">
                     {t("account.region.kicker", "Detected region")}
                   </p>
                   <h3>{regionInfo.country}</h3>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                  <p className="small muted">
                     {t(
                       "account.region.body",
                       "Mirëbook uses your browser region as a smart default for timezone, currency and future localisation features.",
@@ -631,17 +583,14 @@ export default function AccountPage() {
             </div>
 
             {ownsBusiness && (
-              <div
-                className="card"
-                style={{ borderColor: "rgba(255,107,53,0.25)" }}
-              >
+              <div className="card account-business-settings-card">
                 <h3>
                   {t(
                     "account.businessSettingsTitle",
                     "Need to change your business setup?",
                   )}
                 </h3>
-                <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                <p className="small muted">
                   {t(
                     "account.businessSettingsBody",
                     "Use Business settings for booking rules, approval mode, policies, billing, services, staff and public business details.",
@@ -650,7 +599,7 @@ export default function AccountPage() {
                 <Link
                   href="/dashboard/settings"
                   className="btn btn-ghost"
-                  style={{ marginTop: "0.75rem" }}
+                  style={{ marginTop: 0 }}
                 >
                   {t("dashboardSettings.pageTitle", "Business settings")}
                 </Link>
@@ -660,16 +609,11 @@ export default function AccountPage() {
             {isAdmin && (
               <div className="card operator-account-card">
                 <div className="operator-account-row">
-                  <div>
-                    <h2
-                      style={{
-                        fontFamily: "var(--font-display)",
-                        marginTop: 0,
-                      }}
-                    >
+                  <div className="account-card-heading">
+                    <h2>
                       {t("account.operator.title", "Mirëbook operator tools")}
                     </h2>
-                    <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                    <p className="small muted">
                       {t(
                         "account.operator.body",
                         "Use this for business onboarding, trial access, pricing, account lookup and platform notifications. Customer and business dashboards are separate.",
@@ -850,16 +794,9 @@ export default function AccountPage() {
             </div>
 
             <div className="card support-card">
-              <div>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: 0,
-                  }}
-                >
-                  {t("nav.support", "Support")}
-                </h2>
-                <p className="small muted" style={{ marginTop: "0.4rem" }}>
+              <div className="account-card-heading">
+                <h2>{t("nav.support", "Support")}</h2>
+                <p className="small muted">
                   {t(
                     "account.supportBody",
                     "Customer, business and staff support routes are separated. Your saved language preference will be used across translated Mirëbook pages.",
@@ -898,6 +835,25 @@ export default function AccountPage() {
           margin: 0 auto;
           display: grid;
           gap: 1.1rem;
+        }
+
+        .account-header-subtitle {
+          margin-top: 0.45rem;
+        }
+
+        .account-card-heading {
+          display: grid;
+          gap: 0.45rem;
+        }
+
+        .account-card-heading h2,
+        .account-card-heading h3,
+        .account-card-heading p {
+          margin-top: 0;
+        }
+
+        .account-card-heading h2 {
+          font-family: var(--font-display);
         }
 
         .account-header,
@@ -975,7 +931,7 @@ export default function AccountPage() {
 
         .account-form-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.95rem;
         }
 
         .account-primary-card {
@@ -984,9 +940,34 @@ export default function AccountPage() {
 
         .account-form-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 1rem;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.85rem 1rem;
           align-items: start;
+        }
+
+        .account-form-grid input,
+        .account-form-grid select {
+          width: 100%;
+          margin-top: 0.35rem;
+        }
+
+        .account-field-help {
+          margin-top: 0.3rem;
+        }
+
+        .account-save-button {
+          justify-self: flex-start;
+        }
+
+        .account-business-settings-card {
+          display: grid;
+          gap: 0.55rem;
+          border-color: rgba(255, 107, 53, 0.25);
+        }
+
+        .account-business-settings-card h3,
+        .account-business-settings-card p {
+          margin-top: 0;
         }
 
         .support-card {
@@ -1035,6 +1016,11 @@ export default function AccountPage() {
 
           .account-form-grid {
             grid-template-columns: 1fr;
+          }
+
+          .account-save-button {
+            width: 100%;
+            justify-content: center;
           }
 
           .language-pill {
