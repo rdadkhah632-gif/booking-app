@@ -1,464 +1,576 @@
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
-import { useRouter } from 'next/router'
-import DashboardLayout from '@/components/DashboardLayout'
-import { uploadMirebookImage } from '@/lib/imageUpload'
-import ServicesSetupHero from '@/components/dashboard-services/ServicesSetupHero'
-import CreateServiceCard from '@/components/dashboard-services/CreateServiceCard'
-import ServiceCard from '@/components/dashboard-services/ServiceCard'
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/router";
+import DashboardLayout from "@/components/DashboardLayout";
+import { uploadMirebookImage } from "@/lib/imageUpload";
+import ServicesSetupHero from "@/components/dashboard-services/ServicesSetupHero";
+import CreateServiceCard from "@/components/dashboard-services/CreateServiceCard";
+import ServiceCard from "@/components/dashboard-services/ServiceCard";
 import {
   Business,
   Service,
   StaffMember,
-  StaffService
-} from '@/components/dashboard-services/dashboardServicesTypes'
-import { useI18n } from '@/lib/useI18n'
+  StaffService,
+} from "@/components/dashboard-services/dashboardServicesTypes";
+import { useI18n } from "@/lib/useI18n";
 
 export default function Services() {
-  const router = useRouter()
-  const { t } = useI18n()
-  const { businessId } = router.query
+  const router = useRouter();
+  const { t } = useI18n();
+  const { businessId } = router.query;
 
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [business, setBusiness] = useState<Business | null>(null)
-  const [services, setServices] = useState<Service[]>([])
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
-  const [staffServices, setStaffServices] = useState<StaffService[]>([])
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
+  const [staffServices, setStaffServices] = useState<StaffService[]>([]);
 
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const [duration, setDuration] = useState(30)
-  const [price, setPrice] = useState(0)
-  const [formExpanded, setFormExpanded] = useState(true)
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [duration, setDuration] = useState(30);
+  const [price, setPrice] = useState(0);
+  const [formExpanded, setFormExpanded] = useState(true);
 
-  const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
-  const [savingServiceId, setSavingServiceId] = useState<string | null>(null)
-  const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [pageLoading, setPageLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [savingServiceId, setSavingServiceId] = useState<string | null>(null);
+  const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
-      .from('businesses')
-      .select('id, name, published')
-      .eq('user_id', sessionUserId)
-      .order('created_at', { ascending: false })
+      .from("businesses")
+      .select("id, name, published")
+      .eq("user_id", sessionUserId)
+      .order("created_at", { ascending: false });
 
-    if (businessesError) throw businessesError
+    if (businessesError) throw businessesError;
 
-    const owned = ownedBusinesses || []
-    setBusinesses(owned)
+    const owned = ownedBusinesses || [];
+    setBusinesses(owned);
 
-    if (owned.length === 0) return null
+    if (owned.length === 0) return null;
 
     if (businessId && !Array.isArray(businessId)) {
-      const selected = owned.find((b) => b.id === businessId)
+      const selected = owned.find((b) => b.id === businessId);
 
       if (!selected) {
-        throw new Error(t('dashboardServices.error.noAccess', 'You do not have access to this business.'))
+        throw new Error(
+          t(
+            "dashboardServices.error.noAccess",
+            "You do not have access to this business.",
+          ),
+        );
       }
 
-      return selected
+      return selected;
     }
 
-    return owned[0]
+    return owned[0];
   }
 
   async function loadData() {
-    setError(null)
-    setPageLoading(true)
+    setError(null);
+    setPageLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace('/login')
-        return
+        router.replace("/login");
+        return;
       }
-
-      
-
-      const selectedBusiness = await getBusinessContext(session.user.id)
+      const selectedBusiness = await getBusinessContext(session.user.id);
 
       if (!selectedBusiness) {
-        setBusiness(null)
-        setServices([])
-        setStaffMembers([])
-        setStaffServices([])
-        setPageLoading(false)
-        return
+        setBusiness(null);
+        setServices([]);
+        setStaffMembers([]);
+        setStaffServices([]);
+        setPageLoading(false);
+        return;
       }
 
-      setBusiness(selectedBusiness)
+      setBusiness(selectedBusiness);
 
       const { data: serviceData, error: serviceError } = await supabase
-        .from('services')
-        .select('*')
-        .eq('business_id', selectedBusiness.id)
-        .order('created_at', { ascending: false })
+        .from("services")
+        .select("*")
+        .eq("business_id", selectedBusiness.id)
+        .order("created_at", { ascending: false });
 
-      if (serviceError) throw serviceError
+      if (serviceError) throw serviceError;
 
-      setServices(serviceData || [])
+      setServices(serviceData || []);
 
       const { data: staffData, error: staffError } = await supabase
-        .from('staff_members')
-        .select('id, business_id, name, role_title, active')
-        .eq('business_id', selectedBusiness.id)
-        .order('created_at', { ascending: false })
+        .from("staff_members")
+        .select("id, business_id, name, role_title, active")
+        .eq("business_id", selectedBusiness.id)
+        .order("created_at", { ascending: false });
 
-      if (staffError) throw staffError
+      if (staffError) throw staffError;
 
-      setStaffMembers(staffData || [])
+      setStaffMembers(staffData || []);
 
-      const staffIds = (staffData || []).map((staff) => staff.id)
+      const staffIds = (staffData || []).map((staff) => staff.id);
 
       if (staffIds.length > 0) {
-        const { data: staffServiceData, error: staffServiceError } = await supabase
-          .from('staff_services')
-          .select('staff_member_id, service_id')
-          .in('staff_member_id', staffIds)
+        const { data: staffServiceData, error: staffServiceError } =
+          await supabase
+            .from("staff_services")
+            .select("staff_member_id, service_id")
+            .in("staff_member_id", staffIds);
 
-        if (staffServiceError) throw staffServiceError
+        if (staffServiceError) throw staffServiceError;
 
-        setStaffServices(staffServiceData || [])
+        setStaffServices(staffServiceData || []);
       } else {
-        setStaffServices([])
+        setStaffServices([]);
       }
 
-      setPageLoading(false)
+      setPageLoading(false);
     } catch (err: any) {
-      setError(err.message || t('dashboardServices.error.load', 'Could not load services.'))
-      setPageLoading(false)
+      setError(
+        err.message ||
+          t("dashboardServices.error.load", "Could not load services."),
+      );
+      setPageLoading(false);
     }
   }
 
   useEffect(() => {
-    if (!router.isReady) return
-    loadData()
-  }, [router.isReady, businessId])
-
+    if (!router.isReady) return;
+    loadData();
+  }, [router.isReady, businessId]);
 
   function assignedStaffForService(serviceId: string) {
     return staffMembers.filter((staff) =>
-      staffServices.some((link) => link.service_id === serviceId && link.staff_member_id === staff.id)
-    )
+      staffServices.some(
+        (link) =>
+          link.service_id === serviceId && link.staff_member_id === staff.id,
+      ),
+    );
   }
 
   function resetForm() {
-    setName('')
-    setDescription('')
-    setImageUrl('')
-    setImageFile(null)
-    setImagePreviewUrl('')
-    setDuration(30)
-    setPrice(0)
+    setName("");
+    setDescription("");
+    setImageUrl("");
+    setImageFile(null);
+    setImagePreviewUrl("");
+    setDuration(30);
+    setPrice(0);
   }
 
   function handleCreateImageChange(file: File | null) {
-    setError(null)
-    setImageFile(file)
+    setError(null);
+    setImageFile(file);
 
     if (!file) {
-      setImagePreviewUrl('')
-      return
+      setImagePreviewUrl("");
+      return;
     }
 
-    setImagePreviewUrl(URL.createObjectURL(file))
+    setImagePreviewUrl(URL.createObjectURL(file));
   }
 
   async function uploadCreateImage() {
     if (!imageFile) {
-      setError(t('dashboardServices.image.chooseFirst', 'Choose an image file first.'))
-      return null
+      setError(
+        t("dashboardServices.image.chooseFirst", "Choose an image file first."),
+      );
+      return null;
     }
 
-    setUploadingImage(true)
-    setError(null)
+    setUploadingImage(true);
+    setError(null);
 
     try {
       const uploaded = await uploadMirebookImage({
         file: imageFile,
-        folder: 'services',
-        recordId: business?.id || 'new-service'
-      })
+        folder: "services",
+        recordId: business?.id || "new-service",
+      });
 
-      setImageUrl(uploaded.publicUrl)
-      setImageFile(null)
-      setImagePreviewUrl(uploaded.publicUrl)
-      setSuccess(t('dashboardServices.image.uploaded', 'Service image uploaded.'))
-      return uploaded.publicUrl
+      setImageUrl(uploaded.publicUrl);
+      setImageFile(null);
+      setImagePreviewUrl(uploaded.publicUrl);
+      setSuccess(
+        t("dashboardServices.image.uploaded", "Service image uploaded."),
+      );
+      return uploaded.publicUrl;
     } catch (err: any) {
-      setError(err.message || t('dashboardServices.image.uploadError', 'Could not upload image.'))
-      return null
+      setError(
+        err.message ||
+          t("dashboardServices.image.uploadError", "Could not upload image."),
+      );
+      return null;
     } finally {
-      setUploadingImage(false)
+      setUploadingImage(false);
     }
   }
 
   async function uploadServiceImage(service: Service, file: File | null) {
-    if (!file) return
+    if (!file) return;
 
-    setUploadingServiceId(service.id)
-    setError(null)
-    setSuccess(null)
+    setUploadingServiceId(service.id);
+    setError(null);
+    setSuccess(null);
 
     try {
       const uploaded = await uploadMirebookImage({
         file,
-        folder: 'services',
-        recordId: service.id
-      })
+        folder: "services",
+        recordId: service.id,
+      });
 
       const { error: updateError } = await supabase
-        .from('services')
+        .from("services")
         .update({ image_url: uploaded.publicUrl })
-        .eq('id', service.id)
+        .eq("id", service.id);
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      updateLocalService(service.id, 'image_url', uploaded.publicUrl)
-      setSuccess(`${service.name} ${t('dashboardServices.image.uploadedLower', 'image uploaded.')}`)
-      await loadData()
+      updateLocalService(service.id, "image_url", uploaded.publicUrl);
+      setSuccess(
+        `${service.name} ${t("dashboardServices.image.uploadedLower", "image uploaded.")}`,
+      );
+      await loadData();
     } catch (err: any) {
-      setError(err.message || t('dashboardServices.image.serviceUploadError', 'Could not upload service image.'))
+      setError(
+        err.message ||
+          t(
+            "dashboardServices.image.serviceUploadError",
+            "Could not upload service image.",
+          ),
+      );
     } finally {
-      setUploadingServiceId(null)
+      setUploadingServiceId(null);
     }
   }
 
   async function removeServiceImage(service: Service) {
-    const confirmed = confirm(t('dashboardServices.image.confirmRemove', 'Remove this service image from the public booking page?'))
-    if (!confirmed) return
+    const confirmed = confirm(
+      t(
+        "dashboardServices.image.confirmRemove",
+        "Remove this service image from the public booking page?",
+      ),
+    );
+    if (!confirmed) return;
 
-    setUploadingServiceId(service.id)
-    setError(null)
-    setSuccess(null)
+    setUploadingServiceId(service.id);
+    setError(null);
+    setSuccess(null);
 
     const { error } = await supabase
-      .from('services')
+      .from("services")
       .update({ image_url: null })
-      .eq('id', service.id)
+      .eq("id", service.id);
 
-    setUploadingServiceId(null)
+    setUploadingServiceId(null);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    updateLocalService(service.id, 'image_url', '')
-    setSuccess(`${service.name} ${t('dashboardServices.image.removedLower', 'image removed.')}`)
-    await loadData()
+    updateLocalService(service.id, "image_url", "");
+    setSuccess(
+      `${service.name} ${t("dashboardServices.image.removedLower", "image removed.")}`,
+    );
+    await loadData();
   }
 
   async function addService(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!business) {
-      setError(t('dashboardServices.error.chooseBusiness', 'Choose a business first.'))
-      return
+      setError(
+        t("dashboardServices.error.chooseBusiness", "Choose a business first."),
+      );
+      return;
     }
 
     if (!name.trim()) {
-      setError(t('dashboardServices.error.nameRequired', 'Service name is required.'))
-      return
+      setError(
+        t("dashboardServices.error.nameRequired", "Service name is required."),
+      );
+      return;
     }
 
     if (duration < 5) {
-      setError(t('dashboardServices.error.durationMin', 'Service duration must be at least 5 minutes.'))
-      return
+      setError(
+        t(
+          "dashboardServices.error.durationMin",
+          "Service duration must be at least 5 minutes.",
+        ),
+      );
+      return;
     }
 
-    setLoading(true)
-    setError(null)
-    setSuccess(null)
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-    let finalImageUrl = imageUrl.trim() || null
+    let finalImageUrl = imageUrl.trim() || null;
 
     if (imageFile) {
-      const uploadedUrl = await uploadCreateImage()
+      const uploadedUrl = await uploadCreateImage();
       if (!uploadedUrl) {
-        setLoading(false)
-        return
+        setLoading(false);
+        return;
       }
-      finalImageUrl = uploadedUrl
+      finalImageUrl = uploadedUrl;
     }
 
-    const { error } = await supabase
-      .from('services')
-      .insert({
-        business_id: business.id,
-        name: name.trim(),
-        description: description.trim() || null,
-        image_url: finalImageUrl,
-        duration_minutes: duration,
-        price,
-        active: true
-      })
+    const { error } = await supabase.from("services").insert({
+      business_id: business.id,
+      name: name.trim(),
+      description: description.trim() || null,
+      image_url: finalImageUrl,
+      duration_minutes: duration,
+      price,
+      active: true,
+    });
 
     if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
+      setError(error.message);
+      setLoading(false);
+      return;
     }
 
-    resetForm()
-    setFormExpanded(false)
-    setSuccess(t('dashboardServices.create.success', 'Service added. Assign staff to this service so customers can book it on Mirëbook.'))
+    resetForm();
+    setFormExpanded(false);
+    setSuccess(
+      t(
+        "dashboardServices.create.success",
+        "Service added. Assign staff to this service so customers can book it on Mirëbook.",
+      ),
+    );
 
-    await loadData()
-    setLoading(false)
+    await loadData();
+    setLoading(false);
   }
 
-  function updateLocalService(id: string, field: keyof Service, value: string | number | boolean) {
+  function updateLocalService(
+    id: string,
+    field: keyof Service,
+    value: string | number | boolean,
+  ) {
     setServices((prev) =>
       prev.map((service) =>
-        service.id === id ? { ...service, [field]: value } : service
-      )
-    )
+        service.id === id ? { ...service, [field]: value } : service,
+      ),
+    );
   }
 
   async function saveService(service: Service) {
     if (!service.name.trim()) {
-      setError(t('dashboardServices.error.nameRequired', 'Service name is required.'))
-      return
+      setError(
+        t("dashboardServices.error.nameRequired", "Service name is required."),
+      );
+      return;
     }
 
     if (Number(service.duration_minutes) < 5) {
-      setError(t('dashboardServices.error.durationMin', 'Service duration must be at least 5 minutes.'))
-      return
+      setError(
+        t(
+          "dashboardServices.error.durationMin",
+          "Service duration must be at least 5 minutes.",
+        ),
+      );
+      return;
     }
 
-    setSavingServiceId(service.id)
-    setError(null)
-    setSuccess(null)
+    setSavingServiceId(service.id);
+    setError(null);
+    setSuccess(null);
 
     const { error } = await supabase
-      .from('services')
+      .from("services")
       .update({
         name: service.name.trim(),
         description: service.description?.trim() || null,
         image_url: service.image_url?.trim() || null,
         duration_minutes: Number(service.duration_minutes),
         price: Number(service.price),
-        active: service.active
+        active: service.active,
       })
-      .eq('id', service.id)
+      .eq("id", service.id);
 
-    setSavingServiceId(null)
+    setSavingServiceId(null);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    setEditingServiceId(null)
-    setSuccess(`${service.name} ${t('dashboardServices.save.savedLower', 'saved.')}`)
-    await loadData()
+    setEditingServiceId(null);
+    setSuccess(
+      `${service.name} ${t("dashboardServices.save.savedLower", "saved.")}`,
+    );
+    await loadData();
   }
 
   async function toggleService(service: Service) {
-    setError(null)
-    setSuccess(null)
+    setError(null);
+    setSuccess(null);
 
-    const assignedStaff = assignedStaffForService(service.id)
+    const assignedStaff = assignedStaffForService(service.id);
 
     if (!service.active && assignedStaff.length === 0) {
-      const confirmed = confirm(t('dashboardServices.toggle.confirmNoStaff', 'This service has no staff assigned yet. Customers will not be able to book it properly until staff are assigned. Show it anyway?'))
-      if (!confirmed) return
+      const confirmed = confirm(
+        t(
+          "dashboardServices.toggle.confirmNoStaff",
+          "This service has no staff assigned yet. Customers will not be able to book it properly until staff are assigned. Show it anyway?",
+        ),
+      );
+      if (!confirmed) return;
     }
 
     const { error } = await supabase
-      .from('services')
+      .from("services")
       .update({ active: !service.active })
-      .eq('id', service.id)
+      .eq("id", service.id);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    setSuccess(!service.active ? `${service.name} ${t('dashboardServices.toggle.visibleSuccess', 'is now visible to customers.')}` : `${service.name} ${t('dashboardServices.toggle.hiddenSuccess', 'is now hidden from customers.')}`)
-    await loadData()
+    setSuccess(
+      !service.active
+        ? `${service.name} ${t("dashboardServices.toggle.visibleSuccess", "is now visible to customers.")}`
+        : `${service.name} ${t("dashboardServices.toggle.hiddenSuccess", "is now hidden from customers.")}`,
+    );
+    await loadData();
   }
 
   function serviceBookable(service: Service) {
-    return service.active && assignedStaffForService(service.id).length > 0
+    return service.active && assignedStaffForService(service.id).length > 0;
   }
   function serviceReadinessText(service: Service) {
-    const assignedStaff = assignedStaffForService(service.id)
+    const assignedStaff = assignedStaffForService(service.id);
 
     if (!service.active && assignedStaff.length === 0) {
-      return t('dashboardServices.readiness.hiddenNoStaff', 'Hidden and needs staff assignment before customers can book.')
+      return t(
+        "dashboardServices.readiness.hiddenNoStaff",
+        "Hidden and needs staff assignment before customers can book.",
+      );
     }
 
     if (!service.active) {
-      return t('dashboardServices.readiness.hidden', 'Hidden from customers. Show it when you are ready to take bookings.')
+      return t(
+        "dashboardServices.readiness.hidden",
+        "Hidden from customers. Show it when you are ready to take bookings.",
+      );
     }
 
     if (assignedStaff.length === 0) {
-      return t('dashboardServices.readiness.visibleNoStaff', 'Visible but not bookable yet because no staff are assigned.')
+      return t(
+        "dashboardServices.readiness.visibleNoStaff",
+        "Visible but not bookable yet because no staff are assigned.",
+      );
     }
 
-    return t('dashboardServices.readiness.ready', 'Ready for customers to book through Mirëbook.')
+    return t(
+      "dashboardServices.readiness.ready",
+      "Ready for customers to book through Mirëbook.",
+    );
   }
-
 
   function durationOptions() {
-    return [15, 30, 45, 60, 75, 90, 120]
+    return [15, 30, 45, 60, 75, 90, 120];
   }
-
-
   return (
     <DashboardLayout
-      title={t('dashboardServices.pageTitle', 'Services')}
-      subtitle={business ? `${t('dashboardServices.pageSubtitleSelected', 'Create and manage the services customers can book at')} ${business.name}.` : t('dashboardServices.pageSubtitle', 'Create your business first, then add services customers can book.')}
+      title={t("dashboardServices.pageTitle", "Services")}
+      subtitle={
+        business
+          ? `${t("dashboardServices.pageSubtitleSelected", "Create and manage the services customers can book at")} ${business.name}.`
+          : t(
+              "dashboardServices.pageSubtitle",
+              "Create your business first, then add services customers can book.",
+            )
+      }
     >
       {pageLoading && (
         <div className="card">
-          <p className="muted">{t('dashboardServices.loading', 'Loading Mirëbook services...')}</p>
+          <p className="muted">
+            {t("dashboardServices.loading", "Loading Mirëbook services...")}
+          </p>
         </div>
       )}
 
       {success && (
-        <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
-          <p style={{ color: 'var(--success)' }}>{success}</p>
+        <div
+          className="card"
+          style={{
+            borderColor: "rgba(45,212,191,0.35)",
+            background: "rgba(45,212,191,0.06)",
+            marginBottom: "1rem",
+          }}
+        >
+          <p style={{ color: "var(--success)" }}>{success}</p>
         </div>
       )}
 
       {error && (
-        <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
-          <p style={{ color: 'var(--danger)' }}>{error}</p>
+        <div
+          className="card"
+          style={{ borderColor: "rgba(255,77,109,0.35)", marginBottom: "1rem" }}
+        >
+          <p style={{ color: "var(--danger)" }}>{error}</p>
         </div>
       )}
 
       {!pageLoading && businesses.length === 0 && (
         <div className="card">
-          <h3>{t('dashboardServices.noBusiness.title', 'No business found')}</h3>
-          <p className="muted" style={{ marginTop: '0.5rem' }}>
-            {t('dashboardServices.noBusiness.body', 'Create a business profile first, then add Mirëbook services customers can book.')}
+          <h3>
+            {t("dashboardServices.noBusiness.title", "No business found")}
+          </h3>
+          <p className="muted">
+            {t(
+              "dashboardServices.noBusiness.body",
+              "Create a business profile first, then add Mirëbook services customers can book.",
+            )}
           </p>
-          <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-            {t('dashboardServices.noBusiness.cta', 'Create business')}
+          <Link
+            href="/dashboard/businesses"
+            className="btn btn-accent"
+            style={{ marginTop: "0.75rem" }}
+          >
+            {t("dashboardServices.noBusiness.cta", "Create business")}
           </Link>
         </div>
       )}
-
-
       {!pageLoading && business && (
         <>
           {businesses.length > 1 && (
-            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+            <div
+              className="card"
+              style={{
+                borderColor: "rgba(255,190,11,0.28)",
+                marginBottom: "1rem",
+              }}
+            >
               <p className="small muted">
-                {t('dashboardServices.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+                {t(
+                  "dashboardServices.multiBusinessNotice",
+                  "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
+                )}
               </p>
             </div>
           )}
@@ -484,28 +596,35 @@ export default function Services() {
             handleCreateImageChange={handleCreateImageChange}
             uploadCreateImage={uploadCreateImage}
             clearCreateImage={() => {
-              setImageUrl('')
-              setImageFile(null)
-              setImagePreviewUrl('')
+              setImageUrl("");
+              setImageFile(null);
+              setImagePreviewUrl("");
             }}
             resetForm={resetForm}
             addService={addService}
           />
 
           <div className="services-section-heading">
-            <p className="small muted">{t('dashboardServices.list.kicker', 'Service list')}</p>
-            <h2>{t('dashboardServices.list.title', 'Your bookable services')}</h2>
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardServices.list.body', 'Services become bookable when they are active and assigned to at least one staff member.')}
+            <h2>
+              {t("dashboardServices.list.title", "Your bookable services")}
+            </h2>
+            <p className="small muted">
+              {t(
+                "dashboardServices.list.body",
+                "Services become bookable when they are active and assigned to at least one staff member.",
+              )}
             </p>
           </div>
 
           <div className="services-list-grid">
             {services.length === 0 && (
               <div className="card">
-                <h3>{t('dashboardServices.empty.title', 'No services yet')}</h3>
-                <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  {t('dashboardServices.empty.body', 'Add your first service above. Then assign staff to it from the Staff page so customers can book it.')}
+                <h3>{t("dashboardServices.empty.title", "No services yet")}</h3>
+                <p className="muted">
+                  {t(
+                    "dashboardServices.empty.body",
+                    "Add your first service above. Then assign staff to it from the Staff page so customers can book it.",
+                  )}
                 </p>
               </div>
             )}
@@ -536,12 +655,18 @@ export default function Services() {
       )}
       <style jsx>{`
         .services-section-heading {
-          margin: 1.25rem 0 0.75rem;
+          display: grid;
+          gap: 0.45rem;
+          margin: 1.1rem 0 0.75rem;
         }
 
         .services-section-heading h2 {
           font-family: var(--font-display);
-          margin-top: 0.25rem;
+          margin-top: 0;
+        }
+
+        .services-section-heading p {
+          margin-top: 0;
         }
         .services-list-grid {
           display: grid;
@@ -549,5 +674,5 @@ export default function Services() {
         }
       `}</style>
     </DashboardLayout>
-  )
+  );
 }
