@@ -15,14 +15,8 @@ type Props = {
   ) => string;
 };
 
-export default function DashboardSummaryCards({
-  todayCount,
-  pendingActionCount,
-  pendingBookingsCount,
-  pendingRescheduleCount,
-  analytics,
-  bookingsLinkForView,
-}: Props) {
+export default function DashboardSummaryCards(props: Props) {
+  const { todayCount, analytics, bookingsLinkForView } = props;
   const { t } = useI18n();
 
   return (
@@ -37,37 +31,6 @@ export default function DashboardSummaryCards({
           {t("dashboardHome.summary.todayBody", "Confirmed bookings today")}
         </p>
       </Link>
-
-      <div
-        className="card dashboard-summary-card"
-        style={{
-          borderColor:
-            pendingActionCount > 0 ? "rgba(255,107,53,0.35)" : "var(--border)",
-        }}
-      >
-        <h3>{pendingActionCount}</h3>
-        <strong>
-          {t("dashboardHome.summary.actionRequired", "Action required")}
-        </strong>
-        <p className="muted small">
-          {pendingBookingsCount}{" "}
-          {t("dashboardHome.summary.bookingApproval", "booking approval")}
-          {pendingBookingsCount === 1 ? "" : "s"} · {pendingRescheduleCount}{" "}
-          {t("dashboardHome.summary.rescheduleRequest", "reschedule request")}
-          {pendingRescheduleCount === 1 ? "" : "s"}
-        </p>
-
-        <div className="dashboard-summary-actions">
-          <Link
-            href="/dashboard/notifications"
-            className={
-              pendingActionCount > 0 ? "btn btn-accent" : "btn btn-ghost"
-            }
-          >
-            {t("account.needsAction", "Needs action")}
-          </Link>
-        </div>
-      </div>
 
       <Link href="/dashboard/analytics" className="card dashboard-summary-card">
         <h3>{analytics.recentBookings.length}</h3>
@@ -115,13 +78,6 @@ export default function DashboardSummaryCards({
         .dashboard-summary-card h3,
         .dashboard-summary-card p {
           margin-top: 0;
-        }
-
-        .dashboard-summary-actions {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-          margin-top: 0.35rem;
         }
       `}</style>
     </div>

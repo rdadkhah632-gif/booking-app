@@ -12,31 +12,27 @@ type Props = {
 
 export default function PriorityQueueCard({
   pendingActionCount,
-  bookingsLinkForView,
+  bookingsLinkForView: _bookingsLinkForView,
 }: Props) {
   const { t } = useI18n();
+
+  if (pendingActionCount <= 0) return null;
 
   return (
     <div
       className="card priority-queue-card"
       style={{
         marginBottom: "1.25rem",
-        borderColor:
-          pendingActionCount > 0 ? "rgba(255,107,53,0.35)" : "var(--border)",
+        borderColor: "rgba(255,107,53,0.35)",
       }}
     >
       <div className="priority-queue-layout">
         <div className="priority-queue-copy">
           <h3>
-            {pendingActionCount > 0
-              ? t(
-                  "dashboardHome.priority.hasActions",
-                  "You have customer actions to review",
-                )
-              : t(
-                  "dashboardHome.priority.noActions",
-                  "No pending customer actions",
-                )}
+            {t(
+              "dashboardHome.priority.hasActions",
+              "You have customer actions to review",
+            )}
           </h3>
           <p className="small muted">
             {t(
@@ -46,12 +42,7 @@ export default function PriorityQueueCard({
           </p>
         </div>
         <div className="priority-queue-actions">
-          <Link
-            href="/dashboard/notifications"
-            className={
-              pendingActionCount > 0 ? "btn btn-accent" : "btn btn-ghost"
-            }
-          >
+          <Link href="/dashboard/notifications" className="btn btn-accent">
             {t("account.needsAction", "Needs action")}
           </Link>
         </div>

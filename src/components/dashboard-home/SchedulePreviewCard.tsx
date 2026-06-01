@@ -29,10 +29,6 @@ export default function SchedulePreviewCard({
             )}
           </p>
         </div>
-
-        <Link href="/dashboard/bookings" className="btn btn-ghost">
-          {t("dashboardHome.schedule.openBookings", "Open booking manager")}
-        </Link>
       </div>
 
       <div className="dashboard-schedule-grid">
@@ -46,9 +42,9 @@ export default function SchedulePreviewCard({
                 : "schedule-day"
             }
           >
-            <span className="small muted">{day.shortLabel}</span>
-            <strong>{day.label}</strong>
-            <span className="small">
+            <span className="schedule-day-date">{day.label}</span>
+            <span className="schedule-day-name">{day.shortLabel}</span>
+            <span className="schedule-day-count">
               {day.bookings.length}{" "}
               {day.bookings.length === 1
                 ? t("dashboardHome.schedule.booking", "booking")
@@ -66,7 +62,7 @@ export default function SchedulePreviewCard({
 
         .schedule-preview-header {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-start;
           gap: 1rem;
           flex-wrap: wrap;
           align-items: flex-start;
@@ -79,19 +75,34 @@ export default function SchedulePreviewCard({
 
         .dashboard-schedule-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
           gap: 0.75rem;
         }
 
         .schedule-day {
           display: grid;
-          gap: 0.35rem;
+          gap: 0.3rem;
           padding: 0.85rem;
           border-radius: var(--radius);
           border: 1px solid var(--border);
           background: var(--surface-2);
           color: var(--text);
           text-decoration: none;
+          min-height: 92px;
+          align-content: center;
+        }
+
+        .schedule-day-date {
+          font-size: 0.95rem;
+          font-weight: 800;
+          line-height: 1.15;
+        }
+
+        .schedule-day-name,
+        .schedule-day-count {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          line-height: 1.2;
         }
 
         .schedule-day-active {
@@ -100,13 +111,8 @@ export default function SchedulePreviewCard({
         }
 
         @media (max-width: 700px) {
-          .schedule-preview-header,
-          .schedule-preview-header :global(.btn) {
+          .schedule-preview-header {
             width: 100%;
-          }
-
-          .schedule-preview-header :global(.btn) {
-            justify-content: center;
           }
         }
       `}</style>
