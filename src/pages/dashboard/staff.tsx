@@ -1,570 +1,694 @@
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
-import { useRouter } from 'next/router'
-import DashboardLayout from '@/components/DashboardLayout'
-import { uploadMirebookImage } from '@/lib/imageUpload'
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/router";
+import DashboardLayout from "@/components/DashboardLayout";
+import { uploadMirebookImage } from "@/lib/imageUpload";
 
-import StaffSetupHero from '@/components/dashboard-staff/StaffSetupHero'
-import CreateStaffCard from '@/components/dashboard-staff/CreateStaffCard'
-import StaffProfileCard from '@/components/dashboard-staff/StaffProfileCard'
+import StaffSetupHero from "@/components/dashboard-staff/StaffSetupHero";
+import CreateStaffCard from "@/components/dashboard-staff/CreateStaffCard";
+import StaffProfileCard from "@/components/dashboard-staff/StaffProfileCard";
 import {
   AvailabilityRow,
   Business,
   Service,
   StaffMember,
-  StaffService
-} from '@/components/dashboard-staff/dashboardStaffTypes'
-import { useI18n } from '@/lib/useI18n'
+  StaffService,
+} from "@/components/dashboard-staff/dashboardStaffTypes";
+import { useI18n } from "@/lib/useI18n";
 
 export default function StaffPage() {
-  const router = useRouter()
-  const { t } = useI18n()
-  const { businessId } = router.query
+  const router = useRouter();
+  const { t } = useI18n();
+  const { businessId } = router.query;
 
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [business, setBusiness] = useState<Business | null>(null)
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [business, setBusiness] = useState<Business | null>(null);
 
-  const [services, setServices] = useState<Service[]>([])
-  const [staff, setStaff] = useState<StaffMember[]>([])
-  const [staffServices, setStaffServices] = useState<StaffService[]>([])
-  const [staffAvailability, setStaffAvailability] = useState<AvailabilityRow[]>([])
+  const [services, setServices] = useState<Service[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [staffServices, setStaffServices] = useState<StaffService[]>([]);
+  const [staffAvailability, setStaffAvailability] = useState<AvailabilityRow[]>(
+    [],
+  );
 
-  const [name, setName] = useState('')
-  const [roleTitle, setRoleTitle] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const [permissionRole, setPermissionRole] = useState<'staff' | 'manager' | 'reception'>('staff')
-  const [formExpanded, setFormExpanded] = useState(false)
+  const [name, setName] = useState("");
+  const [roleTitle, setRoleTitle] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [permissionRole, setPermissionRole] = useState<
+    "staff" | "manager" | "reception"
+  >("staff");
+  const [formExpanded, setFormExpanded] = useState(false);
 
-  const [editingStaffId, setEditingStaffId] = useState<string | null>(null)
-  const [savingStaffId, setSavingStaffId] = useState<string | null>(null)
-  const [uploadingStaffId, setUploadingStaffId] = useState<string | null>(null)
-  const [pageLoading, setPageLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [actionLoadingKey, setActionLoadingKey] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [editingStaffId, setEditingStaffId] = useState<string | null>(null);
+  const [savingStaffId, setSavingStaffId] = useState<string | null>(null);
+  const [uploadingStaffId, setUploadingStaffId] = useState<string | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [actionLoadingKey, setActionLoadingKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
-      .from('businesses')
-      .select('id, name')
-      .eq('user_id', sessionUserId)
-      .order('created_at', { ascending: false })
+      .from("businesses")
+      .select("id, name")
+      .eq("user_id", sessionUserId)
+      .order("created_at", { ascending: false });
 
-    if (businessesError) throw businessesError
+    if (businessesError) throw businessesError;
 
-    const owned = ownedBusinesses || []
-    setBusinesses(owned)
+    const owned = ownedBusinesses || [];
+    setBusinesses(owned);
 
-    if (owned.length === 0) return null
+    if (owned.length === 0) return null;
 
     if (businessId && !Array.isArray(businessId)) {
-      const selected = owned.find((b) => b.id === businessId)
+      const selected = owned.find((b) => b.id === businessId);
 
       if (!selected) {
-        throw new Error(t('dashboardStaff.error.noAccess', 'You do not have access to this business.'))
+        throw new Error(
+          t(
+            "dashboardStaff.error.noAccess",
+            "You do not have access to this business.",
+          ),
+        );
       }
 
-      return selected
+      return selected;
     }
 
-    return owned[0]
+    return owned[0];
   }
 
   async function loadPage() {
-    setPageLoading(true)
-    setError(null)
+    setPageLoading(true);
+    setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace('/login')
-        return
+        router.replace("/login");
+        return;
       }
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, is_admin')
-        .eq('id', session.user.id)
-        .single()
+        .from("profiles")
+        .select("role, is_admin")
+        .eq("id", session.user.id)
+        .single();
 
-      if (!profile || profile.role !== 'business') {
-  router.replace(profile?.is_admin ? '/admin' : '/account')
-  return
-}
-
-      const selectedBusiness = await getBusinessContext(session.user.id)
-
-      if (!selectedBusiness) {
-        setBusiness(null)
-        setStaff([])
-        setServices([])
-        setStaffServices([])
-        setStaffAvailability([])
-        setPageLoading(false)
-        return
+      if (!profile || profile.role !== "business") {
+        router.replace(profile?.is_admin ? "/admin" : "/account");
+        return;
       }
 
-      setBusiness(selectedBusiness)
+      const selectedBusiness = await getBusinessContext(session.user.id);
+
+      if (!selectedBusiness) {
+        setBusiness(null);
+        setStaff([]);
+        setServices([]);
+        setStaffServices([]);
+        setStaffAvailability([]);
+        setPageLoading(false);
+        return;
+      }
+
+      setBusiness(selectedBusiness);
 
       const { data: serviceData, error: serviceError } = await supabase
-        .from('services')
-        .select('id, business_id, name, active, duration_minutes, price')
-        .eq('business_id', selectedBusiness.id)
-        .order('created_at', { ascending: false })
+        .from("services")
+        .select("id, business_id, name, active, duration_minutes, price")
+        .eq("business_id", selectedBusiness.id)
+        .order("created_at", { ascending: false });
 
-      if (serviceError) throw serviceError
+      if (serviceError) throw serviceError;
 
-      setServices(serviceData || [])
+      setServices(serviceData || []);
 
       const { data: staffData, error: staffError } = await supabase
-        .from('staff_members')
-        .select('*')
-        .eq('business_id', selectedBusiness.id)
-        .order('created_at', { ascending: false })
+        .from("staff_members")
+        .select("*")
+        .eq("business_id", selectedBusiness.id)
+        .order("created_at", { ascending: false });
 
-      if (staffError) throw staffError
+      if (staffError) throw staffError;
 
-      setStaff(staffData || [])
+      setStaff(staffData || []);
 
-      const staffIds = (staffData || []).map((s) => s.id)
+      const staffIds = (staffData || []).map((s) => s.id);
 
       if (staffIds.length > 0) {
         const { data: linkData, error: linkError } = await supabase
-          .from('staff_services')
-          .select('staff_member_id, service_id')
-          .in('staff_member_id', staffIds)
+          .from("staff_services")
+          .select("staff_member_id, service_id")
+          .in("staff_member_id", staffIds);
 
-        if (linkError) throw linkError
+        if (linkError) throw linkError;
 
-        setStaffServices(linkData || [])
+        setStaffServices(linkData || []);
 
-        const { data: availabilityData, error: availabilityError } = await supabase
-          .from('staff_availability')
-          .select('id, staff_member_id, day_of_week, is_closed')
-          .in('staff_member_id', staffIds)
+        const { data: availabilityData, error: availabilityError } =
+          await supabase
+            .from("staff_availability")
+            .select("id, staff_member_id, day_of_week, is_closed")
+            .in("staff_member_id", staffIds);
 
-        if (availabilityError) throw availabilityError
+        if (availabilityError) throw availabilityError;
 
-        setStaffAvailability(availabilityData || [])
+        setStaffAvailability(availabilityData || []);
       } else {
-        setStaffServices([])
-        setStaffAvailability([])
+        setStaffServices([]);
+        setStaffAvailability([]);
       }
 
-      setPageLoading(false)
+      setPageLoading(false);
     } catch (err: any) {
-      setError(err.message || t('dashboardStaff.error.load', 'Could not load staff.'))
-      setPageLoading(false)
+      setError(
+        err.message || t("dashboardStaff.error.load", "Could not load staff."),
+      );
+      setPageLoading(false);
     }
   }
 
   useEffect(() => {
-    if (!router.isReady) return
-    loadPage()
-  }, [router.isReady, businessId])
+    if (!router.isReady) return;
+    loadPage();
+  }, [router.isReady, businessId]);
 
   function assignedServicesForStaff(staffId: string) {
-    return services.filter((service) => staffCanDoService(staffId, service.id))
+    return services.filter((service) => staffCanDoService(staffId, service.id));
   }
 
   async function addStaff(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!business) return
+    if (!business) return;
 
     if (!name.trim()) {
-      setError(t('dashboardStaff.error.nameRequired', 'Staff name is required.'))
-      return
+      setError(
+        t("dashboardStaff.error.nameRequired", "Staff name is required."),
+      );
+      return;
     }
 
-    setSaving(true)
-    setError(null)
-    setSuccess(null)
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
 
-    let finalImageUrl = imageUrl.trim() || null
+    let finalImageUrl = imageUrl.trim() || null;
 
     if (imageFile) {
-      const uploadedUrl = await uploadCreateImage()
+      const uploadedUrl = await uploadCreateImage();
       if (!uploadedUrl) {
-        setSaving(false)
-        return
+        setSaving(false);
+        return;
       }
-      finalImageUrl = uploadedUrl
+      finalImageUrl = uploadedUrl;
     }
 
-    const cleanStaffEmail = email.trim().toLowerCase()
+    const cleanStaffEmail = email.trim().toLowerCase();
 
-    const { error } = await supabase
-      .from('staff_members')
-      .insert({
-        business_id: business.id,
-        name: name.trim(),
-        role_title: roleTitle.trim() || null,
-        email: cleanStaffEmail || null,
-        phone: phone.trim() || null,
-        image_url: finalImageUrl,
-        invite_status: cleanStaffEmail ? 'invited' : 'not_invited',
-        permission_role: permissionRole,
-        active: true
-      })
+    const { error } = await supabase.from("staff_members").insert({
+      business_id: business.id,
+      name: name.trim(),
+      role_title: roleTitle.trim() || null,
+      email: cleanStaffEmail || null,
+      phone: phone.trim() || null,
+      image_url: finalImageUrl,
+      invite_status: cleanStaffEmail ? "invited" : "not_invited",
+      permission_role: permissionRole,
+      active: true,
+    });
 
-    setSaving(false)
+    setSaving(false);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    resetForm()
-    setFormExpanded(false)
-    setSuccess(t('dashboardStaff.create.success', 'Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.'))
+    resetForm();
+    setFormExpanded(false);
+    setSuccess(
+      t(
+        "dashboardStaff.create.success",
+        "Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.",
+      ),
+    );
 
-    await loadPage()
+    await loadPage();
   }
+
   function resetForm() {
-    setName('')
-    setRoleTitle('')
-    setEmail('')
-    setPhone('')
-    setImageUrl('')
-    setImageFile(null)
-    setImagePreviewUrl('')
-    setPermissionRole('staff')
+    setName("");
+    setRoleTitle("");
+    setEmail("");
+    setPhone("");
+    setImageUrl("");
+    setImageFile(null);
+    setImagePreviewUrl("");
+    setPermissionRole("staff");
   }
 
   function handleCreateImageChange(file: File | null) {
-    setError(null)
-    setImageFile(file)
+    setError(null);
+    setImageFile(file);
 
     if (!file) {
-      setImagePreviewUrl('')
-      return
+      setImagePreviewUrl("");
+      return;
     }
 
-    setImagePreviewUrl(URL.createObjectURL(file))
+    setImagePreviewUrl(URL.createObjectURL(file));
   }
 
   async function uploadCreateImage() {
     if (!imageFile) {
-      setError(t('dashboardStaff.image.chooseFirst', 'Choose an image file first.'))
-      return null
+      setError(
+        t("dashboardStaff.image.chooseFirst", "Choose an image file first."),
+      );
+      return null;
     }
 
-    setUploadingImage(true)
-    setError(null)
+    setUploadingImage(true);
+    setError(null);
 
     try {
       const uploaded = await uploadMirebookImage({
         file: imageFile,
-        folder: 'staff',
-        recordId: business?.id || 'new-staff'
-      })
+        folder: "staff",
+        recordId: business?.id || "new-staff",
+      });
 
-      setImageUrl(uploaded.publicUrl)
-      setImageFile(null)
-      setImagePreviewUrl(uploaded.publicUrl)
-      setSuccess(t('dashboardStaff.image.uploaded', 'Staff image uploaded.'))
-      return uploaded.publicUrl
+      setImageUrl(uploaded.publicUrl);
+      setImageFile(null);
+      setImagePreviewUrl(uploaded.publicUrl);
+      setSuccess(t("dashboardStaff.image.uploaded", "Staff image uploaded."));
+      return uploaded.publicUrl;
     } catch (err: any) {
-      setError(err.message || t('dashboardStaff.image.uploadError', 'Could not upload image.'))
-      return null
+      setError(
+        err.message ||
+          t("dashboardStaff.image.uploadError", "Could not upload image."),
+      );
+      return null;
     } finally {
-      setUploadingImage(false)
+      setUploadingImage(false);
     }
   }
 
   async function uploadStaffImage(member: StaffMember, file: File | null) {
-    if (!file) return
+    if (!file) return;
 
-    setUploadingStaffId(member.id)
-    setError(null)
-    setSuccess(null)
+    setUploadingStaffId(member.id);
+    setError(null);
+    setSuccess(null);
 
     try {
       const uploaded = await uploadMirebookImage({
         file,
-        folder: 'staff',
-        recordId: member.id
-      })
+        folder: "staff",
+        recordId: member.id,
+      });
 
       const { error: updateError } = await supabase
-        .from('staff_members')
+        .from("staff_members")
         .update({ image_url: uploaded.publicUrl })
-        .eq('id', member.id)
+        .eq("id", member.id);
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      updateLocalStaff(member.id, 'image_url', uploaded.publicUrl)
-      setSuccess(`${member.name} ${t('dashboardStaff.image.uploadedLower', 'image uploaded.')}`)
-      await loadPage()
+      updateLocalStaff(member.id, "image_url", uploaded.publicUrl);
+      setSuccess(
+        `${member.name} ${t("dashboardStaff.image.uploadedLower", "image uploaded.")}`,
+      );
+      await loadPage();
     } catch (err: any) {
-      setError(err.message || t('dashboardStaff.image.uploadStaffError', 'Could not upload staff image.'))
+      setError(
+        err.message ||
+          t(
+            "dashboardStaff.image.uploadStaffError",
+            "Could not upload staff image.",
+          ),
+      );
     } finally {
-      setUploadingStaffId(null)
+      setUploadingStaffId(null);
     }
   }
-  async function removeStaffImage(member: StaffMember) {
-    const confirmed = confirm(t('dashboardStaff.image.confirmRemove', 'Remove this optional staff photo?'))
-    if (!confirmed) return
 
-    setUploadingStaffId(member.id)
-    setError(null)
-    setSuccess(null)
+  async function removeStaffImage(member: StaffMember) {
+    const confirmed = confirm(
+      t(
+        "dashboardStaff.image.confirmRemove",
+        "Remove this optional staff photo?",
+      ),
+    );
+    if (!confirmed) return;
+
+    setUploadingStaffId(member.id);
+    setError(null);
+    setSuccess(null);
 
     const { error } = await supabase
-      .from('staff_members')
+      .from("staff_members")
       .update({ image_url: null })
-      .eq('id', member.id)
+      .eq("id", member.id);
 
-    setUploadingStaffId(null)
+    setUploadingStaffId(null);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    updateLocalStaff(member.id, 'image_url', '')
-    setSuccess(`${member.name} ${t('dashboardStaff.image.removed', 'photo removed.')}`)
-    await loadPage()
+    updateLocalStaff(member.id, "image_url", "");
+    setSuccess(
+      `${member.name} ${t("dashboardStaff.image.removed", "photo removed.")}`,
+    );
+    await loadPage();
   }
-  function updateLocalStaff(id: string, field: keyof StaffMember, value: string | boolean) {
+
+  function updateLocalStaff(
+    id: string,
+    field: keyof StaffMember,
+    value: string | boolean,
+  ) {
     setStaff((prev) =>
       prev.map((member) =>
-        member.id === id ? { ...member, [field]: value } : member
-      )
-    )
+        member.id === id ? { ...member, [field]: value } : member,
+      ),
+    );
   }
 
   async function saveStaff(member: StaffMember) {
     if (!member.name.trim()) {
-      setError(t('dashboardStaff.error.nameRequired', 'Staff name is required.'))
-      return
+      setError(
+        t("dashboardStaff.error.nameRequired", "Staff name is required."),
+      );
+      return;
     }
 
-    setSavingStaffId(member.id)
-    setError(null)
-    setSuccess(null)
+    setSavingStaffId(member.id);
+    setError(null);
+    setSuccess(null);
 
-    const cleanStaffEmail = member.email?.trim().toLowerCase() || null
+    const cleanStaffEmail = member.email?.trim().toLowerCase() || null;
 
     const { error } = await supabase
-      .from('staff_members')
+      .from("staff_members")
       .update({
         name: member.name.trim(),
         role_title: member.role_title?.trim() || null,
         email: cleanStaffEmail,
         phone: member.phone?.trim() || null,
         image_url: member.image_url?.trim() || null,
-        permission_role: member.permission_role || 'staff',
+        permission_role: member.permission_role || "staff",
         active: member.active,
-        invite_status: cleanStaffEmail && member.invite_status === 'not_invited' ? 'invited' : member.invite_status
+        invite_status:
+          cleanStaffEmail && member.invite_status === "not_invited"
+            ? "invited"
+            : member.invite_status,
       })
-      .eq('id', member.id)
+      .eq("id", member.id);
 
-    setSavingStaffId(null)
+    setSavingStaffId(null);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    setEditingStaffId(null)
-    setSuccess(`${member.name} ${t('dashboardStaff.save.saved', 'saved.')}`)
-    await loadPage()
+    setEditingStaffId(null);
+    setSuccess(`${member.name} ${t("dashboardStaff.save.saved", "saved.")}`);
+    await loadPage();
   }
 
   async function markStaffInvited(member: StaffMember) {
     if (!member.email) {
-      setError(t('dashboardStaff.invite.emailRequired', 'Add an email before marking this staff member as invited.'))
-      return
+      setError(
+        t(
+          "dashboardStaff.invite.emailRequired",
+          "Add an email before marking this staff member as invited.",
+        ),
+      );
+      return;
     }
 
-    const cleanStaffEmail = member.email.trim().toLowerCase()
+    const cleanStaffEmail = member.email.trim().toLowerCase();
 
-    setActionLoadingKey(`invite-${member.id}`)
-    setError(null)
-    setSuccess(null)
+    setActionLoadingKey(`invite-${member.id}`);
+    setError(null);
+    setSuccess(null);
 
     const { error } = await supabase
-      .from('staff_members')
-      .update({ invite_status: 'invited', email: cleanStaffEmail })
-      .eq('id', member.id)
+      .from("staff_members")
+      .update({ invite_status: "invited", email: cleanStaffEmail })
+      .eq("id", member.id);
 
-    setActionLoadingKey(null)
+    setActionLoadingKey(null);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    setSuccess(`${member.name} ${t('dashboardStaff.invite.marked', 'marked as invited. Ask them to register or log in with')} ${cleanStaffEmail}; ${t('dashboardStaff.invite.linkBody', 'Mirëbook will link the staff account when the email matches.')}`)
-    await loadPage()
+    setSuccess(
+      `${member.name} ${t("dashboardStaff.invite.marked", "marked as invited. Ask them to register or log in with")} ${cleanStaffEmail}; ${t("dashboardStaff.invite.linkBody", "Mirëbook will link the staff account when the email matches.")}`,
+    );
+    await loadPage();
   }
 
   async function toggleStaffActive(member: StaffMember) {
-    setActionLoadingKey(`staff-${member.id}`)
-    setError(null)
-    setSuccess(null)
+    setActionLoadingKey(`staff-${member.id}`);
+    setError(null);
+    setSuccess(null);
 
-    const assignedServices = assignedServicesForStaff(member.id)
-    const openDays = openDaysForStaff(member.id)
+    const assignedServices = assignedServicesForStaff(member.id);
+    const openDays = openDaysForStaff(member.id);
 
     if (!member.active && (assignedServices.length === 0 || openDays === 0)) {
-      const confirmed = confirm(t('dashboardStaff.active.confirmIncomplete', 'This staff member is missing assigned services or working hours. They may still not appear as bookable until both are complete. Show them anyway?'))
+      const confirmed = confirm(
+        t(
+          "dashboardStaff.active.confirmIncomplete",
+          "This staff member is missing assigned services or working hours. They may still not appear as bookable until both are complete. Show them anyway?",
+        ),
+      );
       if (!confirmed) {
-        setActionLoadingKey(null)
-        return
+        setActionLoadingKey(null);
+        return;
       }
     }
 
     const { error } = await supabase
-      .from('staff_members')
+      .from("staff_members")
       .update({ active: !member.active })
-      .eq('id', member.id)
+      .eq("id", member.id);
 
-    setActionLoadingKey(null)
+    setActionLoadingKey(null);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
-    setSuccess(!member.active ? `${member.name} ${t('dashboardStaff.active.nowActive', 'is now active for booking.')}` : `${member.name} ${t('dashboardStaff.active.nowHidden', 'is hidden from booking.')}`)
-    await loadPage()
+    setSuccess(
+      !member.active
+        ? `${member.name} ${t("dashboardStaff.active.nowActive", "is now active for booking.")}`
+        : `${member.name} ${t("dashboardStaff.active.nowHidden", "is hidden from booking.")}`,
+    );
+    await loadPage();
   }
 
   function staffCanDoService(staffId: string, serviceId: string) {
     return staffServices.some(
-      (link) => link.staff_member_id === staffId && link.service_id === serviceId
-    )
+      (link) =>
+        link.staff_member_id === staffId && link.service_id === serviceId,
+    );
   }
 
   function openDaysForStaff(staffId: string) {
-    return staffAvailability.filter((row) => row.staff_member_id === staffId && row.is_closed !== true).length
+    return staffAvailability.filter(
+      (row) => row.staff_member_id === staffId && row.is_closed !== true,
+    ).length;
   }
 
-  async function toggleStaffService(staffId: string, serviceId: string, currentlyAssigned?: boolean) {
-    const exists = currentlyAssigned ?? staffCanDoService(staffId, serviceId)
+  async function toggleStaffService(
+    staffId: string,
+    serviceId: string,
+    currentlyAssigned?: boolean,
+  ) {
+    const exists = currentlyAssigned ?? staffCanDoService(staffId, serviceId);
 
-    setActionLoadingKey(`service-${staffId}-${serviceId}`)
-    setError(null)
-    setSuccess(null)
+    setActionLoadingKey(`service-${staffId}-${serviceId}`);
+    setError(null);
+    setSuccess(null);
 
     if (exists) {
       const { error } = await supabase
-        .from('staff_services')
+        .from("staff_services")
         .delete()
-        .eq('staff_member_id', staffId)
-        .eq('service_id', serviceId)
+        .eq("staff_member_id", staffId)
+        .eq("service_id", serviceId);
 
-      setActionLoadingKey(null)
+      setActionLoadingKey(null);
 
       if (error) {
-        setError(error.message)
-        return
+        setError(error.message);
+        return;
       }
     } else {
-      const { error } = await supabase
-        .from('staff_services')
-        .insert({
-          staff_member_id: staffId,
-          service_id: serviceId
-        })
+      const { error } = await supabase.from("staff_services").insert({
+        staff_member_id: staffId,
+        service_id: serviceId,
+      });
 
-      setActionLoadingKey(null)
+      setActionLoadingKey(null);
 
       if (error) {
-        setError(error.message)
-        return
+        setError(error.message);
+        return;
       }
     }
 
-    setSuccess(exists ? t('dashboardStaff.assignments.removedSuccess', 'Service removed from staff member.') : t('dashboardStaff.assignments.addedSuccess', 'Service assigned to staff member.'))
-    await loadPage()
+    setSuccess(
+      exists
+        ? t(
+            "dashboardStaff.assignments.removedSuccess",
+            "Service removed from staff member.",
+          )
+        : t(
+            "dashboardStaff.assignments.addedSuccess",
+            "Service assigned to staff member.",
+          ),
+    );
+    await loadPage();
   }
 
   function readinessBadge(member: StaffMember) {
-    const assignedServices = assignedServicesForStaff(member.id)
-    const openDays = openDaysForStaff(member.id)
-    const ready = member.active && assignedServices.length > 0 && openDays > 0
+    const assignedServices = assignedServicesForStaff(member.id);
+    const openDays = openDaysForStaff(member.id);
+    const ready = member.active && assignedServices.length > 0 && openDays > 0;
 
     return (
       <span
         className="small"
         style={{
-          background: ready ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-          color: ready ? 'var(--success)' : 'var(--warning)',
-          padding: '0.2rem 0.55rem',
-          borderRadius: 999
+          background: ready ? "rgba(45,212,191,0.12)" : "rgba(255,190,11,0.12)",
+          color: ready ? "var(--success)" : "var(--warning)",
+          padding: "0.2rem 0.55rem",
+          borderRadius: 999,
         }}
       >
-        {ready ? t('dashboardStaff.readiness.bookable', 'Bookable on Mirëbook') : t('dashboardStaff.readiness.setupNeeded', 'Setup needed')}
+        {ready
+          ? t("dashboardStaff.readiness.bookable", "Bookable on Mirëbook")
+          : t("dashboardStaff.readiness.setupNeeded", "Setup needed")}
       </span>
-    )
+    );
   }
-  
+
   return (
     <DashboardLayout
-      title={t('dashboardStaff.pageTitle', 'Staff')}
-      subtitle={business ? `${t('dashboardStaff.pageSubtitleSelected', 'Manage staff, service assignments and booking readiness for')} ${business.name}.` : t('dashboardStaff.pageSubtitle', 'Create your business first, then add staff.')}
+      title={t("dashboardStaff.pageTitle", "Staff")}
+      subtitle={
+        business
+          ? `${t("dashboardStaff.pageSubtitleSelected", "Manage staff, service assignments and booking readiness for")} ${business.name}.`
+          : t(
+              "dashboardStaff.pageSubtitle",
+              "Create your business first, then add staff.",
+            )
+      }
     >
       {pageLoading && (
         <div className="card">
-          <p className="muted">{t('dashboardStaff.loading', 'Loading Mirëbook staff setup...')}</p>
+          <p className="muted">
+            {t("dashboardStaff.loading", "Loading Mirëbook staff setup...")}
+          </p>
         </div>
       )}
 
       {success && (
-        <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
-          <p style={{ color: 'var(--success)' }}>{success}</p>
+        <div
+          className="card"
+          style={{
+            borderColor: "rgba(45,212,191,0.35)",
+            background: "rgba(45,212,191,0.06)",
+            marginBottom: "1rem",
+          }}
+        >
+          <p style={{ color: "var(--success)" }}>{success}</p>
         </div>
       )}
 
       {error && (
-        <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
-          <p style={{ color: 'var(--danger)' }}>{error}</p>
+        <div
+          className="card"
+          style={{ borderColor: "rgba(255,77,109,0.35)", marginBottom: "1rem" }}
+        >
+          <p style={{ color: "var(--danger)" }}>{error}</p>
         </div>
       )}
 
       {!pageLoading && businesses.length === 0 && (
         <div className="card">
-          <h3>{t('dashboardStaff.noBusiness.title', 'No business found')}</h3>
-          <p className="muted" style={{ marginTop: '0.5rem' }}>
-            {t('dashboardStaff.noBusiness.body', 'Create a business profile first, then add staff.')}
+          <h3>{t("dashboardStaff.noBusiness.title", "No business found")}</h3>
+          <p className="muted">
+            {t(
+              "dashboardStaff.noBusiness.body",
+              "Create a business profile first, then add staff.",
+            )}
           </p>
-          <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-            {t('dashboardStaff.noBusiness.cta', 'Create business')}
+          <Link
+            href="/dashboard/businesses"
+            className="btn btn-accent"
+            style={{ marginTop: "0.75rem" }}
+          >
+            {t("dashboardStaff.noBusiness.cta", "Create business")}
           </Link>
         </div>
       )}
-
-
       {!pageLoading && business && (
         <>
           {businesses.length > 1 && (
-            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+            <div
+              className="card"
+              style={{
+                borderColor: "rgba(255,190,11,0.28)",
+                marginBottom: "1rem",
+              }}
+            >
               <p className="small muted">
-                {t('dashboardStaff.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+                {t(
+                  "dashboardStaff.multiBusinessNotice",
+                  "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
+                )}
               </p>
             </div>
           )}
 
           <StaffSetupHero business={business} />
-<div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(45,212,191,0.24)' }}>
-  <p className="small muted">{t('dashboardStaff.ownerAsStaff.kicker', 'Owner and staff roles')}</p>
-  <h3 style={{ marginTop: '0.25rem' }}>{t('dashboardStaff.ownerAsStaff.title', 'Only add people who can be booked by customers')}</h3>
-  <p className="small muted" style={{ marginTop: '0.4rem' }}>
-    {t('dashboardStaff.ownerAsStaff.body', 'Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.')}
-  </p>
-</div>
+          <div className="card staff-owner-note">
+            <h3>
+              {t(
+                "dashboardStaff.ownerAsStaff.title",
+                "Only add people who can be booked by customers",
+              )}
+            </h3>
+            <p className="small muted">
+              {t(
+                "dashboardStaff.ownerAsStaff.body",
+                "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.",
+              )}
+            </p>
+          </div>
 
           <CreateStaffCard
             loading={saving}
@@ -583,31 +707,49 @@ export default function StaffPage() {
           />
 
           {services.length === 0 && (
-            <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(255,190,11,0.35)' }}>
-              <h3>{t('dashboardStaff.noServices.title', 'No services yet')}</h3>
-              <p className="muted" style={{ marginTop: '0.5rem' }}>
-                {t('dashboardStaff.noServices.body', 'Add services first, then assign staff to those services.')}
+            <div
+              className="card"
+              style={{
+                marginBottom: "1rem",
+                borderColor: "rgba(255,190,11,0.35)",
+              }}
+            >
+              <h3>{t("dashboardStaff.noServices.title", "No services yet")}</h3>
+              <p className="muted">
+                {t(
+                  "dashboardStaff.noServices.body",
+                  "Add services first, then assign staff to those services.",
+                )}
               </p>
-              <Link href="/dashboard/services" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-                {t('dashboardStaff.noServices.cta', 'Add services')}
+              <Link
+                href="/dashboard/services"
+                className="btn btn-accent"
+                style={{ marginTop: "0.75rem" }}
+              >
+                {t("dashboardStaff.noServices.cta", "Add services")}
               </Link>
             </div>
           )}
 
           <div className="staff-section-heading">
-            <p className="small muted">{t('dashboardStaff.list.kicker', 'Staff list')}</p>
-            <h2>{t('dashboardStaff.list.title', 'Your staff')}</h2>
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardStaff.list.body', 'Staff become bookable only when they are active, assigned to services, and have working hours set. Owner-only users do not need to appear here unless customers can book them.')}
+            <h2>{t("dashboardStaff.list.title", "Your staff")}</h2>
+            <p className="small muted">
+              {t(
+                "dashboardStaff.list.body",
+                "Staff become bookable only when they are active, assigned to services, and have working hours set. Owner-only users do not need to appear here unless customers can book them.",
+              )}
             </p>
           </div>
 
           <div className="staff-card-list">
             {staff.length === 0 && (
               <div className="card">
-                <h3>{t('dashboardStaff.empty.title', 'No staff yet')}</h3>
-                <p className="muted" style={{ marginTop: '0.5rem' }}>
-                  {t('dashboardStaff.empty.body', 'Add your first bookable staff member above, or add the owner only if they personally take appointments. Then assign services and set working hours.')}
+                <h3>{t("dashboardStaff.empty.title", "No staff yet")}</h3>
+                <p className="muted">
+                  {t(
+                    "dashboardStaff.empty.body",
+                    "Add your first bookable staff member above, or add the owner only if they personally take appointments. Then assign services and set working hours.",
+                  )}
                 </p>
               </div>
             )}
@@ -617,11 +759,20 @@ export default function StaffPage() {
                 key={member.id}
                 staff={member}
                 services={services}
-                assignedServiceIds={assignedServicesForStaff(member.id).map((service) => service.id)}
+                assignedServiceIds={assignedServicesForStaff(member.id).map(
+                  (service) => service.id,
+                )}
                 availabilityRows={staffAvailability}
                 isEditing={editingStaffId === member.id}
                 savingStaffId={savingStaffId}
-                savingAssignmentKey={actionLoadingKey?.startsWith(`service-${member.id}-`) ? actionLoadingKey.replace(`service-${member.id}-`, `${member.id}:`) : null}
+                savingAssignmentKey={
+                  actionLoadingKey?.startsWith(`service-${member.id}-`)
+                    ? actionLoadingKey.replace(
+                        `service-${member.id}-`,
+                        `${member.id}:`,
+                      )
+                    : null
+                }
                 updateLocalStaff={updateLocalStaff}
                 saveStaff={saveStaff}
                 toggleStaffActive={toggleStaffActive}
@@ -634,13 +785,31 @@ export default function StaffPage() {
         </>
       )}
       <style jsx>{`
+        .staff-owner-note {
+          display: grid;
+          gap: 0.55rem;
+          margin-bottom: 1rem;
+          border-color: rgba(45, 212, 191, 0.24);
+        }
+
+        .staff-owner-note h3,
+        .staff-owner-note p {
+          margin-top: 0;
+        }
+
         .staff-section-heading {
-          margin: 1.25rem 0 0.75rem;
+          display: grid;
+          gap: 0.45rem;
+          margin: 1.1rem 0 0.75rem;
         }
 
         .staff-section-heading h2 {
           font-family: var(--font-display);
-          margin-top: 0.25rem;
+          margin-top: 0;
+        }
+
+        .staff-section-heading p {
+          margin-top: 0;
         }
 
         .staff-card-list {
@@ -649,5 +818,5 @@ export default function StaffPage() {
         }
       `}</style>
     </DashboardLayout>
-  )
+  );
 }

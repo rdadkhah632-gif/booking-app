@@ -1,29 +1,33 @@
-import Link from 'next/link'
-import { useI18n } from '@/lib/useI18n'
+import Link from "next/link";
+import { useI18n } from "@/lib/useI18n";
 import {
   AvailabilityRow,
   Service,
   StaffMember,
-  UpdateStaffField
-} from './dashboardStaffTypes'
-import StaffAvailabilitySummary from './StaffAvailabilitySummary'
-import StaffServiceAssignmentCard from './StaffServiceAssignmentCard'
+  UpdateStaffField,
+} from "./dashboardStaffTypes";
+import StaffAvailabilitySummary from "./StaffAvailabilitySummary";
+import StaffServiceAssignmentCard from "./StaffServiceAssignmentCard";
 
 type Props = {
-  staff: StaffMember
-  services: Service[]
-  assignedServiceIds: string[]
-  availabilityRows: AvailabilityRow[]
-  isEditing: boolean
-  savingStaffId: string | null
-  savingAssignmentKey: string | null
-  updateLocalStaff: UpdateStaffField
-  saveStaff: (staff: StaffMember) => void
-  toggleStaffActive: (staff: StaffMember) => void
-  setEditingStaffId: (id: string | null) => void
-  loadData: () => void
-  toggleStaffService: (staffId: string, serviceId: string, currentlyAssigned: boolean) => void
-}
+  staff: StaffMember;
+  services: Service[];
+  assignedServiceIds: string[];
+  availabilityRows: AvailabilityRow[];
+  isEditing: boolean;
+  savingStaffId: string | null;
+  savingAssignmentKey: string | null;
+  updateLocalStaff: UpdateStaffField;
+  saveStaff: (staff: StaffMember) => void;
+  toggleStaffActive: (staff: StaffMember) => void;
+  setEditingStaffId: (id: string | null) => void;
+  loadData: () => void;
+  toggleStaffService: (
+    staffId: string,
+    serviceId: string,
+    currentlyAssigned: boolean,
+  ) => void;
+};
 
 export default function StaffProfileCard({
   staff,
@@ -38,83 +42,117 @@ export default function StaffProfileCard({
   toggleStaffActive,
   setEditingStaffId,
   loadData,
-  toggleStaffService
+  toggleStaffService,
 }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
   const activeAssignedCount = services.filter(
-    (service) => service.active && assignedServiceIds.includes(service.id)
-  ).length
+    (service) => service.active && assignedServiceIds.includes(service.id),
+  ).length;
 
   return (
     <div
       className="card staff-profile-card"
       style={{
         borderColor: !staff.active
-          ? 'rgba(255,190,11,0.25)'
+          ? "rgba(255,190,11,0.25)"
           : activeAssignedCount === 0
-            ? 'rgba(255,190,11,0.35)'
-            : 'rgba(45,212,191,0.18)'
+            ? "rgba(255,190,11,0.35)"
+            : "rgba(45,212,191,0.18)",
       }}
     >
       <div className="staff-card-top">
-        <div style={{ flex: 1, minWidth: 260 }}>
+        <div className="staff-main-copy">
           <div className="staff-title-row">
-            <strong>{staff.name || t('dashboardStaff.card.untitled', 'Untitled staff member')}</strong>
+            <strong>
+              {staff.name ||
+                t("dashboardStaff.card.untitled", "Untitled staff member")}
+            </strong>
 
             <span
               className="small"
               style={{
-                background: staff.active ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                color: staff.active ? 'var(--success)' : 'var(--warning)',
-                padding: '0.2rem 0.55rem',
-                borderRadius: 999
+                background: staff.active
+                  ? "rgba(45,212,191,0.12)"
+                  : "rgba(255,190,11,0.12)",
+                color: staff.active ? "var(--success)" : "var(--warning)",
+                padding: "0.2rem 0.55rem",
+                borderRadius: 999,
               }}
             >
-              {staff.active ? t('dashboardStaff.card.active', 'Active') : t('dashboardStaff.card.inactive', 'Inactive')}
+              {staff.active
+                ? t("dashboardStaff.card.active", "Active")
+                : t("dashboardStaff.card.inactive", "Inactive")}
             </span>
 
             <span
               className="small"
               style={{
-                background: staff.user_id ? 'rgba(45,212,191,0.12)' : 'var(--surface-2)',
-                color: staff.user_id ? 'var(--success)' : 'var(--text-muted)',
-                padding: '0.2rem 0.55rem',
-                borderRadius: 999
+                background: staff.user_id
+                  ? "rgba(45,212,191,0.12)"
+                  : "var(--surface-2)",
+                color: staff.user_id ? "var(--success)" : "var(--text-muted)",
+                padding: "0.2rem 0.55rem",
+                borderRadius: 999,
               }}
             >
-              {staff.user_id ? t('dashboardStaff.card.accountLinked', 'Account linked') : t('dashboardStaff.card.notLinked', 'Not linked')}
+              {staff.user_id
+                ? t("dashboardStaff.card.accountLinked", "Account linked")
+                : t("dashboardStaff.card.notLinked", "Not linked")}
             </span>
 
             <span
               className="small"
               style={{
-                background: activeAssignedCount > 0 ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                color: activeAssignedCount > 0 ? 'var(--success)' : 'var(--warning)',
-                padding: '0.2rem 0.55rem',
-                borderRadius: 999
+                background:
+                  activeAssignedCount > 0
+                    ? "rgba(45,212,191,0.12)"
+                    : "rgba(255,190,11,0.12)",
+                color:
+                  activeAssignedCount > 0 ? "var(--success)" : "var(--warning)",
+                padding: "0.2rem 0.55rem",
+                borderRadius: 999,
               }}
             >
               {activeAssignedCount > 0
-                ? `${activeAssignedCount} ${t('dashboardStaff.card.servicesAssigned', 'services assigned')}`
-                : t('dashboardStaff.card.noServicesAssigned', 'No services assigned')}
+                ? `${activeAssignedCount} ${t("dashboardStaff.card.servicesAssigned", "services assigned")}`
+                : t(
+                    "dashboardStaff.card.noServicesAssigned",
+                    "No services assigned",
+                  )}
             </span>
           </div>
 
           {!isEditing && (
             <>
-              <p className="small muted" style={{ marginTop: '0.45rem' }}>
-                {staff.role_title || t('dashboardStaff.card.noRole', 'No role title added')} · {staff.email || t('dashboardStaff.card.noEmail', 'No email')}
+              <p className="small muted staff-line">
+                {staff.role_title ||
+                  t("dashboardStaff.card.noRole", "No role title added")}{" "}
+                · {staff.email || t("dashboardStaff.card.noEmail", "No email")}
               </p>
 
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {staff.phone || t('dashboardStaff.card.noPhone', 'No phone')}
+              <p className="small muted staff-line">
+                {staff.phone || t("dashboardStaff.card.noPhone", "No phone")}
               </p>
 
               {staff.email && !staff.user_id && (
-                <div className="card" style={{ background: 'var(--surface-2)', marginTop: '0.85rem', padding: '0.85rem', borderColor: 'rgba(255,190,11,0.25)' }}>
-                  <strong>{t('dashboardStaff.card.inviteReady', 'Ready for staff account linking')}</strong>
-                  <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    {t('dashboardStaff.card.inviteBody', 'If this person registers using this email as staff, Mirëbook can link their account to this staff profile.')}
+                <div
+                  className="card staff-linking-card"
+                  style={{
+                    background: "var(--surface-2)",
+                    borderColor: "rgba(255,190,11,0.25)",
+                  }}
+                >
+                  <strong>
+                    {t(
+                      "dashboardStaff.card.inviteReady",
+                      "Ready for staff account linking",
+                    )}
+                  </strong>
+                  <p className="small muted staff-line">
+                    {t(
+                      "dashboardStaff.card.inviteBody",
+                      "If this person registers using this email as staff, Mirëbook can link their account to this staff profile.",
+                    )}
                   </p>
                 </div>
               )}
@@ -124,42 +162,72 @@ export default function StaffProfileCard({
           {isEditing && (
             <div className="staff-edit-grid">
               <input
-                placeholder={t('dashboardStaff.create.namePlaceholder', 'Staff name')}
-                value={staff.name || ''}
-                onChange={(e) => updateLocalStaff(staff.id, 'name', e.target.value)}
+                placeholder={t(
+                  "dashboardStaff.create.namePlaceholder",
+                  "Staff name",
+                )}
+                value={staff.name || ""}
+                onChange={(e) =>
+                  updateLocalStaff(staff.id, "name", e.target.value)
+                }
               />
 
               <input
-                placeholder={t('dashboardStaff.create.rolePlaceholder', 'Role title')}
-                value={staff.role_title || ''}
-                onChange={(e) => updateLocalStaff(staff.id, 'role_title', e.target.value)}
+                placeholder={t(
+                  "dashboardStaff.create.rolePlaceholder",
+                  "Role title",
+                )}
+                value={staff.role_title || ""}
+                onChange={(e) =>
+                  updateLocalStaff(staff.id, "role_title", e.target.value)
+                }
               />
 
               <input
                 type="email"
-                placeholder={t('dashboardStaff.create.emailPlaceholder', 'Email')}
-                value={staff.email || ''}
-                onChange={(e) => updateLocalStaff(staff.id, 'email', e.target.value)}
+                placeholder={t(
+                  "dashboardStaff.create.emailPlaceholder",
+                  "Email",
+                )}
+                value={staff.email || ""}
+                onChange={(e) =>
+                  updateLocalStaff(staff.id, "email", e.target.value)
+                }
               />
 
               <input
-                placeholder={t('common.phone', 'Phone')}
-                value={staff.phone || ''}
-                onChange={(e) => updateLocalStaff(staff.id, 'phone', e.target.value)}
+                placeholder={t("common.phone", "Phone")}
+                value={staff.phone || ""}
+                onChange={(e) =>
+                  updateLocalStaff(staff.id, "phone", e.target.value)
+                }
               />
 
-              <label className="card" style={{ background: 'var(--surface-2)', cursor: 'pointer', gridColumn: '1 / -1' }}>
-                <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+              <label
+                className="card staff-active-toggle"
+                style={{ background: "var(--surface-2)" }}
+              >
+                <div className="staff-active-toggle-row">
                   <input
                     type="checkbox"
                     checked={staff.active}
-                    onChange={(e) => updateLocalStaff(staff.id, 'active', e.target.checked)}
+                    onChange={(e) =>
+                      updateLocalStaff(staff.id, "active", e.target.checked)
+                    }
                   />
 
                   <div>
-                    <strong>{t('dashboardStaff.card.activeForBookings', 'Active for bookings')}</strong>
-                    <p className="small muted">
-                      {t('dashboardStaff.card.activeForBookingsBody', 'Inactive staff stay saved but should not be used for new customer bookings.')}
+                    <strong>
+                      {t(
+                        "dashboardStaff.card.activeForBookings",
+                        "Active for bookings",
+                      )}
+                    </strong>
+                    <p className="small muted staff-line">
+                      {t(
+                        "dashboardStaff.card.activeForBookingsBody",
+                        "Inactive staff stay saved but should not be used for new customer bookings.",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -177,32 +245,43 @@ export default function StaffProfileCard({
                 disabled={savingStaffId === staff.id}
               >
                 {savingStaffId === staff.id
-                  ? t('account.saving', 'Saving...')
-                  : t('dashboardStaff.card.saveStaff', 'Save staff')}
+                  ? t("account.saving", "Saving...")
+                  : t("dashboardStaff.card.saveStaff", "Save staff")}
               </button>
 
               <button
                 onClick={() => {
-                  setEditingStaffId(null)
-                  loadData()
+                  setEditingStaffId(null);
+                  loadData();
                 }}
                 className="btn btn-ghost"
               >
-                {t('common.cancel', 'Cancel')}
+                {t("common.cancel", "Cancel")}
               </button>
             </>
           ) : (
             <>
-              <button onClick={() => setEditingStaffId(staff.id)} className="btn btn-ghost">
-                {t('common.edit', 'Edit')}
+              <button
+                onClick={() => setEditingStaffId(staff.id)}
+                className="btn btn-ghost"
+              >
+                {t("common.edit", "Edit")}
               </button>
 
-              <button onClick={() => toggleStaffActive(staff)} className={staff.active ? 'btn btn-ghost' : 'btn btn-accent'}>
-                {staff.active ? t('dashboardStaff.card.deactivate', 'Deactivate') : t('dashboardStaff.card.activate', 'Activate')}
+              <button
+                onClick={() => toggleStaffActive(staff)}
+                className={staff.active ? "btn btn-ghost" : "btn btn-accent"}
+              >
+                {staff.active
+                  ? t("dashboardStaff.card.deactivate", "Deactivate")
+                  : t("dashboardStaff.card.activate", "Activate")}
               </button>
 
-              <Link href={`/dashboard/availability?businessId=${staff.business_id}&staffId=${staff.id}`} className="btn btn-ghost">
-                {t('dashboardStaff.availability.openCta', 'Open availability')}
+              <Link
+                href={`/dashboard/availability?businessId=${staff.business_id}&staffId=${staff.id}`}
+                className="btn btn-ghost"
+              >
+                {t("dashboardStaff.availability.openCta", "Open availability")}
               </Link>
             </>
           )}
@@ -233,28 +312,66 @@ export default function StaffProfileCard({
         .staff-card-top {
           display: flex;
           justify-content: space-between;
-          gap: 1rem;
+          gap: 1.25rem;
           flex-wrap: wrap;
           align-items: flex-start;
+        }
+
+        .staff-main-copy {
+          flex: 1;
+          min-width: 260px;
+          display: grid;
+          gap: 0.6rem;
+        }
+
+        .staff-line {
+          margin-top: 0;
+        }
+
+        .staff-linking-card {
+          display: grid;
+          gap: 0.45rem;
+          margin-top: 0.25rem;
+          padding: 0.85rem;
+        }
+
+        .staff-linking-card p {
+          margin-top: 0;
         }
 
         .staff-title-row,
         .staff-card-actions {
           display: flex;
-          gap: 0.5rem;
+          gap: 0.55rem;
           flex-wrap: wrap;
           align-items: center;
         }
 
         .staff-card-actions {
           justify-content: flex-end;
+          align-items: center;
         }
 
         .staff-edit-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 0.75rem;
-          margin-top: 0.85rem;
+          margin-top: 0.25rem;
+        }
+
+        .staff-active-toggle {
+          cursor: pointer;
+          grid-column: 1 / -1;
+        }
+
+        .staff-active-toggle-row {
+          display: flex;
+          gap: 0.6rem;
+          align-items: center;
+        }
+
+        .staff-active-toggle-row p {
+          margin-top: 0;
         }
 
         @media (max-width: 640px) {
@@ -268,5 +385,5 @@ export default function StaffProfileCard({
         }
       `}</style>
     </div>
-  )
+  );
 }
