@@ -45,10 +45,12 @@ export default function SchedulePreviewCard({
             <span className="schedule-day-date">{day.label}</span>
             <span className="schedule-day-name">{day.shortLabel}</span>
             <span className="schedule-day-count">
-              {day.bookings.length}{" "}
               {day.bookings.length === 1
-                ? t("dashboardHome.schedule.booking", "booking")
-                : t("dashboardHome.schedule.bookings", "bookings")}
+                ? t("dashboardHome.schedule.oneBooking", "1 booking")
+                : t(
+                    "dashboardHome.schedule.bookingCount",
+                    "{{count}} bookings",
+                  ).replace("{{count}}", String(day.bookings.length))}
             </span>
           </Link>
         ))}
@@ -75,34 +77,47 @@ export default function SchedulePreviewCard({
 
         .dashboard-schedule-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+          grid-template-columns: repeat(7, minmax(0, 1fr));
           gap: 0.75rem;
         }
 
         .schedule-day {
           display: grid;
-          gap: 0.3rem;
-          padding: 0.85rem;
+          gap: 0.28rem;
+          padding: 0.85rem 0.65rem;
           border-radius: var(--radius);
           border: 1px solid var(--border);
           background: var(--surface-2);
           color: var(--text);
           text-decoration: none;
-          min-height: 92px;
+          min-height: 96px;
           align-content: center;
+          justify-items: center;
+          text-align: center;
+          overflow: hidden;
         }
 
         .schedule-day-date {
+          display: block;
+          width: 100%;
           font-size: 0.95rem;
           font-weight: 800;
           line-height: 1.15;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .schedule-day-name,
         .schedule-day-count {
+          display: block;
+          width: 100%;
           color: var(--text-muted);
           font-size: 0.82rem;
           line-height: 1.2;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .schedule-day-active {
@@ -113,6 +128,10 @@ export default function SchedulePreviewCard({
         @media (max-width: 700px) {
           .schedule-preview-header {
             width: 100%;
+          }
+
+          .dashboard-schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
           }
         }
       `}</style>
