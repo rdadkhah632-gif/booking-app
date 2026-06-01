@@ -1,92 +1,196 @@
-import { useI18n } from '@/lib/useI18n'
-import { AvailabilityRow } from './dashboardAvailabilityTypes'
+import { useI18n } from "@/lib/useI18n";
+import { AvailabilityRow } from "./dashboardAvailabilityTypes";
 
 type Props = {
-  row: AvailabilityRow
-  index: number
-  dayLabel: string
-  updateRow: (index: number, field: keyof AvailabilityRow, value: string | boolean) => void
-}
+  row: AvailabilityRow;
+  index: number;
+  dayLabel: string;
+  updateRow: (
+    index: number,
+    field: keyof AvailabilityRow,
+    value: string | boolean,
+  ) => void;
+};
 
 export default function AvailabilityDayRow({
   row,
   index,
   dayLabel,
-  updateRow
+  updateRow,
 }: Props) {
-  const { t } = useI18n()
-  const invalid = !row.is_closed && row.start_time >= row.end_time
+  const { t } = useI18n();
+  const invalid = !row.is_closed && row.start_time >= row.end_time;
 
   return (
     <div
       className="card availability-day-row"
       style={{
-        borderColor: invalid ? 'rgba(255,77,109,0.35)' : row.is_closed ? 'rgba(255,190,11,0.20)' : 'var(--border)',
-        opacity: row.is_closed ? 0.76 : 1
+        borderColor: invalid
+          ? "rgba(255,77,109,0.35)"
+          : row.is_closed
+            ? "rgba(255,190,11,0.20)"
+            : "var(--border)",
+        opacity: row.is_closed ? 0.78 : 1,
       }}
     >
-      <div>
-        <strong>{dayLabel}</strong>
-        <p
-          className="small"
-          style={{
-            color: invalid ? 'var(--danger)' : row.is_closed ? 'var(--warning)' : 'var(--success)',
-            marginTop: '0.25rem'
-          }}
+      <div className="availability-day-header">
+        <div>
+          <strong>{dayLabel}</strong>
+          {invalid && (
+            <p className="small" style={{ color: "var(--danger)" }}>
+              {t("dashboardAvailability.day.invalid", "Invalid time range")}
+            </p>
+          )}
+        </div>
+
+        <label
+          className={`availability-status-pill ${row.is_closed ? "closed" : "open"}`}
         >
-          {invalid
-            ? t('dashboardAvailability.day.invalid', 'Invalid time range')
-            : row.is_closed
-              ? t('dashboardAvailability.day.closed', 'Closed')
-              : t('dashboardAvailability.day.open', 'Open')}
-        </p>
+          <input
+            type="checkbox"
+            checked={!row.is_closed}
+            onChange={(e) => updateRow(index, "is_closed", !e.target.checked)}
+          />
+          <span>
+            {row.is_closed
+              ? t("dashboardAvailability.day.closed", "Closed")
+              : t("dashboardAvailability.day.open", "Open")}
+          </span>
+        </label>
       </div>
 
-      <label className="small muted" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <input
-          type="checkbox"
-          checked={row.is_closed}
-          onChange={(e) => updateRow(index, 'is_closed', e.target.checked)}
-        />
-        {t('dashboardAvailability.day.closed', 'Closed')}
-      </label>
+      {!row.is_closed ? (
+        <div className="availability-time-editor">
+          <div className="availability-time-range">
+            <span>{row.start_time}</span>
+            <span aria-hidden="true">→</span>
+            <span>{row.end_time}</span>
+          </div>
 
-      <label className="small muted">
-        {t('dashboardAvailability.day.start', 'Start')}
-        <input
-          type="time"
-          value={row.start_time}
-          disabled={row.is_closed}
-          onChange={(e) => updateRow(index, 'start_time', e.target.value)}
-          style={{ marginTop: '0.25rem' }}
-        />
-      </label>
+          <div className="availability-time-grid">
+            <label className="small muted">
+              {t("dashboardAvailability.day.start", "Start")}
+              <input
+                type="time"
+                value={row.start_time}
+                onChange={(e) => updateRow(index, "start_time", e.target.value)}
+              />
+            </label>
 
-      <label className="small muted">
-        {t('dashboardAvailability.day.end', 'End')}
-        <input
-          type="time"
-          value={row.end_time}
-          disabled={row.is_closed}
-          onChange={(e) => updateRow(index, 'end_time', e.target.value)}
-          style={{ marginTop: '0.25rem' }}
-        />
-      </label>
+            <label className="small muted">
+              {t("dashboardAvailability.day.end", "End")}
+              <input
+                type="time"
+                value={row.end_time}
+                onChange={(e) => updateRow(index, "end_time", e.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+      ) : (
+        <p className="small muted availability-closed-copy">
+          {t(
+            "dashboardAvailability.day.closedBody",
+            "Customers cannot book this business on this day.",
+          )}
+        </p>
+      )}
 
       <style jsx>{`
         .availability-day-row {
           display: grid;
-          grid-template-columns: 1.2fr 1fr 1fr 1fr;
-          gap: 0.75rem;
+          gap: 1rem;
+          align-content: start;
+          min-height: 185px;
+        }
+
+        .availability-day-header {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
           align-items: center;
         }
 
-        @media (max-width: 760px) {
-          .availability-day-row {
+        .availability-day-header p,
+        .availability-closed-copy {
+          margin-top: 0.35rem;
+        }
+
+        .availability-status-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.45rem;
+          min-width: 92px;
+          padding: 0.45rem 0.65rem;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          line-height: 1;
+          white-space: nowrap;
+        }
+
+        .availability-status-pill.open {
+          color: var(--success);
+          border-color: rgba(45, 212, 191, 0.35);
+          background: rgba(45, 212, 191, 0.08);
+        }
+
+        .availability-status-pill.closed {
+          color: var(--text-muted);
+        }
+
+        .availability-status-pill input {
+          width: 1rem;
+          height: 1rem;
+          flex: 0 0 auto;
+        }
+
+        .availability-time-editor {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .availability-time-range {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.55rem;
+          width: fit-content;
+          padding: 0.45rem 0.7rem;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--surface-2);
+          color: var(--text);
+          font-weight: 800;
+        }
+
+        .availability-time-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
+        }
+
+        .availability-time-grid input {
+          margin-top: 0.35rem;
+          width: 100%;
+        }
+
+        .availability-closed-copy {
+          max-width: 32ch;
+        }
+
+        @media (max-width: 520px) {
+          .availability-day-header {
+            align-items: center;
+          }
+
+          .availability-time-grid {
             grid-template-columns: 1fr;
           }
         }
       `}</style>
     </div>
-  )
+  );
 }

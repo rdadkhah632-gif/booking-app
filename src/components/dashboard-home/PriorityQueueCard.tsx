@@ -1,53 +1,108 @@
-import Link from 'next/link'
-import { useI18n } from '@/lib/useI18n'
+import Link from "next/link";
+import { useI18n } from "@/lib/useI18n";
 
 type Props = {
-  pendingActionCount: number
-  bookingsLinkForView: (view: string, status?: string, businessId?: string) => string
-}
+  pendingActionCount: number;
+  bookingsLinkForView: (
+    view: string,
+    status?: string,
+    businessId?: string,
+  ) => string;
+};
 
 export default function PriorityQueueCard({
   pendingActionCount,
-  bookingsLinkForView
+  bookingsLinkForView,
 }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   return (
     <div
-      className="card"
+      className="card priority-queue-card"
       style={{
-        marginBottom: '1.5rem',
-        borderColor: pendingActionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)'
+        marginBottom: "1.25rem",
+        borderColor:
+          pendingActionCount > 0 ? "rgba(255,107,53,0.35)" : "var(--border)",
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1, minWidth: 260 }}>
-          <p className="small muted">{t('dashboardHome.priority.kicker', 'Priority queue')}</p>
-
-          <h3 style={{ marginTop: '0.25rem' }}>
+      <div className="priority-queue-layout">
+        <div className="priority-queue-copy">
+          <h3>
             {pendingActionCount > 0
-              ? t('dashboardHome.priority.hasActions', 'You have customer actions to review')
-              : t('dashboardHome.priority.noActions', 'No pending customer actions')}
+              ? t(
+                  "dashboardHome.priority.hasActions",
+                  "You have customer actions to review",
+                )
+              : t(
+                  "dashboardHome.priority.noActions",
+                  "No pending customer actions",
+                )}
           </h3>
-
-          <p className="small muted" style={{ marginTop: '0.5rem' }}>
+          <p className="small muted">
             {t(
-              'dashboardHome.priority.body',
-              'Pending booking approvals and reschedule requests should be handled quickly so customers know where they stand.'
+              "dashboardHome.priority.body",
+              "Pending booking approvals and reschedule requests should be handled quickly so customers know where they stand.",
             )}
           </p>
         </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link href="/dashboard/notifications" className={pendingActionCount > 0 ? 'btn btn-accent' : 'btn btn-ghost'}>
-            {t('dashboardHome.priority.reviewNotifications', 'Review notifications')}
-          </Link>
-
-          <Link href={bookingsLinkForView('upcoming')} className="btn btn-ghost">
-            {t('dashboardHome.priority.bookingManager', 'Booking manager')}
+        <div className="priority-queue-actions">
+          <Link
+            href="/dashboard/notifications"
+            className={
+              pendingActionCount > 0 ? "btn btn-accent" : "btn btn-ghost"
+            }
+          >
+            {t("account.needsAction", "Needs action")}
           </Link>
         </div>
       </div>
+      <style jsx>{`
+        .priority-queue-card {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .priority-queue-layout {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+
+        .priority-queue-copy {
+          flex: 1;
+          min-width: 260px;
+          display: grid;
+          gap: 0.55rem;
+        }
+
+        .priority-queue-copy h3,
+        .priority-queue-copy p {
+          margin-top: 0;
+        }
+
+        .priority-queue-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 700px) {
+          .priority-queue-layout,
+          .priority-queue-actions {
+            display: grid;
+          }
+
+          .priority-queue-actions,
+          .priority-queue-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </div>
-  )
+  );
 }

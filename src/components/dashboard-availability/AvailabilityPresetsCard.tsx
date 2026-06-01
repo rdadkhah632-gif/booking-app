@@ -1,47 +1,60 @@
-import { useI18n } from '@/lib/useI18n'
+import { useI18n } from "@/lib/useI18n";
 
 type Props = {
-  onApplyWeekdayPreset: () => void
-  onApplyExtendedPreset: () => void
-  onCloseAllDays: () => void
-}
+  onApplyWeekdayPreset: () => void;
+  onApplyExtendedPreset: () => void;
+  onCloseAllDays: () => void;
+};
 
 export default function AvailabilityPresetsCard({
   onApplyWeekdayPreset,
   onApplyExtendedPreset,
-  onCloseAllDays
+  onCloseAllDays,
 }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   return (
-    <div className="card" style={{ marginBottom: '1.25rem' }}>
+    <div
+      className="card availability-preset-card"
+      style={{ marginBottom: "1.25rem" }}
+    >
       <div className="availability-preset-row">
         <div>
-          <p className="small muted">{t('dashboardAvailability.presets.kicker', 'Quick presets')}</p>
-
-          <h3 style={{ marginTop: '0.25rem' }}>
-            {t('dashboardAvailability.presets.title', 'Set common business hours')}
+          <h3 style={{ marginTop: 0 }}>
+            {t("dashboardAvailability.presets.compactTitle", "Quick presets")}
           </h3>
 
-          <p className="small muted" style={{ marginTop: '0.35rem' }}>
+          <p className="small muted">
             {t(
-              'dashboardAvailability.presets.body',
-              'Presets update the table below. You still need to click Save working hours before customers see the change.'
+              "dashboardAvailability.presets.body",
+              "Presets update the table below. You still need to click Save working hours before customers see the change.",
             )}
           </p>
         </div>
 
         <div className="availability-preset-actions">
-          <button type="button" onClick={onApplyWeekdayPreset} className="btn btn-ghost">
-            {t('dashboardAvailability.presets.weekday', 'Mon-Fri 9-5')}
+          <button
+            type="button"
+            onClick={onApplyWeekdayPreset}
+            className="btn btn-ghost"
+          >
+            {t("dashboardAvailability.presets.weekday", "Mon-Fri 9-5")}
           </button>
 
-          <button type="button" onClick={onApplyExtendedPreset} className="btn btn-ghost">
-            {t('dashboardAvailability.presets.extended', 'Mon-Sat 9-7')}
+          <button
+            type="button"
+            onClick={onApplyExtendedPreset}
+            className="btn btn-ghost"
+          >
+            {t("dashboardAvailability.presets.extended", "Mon-Sat 9-7")}
           </button>
 
-          <button type="button" onClick={onCloseAllDays} className="btn btn-danger">
-            {t('dashboardAvailability.presets.closeAll', 'Close all days')}
+          <button
+            type="button"
+            onClick={onCloseAllDays}
+            className="btn btn-danger"
+          >
+            {t("dashboardAvailability.presets.closeAll", "Close all days")}
           </button>
         </div>
       </div>
@@ -59,6 +72,11 @@ export default function AvailabilityPresetsCard({
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
+          align-items: center;
+        }
+
+        .availability-preset-card p {
+          margin-top: 0;
         }
 
         @media (max-width: 640px) {
@@ -71,5 +89,5 @@ export default function AvailabilityPresetsCard({
         }
       `}</style>
     </div>
-  )
+  );
 }

@@ -158,7 +158,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""} ${"urgent" in link && link.urgent ? "urgent" : ""}`}
+                className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""} ${"urgent" in link && link.urgent ? "urgent" : ""}`.trim()}
               >
                 <span>{link.label}</span>
               </Link>
@@ -170,7 +170,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""}`}
+                className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""}`.trim()}
               >
                 <span>{link.label}</span>
               </Link>
@@ -227,6 +227,43 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           border-top: 1px solid var(--border);
         }
 
+        .sidebar-link {
+          position: relative;
+          min-height: 2.55rem;
+          border-left: 3px solid transparent;
+          transition:
+            border-color 0.15s ease,
+            background 0.15s ease,
+            color 0.15s ease,
+            transform 0.15s ease;
+        }
+
+        .sidebar-link::after {
+          content: "";
+          position: absolute;
+          left: 0.85rem;
+          right: 0.85rem;
+          bottom: 0.35rem;
+          height: 2px;
+          border-radius: 999px;
+          background: transparent;
+        }
+
+        .sidebar-link.active {
+          border-left-color: var(--accent);
+          background: rgba(255, 107, 53, 0.12);
+          color: var(--accent);
+          font-weight: 800;
+        }
+
+        .sidebar-link.active::after {
+          background: var(--accent);
+        }
+
+        .sidebar-link:hover {
+          transform: translateX(1px);
+        }
+
         .sidebar-logout {
           width: 100%;
           border: 0;
@@ -237,9 +274,15 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         }
 
         .sidebar-link.urgent {
+          border-left-color: rgba(255, 107, 53, 0.65);
           border-color: rgba(255, 107, 53, 0.45);
           background: rgba(255, 107, 53, 0.1);
           color: var(--accent);
+        }
+
+        .sidebar-link.urgent.active {
+          border-left-color: var(--accent);
+          background: rgba(255, 107, 53, 0.16);
         }
 
         .dashboard-page-header {
