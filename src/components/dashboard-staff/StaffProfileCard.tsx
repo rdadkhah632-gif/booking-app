@@ -49,6 +49,37 @@ export default function StaffProfileCard({
     (service) => service.active && assignedServiceIds.includes(service.id),
   ).length;
 
+  const normalisedInviteStatus = (staff.invite_status || "").toLowerCase();
+  const isLinked = Boolean(staff.user_id);
+  const hasInviteEmail = Boolean(staff.email);
+  const inviteStatusLabel = isLinked
+    ? t("dashboardStaff.card.accountLinked", "Account linked")
+    : hasInviteEmail
+      ? normalisedInviteStatus === "invited" ||
+        normalisedInviteStatus === "pending"
+        ? t("dashboardStaff.card.invitePending", "Invite pending")
+        : t("dashboardStaff.card.readyToLink", "Ready to link")
+      : t("dashboardStaff.card.noLoginEmail", "No login email");
+  const inviteStatusBody = isLinked
+    ? t(
+        "dashboardStaff.card.accountLinkedBody",
+        "This staff profile is connected to a user login. They can access their own staff workspace.",
+      )
+    : hasInviteEmail
+      ? t(
+          "dashboardStaff.card.readyToLinkBody",
+          "This profile can link automatically when the staff member signs up or logs in using this exact email.",
+        )
+      : t(
+          "dashboardStaff.card.noLoginEmailBody",
+          "Add an email if this staff member needs their own Mirëbook login. Leave it blank for owner-managed or non-login staff.",
+        );
+  const inviteStatusTone = isLinked
+    ? "success"
+    : hasInviteEmail
+      ? "warning"
+      : "muted";
+
   return (
     <div
       className="card staff-profile-card"
@@ -69,15 +100,13 @@ export default function StaffProfileCard({
             </strong>
 
             <span
-              className="small"
-              style={{
-                background: staff.active
-                  ? "rgba(45,212,191,0.12)"
-                  : "rgba(255,190,11,0.12)",
-                color: staff.active ? "var(--success)" : "var(--warning)",
-                padding: "0.2rem 0.55rem",
-                borderRadius: 999,
-              }}
+              className={`small staff-status-pill staff-status-${inviteStatusTone}`}
+            >
+              {inviteStatusLabel}
+            </span>
+
+            <span
+              className={`small staff-status-pill ${staff.active ? "staff-status-success" : "staff-status-warning"}`}
             >
               {staff.active
                 ? t("dashboardStaff.card.active", "Active")
@@ -85,33 +114,7 @@ export default function StaffProfileCard({
             </span>
 
             <span
-              className="small"
-              style={{
-                background: staff.user_id
-                  ? "rgba(45,212,191,0.12)"
-                  : "var(--surface-2)",
-                color: staff.user_id ? "var(--success)" : "var(--text-muted)",
-                padding: "0.2rem 0.55rem",
-                borderRadius: 999,
-              }}
-            >
-              {staff.user_id
-                ? t("dashboardStaff.card.accountLinked", "Account linked")
-                : t("dashboardStaff.card.notLinked", "Not linked")}
-            </span>
-
-            <span
-              className="small"
-              style={{
-                background:
-                  activeAssignedCount > 0
-                    ? "rgba(45,212,191,0.12)"
-                    : "rgba(255,190,11,0.12)",
-                color:
-                  activeAssignedCount > 0 ? "var(--success)" : "var(--warning)",
-                padding: "0.2rem 0.55rem",
-                borderRadius: 999,
-              }}
+              className={`small staff-status-pill ${activeAssignedCount > 0 ? "staff-status-success" : "staff-status-warning"}`}
             >
               {activeAssignedCount > 0
                 ? `${activeAssignedCount} ${t("dashboardStaff.card.servicesAssigned", "services assigned")}`
@@ -134,28 +137,13 @@ export default function StaffProfileCard({
                 {staff.phone || t("dashboardStaff.card.noPhone", "No phone")}
               </p>
 
-              {staff.email && !staff.user_id && (
-                <div
-                  className="card staff-linking-card"
-                  style={{
-                    background: "var(--surface-2)",
-                    borderColor: "rgba(255,190,11,0.25)",
-                  }}
-                >
-                  <strong>
-                    {t(
-                      "dashboardStaff.card.inviteReady",
-                      "Ready for staff account linking",
-                    )}
-                  </strong>
-                  <p className="small muted staff-line">
-                    {t(
-                      "dashboardStaff.card.inviteBody",
-                      "If this person registers using this email as staff, Mirëbook can link their account to this staff profile.",
-                    )}
-                  </p>
-                </div>
-              )}
+              <div
+                className={`card staff-linking-card staff-linking-${inviteStatusTone}`}
+                style={{ background: "var(--surface-2)" }}
+              >
+                <strong>{inviteStatusLabel}</strong>
+                <p className="small muted staff-line">{inviteStatusBody}</p>
+              </div>
             </>
           )}
 
@@ -194,6 +182,18 @@ export default function StaffProfileCard({
                   updateLocalStaff(staff.id, "email", e.target.value)
                 }
               />
+
+              <p className="small muted staff-edit-help">
+                {staff.user_id
+                  ? t(
+                      "dashboardStaff.card.linkedEmailLockedHint",
+                      "Changing this email will not move the linked user login. Use this field only for contact/reference details once linked.",
+                    )
+                  : t(
+                      "dashboardStaff.card.emailLinkHint",
+                      "Use the exact email this staff member will use to register or log in if they need staff access.",
+                    )}
+              </p>
 
               <input
                 placeholder={t("common.phone", "Phone")}
@@ -345,6 +345,43 @@ export default function StaffProfileCard({
           gap: 0.55rem;
           flex-wrap: wrap;
           align-items: center;
+        }
+
+        .staff-status-pill {
+          padding: 0.2rem 0.55rem;
+          border-radius: 999px;
+        }
+
+        .staff-status-success {
+          background: rgba(45, 212, 191, 0.12);
+          color: var(--success);
+        }
+
+        .staff-status-warning {
+          background: rgba(255, 190, 11, 0.12);
+          color: var(--warning);
+        }
+
+        .staff-status-muted {
+          background: var(--surface-2);
+          color: var(--text-muted);
+        }
+
+        .staff-linking-success {
+          border-color: rgba(45, 212, 191, 0.22);
+        }
+
+        .staff-linking-warning {
+          border-color: rgba(255, 190, 11, 0.25);
+        }
+
+        .staff-linking-muted {
+          border-color: var(--border);
+        }
+
+        .staff-edit-help {
+          grid-column: 1 / -1;
+          margin-top: -0.25rem;
         }
 
         .staff-card-actions {

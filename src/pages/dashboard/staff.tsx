@@ -25,6 +25,7 @@ export default function StaffPage() {
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [business, setBusiness] = useState<Business | null>(null);
+  const [accountUserId, setAccountUserId] = useState<string | null>(null);
 
   const [services, setServices] = useState<Service[]>([]);
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -97,9 +98,11 @@ export default function StaffPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
+        setAccountUserId(null);
         router.replace("/login");
         return;
       }
+      setAccountUserId(session.user.id);
 
       const capabilities = await getAccountCapabilities(
         session.user.id,
@@ -184,6 +187,25 @@ export default function StaffPage() {
     if (!router.isReady) return;
     loadPage();
   }, [router.isReady, businessId]);
+
+  const ownerStaffProfile = useMemo(
+    () =>
+      staff.find(
+        (member) => member.user_id && member.user_id === accountUserId,
+      ) || null,
+    [staff, accountUserId],
+  );
+
+  const linkedStaffCount = useMemo(
+    () => staff.filter((member) => Boolean(member.user_id)).length,
+    [staff],
+  );
+
+  const loginReadyStaffCount = useMemo(
+    () =>
+      staff.filter((member) => Boolean(member.email) && !member.user_id).length,
+    [staff],
+  );
 
   function assignedServicesForStaff(staffId: string) {
     return services.filter((service) => staffCanDoService(staffId, service.id));
@@ -676,18 +698,43 @@ export default function StaffPage() {
 
           <StaffSetupHero business={business} />
           <div className="card staff-owner-note">
-            <h3>
-              {t(
-                "dashboardStaff.ownerAsStaff.title",
-                "Only add people who can be booked by customers",
-              )}
-            </h3>
-            <p className="small muted">
-              {t(
-                "dashboardStaff.ownerAsStaff.body",
-                "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.",
-              )}
-            </p>
+            <div className="staff-owner-note-copy">
+              <h3>
+                {ownerStaffProfile
+                  ? t(
+                      "dashboardStaff.ownerAsStaff.linkedTitle",
+                      "Owner is also set up as bookable staff",
+                    )
+                  : t(
+                      "dashboardStaff.ownerAsStaff.title",
+                      "Only add people who can be booked by customers",
+                    )}
+              </h3>
+              <p className="small muted">
+                {ownerStaffProfile
+                  ? t(
+                      "dashboardStaff.ownerAsStaff.linkedBody",
+                      "This owner account is linked to a staff profile, so the owner can manage the business and also use the staff workspace for their own appointments.",
+                    )
+                  : t(
+                      "dashboardStaff.ownerAsStaff.body",
+                      "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.",
+                    )}
+              </p>
+            </div>
+            {ownerStaffProfile && (
+              <div className="staff-owner-note-actions">
+                <Link href="/staff" className="btn btn-ghost">
+                  {t("staff.pageTitle", "Staff workspace")}
+                </Link>
+                <Link
+                  href={`/dashboard/availability?businessId=${ownerStaffProfile.business_id}&staffId=${ownerStaffProfile.id}`}
+                  className="btn btn-ghost"
+                >
+                  {t("staff.actions.updateAvailability", "Update availability")}
+                </Link>
+              </div>
+            )}
           </div>
 
           <CreateStaffCard
@@ -738,6 +785,14 @@ export default function StaffPage() {
                 "dashboardStaff.list.body",
                 "Staff become bookable only when they are active, assigned to services, and have working hours set. Owner-only users do not need to appear here unless customers can book them.",
               )}
+              {staff.length > 0 && (
+                <span className="staff-login-summary">
+                  {linkedStaffCount}{" "}
+                  {t("dashboardStaff.list.linkedLogins", "linked logins")} ·{" "}
+                  {loginReadyStaffCount}{" "}
+                  {t("dashboardStaff.list.readyToLink", "ready to link")}
+                </span>
+              )}
             </p>
           </div>
 
@@ -786,15 +841,33 @@ export default function StaffPage() {
       )}
       <style jsx>{`
         .staff-owner-note {
-          display: grid;
-          gap: 0.55rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 0.85rem;
           margin-bottom: 1rem;
           border-color: rgba(45, 212, 191, 0.24);
         }
 
-        .staff-owner-note h3,
-        .staff-owner-note p {
+        .staff-owner-note-copy {
+          flex: 1;
+          min-width: 260px;
+          display: grid;
+          gap: 0.45rem;
+        }
+
+        .staff-owner-note-copy h3,
+        .staff-owner-note-copy p {
           margin-top: 0;
+        }
+
+        .staff-owner-note-actions {
+          display: flex;
+          gap: 0.65rem;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
         }
 
         .staff-section-heading {
@@ -812,9 +885,28 @@ export default function StaffPage() {
           margin-top: 0;
         }
 
+        .staff-login-summary {
+          display: block;
+          margin-top: 0.25rem;
+          color: var(--text-muted);
+        }
+
         .staff-card-list {
           display: grid;
           gap: 1rem;
+        }
+
+        @media (max-width: 700px) {
+          .staff-owner-note,
+          .staff-owner-note-actions {
+            display: grid;
+          }
+
+          .staff-owner-note-actions,
+          .staff-owner-note-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
         }
       `}</style>
     </DashboardLayout>
