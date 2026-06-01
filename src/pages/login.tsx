@@ -1,166 +1,133 @@
-import AuthNav from '@/components/AuthNav'
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { supabase } from '@/lib/supabaseClient'
-import { useI18n } from '@/lib/useI18n'
+import AuthNav from "@/components/AuthNav";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { t } = useI18n()
+  const router = useRouter();
+  const { t } = useI18n();
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [checkingSession, setCheckingSession] = useState(true)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   async function redirectByRole(userId: string, fallbackEmail?: string) {
-    const cleanEmail = fallbackEmail?.trim().toLowerCase() || ''
+    const cleanEmail = fallbackEmail?.trim().toLowerCase() || "";
 
-    const { data: linkedStaffByUserId } = await supabase
-      .from('staff_members')
-      .select('id, business_id, email, invite_status')
-      .eq('user_id', userId)
-      .limit(1)
+    let capabilities = await getAccountCapabilities(userId, cleanEmail);
 
-    if (linkedStaffByUserId && linkedStaffByUserId.length > 0) {
-      router.replace('/staff')
-      return
-    }
+    if (!capabilities.profile) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const metadataRole =
+        user?.user_metadata?.role === "business" ? "business" : "customer";
 
-    if (cleanEmail) {
-      const { data: unlinkedStaffInvite } = await supabase
-        .from('staff_members')
-        .select('id, business_id, email, invite_status')
-        .eq('email', cleanEmail)
-        .is('user_id', null)
-        .limit(1)
-        .maybeSingle()
-
-      if (unlinkedStaffInvite?.id) {
-        const { error: linkStaffError } = await supabase
-          .from('staff_members')
-          .update({
-            user_id: userId,
-            invite_status: 'linked'
-          })
-          .eq('id', unlinkedStaffInvite.id)
-
-        if (linkStaffError) {
-          throw new Error(linkStaffError.message)
-        }
-
-        router.replace('/staff')
-        return
-      }
-    }
-
-    const { data: ownedBusinesses } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1)
-
-    if (ownedBusinesses && ownedBusinesses.length > 0) {
-      router.replace('/dashboard')
-      return
-    }
-
-    let { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single()
-
-    if (profileError || !profile) {
-      const { data: { user } } = await supabase.auth.getUser()
-      const metadataRole = user?.user_metadata?.role === 'business' ? 'business' : 'customer'
-
-      const { data: createdProfile, error: createProfileError } = await supabase
-        .from('profiles')
+      const { error: createProfileError } = await supabase
+        .from("profiles")
         .upsert(
           {
             id: userId,
-            email: fallbackEmail || user?.email || '',
-            role: metadataRole
+            email: cleanEmail || user?.email || "",
+            role: metadataRole,
           },
-          { onConflict: 'id' }
-        )
-        .select('role')
-        .single()
+          { onConflict: "id" },
+        );
 
-      if (createProfileError || !createdProfile) {
-        throw new Error('Could not load or create user profile')
+      if (createProfileError) {
+        throw new Error("Could not load or create user profile");
       }
 
-      profile = createdProfile
+      capabilities = await getAccountCapabilities(
+        userId,
+        cleanEmail || user?.email || "",
+      );
     }
 
-    if (profile.role === 'business') {
-      router.replace('/dashboard')
-    } else {
-      const redirectTo = typeof router.query.redirectTo === 'string' ? router.query.redirectTo : '/my-bookings'
-      router.replace(redirectTo.startsWith('/') ? redirectTo : '/my-bookings')
+    if (capabilities.defaultRoute === "/my-bookings") {
+      const redirectTo =
+        typeof router.query.redirectTo === "string"
+          ? router.query.redirectTo
+          : "/my-bookings";
+      router.replace(redirectTo.startsWith("/") ? redirectTo : "/my-bookings");
+      return;
     }
+
+    router.replace(capabilities.defaultRoute);
   }
 
   useEffect(() => {
     async function checkExistingSession() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (session?.user) {
         try {
-          await redirectByRole(session.user.id, session.user.email || undefined)
-          return
+          await redirectByRole(
+            session.user.id,
+            session.user.email || undefined,
+          );
+          return;
         } catch {
-          setCheckingSession(false)
-          return
+          setCheckingSession(false);
+          return;
         }
       }
 
-      setCheckingSession(false)
+      setCheckingSession(false);
     }
 
-    if (!router.isReady) return
-    checkExistingSession()
-  }, [router.isReady])
+    if (!router.isReady) return;
+    checkExistingSession();
+  }, [router.isReady]);
 
   async function onLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const cleanEmail = email.trim().toLowerCase()
+    const cleanEmail = email.trim().toLowerCase();
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
-      password
-    })
+      password,
+    });
 
     if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
+      setError(error.message);
+      setLoading(false);
+      return;
     }
 
-    const user = data.user
+    const user = data.user;
 
     if (!user) {
-      setError(t('login.failed', 'Login failed. Please try again.'))
-      setLoading(false)
-      return
+      setError(t("login.failed", "Login failed. Please try again."));
+      setLoading(false);
+      return;
     }
 
     try {
-      await redirectByRole(user.id, cleanEmail)
+      await redirectByRole(user.id, cleanEmail);
     } catch (err: any) {
-      setError(err.message || t('login.profileError', 'Could not load your profile. Please try again.'))
-      setLoading(false)
-      return
+      setError(
+        err.message ||
+          t(
+            "login.profileError",
+            "Could not load your profile. Please try again.",
+          ),
+      );
+      setLoading(false);
+      return;
     }
 
-    setLoading(false)
+    setLoading(false);
   }
 
   if (checkingSession) {
@@ -169,11 +136,13 @@ export default function LoginPage() {
         <AuthNav />
         <section className="auth-wrap">
           <div className="card">
-            <p className="muted">{t('login.checkingSession', 'Checking your account...')}</p>
+            <p className="muted">
+              {t("login.checkingSession", "Checking your account...")}
+            </p>
           </div>
         </section>
       </main>
-    )
+    );
   }
 
   return (
@@ -183,78 +152,106 @@ export default function LoginPage() {
       <section className="auth-wrap">
         <div className="login-shell">
           <div className="login-promo-panel">
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              left: '-20%',
-              width: 400,
-              height: 400,
-              background: 'radial-gradient(circle, rgba(255,107,53,0.18) 0%, transparent 70%)'
-            }} />
+            <div
+              style={{
+                position: "absolute",
+                top: "-30%",
+                left: "-20%",
+                width: 400,
+                height: 400,
+                background:
+                  "radial-gradient(circle, rgba(255,107,53,0.18) 0%, transparent 70%)",
+              }}
+            />
 
-            <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ position: "relative", zIndex: 1 }}>
               <div className="logo login-promo-logo">
                 Mirë<span>book</span>
               </div>
 
-              <h1 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '2.2rem',
-                lineHeight: 1.15,
-                letterSpacing: '-0.03em',
-                marginBottom: 16
-              }}>
-                {t('login.promoTitle', 'Welcome back to Mirëbook')}
+              <h1
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "2.2rem",
+                  lineHeight: 1.15,
+                  letterSpacing: "-0.03em",
+                  marginBottom: 16,
+                }}
+              >
+                {t("login.promoTitle", "Welcome back to Mirëbook")}
               </h1>
 
               <p className="muted">
-                {t('login.promoBody', 'Sign in and Mirëbook will take you to the right workspace for your account: customer, staff, business or operator.')}
+                {t(
+                  "login.promoBody",
+                  "Sign in and Mirëbook will take you to the right workspace for your account: customer, staff, business or operator.",
+                )}
               </p>
             </div>
 
             <div className="login-proof-list">
               <div className="card login-proof-card">
-                <strong>{t('login.proof.customerTitle', 'Customers')}</strong>
-                <span>{t('login.proof.customerBody', 'View bookings, requests and appointment history.')}</span>
+                <strong>{t("login.proof.customerTitle", "Customers")}</strong>
+                <span>
+                  {t(
+                    "login.proof.customerBody",
+                    "View bookings, requests and appointment history.",
+                  )}
+                </span>
               </div>
               <div className="card login-proof-card">
-                <strong>{t('login.proof.staffTitle', 'Staff')}</strong>
-                <span>{t('login.proof.staffBody', 'Open your schedule, calendar, availability and updates.')}</span>
+                <strong>{t("login.proof.staffTitle", "Staff")}</strong>
+                <span>
+                  {t(
+                    "login.proof.staffBody",
+                    "Open your schedule, calendar, availability and updates.",
+                  )}
+                </span>
               </div>
               <div className="card login-proof-card">
-                <strong>{t('login.proof.businessTitle', 'Businesses')}</strong>
-                <span>{t('login.proof.businessBody', 'Manage setup, services, staff, bookings and publishing.')}</span>
+                <strong>{t("login.proof.businessTitle", "Businesses")}</strong>
+                <span>
+                  {t(
+                    "login.proof.businessBody",
+                    "Manage setup, services, staff, bookings and publishing.",
+                  )}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="login-form-panel">
-            <p className="small muted" style={{ marginBottom: '0.5rem' }}>
-              {t('login.kicker', 'Sign in')}
+            <p className="small muted" style={{ marginBottom: "0.5rem" }}>
+              {t("login.kicker", "Sign in")}
             </p>
 
-            <h2 style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '2rem',
-              marginBottom: 8
-            }}>
-              {t('login.title', 'Login to Mirëbook')}
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "2rem",
+                marginBottom: 8,
+              }}
+            >
+              {t("login.title", "Login to Mirëbook")}
             </h2>
 
             <p className="muted login-subtitle">
-              {t('login.subtitle', 'Use one login. Mirëbook detects whether this account is a customer, staff member, business owner or operator.')}
+              {t(
+                "login.subtitle",
+                "Use one login. Mirëbook detects whether this account is a customer, staff member, business owner or operator.",
+              )}
             </p>
 
             <div className="login-role-strip">
-              <span>{t('nav.role.customer', 'Customer')}</span>
-              <span>{t('nav.role.staff', 'Staff')}</span>
-              <span>{t('nav.role.business', 'Business')}</span>
+              <span>{t("nav.role.customer", "Customer")}</span>
+              <span>{t("nav.role.staff", "Staff")}</span>
+              <span>{t("nav.role.business", "Business")}</span>
             </div>
 
             <form onSubmit={onLogin} className="form-grid">
               <input
                 type="email"
-                placeholder={t('login.emailPlaceholder', 'Email address')}
+                placeholder={t("login.emailPlaceholder", "Email address")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -262,32 +259,46 @@ export default function LoginPage() {
 
               <input
                 type="password"
-                placeholder={t('login.passwordPlaceholder', 'Password')}
+                placeholder={t("login.passwordPlaceholder", "Password")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
 
-              <button type="submit" disabled={loading} className="btn btn-accent login-submit-button">
-                {loading ? t('login.loading', 'Signing in...') : t('login.submit', 'Sign in')}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-accent login-submit-button"
+              >
+                {loading
+                  ? t("login.loading", "Signing in...")
+                  : t("login.submit", "Sign in")}
               </button>
             </form>
 
             {error && (
-              <p style={{
-                color: 'var(--danger)',
-                marginTop: '1rem'
-              }}>
+              <p
+                style={{
+                  color: "var(--danger)",
+                  marginTop: "1rem",
+                }}
+              >
                 {error}
               </p>
             )}
 
             <div className="login-bottom-actions">
               <p className="small muted">
-                {t('login.noAccount', 'No account yet?')} <Link href="/register" style={{ color: 'var(--accent)' }}>{t('login.createAccount', 'Create account')}</Link>
+                {t("login.noAccount", "No account yet?")}{" "}
+                <Link href="/register" style={{ color: "var(--accent)" }}>
+                  {t("login.createAccount", "Create account")}
+                </Link>
               </p>
               <p className="small muted">
-                {t('login.staffHint', 'Staff invited by a business should sign in or register using the invited email address.')}
+                {t(
+                  "login.staffHint",
+                  "Staff invited by a business should sign in or register using the invited email address.",
+                )}
               </p>
             </div>
           </div>
@@ -303,7 +314,7 @@ export default function LoginPage() {
           border: 1px solid var(--border);
           border-radius: 24px;
           overflow: hidden;
-          box-shadow: 0 22px 70px rgba(0,0,0,0.22);
+          box-shadow: 0 22px 70px rgba(0, 0, 0, 0.22);
         }
 
         .login-promo-panel {
@@ -329,7 +340,7 @@ export default function LoginPage() {
         }
 
         .login-proof-card {
-          background: rgba(255,255,255,0.04);
+          background: rgba(255, 255, 255, 0.04);
           display: grid;
           gap: 0.25rem;
         }
@@ -429,5 +440,5 @@ export default function LoginPage() {
         }
       `}</style>
     </main>
-  )
+  );
 }

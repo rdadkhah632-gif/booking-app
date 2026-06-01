@@ -19,6 +19,7 @@ import {
   StaffMember,
 } from "@/components/dashboard-home/dashboardHomeTypes";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 export default function DashboardHome() {
   const router = useRouter();
@@ -77,14 +78,13 @@ export default function DashboardHome() {
       return;
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
+    const capabilities = await getAccountCapabilities(
+      session.user.id,
+      session.user.email,
+    );
 
-    if (!profile || profile.role !== "business") {
-      router.replace("/account");
+    if (!capabilities.canUseBusiness) {
+      router.replace(capabilities.defaultRoute);
       return;
     }
 

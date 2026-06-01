@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type Props = {
   children: React.ReactNode;
@@ -29,29 +30,20 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         return;
       }
 
-      const { data: linkedStaff } = await supabase
-        .from("staff_members")
-        .select("id")
-        .eq("user_id", session.user.id)
-        .limit(1);
+      const capabilities = await getAccountCapabilities(
+        session.user.id,
+        session.user.email,
+      );
 
-      if (linkedStaff && linkedStaff.length > 0) {
-        router.replace("/staff");
-        return;
-      }
-
-      const { data: businesses } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("user_id", session.user.id);
-
-      const businessIds = (businesses || []).map((business) => business.id);
-
-      if (businessIds.length === 0) {
+      if (!capabilities.canUseBusiness) {
         setPendingCount(0);
-        router.replace("/explore");
+        router.replace(capabilities.defaultRoute);
         return;
       }
+
+      const businessIds = capabilities.ownedBusinesses.map(
+        (business) => business.id,
+      );
 
       const { count: pendingBookingsCount } = await supabase
         .from("bookings")
