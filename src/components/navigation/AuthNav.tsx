@@ -8,22 +8,8 @@ import BusinessNav from "./BusinessNav";
 import StaffNav from "./StaffNav";
 import AdminNav from "./AdminNav";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { Role } from "./navTypes";
-
-type BusinessRow = {
-  id: string;
-  published?: boolean | null;
-};
-
-type StaffRow = {
-  id: string;
-  business_id?: string | null;
-};
-
-type ProfileRow = {
-  role?: "customer" | "business" | "staff" | string | null;
-  is_admin?: boolean | null;
-};
 
 function isAdminRoute(pathname: string) {
   return pathname.startsWith("/admin");
@@ -35,6 +21,23 @@ function isBusinessRoute(pathname: string) {
 
 function isStaffRoute(pathname: string) {
   return pathname.startsWith("/staff");
+}
+
+function navRoleForCapabilities(params: {
+  activePath: string;
+  isAdmin: boolean;
+  ownsBusiness: boolean;
+  hasStaffAccess: boolean;
+}): Role {
+  if (params.isAdmin && isAdminRoute(params.activePath)) return "admin";
+  if (params.hasStaffAccess && isStaffRoute(params.activePath)) return "staff";
+  if (params.ownsBusiness && isBusinessRoute(params.activePath))
+    return "business";
+
+  if (params.isAdmin) return "admin";
+  if (params.ownsBusiness) return "business";
+  if (params.hasStaffAccess) return "staff";
+  return "customer";
 }
 
 export default function AuthNav() {
@@ -68,54 +71,34 @@ export default function AuthNav() {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, is_admin")
-        .eq("id", session.user.id)
-        .single<ProfileRow>();
-
-      const { data: ownedBusinesses } = await supabase
-        .from("businesses")
-        .select("id, published")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(10)
-        .returns<BusinessRow[]>();
-
-      const { data: linkedStaff } = await supabase
-        .from("staff_members")
-        .select("id, business_id")
-        .eq("user_id", session.user.id)
-        .limit(1)
-        .returns<StaffRow[]>();
+      const capabilities = await getAccountCapabilities(
+        session.user.id,
+        session.user.email,
+      );
 
       if (cancelled) return;
 
-      const ownsBusiness = !!ownedBusinesses && ownedBusinesses.length > 0;
-      const primaryBusiness = ownedBusinesses?.[0] || null;
-      const hasStaffProfile = !!linkedStaff && linkedStaff.length > 0;
-      const adminUser = !!profile?.is_admin;
+      const nextRole = navRoleForCapabilities({
+        activePath: router.pathname,
+        isAdmin: capabilities.isAdmin,
+        ownsBusiness: capabilities.ownsBusiness,
+        hasStaffAccess: capabilities.hasStaffAccess,
+      });
 
-      setPrimaryBusinessId(primaryBusiness?.id || null);
-
-      if (adminUser) {
-        setRole("admin");
-      } else if (hasStaffProfile) {
-        setRole("staff");
-      } else if (profile?.role === "business" || ownsBusiness) {
-        setRole("business");
-      } else {
-        setRole("customer");
-      }
+      setPrimaryBusinessId(capabilities.primaryBusinessId);
+      setRole(nextRole);
 
       await loadNotificationCounts({
         userId: session.user.id,
         activePath: router.pathname,
-        adminUser,
-        ownsBusiness,
-        hasStaffProfile,
-        staffId: linkedStaff?.[0]?.id || null,
-        businessIds: (ownedBusinesses || []).map((business) => business.id),
+        navRole: nextRole,
+        adminUser: capabilities.isAdmin,
+        ownsBusiness: capabilities.ownsBusiness,
+        hasStaffProfile: capabilities.hasStaffAccess,
+        staffId: capabilities.primaryStaffId,
+        businessIds: capabilities.ownedBusinesses.map(
+          (business) => business.id,
+        ),
       });
 
       if (!cancelled) setLoading(false);
@@ -131,6 +114,7 @@ export default function AuthNav() {
   async function loadNotificationCounts(params: {
     userId: string;
     activePath: string;
+    navRole: Role;
     adminUser: boolean;
     ownsBusiness: boolean;
     hasStaffProfile: boolean;
@@ -148,7 +132,11 @@ export default function AuthNav() {
       return;
     }
 
-    if (params.hasStaffProfile && params.staffId) {
+    if (
+      params.navRole === "staff" &&
+      params.hasStaffProfile &&
+      params.staffId
+    ) {
       const { count: unreadStaffNotifications } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
@@ -168,11 +156,7 @@ export default function AuthNav() {
       return;
     }
 
-    if (
-      (params.ownsBusiness || isBusinessRoute(params.activePath)) &&
-      !isStaffRoute(params.activePath) &&
-      params.businessIds.length > 0
-    ) {
+    if (params.navRole === "business" && params.businessIds.length > 0) {
       const { count: pendingBookingsCount } = await supabase
         .from("bookings")
         .select("id", { count: "exact", head: true })
