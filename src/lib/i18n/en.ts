@@ -2251,4 +2251,42 @@ export const en: TranslationTree = {
   "explore.filters.clearButton": "Clear filters",
   "explore.filters.refreshButton": "Refresh results",
   "staffAvailability.templates.compactTitle": "Quick templates",
+  "staff.workspace.ownerStaffWorkspace":
+    "Staff workspace linked to your owner account",
+  "staff.actions.businessDashboard": "Business dashboard",
+
+  "staffAvailability.ownerStaffAvailability":
+    "Staff availability linked to your owner account",
+
+  "staffNotifications.ownerStaffBody":
+    "Staff updates linked to your owner account, schedule, profile and assigned bookings.",
+
+  "dashboardStaff.card.accountLinkedBody":
+    "This staff profile is connected to a user login. They can access their own staff workspace.",
+  "dashboardStaff.card.invitePending": "Invite pending",
+  "dashboardStaff.card.readyToLink": "Ready to link",
+  "dashboardStaff.card.noLoginEmail": "No login email",
+  "dashboardStaff.card.readyToLinkBody":
+    "This profile can link automatically when the staff member signs up or logs in using this exact email.",
+  "dashboardStaff.card.noLoginEmailBody":
+    "Add an email if this staff member needs their own Mirëbook login. Leave it blank for owner-managed or non-login staff.",
+  "dashboardStaff.card.linkedEmailLockedHint":
+    "Changing this email will not move the linked user login. Use this field only for contact/reference details once linked.",
+  "dashboardStaff.card.emailLinkHint":
+    "Use the exact email this staff member will use to register or log in if they need staff access.",
+
+  "dashboardStaff.ownerAsStaff.linkedTitle":
+    "Owner is also set up as bookable staff",
+  "dashboardStaff.ownerAsStaff.linkedBody":
+    "This owner account is linked to a staff profile, so the owner can manage the business and also use the staff workspace for their own appointments.",
+  "dashboardStaff.ownerAsStaff.confirmDeactivateSelf":
+    "This staff profile is linked to your own account. Deactivating it will not remove your business owner access, but it will stop this staff profile from appearing as bookable for new appointments. Continue?",
+
+  "dashboardStaff.list.linkedLogins": "linked logins",
+  "dashboardStaff.list.readyToLink": "ready to link",
+
+  "dashboardStaff.active.confirmFutureBookings":
+    "This staff member has upcoming pending or confirmed bookings. Deactivating them will hide them from new bookings, but existing bookings will still need reviewing or moving manually. Continue?",
+  "dashboardStaff.active.futureBookingCheckError":
+    "Could not check upcoming bookings for this staff member.",
 };

@@ -2318,4 +2318,42 @@ export const sq: TranslationTree = {
   "explore.filters.sortLabel": "Rendit",
   "explore.filters.clearButton": "Pastro filtrat",
   "explore.filters.refreshButton": "Rifresko rezultatet",
+  "staff.workspace.ownerStaffWorkspace":
+    "Hapësirë stafi e lidhur me llogarinë tënde të pronarit",
+  "staff.actions.businessDashboard": "Paneli i biznesit",
+
+  "staffAvailability.ownerStaffAvailability":
+    "Disponueshmëri stafi e lidhur me llogarinë tënde të pronarit",
+
+  "staffNotifications.ownerStaffBody":
+    "Përditësime stafi të lidhura me llogarinë tënde të pronarit, orarin, profilin dhe rezervimet e caktuara.",
+
+  "dashboardStaff.card.accountLinkedBody":
+    "Ky profil stafi është i lidhur me një hyrje përdoruesi. Ata mund të përdorin hapësirën e tyre të stafit.",
+  "dashboardStaff.card.invitePending": "Ftesa në pritje",
+  "dashboardStaff.card.readyToLink": "Gati për lidhje",
+  "dashboardStaff.card.noLoginEmail": "Pa email hyrjeje",
+  "dashboardStaff.card.readyToLinkBody":
+    "Ky profil mund të lidhet automatikisht kur anëtari i stafit regjistrohet ose hyn duke përdorur pikërisht këtë email.",
+  "dashboardStaff.card.noLoginEmailBody":
+    "Shto një email nëse ky anëtar stafi ka nevojë për hyrjen e vet në Mirëbook. Lëre bosh për staf të menaxhuar nga pronari ose staf pa hyrje.",
+  "dashboardStaff.card.linkedEmailLockedHint":
+    "Ndryshimi i këtij emaili nuk do ta zhvendosë hyrjen e lidhur të përdoruesit. Përdore këtë fushë vetëm për kontakt ose referencë pasi profili është lidhur.",
+  "dashboardStaff.card.emailLinkHint":
+    "Përdor pikërisht emailin që ky anëtar stafi do të përdorë për t’u regjistruar ose për të hyrë nëse ka nevojë për akses stafi.",
+
+  "dashboardStaff.ownerAsStaff.linkedTitle":
+    "Pronari është konfiguruar edhe si staf i rezervueshëm",
+  "dashboardStaff.ownerAsStaff.linkedBody":
+    "Kjo llogari pronari është e lidhur me një profil stafi, kështu pronari mund të menaxhojë biznesin dhe të përdorë edhe hapësirën e stafit për takimet e veta.",
+  "dashboardStaff.ownerAsStaff.confirmDeactivateSelf":
+    "Ky profil stafi është i lidhur me llogarinë tënde. Çaktivizimi nuk do të heqë aksesin tënd si pronar biznesi, por do ta ndalojë këtë profil stafi të shfaqet si i rezervueshëm për takime të reja. Të vazhdohet?",
+
+  "dashboardStaff.list.linkedLogins": "hyrje të lidhura",
+  "dashboardStaff.list.readyToLink": "gati për lidhje",
+
+  "dashboardStaff.active.confirmFutureBookings":
+    "Ky anëtar stafi ka rezervime të ardhshme në pritje ose të konfirmuara. Çaktivizimi do ta fshehë nga rezervimet e reja, por rezervimet ekzistuese duhet ende të kontrollohen ose të zhvendosen manualisht. Të vazhdohet?",
+  "dashboardStaff.active.futureBookingCheckError":
+    "Nuk u kontrolluan dot rezervimet e ardhshme për këtë anëtar stafi.",
 };
