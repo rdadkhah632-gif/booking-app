@@ -80,6 +80,23 @@ export default function StaffProfileCard({
       ? "warning"
       : "muted";
 
+  const bookableStatusLabel = staff.active
+    ? t("dashboardStaff.card.bookableActive", "Bookable: active")
+    : t("dashboardStaff.card.bookableDisabled", "Bookable: disabled");
+  const bookableStatusBody = staff.active
+    ? t(
+        "dashboardStaff.card.bookableActiveBody",
+        "This staff profile can be used for new customer bookings once services and availability are set.",
+      )
+    : t(
+        "dashboardStaff.card.bookableDisabledBody",
+        "This staff profile is saved but hidden from new customer bookings.",
+      );
+  const setupStatusLabel =
+    activeAssignedCount > 0
+      ? `${activeAssignedCount} ${t("dashboardStaff.card.servicesAssigned", "services assigned")}`
+      : t("dashboardStaff.card.noServicesAssigned", "No services assigned");
+
   return (
     <div
       className="card staff-profile-card"
@@ -101,27 +118,24 @@ export default function StaffProfileCard({
 
             <span
               className={`small staff-status-pill staff-status-${inviteStatusTone}`}
+              title={t("dashboardStaff.card.accountLink", "Account link")}
             >
+              {t("dashboardStaff.card.accountLink", "Account link")}:{" "}
               {inviteStatusLabel}
             </span>
 
             <span
               className={`small staff-status-pill ${staff.active ? "staff-status-success" : "staff-status-warning"}`}
+              title={t("dashboardStaff.card.bookableStatus", "Bookable status")}
             >
-              {staff.active
-                ? t("dashboardStaff.card.active", "Active")
-                : t("dashboardStaff.card.inactive", "Inactive")}
+              {bookableStatusLabel}
             </span>
 
             <span
               className={`small staff-status-pill ${activeAssignedCount > 0 ? "staff-status-success" : "staff-status-warning"}`}
+              title={t("dashboardStaff.card.setupStatus", "Setup status")}
             >
-              {activeAssignedCount > 0
-                ? `${activeAssignedCount} ${t("dashboardStaff.card.servicesAssigned", "services assigned")}`
-                : t(
-                    "dashboardStaff.card.noServicesAssigned",
-                    "No services assigned",
-                  )}
+              {t("dashboardStaff.card.setup", "Setup")}: {setupStatusLabel}
             </span>
           </div>
 
@@ -137,12 +151,28 @@ export default function StaffProfileCard({
                 {staff.phone || t("dashboardStaff.card.noPhone", "No phone")}
               </p>
 
-              <div
-                className={`card staff-linking-card staff-linking-${inviteStatusTone}`}
-                style={{ background: "var(--surface-2)" }}
-              >
-                <strong>{inviteStatusLabel}</strong>
-                <p className="small muted staff-line">{inviteStatusBody}</p>
+              <div className="staff-state-grid">
+                <div
+                  className={`card staff-state-card staff-linking-${inviteStatusTone}`}
+                  style={{ background: "var(--surface-2)" }}
+                >
+                  <span className="small muted">
+                    {t("dashboardStaff.card.accountLink", "Account link")}
+                  </span>
+                  <strong>{inviteStatusLabel}</strong>
+                  <p className="small muted staff-line">{inviteStatusBody}</p>
+                </div>
+
+                <div
+                  className={`card staff-state-card ${staff.active ? "staff-linking-success" : "staff-linking-warning"}`}
+                  style={{ background: "var(--surface-2)" }}
+                >
+                  <span className="small muted">
+                    {t("dashboardStaff.card.bookableStatus", "Bookable status")}
+                  </span>
+                  <strong>{bookableStatusLabel}</strong>
+                  <p className="small muted staff-line">{bookableStatusBody}</p>
+                </div>
               </div>
             </>
           )}
@@ -328,14 +358,20 @@ export default function StaffProfileCard({
           margin-top: 0;
         }
 
-        .staff-linking-card {
+        .staff-state-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+          margin-top: 0.25rem;
+        }
+
+        .staff-state-card {
           display: grid;
           gap: 0.45rem;
-          margin-top: 0.25rem;
           padding: 0.85rem;
         }
 
-        .staff-linking-card p {
+        .staff-state-card p {
           margin-top: 0;
         }
 
@@ -412,6 +448,10 @@ export default function StaffProfileCard({
         }
 
         @media (max-width: 640px) {
+          .staff-state-grid {
+            grid-template-columns: 1fr;
+          }
+
           .staff-card-actions,
           .staff-card-actions :global(.btn),
           .staff-card-actions a,

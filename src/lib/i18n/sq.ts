@@ -2398,4 +2398,14 @@ export const sq: TranslationTree = {
   "staff.ownerSetup.stepBookableBody":
     "Shtoje veten këtu vetëm nëse klientët duhet të mund të rezervojnë takime drejtpërdrejt me ty.",
   "staff.ownerSetup.addSelf": "Më shto si staf të rezervueshëm",
+  "dashboardStaff.card.accountLink": "Lidhja e llogarisë",
+  "dashboardStaff.card.bookableStatus": "Statusi i rezervimit",
+  "dashboardStaff.card.bookableActive": "I rezervueshëm: aktiv",
+  "dashboardStaff.card.bookableDisabled": "I rezervueshëm: i çaktivizuar",
+  "dashboardStaff.card.bookableActiveBody":
+    "Ky profil stafi mund të përdoret për rezervime të reja të klientëve pasi të caktohen shërbimet dhe disponueshmëria.",
+  "dashboardStaff.card.bookableDisabledBody":
+    "Ky profil stafi është ruajtur, por është i fshehur nga rezervimet e reja të klientëve.",
+  "dashboardStaff.card.setupStatus": "Statusi i konfigurimit",
+  "dashboardStaff.card.setup": "Konfigurimi",
 };

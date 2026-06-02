@@ -2331,4 +2331,14 @@ export const en: TranslationTree = {
   "staff.ownerSetup.stepBookableBody":
     "Only add yourself here if customers should be able to book appointments directly with you.",
   "staff.ownerSetup.addSelf": "Add myself as bookable staff",
+  "dashboardStaff.card.accountLink": "Account link",
+  "dashboardStaff.card.bookableStatus": "Bookable status",
+  "dashboardStaff.card.bookableActive": "Bookable: active",
+  "dashboardStaff.card.bookableDisabled": "Bookable: disabled",
+  "dashboardStaff.card.bookableActiveBody":
+    "This staff profile can be used for new customer bookings once services and availability are set.",
+  "dashboardStaff.card.bookableDisabledBody":
+    "This staff profile is saved but hidden from new customer bookings.",
+  "dashboardStaff.card.setupStatus": "Setup status",
+  "dashboardStaff.card.setup": "Setup",
 };
