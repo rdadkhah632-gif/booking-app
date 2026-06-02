@@ -3,11 +3,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type StaffProfile = {
   id: string;
   business_id: string;
   name: string;
+  businesses?: { name?: string | null } | { name?: string | null }[] | null;
 };
 
 type Booking = {
@@ -50,6 +52,13 @@ function serviceName(booking: Booking, fallback: string) {
     : booking.services.name || fallback;
 }
 
+function staffBusinessName(staff: StaffProfile | null, fallback: string) {
+  if (!staff?.businesses) return fallback;
+  return Array.isArray(staff.businesses)
+    ? staff.businesses[0]?.name || fallback
+    : staff.businesses.name || fallback;
+}
+
 function statusColor(status: string) {
   if (status === "pending") return "var(--accent)";
   if (status === "confirmed") return "var(--success)";
@@ -62,6 +71,7 @@ export default function StaffCalendarPage() {
   const { t } = useI18n();
 
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
+  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState(
     formatDateInputValue(new Date()),
@@ -86,12 +96,35 @@ export default function StaffCalendarPage() {
       window.location.href = "/login?redirectTo=/staff/calendar";
       return;
     }
+    const capabilities = await getAccountCapabilities(
+      session.user.id,
+      session.user.email,
+    );
+
+    setHasBusinessWorkspace(capabilities.canUseBusiness);
+
+    if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
+      setStaffProfile(null);
+      setBookings([]);
+      setError(t("staff.noProfile.kicker", "No staff profile linked"));
+      setLoading(false);
+      return;
+    }
 
     const { data: staffData, error: staffError } = await supabase
       .from("staff_members")
-      .select("id, business_id, name")
+      .select(
+        `
+        id,
+        business_id,
+        name,
+        businesses (
+          name
+        )
+      `,
+      )
+      .eq("id", capabilities.primaryStaffId)
       .eq("user_id", session.user.id)
-      .limit(1)
       .maybeSingle();
 
     if (staffError || !staffData) {
@@ -103,7 +136,8 @@ export default function StaffCalendarPage() {
       return;
     }
 
-    setStaffProfile(staffData);
+    const normalisedStaff = staffData as unknown as StaffProfile;
+    setStaffProfile(normalisedStaff);
 
     const from = startOfMonth(addDays(monthCursor, -7)).toISOString();
     const to = endOfMonth(addDays(monthCursor, 35)).toISOString();
@@ -125,7 +159,7 @@ export default function StaffCalendarPage() {
         )
       `,
       )
-      .eq("staff_member_id", staffData.id)
+      .eq("staff_member_id", normalisedStaff.id)
       .gte("start_at", from)
       .lte("start_at", to)
       .order("start_at", { ascending: true });
@@ -201,10 +235,19 @@ export default function StaffCalendarPage() {
               {t("staffCalendar.title", "Calendar view")}
             </h1>
             <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-              {t(
-                "staffCalendar.body",
-                "Look ahead across your assigned bookings and plan your working days.",
-              )}
+              {staffProfile
+                ? `${staffBusinessName(staffProfile, t("staff.fallback.business", "Your business"))} · ${
+                    hasBusinessWorkspace
+                      ? t(
+                          "staff.workspace.ownerStaffWorkspace",
+                          "Staff workspace linked to your owner account",
+                        )
+                      : t("staff.workspace.staffOnly", "Staff-only workspace")
+                  }`
+                : t(
+                    "staffCalendar.body",
+                    "Look ahead across your assigned bookings and plan your working days.",
+                  )}
             </p>
           </div>
 
@@ -212,6 +255,11 @@ export default function StaffCalendarPage() {
             <Link href="/staff/availability" className="btn btn-accent">
               {t("staff.actions.updateAvailability", "Update availability")}
             </Link>
+            {hasBusinessWorkspace && (
+              <Link href="/dashboard" className="btn btn-ghost">
+                {t("staff.actions.businessDashboard", "Business dashboard")}
+              </Link>
+            )}
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type Notification = {
   id: string;
@@ -108,6 +109,7 @@ export default function StaffNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
 
   useEffect(() => {
     loadNotifications();
@@ -126,15 +128,15 @@ export default function StaffNotificationsPage() {
       return;
     }
 
-    const { data: linkedStaff } = await supabase
-      .from("staff_members")
-      .select("id")
-      .eq("user_id", session.user.id)
-      .limit(1)
-      .maybeSingle();
+    const capabilities = await getAccountCapabilities(
+      session.user.id,
+      session.user.email,
+    );
 
-    if (!linkedStaff) {
-      window.location.href = "/my-bookings";
+    setHasBusinessWorkspace(capabilities.canUseBusiness);
+
+    if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
+      window.location.href = capabilities.defaultRoute;
       return;
     }
 
@@ -212,15 +214,24 @@ export default function StaffNotificationsPage() {
               {t("staffNotifications.title", "Updates")}
             </h1>
             <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-              {t(
-                "staffNotifications.body",
-                "Staff-only updates for your schedule, profile and assigned bookings.",
-              )}
+              {hasBusinessWorkspace
+                ? t(
+                    "staffNotifications.ownerStaffBody",
+                    "Staff updates linked to your owner account, schedule, profile and assigned bookings.",
+                  )
+                : t(
+                    "staffNotifications.body",
+                    "Staff-only updates for your schedule, profile and assigned bookings.",
+                  )}
             </p>
           </div>
 
           <div className="page-header-actions">
-
+            {hasBusinessWorkspace && (
+              <Link href="/dashboard" className="btn btn-ghost">
+                {t("staff.actions.businessDashboard", "Business dashboard")}
+              </Link>
+            )}
             <button
               type="button"
               onClick={markAllRead}
@@ -340,9 +351,7 @@ export default function StaffNotificationsPage() {
                       </span>
                     </div>
 
-                    <p className="muted">
-                      {displayNotification.message}
-                    </p>
+                    <p className="muted">{displayNotification.message}</p>
 
                     <p className="small muted">
                       {new Date(item.created_at).toLocaleString()}
@@ -356,8 +365,6 @@ export default function StaffNotificationsPage() {
                           {t("common.open", "Open")}
                         </Link>
                       )}
-
-
                     {!item.read_at && (
                       <button
                         type="button"

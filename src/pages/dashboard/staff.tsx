@@ -497,6 +497,50 @@ export default function StaffPage() {
     const assignedServices = assignedServicesForStaff(member.id);
     const openDays = openDaysForStaff(member.id);
 
+    if (member.active) {
+      try {
+        const futureBookingCount = await futureBookingsForStaff(member.id);
+
+        if (futureBookingCount > 0) {
+          const confirmed = confirm(
+            t(
+              "dashboardStaff.active.confirmFutureBookings",
+              "This staff member has upcoming pending or confirmed bookings. Deactivating them will hide them from new bookings, but existing bookings will still need reviewing or moving manually. Continue?",
+            ),
+          );
+
+          if (!confirmed) {
+            setActionLoadingKey(null);
+            return;
+          }
+        }
+      } catch (err: any) {
+        setActionLoadingKey(null);
+        setError(
+          err.message ||
+            t(
+              "dashboardStaff.active.futureBookingCheckError",
+              "Could not check upcoming bookings for this staff member.",
+            ),
+        );
+        return;
+      }
+    }
+
+    if (member.active && member.user_id && member.user_id === accountUserId) {
+      const confirmed = confirm(
+        t(
+          "dashboardStaff.ownerAsStaff.confirmDeactivateSelf",
+          "This staff profile is linked to your own account. Deactivating it will not remove your business owner access, but it will stop this staff profile from appearing as bookable for new appointments. Continue?",
+        ),
+      );
+
+      if (!confirmed) {
+        setActionLoadingKey(null);
+        return;
+      }
+    }
+
     if (!member.active && (assignedServices.length === 0 || openDays === 0)) {
       const confirmed = confirm(
         t(
@@ -525,7 +569,7 @@ export default function StaffPage() {
     setSuccess(
       !member.active
         ? `${member.name} ${t("dashboardStaff.active.nowActive", "is now active for booking.")}`
-        : `${member.name} ${t("dashboardStaff.active.nowHidden", "is hidden from booking.")}`,
+        : `${member.name} ${t("dashboardStaff.active.nowHidden", "is hidden from new bookings. Existing bookings were not changed.")}`,
     );
     await loadPage();
   }
@@ -541,6 +585,18 @@ export default function StaffPage() {
     return staffAvailability.filter(
       (row) => row.staff_member_id === staffId && row.is_closed !== true,
     ).length;
+  }
+
+  async function futureBookingsForStaff(staffId: string) {
+    const { count, error } = await supabase
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("staff_member_id", staffId)
+      .in("status", ["pending", "confirmed"])
+      .gte("start_at", new Date().toISOString());
+
+    if (error) throw error;
+    return count || 0;
   }
 
   async function toggleStaffService(
@@ -718,7 +774,7 @@ export default function StaffPage() {
                     )
                   : t(
                       "dashboardStaff.ownerAsStaff.body",
-                      "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.",
+                      "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only. Deactivating a staff profile hides it from new bookings but does not delete the personal account.",
                     )}
               </p>
             </div>
