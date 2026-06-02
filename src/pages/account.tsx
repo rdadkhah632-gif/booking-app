@@ -613,6 +613,59 @@ export default function AccountPage() {
               </div>
             )}
 
+            {ownsBusiness && (
+              <div className="card account-owner-booking-card">
+                <div className="account-card-heading">
+                  <p className="small muted">
+                    {t("account.ownerBooking.kicker", "Owner booking status")}
+                  </p>
+                  <h3>
+                    {hasLinkedStaffProfile
+                      ? t(
+                          "account.ownerBooking.linkedTitle",
+                          "You are set up as bookable staff",
+                        )
+                      : t(
+                          "account.ownerBooking.notLinkedTitle",
+                          "You are not set up as bookable staff",
+                        )}
+                  </h3>
+                  <p className="small muted">
+                    {hasLinkedStaffProfile
+                      ? t(
+                          "account.ownerBooking.linkedBody",
+                          "Customers can book appointments with you personally once your services and availability are configured.",
+                        )
+                      : t(
+                          "account.ownerBooking.notLinkedBody",
+                          "If you personally take appointments, set yourself up as bookable staff. If you only manage the business, you can leave this off.",
+                        )}
+                  </p>
+                </div>
+                <div className="account-card-actions">
+                  <Link href="/staff" className="btn btn-accent">
+                    {hasLinkedStaffProfile
+                      ? t("staff.schedule.title", "My schedule")
+                      : t(
+                          "staff.ownerSetup.addSelf",
+                          "Add myself as bookable staff",
+                        )}
+                  </Link>
+                  {hasLinkedStaffProfile && (
+                    <Link href="/staff/availability" className="btn btn-ghost">
+                      {t(
+                        "staff.actions.updateAvailability",
+                        "Update availability",
+                      )}
+                    </Link>
+                  )}
+                  <Link href="/dashboard/staff" className="btn btn-ghost">
+                    {t("dashboardStaff.pageTitle", "Staff")}
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {isAdmin && (
               <div className="card operator-account-card">
                 <div className="operator-account-row">
@@ -994,8 +1047,21 @@ export default function AccountPage() {
           border-color: rgba(255, 107, 53, 0.25);
         }
 
+        .account-owner-booking-card {
+          display: grid;
+          gap: 0.75rem;
+          border-color: rgba(45, 212, 191, 0.25);
+          background: linear-gradient(
+            135deg,
+            rgba(45, 212, 191, 0.08),
+            rgba(255, 107, 53, 0.04)
+          );
+        }
+
         .account-business-settings-card h3,
-        .account-business-settings-card p {
+        .account-business-settings-card p,
+        .account-owner-booking-card h3,
+        .account-owner-booking-card p {
           margin-top: 0;
         }
 

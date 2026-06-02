@@ -1,75 +1,92 @@
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import DashboardLayout from '@/components/DashboardLayout'
-import BusinessSettingsActions from '@/components/dashboard-settings/BusinessSettingsActions'
-import BusinessSettingsHeader from '@/components/dashboard-settings/BusinessSettingsHeader'
-import BusinessSettingsSummary from '@/components/dashboard-settings/BusinessSettingsSummary'
-import BookingApprovalSettings from '@/components/dashboard-settings/BookingApprovalSettings'
-import BookingRuleSettings from '@/components/dashboard-settings/BookingRuleSettings'
-import PolicySettings from '@/components/dashboard-settings/PolicySettings'
-import RegionSettings from '@/components/dashboard-settings/RegionSettings'
-import { Business } from '@/components/dashboard-settings/dashboardSettingsTypes'
-import { defaultSettings } from '@/components/dashboard-settings/settingsOptions'
-import { useI18n } from '@/lib/useI18n'
-import { supabase } from '@/lib/supabaseClient'
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import DashboardLayout from "@/components/DashboardLayout";
+import BusinessSettingsActions from "@/components/dashboard-settings/BusinessSettingsActions";
+import BusinessSettingsHeader from "@/components/dashboard-settings/BusinessSettingsHeader";
+import BusinessSettingsSummary from "@/components/dashboard-settings/BusinessSettingsSummary";
+import BookingApprovalSettings from "@/components/dashboard-settings/BookingApprovalSettings";
+import BookingRuleSettings from "@/components/dashboard-settings/BookingRuleSettings";
+import PolicySettings from "@/components/dashboard-settings/PolicySettings";
+import RegionSettings from "@/components/dashboard-settings/RegionSettings";
+import { Business } from "@/components/dashboard-settings/dashboardSettingsTypes";
+import { defaultSettings } from "@/components/dashboard-settings/settingsOptions";
+import { useI18n } from "@/lib/useI18n";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function DashboardSettingsPage() {
-  const router = useRouter()
-  const { t } = useI18n()
+  const router = useRouter();
+  const { t } = useI18n();
 
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [selectedBusinessId, setSelectedBusinessId] = useState('')
-  const [settings, setSettings] = useState<Business | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [selectedBusinessId, setSelectedBusinessId] = useState("");
+  const [settings, setSettings] = useState<Business | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [ownerStaffBusinessIds, setOwnerStaffBusinessIds] = useState<string[]>(
+    [],
+  );
 
   const selectedBusiness = useMemo(() => {
-    return businesses.find((business) => business.id === selectedBusinessId) || null
-  }, [businesses, selectedBusinessId])
+    return (
+      businesses.find((business) => business.id === selectedBusinessId) || null
+    );
+  }, [businesses, selectedBusinessId]);
+
+  const ownerIsBookableStaff = selectedBusinessId
+    ? ownerStaffBusinessIds.includes(selectedBusinessId)
+    : false;
 
   const settingsReadyScore = useMemo(() => {
-    if (!settings) return 0
+    if (!settings) return 0;
 
     const checks = [
       Boolean(settings.booking_interval_minutes),
-      settings.min_notice_minutes !== null && settings.min_notice_minutes !== undefined,
+      settings.min_notice_minutes !== null &&
+        settings.min_notice_minutes !== undefined,
       Boolean(settings.max_advance_days),
-      settings.buffer_before_minutes !== null && settings.buffer_before_minutes !== undefined,
-      settings.buffer_after_minutes !== null && settings.buffer_after_minutes !== undefined,
+      settings.buffer_before_minutes !== null &&
+        settings.buffer_before_minutes !== undefined,
+      settings.buffer_after_minutes !== null &&
+        settings.buffer_after_minutes !== undefined,
       Boolean(settings.cancellation_policy?.trim()),
       Boolean(settings.reschedule_policy?.trim()),
       Boolean(settings.timezone),
-      Boolean(settings.currency)
-    ]
+      Boolean(settings.currency),
+    ];
 
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100)
-  }, [settings])
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  }, [settings]);
 
-  const selectedBusinessPublicHref = settings ? `/explore/${settings.id}` : '/dashboard/businesses'
+  const selectedBusinessPublicHref = settings
+    ? `/explore/${settings.id}`
+    : "/dashboard/businesses";
 
   const approvalModeLabel = settings?.auto_accept_bookings
-    ? t('dashboardSettings.approval.instantTitle', 'Instant confirmation')
-    : t('dashboardSettings.approval.manualTitle', 'Manual approval')
+    ? t("dashboardSettings.approval.instantTitle", "Instant confirmation")
+    : t("dashboardSettings.approval.manualTitle", "Manual approval");
 
   async function loadSettings() {
-    setLoading(true)
-    setError(null)
-    setSuccess(null)
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace('/login?redirectTo=/dashboard/settings')
-        return
+        router.replace("/login?redirectTo=/dashboard/settings");
+        return;
       }
 
       const { data, error } = await supabase
-        .from('businesses')
-        .select(`
+        .from("businesses")
+        .select(
+          `
           id,
           name,
           published,
@@ -83,61 +100,88 @@ export default function DashboardSettingsPage() {
           reschedule_policy,
           timezone,
           currency
-        `)
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true })
+        `,
+        )
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: true });
 
-      if (error) throw error
+      if (error) throw error;
 
-      const ownedBusinesses = (data || []) as Business[]
-      setBusinesses(ownedBusinesses)
+      const ownedBusinesses = (data || []) as Business[];
+      setBusinesses(ownedBusinesses);
 
-      const queryBusinessId = typeof router.query.businessId === 'string'
-        ? router.query.businessId
-        : ''
+      const businessIds = ownedBusinesses.map((business) => business.id);
+
+      if (businessIds.length > 0) {
+        const { data: ownerStaffRows, error: ownerStaffError } = await supabase
+          .from("staff_members")
+          .select("business_id")
+          .eq("user_id", session.user.id)
+          .in("business_id", businessIds);
+
+        if (ownerStaffError) throw ownerStaffError;
+
+        setOwnerStaffBusinessIds(
+          (ownerStaffRows || [])
+            .map((row: { business_id?: string | null }) => row.business_id)
+            .filter(Boolean) as string[],
+        );
+      } else {
+        setOwnerStaffBusinessIds([]);
+      }
+
+      const queryBusinessId =
+        typeof router.query.businessId === "string"
+          ? router.query.businessId
+          : "";
 
       const nextSelectedBusiness =
         ownedBusinesses.find((business) => business.id === queryBusinessId) ||
         ownedBusinesses[0] ||
-        null
+        null;
 
       if (nextSelectedBusiness) {
-        setSelectedBusinessId(nextSelectedBusiness.id)
-        setSettings(defaultSettings(nextSelectedBusiness))
+        setSelectedBusinessId(nextSelectedBusiness.id);
+        setSettings(defaultSettings(nextSelectedBusiness));
       } else {
-        setSelectedBusinessId('')
-        setSettings(null)
+        setSelectedBusinessId("");
+        setSettings(null);
       }
 
-      setLoading(false)
+      setLoading(false);
     } catch (err: any) {
-      setError(err.message || t('dashboardSettings.error.load', 'Could not load business settings.'))
-      setLoading(false)
+      setError(
+        err.message ||
+          t(
+            "dashboardSettings.error.load",
+            "Could not load business settings.",
+          ),
+      );
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-    if (!router.isReady) return
-    loadSettings()
-  }, [router.isReady])
-
+    if (!router.isReady) return;
+    loadSettings();
+  }, [router.isReady]);
 
   function updateSetting<K extends keyof Business>(key: K, value: Business[K]) {
     setSettings((current) => {
-      if (!current) return current
+      if (!current) return current;
       return {
         ...current,
-        [key]: value
-      }
-    })
+        [key]: value,
+      };
+    });
   }
 
   async function saveSettings() {
-    if (!settings) return
+    if (!settings) return;
 
-    setSaving(true)
-    setError(null)
-    setSuccess(null)
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
 
     const payload = {
       auto_accept_bookings: settings.auto_accept_bookings ?? false,
@@ -148,60 +192,93 @@ export default function DashboardSettingsPage() {
       buffer_after_minutes: settings.buffer_after_minutes ?? 0,
       cancellation_policy: settings.cancellation_policy?.trim() || null,
       reschedule_policy: settings.reschedule_policy?.trim() || null,
-      timezone: settings.timezone || 'Europe/London',
-      currency: settings.currency || 'GBP'
-    }
+      timezone: settings.timezone || "Europe/London",
+      currency: settings.currency || "GBP",
+    };
 
     const { error } = await supabase
-      .from('businesses')
+      .from("businesses")
       .update(payload)
-      .eq('id', settings.id)
+      .eq("id", settings.id);
 
-    setSaving(false)
+    setSaving(false);
 
     if (error) {
-      setError(error.message)
-      return
+      setError(error.message);
+      return;
     }
 
     setSuccess(
-      `${settings.name} ${t('dashboardSettings.success.saved', 'settings saved.')} ${
+      `${settings.name} ${t("dashboardSettings.success.saved", "settings saved.")} ${
         settings.auto_accept_bookings
-          ? t('dashboardSettings.success.instant', 'New bookings will confirm instantly.')
-          : t('dashboardSettings.success.manual', 'New bookings will go to Needs action for approval.')
-      }`
-    )
-    await loadSettings()
+          ? t(
+              "dashboardSettings.success.instant",
+              "New bookings will confirm instantly.",
+            )
+          : t(
+              "dashboardSettings.success.manual",
+              "New bookings will go to Needs action for approval.",
+            )
+      }`,
+    );
+    await loadSettings();
   }
 
   function settingSummary() {
-    if (!settings) return t('dashboardSettings.chooseBusiness', 'Choose a business to manage its booking settings.')
+    if (!settings)
+      return t(
+        "dashboardSettings.chooseBusiness",
+        "Choose a business to manage its booking settings.",
+      );
 
-    return `${approvalModeLabel} · ${settings.booking_interval_minutes || 30} ${t('dashboardSettings.summary.minuteSlots', 'minute slots')} · ${settings.min_notice_minutes || 0} ${t('dashboardSettings.summary.minuteNotice', 'minute notice')} · ${settings.max_advance_days || 60} ${t('dashboardSettings.summary.daysAhead', 'days ahead')}`
+    return `${approvalModeLabel} · ${settings.booking_interval_minutes || 30} ${t("dashboardSettings.summary.minuteSlots", "minute slots")} · ${settings.min_notice_minutes || 0} ${t("dashboardSettings.summary.minuteNotice", "minute notice")} · ${settings.max_advance_days || 60} ${t("dashboardSettings.summary.daysAhead", "days ahead")}`;
   }
 
   return (
     <DashboardLayout
-      title={t('dashboardSettings.pageTitle', 'Business settings')}
-      subtitle={selectedBusiness ? `${t('dashboardSettings.subtitleSelected', 'Control booking approval, rules, policies and billing for')} ${selectedBusiness.name}.` : t('dashboardSettings.subtitle', 'Control booking approval, rules, policies and billing.')}
+      title={t("dashboardSettings.pageTitle", "Business settings")}
+      subtitle={
+        selectedBusiness
+          ? `${t("dashboardSettings.subtitleSelected", "Control booking approval, rules, policies and billing for")} ${selectedBusiness.name}.`
+          : t(
+              "dashboardSettings.subtitle",
+              "Control booking approval, rules, policies and billing.",
+            )
+      }
     >
       {loading && (
         <div className="card">
-          <p className="muted">{t('dashboardSettings.loading', 'Loading Mirëbook business settings...')}</p>
+          <p className="muted">
+            {t(
+              "dashboardSettings.loading",
+              "Loading Mirëbook business settings...",
+            )}
+          </p>
         </div>
       )}
 
       {!loading && businesses.length === 0 && (
         <div className="card">
-          <p className="small" style={{ color: 'var(--warning)' }}>{t('dashboardSettings.empty.kicker', 'No business profile found')}</p>
-          <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.35rem' }}>
-            {t('dashboardSettings.empty.title', 'Create a business first')}
-          </h2>
-          <p className="muted" style={{ marginTop: '0.5rem' }}>
-            {t('dashboardSettings.empty.body', 'Business settings become available after you create a Mirëbook business profile.')}
+          <p className="small" style={{ color: "var(--warning)" }}>
+            {t("dashboardSettings.empty.kicker", "No business profile found")}
           </p>
-          <Link href="/dashboard/businesses" className="btn btn-accent" style={{ marginTop: '1rem' }}>
-            {t('dashboardSettings.setupHub', 'Open setup hub')}
+          <h2
+            style={{ fontFamily: "var(--font-display)", marginTop: "0.35rem" }}
+          >
+            {t("dashboardSettings.empty.title", "Create a business first")}
+          </h2>
+          <p className="muted" style={{ marginTop: "0.5rem" }}>
+            {t(
+              "dashboardSettings.empty.body",
+              "Business settings become available after you create a Mirëbook business profile.",
+            )}
+          </p>
+          <Link
+            href="/dashboard/businesses"
+            className="btn btn-accent"
+            style={{ marginTop: "1rem" }}
+          >
+            {t("dashboardSettings.setupHub", "Open setup hub")}
           </Link>
         </div>
       )}
@@ -209,14 +286,27 @@ export default function DashboardSettingsPage() {
       {!loading && businesses.length > 0 && settings && (
         <>
           {error && (
-            <div className="card" style={{ borderColor: 'rgba(255,77,109,0.35)', marginBottom: '1rem' }}>
-              <p style={{ color: 'var(--danger)' }}>{error}</p>
+            <div
+              className="card"
+              style={{
+                borderColor: "rgba(255,77,109,0.35)",
+                marginBottom: "1rem",
+              }}
+            >
+              <p style={{ color: "var(--danger)" }}>{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="card" style={{ borderColor: 'rgba(45,212,191,0.35)', background: 'rgba(45,212,191,0.06)', marginBottom: '1rem' }}>
-              <p style={{ color: 'var(--success)' }}>{success}</p>
+            <div
+              className="card"
+              style={{
+                borderColor: "rgba(45,212,191,0.35)",
+                background: "rgba(45,212,191,0.06)",
+                marginBottom: "1rem",
+              }}
+            >
+              <p style={{ color: "var(--success)" }}>{success}</p>
             </div>
           )}
 
@@ -236,18 +326,37 @@ export default function DashboardSettingsPage() {
           />
 
           {businesses.length > 1 && (
-            <div className="card" style={{ borderColor: 'rgba(255,190,11,0.28)', marginBottom: '1rem' }}>
+            <div
+              className="card"
+              style={{
+                borderColor: "rgba(255,190,11,0.28)",
+                marginBottom: "1rem",
+              }}
+            >
               <p className="small muted">
-                {t('dashboardSettings.multiBusinessNotice', 'This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.')}
+                {t(
+                  "dashboardSettings.multiBusinessNotice",
+                  "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
+                )}
               </p>
             </div>
           )}
 
           <div className="settings-section-heading">
-            <p className="small muted">{t('dashboardSettings.bookingSection.kicker', 'Booking settings')}</p>
-            <h2>{t('dashboardSettings.bookingSection.title', 'Rules and policies')}</h2>
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardSettings.bookingSection.body', 'Control how customers book, how far ahead they can book, and what happens when they need to cancel or reschedule.')}
+            <p className="small muted">
+              {t("dashboardSettings.bookingSection.kicker", "Booking settings")}
+            </p>
+            <h2>
+              {t(
+                "dashboardSettings.bookingSection.title",
+                "Rules and policies",
+              )}
+            </h2>
+            <p className="small muted" style={{ marginTop: "0.35rem" }}>
+              {t(
+                "dashboardSettings.bookingSection.body",
+                "Control how customers book, how far ahead they can book, and what happens when they need to cancel or reschedule.",
+              )}
             </p>
           </div>
 
@@ -263,44 +372,91 @@ export default function DashboardSettingsPage() {
               updateSetting={updateSetting}
             />
 
-            <RegionSettings
-              settings={settings}
-              updateSetting={updateSetting}
-            />
+            <RegionSettings settings={settings} updateSetting={updateSetting} />
           </div>
 
-          <PolicySettings
-            settings={settings}
-            updateSetting={updateSetting}
-          />
+          <PolicySettings settings={settings} updateSetting={updateSetting} />
 
           <div className="card settings-tools-card">
             <div>
-              <p className="small muted">{t('dashboardSettings.tools.kicker', 'Related settings')}</p>
-              <h3>{t('dashboardSettings.tools.title', 'Other business controls')}</h3>
-              <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                {t('dashboardSettings.tools.body', 'Use these when you need to adjust opening times, billing or business support.')}
+              <p className="small muted">
+                {t("dashboardSettings.tools.kicker", "Related settings")}
+              </p>
+              <h3>
+                {t("dashboardSettings.tools.title", "Other business controls")}
+              </h3>
+              <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                {t(
+                  "dashboardSettings.tools.body",
+                  "Use these when you need to adjust opening times, billing or business support.",
+                )}
               </p>
             </div>
 
             <div className="settings-tools-grid">
-              <Link href="/dashboard/availability" className="settings-tool-link">
-                <strong>{t('dashboardSettings.tools.availability', 'Availability')}</strong>
-                <span>{t('dashboardSettings.tools.availabilityBody', 'Set business-wide opening days and hours.')}</span>
+              <Link
+                href="/dashboard/availability"
+                className="settings-tool-link"
+              >
+                <strong>
+                  {t("dashboardSettings.tools.availability", "Availability")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.tools.availabilityBody",
+                    "Set business-wide opening days and hours.",
+                  )}
+                </span>
+              </Link>
+
+              <Link
+                href="/staff"
+                className="settings-tool-link settings-tool-link-owner"
+              >
+                <strong>
+                  {t(
+                    "dashboardSettings.tools.ownerBooking",
+                    "Owner booking status",
+                  )}
+                </strong>
+                <span>
+                  {ownerIsBookableStaff
+                    ? t(
+                        "dashboardSettings.tools.ownerBookingLinkedBody",
+                        "You are set up as bookable staff. Manage your personal schedule and availability.",
+                      )
+                    : t(
+                        "dashboardSettings.tools.ownerBookingBody",
+                        "Set yourself up as bookable staff only if customers should book appointments directly with you.",
+                      )}
+                </span>
               </Link>
 
               <Link href="/dashboard/billing" className="settings-tool-link">
-                <strong>{t('dashboardSettings.tools.billing', 'Billing')}</strong>
-                <span>{t('dashboardSettings.tools.billingBody', 'View plan, trial and payment settings.')}</span>
+                <strong>
+                  {t("dashboardSettings.tools.billing", "Billing")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.tools.billingBody",
+                    "View plan, trial and payment settings.",
+                  )}
+                </span>
               </Link>
 
               <Link href="/support/business" className="settings-tool-link">
-                <strong>{t('dashboardSettings.tools.support', 'Business support')}</strong>
-                <span>{t('dashboardSettings.tools.supportBody', 'Get help with setup, bookings or account changes.')}</span>
+                <strong>
+                  {t("dashboardSettings.tools.support", "Business support")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.tools.supportBody",
+                    "Get help with setup, bookings or account changes.",
+                  )}
+                </span>
               </Link>
             </div>
           </div>
-
 
           <BusinessSettingsActions
             selectedBusiness={selectedBusiness}
@@ -327,8 +483,12 @@ export default function DashboardSettingsPage() {
           align-items: flex-start;
           flex-wrap: wrap;
           margin-bottom: 1.5rem;
-          background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.08));
-          border-color: rgba(255,107,53,0.25);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 107, 53, 0.12),
+            rgba(45, 212, 191, 0.08)
+          );
+          border-color: rgba(255, 107, 53, 0.25);
         }
 
         .settings-hero-actions,
@@ -347,7 +507,7 @@ export default function DashboardSettingsPage() {
 
         .settings-tools-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 0.75rem;
         }
 
@@ -360,6 +520,11 @@ export default function DashboardSettingsPage() {
           background: var(--surface-2);
           color: var(--text);
           text-decoration: none;
+        }
+
+        .settings-tool-link-owner {
+          border-color: rgba(45, 212, 191, 0.28);
+          background: rgba(45, 212, 191, 0.06);
         }
 
         .settings-tool-link span {
@@ -386,7 +551,6 @@ export default function DashboardSettingsPage() {
           gap: 0.75rem;
         }
 
-
         .settings-approval-card {
           grid-column: 1 / -1;
         }
@@ -410,7 +574,7 @@ export default function DashboardSettingsPage() {
         }
 
         .settings-mode-card-active {
-          border-color: rgba(255,107,53,0.45);
+          border-color: rgba(255, 107, 53, 0.45);
           background: var(--accent-dim);
         }
 
@@ -454,5 +618,5 @@ export default function DashboardSettingsPage() {
         }
       `}</style>
     </DashboardLayout>
-  )
+  );
 }

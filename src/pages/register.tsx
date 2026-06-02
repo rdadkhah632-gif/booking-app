@@ -29,6 +29,7 @@ export default function RegisterPage() {
   const [businessCategory, setBusinessCategory] = useState("");
   const [businessCity, setBusinessCity] = useState("");
   const [businessCountry, setBusinessCountry] = useState("Albania");
+  const [ownerTakesBookings, setOwnerTakesBookings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -177,7 +178,7 @@ export default function RegisterPage() {
       // staff invite linking now handled automatically elsewhere
 
       if (role === "business") {
-        const { error: businessError } = await supabase
+        const { data: createdBusiness, error: businessError } = await supabase
           .from("businesses")
           .insert({
             user_id: data.user.id,
@@ -187,12 +188,42 @@ export default function RegisterPage() {
             city: businessCity.trim(),
             country: businessCountry.trim(),
             published: false,
-          });
+          })
+          .select("id")
+          .single<{ id: string }>();
 
-        if (businessError) {
-          setError(businessError.message);
+        if (businessError || !createdBusiness) {
+          setError(
+            businessError?.message ||
+              t(
+                "register.business.createError",
+                "Could not create business profile.",
+              ),
+          );
           setLoading(false);
           return;
+        }
+
+        if (ownerTakesBookings) {
+          const ownerName = cleanEmail.split("@")[0] || "Owner";
+          const { error: ownerStaffError } = await supabase
+            .from("staff_members")
+            .insert({
+              business_id: createdBusiness.id,
+              user_id: data.user.id,
+              name: ownerName,
+              email: cleanEmail,
+              role_title: t("staff.ownerSetup.defaultRole", "Owner"),
+              permission_role: "owner",
+              invite_status: "linked",
+              active: true,
+            });
+
+          if (ownerStaffError) {
+            setError(ownerStaffError.message);
+            setLoading(false);
+            return;
+          }
         }
       }
     }
@@ -562,6 +593,29 @@ export default function RegisterPage() {
                     required={role === "business"}
                   />
                 </div>
+                <label className="register-owner-staff-option">
+                  <input
+                    type="checkbox"
+                    checked={ownerTakesBookings}
+                    onChange={(event) =>
+                      setOwnerTakesBookings(event.target.checked)
+                    }
+                  />
+                  <span>
+                    <strong>
+                      {t(
+                        "register.business.ownerTakesBookings",
+                        "I also take bookings myself",
+                      )}
+                    </strong>
+                    <span className="small muted">
+                      {t(
+                        "register.business.ownerTakesBookingsBody",
+                        "Create a linked owner staff profile so customers can book appointments with you personally. You can assign services and availability after registration.",
+                      )}
+                    </span>
+                  </span>
+                </label>
               </div>
             )}
 
@@ -682,6 +736,27 @@ export default function RegisterPage() {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 0.75rem;
+        }
+
+        .register-owner-staff-option {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 0.75rem;
+          align-items: flex-start;
+          padding: 0.85rem;
+          border: 1px solid rgba(45, 212, 191, 0.22);
+          border-radius: var(--radius);
+          background: rgba(45, 212, 191, 0.06);
+          color: var(--text);
+        }
+
+        .register-owner-staff-option input {
+          margin-top: 0.2rem;
+        }
+
+        .register-owner-staff-option span {
+          display: grid;
+          gap: 0.25rem;
         }
 
         .register-role-explainer {

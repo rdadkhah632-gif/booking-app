@@ -2410,4 +2410,22 @@ export const sq: TranslationTree = {
   "dashboardStaff.card.setup": "Konfigurimi",
   "dashboardStaff.list.accountSummary": "Lidhjet e llogarive:",
   "dashboardStaff.list.pendingInvites": "ftesë në pritje",
+  "register.business.ownerTakesBookings": "Unë gjithashtu marr rezervime vetë",
+  "register.business.ownerTakesBookingsBody":
+    "Krijo një profil stafi të lidhur për pronarin, që klientët të mund të rezervojnë takime drejtpërdrejt me ty. Shërbimet dhe disponueshmërinë mund t’i caktosh pas regjistrimit.",
+
+  "account.ownerBooking.kicker": "Statusi i rezervimeve të pronarit",
+  "account.ownerBooking.linkedTitle": "Je konfiguruar si staf i rezervueshëm",
+  "account.ownerBooking.notLinkedTitle":
+    "Ende nuk je konfiguruar si staf i rezervueshëm",
+  "account.ownerBooking.linkedBody":
+    "Klientët mund të rezervojnë takime drejtpërdrejt me ty pasi të konfigurohen shërbimet dhe disponueshmëria jote.",
+  "account.ownerBooking.notLinkedBody":
+    "Nëse merr personalisht takime, konfiguroje veten si staf të rezervueshëm. Nëse vetëm menaxhon biznesin, mund ta lësh të çaktivizuar.",
+
+  "dashboardSettings.tools.ownerBooking": "Statusi i rezervimeve të pronarit",
+  "dashboardSettings.tools.ownerBookingLinkedBody":
+    "Je konfiguruar si staf i rezervueshëm. Menaxho orarin dhe disponueshmërinë tënde personale.",
+  "dashboardSettings.tools.ownerBookingBody":
+    "Konfiguroje veten si staf të rezervueshëm vetëm nëse klientët duhet të mund të rezervojnë takime drejtpërdrejt me ty.",
 };

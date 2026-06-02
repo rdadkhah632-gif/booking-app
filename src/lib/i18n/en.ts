@@ -2343,4 +2343,21 @@ export const en: TranslationTree = {
   "dashboardStaff.card.setup": "Setup",
   "dashboardStaff.list.accountSummary": "Account links:",
   "dashboardStaff.list.pendingInvites": "invite pending",
+  "register.business.ownerTakesBookings": "I also take bookings myself",
+  "register.business.ownerTakesBookingsBody":
+    "Create a linked owner staff profile so customers can book appointments with you personally. You can assign services and availability after registration.",
+
+  "account.ownerBooking.kicker": "Owner booking status",
+  "account.ownerBooking.linkedTitle": "You are set up as bookable staff",
+  "account.ownerBooking.notLinkedTitle": "You are not set up as bookable staff",
+  "account.ownerBooking.linkedBody":
+    "Customers can book appointments with you personally once your services and availability are configured.",
+  "account.ownerBooking.notLinkedBody":
+    "If you personally take appointments, set yourself up as bookable staff. If you only manage the business, you can leave this off.",
+
+  "dashboardSettings.tools.ownerBooking": "Owner booking status",
+  "dashboardSettings.tools.ownerBookingLinkedBody":
+    "You are set up as bookable staff. Manage your personal schedule and availability.",
+  "dashboardSettings.tools.ownerBookingBody":
+    "Set yourself up as bookable staff only if customers should book appointments directly with you.",
 };
