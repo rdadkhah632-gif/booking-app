@@ -142,7 +142,9 @@ export default function RegisterPage() {
       password,
       options: {
         data: {
-          role,
+          // Keep staff sign-ups compatible with existing profile role constraints.
+          // Staff intent is stored as account_mode='staff' and resolved by getAccountCapabilities.
+          role: role === "staff" ? "customer" : role,
           account_mode: role,
           preferred_language: preferredLanguage,
         },
