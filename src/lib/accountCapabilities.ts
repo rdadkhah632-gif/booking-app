@@ -65,7 +65,9 @@ function normaliseEmail(email?: string | null) {
 
 function staffInviteCanBeLinked(inviteStatus?: string | null) {
   const status = inviteStatus?.trim().toLowerCase() || "";
-  return ["", "invited", "pending", "not_invited", "ready_to_link"].includes(status);
+  return ["", "invited", "pending", "not_invited", "ready_to_link"].includes(
+    status,
+  );
 }
 
 export async function linkStaffInviteByEmail(

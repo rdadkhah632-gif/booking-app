@@ -119,6 +119,8 @@ export default function AccountPage() {
     null,
   );
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
+  const [isStaffIntentAccount, setIsStaffIntentAccount] = useState(false);
+  const [hasLinkedStaffProfile, setHasLinkedStaffProfile] = useState(false);
   const [stats, setStats] = useState<AccountStats>({
     bookings: 0,
     unreadNotifications: 0,
@@ -144,17 +146,20 @@ export default function AccountPage() {
   });
 
   const ownsBusiness = ownedBusinesses.length > 0;
-  const hasStaffAccess = !!staffProfile;
+  const hasStaffAccess = hasLinkedStaffProfile || isStaffIntentAccount;
   const isAdmin = !!profile?.is_admin;
+  const isStaffIntentOnly = isStaffIntentAccount && !hasLinkedStaffProfile;
   const isCustomerOnly = !ownsBusiness && !hasStaffAccess && !isAdmin;
 
   const primaryAccountMode = useMemo(() => {
     if (isAdmin) return t("account.access.operator", "Operator");
     if (ownsBusiness)
       return t("account.access.businessOwner", "Business owner");
-    if (hasStaffAccess) return t("account.access.staff", "Staff member");
+    if (hasLinkedStaffProfile) return t("account.access.staff", "Staff member");
+    if (isStaffIntentAccount)
+      return t("account.access.staffIntent", "Staff account");
     return t("account.access.customer", "Customer");
-  }, [isAdmin, ownsBusiness, hasStaffAccess, t]);
+  }, [isAdmin, ownsBusiness, hasLinkedStaffProfile, isStaffIntentAccount, t]);
 
   async function loadProfile() {
     setLoading(true);
@@ -203,6 +208,8 @@ export default function AccountPage() {
     const loadedBusinesses = capabilities.ownedBusinesses as BusinessRow[];
     setOwnedBusinesses(loadedBusinesses);
     setPrimaryBusinessId(capabilities.primaryBusinessId);
+    setIsStaffIntentAccount(capabilities.isStaffIntent);
+    setHasLinkedStaffProfile(capabilities.hasLinkedStaffProfile);
 
     let resolvedStaffProfile: StaffProfile | null =
       (capabilities.linkedStaffProfiles[0] as StaffProfile | undefined) || null;
@@ -447,7 +454,7 @@ export default function AccountPage() {
                     : hasStaffAccess
                       ? t(
                           "account.accountOnlyStaffBody",
-                          "These settings belong to your personal login. Staff services, assigned bookings and working hours are managed separately.",
+                          "These settings belong to your staff login. If no business is linked yet, your staff workspace will stay limited until a matching invite is connected.",
                         )
                       : t(
                           "account.accountOnlyCustomerBody",
@@ -656,7 +663,7 @@ export default function AccountPage() {
                       : hasStaffAccess
                         ? t(
                             "account.staffSummaryBody",
-                            "Staff access lets you view assigned bookings, calendar, availability, notifications and support conversations.",
+                            "Staff access lets you view your staff workspace. Linked staff can see assigned bookings, calendar, availability, notifications and support conversations.",
                           )
                         : t(
                             "account.customerSummaryBody",
@@ -730,21 +737,35 @@ export default function AccountPage() {
                   style={{ borderColor: "rgba(45,212,191,0.25)" }}
                 >
                   <strong>
-                    {t("account.linkedStaffProfile", "Linked staff profile")}
+                    {hasLinkedStaffProfile
+                      ? t("account.linkedStaffProfile", "Linked staff profile")
+                      : t("account.staffIntentProfile", "Staff account")}
                   </strong>
                   <p className="small muted">
-                    {`${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || t("account.access.staff", "Staff")} ${t("account.at", "at")} ${staffBusinessName()}`}
+                    {hasLinkedStaffProfile
+                      ? `${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || t("account.access.staff", "Staff")} ${t("account.at", "at")} ${staffBusinessName()}`
+                      : t(
+                          "account.staffIntentUnlinkedBody",
+                          "This login is set up as a staff account, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, then refresh your staff workspace.",
+                        )}
                   </p>
                   <div className="account-card-actions">
                     <Link href="/staff" className="btn btn-accent">
-                      {t("staff.schedule.title", "My schedule")}
+                      {hasLinkedStaffProfile
+                        ? t("staff.schedule.title", "My schedule")
+                        : t("staff.unlinked.title", "No business linked yet")}
                     </Link>
-                    <Link href="/staff/availability" className="btn btn-ghost">
-                      {t(
-                        "staff.actions.updateAvailability",
-                        "Update availability",
-                      )}
-                    </Link>
+                    {hasLinkedStaffProfile && (
+                      <Link
+                        href="/staff/availability"
+                        className="btn btn-ghost"
+                      >
+                        {t(
+                          "staff.actions.updateAvailability",
+                          "Update availability",
+                        )}
+                      </Link>
+                    )}
                   </div>
                 </div>
               )}
@@ -757,7 +778,7 @@ export default function AccountPage() {
                   <p className="small muted">
                     {t(
                       "account.staffAccessBody",
-                      "Staff access appears here only when a business links this login to a staff profile.",
+                      "Staff access appears here only when a business links this login to a staff profile, or when the account was registered as staff.",
                     )}
                   </p>
                 </div>
@@ -776,7 +797,7 @@ export default function AccountPage() {
                       : hasStaffAccess
                         ? t(
                             "account.staffNotificationsBody",
-                            "Staff booking and schedule updates appear here.",
+                            "Staff workspace updates appear here once your account is linked to a business profile.",
                           )
                         : t(
                             "account.customerNotificationsBody",
@@ -784,7 +805,9 @@ export default function AccountPage() {
                           )}
                 </p>
                 <Link
-                  href="/notifications"
+                  href={
+                    hasStaffAccess ? "/staff/notifications" : "/notifications"
+                  }
                   className="btn btn-ghost"
                   style={{ marginTop: "0.75rem" }}
                 >
@@ -805,10 +828,16 @@ export default function AccountPage() {
               </div>
 
               <div className="workspace-actions">
-                <Link href="/support" className="btn btn-ghost">
+                <Link
+                  href={hasStaffAccess ? "/support/staff" : "/support"}
+                  className="btn btn-ghost"
+                >
                   {t("account.contactSupport", "Contact support")}
                 </Link>
-                <Link href="/support/messages" className="btn btn-ghost">
+                <Link
+                  href={hasStaffAccess ? "/support/staff" : "/support/messages"}
+                  className="btn btn-ghost"
+                >
                   {t(
                     "support.customer.allConversations",
                     "All support messages",
