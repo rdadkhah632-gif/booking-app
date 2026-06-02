@@ -197,6 +197,7 @@ export default function StaffDashboardPage() {
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
+  const [isStaffIntentAccount, setIsStaffIntentAccount] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [assignedServices, setAssignedServices] = useState<Service[]>([]);
@@ -219,6 +220,7 @@ export default function StaffDashboardPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
+        setIsStaffIntentAccount(false);
         router.replace("/login?redirectTo=/staff");
         return;
       }
@@ -229,6 +231,7 @@ export default function StaffDashboardPage() {
       );
 
       setHasBusinessWorkspace(capabilities.canUseBusiness);
+      setIsStaffIntentAccount(capabilities.isStaffIntent);
 
       if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
         setStaffProfile(null);
@@ -732,39 +735,67 @@ export default function StaffDashboardPage() {
         style={{ paddingTop: 32, paddingBottom: 48 }}
       >
         {!staffProfile && (
-          <div className="card">
+          <div className="card staff-unlinked-card">
             <p className="small" style={{ color: "var(--warning)" }}>
-              {t("staff.noProfile.kicker", "No staff profile linked")}
+              {isStaffIntentAccount
+                ? t("staff.unlinked.kicker", "Staff account created")
+                : t("staff.noProfile.kicker", "No staff profile linked")}
             </p>
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                marginTop: "0.25rem",
-              }}
-            >
-              {t(
-                "staff.noProfile.title",
-                "Ask the business owner to invite you",
-              )}
+            <h1 className="staff-unlinked-title">
+              {isStaffIntentAccount
+                ? t("staff.unlinked.title", "No business linked yet")
+                : t(
+                    "staff.noProfile.title",
+                    "Ask the business owner to invite you",
+                  )}
             </h1>
-            <p className="muted" style={{ marginTop: "0.75rem" }}>
-              {t(
-                "staff.noProfile.body",
-                "This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.",
-              )}
+            <p className="muted staff-unlinked-body">
+              {isStaffIntentAccount
+                ? t(
+                    "staff.unlinked.body",
+                    "Your staff account is ready, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, or wait for the invite email when production email sending is enabled.",
+                  )
+                : t(
+                    "staff.noProfile.body",
+                    "This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.",
+                  )}
             </p>
-            <div
-              style={{
-                display: "flex",
-                gap: "0.75rem",
-                flexWrap: "wrap",
-                marginTop: "1rem",
-              }}
-            >
+            <div className="staff-unlinked-steps">
+              <div className="staff-unlinked-step">
+                <strong>
+                  {t("staff.unlinked.stepEmailTitle", "Use the same email")}
+                </strong>
+                <p className="small muted">
+                  {t(
+                    "staff.unlinked.stepEmailBody",
+                    "The business invite must use the same email address as this staff account.",
+                  )}
+                </p>
+              </div>
+              <div className="staff-unlinked-step">
+                <strong>
+                  {t("staff.unlinked.stepLinkTitle", "Automatic linking")}
+                </strong>
+                <p className="small muted">
+                  {t(
+                    "staff.unlinked.stepLinkBody",
+                    "When a matching invite is available, Mirëbook will link it on your next login or page refresh.",
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="staff-unlinked-actions">
+              <button
+                type="button"
+                className="btn btn-accent"
+                onClick={() => loadStaffDashboard()}
+              >
+                {t("common.refresh", "Refresh")}
+              </button>
               <Link href="/support/staff" className="btn btn-ghost">
                 {t("nav.staffSupport", "Staff support")}
               </Link>
-              <Link href="/account" className="btn btn-accent">
+              <Link href="/account" className="btn btn-ghost">
                 {t("account.title", "Account settings")}
               </Link>
             </div>
@@ -1214,6 +1245,46 @@ export default function StaffDashboardPage() {
       </section>
 
       <style jsx>{`
+        .staff-unlinked-card {
+          display: grid;
+          gap: 0.85rem;
+          border-color: rgba(255, 190, 11, 0.28);
+        }
+
+        .staff-unlinked-title {
+          font-family: var(--font-display);
+          margin-top: 0;
+        }
+
+        .staff-unlinked-body {
+          margin-top: 0;
+          max-width: 760px;
+        }
+
+        .staff-unlinked-steps {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .staff-unlinked-step {
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          display: grid;
+          gap: 0.35rem;
+        }
+
+        .staff-unlinked-step p {
+          margin-top: 0;
+        }
+
+        .staff-unlinked-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
         .staff-hero-card {
           display: flex;
           justify-content: space-between;
@@ -1440,6 +1511,17 @@ export default function StaffDashboardPage() {
           .staff-schedule-header,
           .staff-booking-card-inner {
             display: grid;
+          }
+
+          .staff-unlinked-steps {
+            grid-template-columns: 1fr;
+          }
+
+          .staff-unlinked-actions,
+          .staff-unlinked-actions :global(.btn),
+          .staff-unlinked-actions button {
+            width: 100%;
+            justify-content: center;
           }
 
           .staff-hero-actions,

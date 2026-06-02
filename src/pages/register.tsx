@@ -142,7 +142,7 @@ export default function RegisterPage() {
       password,
       options: {
         data: {
-          role: role === "staff" ? "customer" : role,
+          role,
           account_mode: role,
           preferred_language: preferredLanguage,
         },
@@ -160,7 +160,7 @@ export default function RegisterPage() {
         {
           id: data.user.id,
           email: cleanEmail,
-          role: role === "staff" ? "customer" : role,
+          role,
           preferred_language: preferredLanguage,
         },
         { onConflict: "id" },
@@ -172,46 +172,7 @@ export default function RegisterPage() {
         return;
       }
 
-      if (role === "staff") {
-        const { data: matchingStaff, error: staffLookupError } = await supabase
-          .from("staff_members")
-          .select("id, business_id, name, email, invite_status")
-          .eq("email", cleanEmail)
-          .is("user_id", null)
-          .limit(1)
-          .maybeSingle();
-
-        if (staffLookupError) {
-          setError(staffLookupError.message);
-          setLoading(false);
-          return;
-        }
-
-        if (!matchingStaff) {
-          setError(
-            t(
-              "register.noStaffInvite",
-              "No staff profile was found for this email. Ask the business to add this exact email to their staff list, then try again.",
-            ),
-          );
-          setLoading(false);
-          return;
-        }
-
-        const { error: staffLinkError } = await supabase
-          .from("staff_members")
-          .update({
-            user_id: data.user.id,
-            invite_status: "linked",
-          })
-          .eq("id", matchingStaff.id);
-
-        if (staffLinkError) {
-          setError(staffLinkError.message);
-          setLoading(false);
-          return;
-        }
-      }
+      // staff invite linking now handled automatically elsewhere
 
       if (role === "business") {
         const { error: businessError } = await supabase
@@ -386,7 +347,7 @@ export default function RegisterPage() {
               <p className="small muted">
                 {t(
                   "register.role.staffBody",
-                  "Join a business that has already added your email to its staff list.",
+                  "Create a staff account. If a business has already invited this email, Mirëbook will link it automatically; otherwise you can wait for an invite.",
                 )}
               </p>
             </button>
@@ -418,7 +379,7 @@ export default function RegisterPage() {
                 : role === "staff"
                   ? t(
                       "register.roleExplainer.staffBody",
-                      "Use this only if a business has already added this exact email to their staff list. Otherwise choose Customer or ask the business owner to invite you first.",
+                      "Use this if you work for a business on Mirëbook. Your staff account can exist before it is linked to a business, then it will unlock schedule and availability once an invite matches this email.",
                     )
                   : t(
                       "register.roleExplainer.customerBody",
@@ -435,13 +396,13 @@ export default function RegisterPage() {
               <p className="small muted" style={{ marginTop: "0.35rem" }}>
                 {t(
                   "register.staffNotice.body",
-                  "Use the exact email your business added to their staff list. Mirëbook will check and link your staff profile after your account is created.",
+                  "Use the exact email your business uses for your staff invite. Mirëbook will check and link your staff profile after your account is created.",
                 )}
               </p>
               <p className="small muted" style={{ marginTop: "0.35rem" }}>
                 {t(
                   "register.staffNotice.noInvite",
-                  "If no staff profile is found, ask the business owner to add your email first, then register again.",
+                  "If no business is linked yet, your staff account will still open the staff area with limited setup information until a business invite is connected.",
                 )}
               </p>
             </div>
@@ -615,7 +576,7 @@ export default function RegisterPage() {
                   : role === "staff"
                     ? t(
                         "register.nextStep.staff",
-                        "If your email matches an invited staff profile, you will go to your staff workspace.",
+                        "You will go to your staff workspace. If your email matches an invited staff profile, it will link automatically; otherwise it will show that no business is linked yet.",
                       )
                     : t(
                         "register.nextStep.customer",
