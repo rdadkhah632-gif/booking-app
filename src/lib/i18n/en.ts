@@ -2304,4 +2304,31 @@ export const en: TranslationTree = {
   "staff.unlinked.stepLinkTitle": "Automatic linking",
   "staff.unlinked.stepLinkBody":
     "When a matching invite is available, Mirëbook will link it on your next login or page refresh.",
+  "dashboardLayout.myWork.title": "My work",
+  "dashboardLayout.myWork.schedule": "My schedule",
+  "dashboardLayout.myWork.availability": "My availability",
+  "dashboardLayout.myWork.notifications": "Staff notifications",
+
+  "staff.ownerSetup.noBusiness":
+    "No business profile was found for this owner account.",
+  "staff.ownerSetup.confirm":
+    "Add yourself as bookable staff for this business? You will still manage the business from the business dashboard, but this creates a personal staff profile for your own appointments.",
+  "staff.ownerSetup.alreadyLinked":
+    "You are already linked as staff for this business.",
+  "staff.ownerSetup.defaultName": "Owner",
+  "staff.ownerSetup.defaultRole": "Owner",
+  "staff.ownerSetup.success":
+    "You have been added as bookable staff. Assign services and set your availability next.",
+  "staff.ownerSetup.error": "Could not add you as bookable staff.",
+  "staff.ownerSetup.kicker": "Owner account",
+  "staff.ownerSetup.title": "You are not set up as bookable staff yet",
+  "staff.ownerSetup.body":
+    "Business owners can manage the business without being bookable staff. If you personally take appointments, add yourself as bookable staff, then assign services and set your own availability.",
+  "staff.ownerSetup.stepManageTitle": "Owner access stays separate",
+  "staff.ownerSetup.stepManageBody":
+    "Your business dashboard remains your default workspace for managing bookings, staff, services and business settings.",
+  "staff.ownerSetup.stepBookableTitle": "Personal staff profile",
+  "staff.ownerSetup.stepBookableBody":
+    "Only add yourself here if customers should be able to book appointments directly with you.",
+  "staff.ownerSetup.addSelf": "Add myself as bookable staff",
 };

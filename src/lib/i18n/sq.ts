@@ -2371,4 +2371,31 @@ export const sq: TranslationTree = {
   "staff.unlinked.stepLinkTitle": "Lidhje automatike",
   "staff.unlinked.stepLinkBody":
     "Kur të ketë një ftesë që përputhet, Mirëbook do ta lidhë në hyrjen ose rifreskimin tjetër.",
+  "dashboardLayout.myWork.title": "Puna ime",
+  "dashboardLayout.myWork.schedule": "Orari im",
+  "dashboardLayout.myWork.availability": "Disponueshmëria ime",
+  "dashboardLayout.myWork.notifications": "Njoftime stafi",
+
+  "staff.ownerSetup.noBusiness":
+    "Nuk u gjet profil biznesi për këtë llogari pronari.",
+  "staff.ownerSetup.confirm":
+    "Ta shtosh veten si staf të rezervueshëm për këtë biznes? Do ta menaxhosh ende biznesin nga paneli i biznesit, por kjo krijon një profil personal stafi për takimet e tua.",
+  "staff.ownerSetup.alreadyLinked":
+    "Ti je tashmë i/e lidhur si staf për këtë biznes.",
+  "staff.ownerSetup.defaultName": "Pronar",
+  "staff.ownerSetup.defaultRole": "Pronar",
+  "staff.ownerSetup.success":
+    "U shtove si staf i rezervueshëm. Cakto shërbimet dhe më pas vendos disponueshmërinë tënde.",
+  "staff.ownerSetup.error": "Nuk u shtove dot si staf i rezervueshëm.",
+  "staff.ownerSetup.kicker": "Llogari pronari",
+  "staff.ownerSetup.title": "Ende nuk je konfiguruar si staf i rezervueshëm",
+  "staff.ownerSetup.body":
+    "Pronarët e biznesit mund ta menaxhojnë biznesin pa qenë staf i rezervueshëm. Nëse merr personalisht takime, shtoje veten si staf të rezervueshëm, pastaj cakto shërbimet dhe disponueshmërinë tënde.",
+  "staff.ownerSetup.stepManageTitle": "Aksesi i pronarit mbetet i ndarë",
+  "staff.ownerSetup.stepManageBody":
+    "Paneli i biznesit mbetet hapësira jote kryesore për menaxhimin e rezervimeve, stafit, shërbimeve dhe cilësimeve të biznesit.",
+  "staff.ownerSetup.stepBookableTitle": "Profil personal stafi",
+  "staff.ownerSetup.stepBookableBody":
+    "Shtoje veten këtu vetëm nëse klientët duhet të mund të rezervojnë takime drejtpërdrejt me ty.",
+  "staff.ownerSetup.addSelf": "Më shto si staf të rezervueshëm",
 };
