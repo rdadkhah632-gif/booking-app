@@ -197,6 +197,9 @@ export default function StaffDashboardPage() {
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
+  const [ownerBusinessId, setOwnerBusinessId] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [addingOwnerStaff, setAddingOwnerStaff] = useState(false);
   const [isStaffIntentAccount, setIsStaffIntentAccount] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [requests, setRequests] = useState<BookingRequest[]>([]);
@@ -225,12 +228,15 @@ export default function StaffDashboardPage() {
         return;
       }
 
+      setCurrentUserEmail(session.user.email || null);
+
       const capabilities = await getAccountCapabilities(
         session.user.id,
         session.user.email,
       );
 
       setHasBusinessWorkspace(capabilities.canUseBusiness);
+      setOwnerBusinessId(capabilities.primaryBusinessId);
       setIsStaffIntentAccount(capabilities.isStaffIntent);
 
       if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
@@ -395,6 +401,104 @@ export default function StaffDashboardPage() {
     if (!router.isReady) return;
     loadStaffDashboard();
   }, [router.isReady]);
+
+  async function addOwnerAsStaff() {
+    if (!ownerBusinessId) {
+      setError(
+        t(
+          "staff.ownerSetup.noBusiness",
+          "No business profile was found for this owner account.",
+        ),
+      );
+      return;
+    }
+
+    const confirmed = confirm(
+      t(
+        "staff.ownerSetup.confirm",
+        "Add yourself as bookable staff for this business? You will still manage the business from the business dashboard, but this creates a personal staff profile for your own appointments.",
+      ),
+    );
+
+    if (!confirmed) return;
+
+    setAddingOwnerStaff(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.replace("/login?redirectTo=/staff");
+        return;
+      }
+
+      const { data: existingStaff, error: existingError } = await supabase
+        .from("staff_members")
+        .select("id")
+        .eq("business_id", ownerBusinessId)
+        .eq("user_id", session.user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingError) throw existingError;
+
+      if (existingStaff?.id) {
+        setSuccess(
+          t(
+            "staff.ownerSetup.alreadyLinked",
+            "You are already linked as staff for this business.",
+          ),
+        );
+        await loadStaffDashboard();
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", session.user.id)
+        .maybeSingle<{ full_name?: string | null; email?: string | null }>();
+
+      const fallbackName =
+        profile?.full_name?.trim() ||
+        session.user.email?.split("@")[0] ||
+        t("staff.ownerSetup.defaultName", "Owner");
+
+      const { error: insertError } = await supabase
+        .from("staff_members")
+        .insert({
+          business_id: ownerBusinessId,
+          user_id: session.user.id,
+          name: fallbackName,
+          email: session.user.email || profile?.email || null,
+          role_title: t("staff.ownerSetup.defaultRole", "Owner"),
+          permission_role: "owner",
+          invite_status: "linked",
+          active: true,
+        });
+
+      if (insertError) throw insertError;
+
+      setSuccess(
+        t(
+          "staff.ownerSetup.success",
+          "You have been added as bookable staff. Assign services and set your availability next.",
+        ),
+      );
+      await loadStaffDashboard();
+    } catch (err: any) {
+      setError(
+        err.message ||
+          t("staff.ownerSetup.error", "Could not add you as bookable staff."),
+      );
+    } finally {
+      setAddingOwnerStaff(false);
+    }
+  }
 
   const now = useMemo(() => new Date(), [bookings]);
 
@@ -737,61 +841,128 @@ export default function StaffDashboardPage() {
         {!staffProfile && (
           <div className="card staff-unlinked-card">
             <p className="small" style={{ color: "var(--warning)" }}>
-              {isStaffIntentAccount
-                ? t("staff.unlinked.kicker", "Staff account created")
-                : t("staff.noProfile.kicker", "No staff profile linked")}
+              {hasBusinessWorkspace
+                ? t("staff.ownerSetup.kicker", "Owner account")
+                : isStaffIntentAccount
+                  ? t("staff.unlinked.kicker", "Staff account created")
+                  : t("staff.noProfile.kicker", "No staff profile linked")}
             </p>
             <h1 className="staff-unlinked-title">
-              {isStaffIntentAccount
-                ? t("staff.unlinked.title", "No business linked yet")
-                : t(
-                    "staff.noProfile.title",
-                    "Ask the business owner to invite you",
-                  )}
+              {hasBusinessWorkspace
+                ? t(
+                    "staff.ownerSetup.title",
+                    "You are not set up as bookable staff yet",
+                  )
+                : isStaffIntentAccount
+                  ? t("staff.unlinked.title", "No business linked yet")
+                  : t(
+                      "staff.noProfile.title",
+                      "Ask the business owner to invite you",
+                    )}
             </h1>
             <p className="muted staff-unlinked-body">
-              {isStaffIntentAccount
+              {hasBusinessWorkspace
                 ? t(
-                    "staff.unlinked.body",
-                    "Your staff account is ready, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, or wait for the invite email when production email sending is enabled.",
+                    "staff.ownerSetup.body",
+                    "Business owners can manage the business without being bookable staff. If you personally take appointments, add yourself as bookable staff, then assign services and set your own availability.",
                   )
-                : t(
-                    "staff.noProfile.body",
-                    "This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.",
-                  )}
+                : isStaffIntentAccount
+                  ? t(
+                      "staff.unlinked.body",
+                      "Your staff account is ready, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, or wait for the invite email when production email sending is enabled.",
+                    )
+                  : t(
+                      "staff.noProfile.body",
+                      "This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.",
+                    )}
             </p>
-            <div className="staff-unlinked-steps">
-              <div className="staff-unlinked-step">
-                <strong>
-                  {t("staff.unlinked.stepEmailTitle", "Use the same email")}
-                </strong>
-                <p className="small muted">
-                  {t(
-                    "staff.unlinked.stepEmailBody",
-                    "The business invite must use the same email address as this staff account.",
-                  )}
-                </p>
+            {hasBusinessWorkspace ? (
+              <div className="staff-unlinked-steps">
+                <div className="staff-unlinked-step">
+                  <strong>
+                    {t(
+                      "staff.ownerSetup.stepManageTitle",
+                      "Owner access stays separate",
+                    )}
+                  </strong>
+                  <p className="small muted">
+                    {t(
+                      "staff.ownerSetup.stepManageBody",
+                      "Your business dashboard remains your default workspace for managing bookings, staff, services and business settings.",
+                    )}
+                  </p>
+                </div>
+                <div className="staff-unlinked-step">
+                  <strong>
+                    {t(
+                      "staff.ownerSetup.stepBookableTitle",
+                      "Personal staff profile",
+                    )}
+                  </strong>
+                  <p className="small muted">
+                    {t(
+                      "staff.ownerSetup.stepBookableBody",
+                      "Only add yourself here if customers should be able to book appointments directly with you.",
+                    )}
+                  </p>
+                </div>
               </div>
-              <div className="staff-unlinked-step">
-                <strong>
-                  {t("staff.unlinked.stepLinkTitle", "Automatic linking")}
-                </strong>
-                <p className="small muted">
-                  {t(
-                    "staff.unlinked.stepLinkBody",
-                    "When a matching invite is available, Mirëbook will link it on your next login or page refresh.",
-                  )}
-                </p>
+            ) : (
+              <div className="staff-unlinked-steps">
+                <div className="staff-unlinked-step">
+                  <strong>
+                    {t("staff.unlinked.stepEmailTitle", "Use the same email")}
+                  </strong>
+                  <p className="small muted">
+                    {t(
+                      "staff.unlinked.stepEmailBody",
+                      "The business invite must use the same email address as this staff account.",
+                    )}
+                  </p>
+                </div>
+                <div className="staff-unlinked-step">
+                  <strong>
+                    {t("staff.unlinked.stepLinkTitle", "Automatic linking")}
+                  </strong>
+                  <p className="small muted">
+                    {t(
+                      "staff.unlinked.stepLinkBody",
+                      "When a matching invite is available, Mirëbook will link it on your next login or page refresh.",
+                    )}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
             <div className="staff-unlinked-actions">
+              {hasBusinessWorkspace && (
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  disabled={addingOwnerStaff}
+                  onClick={addOwnerAsStaff}
+                >
+                  {addingOwnerStaff
+                    ? t("common.saving", "Saving...")
+                    : t(
+                        "staff.ownerSetup.addSelf",
+                        "Add myself as bookable staff",
+                      )}
+                </button>
+              )}
               <button
                 type="button"
-                className="btn btn-accent"
+                className={
+                  hasBusinessWorkspace ? "btn btn-ghost" : "btn btn-accent"
+                }
                 onClick={() => loadStaffDashboard()}
               >
                 {t("common.refresh", "Refresh")}
               </button>
+              {hasBusinessWorkspace && (
+                <Link href="/dashboard" className="btn btn-ghost">
+                  {t("staff.actions.businessDashboard", "Business dashboard")}
+                </Link>
+              )}
               <Link href="/support/staff" className="btn btn-ghost">
                 {t("nav.staffSupport", "Staff support")}
               </Link>
