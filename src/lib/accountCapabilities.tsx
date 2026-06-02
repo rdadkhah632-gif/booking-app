@@ -77,10 +77,23 @@ export async function linkStaffInviteByEmail(
   const cleanEmail = normaliseEmail(email);
   if (!cleanEmail) return null;
 
-  // Temporary Stage 1 invite linking: until secure invite tokens are added,
-  // only auto-link an unclaimed staff row when it matches the authenticated
-  // user's email exactly after normalisation. This keeps the match scoped to
-  // the signed-in auth email and avoids changing broader RLS policies.
+  const { data: rpcLinkedStaff, error: rpcError } = await supabase.rpc(
+    "link_staff_invite_for_current_user",
+  );
+
+  if (!rpcError) {
+    const linkedRow = Array.isArray(rpcLinkedStaff)
+      ? rpcLinkedStaff[0]
+      : rpcLinkedStaff;
+
+    if (linkedRow?.id) {
+      return linkedRow as AccountStaffProfile;
+    }
+  }
+
+  // Fallback for local/dev environments where the RPC has not been deployed yet.
+  // This can be blocked by RLS in production, so the RPC above remains the
+  // preferred safe path for staff invite linking.
   const { data: possibleInvites, error: inviteError } = await supabase
     .from("staff_members")
     .select(
@@ -90,13 +103,14 @@ export async function linkStaffInviteByEmail(
     .limit(20)
     .returns<AccountStaffProfile[]>();
 
+  if (inviteError) throw inviteError;
+
   const invite = (possibleInvites || []).find(
     (staff) =>
       normaliseEmail(staff.email) === cleanEmail &&
       staffInviteCanBeLinked(staff.invite_status),
   );
 
-  if (inviteError) throw inviteError;
   if (!invite?.id) return null;
 
   const { error: linkError } = await supabase
