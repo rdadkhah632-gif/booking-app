@@ -2289,4 +2289,19 @@ export const en: TranslationTree = {
     "This staff member has upcoming pending or confirmed bookings. Deactivating them will hide them from new bookings, but existing bookings will still need reviewing or moving manually. Continue?",
   "dashboardStaff.active.futureBookingCheckError":
     "Could not check upcoming bookings for this staff member.",
+  "account.access.staffIntent": "Staff account",
+  "account.staffIntentProfile": "Staff account",
+  "account.staffIntentUnlinkedBody":
+    "This login is set up as a staff account, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, then refresh your staff workspace.",
+
+  "staff.unlinked.kicker": "Staff account created",
+  "staff.unlinked.title": "No business linked yet",
+  "staff.unlinked.body":
+    "Your staff account is ready, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, or wait for the invite email when production email sending is enabled.",
+  "staff.unlinked.stepEmailTitle": "Use the same email",
+  "staff.unlinked.stepEmailBody":
+    "The business invite must use the same email address as this staff account.",
+  "staff.unlinked.stepLinkTitle": "Automatic linking",
+  "staff.unlinked.stepLinkBody":
+    "When a matching invite is available, Mirëbook will link it on your next login or page refresh.",
 };

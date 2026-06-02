@@ -2356,4 +2356,19 @@ export const sq: TranslationTree = {
     "Ky anëtar stafi ka rezervime të ardhshme në pritje ose të konfirmuara. Çaktivizimi do ta fshehë nga rezervimet e reja, por rezervimet ekzistuese duhet ende të kontrollohen ose të zhvendosen manualisht. Të vazhdohet?",
   "dashboardStaff.active.futureBookingCheckError":
     "Nuk u kontrolluan dot rezervimet e ardhshme për këtë anëtar stafi.",
+  "account.access.staffIntent": "Llogari stafi",
+  "account.staffIntentProfile": "Llogari stafi",
+  "account.staffIntentUnlinkedBody":
+    "Kjo hyrje është konfiguruar si llogari stafi, por ende nuk është lidhur me një profil stafi biznesi. Kërkoji biznesit të ftojë pikërisht këtë email, pastaj rifresko hapësirën tënde të stafit.",
+
+  "staff.unlinked.kicker": "Llogaria e stafit u krijua",
+  "staff.unlinked.title": "Ende nuk ka biznes të lidhur",
+  "staff.unlinked.body":
+    "Llogaria jote e stafit është gati, por ende nuk është lidhur me një profil stafi biznesi. Kërkoji biznesit të ftojë pikërisht këtë email, ose prit emailin e ftesës kur dërgimi i emaileve të aktivizohet në prodhim.",
+  "staff.unlinked.stepEmailTitle": "Përdor të njëjtin email",
+  "staff.unlinked.stepEmailBody":
+    "Ftesa e biznesit duhet të përdorë të njëjtën adresë emaili si kjo llogari stafi.",
+  "staff.unlinked.stepLinkTitle": "Lidhje automatike",
+  "staff.unlinked.stepLinkBody":
+    "Kur të ketë një ftesë që përputhet, Mirëbook do ta lidhë në hyrjen ose rifreskimin tjetër.",
 };
