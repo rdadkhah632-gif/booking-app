@@ -201,9 +201,25 @@ export default function StaffPage() {
     [staff],
   );
 
+  const pendingInviteCount = useMemo(
+    () =>
+      staff.filter(
+        (member) =>
+          Boolean(member.email) &&
+          !member.user_id &&
+          (member.invite_status || "").toLowerCase() === "invited",
+      ).length,
+    [staff],
+  );
+
   const loginReadyStaffCount = useMemo(
     () =>
-      staff.filter((member) => Boolean(member.email) && !member.user_id).length,
+      staff.filter(
+        (member) =>
+          Boolean(member.email) &&
+          !member.user_id &&
+          (member.invite_status || "").toLowerCase() !== "invited",
+      ).length,
     [staff],
   );
 
@@ -843,8 +859,11 @@ export default function StaffPage() {
               )}
               {staff.length > 0 && (
                 <span className="staff-login-summary">
+                  {t("dashboardStaff.list.accountSummary", "Account links:")}{" "}
                   {linkedStaffCount}{" "}
-                  {t("dashboardStaff.list.linkedLogins", "linked logins")} ·{" "}
+                  {t("dashboardStaff.list.linkedLogins", "linked")} ·{" "}
+                  {pendingInviteCount}{" "}
+                  {t("dashboardStaff.list.pendingInvites", "invite pending")} ·{" "}
                   {loginReadyStaffCount}{" "}
                   {t("dashboardStaff.list.readyToLink", "ready to link")}
                 </span>

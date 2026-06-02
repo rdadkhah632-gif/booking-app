@@ -2341,4 +2341,6 @@ export const en: TranslationTree = {
     "This staff profile is saved but hidden from new customer bookings.",
   "dashboardStaff.card.setupStatus": "Setup status",
   "dashboardStaff.card.setup": "Setup",
+  "dashboardStaff.list.accountSummary": "Account links:",
+  "dashboardStaff.list.pendingInvites": "invite pending",
 };

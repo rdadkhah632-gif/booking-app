@@ -2408,4 +2408,6 @@ export const sq: TranslationTree = {
     "Ky profil stafi është ruajtur, por është i fshehur nga rezervimet e reja të klientëve.",
   "dashboardStaff.card.setupStatus": "Statusi i konfigurimit",
   "dashboardStaff.card.setup": "Konfigurimi",
+  "dashboardStaff.list.accountSummary": "Lidhjet e llogarive:",
+  "dashboardStaff.list.pendingInvites": "ftesë në pritje",
 };
