@@ -162,7 +162,7 @@ export default function RegisterPage() {
         {
           id: data.user.id,
           email: cleanEmail,
-          role,
+          role: role === "staff" ? "customer" : role,
           preferred_language: preferredLanguage,
         },
         { onConflict: "id" },
