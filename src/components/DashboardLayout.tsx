@@ -16,6 +16,8 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
   const { t } = useI18n();
   const [pendingCount, setPendingCount] = useState(0);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  const [hasPersonalStaffWorkspace, setHasPersonalStaffWorkspace] =
+    useState(false);
 
   useEffect(() => {
     async function loadPendingNotifications() {
@@ -26,6 +28,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
       } = await supabase.auth.getSession();
 
       if (!session) {
+        setHasPersonalStaffWorkspace(false);
         router.replace("/login");
         return;
       }
@@ -40,6 +43,8 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         router.replace(capabilities.defaultRoute);
         return;
       }
+
+      setHasPersonalStaffWorkspace(capabilities.hasLinkedStaffProfile);
 
       const businessIds = capabilities.ownedBusinesses.map(
         (business) => business.id,
@@ -93,6 +98,26 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
       label: t("dashboardHome.viewAnalytics", "Analytics"),
     },
   ];
+
+  const personalStaffLinks = hasPersonalStaffWorkspace
+    ? [
+        {
+          href: "/staff",
+          label: t("dashboardLayout.myWork.schedule", "My schedule"),
+        },
+        {
+          href: "/staff/availability",
+          label: t("dashboardLayout.myWork.availability", "My availability"),
+        },
+        {
+          href: "/staff/notifications",
+          label: t(
+            "dashboardLayout.myWork.notifications",
+            "Staff notifications",
+          ),
+        },
+      ]
+    : [];
 
   const lowerLinks = [
     {
@@ -157,6 +182,23 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             ))}
           </div>
 
+          {personalStaffLinks.length > 0 && (
+            <div className="sidebar-personal-links">
+              <p className="sidebar-section-label">
+                {t("dashboardLayout.myWork.title", "My work")}
+              </p>
+              {personalStaffLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""}`.trim()}
+                >
+                  <span>{link.label}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+
           <div className="sidebar-lower-links">
             {lowerLinks.map((link) => (
               <Link
@@ -208,15 +250,27 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         }
 
         .sidebar-main-links,
+        .sidebar-personal-links,
         .sidebar-lower-links {
           display: grid;
           gap: 0.3rem;
         }
 
+        .sidebar-personal-links,
         .sidebar-lower-links {
           margin-top: 0.25rem;
           padding-top: 1rem;
           border-top: 1px solid var(--border);
+        }
+
+        .sidebar-section-label {
+          margin: 0 0 0.25rem;
+          padding: 0 0.85rem;
+          color: var(--text-muted);
+          font-size: 0.75rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
         }
 
         .sidebar-link {
