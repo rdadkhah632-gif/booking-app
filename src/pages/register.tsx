@@ -214,7 +214,7 @@ export default function RegisterPage() {
               name: ownerName,
               email: cleanEmail,
               role_title: t("staff.ownerSetup.defaultRole", "Owner"),
-              permission_role: "owner",
+              permission_role: "staff",
               invite_status: "linked",
               active: true,
             });

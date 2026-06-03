@@ -476,7 +476,7 @@ export default function StaffDashboardPage() {
           name: fallbackName,
           email: session.user.email || profile?.email || null,
           role_title: t("staff.ownerSetup.defaultRole", "Owner"),
-          permission_role: "owner",
+          permission_role: "staff",
           invite_status: "linked",
           active: true,
         });
