@@ -346,7 +346,6 @@ export default function StaffAvailabilityPage() {
     setSuccess(null);
 
     const rowsToSave = availability.map((row) => ({
-      id: row.id,
       staff_member_id: staffProfile.id,
       business_id: staffProfile.business_id,
       day_of_week: row.day_of_week,
@@ -355,11 +354,20 @@ export default function StaffAvailabilityPage() {
       is_closed: row.is_closed,
     }));
 
+    const { error: deleteError } = await supabase
+      .from("staff_availability")
+      .delete()
+      .eq("staff_member_id", staffProfile.id);
+
+    if (deleteError) {
+      setSaving(false);
+      setError(deleteError.message);
+      return;
+    }
+
     const { error } = await supabase
       .from("staff_availability")
-      .upsert(rowsToSave, {
-        onConflict: "staff_member_id,day_of_week",
-      });
+      .insert(rowsToSave);
 
     setSaving(false);
 
