@@ -205,7 +205,9 @@ export default function RegisterPage() {
         }
 
         if (ownerTakesBookings) {
-          const ownerName = cleanEmail.split("@")[0] || "Owner";
+          const ownerName =
+            cleanEmail.split("@")[0] ||
+            t("staff.ownerSetup.defaultName", "Owner");
           const { error: ownerStaffError } = await supabase
             .from("staff_members")
             .insert({
