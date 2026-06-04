@@ -5,6 +5,7 @@ type Props = {
   services: Service[]
   selectedServiceId: string
   bookableServiceCount: number
+  totalServiceCount?: number
   onSelectService: (serviceId: string) => void
   formatServicePrice: (price: number) => string
   serviceImageBackground: (service: Service) => string | undefined
@@ -14,6 +15,7 @@ export default function PublicBusinessServices({
   services,
   selectedServiceId,
   bookableServiceCount,
+  totalServiceCount = services.length,
   onSelectService,
   formatServicePrice,
   serviceImageBackground
@@ -27,6 +29,11 @@ export default function PublicBusinessServices({
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
           {bookableServiceCount} {t('common.service').toLowerCase()}{bookableServiceCount === 1 ? '' : 's'} {t('publicBusiness.services.bookableCount')}.
         </p>
+        {totalServiceCount > bookableServiceCount && (
+          <p className="small muted" style={{ marginTop: '0.35rem' }}>
+            {t('publicBusiness.services.assignmentHint', 'Only services assigned to active staff are shown for booking.')}
+          </p>
+        )}
       </div>
 
       <div className="public-business-service-list">
@@ -67,7 +74,11 @@ export default function PublicBusinessServices({
                 )}
 
                 <p className="small muted" style={{ marginTop: '0.45rem' }}>
-                  {service.duration_minutes} minutes · {formatServicePrice(service.price)}
+                  {service.duration_minutes} {t('common.minutes', 'minutes')}
+                  {Number(service.price || 0) > 0 ? ` · ${formatServicePrice(service.price)}` : ''}
+                </p>
+                <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                  {t('publicBusiness.services.staffReady', 'Assigned staff available')}
                 </p>
               </div>
 

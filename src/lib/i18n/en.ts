@@ -221,6 +221,9 @@ export const en: TranslationTree = {
   "publicBusiness.services.title": "Choose a service",
   "publicBusiness.services.bookableCount": "can currently be booked",
   "publicBusiness.services.none": "No active services are available yet.",
+  "publicBusiness.services.assignmentHint":
+    "Only services assigned to active staff are shown for booking.",
+  "publicBusiness.services.staffReady": "Assigned staff available",
   "publicBusiness.staff.step": "Step 2",
   "publicBusiness.staff.title": "Choose staff",
   "publicBusiness.staff.subtitle":
@@ -230,6 +233,8 @@ export const en: TranslationTree = {
     "Mirëbook will show slots for anyone who can perform the selected service.",
   "publicBusiness.staff.memberFallback": "Staff member",
   "publicBusiness.staff.none": "No active staff are available yet.",
+  "publicBusiness.staff.noneAssigned":
+    "No active staff are assigned to this service yet. Choose another service or contact the business.",
   "publicBusiness.availability.step": "Step 3",
   "publicBusiness.availability.title": "Choose a time",
   "publicBusiness.availability.subtitle":
@@ -238,7 +243,14 @@ export const en: TranslationTree = {
   "publicBusiness.availability.loading": "Loading available slots...",
   "publicBusiness.availability.none":
     "No available slots for this date. Try another date or staff member.",
+  "publicBusiness.availability.chooseServiceFirst":
+    "Choose a service first to see available booking times.",
+  "publicBusiness.availability.chooseDateFirst":
+    "Choose a date to see available booking times.",
+  "publicBusiness.availability.noAssignedStaff":
+    "No active staff are assigned to this service yet. Choose another service or contact the business.",
   "publicBusiness.summary.title": "Booking summary",
+  "publicBusiness.summary.nextStep": "After submit",
   "publicBusiness.summary.chooseService": "Choose a service",
   "publicBusiness.summary.chooseTime": "Choose a time",
   "publicBusiness.summary.loginRequired": "Login required",
@@ -1370,6 +1382,9 @@ export const en: TranslationTree = {
   "dashboardBookings.card.requestedTime": "Requested appointment time",
   "dashboardBookings.card.appointmentTime": "Appointment time",
   "dashboardBookings.card.pendingReserved": "Review this booking request.",
+  "dashboardBookings.card.nextAction": "Next action",
+  "dashboardBookings.card.reviewRequestHint":
+    "Review this booking request, then accept or decline it.",
   "dashboardBookings.card.customerNote": "Customer note",
   "dashboardBookings.card.internalNote": "Internal note",
   "dashboardBookings.card.customerDetails": "Customer details",
@@ -1738,6 +1753,8 @@ export const en: TranslationTree = {
   "staff.booking.emailCustomer": "Email customer",
   "staff.booking.callCustomer": "Call customer",
   "staff.booking.markComplete": "Mark complete",
+  "staff.booking.pendingHint":
+    "Awaiting business approval. No staff action is needed yet.",
   "staff.notification.completedTitle": "Appointment completed",
   "staff.notification.completedStart": "Your appointment for",
   "staff.notification.completedMiddle": "on",
@@ -1891,6 +1908,12 @@ export const en: TranslationTree = {
   "myBookings.lifecycle.confirmedBody": "Your booking is confirmed.",
   "myBookings.lifecycle.completedBody": "This booking is complete.",
   "myBookings.lifecycle.cancelledBody": "This booking has been cancelled.",
+  "myBookings.sections.waitingTitle": "Request sent",
+  "myBookings.sections.waitingBody":
+    "Waiting for the business to confirm. You can cancel the request while it is still waiting.",
+  "myBookings.sections.activeTitle": "Confirmed bookings",
+  "myBookings.sections.activeBody":
+    "Your booking is confirmed. You can request a different time or cancel before it is completed.",
   "dashboardBusinesses.status.live": "Live on Mirëbook",
   "dashboardBusinesses.status.ready": "Ready to publish",
   "dashboardBusinesses.status.draft": "Draft setup",

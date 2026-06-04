@@ -687,11 +687,11 @@ export default function MyBookings() {
                 kicker={t("myBookings.sections.actionStatus", "Action status")}
                 title={t(
                   "myBookings.sections.waitingTitle",
-                  "Waiting for business approval",
+                  "Request sent",
                 )}
                 body={t(
                   "myBookings.sections.waitingBody",
-                  "These booking requests are not confirmed appointments yet. The business must accept them first, and you can cancel the request while it is still pending.",
+                  "Waiting for the business to confirm. You can cancel the request while it is still waiting.",
                 )}
               >
                 {pendingBookings.map((booking) =>
@@ -730,11 +730,11 @@ export default function MyBookings() {
                 kicker={t("myBookings.sections.schedule", "Schedule")}
                 title={t(
                   "myBookings.sections.activeTitle",
-                  "Active confirmed appointments",
+                  "Confirmed bookings",
                 )}
                 body={t(
                   "myBookings.sections.activeBody",
-                  "These are your confirmed customer appointments. You can request a different time or cancel before the appointment is completed.",
+                  "Your booking is confirmed. You can request a different time or cancel before it is completed.",
                 )}
                 action={
                   pendingRescheduleCount > 0 ? (

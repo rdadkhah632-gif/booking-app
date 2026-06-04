@@ -2,19 +2,27 @@ import { TimeSlot } from './publicBusinessTypes'
 import { useI18n } from '@/lib/useI18n'
 
 type Props = {
+  selectedServiceName?: string | null
+  selectedStaffLabel?: string | null
   selectedDate: string
   availableSlots: TimeSlot[]
   selectedSlot: TimeSlot | null
   loadingSlots: boolean
+  canPickDate?: boolean
+  noSlotsMessage?: string
   onDateChange: (date: string) => void
   onSelectSlot: (slot: TimeSlot) => void
 }
 
 export default function PublicBusinessAvailability({
+  selectedServiceName,
+  selectedStaffLabel,
   selectedDate,
   availableSlots,
   selectedSlot,
   loadingSlots,
+  canPickDate = true,
+  noSlotsMessage,
   onDateChange,
   onSelectSlot
 }: Props) {
@@ -27,6 +35,11 @@ export default function PublicBusinessAvailability({
         <p className="small muted" style={{ marginTop: '0.35rem' }}>
           {t('publicBusiness.availability.subtitle', 'Pick a date and choose one of the available booking times.')}
         </p>
+        {(selectedServiceName || selectedStaffLabel) && (
+          <p className="small muted" style={{ marginTop: '0.35rem' }}>
+            {[selectedServiceName, selectedStaffLabel].filter(Boolean).join(' · ')}
+          </p>
+        )}
       </div>
 
       <label className="small muted" style={{ display: 'block', marginTop: '1rem' }}>
@@ -35,6 +48,7 @@ export default function PublicBusinessAvailability({
           type="date"
           value={selectedDate}
           onChange={(e) => onDateChange(e.target.value)}
+          disabled={!canPickDate}
           style={{ marginTop: '0.4rem' }}
         />
       </label>
@@ -46,7 +60,7 @@ export default function PublicBusinessAvailability({
 
         {!loadingSlots && availableSlots.length === 0 && (
           <div className="card" style={{ background: 'var(--surface-2)', gridColumn: '1 / -1' }}>
-            <p className="muted">{t('publicBusiness.availability.none', 'No available times for this date. Try another date or staff member.')}</p>
+            <p className="muted">{noSlotsMessage || t('publicBusiness.availability.none', 'No available times for this date. Try another date or staff member.')}</p>
           </div>
         )}
 

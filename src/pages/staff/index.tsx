@@ -146,6 +146,7 @@ function statusColor(status: string) {
   if (status === "pending") return "var(--accent)";
   if (status === "confirmed") return "var(--success)";
   if (status === "completed") return "var(--success)";
+  if (status === "declined") return "var(--warning)";
   if (status === "cancelled") return "var(--warning)";
   return "var(--text-muted)";
 }
@@ -154,6 +155,7 @@ function statusBackground(status: string) {
   if (status === "pending") return "rgba(255,107,53,0.12)";
   if (status === "confirmed") return "rgba(45,212,191,0.12)";
   if (status === "completed") return "rgba(45,212,191,0.12)";
+  if (status === "declined") return "rgba(255,190,11,0.12)";
   if (status === "cancelled") return "rgba(255,190,11,0.12)";
   return "var(--surface-2)";
 }
@@ -188,8 +190,9 @@ export default function StaffDashboardPage() {
   const { t } = useI18n();
   function statusLabel(status: string) {
     if (status === "pending")
-      return t("staff.status.pending", "Pending approval");
+      return t("staff.status.pending", "Awaiting business approval");
     if (status === "confirmed") return t("staff.status.confirmed", "Confirmed");
+    if (status === "declined") return t("staff.status.declined", "Declined");
     if (status === "completed") return t("staff.status.completed", "Completed");
     if (status === "cancelled") return t("staff.status.cancelled", "Cancelled");
     return status;
@@ -733,7 +736,12 @@ export default function StaffDashboardPage() {
                 className="small"
                 style={{ color: "var(--accent)", marginTop: "0.35rem" }}
               >
-                {t("staff.booking.upcomingHint", "Upcoming appointment")}
+                {booking.status === "pending"
+                  ? t(
+                      "staff.booking.pendingHint",
+                      "Awaiting business approval. No staff action is needed yet.",
+                    )
+                  : t("staff.booking.upcomingHint", "Upcoming appointment")}
               </p>
             )}
 

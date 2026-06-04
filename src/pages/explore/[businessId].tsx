@@ -1094,6 +1094,31 @@ export default function BusinessBookingPage() {
     staffMemberId: slot.staffIds[0] || null,
   }));
 
+  const availabilityEmptyMessage = !selectedService
+    ? t(
+        "publicBusiness.availability.chooseServiceFirst",
+        "Choose a service first to see available booking times.",
+      )
+    : selectableStaff.length === 0
+      ? t(
+          "publicBusiness.availability.noAssignedStaff",
+          "No active staff are assigned to this service yet. Choose another service or contact the business.",
+        )
+    : !selectedDate
+      ? t(
+          "publicBusiness.availability.chooseDateFirst",
+          "Choose a date to see available booking times.",
+        )
+      : t(
+          "publicBusiness.availability.none",
+          "No available times for this date. Try another date or staff member.",
+        );
+
+  const staffPreferenceLabel =
+    staffFilter === "any"
+      ? t("publicBusiness.staff.any", "Any available staff")
+      : selectedFilterStaff?.name || null;
+
   return (
     <main>
       <AuthNav />
@@ -1193,6 +1218,7 @@ export default function BusinessBookingPage() {
                 .map((item) => item.service)}
               selectedServiceId={selectedService?.id || ""}
               bookableServiceCount={bookableServiceCount}
+              totalServiceCount={services.length}
               onSelectService={(serviceId) => {
                 const nextService =
                   services.find((service) => service.id === serviceId) || null;
@@ -1262,10 +1288,14 @@ export default function BusinessBookingPage() {
                 />
 
                 <PublicBusinessAvailability
+                  selectedServiceName={selectedService.name}
+                  selectedStaffLabel={staffPreferenceLabel}
                   selectedDate={selectedDate}
                   availableSlots={timeSlotsForComponents}
                   selectedSlot={selectedSlotForComponents}
                   loadingSlots={false}
+                  canPickDate={selectableStaff.length > 0}
+                  noSlotsMessage={availabilityEmptyMessage}
                   onDateChange={(date) => {
                     setSelectedDate(date);
                     setSelectedTime("");
@@ -1285,6 +1315,11 @@ export default function BusinessBookingPage() {
             selectedService={selectedService}
             selectedSlot={selectedSlotForComponents}
             selectedStaffSummary={selectedStaffSummary}
+            selectedDateLabel={
+              selectedDateLabel && selectedTime
+                ? `${selectedDateLabel} · ${selectedTime}`
+                : selectedDateLabel
+            }
             customerName={customerName}
             customerEmail={customerEmail}
             customerPhone={customerPhone}

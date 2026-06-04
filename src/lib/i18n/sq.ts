@@ -272,6 +272,9 @@ export const sq: TranslationTree = {
   "publicBusiness.services.bookableCount": "mund të rezervohen aktualisht",
   "publicBusiness.services.none":
     "Nuk ka ende shërbime aktive të disponueshme.",
+  "publicBusiness.services.assignmentHint":
+    "Shfaqen vetëm shërbimet e caktuara te staf aktiv.",
+  "publicBusiness.services.staffReady": "Staf i caktuar i disponueshëm",
   "publicBusiness.availability.step": "Hapi 3",
   "publicBusiness.availability.title": "Zgjidh një orar",
   "publicBusiness.availability.subtitle":
@@ -281,7 +284,14 @@ export const sq: TranslationTree = {
     "Duke ngarkuar oraret e disponueshme...",
   "publicBusiness.availability.none":
     "Nuk ka orare të disponueshme për këtë datë. Provo një datë ose staf tjetër.",
+  "publicBusiness.availability.chooseServiceFirst":
+    "Zgjidh fillimisht një shërbim për të parë oraret e disponueshme.",
+  "publicBusiness.availability.chooseDateFirst":
+    "Zgjidh një datë për të parë oraret e disponueshme.",
+  "publicBusiness.availability.noAssignedStaff":
+    "Nuk ka staf aktiv të caktuar te ky shërbim. Zgjidh një shërbim tjetër ose kontakto biznesin.",
   "publicBusiness.summary.title": "Përmbledhja e rezervimit",
+  "publicBusiness.summary.nextStep": "Pas dërgimit",
   "publicBusiness.summary.chooseService": "Zgjidh një shërbim",
   "publicBusiness.summary.chooseTime": "Zgjidh një orar",
   "publicBusiness.summary.loginRequired": "Kërkohet hyrja",
@@ -1389,6 +1399,9 @@ export const sq: TranslationTree = {
   "dashboardBookings.card.requestedTime": "Ora e kërkuar e takimit",
   "dashboardBookings.card.appointmentTime": "Ora e takimit",
   "dashboardBookings.card.pendingReserved": "Shqyrto këtë kërkesë rezervimi.",
+  "dashboardBookings.card.nextAction": "Veprimi tjetër",
+  "dashboardBookings.card.reviewRequestHint":
+    "Shqyrto këtë kërkesë rezervimi, pastaj pranoje ose refuzoje.",
   "dashboardBookings.card.customerNote": "Shënim nga klienti",
   "dashboardBookings.card.internalNote": "Shënim i brendshëm",
   "dashboardBookings.card.customerDetails": "Detajet e klientit",
@@ -1688,6 +1701,8 @@ export const sq: TranslationTree = {
   "publicBusiness.staff.memberFallback": "Anëtar stafi",
   "publicBusiness.staff.none":
     "Nuk ka staf aktiv të disponueshëm për këtë shërbim ende.",
+  "publicBusiness.staff.noneAssigned":
+    "Nuk ka staf aktiv të caktuar te ky shërbim. Zgjidh një shërbim tjetër ose kontakto biznesin.",
   "publicBusiness.staff.chooseTimeFirst":
     "Zgjedhja e stafit shfaqet pasi zgjedh një orar",
   "publicBusiness.staff.onlyShowing": "Po shfaqen vetëm oraret me",
@@ -1828,6 +1843,8 @@ export const sq: TranslationTree = {
   "staff.booking.emailCustomer": "Dërgo email klientit",
   "staff.booking.callCustomer": "Telefono klientin",
   "staff.booking.markComplete": "Shëno si përfunduar",
+  "staff.booking.pendingHint":
+    "Në pritje të miratimit nga biznesi. Nuk nevojitet veprim nga stafi ende.",
   "staff.notification.completedTitle": "Takimi u përfundua",
   "staff.notification.completedStart": "Takimi yt për",
   "staff.notification.completedMiddle": "më",
@@ -1982,6 +1999,12 @@ export const sq: TranslationTree = {
   "myBookings.lifecycle.confirmedBody": "Rezervimi yt është konfirmuar.",
   "myBookings.lifecycle.completedBody": "Ky rezervim është përfunduar.",
   "myBookings.lifecycle.cancelledBody": "Ky rezervim është anuluar.",
+  "myBookings.sections.waitingTitle": "Kërkesa u dërgua",
+  "myBookings.sections.waitingBody":
+    "Në pritje që biznesi ta konfirmojë. Mund ta anulosh kërkesën ndërsa pret.",
+  "myBookings.sections.activeTitle": "Rezervime të konfirmuara",
+  "myBookings.sections.activeBody":
+    "Rezervimi yt është konfirmuar. Mund të kërkosh orar tjetër ose ta anulosh para se të përfundojë.",
   "dashboardBusinesses.status.live": "Live në Mirëbook",
   "dashboardBusinesses.status.ready": "Gati për publikim",
   "dashboardBusinesses.status.draft": "Konfigurim draft",

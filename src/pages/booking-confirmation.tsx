@@ -409,42 +409,42 @@ export default function BookingConfirmation() {
                     {booking.status === "pending"
                       ? t(
                           "bookingConfirmation.note.pendingTitle",
-                          "Waiting for business approval",
+                          "Request sent",
                         )
                       : booking.status === "confirmed"
                         ? t(
                             "bookingConfirmation.note.confirmedTitle",
-                            "What happens next?",
+                            "Confirmed",
                           )
                         : booking.status === "completed"
                           ? t(
                               "bookingConfirmation.note.completedTitle",
-                              "Appointment completed",
+                              "Completed",
                             )
                           : t(
                               "bookingConfirmation.note.cancelledTitle",
-                              "Booking no longer active",
+                              "Cancelled",
                             )}
                   </strong>
                   <p className="small muted" style={{ marginTop: "0.35rem" }}>
                     {booking.status === "pending"
                       ? t(
                           "bookingConfirmation.note.pendingBody",
-                          "The business needs to approve this booking request before it becomes a confirmed appointment. You can track the request from My Bookings or Notifications.",
+                          "Waiting for the business to confirm.",
                         )
                       : booking.status === "confirmed"
                         ? t(
                             "bookingConfirmation.note.confirmedBody",
-                            "This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.",
+                            "Your booking is confirmed.",
                           )
                         : booking.status === "completed"
                           ? t(
                               "bookingConfirmation.note.completedBody",
-                              "This appointment is locked as completed and will stay in your booking history.",
+                              "This booking is complete.",
                             )
                           : t(
                               "bookingConfirmation.note.cancelledBody",
-                              "This booking is cancelled and cannot be changed. You can browse the marketplace to book another appointment.",
+                              "This booking has been cancelled.",
                             )}
                   </p>
                 </div>

@@ -26,22 +26,24 @@ export default function PublicBusinessStaffPicker({
       </div>
 
       <div className="public-business-staff-list">
-        <button
-          type="button"
-          onClick={() => onSelectStaff('any')}
-          className="public-business-staff-card"
-          style={{
-            borderColor: selectedStaffId === 'any' ? 'rgba(255,107,53,0.55)' : 'var(--border)',
-            background: selectedStaffId === 'any' ? 'rgba(255,107,53,0.08)' : 'var(--surface-2)'
-          }}
-        >
-          <div>
-            <strong>{t('publicBusiness.staff.any', 'Any available staff')}</strong>
-            <p className="small muted" style={{ marginTop: '0.25rem' }}>
-              {t('publicBusiness.staff.anyBody', 'Mirëbook will use any staff member assigned to this service who is available at the chosen time.')}
-            </p>
-          </div>
-        </button>
+        {availableStaffForSelectedService.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onSelectStaff('any')}
+            className="public-business-staff-card"
+            style={{
+              borderColor: selectedStaffId === 'any' ? 'rgba(255,107,53,0.55)' : 'var(--border)',
+              background: selectedStaffId === 'any' ? 'rgba(255,107,53,0.08)' : 'var(--surface-2)'
+            }}
+          >
+            <div>
+              <strong>{t('publicBusiness.staff.any', 'Any available staff')}</strong>
+              <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                {t('publicBusiness.staff.anyBody', 'Mirëbook will use any staff member assigned to this service who is available at the chosen time.')}
+              </p>
+            </div>
+          </button>
+        )}
 
         {availableStaffForSelectedService.map((staff) => (
           <button
@@ -71,8 +73,14 @@ export default function PublicBusinessStaffPicker({
           </button>
         ))}
 
-        {staffMembers.length === 0 && (
-          <p className="small muted">{t('publicBusiness.staff.none', 'No active staff are available for this service yet.')}</p>
+        {availableStaffForSelectedService.length === 0 && (
+          <div className="card" style={{ background: 'var(--surface-2)' }}>
+            <p className="small muted">
+              {staffMembers.length === 0
+                ? t('publicBusiness.staff.none', 'No active staff are available for this service yet.')
+                : t('publicBusiness.staff.noneAssigned', 'No active staff are assigned to this service yet. Choose another service or contact the business.')}
+            </p>
+          </div>
         )}
       </div>
     </div>

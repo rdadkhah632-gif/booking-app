@@ -198,6 +198,27 @@ export default function BookingCard({
         <div className="booking-manager-actions">
           {booking.status === "pending" && (
             <>
+              <div
+                className="card booking-action-hint"
+                style={{
+                  background: "rgba(255,107,53,0.08)",
+                  borderColor: "rgba(255,107,53,0.24)",
+                }}
+              >
+                <p className="small" style={{ color: "var(--accent)" }}>
+                  {t(
+                    "dashboardBookings.card.nextAction",
+                    "Next action",
+                  )}
+                </p>
+                <p className="small muted booking-card-line">
+                  {t(
+                    "dashboardBookings.card.reviewRequestHint",
+                    "Review this booking request, then accept or decline it.",
+                  )}
+                </p>
+              </div>
+
               <button
                 onClick={() => acceptPendingBooking(booking)}
                 className="btn btn-accent"

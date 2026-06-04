@@ -7,6 +7,7 @@ type Props = {
   selectedService: Service | null;
   selectedSlot: TimeSlot | null;
   selectedStaffSummary: () => string;
+  selectedDateLabel?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -33,6 +34,7 @@ export default function PublicBusinessSummary({
   selectedService,
   selectedSlot,
   selectedStaffSummary,
+  selectedDateLabel,
   customerName,
   customerEmail,
   customerPhone,
@@ -87,8 +89,10 @@ export default function PublicBusinessSummary({
 
         {selectedService && (
           <p className="small muted" style={{ marginTop: "0.25rem" }}>
-            {selectedService.duration_minutes} {t("common.minutes", "minutes")}{" "}
-            · {formatServicePrice(selectedService.price)}
+            {selectedService.duration_minutes} {t("common.minutes", "minutes")}
+            {Number(selectedService.price || 0) > 0
+              ? ` · ${formatServicePrice(selectedService.price)}`
+              : ""}
           </p>
         )}
 
@@ -102,7 +106,7 @@ export default function PublicBusinessSummary({
         </p>
         <strong>
           {selectedSlot
-            ? new Date(selectedSlot.startAt).toLocaleString()
+            ? selectedDateLabel || new Date(selectedSlot.startAt).toLocaleString()
             : t("publicBusiness.summary.chooseTime", "Choose a time")}
         </strong>
 
@@ -191,6 +195,16 @@ export default function PublicBusinessSummary({
       )}
 
       <form onSubmit={onSubmit} className="public-business-form">
+        <div className="public-business-summary-box">
+          <p className="small muted">
+            {t("publicBusiness.summary.nextStep", "After submit")}
+          </p>
+          <strong>{bookingModeText()}</strong>
+          <p className="small muted" style={{ marginTop: "0.25rem" }}>
+            {bookingModeDescription()}
+          </p>
+        </div>
+
         <label className="small muted">
           {t("common.name", "Name")}
           <input
