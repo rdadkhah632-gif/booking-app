@@ -388,6 +388,7 @@ export default function CustomerNotifications() {
         (booking) =>
           booking.status === "confirmed" ||
           booking.status === "completed" ||
+          booking.status === "declined" ||
           booking.status === "cancelled",
       )
       .slice(0, 12);

@@ -560,6 +560,8 @@ export default function BusinessNotifications() {
   }
 
   async function acceptBooking(booking: Booking) {
+    if (actionLoadingId) return;
+
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.accept",
@@ -572,16 +574,25 @@ export default function BusinessNotifications() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
       .update({ status: "confirmed" })
       .eq("id", booking.id)
-      .in("business_id", businessIds);
+      .in("business_id", businessIds)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
     setActionLoadingId(null);
 
-    if (error) {
-      setError(error.message);
+    if (error || !updatedBooking) {
+      setError(
+        error?.message ||
+          t(
+            "dashboardBookings.error.actionNoLongerAvailable",
+            "This booking is no longer waiting for approval. Refresh notifications to see the latest status.",
+          ),
+      );
       return;
     }
 
@@ -617,6 +628,8 @@ export default function BusinessNotifications() {
   }
 
   async function declineBooking(booking: Booking) {
+    if (actionLoadingId) return;
+
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.decline",
@@ -629,22 +642,31 @@ export default function BusinessNotifications() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
-      .update({ status: "cancelled" })
+      .update({ status: "declined" })
       .eq("id", booking.id)
-      .in("business_id", businessIds);
+      .in("business_id", businessIds)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
     setActionLoadingId(null);
 
-    if (error) {
-      setError(error.message);
+    if (error || !updatedBooking) {
+      setError(
+        error?.message ||
+          t(
+            "dashboardBookings.error.actionNoLongerAvailable",
+            "This booking is no longer waiting for approval. Refresh notifications to see the latest status.",
+          ),
+      );
       return;
     }
 
     setBookings((current) =>
       current.map((item) =>
-        item.id === booking.id ? { ...item, status: "cancelled" } : item,
+        item.id === booking.id ? { ...item, status: "declined" } : item,
       ),
     );
 

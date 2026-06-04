@@ -317,6 +317,7 @@ export default function Bookings() {
       "confirmed",
       "completed",
       "cancelled",
+      "declined",
     ];
 
     if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -377,6 +378,8 @@ export default function Bookings() {
   }
 
   async function acceptPendingBooking(booking: Booking) {
+    if (actionLoadingId) return;
+
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.accept",
@@ -389,16 +392,25 @@ export default function Bookings() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
       .update({ status: "confirmed" })
       .eq("id", booking.id)
-      .eq("business_id", booking.business_id);
+      .eq("business_id", booking.business_id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
     setActionLoadingId(null);
 
-    if (error) {
-      setError(error.message);
+    if (error || !updatedBooking) {
+      setError(
+        error?.message ||
+          t(
+            "dashboardBookings.error.actionNoLongerAvailable",
+            "This booking is no longer waiting for approval. Refresh bookings to see the latest status.",
+          ),
+      );
       return;
     }
 
@@ -428,6 +440,8 @@ export default function Bookings() {
   }
 
   async function declinePendingBooking(booking: Booking) {
+    if (actionLoadingId) return;
+
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.decline",
@@ -440,20 +454,29 @@ export default function Bookings() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
-      .update({ status: "cancelled" })
+      .update({ status: "declined" })
       .eq("id", booking.id)
-      .eq("business_id", booking.business_id);
+      .eq("business_id", booking.business_id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
     setActionLoadingId(null);
 
-    if (error) {
-      setError(error.message);
+    if (error || !updatedBooking) {
+      setError(
+        error?.message ||
+          t(
+            "dashboardBookings.error.actionNoLongerAvailable",
+            "This booking is no longer waiting for approval. Refresh bookings to see the latest status.",
+          ),
+      );
       return;
     }
 
-    updateLocalBookingStatus(booking.id, "cancelled");
+    updateLocalBookingStatus(booking.id, "declined");
 
     await createCustomerNotification({
       booking,
@@ -479,6 +502,8 @@ export default function Bookings() {
   }
 
   async function cancelBooking(booking: Booking) {
+    if (actionLoadingId) return;
+
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.cancel",
@@ -491,16 +516,25 @@ export default function Bookings() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", booking.id)
-      .eq("business_id", booking.business_id);
+      .eq("business_id", booking.business_id)
+      .eq("status", "confirmed")
+      .select("id")
+      .maybeSingle();
 
     setActionLoadingId(null);
 
-    if (error) {
-      setError(error.message);
+    if (error || !updatedBooking) {
+      setError(
+        error?.message ||
+          t(
+            "dashboardBookings.error.actionNoLongerAvailable",
+            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
+          ),
+      );
       return;
     }
 
@@ -530,6 +564,8 @@ export default function Bookings() {
   }
 
   async function completeBooking(booking: Booking) {
+    if (actionLoadingId) return;
+
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.complete",
@@ -542,16 +578,25 @@ export default function Bookings() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
       .update({ status: "completed" })
       .eq("id", booking.id)
-      .eq("business_id", booking.business_id);
+      .eq("business_id", booking.business_id)
+      .eq("status", "confirmed")
+      .select("id")
+      .maybeSingle();
 
     setActionLoadingId(null);
 
-    if (error) {
-      setError(error.message);
+    if (error || !updatedBooking) {
+      setError(
+        error?.message ||
+          t(
+            "dashboardBookings.error.actionNoLongerAvailable",
+            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
+          ),
+      );
       return;
     }
 
@@ -662,6 +707,7 @@ export default function Bookings() {
     return bookings.filter(
       (booking) =>
         booking.status === "cancelled" ||
+        booking.status === "declined" ||
         booking.status === "completed" ||
         (booking.status === "confirmed" && new Date(booking.start_at) < now),
     );
@@ -695,6 +741,7 @@ export default function Bookings() {
       if (rangeFilter === "history") {
         matchesRange =
           booking.status === "cancelled" ||
+          booking.status === "declined" ||
           booking.status === "completed" ||
           (booking.status === "confirmed" && bookingDate < now);
       } else if (rangeFilter === "upcoming") {

@@ -413,7 +413,7 @@ export const sq: TranslationTree = {
   "myBookings.stats.noChanges": "Nuk ka ndryshime në pritje",
   "myBookings.stats.history": "Historia",
   "myBookings.stats.historyBody":
-    "Rezervime të përfunduara, të anuluara ose të kaluara",
+    "Rezervime të përfunduara, të refuzuara, të anuluara ose të kaluara",
   "myBookings.stats.tapHistory": "Kliko për të parë historinë ↓",
   "myBookings.stats.noHistory": "Nuk ka ende histori",
   "myBookings.empty.title": "Nuk ka ende rezervime",
@@ -529,6 +529,7 @@ export const sq: TranslationTree = {
   "bookingConfirmation.locationNotAdded": "Vendndodhja nuk është shtuar",
   "bookingConfirmation.heading.pending": "Kërkesa u dërgua",
   "bookingConfirmation.heading.confirmed": "Konfirmuar",
+  "bookingConfirmation.heading.declined": "Refuzuar",
   "bookingConfirmation.heading.completed": "Përfunduar",
   "bookingConfirmation.heading.cancelled": "Anuluar",
   "bookingConfirmation.heading.received": "Rezervimi u mor.",
@@ -536,6 +537,7 @@ export const sq: TranslationTree = {
   "bookingConfirmation.lead.pendingEnd": "ta konfirmojë.",
   "bookingConfirmation.lead.confirmedStart": "Rezervimi yt është konfirmuar me",
   "bookingConfirmation.lead.confirmedEnd": "Rezervimi yt është konfirmuar.",
+  "bookingConfirmation.lead.declined": "Biznesi e refuzoi këtë kërkesë.",
   "bookingConfirmation.lead.completed": "Ky rezervim është përfunduar.",
   "bookingConfirmation.lead.cancelled": "Ky rezervim është anuluar.",
   "bookingConfirmation.lead.default": "Detajet e rezervimit janë më poshtë.",
@@ -549,10 +551,12 @@ export const sq: TranslationTree = {
   "bookingConfirmation.actions.businessBookings": "Rezervimet e biznesit",
   "bookingConfirmation.note.pendingTitle": "Kërkesa u dërgua",
   "bookingConfirmation.note.confirmedTitle": "Konfirmuar",
+  "bookingConfirmation.note.declinedTitle": "Refuzuar",
   "bookingConfirmation.note.completedTitle": "Përfunduar",
   "bookingConfirmation.note.cancelledTitle": "Anuluar",
   "bookingConfirmation.note.pendingBody": "Në pritje që biznesi ta konfirmojë.",
   "bookingConfirmation.note.confirmedBody": "Rezervimi yt është konfirmuar.",
+  "bookingConfirmation.note.declinedBody": "Biznesi e refuzoi këtë kërkesë.",
   "bookingConfirmation.note.completedBody": "Ky rezervim është përfunduar.",
   "bookingConfirmation.note.cancelledBody": "Ky rezervim është anuluar.",
   "bookingConfirmation.details.title": "Detajet e takimit",
@@ -1347,6 +1351,8 @@ export const sq: TranslationTree = {
   "dashboardBookings.loading": "Duke ngarkuar rezervimet...",
   "dashboardBookings.error.noAccess": "Nuk ke akses te ky biznes.",
   "dashboardBookings.error.load": "Rezervimet nuk u ngarkuan.",
+  "dashboardBookings.error.actionNoLongerAvailable":
+    "Ky rezervim nuk është më i disponueshëm për këtë veprim. Rifresko rezervimet për statusin më të fundit.",
   "dashboardBookings.businessPicker.kicker": "U gjetën disa biznese",
   "dashboardBookings.businessPicker.title": "Zgjidh një biznes për të vazhduar",
   "dashboardBookings.businessPicker.body":
@@ -1408,6 +1414,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.card.call": "Telefono",
   "dashboardBookings.card.lockedCompleted": "Regjistër i përfunduar i kyçur",
   "dashboardBookings.card.lockedCancelled": "Regjistër i anuluar i kyçur",
+  "dashboardBookings.card.lockedDeclined": "Regjistër i refuzuar i kyçur",
   "dashboardBookings.card.lockedBody": "Ky rezervim nuk mund të ndryshohet më.",
   "dashboardBookings.actions.working": "Duke punuar...",
   "dashboardBookings.actions.accept": "Prano rezervimin",
@@ -1672,10 +1679,20 @@ export const sq: TranslationTree = {
     "Të lutem hyr ose krijo një llogari klienti për të rezervuar me",
   "publicBusiness.error.chooseStaff":
     "Zgjidh “Çdo staf i disponueshëm” ose një nga anëtarët e stafit të disponueshëm për këtë orar.",
+  "publicBusiness.error.missingSelection":
+    "Zgjidh shërbim, opsion stafi, datë dhe orar para se të rezervosh.",
+  "publicBusiness.error.serviceUnavailable":
+    "Ky shërbim nuk është më i disponueshëm. Zgjidh një shërbim tjetër.",
+  "publicBusiness.error.staffUnavailable":
+    "Ky opsion stafi nuk është më i disponueshëm për rezervim. Zgjidh një opsion tjetër stafi.",
+  "publicBusiness.error.staffServiceUnavailable":
+    "Ky anëtar stafi nuk mund të rezervohet më për shërbimin e zgjedhur. Zgjidh një opsion tjetër.",
+  "publicBusiness.error.unableToCreate":
+    "Nuk mund të krijohet ky rezervim tani. Provo përsëri.",
   "publicBusiness.error.slotJustBooked":
-    "Ky orar sapo u rezervua. Zgjidh një tjetër.",
+    "Ky orar nuk është më i disponueshëm. Zgjidh një orar tjetër.",
   "publicBusiness.error.slotUnavailable":
-    "Ky orar nuk është më i disponueshëm. Zgjidh një tjetër.",
+    "Ky orar nuk është më i disponueshëm. Zgjidh një orar tjetër.",
 
   "publicBusiness.notification.requestSentTitle": "Kërkesa u dërgua",
   "publicBusiness.notification.confirmedTitle": "Konfirmuar",
@@ -1997,6 +2014,7 @@ export const sq: TranslationTree = {
   "myBookings.lifecycle.waitingTitle": "Kërkesa u dërgua",
   "myBookings.lifecycle.waitingBody": "Në pritje që biznesi ta konfirmojë.",
   "myBookings.lifecycle.confirmedBody": "Rezervimi yt është konfirmuar.",
+  "myBookings.lifecycle.declinedBody": "Biznesi e refuzoi këtë kërkesë.",
   "myBookings.lifecycle.completedBody": "Ky rezervim është përfunduar.",
   "myBookings.lifecycle.cancelledBody": "Ky rezervim është anuluar.",
   "myBookings.sections.waitingTitle": "Kërkesa u dërgua",

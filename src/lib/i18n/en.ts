@@ -367,7 +367,8 @@ export const en: TranslationTree = {
   "myBookings.stats.tapChanges": "Tap to view requested changes ↓",
   "myBookings.stats.noChanges": "No pending changes",
   "myBookings.stats.history": "History",
-  "myBookings.stats.historyBody": "Completed, cancelled or past bookings",
+  "myBookings.stats.historyBody":
+    "Completed, declined, cancelled or past bookings",
   "myBookings.stats.tapHistory": "Tap to view history ↓",
   "myBookings.stats.noHistory": "No history yet",
   "myBookings.empty.title": "No bookings yet",
@@ -482,6 +483,7 @@ export const en: TranslationTree = {
   "bookingConfirmation.locationNotAdded": "Location not added",
   "bookingConfirmation.heading.pending": "Request sent",
   "bookingConfirmation.heading.confirmed": "Confirmed",
+  "bookingConfirmation.heading.declined": "Declined",
   "bookingConfirmation.heading.completed": "Completed",
   "bookingConfirmation.heading.cancelled": "Cancelled",
   "bookingConfirmation.heading.received": "Booking received.",
@@ -489,6 +491,7 @@ export const en: TranslationTree = {
   "bookingConfirmation.lead.pendingEnd": "to confirm.",
   "bookingConfirmation.lead.confirmedStart": "Your booking is confirmed with",
   "bookingConfirmation.lead.confirmedEnd": "Your booking is confirmed.",
+  "bookingConfirmation.lead.declined": "The business declined this request.",
   "bookingConfirmation.lead.completed": "This booking is complete.",
   "bookingConfirmation.lead.cancelled": "This booking has been cancelled.",
   "bookingConfirmation.lead.default": "Your booking details are below.",
@@ -501,11 +504,14 @@ export const en: TranslationTree = {
   "bookingConfirmation.actions.businessBookings": "Business bookings",
   "bookingConfirmation.note.pendingTitle": "Request sent",
   "bookingConfirmation.note.confirmedTitle": "Confirmed",
+  "bookingConfirmation.note.declinedTitle": "Declined",
   "bookingConfirmation.note.completedTitle": "Completed",
   "bookingConfirmation.note.cancelledTitle": "Cancelled",
   "bookingConfirmation.note.pendingBody":
     "Waiting for the business to confirm.",
   "bookingConfirmation.note.confirmedBody": "Your booking is confirmed.",
+  "bookingConfirmation.note.declinedBody":
+    "The business declined this request.",
   "bookingConfirmation.note.completedBody": "This booking is complete.",
   "bookingConfirmation.note.cancelledBody": "This booking has been cancelled.",
   "bookingConfirmation.details.title": "Appointment details",
@@ -1331,6 +1337,8 @@ export const en: TranslationTree = {
   "dashboardBookings.error.noAccess":
     "You do not have access to this business.",
   "dashboardBookings.error.load": "Could not load bookings.",
+  "dashboardBookings.error.actionNoLongerAvailable":
+    "This booking is no longer available for that action. Refresh bookings to see the latest status.",
   "dashboardBookings.businessPicker.kicker": "Multiple businesses found",
   "dashboardBookings.businessPicker.title": "Choose a business to continue",
   "dashboardBookings.businessPicker.body":
@@ -1391,6 +1399,7 @@ export const en: TranslationTree = {
   "dashboardBookings.card.call": "Call",
   "dashboardBookings.card.lockedCompleted": "Locked completed record",
   "dashboardBookings.card.lockedCancelled": "Locked cancelled record",
+  "dashboardBookings.card.lockedDeclined": "Locked declined record",
   "dashboardBookings.card.lockedBody": "This booking can no longer be changed.",
   "dashboardBookings.actions.working": "Working...",
   "dashboardBookings.actions.accept": "Accept booking",
@@ -1646,10 +1655,20 @@ export const en: TranslationTree = {
     "Please login or create a customer account to book with",
   "publicBusiness.error.chooseStaff":
     "Please choose Any available staff or one of the staff available for this time.",
+  "publicBusiness.error.missingSelection":
+    "Choose a service, staff option, date and time before booking.",
+  "publicBusiness.error.serviceUnavailable":
+    "This service is no longer available. Please choose another service.",
+  "publicBusiness.error.staffUnavailable":
+    "This staff option is no longer available for booking. Please choose another staff option.",
+  "publicBusiness.error.staffServiceUnavailable":
+    "This staff member can no longer be booked for the selected service. Please choose another option.",
+  "publicBusiness.error.unableToCreate":
+    "Unable to create this booking right now. Please try again.",
   "publicBusiness.error.slotJustBooked":
-    "This time slot has just been booked. Please choose another.",
+    "This time is no longer available. Please choose another time.",
   "publicBusiness.error.slotUnavailable":
-    "This time is no longer available. Please choose another slot.",
+    "This time is no longer available. Please choose another time.",
 
   "publicBusiness.notification.requestSentTitle": "Request sent",
   "publicBusiness.notification.confirmedTitle": "Confirmed",
@@ -1906,6 +1925,7 @@ export const en: TranslationTree = {
   "myBookings.lifecycle.waitingTitle": "Request sent",
   "myBookings.lifecycle.waitingBody": "Waiting for the business to confirm.",
   "myBookings.lifecycle.confirmedBody": "Your booking is confirmed.",
+  "myBookings.lifecycle.declinedBody": "The business declined this request.",
   "myBookings.lifecycle.completedBody": "This booking is complete.",
   "myBookings.lifecycle.cancelledBody": "This booking has been cancelled.",
   "myBookings.sections.waitingTitle": "Request sent",

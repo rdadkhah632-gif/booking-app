@@ -287,6 +287,7 @@ export default function MyBookings() {
   function statusColor(status: string) {
     if (status === "pending") return "var(--accent)";
     if (status === "confirmed") return "var(--success)";
+    if (status === "declined") return "var(--warning)";
     if (status === "completed") return "var(--accent)";
     if (status === "cancelled") return "var(--warning)";
     return "var(--text-muted)";
@@ -295,6 +296,7 @@ export default function MyBookings() {
   function statusBackground(status: string) {
     if (status === "pending") return "rgba(255,107,53,0.12)";
     if (status === "confirmed") return "rgba(45,212,191,0.12)";
+    if (status === "declined") return "rgba(255,190,11,0.12)";
     if (status === "completed") return "rgba(255,107,53,0.12)";
     if (status === "cancelled") return "rgba(255,190,11,0.12)";
     return "var(--surface-2)";
@@ -326,6 +328,14 @@ export default function MyBookings() {
         border: "rgba(45,212,191,0.22)",
         background:
           "linear-gradient(135deg, rgba(45,212,191,0.08), rgba(31,28,44,0.72))",
+      };
+    }
+
+    if (status === "declined") {
+      return {
+        border: "rgba(255,190,11,0.22)",
+        background:
+          "linear-gradient(135deg, rgba(255,190,11,0.07), rgba(31,28,44,0.66))",
       };
     }
 
@@ -400,6 +410,8 @@ export default function MyBookings() {
       return t("myBookings.status.completed", "Completed");
     if (booking.status === "cancelled")
       return t("myBookings.status.cancelled", "Cancelled");
+    if (booking.status === "declined")
+      return t("myBookings.status.declined", "Declined");
     return statusLabel(booking.status);
   }
 
@@ -436,6 +448,13 @@ export default function MyBookings() {
       return t(
         "myBookings.lifecycle.cancelledBody",
         "This booking has been cancelled.",
+      );
+    }
+
+    if (booking.status === "declined") {
+      return t(
+        "myBookings.lifecycle.declinedBody",
+        "The business declined this request.",
       );
     }
 
@@ -488,6 +507,7 @@ export default function MyBookings() {
     return bookings.filter(
       (booking) =>
         booking.status === "cancelled" ||
+        booking.status === "declined" ||
         booking.status === "completed" ||
         (booking.status === "confirmed" &&
           new Date(booking.start_at) < new Date()),

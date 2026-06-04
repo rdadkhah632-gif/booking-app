@@ -26,7 +26,9 @@ export default function BookingCard({
 }: Props) {
   const { t } = useI18n();
   const isLocked =
-    booking.status === "cancelled" || booking.status === "completed";
+    booking.status === "cancelled" ||
+    booking.status === "declined" ||
+    booking.status === "completed";
   const isWorking = actionLoadingId === booking.id;
   const start = new Date(booking.start_at);
   const end = booking.end_at
@@ -43,7 +45,7 @@ export default function BookingCard({
             ? "rgba(255,107,53,0.35)"
             : booking.status === "completed"
               ? "rgba(45,212,191,0.22)"
-              : booking.status === "cancelled"
+              : booking.status === "cancelled" || booking.status === "declined"
                 ? "rgba(255,190,11,0.25)"
                 : "var(--border)",
       }}
@@ -291,6 +293,11 @@ export default function BookingCard({
                       "dashboardBookings.card.lockedCompleted",
                       "Locked completed record",
                     )
+                  : booking.status === "declined"
+                    ? t(
+                        "dashboardBookings.card.lockedDeclined",
+                        "Locked declined record",
+                      )
                   : t(
                       "dashboardBookings.card.lockedCancelled",
                       "Locked cancelled record",

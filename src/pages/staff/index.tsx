@@ -568,7 +568,11 @@ export default function StaffDashboardPage() {
       }
 
       if (statusFilter === "history") {
-        return booking.status === "completed" || booking.status === "cancelled";
+        return (
+          booking.status === "completed" ||
+          booking.status === "cancelled" ||
+          booking.status === "declined"
+        );
       }
 
       if (statusFilter === "all") return true;

@@ -171,6 +171,7 @@ export default function BookingConfirmation() {
   function statusColor(status: string) {
     if (status === "pending") return "var(--accent)";
     if (status === "confirmed") return "var(--success)";
+    if (status === "declined") return "var(--warning)";
     if (status === "completed") return "var(--accent)";
     if (status === "cancelled") return "var(--warning)";
     return "var(--text-muted)";
@@ -179,6 +180,7 @@ export default function BookingConfirmation() {
   function statusBackground(status: string) {
     if (status === "pending") return "rgba(255,107,53,0.12)";
     if (status === "confirmed") return "rgba(45,212,191,0.12)";
+    if (status === "declined") return "rgba(255,190,11,0.12)";
     if (status === "completed") return "rgba(255,107,53,0.12)";
     if (status === "cancelled") return "rgba(255,190,11,0.12)";
     return "var(--surface-2)";
@@ -254,6 +256,8 @@ export default function BookingConfirmation() {
       return t("bookingConfirmation.heading.confirmed", "Confirmed");
     if (booking?.status === "completed")
       return t("bookingConfirmation.heading.completed", "Completed");
+    if (booking?.status === "declined")
+      return t("bookingConfirmation.heading.declined", "Declined");
     if (booking?.status === "cancelled")
       return t("bookingConfirmation.heading.cancelled", "Cancelled");
     return t("bookingConfirmation.heading.received", "Booking received.");
@@ -272,6 +276,13 @@ export default function BookingConfirmation() {
       return t(
         "bookingConfirmation.lead.completed",
         "This booking is complete.",
+      );
+    }
+
+    if (booking?.status === "declined") {
+      return t(
+        "bookingConfirmation.lead.declined",
+        "The business declined this request.",
       );
     }
 
@@ -344,7 +355,8 @@ export default function BookingConfirmation() {
               >
                 {booking.status === "pending"
                   ? "…"
-                  : booking.status === "cancelled"
+                  : booking.status === "cancelled" ||
+                      booking.status === "declined"
                     ? "!"
                     : "✓"}
               </div>
@@ -376,10 +388,14 @@ export default function BookingConfirmation() {
               style={{
                 borderColor: isPendingApproval()
                   ? "rgba(255,107,53,0.28)"
-                  : "rgba(45,212,191,0.28)",
+                  : booking.status === "declined"
+                    ? "rgba(255,190,11,0.28)"
+                    : "rgba(45,212,191,0.28)",
                 background: isPendingApproval()
                   ? "rgba(255,107,53,0.06)"
-                  : "rgba(45,212,191,0.06)",
+                  : booking.status === "declined"
+                    ? "rgba(255,190,11,0.06)"
+                    : "rgba(45,212,191,0.06)",
               }}
             >
               <div className="booking-confirmation-note-row">
@@ -393,7 +409,9 @@ export default function BookingConfirmation() {
                       : "rgba(45,212,191,0.12)",
                     color: isPendingApproval()
                       ? "var(--accent)"
-                      : "var(--success)",
+                      : booking.status === "declined"
+                        ? "var(--warning)"
+                        : "var(--success)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -421,10 +439,15 @@ export default function BookingConfirmation() {
                               "bookingConfirmation.note.completedTitle",
                               "Completed",
                             )
-                          : t(
-                              "bookingConfirmation.note.cancelledTitle",
-                              "Cancelled",
-                            )}
+                          : booking.status === "declined"
+                            ? t(
+                                "bookingConfirmation.note.declinedTitle",
+                                "Declined",
+                              )
+                            : t(
+                                "bookingConfirmation.note.cancelledTitle",
+                                "Cancelled",
+                              )}
                   </strong>
                   <p className="small muted" style={{ marginTop: "0.35rem" }}>
                     {booking.status === "pending"
@@ -442,10 +465,15 @@ export default function BookingConfirmation() {
                               "bookingConfirmation.note.completedBody",
                               "This booking is complete.",
                             )
-                          : t(
-                              "bookingConfirmation.note.cancelledBody",
-                              "This booking has been cancelled.",
-                            )}
+                          : booking.status === "declined"
+                            ? t(
+                                "bookingConfirmation.note.declinedBody",
+                                "The business declined this request.",
+                              )
+                            : t(
+                                "bookingConfirmation.note.cancelledBody",
+                                "This booking has been cancelled.",
+                              )}
                   </p>
                 </div>
               </div>

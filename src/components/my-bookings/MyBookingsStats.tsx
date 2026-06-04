@@ -28,7 +28,7 @@ export default function MyBookingsStats({
         disabled={pendingCount === 0}
         style={statCardStyle(pendingCount > 0)}
       >
-        <p className="small muted">{t('myBookings.status.waitingApproval', 'Waiting approval')}</p>
+        <p className="small muted">{t('myBookings.stats.waitingApproval', 'Request sent')}</p>
         <h3>{pendingCount}</h3>
         <p className="muted small">{t('myBookings.stats.waitingBody', 'Booking requests not confirmed yet')}</p>
         <p className="small" style={{ color: pendingCount > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
@@ -75,7 +75,7 @@ export default function MyBookingsStats({
       >
         <p className="small muted">{t('dashboardBookings.summary.history', 'History')}</p>
         <h3>{historyCount}</h3>
-        <p className="muted small">{t('myBookings.stats.historyBody', 'Completed, cancelled or past bookings')}</p>
+        <p className="muted small">{t('myBookings.stats.historyBody', 'Completed, declined, cancelled or past bookings')}</p>
         <p className="small" style={{ color: historyCount > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
           {historyCount > 0 ? t('myBookings.stats.tapHistory', 'Tap to view history ↓') : t('myBookings.stats.noHistory', 'No history yet')}
         </p>

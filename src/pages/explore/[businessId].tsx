@@ -899,6 +899,8 @@ export default function BusinessBookingPage() {
   async function createBooking(e: React.FormEvent) {
     e.preventDefault();
 
+    if (loading) return;
+
     if (!authChecked) return;
 
     if (!customerUserId || userRole !== "customer") {
@@ -912,9 +914,17 @@ export default function BusinessBookingPage() {
       !businessId ||
       Array.isArray(businessId) ||
       !selectedService ||
+      !selectedDate ||
       !selectedTime
-    )
+    ) {
+      setError(
+        t(
+          "publicBusiness.error.missingSelection",
+          "Choose a service, staff option, date and time before booking.",
+        ),
+      );
       return;
+    }
 
     const staffMemberIdForBooking = resolveStaffForBooking();
 
@@ -931,18 +941,149 @@ export default function BusinessBookingPage() {
     setLoading(true);
     setError(null);
 
-    const freshSlots = generateSlotsForStaffOnDate(
-      staffMemberIdForBooking,
-      selectedDate,
-      selectedService,
-    );
+    const { data: freshService, error: freshServiceError } = await supabase
+      .from("services")
+      .select("id, duration_minutes, active")
+      .eq("id", selectedService.id)
+      .eq("business_id", businessId)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (freshServiceError || !freshService) {
+      setLoading(false);
+      setError(
+        t(
+          "publicBusiness.error.serviceUnavailable",
+          "This service is no longer available. Please choose another service.",
+        ),
+      );
+      await loadBookingPage();
+      return;
+    }
+
+    const { data: freshStaff, error: freshStaffError } = await supabase
+      .from("staff_members")
+      .select("id, active")
+      .eq("id", staffMemberIdForBooking)
+      .eq("business_id", businessId)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (freshStaffError || !freshStaff) {
+      setLoading(false);
+      setError(
+        t(
+          "publicBusiness.error.staffUnavailable",
+          "This staff option is no longer available for booking. Please choose another staff option.",
+        ),
+      );
+      await loadBookingPage();
+      return;
+    }
+
+    const { data: freshStaffService, error: freshStaffServiceError } =
+      await supabase
+        .from("staff_services")
+        .select("staff_member_id")
+        .eq("staff_member_id", staffMemberIdForBooking)
+        .eq("service_id", selectedService.id)
+        .maybeSingle();
+
+    if (freshStaffServiceError || !freshStaffService) {
+      setLoading(false);
+      setError(
+        t(
+          "publicBusiness.error.staffServiceUnavailable",
+          "This staff member can no longer be booked for the selected service. Please choose another option.",
+        ),
+      );
+      await loadBookingPage();
+      return;
+    }
+
+    const { data: freshBookingsData, error: freshBookingsError } =
+      await supabase
+        .from("bookings")
+        .select("id, staff_member_id, start_at, end_at, duration_minutes, status")
+        .eq("business_id", businessId)
+        .in("status", ["pending", "confirmed"]);
+
+    if (freshBookingsError) {
+      setLoading(false);
+      setError(
+        t(
+          "publicBusiness.error.unableToCreate",
+          "Unable to create this booking right now. Please try again.",
+        ),
+      );
+      return;
+    }
+
+    setBookings(freshBookingsData || []);
+
+    const freshSlots = (() => {
+      const nextBookings = (freshBookingsData || []) as Booking[];
+      const dayAvailability = getStaffDayAvailabilityForDate(
+        staffMemberIdForBooking,
+        selectedDate,
+      );
+      if (!dayAvailability || dayAvailability.is_closed) return [];
+
+      const slots: string[] = [];
+      let start = new Date(`${selectedDate}T${dayAvailability.start_time}`);
+      const end = new Date(`${selectedDate}T${dayAvailability.end_time}`);
+      const now = new Date();
+      const slotIntervalMinutes = bookingIntervalMinutes();
+      const earliestBookableTime = addMinutes(now, minNoticeMinutes());
+      const maxAdvanceDate = new Date(now);
+      maxAdvanceDate.setDate(maxAdvanceDate.getDate() + maxAdvanceDays());
+      maxAdvanceDate.setHours(23, 59, 59, 999);
+
+      while (
+        start.getTime() + freshService.duration_minutes * 60000 <=
+        end.getTime()
+      ) {
+        const visibleSlotStart = new Date(start);
+        const slotStart = addMinutes(visibleSlotStart, -bufferBeforeMinutes());
+        const appointmentEnd = addMinutes(
+          visibleSlotStart,
+          freshService.duration_minutes,
+        );
+        const slotEnd = addMinutes(appointmentEnd, bufferAfterMinutes());
+        const timeString = visibleSlotStart.toTimeString().slice(0, 5);
+
+        const overlapsBooking = nextBookings.some((booking) => {
+          if (booking.staff_member_id !== staffMemberIdForBooking) return false;
+
+          const bookingStart = new Date(booking.start_at);
+          const bookingEnd = booking.end_at
+            ? new Date(booking.end_at)
+            : addMinutes(bookingStart, booking.duration_minutes);
+
+          return slotStart < bookingEnd && slotEnd > bookingStart;
+        });
+
+        if (
+          visibleSlotStart >= now &&
+          visibleSlotStart >= earliestBookableTime &&
+          visibleSlotStart <= maxAdvanceDate &&
+          !overlapsBooking
+        ) {
+          slots.push(timeString);
+        }
+
+        start = addMinutes(start, slotIntervalMinutes);
+      }
+
+      return slots;
+    })();
 
     if (!freshSlots.includes(selectedTime)) {
       setLoading(false);
       setError(
         t(
           "publicBusiness.error.slotUnavailable",
-          "This time is no longer available. Please choose another slot.",
+          "This time is no longer available. Please choose another time.",
         ),
       );
       setSelectedTime("");
@@ -980,11 +1121,16 @@ export default function BusinessBookingPage() {
         setError(
           t(
             "publicBusiness.error.slotJustBooked",
-            "This time slot has just been booked. Please choose another.",
+            "This time is no longer available. Please choose another time.",
           ),
         );
       } else {
-        setError(error.message);
+        setError(
+          t(
+            "publicBusiness.error.unableToCreate",
+            "Unable to create this booking right now. Please try again.",
+          ),
+        );
       }
       await loadBookingPage();
       return;

@@ -12,7 +12,7 @@ export default function NotificationsStats({ actionCount, historyCount, unreadCo
   return (
     <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
       <div className="card" style={{ borderColor: actionCount > 0 ? 'rgba(255,107,53,0.35)' : 'var(--border)' }}>
-        <p className="small muted">{t('notifications.stats.waitingApproval', 'Waiting approval')}</p>
+        <p className="small muted">{t('notifications.stats.waitingApproval', 'Request sent')}</p>
         <h3>{actionCount}</h3>
         <p className="muted small">{t('notifications.stats.waitingBody', 'Booking and reschedule requests waiting for business action')}</p>
       </div>

@@ -99,6 +99,62 @@ Improve clarity and consistency in:
 - booking status badges and next-action language
 - pending approvals and reschedule requests
 
+## Batch 2/3 Closure - Booking Flow Clarity and Operational Status Guidance
+
+Status: pass with minor copy follow-up completed.
+
+Confirmed:
+
+- Request-mode booking flow works.
+- Instant-confirmation booking flow works.
+- Customer confirmation page matches status.
+- Business pending bookings show Needs approval and correct actions.
+- Staff pending bookings show Awaiting business approval with no staff action required.
+- Empty/unavailable states are clearer.
+- Stage 1 role/account routing did not regress.
+
+Minor follow-up completed:
+
+- Customer My Bookings summary card used older "Waiting approval" wording.
+- Replaced the customer-facing summary/stat wording with "Request sent" to match Batch 1 wording.
+
+Next recommended batch:
+
+Stage 2 Batch 4 - Booking action reliability and stale-slot handling.
+
+Plan before editing. This batch is more technical and should test or harden:
+
+- selected slot becomes unavailable before submit
+- overlapping booking prevention messaging
+- accept/decline success/failure feedback
+- booking state updates after business action
+- customer/staff/business views refreshing correctly
+- duplicate notification/action surfaces
+
+## Batch 4 Closure - Booking Reliability, Stale Slot Handling and Action Feedback
+
+Status: pass.
+
+Confirmed:
+
+- Public booking submit re-checks selected service, staff/service assignment and current pending/confirmed booking overlap before insert.
+- Stale selected slots are blocked with "This time is no longer available. Please choose another time."
+- Booking submit ignores duplicate clicks while loading.
+- Business accept, decline, cancel and complete actions ignore duplicate clicks while processing.
+- Business actions now guard against stale status changes and show a clear refresh message when the booking is no longer actionable.
+- Declined bookings now remain distinct from cancelled bookings across business/customer/staff touched views.
+- Customer history includes declined bookings and customer lifecycle copy explains declined requests.
+- Staff history includes declined bookings so declined requests are not treated as active upcoming work.
+- Customer and business notification surfaces touched in this batch include declined booking updates consistently.
+- Stage 1 role/account/routing logic was not changed.
+- `npm run build` passed.
+
+Follow-up QA:
+
+- Manually simulate two sessions selecting the same slot and confirm the first stale submit is blocked cleanly.
+- Confirm the database accepts `declined` as a booking status in production data.
+- Re-test business accept/decline from both dashboard bookings and dashboard notifications.
+
 ## Suggested Batch 5 - Business Setup Readiness
 
 Make readiness checks accurately reflect whether a business can be booked:
@@ -146,4 +202,3 @@ Manual QA should include:
 - staff can see assigned booking where applicable
 - booking status labels are consistent across views
 - EN/SQ text does not visibly regress on touched pages
-
