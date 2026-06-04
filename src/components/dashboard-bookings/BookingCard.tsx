@@ -133,7 +133,7 @@ export default function BookingCard({
               <p className="small muted booking-card-line">
                 {t(
                   "dashboardBookings.card.pendingReserved",
-                  "This time is reserved while waiting for your approval.",
+                  "Review this booking request.",
                 )}
               </p>
             )}

@@ -272,22 +272,15 @@ export default function MyBookings() {
 
   function statusLabel(status: string) {
     if (status === "pending")
-      return t("myBookings.status.waitingApproval", "Waiting for approval");
+      return t("myBookings.status.requestSent", "Request sent");
     if (status === "confirmed")
-      return t(
-        "dashboardBookings.status.confirmedAppointment",
-        "Confirmed appointment",
-      );
+      return t("myBookings.status.confirmed", "Confirmed");
+    if (status === "declined")
+      return t("myBookings.status.declined", "Declined");
     if (status === "completed")
-      return t(
-        "dashboardBookings.status.completedAppointment",
-        "Completed appointment",
-      );
+      return t("myBookings.status.completed", "Completed");
     if (status === "cancelled")
-      return t(
-        "dashboardBookings.status.cancelledBooking",
-        "Cancelled booking",
-      );
+      return t("myBookings.status.cancelled", "Cancelled");
     return status;
   }
 
@@ -395,30 +388,18 @@ export default function MyBookings() {
 
   function lifecycleTitle(booking: Booking, pendingRequest?: BookingRequest) {
     if (booking.status === "pending")
-      return t(
-        "myBookings.lifecycle.waitingTitle",
-        "Waiting for business approval",
-      );
+      return t("myBookings.lifecycle.waitingTitle", "Request sent");
     if (pendingRequest && booking.status === "confirmed")
       return t(
         "myBookings.lifecycle.pendingChangeTitle",
-        "Confirmed appointment with a pending change request",
+        "Confirmed booking with a pending change request",
       );
     if (booking.status === "confirmed")
-      return t(
-        "dashboardBookings.status.confirmedAppointment",
-        "Confirmed appointment",
-      );
+      return t("myBookings.status.confirmed", "Confirmed");
     if (booking.status === "completed")
-      return t(
-        "dashboardBookings.status.completedAppointment",
-        "Completed appointment",
-      );
+      return t("myBookings.status.completed", "Completed");
     if (booking.status === "cancelled")
-      return t(
-        "dashboardBookings.status.cancelledBooking",
-        "Cancelled booking",
-      );
+      return t("myBookings.status.cancelled", "Cancelled");
     return statusLabel(booking.status);
   }
 
@@ -426,7 +407,7 @@ export default function MyBookings() {
     if (booking.status === "pending") {
       return t(
         "myBookings.lifecycle.waitingBody",
-        "This booking is not confirmed yet. The business needs to accept it before it becomes an appointment.",
+        "Waiting for the business to confirm.",
       );
     }
 
@@ -440,21 +421,21 @@ export default function MyBookings() {
     if (booking.status === "confirmed") {
       return t(
         "myBookings.lifecycle.confirmedBody",
-        "This is your active appointment. You can request a new time or cancel it before it is completed.",
+        "Your booking is confirmed.",
       );
     }
 
     if (booking.status === "completed") {
       return t(
         "myBookings.lifecycle.completedBody",
-        "This appointment is complete and locked. It stays here as part of your booking history.",
+        "This booking is complete.",
       );
     }
 
     if (booking.status === "cancelled") {
       return t(
         "myBookings.lifecycle.cancelledBody",
-        "This booking is cancelled and no longer active.",
+        "This booking has been cancelled.",
       );
     }
 

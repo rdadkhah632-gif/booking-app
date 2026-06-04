@@ -422,18 +422,18 @@ export default function BusinessBookingPage() {
   function bookingModeText() {
     return business?.auto_accept_bookings === false
       ? t("publicBusiness.bookingMode.request", "Booking request")
-      : t("publicBusiness.bookingMode.instant", "Instant booking");
+      : t("publicBusiness.bookingMode.instant", "Instant confirmation");
   }
 
   function bookingModeDescription() {
     return business?.auto_accept_bookings === false
       ? t(
           "publicBusiness.bookingMode.requestBody",
-          "This business reviews new booking requests before confirming them.",
+          "The business will review and confirm your request.",
         )
       : t(
           "publicBusiness.bookingMode.instantBody",
-          "This business confirms new bookings instantly when you choose an available slot.",
+          "Your booking will be confirmed immediately after you submit.",
         );
   }
 
@@ -497,14 +497,8 @@ export default function BusinessBookingPage() {
             : "booking_accepted",
         title:
           bookingStatus === "pending"
-            ? t(
-                "notifications.types.bookingRequested.title",
-                "Booking request sent",
-              )
-            : t(
-                "notifications.types.bookingAccepted.title",
-                "Booking accepted",
-              ),
+            ? t("notifications.types.bookingRequested.title", "Request sent")
+            : t("notifications.types.bookingAccepted.title", "Confirmed"),
         message:
           bookingStatus === "pending"
             ? `${business.name} ${t("publicBusiness.notification.customerPendingMessage", "will review your booking request for")} ${selectedService.name} ${t("publicBusiness.notification.forWord", "for")} ${appointmentTime}.`
@@ -525,12 +519,9 @@ export default function BusinessBookingPage() {
           bookingStatus === "pending"
             ? t(
                 "publicBusiness.notification.needsApprovalTitle",
-                "New booking needs approval",
+                "Needs approval",
               )
-            : t(
-                "publicBusiness.notification.createdTitle",
-                "New booking created",
-              ),
+            : t("publicBusiness.notification.createdTitle", "Confirmed"),
         message: `${customerName.trim() || t("publicBusiness.customerFallback", "A customer")} ${t("publicBusiness.notification.bookedWord", "booked")} ${selectedService.name} ${t("publicBusiness.notification.forWord", "for")} ${appointmentTime} ${t("publicBusiness.notification.withWord", "with")} ${staffLabel}.`,
         action_url: `/dashboard/bookings?businessId=${businessId}&date=${selectedDate}`,
       },

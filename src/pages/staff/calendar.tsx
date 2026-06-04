@@ -63,6 +63,7 @@ function statusColor(status: string) {
   if (status === "pending") return "var(--accent)";
   if (status === "confirmed") return "var(--success)";
   if (status === "completed") return "var(--success)";
+  if (status === "declined") return "var(--warning)";
   if (status === "cancelled") return "var(--warning)";
   return "var(--text-muted)";
 }
@@ -214,8 +215,9 @@ export default function StaffCalendarPage() {
 
   function statusLabel(status: string) {
     if (status === "pending")
-      return t("staff.status.pending", "Pending approval");
+      return t("staff.status.pending", "Awaiting business approval");
     if (status === "confirmed") return t("staff.status.confirmed", "Confirmed");
+    if (status === "declined") return t("staff.status.declined", "Declined");
     if (status === "completed") return t("staff.status.completed", "Completed");
     if (status === "cancelled") return t("staff.status.cancelled", "Cancelled");
     return status;

@@ -295,15 +295,15 @@ export const sq: TranslationTree = {
     "Llogaritë e biznesit, stafit dhe operatorit mund ta shohin këtë faqe, por rezervimet duhet të bëhen nga një llogari klienti.",
   "publicBusiness.summary.policies": "Politikat e biznesit",
   "publicBusiness.summary.instantNotice":
-    "Kjo do të konfirmohet menjëherë nëse orari është ende i disponueshëm.",
+    "Rezervimi yt do të konfirmohet menjëherë pasi ta dërgosh.",
   "publicBusiness.summary.requestNotice":
-    "Kjo do të dërgohet si kërkesë rezervimi.",
+    "Biznesi do ta shqyrtojë dhe konfirmojë kërkesën tënde.",
   "publicBusiness.summary.namePlaceholder": "Emri juaj",
   "publicBusiness.summary.emailPlaceholder": "ju@example.com",
   "publicBusiness.summary.phonePlaceholder": "Numri i telefonit",
   "publicBusiness.summary.notesPlaceholder": "Shënime opsionale për biznesin",
   "publicBusiness.summary.sendRequest": "Dërgo kërkesë rezervimi",
-  "publicBusiness.summary.confirmAppointment": "Konfirmo takimin",
+  "publicBusiness.summary.confirmAppointment": "Konfirmo rezervimin",
   "publicBusiness.summary.createAccount": "Krijo llogari",
 
   "support.title": "Për çfarë keni nevojë për ndihmë?",
@@ -373,7 +373,7 @@ export const sq: TranslationTree = {
   "myBookings.title": "Rezervimet e mia në Mirëbook",
   "myBookings.signedInAs": "Hyrë si",
   "myBookings.subtitle": "Shiko dhe menaxho takimet e tua në Mirëbook.",
-  "myBookings.requestSent.kicker": "Kërkesa e rezervimit u dërgua",
+  "myBookings.requestSent.kicker": "Kërkesa u dërgua",
   "myBookings.requestSent.title":
     "Rezervimi yt është në pritje të miratimit nga biznesi.",
   "myBookings.requestSent.body":
@@ -389,7 +389,7 @@ export const sq: TranslationTree = {
   "myBookings.refresh": "Rifresko rezervimet",
   "myBookings.refreshHint":
     "Ndryshimet e rezervimit përditësojnë këtë faqe pas çdo veprimi. Faqja rifreskohet edhe kur kthehesh në këtë tab.",
-  "myBookings.stats.waitingApproval": "Në pritje miratimi",
+  "myBookings.stats.waitingApproval": "Kërkesa u dërgua",
   "myBookings.stats.waitingBody": "Kërkesa rezervimi ende të pakonfirmuara",
   "myBookings.stats.tapRequests": "Kliko për të parë kërkesat ↓",
   "myBookings.stats.noApprovals": "Nuk ka miratime në pritje",
@@ -461,7 +461,7 @@ export const sq: TranslationTree = {
   "notifications.allRead": "Të gjitha të lexuara",
   "notifications.refreshHint":
     "Mirëbook e rifreskon këtë faqe kur kthehesh në këtë tab. Përdor rifreskimin nëse një përditësim i fundit nuk shfaqet menjëherë.",
-  "notifications.stats.waitingApproval": "Në pritje miratimi",
+  "notifications.stats.waitingApproval": "Kërkesa u dërgua",
   "notifications.stats.waitingBody":
     "Kërkesa rezervimi dhe ndryshimi orari që presin veprim nga biznesi",
   "notifications.stats.history": "Historia",
@@ -506,31 +506,28 @@ export const sq: TranslationTree = {
   "notifications.viewBookings": "Shiko rezervimet",
   "nav.settings": "Cilësimet",
   "common.minutes": "minuta",
-  "bookingConfirmation.status.pending": "Kërkesa e rezervimit u dërgua",
-  "bookingConfirmation.status.confirmed": "Takim i konfirmuar",
-  "bookingConfirmation.status.completed": "Takim i përfunduar",
-  "bookingConfirmation.status.cancelled": "Rezervim i anuluar",
+  "bookingConfirmation.status.pending": "Kërkesa u dërgua",
+  "bookingConfirmation.status.confirmed": "Konfirmuar",
+  "bookingConfirmation.status.declined": "Refuzuar",
+  "bookingConfirmation.status.completed": "Përfunduar",
+  "bookingConfirmation.status.cancelled": "Anuluar",
   "bookingConfirmation.error.noPermission":
     "Nuk ke leje ta shohësh këtë rezervim.",
   "bookingConfirmation.error.title": "Rezervimi nuk u ngarkua",
   "bookingConfirmation.fallback.business": "ky biznes",
   "bookingConfirmation.priceNotSet": "Çmimi nuk shfaqet",
   "bookingConfirmation.locationNotAdded": "Vendndodhja nuk është shtuar",
-  "bookingConfirmation.heading.pending": "Kërkesa jote e rezervimit u dërgua.",
-  "bookingConfirmation.heading.confirmed": "Takimi yt është konfirmuar.",
-  "bookingConfirmation.heading.completed": "Ky takim është përfunduar.",
-  "bookingConfirmation.heading.cancelled": "Ky rezervim është anuluar.",
+  "bookingConfirmation.heading.pending": "Kërkesa u dërgua",
+  "bookingConfirmation.heading.confirmed": "Konfirmuar",
+  "bookingConfirmation.heading.completed": "Përfunduar",
+  "bookingConfirmation.heading.cancelled": "Anuluar",
   "bookingConfirmation.heading.received": "Rezervimi u mor.",
-  "bookingConfirmation.lead.pendingStart": "Kërkesa jote iu dërgua",
-  "bookingConfirmation.lead.pendingEnd":
-    "për miratim. Takimi nuk është i konfirmuar derisa biznesi ta pranojë.",
+  "bookingConfirmation.lead.pendingStart": "Në pritje që",
+  "bookingConfirmation.lead.pendingEnd": "ta konfirmojë.",
   "bookingConfirmation.lead.confirmedStart": "Rezervimi yt është konfirmuar me",
-  "bookingConfirmation.lead.confirmedEnd":
-    "Mund ta shohësh, anulosh ose të kërkosh ndryshim orari nga Rezervimet e mia.",
-  "bookingConfirmation.lead.completed":
-    "Ky takim është shënuar si i përfunduar. Mund ta shohësh ende në historikun e rezervimeve.",
-  "bookingConfirmation.lead.cancelled":
-    "Ky rezervim nuk është më aktiv. Mund të eksplorosh shërbime të tjera në Mirëbook.",
+  "bookingConfirmation.lead.confirmedEnd": "Rezervimi yt është konfirmuar.",
+  "bookingConfirmation.lead.completed": "Ky rezervim është përfunduar.",
+  "bookingConfirmation.lead.cancelled": "Ky rezervim është anuluar.",
   "bookingConfirmation.lead.default": "Detajet e rezervimit janë më poshtë.",
   "bookingConfirmation.loading":
     "Duke ngarkuar konfirmimin e rezervimit Mirëbook...",
@@ -540,18 +537,14 @@ export const sq: TranslationTree = {
     "Shiko ose menaxho këtë rezervim",
   "bookingConfirmation.actions.explore": "Eksploro Mirëbook",
   "bookingConfirmation.actions.businessBookings": "Rezervimet e biznesit",
-  "bookingConfirmation.note.pendingTitle": "Në pritje të miratimit nga biznesi",
-  "bookingConfirmation.note.confirmedTitle": "Çfarë ndodh më pas?",
-  "bookingConfirmation.note.completedTitle": "Takimi u përfundua",
-  "bookingConfirmation.note.cancelledTitle": "Rezervimi nuk është më aktiv",
-  "bookingConfirmation.note.pendingBody":
-    "Biznesi duhet ta miratojë këtë kërkesë para se të bëhet takim i konfirmuar. Mund ta gjurmosh nga Rezervimet e mia ose Njoftimet.",
-  "bookingConfirmation.note.confirmedBody":
-    "Ky takim është aktualisht i konfirmuar. Nëse duhet ta ndryshosh, kërko një orar të ri nga Rezervimet e mia dhe biznesi do ta shqyrtojë.",
-  "bookingConfirmation.note.completedBody":
-    "Ky takim është i kyçur si i përfunduar dhe do të qëndrojë në historikun e rezervimeve.",
-  "bookingConfirmation.note.cancelledBody":
-    "Ky rezervim është anuluar dhe nuk mund të ndryshohet. Mund të shfletosh marketplace-in për të rezervuar një takim tjetër.",
+  "bookingConfirmation.note.pendingTitle": "Kërkesa u dërgua",
+  "bookingConfirmation.note.confirmedTitle": "Konfirmuar",
+  "bookingConfirmation.note.completedTitle": "Përfunduar",
+  "bookingConfirmation.note.cancelledTitle": "Anuluar",
+  "bookingConfirmation.note.pendingBody": "Në pritje që biznesi ta konfirmojë.",
+  "bookingConfirmation.note.confirmedBody": "Rezervimi yt është konfirmuar.",
+  "bookingConfirmation.note.completedBody": "Ky rezervim është përfunduar.",
+  "bookingConfirmation.note.cancelledBody": "Ky rezervim është anuluar.",
   "bookingConfirmation.details.title": "Detajet e takimit",
   "bookingConfirmation.details.staffMember": "Anëtar stafi",
   "bookingConfirmation.details.requestedDateTime": "Data dhe ora e kërkuar",
@@ -564,14 +557,17 @@ export const sq: TranslationTree = {
   "bookingConfirmation.details.status": "Statusi",
   "notifications.error.load": "Njoftimet nuk u ngarkuan.",
   "notifications.loading": "Duke ngarkuar njoftimet Mirëbook...",
-  "notifications.status.bookingWaitingApproval": "Rezervim në pritje miratimi",
-  "notifications.status.waitingApproval": "Në pritje të miratimit nga biznesi",
+  "notifications.status.bookingWaitingApproval": "Kërkesa u dërgua",
+  "notifications.status.requestSent": "Kërkesa u dërgua",
+  "notifications.status.waitingApproval": "Në pritje që biznesi ta konfirmojë",
   "notifications.status.rescheduleAccepted": "Ndryshimi i orarit u pranua",
   "notifications.status.rescheduleDeclined": "Ndryshimi i orarit u refuzua",
-  "notifications.status.bookingCancelled": "Rezervimi u anulua / nuk u pranua",
+  "notifications.status.bookingCancelled": "Anuluar",
+  "notifications.status.declined": "Refuzuar",
+  "notifications.status.cancelled": "Anuluar",
   "notifications.status.superseded": "U zëvendësua",
-  "notifications.status.completed": "Takim i përfunduar",
-  "notifications.status.confirmed": "Takim i konfirmuar",
+  "notifications.status.completed": "Përfunduar",
+  "notifications.status.confirmed": "Konfirmuar",
   "dashboardSettings.pageTitle": "Cilësimet e biznesit",
   "dashboardSettings.kicker": "Cilësimet e biznesit",
   "dashboardSettings.title": "Menaxho rregullat e biznesit",
@@ -1377,11 +1373,13 @@ export const sq: TranslationTree = {
   "dashboardBookings.filters.reset": "Rivendos filtrat",
   "dashboardBookings.filters.searchShort": "Kërko",
   "dashboardBookings.status.all": "Të gjitha statuset",
-  "dashboardBookings.status.pendingApproval": "Në pritje miratimi",
-  "dashboardBookings.status.confirmedAppointment": "Takim i konfirmuar",
-  "dashboardBookings.status.completedAppointment": "Takim i përfunduar",
-  "dashboardBookings.status.cancelledBooking": "Rezervim i anuluar",
+  "dashboardBookings.status.pendingApproval": "Kërkon miratim",
+  "dashboardBookings.status.needsApproval": "Kërkon miratim",
+  "dashboardBookings.status.confirmedAppointment": "Konfirmuar",
+  "dashboardBookings.status.completedAppointment": "Përfunduar",
+  "dashboardBookings.status.cancelledBooking": "Anuluar",
   "dashboardBookings.status.confirmed": "Konfirmuar",
+  "dashboardBookings.status.declined": "Refuzuar",
   "dashboardBookings.status.completed": "Përfunduar",
   "dashboardBookings.status.cancelled": "Anuluar",
   "dashboardBookings.card.customerFallback": "Klient",
@@ -1390,8 +1388,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.card.noStaff": "Nuk është regjistruar staf",
   "dashboardBookings.card.requestedTime": "Ora e kërkuar e takimit",
   "dashboardBookings.card.appointmentTime": "Ora e takimit",
-  "dashboardBookings.card.pendingReserved":
-    "Kjo orë është e rezervuar ndërsa pret miratimin tënd.",
+  "dashboardBookings.card.pendingReserved": "Shqyrto këtë kërkesë rezervimi.",
   "dashboardBookings.card.customerNote": "Shënim nga klienti",
   "dashboardBookings.card.internalNote": "Shënim i brendshëm",
   "dashboardBookings.card.customerDetails": "Detajet e klientit",
@@ -1479,7 +1476,7 @@ export const sq: TranslationTree = {
   "dashboardNotifications.status.supersededCancelled": "Zëvendësuar / anuluar",
   "dashboardNotifications.status.read": "Lexuar",
   "dashboardNotifications.status.unread": "Pa lexuar",
-  "dashboardNotifications.status.waitingApproval": "Në pritje miratimi",
+  "dashboardNotifications.status.waitingApproval": "Kërkon miratim",
   "dashboardNotifications.toolbar.body":
     "Shqyrto miratimet e rezervimeve, kërkesat për ndryshim orari dhe njoftimet e biznesit. Veprimet e përditësojnë këtë faqe menjëherë pas përfundimit.",
   "dashboardNotifications.toolbar.refreshing": "Duke rifreskuar...",
@@ -1525,7 +1522,7 @@ export const sq: TranslationTree = {
     "Kërkesa në pritje për ndryshim orari",
   "dashboardNotifications.sections.previousRescheduleRequests":
     "Kërkesa të mëparshme për ndryshim orari",
-  "dashboardNotifications.booking.newRequest": "Kërkesë e re rezervimi",
+  "dashboardNotifications.booking.newRequest": "Kërkon miratim",
   "dashboardNotifications.booking.reservedUntilAction":
     "Ky orar është i rezervuar derisa ta pranosh ose refuzosh kërkesën.",
   "dashboardNotifications.reschedule.latestPending":
@@ -1610,11 +1607,11 @@ export const sq: TranslationTree = {
   "publicBusiness.locationComingSoon":
     "Detajet e vendndodhjes do të shtohen së shpejti",
   "publicBusiness.bookingMode.request": "Kërkesë rezervimi",
-  "publicBusiness.bookingMode.instant": "Rezervim i menjëhershëm",
+  "publicBusiness.bookingMode.instant": "Konfirmim i menjëhershëm",
   "publicBusiness.bookingMode.requestBody":
-    "Ky biznes i shqyrton kërkesat e reja të rezervimit para se t’i konfirmojë.",
+    "Biznesi do ta shqyrtojë dhe konfirmojë kërkesën tënde.",
   "publicBusiness.bookingMode.instantBody":
-    "Ky biznes i konfirmon rezervimet menjëherë kur zgjedh një orar të disponueshëm.",
+    "Rezervimi yt do të konfirmohet menjëherë pasi ta dërgosh.",
   "publicBusiness.localBusinessTime": "ora lokale e biznesit",
   "publicBusiness.cancellationFallback":
     "Ky biznes nuk ka shtuar ende politikë anulimi.",
@@ -1667,12 +1664,10 @@ export const sq: TranslationTree = {
   "publicBusiness.error.slotUnavailable":
     "Ky orar nuk është më i disponueshëm. Zgjidh një tjetër.",
 
-  "publicBusiness.notification.requestSentTitle":
-    "Kërkesa e rezervimit u dërgua",
-  "publicBusiness.notification.confirmedTitle": "Rezervimi u konfirmua",
-  "publicBusiness.notification.needsApprovalTitle":
-    "Rezervim i ri kërkon miratim",
-  "publicBusiness.notification.createdTitle": "Rezervim i ri u krijua",
+  "publicBusiness.notification.requestSentTitle": "Kërkesa u dërgua",
+  "publicBusiness.notification.confirmedTitle": "Konfirmuar",
+  "publicBusiness.notification.needsApprovalTitle": "Kërkon miratim",
+  "publicBusiness.notification.createdTitle": "Konfirmuar",
   "publicBusiness.notification.bookedWord": "rezervoi",
   "publicBusiness.notification.forWord": "për",
   "publicBusiness.notification.withWord": "me",
@@ -1811,8 +1806,9 @@ export const sq: TranslationTree = {
   "common.saving": "Duke ruajtur...",
   "common.saveChanges": "Ruaj ndryshimet",
 
-  "staff.status.pending": "Në pritje të miratimit",
+  "staff.status.pending": "Në pritje të miratimit nga biznesi",
   "staff.status.confirmed": "E konfirmuar",
+  "staff.status.declined": "E refuzuar",
   "staff.status.completed": "E përfunduar",
   "staff.status.cancelled": "E anuluar",
   "staff.error.loadDashboard": "Nuk mundëm të ngarkojmë panelin e stafit.",
@@ -1976,6 +1972,16 @@ export const sq: TranslationTree = {
   "myBookings.command.viewUpcoming": "Shiko të ardhshmet",
   "myBookings.command.viewHistory": "Shiko historikun",
   "myBookings.command.bookAgain": "Rezervo një shërbim tjetër",
+  "myBookings.status.requestSent": "Kërkesa u dërgua",
+  "myBookings.status.confirmed": "Konfirmuar",
+  "myBookings.status.declined": "Refuzuar",
+  "myBookings.status.cancelled": "Anuluar",
+  "myBookings.status.completed": "Përfunduar",
+  "myBookings.lifecycle.waitingTitle": "Kërkesa u dërgua",
+  "myBookings.lifecycle.waitingBody": "Në pritje që biznesi ta konfirmojë.",
+  "myBookings.lifecycle.confirmedBody": "Rezervimi yt është konfirmuar.",
+  "myBookings.lifecycle.completedBody": "Ky rezervim është përfunduar.",
+  "myBookings.lifecycle.cancelledBody": "Ky rezervim është anuluar.",
   "dashboardBusinesses.status.live": "Live në Mirëbook",
   "dashboardBusinesses.status.ready": "Gati për publikim",
   "dashboardBusinesses.status.draft": "Konfigurim draft",
@@ -2245,18 +2251,18 @@ export const sq: TranslationTree = {
   "support.faq.mobileAppTitle": "A do të ketë aplikacion mobil?",
   "support.faq.mobileAppBody":
     "Produkti aktual po ndërtohet fillimisht si platformë web, me gatishmëri për aplikacion në të ardhmen. Qëllimi është që rrugët, faqosja, rrjedha e llogarisë dhe cilësimet të jenë të përshtatshme për një version aplikacioni më vonë.",
-  "notifications.types.bookingAccepted.title": "Rezervimi u pranua",
+  "notifications.types.bookingAccepted.title": "Konfirmuar",
   "notifications.types.bookingAccepted.message":
-    "Rezervimi yt u pranua dhe u konfirmua.",
+    "Rezervimi yt është konfirmuar.",
   "notifications.types.bookingDeclined.title": "Rezervimi u refuzua",
   "notifications.types.bookingDeclined.message":
     "Kërkesa jote për rezervim u refuzua.",
   "notifications.types.bookingCancelled.title": "Rezervimi u anulua",
   "notifications.types.bookingCancelled.message":
     "Rezervimi yt u anulua nga biznesi.",
-  "notifications.types.bookingCompleted.title": "Takimi u përfundua",
+  "notifications.types.bookingCompleted.title": "Përfunduar",
   "notifications.types.bookingCompleted.message":
-    "Takimi yt është shënuar si i përfunduar.",
+    "Ky rezervim është përfunduar.",
   "notifications.types.rescheduleAccepted.title": "Riplanifikimi u pranua",
   "notifications.types.rescheduleAccepted.message":
     "Kërkesa jote për riplanifikim u pranua.",
@@ -2271,12 +2277,12 @@ export const sq: TranslationTree = {
   "notifications.types.supportResolved.message":
     "Biseda jote e suportit është shënuar si e zgjidhur.",
   "notifications.types.generic.title": "Përditësim nga Mirëbook",
-  "notifications.types.businessBookingRequest.title": "Kërkesë e re rezervimi",
+  "notifications.types.businessBookingRequest.title": "Kërkon miratim",
   "notifications.types.businessBookingRequest.message":
-    "Një klient ka dërguar një kërkesë rezervimi që duhet shqyrtuar.",
-  "notifications.types.businessBookingConfirmed.title": "Rezervimi u konfirmua",
+    "Shqyrto këtë kërkesë rezervimi.",
+  "notifications.types.businessBookingConfirmed.title": "Konfirmuar",
   "notifications.types.businessBookingConfirmed.message":
-    "Një rezervim është konfirmuar.",
+    "Ky rezervim është konfirmuar.",
   "notifications.types.businessBookingCancelled.title": "Rezervimi u anulua",
   "notifications.types.businessBookingCancelled.message":
     "Një rezervim është anuluar.",
@@ -2301,9 +2307,9 @@ export const sq: TranslationTree = {
     "Rezervimi u riplanifikua",
   "notifications.types.bookingRescheduledByBusiness.message":
     "Rezervimi yt u zhvendos në një orar të ri nga biznesi.",
-  "notifications.types.bookingRequested.title": "Kërkesa për rezervim u dërgua",
+  "notifications.types.bookingRequested.title": "Kërkesa u dërgua",
   "notifications.types.bookingRequested.message":
-    "Kërkesa jote për rezervim iu dërgua biznesit për shqyrtim.",
+    "Në pritje që biznesi ta konfirmojë.",
   "billing.currentPlan": "Plani aktual",
   "billing.subscriptionStatus": "Statusi i abonimit",
   "billing.trialActive": "Periudha provuese aktive",

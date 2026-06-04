@@ -148,13 +148,13 @@ function businessNotificationText(
     return {
       title: t(
         "notifications.types.businessBookingRequest.title",
-        "New booking request",
+        "Needs approval",
       ),
       message:
         notification.message ||
         t(
           "notifications.types.businessBookingRequest.message",
-          "A customer has sent a booking request that needs review.",
+          "Review this booking request.",
         ),
     };
   }
@@ -163,13 +163,13 @@ function businessNotificationText(
     return {
       title: t(
         "notifications.types.businessBookingConfirmed.title",
-        "Booking confirmed",
+        "Confirmed",
       ),
       message:
         notification.message ||
         t(
           "notifications.types.businessBookingConfirmed.message",
-          "A booking has been confirmed.",
+          "This booking is confirmed.",
         ),
     };
   }
@@ -935,12 +935,9 @@ export default function BusinessNotifications() {
 
   function statusLabel(status: string) {
     if (status === "pending")
-      return t("dashboardBookings.status.pendingApproval", "Pending approval");
+      return t("dashboardBookings.status.needsApproval", "Needs approval");
     if (status === "confirmed")
-      return t(
-        "dashboardBookings.status.confirmedAppointment",
-        "Confirmed appointment",
-      );
+      return t("dashboardBookings.status.confirmed", "Confirmed");
     if (status === "accepted")
       return t("dashboardNotifications.status.accepted", "Accepted");
     if (status === "declined")
@@ -951,10 +948,7 @@ export default function BusinessNotifications() {
         "Superseded / cancelled",
       );
     if (status === "completed")
-      return t(
-        "dashboardBookings.status.completedAppointment",
-        "Completed appointment",
-      );
+      return t("dashboardBookings.status.completed", "Completed");
     return status;
   }
 
@@ -1357,7 +1351,7 @@ export default function BusinessNotifications() {
                       <p className="small" style={{ color: "var(--accent)" }}>
                         {t(
                           "dashboardNotifications.booking.newRequest",
-                          "New booking request",
+                          "Needs approval",
                         )}
                       </p>
 
@@ -1371,8 +1365,8 @@ export default function BusinessNotifications() {
                         }}
                       >
                         {t(
-                          "dashboardNotifications.status.waitingApproval",
-                          "Waiting approval",
+                          "dashboardBookings.status.needsApproval",
+                          "Needs approval",
                         )}
                       </span>
                     </div>
@@ -1565,8 +1559,8 @@ export default function BusinessNotifications() {
                         }}
                       >
                         {t(
-                          "dashboardNotifications.status.waitingApproval",
-                          "Waiting approval",
+                          "dashboardBookings.status.needsApproval",
+                          "Needs approval",
                         )}
                       </span>
                     </div>

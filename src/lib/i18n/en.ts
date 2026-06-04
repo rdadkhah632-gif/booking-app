@@ -252,15 +252,15 @@ export const en: TranslationTree = {
     "Business, staff and operator accounts can view this page, but bookings must be made from a customer account.",
   "publicBusiness.summary.policies": "Business policies",
   "publicBusiness.summary.instantNotice":
-    "This will be confirmed instantly if the slot is still available.",
+    "Your booking will be confirmed immediately after you submit.",
   "publicBusiness.summary.requestNotice":
-    "This will be sent as a booking request.",
+    "The business will review and confirm your request.",
   "publicBusiness.summary.namePlaceholder": "Your name",
   "publicBusiness.summary.emailPlaceholder": "you@example.com",
   "publicBusiness.summary.phonePlaceholder": "Phone number",
   "publicBusiness.summary.notesPlaceholder": "Optional notes for the business",
   "publicBusiness.summary.sendRequest": "Send booking request",
-  "publicBusiness.summary.confirmAppointment": "Confirm appointment",
+  "publicBusiness.summary.confirmAppointment": "Confirm booking",
   "publicBusiness.summary.createAccount": "Create account",
 
   "support.title": "What do you need help with?",
@@ -326,7 +326,7 @@ export const en: TranslationTree = {
   "myBookings.title": "My Mirëbook bookings",
   "myBookings.signedInAs": "Signed in as",
   "myBookings.subtitle": "View and manage your Mirëbook appointments.",
-  "myBookings.requestSent.kicker": "Booking request sent",
+  "myBookings.requestSent.kicker": "Request sent",
   "myBookings.requestSent.title":
     "Your booking is waiting for business approval.",
   "myBookings.requestSent.body":
@@ -342,7 +342,7 @@ export const en: TranslationTree = {
   "myBookings.refresh": "Refresh bookings",
   "myBookings.refreshHint":
     "Booking changes update this page after each action. It also refreshes when you return to the tab.",
-  "myBookings.stats.waitingApproval": "Waiting approval",
+  "myBookings.stats.waitingApproval": "Request sent",
   "myBookings.stats.waitingBody": "Booking requests not confirmed yet",
   "myBookings.stats.tapRequests": "Tap to view requests ↓",
   "myBookings.stats.noApprovals": "No waiting approvals",
@@ -413,7 +413,7 @@ export const en: TranslationTree = {
   "notifications.allRead": "All read",
   "notifications.refreshHint":
     "Mirëbook refreshes this page when you return to the tab. Use refresh if a recent booking update does not appear straight away.",
-  "notifications.stats.waitingApproval": "Waiting approval",
+  "notifications.stats.waitingApproval": "Request sent",
   "notifications.stats.waitingBody":
     "Booking and reschedule requests waiting for business action",
   "notifications.stats.history": "History",
@@ -457,31 +457,28 @@ export const en: TranslationTree = {
   "notifications.viewBookings": "View bookings",
   "nav.settings": "Settings",
   "common.minutes": "minutes",
-  "bookingConfirmation.status.pending": "Booking request sent",
-  "bookingConfirmation.status.confirmed": "Confirmed appointment",
-  "bookingConfirmation.status.completed": "Completed appointment",
-  "bookingConfirmation.status.cancelled": "Cancelled booking",
+  "bookingConfirmation.status.pending": "Request sent",
+  "bookingConfirmation.status.confirmed": "Confirmed",
+  "bookingConfirmation.status.declined": "Declined",
+  "bookingConfirmation.status.completed": "Completed",
+  "bookingConfirmation.status.cancelled": "Cancelled",
   "bookingConfirmation.error.noPermission":
     "You do not have permission to view this booking.",
   "bookingConfirmation.error.title": "Could not load booking",
   "bookingConfirmation.fallback.business": "this business",
   "bookingConfirmation.priceNotSet": "Price not shown",
   "bookingConfirmation.locationNotAdded": "Location not added",
-  "bookingConfirmation.heading.pending": "Your booking request was sent.",
-  "bookingConfirmation.heading.confirmed": "Your appointment is confirmed.",
-  "bookingConfirmation.heading.completed": "This appointment is completed.",
-  "bookingConfirmation.heading.cancelled": "This booking is cancelled.",
+  "bookingConfirmation.heading.pending": "Request sent",
+  "bookingConfirmation.heading.confirmed": "Confirmed",
+  "bookingConfirmation.heading.completed": "Completed",
+  "bookingConfirmation.heading.cancelled": "Cancelled",
   "bookingConfirmation.heading.received": "Booking received.",
-  "bookingConfirmation.lead.pendingStart": "Your request has been sent to",
-  "bookingConfirmation.lead.pendingEnd":
-    "for approval. Your appointment is not confirmed until the business accepts it.",
+  "bookingConfirmation.lead.pendingStart": "Waiting for",
+  "bookingConfirmation.lead.pendingEnd": "to confirm.",
   "bookingConfirmation.lead.confirmedStart": "Your booking is confirmed with",
-  "bookingConfirmation.lead.confirmedEnd":
-    "You can view, cancel or request a reschedule from My Bookings.",
-  "bookingConfirmation.lead.completed":
-    "This appointment has been marked as completed. You can still view it in your booking history.",
-  "bookingConfirmation.lead.cancelled":
-    "This booking is no longer active. You can explore other available services on Mirëbook.",
+  "bookingConfirmation.lead.confirmedEnd": "Your booking is confirmed.",
+  "bookingConfirmation.lead.completed": "This booking is complete.",
+  "bookingConfirmation.lead.cancelled": "This booking has been cancelled.",
   "bookingConfirmation.lead.default": "Your booking details are below.",
   "bookingConfirmation.loading":
     "Loading your Mirëbook booking confirmation...",
@@ -490,18 +487,15 @@ export const en: TranslationTree = {
   "bookingConfirmation.actions.manageBooking": "View or manage this booking",
   "bookingConfirmation.actions.explore": "Explore Mirëbook",
   "bookingConfirmation.actions.businessBookings": "Business bookings",
-  "bookingConfirmation.note.pendingTitle": "Waiting for business approval",
-  "bookingConfirmation.note.confirmedTitle": "What happens next?",
-  "bookingConfirmation.note.completedTitle": "Appointment completed",
-  "bookingConfirmation.note.cancelledTitle": "Booking no longer active",
+  "bookingConfirmation.note.pendingTitle": "Request sent",
+  "bookingConfirmation.note.confirmedTitle": "Confirmed",
+  "bookingConfirmation.note.completedTitle": "Completed",
+  "bookingConfirmation.note.cancelledTitle": "Cancelled",
   "bookingConfirmation.note.pendingBody":
-    "The business needs to approve this booking request before it becomes a confirmed appointment. You can track the request from My Bookings or Notifications.",
-  "bookingConfirmation.note.confirmedBody":
-    "This appointment is currently confirmed. If you need to change it, request a new time from My Bookings and the business will review it.",
-  "bookingConfirmation.note.completedBody":
-    "This appointment is locked as completed and will stay in your booking history.",
-  "bookingConfirmation.note.cancelledBody":
-    "This booking is cancelled and cannot be changed. You can browse the marketplace to book another appointment.",
+    "Waiting for the business to confirm.",
+  "bookingConfirmation.note.confirmedBody": "Your booking is confirmed.",
+  "bookingConfirmation.note.completedBody": "This booking is complete.",
+  "bookingConfirmation.note.cancelledBody": "This booking has been cancelled.",
   "bookingConfirmation.details.title": "Appointment details",
   "bookingConfirmation.details.staffMember": "Staff member",
   "bookingConfirmation.details.requestedDateTime": "Requested date and time",
@@ -514,14 +508,17 @@ export const en: TranslationTree = {
   "bookingConfirmation.details.status": "Status",
   "notifications.error.load": "Could not load notifications.",
   "notifications.loading": "Loading Mirëbook notifications...",
-  "notifications.status.bookingWaitingApproval": "Booking waiting approval",
-  "notifications.status.waitingApproval": "Waiting for business approval",
+  "notifications.status.bookingWaitingApproval": "Request sent",
+  "notifications.status.requestSent": "Request sent",
+  "notifications.status.waitingApproval": "Waiting for the business to confirm",
   "notifications.status.rescheduleAccepted": "Reschedule accepted",
   "notifications.status.rescheduleDeclined": "Reschedule declined",
-  "notifications.status.bookingCancelled": "Booking cancelled / not accepted",
+  "notifications.status.bookingCancelled": "Cancelled",
+  "notifications.status.declined": "Declined",
+  "notifications.status.cancelled": "Cancelled",
   "notifications.status.superseded": "Superseded / replaced",
-  "notifications.status.completed": "Appointment completed",
-  "notifications.status.confirmed": "Confirmed appointment",
+  "notifications.status.completed": "Completed",
+  "notifications.status.confirmed": "Confirmed",
   "dashboardSettings.pageTitle": "Business settings",
   "dashboardSettings.kicker": "Business settings",
   "dashboardSettings.title": "Manage business rules",
@@ -1357,11 +1354,13 @@ export const en: TranslationTree = {
   "dashboardBookings.filters.reset": "Reset filters",
   "dashboardBookings.filters.searchShort": "Search",
   "dashboardBookings.status.all": "All statuses",
-  "dashboardBookings.status.pendingApproval": "Pending approval",
-  "dashboardBookings.status.confirmedAppointment": "Confirmed appointment",
-  "dashboardBookings.status.completedAppointment": "Completed appointment",
-  "dashboardBookings.status.cancelledBooking": "Cancelled booking",
+  "dashboardBookings.status.pendingApproval": "Needs approval",
+  "dashboardBookings.status.needsApproval": "Needs approval",
+  "dashboardBookings.status.confirmedAppointment": "Confirmed",
+  "dashboardBookings.status.completedAppointment": "Completed",
+  "dashboardBookings.status.cancelledBooking": "Cancelled",
   "dashboardBookings.status.confirmed": "Confirmed",
+  "dashboardBookings.status.declined": "Declined",
   "dashboardBookings.status.completed": "Completed",
   "dashboardBookings.status.cancelled": "Cancelled",
   "dashboardBookings.card.customerFallback": "Customer",
@@ -1370,8 +1369,7 @@ export const en: TranslationTree = {
   "dashboardBookings.card.noStaff": "Staff not recorded",
   "dashboardBookings.card.requestedTime": "Requested appointment time",
   "dashboardBookings.card.appointmentTime": "Appointment time",
-  "dashboardBookings.card.pendingReserved":
-    "This time is reserved while waiting for your approval.",
+  "dashboardBookings.card.pendingReserved": "Review this booking request.",
   "dashboardBookings.card.customerNote": "Customer note",
   "dashboardBookings.card.internalNote": "Internal note",
   "dashboardBookings.card.customerDetails": "Customer details",
@@ -1458,7 +1456,7 @@ export const en: TranslationTree = {
   "dashboardNotifications.status.supersededCancelled": "Superseded / cancelled",
   "dashboardNotifications.status.read": "Read",
   "dashboardNotifications.status.unread": "Unread",
-  "dashboardNotifications.status.waitingApproval": "Waiting approval",
+  "dashboardNotifications.status.waitingApproval": "Needs approval",
   "dashboardNotifications.toolbar.body":
     "Review customer booking approvals, reschedule requests and business notifications. Actions update this page immediately after completion.",
   "dashboardNotifications.toolbar.refreshing": "Refreshing...",
@@ -1503,7 +1501,7 @@ export const en: TranslationTree = {
     "Pending reschedule requests",
   "dashboardNotifications.sections.previousRescheduleRequests":
     "Previous reschedule requests",
-  "dashboardNotifications.booking.newRequest": "New booking request",
+  "dashboardNotifications.booking.newRequest": "Needs approval",
   "dashboardNotifications.booking.reservedUntilAction":
     "This time is reserved until you accept or decline the request.",
   "dashboardNotifications.reschedule.latestPending":
@@ -1584,11 +1582,11 @@ export const en: TranslationTree = {
     "This business is not currently available for public booking.",
   "publicBusiness.locationComingSoon": "Location details coming soon",
   "publicBusiness.bookingMode.request": "Booking request",
-  "publicBusiness.bookingMode.instant": "Instant booking",
+  "publicBusiness.bookingMode.instant": "Instant confirmation",
   "publicBusiness.bookingMode.requestBody":
-    "This business reviews new booking requests before confirming them.",
+    "The business will review and confirm your request.",
   "publicBusiness.bookingMode.instantBody":
-    "This business confirms new bookings instantly when you choose an available slot.",
+    "Your booking will be confirmed immediately after you submit.",
   "publicBusiness.localBusinessTime": "local business time",
   "publicBusiness.cancellationFallback":
     "Cancellation policy has not been added by this business yet.",
@@ -1638,11 +1636,10 @@ export const en: TranslationTree = {
   "publicBusiness.error.slotUnavailable":
     "This time is no longer available. Please choose another slot.",
 
-  "publicBusiness.notification.requestSentTitle": "Booking request sent",
-  "publicBusiness.notification.confirmedTitle": "Booking confirmed",
-  "publicBusiness.notification.needsApprovalTitle":
-    "New booking needs approval",
-  "publicBusiness.notification.createdTitle": "New booking created",
+  "publicBusiness.notification.requestSentTitle": "Request sent",
+  "publicBusiness.notification.confirmedTitle": "Confirmed",
+  "publicBusiness.notification.needsApprovalTitle": "Needs approval",
+  "publicBusiness.notification.createdTitle": "Confirmed",
   "publicBusiness.notification.bookedWord": "booked",
   "publicBusiness.notification.forWord": "for",
   "publicBusiness.notification.withWord": "with",
@@ -1718,8 +1715,9 @@ export const en: TranslationTree = {
   "common.saving": "Saving...",
   "common.saveChanges": "Save changes",
 
-  "staff.status.pending": "Pending approval",
+  "staff.status.pending": "Awaiting business approval",
   "staff.status.confirmed": "Confirmed",
+  "staff.status.declined": "Declined",
   "staff.status.completed": "Completed",
   "staff.status.cancelled": "Cancelled",
   "staff.error.loadDashboard": "Could not load your staff dashboard.",
@@ -1883,6 +1881,16 @@ export const en: TranslationTree = {
   "myBookings.command.viewUpcoming": "View upcoming",
   "myBookings.command.viewHistory": "View history",
   "myBookings.command.bookAgain": "Book another service",
+  "myBookings.status.requestSent": "Request sent",
+  "myBookings.status.confirmed": "Confirmed",
+  "myBookings.status.declined": "Declined",
+  "myBookings.status.cancelled": "Cancelled",
+  "myBookings.status.completed": "Completed",
+  "myBookings.lifecycle.waitingTitle": "Request sent",
+  "myBookings.lifecycle.waitingBody": "Waiting for the business to confirm.",
+  "myBookings.lifecycle.confirmedBody": "Your booking is confirmed.",
+  "myBookings.lifecycle.completedBody": "This booking is complete.",
+  "myBookings.lifecycle.cancelledBody": "This booking has been cancelled.",
   "dashboardBusinesses.status.live": "Live on Mirëbook",
   "dashboardBusinesses.status.ready": "Ready to publish",
   "dashboardBusinesses.status.draft": "Draft setup",
@@ -2146,18 +2154,16 @@ export const en: TranslationTree = {
   "support.faq.mobileAppTitle": "Will there be a mobile app?",
   "support.faq.mobileAppBody":
     "The current product is being built as a web platform first, with future app-store readiness in mind. The goal is to make the routes, layout, account flow and settings suitable for a later app version.",
-  "notifications.types.bookingAccepted.title": "Booking accepted",
-  "notifications.types.bookingAccepted.message":
-    "Your booking has been accepted and confirmed.",
+  "notifications.types.bookingAccepted.title": "Confirmed",
+  "notifications.types.bookingAccepted.message": "Your booking is confirmed.",
   "notifications.types.bookingDeclined.title": "Booking declined",
   "notifications.types.bookingDeclined.message":
     "Your booking request was declined.",
   "notifications.types.bookingCancelled.title": "Booking cancelled",
   "notifications.types.bookingCancelled.message":
     "Your booking was cancelled by the business.",
-  "notifications.types.bookingCompleted.title": "Appointment completed",
-  "notifications.types.bookingCompleted.message":
-    "Your appointment has been marked as completed.",
+  "notifications.types.bookingCompleted.title": "Completed",
+  "notifications.types.bookingCompleted.message": "This booking is complete.",
   "notifications.types.rescheduleAccepted.title": "Reschedule accepted",
   "notifications.types.rescheduleAccepted.message":
     "Your reschedule request has been accepted.",
@@ -2171,12 +2177,12 @@ export const en: TranslationTree = {
   "notifications.types.supportResolved.message":
     "Your support conversation has been marked as resolved.",
   "notifications.types.generic.title": "Mirëbook update",
-  "notifications.types.businessBookingRequest.title": "New booking request",
+  "notifications.types.businessBookingRequest.title": "Needs approval",
   "notifications.types.businessBookingRequest.message":
-    "A customer has sent a booking request that needs review.",
-  "notifications.types.businessBookingConfirmed.title": "Booking confirmed",
+    "Review this booking request.",
+  "notifications.types.businessBookingConfirmed.title": "Confirmed",
   "notifications.types.businessBookingConfirmed.message":
-    "A booking has been confirmed.",
+    "This booking is confirmed.",
   "notifications.types.businessBookingCancelled.title": "Booking cancelled",
   "notifications.types.businessBookingCancelled.message":
     "A booking has been cancelled.",
@@ -2200,9 +2206,9 @@ export const en: TranslationTree = {
     "Booking rescheduled",
   "notifications.types.bookingRescheduledByBusiness.message":
     "Your booking was moved to a new appointment time by the business.",
-  "notifications.types.bookingRequested.title": "Booking request sent",
+  "notifications.types.bookingRequested.title": "Request sent",
   "notifications.types.bookingRequested.message":
-    "Your booking request has been sent to the business for review.",
+    "Waiting for the business to confirm.",
   "billing.currentPlan": "Current plan",
   "billing.subscriptionStatus": "Subscription status",
   "billing.trialActive": "Trial active",
