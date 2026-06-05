@@ -193,12 +193,12 @@ export const sq: TranslationTree = {
   "explore.hero.kicker": "Tregu Mirëbook",
   "explore.hero.title": "Gjej dhe rezervo shërbime lokale",
   "explore.hero.subtitle":
-    "Shfleto biznese në Mirëbook që kanë shërbime aktive, staf dhe orare pune. Zgjidh një shërbim, një orar të lirë dhe dërgo kërkesë rezervimi ose merr konfirmim të menjëhershëm sipas cilësimeve të biznesit.",
+    "Shfleto biznese Mirëbook me shërbime aktive të caktuara te staf aktiv dhe orare pune të disponueshme. Zgjidh shërbimin dhe orarin, pastaj dërgo kërkesë ose merr konfirmim të menjëhershëm.",
   "explore.badge.availability": "Rezervim sipas disponueshmërisë",
   "explore.badge.noCheckout": "Pa pagesë nga klienti tani për tani",
   "explore.filters.title": "Kërko biznese të rezervueshme",
   "explore.filters.subtitle":
-    "Kërko biznese që janë aktualisht të rezervueshme në Mirëbook. Shfaqen vetëm bizneset e publikuara me shërbime aktive, staf aktiv dhe orare pune.",
+    "Kërko biznese që janë aktualisht të rezervueshme në Mirëbook. Explore shfaq vetëm biznese të publikuara me shërbim aktiv të caktuar te staf aktiv dhe orare pune të disponueshme.",
   "explore.filters.search": "Kërko",
   "explore.filters.category": "Kategori",
   "explore.filters.city": "Qytet",
@@ -494,7 +494,9 @@ export const sq: TranslationTree = {
   "notifications.open": "Hap",
   "notifications.markRead": "Shëno si lexuar",
   "notifications.actionStatus": "Statusi i veprimit",
-  "notifications.pendingBookings.title": "Kërkesa rezervimi në pritje miratimi",
+  "notifications.requestStatus": "Statusi i kërkesës",
+  "notifications.pendingBookings.title":
+    "Kërkesa rezervimi në pritje konfirmimi",
   "notifications.pendingBookings.body":
     "Këto takime nuk janë ende të konfirmuara. Biznesi duhet t’i pranojë ose refuzojë.",
   "notifications.requestedAppointmentTime": "Orari i kërkuar i takimit",
@@ -857,6 +859,8 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.readyToBook": "Gati për rezervime",
   "dashboardBusinesses.setupIncomplete": "Konfigurim jo i plotë",
   "dashboardBusinesses.imageNeeded": "Duhet imazh",
+  "dashboardBusinesses.profileComplete": "Profili është i plotë",
+  "dashboardBusinesses.profileNeedsPolish": "Profilit i duhen detaje",
   "dashboardBusinesses.hideMarketplace": "Fshihe nga marketplace",
   "dashboardBusinesses.publish": "Publiko në Mirëbook",
   "dashboardBusinesses.finishSetup": "Përfundo konfigurimin fillimisht",
@@ -914,7 +918,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.readiness.notReadyTitle":
     "Përfundo konfigurimin para lançimit",
   "dashboardBusinesses.readiness.body":
-    "Kjo e mban marketplace-in të pastër dhe ndalon klientët të shohin një biznes që nuk mund ta rezervojnë me besim.",
+    "Gatishmëria për rezervime përcakton nëse klientët mund të rezervojnë realisht. Detajet dhe imazhet e profilit përmirësojnë paraqitjen, por nuk krijojnë disponueshmëri.",
   "dashboardBusinesses.readiness.profile": "Detajet e profilit",
   "dashboardBusinesses.readiness.profileBody":
     "Emri, kategoria, qyteti, telefoni dhe përshkrimi janë plotësuar.",
@@ -922,7 +926,9 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.readiness.imageReady":
     "Është ngarkuar një imazh marketplace-i.",
   "dashboardBusinesses.readiness.imageMissing":
-    "Ngarko një imazh biznesi para publikimit.",
+    "Rekomandohet për një profil më të fortë në marketplace; nuk kërkohet për gatishmërinë e rezervimeve.",
+  "dashboardBusinesses.readiness.addDetails": "Shto detaje",
+  "dashboardBusinesses.readiness.recommended": "Rekomandohet",
   "dashboardBusinesses.readiness.services": "Shërbime aktive",
   "dashboardBusinesses.readiness.staff": "Staf aktiv",
   "dashboardBusinesses.readiness.assignment": "Caktimi staf-shërbim",
@@ -2033,16 +2039,24 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.status.live": "Live në Mirëbook",
   "dashboardBusinesses.status.ready": "Gati për publikim",
   "dashboardBusinesses.status.draft": "Konfigurim draft",
+  "dashboardBusinesses.status.bookingSetup":
+    "Duhet konfigurim për rezervime",
   "dashboardBusinesses.status.liveBody":
     "Klientët mund ta gjejnë dhe rezervojnë këtë biznes.",
   "dashboardBusinesses.status.readyBody":
     "Çdo gjë e nevojshme është plotësuar. Publikoje kur të jesh gati.",
   "dashboardBusinesses.status.draftBody":
     "Plotëso elementet që mungojnë para se të dalësh live.",
+  "dashboardBusinesses.status.publishedNotBookableBody":
+    "Ky profil është publikuar, por fshihet nga Explore derisa konfigurimi i rezervimeve të plotësohet.",
+  "dashboardBusinesses.status.bookingSetupBody":
+    "Shto shërbimet, caktimet e stafit ose oraret që mungojnë para se klientët të rezervojnë.",
   "dashboardBusinesses.readiness.assignments": "Caktimet",
   "dashboardBusinesses.missingSetup.kicker": "Mungon para lançimit",
   "dashboardBusinesses.missingSetup.title":
     "Përfundo këto pika para publikimit",
+  "dashboardBusinesses.missingSetup.polishTitle":
+    "Rezervimet janë gati; përmirësimi i profilit ende rekomandohet",
   "dashboardBusinesses.missingSetup.cta": "Rishiko profilin",
   "login.proof.customerTitle": "Klientët",
   "login.proof.customerBody":
@@ -2482,4 +2496,67 @@ export const sq: TranslationTree = {
     "Je konfiguruar si staf i rezervueshëm. Menaxho orarin dhe disponueshmërinë tënde personale.",
   "dashboardSettings.tools.ownerBookingBody":
     "Konfiguroje veten si staf të rezervueshëm vetëm nëse klientët duhet të mund të rezervojnë takime drejtpërdrejt me ty.",
+
+  "notifications.actions.openSupport": "Hap mbështetjen",
+  "notifications.actions.viewRequest": "Shiko kërkesën",
+  "notifications.actions.viewBooking": "Shiko rezervimin",
+  "notifications.actions.openUpdate": "Hap përditësimin",
+  "dashboardBusinesses.missingSetup.profileCta": "Shto detajet e biznesit",
+  "dashboardBusinesses.missingSetup.servicesCta": "Shto shërbim",
+  "dashboardBusinesses.missingSetup.staffCta": "Shto staf",
+  "dashboardBusinesses.missingSetup.assignmentCta":
+    "Cakto stafin te shërbimi",
+  "dashboardBusinesses.missingSetup.hoursCta": "Vendos disponueshmërinë",
+  "dashboardNotifications.inbox.bookingNowConfirmed":
+    "Kjo kërkesë rezervimi është konfirmuar. Nuk ka më veprim miratimi.",
+  "dashboardNotifications.inbox.bookingNowDeclined":
+    "Kjo kërkesë rezervimi është refuzuar. Nuk ka më veprim miratimi.",
+  "dashboardNotifications.inbox.bookingNowCancelled":
+    "Ky rezervim është anuluar dhe nuk kërkon më veprim.",
+  "dashboardNotifications.inbox.bookingNowCompleted":
+    "Ky rezervim është përfunduar dhe nuk kërkon më veprim.",
+  "dashboardNotifications.actions.reviewBookingRequest":
+    "Shqyrto kërkesën e rezervimit",
+  "dashboardNotifications.actions.reviewRescheduleRequest":
+    "Shqyrto kërkesën për ndryshim orari",
+  "dashboardNotifications.actions.openBooking": "Hap rezervimin",
+  "dashboardNotifications.actions.openSupport": "Hap mbështetjen",
+  "dashboardNotifications.actions.openUpdate": "Hap përditësimin",
+  "notifications.types.businessBookingDeclined.message":
+    "Kjo kërkesë rezervimi u refuzua.",
+  "notifications.types.businessBookingCompleted.message":
+    "Ky rezervim është përfunduar.",
+  "staffNotifications.booking.pendingTitle":
+    "Në pritje të miratimit të biznesit",
+  "staffNotifications.booking.pendingBody":
+    "Kjo kërkesë rezervimi e caktuar pret miratimin e biznesit. Nuk kërkohet veprim nga stafi.",
+  "staffNotifications.booking.confirmedBody":
+    "Ky rezervim i caktuar është konfirmuar dhe është pjesë e orarit aktiv.",
+  "staffNotifications.booking.declinedBody":
+    "Kjo kërkesë rezervimi u refuzua dhe nuk është punë aktive.",
+  "staffNotifications.booking.cancelledBody":
+    "Ky rezervim u anulua dhe nuk është më punë aktive.",
+  "staffNotifications.booking.completedBody":
+    "Ky takim i caktuar është përfunduar.",
+  "staffNotifications.actions.viewSchedule": "Shiko orarin",
+  "staffNotifications.actions.openSchedule": "Hap orarin",
+  "staffNotifications.actions.openSupport": "Hap mbështetjen",
+  "staffNotifications.actions.openUpdate": "Hap përditësimin",
+  "dashboardBusinesses.overview.profileTitle": "Plotësia e profilit",
+  "dashboardBusinesses.overview.complete": "I plotë",
+  "dashboardBusinesses.overview.needsDetails": "Duhen detaje",
+  "dashboardBusinesses.overview.profileBody":
+    "Detajet e paraqitjes për klientët. Imazhi rekomandohet, por nuk kërkohet për gatishmërinë e rezervimeve.",
+  "dashboardBusinesses.overview.bookingTitle": "Gatishmëria për rezervime",
+  "dashboardBusinesses.overview.ready": "Gati",
+  "dashboardBusinesses.overview.actionNeeded": "Kërkohet veprim",
+  "dashboardBusinesses.overview.bookingBody":
+    "Kërkon shërbim aktiv, caktim aktiv të stafit dhe orare pune të disponueshme.",
+  "dashboardBusinesses.overview.publicTitle": "Listimi publik",
+  "dashboardBusinesses.overview.listed": "I listuar dhe i rezervueshëm",
+  "dashboardBusinesses.overview.hiddenUntilReady":
+    "I publikuar, në pritje të konfigurimit të rezervimeve",
+  "dashboardBusinesses.overview.hidden": "I fshehur",
+  "dashboardBusinesses.overview.publicBody":
+    "Explore shfaq vetëm bizneset e publikuara që kalojnë kontrollet e gatishmërisë për rezervime.",
 };

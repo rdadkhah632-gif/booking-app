@@ -28,9 +28,9 @@ export default function PendingBookingRequestsSection({
   return (
     <div className="customer-notification-section">
       <div>
-        <p className="small muted">{t('notifications.actionStatus', 'Action status')}</p>
+        <p className="small muted">{t('notifications.requestStatus', 'Request status')}</p>
         <h2 style={{ fontFamily: 'var(--font-display)' }}>
-          {t('notifications.pendingBookings.title', 'Booking requests waiting approval')}
+          {t('notifications.pendingBookings.title', 'Booking requests awaiting confirmation')}
         </h2>
         <p className="muted small" style={{ marginTop: '0.35rem' }}>
           {t('notifications.pendingBookings.body', 'These appointments are not confirmed yet. The business needs to accept or decline them.')}

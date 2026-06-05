@@ -336,34 +336,39 @@ export default function Businesses() {
     const hasWorkingHours = workingDays > 0
     const hasBusinessImage = Boolean(business.image_url?.trim())
     const missingItems: string[] = []
+    const profileMissingItems: string[] = []
 
-    if (!profileComplete) missingItems.push(t('dashboardBusinesses.missing.profile', 'profile details'))
-    if (!hasBusinessImage) missingItems.push(t('dashboardBusinesses.missing.image', 'business image'))
+    if (!profileComplete) profileMissingItems.push(t('dashboardBusinesses.missing.profile', 'profile details'))
+    if (!hasBusinessImage) profileMissingItems.push(t('dashboardBusinesses.missing.image', 'business image'))
     if (!hasActiveServices) missingItems.push(t('dashboardBusinesses.missing.services', 'active services'))
     if (!hasActiveStaff) missingItems.push(t('dashboardBusinesses.missing.staff', 'active staff'))
     if (!hasStaffServiceAssignments) missingItems.push(t('dashboardBusinesses.missing.assignments', 'staff-service assignments'))
     if (!hasWorkingHours) missingItems.push(t('dashboardBusinesses.missing.hours', 'working hours'))
 
+    const bookingReady = hasActiveServices && hasActiveStaff && hasStaffServiceAssignments && hasWorkingHours
+
     return {
       profileComplete,
+      bookingReady,
+      publicListingReady: business.published && bookingReady,
       hasActiveServices,
       hasActiveStaff,
       hasStaffServiceAssignments,
       hasWorkingHours,
       hasBusinessImage,
-      readyToPublish: profileComplete && hasBusinessImage && hasActiveServices && hasActiveStaff && hasStaffServiceAssignments && hasWorkingHours,
       activeServices,
       activeStaff,
       staffServiceAssignments,
       workingDays,
-      missingItems
+      missingItems,
+      profileMissingItems
     }
   }
 
   const dashboardStats = useMemo(() => {
     const published = businesses.filter((business) => business.published).length
-    const ready = businesses.filter((business) => getReadiness(business).readyToPublish).length
-    const incompletePublished = businesses.filter((business) => business.published && !getReadiness(business).readyToPublish).length
+    const ready = businesses.filter((business) => getReadiness(business).bookingReady).length
+    const incompletePublished = businesses.filter((business) => business.published && !getReadiness(business).bookingReady).length
 
     return {
       total: businesses.length,
@@ -416,7 +421,7 @@ export default function Businesses() {
 
     const readiness = getReadiness(business)
 
-    if (!business.published && !readiness.readyToPublish) {
+    if (!business.published && !readiness.bookingReady) {
       setError(`${t('dashboardBusinesses.publish.completeFirst', 'Complete')} ${readiness.missingItems.join(', ')} ${t('dashboardBusinesses.publish.beforePublishing', 'before publishing this business to Mirëbook.')}`)
       setPublishingBusinessId(null)
       return
@@ -470,20 +475,22 @@ export default function Businesses() {
             </div>
 
             {primaryBusiness && primaryReadiness && (
-              <div className={primaryBusiness.published ? 'business-live-pill' : 'business-draft-pill'}>
+              <div className={primaryReadiness.publicListingReady ? 'business-live-pill' : 'business-draft-pill'}>
                 <strong>
-                  {primaryBusiness.published
+                  {primaryReadiness.publicListingReady
                     ? t('dashboardBusinesses.status.live', 'Live on Mirëbook')
-                    : primaryReadiness.readyToPublish
+                    : primaryReadiness.bookingReady
                       ? t('dashboardBusinesses.status.ready', 'Ready to publish')
-                      : t('dashboardBusinesses.status.draft', 'Draft setup')}
+                      : t('dashboardBusinesses.status.bookingSetup', 'Booking setup needed')}
                 </strong>
                 <span>
-                  {primaryBusiness.published
+                  {primaryReadiness.publicListingReady
                     ? t('dashboardBusinesses.status.liveBody', 'Customers can find and book this business.')
-                    : primaryReadiness.readyToPublish
+                    : primaryBusiness.published
+                      ? t('dashboardBusinesses.status.publishedNotBookableBody', 'This profile is published but hidden from Explore until booking setup is complete.')
+                    : primaryReadiness.bookingReady
                       ? t('dashboardBusinesses.status.readyBody', 'Everything needed is complete. Publish when you are ready.')
-                      : t('dashboardBusinesses.status.draftBody', 'Complete the missing setup items before going live.')}
+                      : t('dashboardBusinesses.status.bookingSetupBody', 'Add the missing services, staff assignments or hours before customers can book.')}
                 </span>
               </div>
             )}
@@ -571,18 +578,48 @@ export default function Businesses() {
         </div>
       )}
 
-      {primaryBusiness && primaryReadiness && !primaryReadiness.readyToPublish && (
+      {primaryBusiness && primaryReadiness && (!primaryReadiness.bookingReady || !primaryReadiness.profileComplete || !primaryReadiness.hasBusinessImage) && (
         <div className="card business-missing-card">
           <div>
-            <p className="small muted">{t('dashboardBusinesses.missingSetup.kicker', 'Missing before launch')}</p>
-            <h3>{t('dashboardBusinesses.missingSetup.title', 'Finish these items before publishing')}</h3>
+            <p className="small muted">{t('dashboardBusinesses.missingSetup.kicker', 'Next setup actions')}</p>
+            <h3>
+              {primaryReadiness.bookingReady
+                ? t('dashboardBusinesses.missingSetup.polishTitle', 'Booking is ready; profile polish is still recommended')
+                : t('dashboardBusinesses.missingSetup.title', 'Finish booking setup before publishing')}
+            </h3>
             <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {primaryReadiness.missingItems.join(', ')}
+              {!primaryReadiness.bookingReady
+                ? primaryReadiness.missingItems.join(', ')
+                : primaryReadiness.profileMissingItems.join(', ')}
             </p>
           </div>
-          <a href="#business-profile" className="btn btn-ghost">
-            {t('dashboardBusinesses.missingSetup.cta', 'Review profile')}
-          </a>
+          <div className="business-missing-actions">
+            {!primaryReadiness.profileComplete && (
+              <a href="#business-profile" className="btn btn-ghost">
+                {t('dashboardBusinesses.missingSetup.profileCta', 'Add business details')}
+              </a>
+            )}
+            {!primaryReadiness.hasActiveServices && (
+              <a href="/dashboard/services" className="btn btn-ghost">
+                {t('dashboardBusinesses.missingSetup.servicesCta', 'Add service')}
+              </a>
+            )}
+            {!primaryReadiness.hasActiveStaff && (
+              <a href="/dashboard/staff" className="btn btn-ghost">
+                {t('dashboardBusinesses.missingSetup.staffCta', 'Add staff')}
+              </a>
+            )}
+            {primaryReadiness.hasActiveStaff && primaryReadiness.hasActiveServices && !primaryReadiness.hasStaffServiceAssignments && (
+              <a href="/dashboard/staff" className="btn btn-ghost">
+                {t('dashboardBusinesses.missingSetup.assignmentCta', 'Assign staff to service')}
+              </a>
+            )}
+            {!primaryReadiness.hasWorkingHours && (
+              <a href="/dashboard/availability" className="btn btn-ghost">
+                {t('dashboardBusinesses.missingSetup.hoursCta', 'Set availability')}
+              </a>
+            )}
+          </div>
         </div>
       )}
 
@@ -707,6 +744,13 @@ export default function Businesses() {
           background: rgba(255,190,11,0.06);
         }
 
+        .business-missing-actions {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
         .business-setup-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -766,7 +810,8 @@ export default function Businesses() {
 
           .business-live-pill,
           .business-draft-pill,
-          .business-missing-card :global(.btn) {
+          .business-missing-card :global(.btn),
+          .business-missing-actions {
             width: 100%;
           }
 

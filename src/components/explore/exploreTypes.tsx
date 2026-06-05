@@ -11,7 +11,11 @@ export type Business = {
   auto_accept_bookings?: boolean | null
   published?: boolean | null
   created_at?: string | null
-  services?: { id: string; active: boolean }[] | null
+  services?: {
+    id: string
+    active: boolean
+    staff_services?: { staff_member_id: string }[] | null
+  }[] | null
   staff_members?: { id: string; active: boolean }[] | null
   availability?: { id: string; is_closed?: boolean | null }[] | null
 }
@@ -20,6 +24,7 @@ export type BusinessCardStats = {
   activeServices: number
   activeStaff: number
   openDays: number
+  assignedServices: number
   missing: string[]
   bookable: boolean
 }

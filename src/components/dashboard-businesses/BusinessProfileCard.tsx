@@ -44,9 +44,9 @@ export default function BusinessProfileCard({
       style={{
         display: 'grid',
         gap: '1rem',
-        borderColor: business.published
+        borderColor: readiness.publicListingReady
           ? 'rgba(45,212,191,0.25)'
-          : readiness.readyToPublish
+          : readiness.bookingReady
             ? 'rgba(255,107,53,0.25)'
             : 'var(--border)'
       }}
@@ -114,30 +114,22 @@ export default function BusinessProfileCard({
             <span
               className="small"
               style={{
-                background: readiness.readyToPublish ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
-                color: readiness.readyToPublish ? 'var(--success)' : 'var(--warning)',
+                background: readiness.bookingReady ? 'rgba(45,212,191,0.12)' : 'rgba(255,190,11,0.12)',
+                color: readiness.bookingReady ? 'var(--success)' : 'var(--warning)',
                 padding: '0.2rem 0.55rem',
                 borderRadius: 999
               }}
             >
-              {readiness.readyToPublish
-                ? t('dashboardBusinesses.readyToBook', 'Ready to book')
-                : t('dashboardBusinesses.setupIncomplete', 'Setup incomplete')}
+              {readiness.bookingReady
+                ? t('dashboardBusinesses.readyToBook', 'Booking ready')
+                : t('dashboardBusinesses.setupIncomplete', 'Booking setup needed')}
             </span>
 
-            {!readiness.hasBusinessImage && (
-              <span
-                className="small"
-                style={{
-                  background: 'rgba(255,190,11,0.12)',
-                  color: 'var(--warning)',
-                  padding: '0.2rem 0.55rem',
-                  borderRadius: 999
-                }}
-              >
-                {t('dashboardBusinesses.imageNeeded', 'Image needed')}
-              </span>
-            )}
+            <span className="small" style={{ background: readiness.profileComplete ? 'rgba(45,212,191,0.12)' : 'var(--surface-2)', color: readiness.profileComplete ? 'var(--success)' : 'var(--text-muted)', padding: '0.2rem 0.55rem', borderRadius: 999 }}>
+              {readiness.profileComplete
+                ? t('dashboardBusinesses.profileComplete', 'Profile complete')
+                : t('dashboardBusinesses.profileNeedsPolish', 'Profile needs details')}
+            </span>
           </div>
         </div>
 
@@ -150,10 +142,56 @@ export default function BusinessProfileCard({
             ? t('common.updating', 'Updating...')
             : business.published
               ? t('dashboardBusinesses.hideMarketplace', 'Hide from marketplace')
-              : readiness.readyToPublish
+              : readiness.bookingReady
                 ? t('dashboardBusinesses.publish', 'Publish to Mirëbook')
                 : t('dashboardBusinesses.finishSetup', 'Finish setup first')}
         </button>
+      </div>
+
+      <div className="business-readiness-overview">
+        <div className={readiness.profileComplete ? 'business-readiness-panel ready' : 'business-readiness-panel'}>
+          <p className="small muted">
+            {t('dashboardBusinesses.overview.profileTitle', 'Profile completeness')}
+          </p>
+          <strong>
+            {readiness.profileComplete
+              ? t('dashboardBusinesses.overview.complete', 'Complete')
+              : t('dashboardBusinesses.overview.needsDetails', 'Needs details')}
+          </strong>
+          <p className="small muted">
+            {t('dashboardBusinesses.overview.profileBody', 'Presentation details for customers. An image is recommended, not required for booking readiness.')}
+          </p>
+        </div>
+
+        <div className={readiness.bookingReady ? 'business-readiness-panel ready' : 'business-readiness-panel'}>
+          <p className="small muted">
+            {t('dashboardBusinesses.overview.bookingTitle', 'Booking readiness')}
+          </p>
+          <strong>
+            {readiness.bookingReady
+              ? t('dashboardBusinesses.overview.ready', 'Ready')
+              : t('dashboardBusinesses.overview.actionNeeded', 'Action needed')}
+          </strong>
+          <p className="small muted">
+            {t('dashboardBusinesses.overview.bookingBody', 'Requires an active service, active staff assignment and available working hours.')}
+          </p>
+        </div>
+
+        <div className={readiness.publicListingReady ? 'business-readiness-panel ready' : 'business-readiness-panel'}>
+          <p className="small muted">
+            {t('dashboardBusinesses.overview.publicTitle', 'Public listing')}
+          </p>
+          <strong>
+            {readiness.publicListingReady
+              ? t('dashboardBusinesses.overview.listed', 'Listed and bookable')
+              : business.published
+                ? t('dashboardBusinesses.overview.hiddenUntilReady', 'Published, awaiting booking setup')
+                : t('dashboardBusinesses.overview.hidden', 'Hidden')}
+          </strong>
+          <p className="small muted">
+            {t('dashboardBusinesses.overview.publicBody', 'Explore only shows published businesses that pass the booking-readiness checks.')}
+          </p>
+        </div>
       </div>
 
       <div className="grid-2 business-setup-card-grid">
@@ -208,11 +246,11 @@ export default function BusinessProfileCard({
           helper={
             business.published
               ? t('dashboardBusinesses.previewLiveHelper', 'Preview how customers see this business on Mirëbook.')
-              : readiness.readyToPublish
+              : readiness.bookingReady
                 ? t('dashboardBusinesses.previewReadyHelper', 'Preview the public page before publishing.')
                 : t('dashboardBusinesses.previewIncompleteHelper', 'Preview is available, but customers may not be able to book until setup is complete.')
           }
-          ready={business.published}
+          ready={readiness.publicListingReady}
           href={`/explore/${business.id}`}
           cta={t('dashboardBusinesses.openPublicPage', 'Open public page')}
         />
@@ -291,15 +329,15 @@ export default function BusinessProfileCard({
           <p className="small muted">{t('dashboardBusinesses.readiness.kicker', 'Readiness checklist')}</p>
 
           <h3 style={{ marginTop: '0.25rem' }}>
-            {readiness.readyToPublish
-              ? t('dashboardBusinesses.readiness.readyTitle', 'Ready for customers')
-              : t('dashboardBusinesses.readiness.notReadyTitle', 'Complete setup before launch')}
+            {readiness.bookingReady
+              ? t('dashboardBusinesses.readiness.readyTitle', 'Booking readiness complete')
+              : t('dashboardBusinesses.readiness.notReadyTitle', 'Booking setup needs attention')}
           </h3>
 
           <p className="small muted" style={{ marginTop: '0.35rem' }}>
             {t(
               'dashboardBusinesses.readiness.body',
-              'This keeps the marketplace clean and stops customers seeing a business they cannot confidently book with.'
+              'Booking readiness controls whether customers can actually book. Profile details and images improve presentation but do not create appointment availability.'
             )}
           </p>
 
@@ -308,6 +346,7 @@ export default function BusinessProfileCard({
               label={t('dashboardBusinesses.readiness.profile', 'Profile details')}
               complete={readiness.profileComplete}
               helper={t('dashboardBusinesses.readiness.profileBody', 'Name, category, city, phone and description are filled in.')}
+              incompleteLabel={t('dashboardBusinesses.readiness.addDetails', 'Add details')}
             />
 
             <BusinessReadinessRow
@@ -315,7 +354,8 @@ export default function BusinessProfileCard({
               complete={readiness.hasBusinessImage}
               helper={readiness.hasBusinessImage
                 ? t('dashboardBusinesses.readiness.imageReady', 'A marketplace image is uploaded.')
-                : t('dashboardBusinesses.readiness.imageMissing', 'Upload a business image before publishing.')}
+                : t('dashboardBusinesses.readiness.imageMissing', 'Recommended for a stronger marketplace profile; not required for booking readiness.')}
+              incompleteLabel={t('dashboardBusinesses.readiness.recommended', 'Recommended')}
             />
 
             <BusinessReadinessRow
@@ -437,6 +477,30 @@ export default function BusinessProfileCard({
           margin-top: 0.7rem;
         }
 
+        .business-readiness-overview {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .business-readiness-panel {
+          display: grid;
+          gap: 0.35rem;
+          padding: 0.9rem;
+          border: 1px solid rgba(255,190,11,0.28);
+          border-radius: var(--radius);
+          background: rgba(255,190,11,0.06);
+        }
+
+        .business-readiness-panel.ready {
+          border-color: rgba(45,212,191,0.28);
+          background: rgba(45,212,191,0.06);
+        }
+
+        .business-readiness-panel p {
+          margin-top: 0;
+        }
+
         .business-profile-input-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -467,6 +531,10 @@ export default function BusinessProfileCard({
           .business-profile-image-preview {
             min-height: 160px;
             height: auto;
+          }
+
+          .business-readiness-overview {
+            grid-template-columns: 1fr;
           }
         }
 

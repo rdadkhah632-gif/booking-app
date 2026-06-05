@@ -157,7 +157,7 @@ Follow-up QA:
 
 ## Batch 4A - Decline Status Production Blocker
 
-Status: awaiting live database verification.
+Status: complete.
 
 Root cause evidence:
 
@@ -178,9 +178,28 @@ Code follow-up completed:
 
 Closure requirement:
 
-- Update the live Supabase booking status constraint to allow `declined`, preserving all existing allowed values.
-- Re-run decline QA from business bookings and business notifications.
-- Do not mark Batch 4A complete until the live write succeeds and pending counts decrease.
+- Live Supabase now allows `declined` alongside pending, confirmed, cancelled and completed.
+- Decline QA can now verify the intended status instead of falling back to cancelled.
+
+## Batch 5/6 Closure - Business Readiness and Notification Action Centre
+
+Status: pass pending manual QA.
+
+Implemented:
+
+- Business setup now separates profile completeness, booking readiness and public listing status.
+- Missing profile image is presented as recommended profile polish rather than a booking blocker.
+- Publishing requires operational booking readiness: active service, active staff, staff-service assignment and working hours.
+- Explore applies the same assignment-aware bookability rule before listing a published business.
+- Missing setup items link directly to business details, services, staff assignment or availability.
+- The dashboard keeps one clear pending-action summary instead of repeating a second large action card.
+- Business notification records use the linked booking's current status so resolved requests do not continue to look actionable.
+- Business notification actions use specific labels such as Review booking request, Review reschedule request and Open booking.
+- Customer notification actions use customer-facing View booking, View request and Open support labels.
+- Staff booking notifications use Awaiting business approval, Confirmed, Declined, Cancelled and Completed language without approval actions.
+- Existing booking, reschedule, support, staff and general notification categories remain available.
+- Stored notification text was not migrated.
+- `npm run build` passed.
 
 ## Suggested Batch 5 - Business Setup Readiness
 

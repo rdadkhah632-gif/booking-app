@@ -21,12 +21,66 @@ function staffNotificationText(
 ) {
   const type = String(notification.type || "");
 
-  if (type.includes("booking")) {
+  if (
+    type === "booking_created" ||
+    type === "booking_requested" ||
+    type === "booking_approval_requested"
+  ) {
     return {
       title: t(
-        "notifications.types.staffBooking.title",
-        "Staff booking update",
+        "staffNotifications.booking.pendingTitle",
+        "Awaiting business approval",
       ),
+      message: t(
+        "staffNotifications.booking.pendingBody",
+        "This assigned booking request is waiting for the business to approve it. No staff action is required.",
+      ),
+    };
+  }
+
+  if (type === "booking_confirmed" || type === "booking_accepted") {
+    return {
+      title: t("staff.status.confirmed", "Confirmed"),
+      message: t(
+        "staffNotifications.booking.confirmedBody",
+        "This assigned booking is confirmed and belongs in your active schedule.",
+      ),
+    };
+  }
+
+  if (type === "booking_declined") {
+    return {
+      title: t("staff.status.declined", "Declined"),
+      message: t(
+        "staffNotifications.booking.declinedBody",
+        "This booking request was declined and is not active work.",
+      ),
+    };
+  }
+
+  if (type === "booking_cancelled") {
+    return {
+      title: t("staff.status.cancelled", "Cancelled"),
+      message: t(
+        "staffNotifications.booking.cancelledBody",
+        "This booking was cancelled and is no longer active work.",
+      ),
+    };
+  }
+
+  if (type === "booking_completed") {
+    return {
+      title: t("staff.status.completed", "Completed"),
+      message: t(
+        "staffNotifications.booking.completedBody",
+        "This assigned appointment has been completed.",
+      ),
+    };
+  }
+
+  if (type.includes("booking")) {
+    return {
+      title: t("notifications.types.staffBooking.title", "Staff booking update"),
       message:
         notification.message ||
         t(
@@ -203,6 +257,17 @@ export default function StaffNotificationsPage() {
     return t("staffNotifications.type.general", "General");
   }
 
+  function notificationActionLabel(type?: string | null) {
+    const value = String(type || "");
+    if (value.includes("booking"))
+      return t("staffNotifications.actions.viewSchedule", "View schedule");
+    if (value.includes("availability") || value.includes("schedule"))
+      return t("staffNotifications.actions.openSchedule", "Open schedule");
+    if (value.includes("support"))
+      return t("staffNotifications.actions.openSupport", "Open support");
+    return t("staffNotifications.actions.openUpdate", "Open update");
+  }
+
   return (
     <main>
       <AuthNav />
@@ -362,7 +427,7 @@ export default function StaffNotificationsPage() {
                     {item.action_url &&
                       item.action_url.startsWith("/staff") && (
                         <Link href={item.action_url} className="btn btn-ghost">
-                          {t("common.open", "Open")}
+                          {notificationActionLabel(item.type)}
                         </Link>
                       )}
                     {!item.read_at && (

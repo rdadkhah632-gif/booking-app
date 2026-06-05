@@ -4,12 +4,14 @@ type Props = {
   label: string
   complete: boolean
   helper: string
+  incompleteLabel?: string
 }
 
 export default function BusinessReadinessRow({
   label,
   complete,
-  helper
+  helper,
+  incompleteLabel
 }: Props) {
   const { t } = useI18n()
 
@@ -34,7 +36,7 @@ export default function BusinessReadinessRow({
       >
         {complete
           ? t('dashboardBusinesses.ready', 'Ready')
-          : t('dashboardBusinesses.needsWork', 'Needs work')}
+          : incompleteLabel || t('dashboardBusinesses.needsWork', 'Needs work')}
       </span>
 
       <style jsx>{`

@@ -41,17 +41,19 @@ export type AvailabilityRow = {
 
 export type Readiness = {
   profileComplete: boolean
+  bookingReady: boolean
+  publicListingReady: boolean
   hasActiveServices: boolean
   hasActiveStaff: boolean
   hasStaffServiceAssignments: boolean
   hasWorkingHours: boolean
   hasBusinessImage: boolean
-  readyToPublish: boolean
   activeServices: number
   activeStaff: number
   staffServiceAssignments: number
   workingDays: number
   missingItems: string[]
+  profileMissingItems: string[]
 }
 
 export type DashboardStats = {

@@ -61,7 +61,10 @@ export default function Explore() {
           created_at,
           services (
             id,
-            active
+            active,
+            staff_services (
+              staff_member_id
+            )
           ),
           staff_members (
             id,
@@ -110,21 +113,28 @@ export default function Explore() {
   }, [])
 
   function getBusinessStats(business: Business): BusinessCardStats {
+    const activeStaffIds = new Set((business.staff_members || []).filter((staff) => staff.active).map((staff) => staff.id))
     const activeServices = (business.services || []).filter((service) => service.active).length
-    const activeStaff = (business.staff_members || []).filter((staff) => staff.active).length
+    const assignedServices = (business.services || []).filter((service) =>
+      service.active &&
+      (service.staff_services || []).some((assignment) => activeStaffIds.has(assignment.staff_member_id))
+    ).length
+    const activeStaff = activeStaffIds.size
     const openDays = (business.availability || []).filter((row) => row.is_closed !== true).length
     const missing: string[] = []
 
     if (activeServices === 0) missing.push('active services')
     if (activeStaff === 0) missing.push('active staff')
+    if (assignedServices === 0) missing.push('staff-service assignments')
     if (openDays === 0) missing.push('working hours')
 
     return {
       activeServices,
       activeStaff,
       openDays,
+      assignedServices,
       missing,
-      bookable: activeServices > 0 && activeStaff > 0 && openDays > 0
+      bookable: assignedServices > 0 && activeStaff > 0 && openDays > 0
     }
   }
 

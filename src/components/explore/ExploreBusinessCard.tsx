@@ -20,7 +20,7 @@ export default function ExploreBusinessCard({
   imageBackground
 }: Props) {
   const { t } = useI18n()
-  const serviceText = `${stats.activeServices} ${t('common.service').toLowerCase()}${stats.activeServices === 1 ? '' : 's'}`
+  const serviceText = `${stats.assignedServices} ${t('common.service').toLowerCase()}${stats.assignedServices === 1 ? '' : 's'}`
   const staffText = `${stats.activeStaff} ${t('common.staff').toLowerCase()}`
 
   return (

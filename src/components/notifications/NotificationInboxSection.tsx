@@ -19,7 +19,7 @@ function notificationText(
     return {
       title: t(
         "notifications.types.bookingRequested.title",
-        "Booking request sent",
+        "Request sent",
       ),
       message:
         notification.message ||
@@ -155,6 +155,27 @@ function notificationText(
   };
 }
 
+function notificationActionLabel(
+  notification: NotificationRow,
+  t: (key: string, fallback?: string) => string,
+) {
+  const type = String(notification.type || "");
+
+  if (type.includes("support")) {
+    return t("notifications.actions.openSupport", "Open support");
+  }
+
+  if (type.includes("reschedule")) {
+    return t("notifications.actions.viewRequest", "View request");
+  }
+
+  if (type.includes("booking")) {
+    return t("notifications.actions.viewBooking", "View booking");
+  }
+
+  return t("notifications.actions.openUpdate", "Open update");
+}
+
 export default function NotificationInboxSection({
   notifications,
   onMarkRead,
@@ -245,7 +266,7 @@ export default function NotificationInboxSection({
                     className="btn btn-accent"
                     onClick={() => onMarkRead(notification)}
                   >
-                    {t("notifications.open", "Open")}
+                    {notificationActionLabel(notification, t)}
                   </Link>
                 )}
 

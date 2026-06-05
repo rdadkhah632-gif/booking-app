@@ -145,12 +145,12 @@ export const en: TranslationTree = {
   "explore.hero.kicker": "Mirëbook marketplace",
   "explore.hero.title": "Find and book local services",
   "explore.hero.subtitle":
-    "Browse bookable Mirëbook businesses with active services, staff and working hours. Choose a service, pick an available time, and send a booking request or instant confirmation depending on the business settings.",
+    "Browse bookable Mirëbook businesses with active services assigned to active staff and available working hours. Choose a service, pick a time, and send a booking request or receive instant confirmation.",
   "explore.badge.availability": "Availability-based booking",
   "explore.badge.noCheckout": "No customer checkout yet",
   "explore.filters.title": "Search bookable businesses",
   "explore.filters.subtitle":
-    "Search businesses that are currently bookable on Mirëbook. Only published businesses with active services, active staff and working hours appear here.",
+    "Search businesses that are currently bookable on Mirëbook. Explore only shows published businesses with an active service assigned to active staff and available working hours.",
   "explore.filters.search": "Search",
   "explore.filters.category": "Category",
   "explore.filters.city": "City",
@@ -448,7 +448,9 @@ export const en: TranslationTree = {
   "notifications.open": "Open",
   "notifications.markRead": "Mark read",
   "notifications.actionStatus": "Action status",
-  "notifications.pendingBookings.title": "Booking requests waiting approval",
+  "notifications.requestStatus": "Request status",
+  "notifications.pendingBookings.title":
+    "Booking requests awaiting confirmation",
   "notifications.pendingBookings.body":
     "These appointments are not confirmed yet. The business needs to accept or decline them.",
   "notifications.requestedAppointmentTime": "Requested appointment time",
@@ -839,6 +841,8 @@ export const en: TranslationTree = {
   "dashboardBusinesses.readyToBook": "Ready to book",
   "dashboardBusinesses.setupIncomplete": "Setup incomplete",
   "dashboardBusinesses.imageNeeded": "Image needed",
+  "dashboardBusinesses.profileComplete": "Profile complete",
+  "dashboardBusinesses.profileNeedsPolish": "Profile needs details",
   "dashboardBusinesses.hideMarketplace": "Hide from marketplace",
   "dashboardBusinesses.publish": "Publish to Mirëbook",
   "dashboardBusinesses.finishSetup": "Finish setup first",
@@ -895,7 +899,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.readiness.readyTitle": "Ready for customers",
   "dashboardBusinesses.readiness.notReadyTitle": "Complete setup before launch",
   "dashboardBusinesses.readiness.body":
-    "This keeps the marketplace clean and stops customers seeing a business they cannot confidently book with.",
+    "Booking readiness controls whether customers can actually book. Profile details and images improve presentation but do not create appointment availability.",
   "dashboardBusinesses.readiness.profile": "Profile details",
   "dashboardBusinesses.readiness.profileBody":
     "Name, category, city, phone and description are filled in.",
@@ -903,7 +907,9 @@ export const en: TranslationTree = {
   "dashboardBusinesses.readiness.imageReady":
     "A marketplace image is uploaded.",
   "dashboardBusinesses.readiness.imageMissing":
-    "Upload a business image before publishing.",
+    "Recommended for a stronger marketplace profile; not required for booking readiness.",
+  "dashboardBusinesses.readiness.addDetails": "Add details",
+  "dashboardBusinesses.readiness.recommended": "Recommended",
   "dashboardBusinesses.readiness.services": "Active services",
   "dashboardBusinesses.readiness.staff": "Active staff",
   "dashboardBusinesses.readiness.assignment": "Staff-service assignment",
@@ -1943,16 +1949,23 @@ export const en: TranslationTree = {
   "dashboardBusinesses.status.live": "Live on Mirëbook",
   "dashboardBusinesses.status.ready": "Ready to publish",
   "dashboardBusinesses.status.draft": "Draft setup",
+  "dashboardBusinesses.status.bookingSetup": "Booking setup needed",
   "dashboardBusinesses.status.liveBody":
     "Customers can find and book this business.",
   "dashboardBusinesses.status.readyBody":
     "Everything needed is complete. Publish when you are ready.",
   "dashboardBusinesses.status.draftBody":
     "Complete the missing setup items before going live.",
+  "dashboardBusinesses.status.publishedNotBookableBody":
+    "This profile is published but hidden from Explore until booking setup is complete.",
+  "dashboardBusinesses.status.bookingSetupBody":
+    "Add the missing services, staff assignments or hours before customers can book.",
   "dashboardBusinesses.readiness.assignments": "Assignments",
   "dashboardBusinesses.missingSetup.kicker": "Missing before launch",
   "dashboardBusinesses.missingSetup.title":
     "Finish these items before publishing",
+  "dashboardBusinesses.missingSetup.polishTitle":
+    "Booking is ready; profile polish is still recommended",
   "dashboardBusinesses.missingSetup.cta": "Review profile",
   "login.proof.customerTitle": "Customers",
   "login.proof.customerBody":
@@ -2415,4 +2428,66 @@ export const en: TranslationTree = {
     "You are set up as bookable staff. Manage your personal schedule and availability.",
   "dashboardSettings.tools.ownerBookingBody":
     "Set yourself up as bookable staff only if customers should book appointments directly with you.",
+
+  "notifications.actions.openSupport": "Open support",
+  "notifications.actions.viewRequest": "View request",
+  "notifications.actions.viewBooking": "View booking",
+  "notifications.actions.openUpdate": "Open update",
+  "dashboardBusinesses.missingSetup.profileCta": "Add business details",
+  "dashboardBusinesses.missingSetup.servicesCta": "Add service",
+  "dashboardBusinesses.missingSetup.staffCta": "Add staff",
+  "dashboardBusinesses.missingSetup.assignmentCta":
+    "Assign staff to service",
+  "dashboardBusinesses.missingSetup.hoursCta": "Set availability",
+  "dashboardNotifications.inbox.bookingNowConfirmed":
+    "This booking request has been confirmed. No approval action remains.",
+  "dashboardNotifications.inbox.bookingNowDeclined":
+    "This booking request was declined. No approval action remains.",
+  "dashboardNotifications.inbox.bookingNowCancelled":
+    "This booking has been cancelled and is no longer actionable.",
+  "dashboardNotifications.inbox.bookingNowCompleted":
+    "This booking is complete and no longer requires action.",
+  "dashboardNotifications.actions.reviewBookingRequest":
+    "Review booking request",
+  "dashboardNotifications.actions.reviewRescheduleRequest":
+    "Review reschedule request",
+  "dashboardNotifications.actions.openBooking": "Open booking",
+  "dashboardNotifications.actions.openSupport": "Open support",
+  "dashboardNotifications.actions.openUpdate": "Open update",
+  "notifications.types.businessBookingDeclined.message":
+    "This booking request was declined.",
+  "notifications.types.businessBookingCompleted.message":
+    "This booking has been completed.",
+  "staffNotifications.booking.pendingTitle": "Awaiting business approval",
+  "staffNotifications.booking.pendingBody":
+    "This assigned booking request is waiting for the business to approve it. No staff action is required.",
+  "staffNotifications.booking.confirmedBody":
+    "This assigned booking is confirmed and belongs in your active schedule.",
+  "staffNotifications.booking.declinedBody":
+    "This booking request was declined and is not active work.",
+  "staffNotifications.booking.cancelledBody":
+    "This booking was cancelled and is no longer active work.",
+  "staffNotifications.booking.completedBody":
+    "This assigned appointment has been completed.",
+  "staffNotifications.actions.viewSchedule": "View schedule",
+  "staffNotifications.actions.openSchedule": "Open schedule",
+  "staffNotifications.actions.openSupport": "Open support",
+  "staffNotifications.actions.openUpdate": "Open update",
+  "dashboardBusinesses.overview.profileTitle": "Profile completeness",
+  "dashboardBusinesses.overview.complete": "Complete",
+  "dashboardBusinesses.overview.needsDetails": "Needs details",
+  "dashboardBusinesses.overview.profileBody":
+    "Presentation details for customers. An image is recommended, not required for booking readiness.",
+  "dashboardBusinesses.overview.bookingTitle": "Booking readiness",
+  "dashboardBusinesses.overview.ready": "Ready",
+  "dashboardBusinesses.overview.actionNeeded": "Action needed",
+  "dashboardBusinesses.overview.bookingBody":
+    "Requires an active service, active staff assignment and available working hours.",
+  "dashboardBusinesses.overview.publicTitle": "Public listing",
+  "dashboardBusinesses.overview.listed": "Listed and bookable",
+  "dashboardBusinesses.overview.hiddenUntilReady":
+    "Published, awaiting booking setup",
+  "dashboardBusinesses.overview.hidden": "Hidden",
+  "dashboardBusinesses.overview.publicBody":
+    "Explore only shows published businesses that pass the booking-readiness checks.",
 };

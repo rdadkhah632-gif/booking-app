@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import DashboardHomeHeader from "@/components/dashboard-home/DashboardHomeHeader";
 import DashboardSummaryCards from "@/components/dashboard-home/DashboardSummaryCards";
-import PriorityQueueCard from "@/components/dashboard-home/PriorityQueueCard";
 import SchedulePreviewCard from "@/components/dashboard-home/SchedulePreviewCard";
 import SetupGuidanceList from "@/components/dashboard-home/SetupGuidanceList";
 import {
@@ -594,7 +593,11 @@ export default function DashboardHome() {
 
           <div className="dashboard-owner-command-actions">
             <Link
-              href={bookingsLinkForView("needs-action", "pending")}
+              href={
+                pendingActionCount > 0
+                  ? "/dashboard/notifications"
+                  : bookingsLinkForView("upcoming")
+              }
               className="btn btn-accent"
             >
               {pendingActionCount > 0
@@ -694,11 +697,6 @@ export default function DashboardHome() {
           </div>
         </div>
       )}
-
-      <PriorityQueueCard
-        pendingActionCount={pendingActionCount}
-        bookingsLinkForView={bookingsLinkForView}
-      />
 
       <SchedulePreviewCard
         scheduleDays={scheduleDays}

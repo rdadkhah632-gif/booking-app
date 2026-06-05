@@ -141,6 +141,7 @@ function requestedStaffName(
 function businessNotificationText(
   notification: NotificationRow,
   t: (key: string, fallback?: string) => string,
+  currentBookingStatus?: string | null,
 ) {
   const type = String(notification.type || "");
 
@@ -149,6 +150,48 @@ function businessNotificationText(
     type === "booking_requested" ||
     type === "booking_approval_requested"
   ) {
+    if (currentBookingStatus && currentBookingStatus !== "pending") {
+      if (currentBookingStatus === "confirmed") {
+        return {
+          title: t("dashboardBookings.status.confirmed", "Confirmed"),
+          message: t(
+            "dashboardNotifications.inbox.bookingNowConfirmed",
+            "This booking request has been confirmed. No approval action remains.",
+          ),
+        };
+      }
+
+      if (currentBookingStatus === "declined") {
+        return {
+          title: t("dashboardNotifications.status.declined", "Declined"),
+          message: t(
+            "dashboardNotifications.inbox.bookingNowDeclined",
+            "This booking request was declined. No approval action remains.",
+          ),
+        };
+      }
+
+      if (currentBookingStatus === "cancelled") {
+        return {
+          title: t("dashboardBookings.status.cancelled", "Cancelled"),
+          message: t(
+            "dashboardNotifications.inbox.bookingNowCancelled",
+            "This booking has been cancelled and is no longer actionable.",
+          ),
+        };
+      }
+
+      if (currentBookingStatus === "completed") {
+        return {
+          title: t("dashboardBookings.status.completed", "Completed"),
+          message: t(
+            "dashboardNotifications.inbox.bookingNowCompleted",
+            "This booking is complete and no longer requires action.",
+          ),
+        };
+      }
+    }
+
     return {
       title: t(
         "notifications.types.businessBookingRequest.title",
@@ -178,6 +221,16 @@ function businessNotificationText(
     };
   }
 
+  if (type === "booking_declined") {
+    return {
+      title: t("dashboardNotifications.status.declined", "Declined"),
+      message: t(
+        "notifications.types.businessBookingDeclined.message",
+        "This booking request was declined.",
+      ),
+    };
+  }
+
   if (type === "booking_cancelled") {
     return {
       title: t(
@@ -190,6 +243,16 @@ function businessNotificationText(
           "notifications.types.businessBookingCancelled.message",
           "A booking has been cancelled.",
         ),
+    };
+  }
+
+  if (type === "booking_completed") {
+    return {
+      title: t("dashboardBookings.status.completed", "Completed"),
+      message: t(
+        "notifications.types.businessBookingCompleted.message",
+        "This booking has been completed.",
+      ),
     };
   }
 
@@ -232,6 +295,46 @@ function businessNotificationText(
       t("notifications.types.generic.title", "Mirëbook update"),
     message: notification.message || "",
   };
+}
+
+function businessNotificationActionLabel(
+  notification: NotificationRow,
+  currentBookingStatus: string | null,
+  t: (key: string, fallback?: string) => string,
+) {
+  const type = String(notification.type || "");
+
+  if (
+    currentBookingStatus === "pending" &&
+    (type === "booking_created" ||
+      type === "booking_requested" ||
+      type === "booking_approval_requested")
+  ) {
+    return t(
+      "dashboardNotifications.actions.reviewBookingRequest",
+      "Review booking request",
+    );
+  }
+
+  if (
+    type === "reschedule_requested" ||
+    type === "booking_reschedule_requested"
+  ) {
+    return t(
+      "dashboardNotifications.actions.reviewRescheduleRequest",
+      "Review reschedule request",
+    );
+  }
+
+  if (notification.booking_id) {
+    return t("dashboardNotifications.actions.openBooking", "Open booking");
+  }
+
+  if (type.includes("support")) {
+    return t("dashboardNotifications.actions.openSupport", "Open support");
+  }
+
+  return t("dashboardNotifications.actions.openUpdate", "Open update");
 }
 
 export default function BusinessNotifications() {
@@ -1133,28 +1236,6 @@ export default function BusinessNotifications() {
           className="card"
           style={{
             borderColor:
-              actionCount > 0 ? "rgba(255,107,53,0.35)" : "var(--border)",
-          }}
-        >
-          <p className="small muted">
-            {t(
-              "dashboardNotifications.summary.totalAction",
-              "Total action required",
-            )}
-          </p>
-          <h3>{actionCount}</h3>
-          <p className="muted small">
-            {t(
-              "dashboardNotifications.summary.totalActionBody",
-              "Items needing business review",
-            )}
-          </p>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            borderColor:
               unreadBusinessNotifications.length > 0
                 ? "rgba(255,107,53,0.35)"
                 : "var(--border)",
@@ -1252,9 +1333,13 @@ export default function BusinessNotifications() {
           </div>
 
           {recentBusinessNotifications.map((notification) => {
+            const linkedBooking = notification.booking_id
+              ? bookings.find((booking) => booking.id === notification.booking_id)
+              : null;
             const displayNotification = businessNotificationText(
               notification,
               t,
+              linkedBooking?.status,
             );
 
             return (
@@ -1322,7 +1407,11 @@ export default function BusinessNotifications() {
                         className="btn btn-accent"
                         onClick={() => markNotificationRead(notification)}
                       >
-                        {t("dashboardNotifications.actions.open", "Open")}
+                        {businessNotificationActionLabel(
+                          notification,
+                          linkedBooking?.status || null,
+                          t,
+                        )}
                       </Link>
                     )}
 
@@ -1552,8 +1641,8 @@ export default function BusinessNotifications() {
                       className="btn btn-ghost"
                     >
                       {t(
-                        "dashboardBookings.businessPicker.cta",
-                        "View bookings",
+                        "dashboardNotifications.actions.openBooking",
+                        "Open booking",
                       )}
                     </Link>
                   </div>
@@ -1859,7 +1948,7 @@ export default function BusinessNotifications() {
       <style jsx>{`
         .business-notification-summary-grid {
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 1rem;
           margin-bottom: 1.5rem;
         }
