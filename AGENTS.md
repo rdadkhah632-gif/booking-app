@@ -8,7 +8,7 @@ Before making code changes, always read:
 2. `/sources/01_STAGE_ACCOUNT_ROLE_STAFF_BUSINESS_FOUNDATION.md`
 3. `/sources/01_STAGE_1_CLOSURE_QA.md`
 4. The current active stage document, currently:
-   `/sources/02_STAGE_BOOKING_FLOW_OPERATIONAL_READINESS.md`
+   `/sources/03_STAGE_LAUNCH_UI_RESPONSIVE_POLISH.md`
 
 ## Current Status
 
@@ -25,20 +25,18 @@ Stage 1 covered:
 - language preference persistence
 - basic route protection
 
-Stage 2 is active.
+Stage 2 is complete with accepted minor follow-ups.
 
-Stage 2 focuses on:
+Stage 3 is active.
 
-- public booking journey
-- service, staff and availability connection
-- booking request vs instant confirmation clarity
-- business booking manager
-- customer My Bookings
-- staff assigned bookings and schedule
-- booking status consistency
-- notifications/action centre basics
-- business setup readiness accuracy
-- final translation cleanup on booking and business pages
+Stage 3 focuses on:
+
+- mobile responsive polish
+- public and customer trust polish
+- business workspace polish
+- staff workspace polish
+- translation, copy and empty-state cleanup
+- launch UI closure QA
 
 ## Working Rules
 
@@ -46,7 +44,7 @@ Start each task by checking repository status.
 
 Protect Stage 1 foundations. Do not alter account identity, role/capability logic, staff-business linking, route protection or language preference persistence unless the current task clearly requires it.
 
-Do not touch billing unless the user explicitly asks. Customer booking should not become a payment or checkout flow during Stage 2.
+Do not touch billing unless the user explicitly asks. Customer booking should not become a payment or checkout flow during Stage 3.
 
 Use small grouped changes. After grouped edits, run formatting on changed files when a formatter is available, then run the build.
 
@@ -82,4 +80,3 @@ Known non-blocking follow-ups from Stage 1:
 
 - older mixed translation strings remain in some areas
 - staff workspace layout still uses staff top-nav rather than the business-style sidebar
-

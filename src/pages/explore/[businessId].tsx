@@ -1663,9 +1663,19 @@ export default function BusinessBookingPage() {
           .booking-summary-panel {
             position: static;
           }
+
+          .booking-page-grid > section,
+          .booking-summary-panel {
+            min-width: 0;
+            max-width: 100%;
+          }
         }
 
         @media (max-width: 520px) {
+          .booking-page-grid {
+            gap: 1rem;
+          }
+
           .booking-calendar-card {
             padding: 0.65rem !important;
           }
@@ -1703,7 +1713,13 @@ export default function BusinessBookingPage() {
           }
 
           :global(.public-business-slot-grid) {
-            grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          :global(.public-business-slot-grid .btn) {
+            width: 100%;
+            min-width: 0;
+            padding-inline: 0.6rem;
           }
 
           .booking-action-row,
@@ -1723,6 +1739,7 @@ export default function BusinessBookingPage() {
           .booking-summary-panel select,
           .booking-summary-panel .btn {
             width: 100%;
+            min-width: 0;
           }
           .booking-step-stack {
             display: grid;

@@ -363,6 +363,7 @@ export default function Explore() {
 
         :global(.explore-business-content) {
           padding: 1rem 0;
+          min-width: 0;
         }
 
         :global(.explore-business-actions) {
@@ -406,6 +407,15 @@ export default function Explore() {
         }
 
         @media (max-width: 760px) {
+          .explore-layout-grid,
+          .explore-results-grid,
+          :global(.explore-business-card),
+          :global(.explore-business-content),
+          :global(.explore-business-actions) {
+            min-width: 0;
+            max-width: 100%;
+          }
+
           :global(.explore-business-card) {
             grid-template-columns: 1fr;
           }
@@ -424,6 +434,7 @@ export default function Explore() {
             align-items: stretch;
             padding: 0 1rem 1rem;
             min-width: 0;
+            width: 100%;
           }
 
           :global(.explore-business-actions .btn) {

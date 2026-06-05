@@ -188,11 +188,15 @@ select option {
 
 .container {
   max-width: var(--max-w);
+  width: 100%;
+  min-width: 0;
   margin: 0 auto;
   padding: 0 var(--content-pad);
 }
 
 .page-shell {
+  width: 100%;
+  min-width: 0;
   min-height: 100vh;
   min-height: 100dvh;
   padding: 32px 24px;
@@ -917,18 +921,24 @@ select option {
   .actions-row-right,
   .row-wrap,
   .page-header-actions,
-  .responsive-card-actions {
+  .responsive-card-actions,
+  .account-header-actions,
+  .customer-notification-actions,
+  .business-notification-toolbar-actions,
+  .staff-notification-actions,
+  .my-bookings-header-actions {
     display: grid;
     grid-template-columns: 1fr;
     width: 100%;
   }
-.nav-simple .auth-nav-links a,
-.nav-simple .auth-nav-links button,
-.nav-simple .auth-nav-links .btn {
-  width: auto;
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
+
+  .nav-simple .auth-nav-links a,
+  .nav-simple .auth-nav-links button,
+  .nav-simple .auth-nav-links .btn {
+    width: auto;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
 
   .actions-row .btn,
   .actions-row-right .btn,
@@ -945,6 +955,25 @@ select option {
   .row-wrap a,
   .page-header-actions a,
   .responsive-card-actions a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .account-header-actions .btn,
+  .account-header-actions a,
+  .account-header-actions button,
+  .customer-notification-actions .btn,
+  .customer-notification-actions a,
+  .customer-notification-actions button,
+  .business-notification-toolbar-actions .btn,
+  .business-notification-toolbar-actions a,
+  .business-notification-toolbar-actions button,
+  .staff-notification-actions .btn,
+  .staff-notification-actions a,
+  .staff-notification-actions button,
+  .my-bookings-header-actions .btn,
+  .my-bookings-header-actions a,
+  .my-bookings-header-actions button {
     width: 100%;
     justify-content: center;
   }
@@ -1001,28 +1030,28 @@ select option {
     overflow-x: auto;
   }
 
- .language-toggle,
-.account-mode-pill {
-  width: 100%;
-  justify-content: space-between;
-}
+  .language-toggle,
+  .account-mode-pill {
+    width: 100%;
+    justify-content: space-between;
+  }
 
-.nav-simple .language-toggle,
-.nav-simple .account-mode-pill {
-  width: auto;
-  flex: 0 0 auto;
-  justify-content: flex-start;
-}
+  .nav-simple .language-toggle,
+  .nav-simple .account-mode-pill {
+    width: auto;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+  }
 
-.language-toggle button,
-.account-mode-pill button {
-  flex: 1;
-}
+  .language-toggle button,
+  .account-mode-pill button {
+    flex: 1;
+  }
 
-.nav-simple .language-toggle button,
-.nav-simple .account-mode-pill button {
-  flex: 0 0 auto;
-}
+  .nav-simple .language-toggle button,
+  .nav-simple .account-mode-pill button {
+    flex: 0 0 auto;
+  }
 
   .home-hero {
     padding: 38px 0 30px;
@@ -1123,9 +1152,9 @@ select option {
     font-size: 1.4rem;
   }
 
- .nav-simple {
-  padding: 8px 0;
-}
+  .nav-simple {
+    padding: 8px 0;
+  }
 
   .page-card,
   .auth-card {

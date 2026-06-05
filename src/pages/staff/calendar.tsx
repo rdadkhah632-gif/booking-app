@@ -322,46 +322,48 @@ export default function StaffCalendarPage() {
               </button>
             </div>
 
-            <div className="staff-calendar-grid">
-              {[
-                t("calendar.weekdays.sun", "Sun"),
-                t("calendar.weekdays.mon", "Mon"),
-                t("calendar.weekdays.tue", "Tue"),
-                t("calendar.weekdays.wed", "Wed"),
-                t("calendar.weekdays.thu", "Thu"),
-                t("calendar.weekdays.fri", "Fri"),
-                t("calendar.weekdays.sat", "Sat"),
-              ].map((day) => (
-                <div key={day} className="staff-calendar-day-name">
-                  {day}
-                </div>
-              ))}
+            <div className="staff-calendar-scroll">
+              <div className="staff-calendar-grid">
+                {[
+                  t("calendar.weekdays.sun", "Sun"),
+                  t("calendar.weekdays.mon", "Mon"),
+                  t("calendar.weekdays.tue", "Tue"),
+                  t("calendar.weekdays.wed", "Wed"),
+                  t("calendar.weekdays.thu", "Thu"),
+                  t("calendar.weekdays.fri", "Fri"),
+                  t("calendar.weekdays.sat", "Sat"),
+                ].map((day) => (
+                  <div key={day} className="staff-calendar-day-name">
+                    {day}
+                  </div>
+                ))}
 
-              {calendarDays.map((day) => (
-                <button
-                  key={day.dateString}
-                  type="button"
-                  className={[
-                    "staff-calendar-day",
-                    day.isCurrentMonth ? "" : "staff-calendar-muted",
-                    day.isToday ? "staff-calendar-today" : "",
-                    selectedDate === day.dateString
-                      ? "staff-calendar-selected"
-                      : "",
-                  ].join(" ")}
-                  onClick={() => setSelectedDate(day.dateString)}
-                >
-                  <strong>{day.date.getDate()}</strong>
-                  {day.bookings.length > 0 && (
-                    <span>
-                      {day.bookings.length}{" "}
-                      {day.bookings.length === 1
-                        ? t("staffCalendar.bookingSingle", "booking")
-                        : t("staffCalendar.bookingPlural", "bookings")}
-                    </span>
-                  )}
-                </button>
-              ))}
+                {calendarDays.map((day) => (
+                  <button
+                    key={day.dateString}
+                    type="button"
+                    className={[
+                      "staff-calendar-day",
+                      day.isCurrentMonth ? "" : "staff-calendar-muted",
+                      day.isToday ? "staff-calendar-today" : "",
+                      selectedDate === day.dateString
+                        ? "staff-calendar-selected"
+                        : "",
+                    ].join(" ")}
+                    onClick={() => setSelectedDate(day.dateString)}
+                  >
+                    <strong>{day.date.getDate()}</strong>
+                    {day.bookings.length > 0 && (
+                      <span>
+                        {day.bookings.length}{" "}
+                        {day.bookings.length === 1
+                          ? t("staffCalendar.bookingSingle", "booking")
+                          : t("staffCalendar.bookingPlural", "bookings")}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="card staff-selected-day">
@@ -482,6 +484,13 @@ export default function StaffCalendarPage() {
           margin-bottom: 1.5rem;
         }
 
+        .staff-calendar-scroll {
+          max-width: 100%;
+          overflow-x: auto;
+          overscroll-behavior-inline: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
         .staff-calendar-day-name {
           color: var(--text-muted);
           font-size: 0.8rem;
@@ -567,6 +576,7 @@ export default function StaffCalendarPage() {
 
           .staff-calendar-grid {
             gap: 0.35rem;
+            min-width: 560px;
           }
 
           .staff-calendar-day {

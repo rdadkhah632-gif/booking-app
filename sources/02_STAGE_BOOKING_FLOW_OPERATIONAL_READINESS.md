@@ -1,6 +1,6 @@
 # Stage 2 - Booking Flow, Business Setup and Operational Readiness
 
-Status: active.
+Status: complete with accepted minor follow-ups.
 
 Stage 2 answers:
 
@@ -251,7 +251,7 @@ Manual QA should include:
 
 ## Batch 7/8 - Final Stage 2 Polish and Closure QA Preparation
 
-Status: ready for closure QA.
+Status: pass.
 
 Completed:
 
@@ -274,4 +274,5 @@ Known non-blockers:
 
 Closure rule:
 
-- Do not mark Stage 2 complete until closure QA passes.
+- Stage 2 closure QA passed with accepted minor follow-ups.
+- Protect the booking, readiness, status and notification foundations during Stage 3.

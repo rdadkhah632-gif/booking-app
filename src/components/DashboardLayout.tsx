@@ -345,6 +345,68 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
             display: grid;
           }
         }
+
+        @media (max-width: 900px) {
+          .sidebar {
+            position: sticky;
+            top: 0;
+            z-index: 35;
+            overflow: hidden;
+          }
+
+          .sidebar-logo {
+            margin-bottom: 0.65rem;
+          }
+
+          .sidebar-nav {
+            display: flex;
+            flex-direction: row;
+            gap: 0.45rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 0.25rem;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .sidebar-nav::-webkit-scrollbar {
+            display: none;
+          }
+
+          .sidebar-main-links,
+          .sidebar-personal-links,
+          .sidebar-lower-links {
+            display: contents;
+          }
+
+          .sidebar-section-label {
+            display: none;
+          }
+
+          .sidebar-link,
+          .sidebar-logout {
+            width: auto;
+            min-height: 2.6rem;
+            flex: 0 0 auto;
+            white-space: nowrap;
+            border-left: 0;
+            border-bottom: 3px solid transparent;
+          }
+
+          .sidebar-link.active,
+          .sidebar-link.urgent {
+            border-left: 0;
+            border-bottom-color: var(--accent);
+          }
+
+          .sidebar-link::after {
+            display: none;
+          }
+
+          .sidebar-link:hover {
+            transform: none;
+          }
+        }
       `}</style>
     </main>
   );

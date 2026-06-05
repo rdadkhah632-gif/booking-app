@@ -412,6 +412,30 @@ export default function AuthNav() {
             flex: 0 0 auto;
           }
         }
+
+        @media (max-width: 360px) {
+          .auth-nav-links {
+            gap: 0.3rem;
+          }
+
+          .auth-nav-links :global(a),
+          .auth-nav-links button {
+            font-size: 0.8rem;
+          }
+
+          .auth-nav-links :global(.btn) {
+            padding-inline: 0.55rem;
+          }
+
+          .auth-nav-links :global(.language-switcher) {
+            gap: 0.15rem;
+            padding-inline: 0.2rem;
+          }
+
+          .auth-nav-links :global(.language-switcher button) {
+            padding-inline: 0.3rem;
+          }
+        }
       `}</style>
     </nav>
   );
