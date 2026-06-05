@@ -1475,6 +1475,7 @@ export default function BusinessBookingPage() {
             canSubmit={canSubmit}
             customerUserId={customerUserId}
             userRole={userRole}
+            isOwnerPreview={isOwnerPreview}
             loginHref={`/login?redirectTo=${encodeURIComponent(`/explore/${business.id}`)}`}
             onCustomerNameChange={setCustomerName}
             onCustomerEmailChange={setCustomerEmail}

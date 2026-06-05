@@ -17,6 +17,7 @@ type Props = {
   canSubmit: boolean;
   customerUserId: string | null;
   userRole: string | null;
+  isOwnerPreview: boolean;
   loginHref: string;
   onCustomerNameChange: (value: string) => void;
   onCustomerEmailChange: (value: string) => void;
@@ -44,6 +45,7 @@ export default function PublicBusinessSummary({
   canSubmit,
   customerUserId,
   userRole,
+  isOwnerPreview,
   loginHref,
   onCustomerNameChange,
   onCustomerEmailChange,
@@ -166,30 +168,56 @@ export default function PublicBusinessSummary({
           }}
         >
           <p className="small" style={{ color: "var(--warning)" }}>
-            {t(
-              "publicBusiness.summary.customerRequired",
-              "Customer account required",
-            )}
+            {isOwnerPreview
+              ? t(
+                  "publicBusiness.summary.ownerPreview",
+                  "Your business page",
+                )
+              : t(
+                  "publicBusiness.summary.customerRequired",
+                  "Customer account required",
+                )}
           </p>
           <h3 style={{ marginTop: "0.25rem" }}>
-            {t(
-              "publicBusiness.summary.customerRequiredTitle",
-              "Use a customer account to book",
-            )}
+            {isOwnerPreview
+              ? t(
+                  "publicBusiness.summary.ownerPreviewTitle",
+                  "You're viewing your own business page",
+                )
+              : t(
+                  "publicBusiness.summary.customerRequiredTitle",
+                  "Use a customer account to book",
+                )}
           </h3>
           <p className="small muted" style={{ marginTop: "0.35rem" }}>
-            {t(
-              "publicBusiness.summary.customerRequiredBody",
-              "Business, staff and operator accounts cannot place customer bookings from this page.",
-            )}
+            {isOwnerPreview
+              ? t(
+                  "publicBusiness.summary.ownerPreviewBody",
+                  "To test the customer booking flow, use a customer account. Manage this business from your dashboard.",
+                )
+              : t(
+                  "publicBusiness.summary.customerRequiredBody",
+                  "Use a customer account to test or place a customer booking.",
+                )}
           </p>
           <div className="booking-action-row compact">
-            <Link href="/account" className="btn btn-ghost">
-              {t("nav.account", "Account")}
-            </Link>
-            <Link href="/support/customer" className="btn btn-ghost">
-              {t("nav.customerSupport", "Customer support")}
-            </Link>
+            {isOwnerPreview ? (
+              <Link href="/dashboard" className="btn btn-ghost">
+                {t(
+                  "publicBusiness.summary.manageBusiness",
+                  "Manage this business",
+                )}
+              </Link>
+            ) : (
+              <>
+                <Link href="/account" className="btn btn-ghost">
+                  {t("nav.account", "Account")}
+                </Link>
+                <Link href="/support/customer" className="btn btn-ghost">
+                  {t("nav.customerSupport", "Customer support")}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

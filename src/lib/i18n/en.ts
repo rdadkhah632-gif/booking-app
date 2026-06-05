@@ -189,6 +189,7 @@ export const en: TranslationTree = {
     "Book available services through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.",
   "explore.card.bookable": "Bookable on Mirëbook",
   "explore.card.appointmentBooking": "Appointment booking",
+  "explore.card.availabilitySet": "Availability set",
   "explore.card.viewTimes": "View times and book",
   "explore.card.bookNow": "Book now",
   "explore.card.locationComingSoon": "Location details coming soon",
@@ -259,9 +260,15 @@ export const en: TranslationTree = {
     "Customers need to log in before sending booking requests or confirming appointments.",
   "publicBusiness.summary.customerRequired": "Customer account required",
   "publicBusiness.summary.customerRequiredTitle":
-    "This account cannot book as a customer",
+    "Use a customer account to book",
   "publicBusiness.summary.customerRequiredBody":
-    "Business, staff and operator accounts can view this page, but bookings must be made from a customer account.",
+    "Use a customer account to test or place a customer booking.",
+  "publicBusiness.summary.ownerPreview": "Your business page",
+  "publicBusiness.summary.ownerPreviewTitle":
+    "You're viewing your own business page",
+  "publicBusiness.summary.ownerPreviewBody":
+    "To test the customer booking flow, use a customer account. Manage this business from your dashboard.",
+  "publicBusiness.summary.manageBusiness": "Manage this business",
   "publicBusiness.summary.policies": "Business policies",
   "publicBusiness.summary.instantNotice":
     "Your booking will be confirmed immediately after you submit.",
@@ -340,7 +347,7 @@ export const en: TranslationTree = {
   "myBookings.subtitle": "View and manage your Mirëbook appointments.",
   "myBookings.requestSent.kicker": "Request sent",
   "myBookings.requestSent.title":
-    "Your booking is waiting for business approval.",
+    "Waiting for the business to confirm.",
   "myBookings.requestSent.body":
     "This appointment is not confirmed yet. You can track the request here or from Notifications.",
   "myBookings.rescheduleSent.kicker": "Reschedule request sent",
@@ -357,7 +364,7 @@ export const en: TranslationTree = {
   "myBookings.stats.waitingApproval": "Request sent",
   "myBookings.stats.waitingBody": "Booking requests not confirmed yet",
   "myBookings.stats.tapRequests": "Tap to view requests ↓",
-  "myBookings.stats.noApprovals": "No waiting approvals",
+  "myBookings.stats.noApprovals": "No requests waiting for confirmation",
   "myBookings.stats.upcoming": "Upcoming",
   "myBookings.stats.upcomingBody": "Confirmed future appointments",
   "myBookings.stats.tapSchedule": "Tap to view schedule ↓",
@@ -395,7 +402,8 @@ export const en: TranslationTree = {
   "myBookings.card.inactiveHint": "This appointment is no longer active.",
   "myBookings.card.duration": "Duration",
   "myBookings.card.status": "Status",
-  "myBookings.card.changeAwaiting": "Requested change awaiting approval",
+  "myBookings.card.changeAwaiting":
+    "Requested change awaiting business review",
   "myBookings.card.newRequestedTime": "New requested appointment time",
   "myBookings.card.businessApprovalNeeded": "Business approval needed",
   "myBookings.card.requestedNewTime": "Requested new time",
@@ -458,7 +466,7 @@ export const en: TranslationTree = {
     "This time is reserved while waiting for business approval.",
   "notifications.viewBooking": "View booking",
   "notifications.pendingReschedules.title":
-    "Reschedule requests waiting approval",
+    "Reschedule requests awaiting business review",
   "notifications.currentConfirmedAppointment": "Current confirmed appointment",
   "notifications.notRecorded": "Not recorded",
   "notifications.requestedNewAppointment": "Requested new appointment",
@@ -1500,13 +1508,15 @@ export const en: TranslationTree = {
   "dashboardNotifications.toolbar.mark": "Mark",
   "dashboardNotifications.toolbar.read": "read",
   "dashboardNotifications.toolbar.allRead": "All read",
-  "dashboardNotifications.toolbar.pendingBookings": "Pending bookings",
-  "dashboardNotifications.summary.bookingApprovals": "Booking approvals",
+  "dashboardNotifications.toolbar.pendingBookings":
+    "Bookings needing approval",
+  "dashboardNotifications.summary.bookingApprovals":
+    "Bookings needing approval",
   "dashboardNotifications.summary.bookingApprovalsBody":
-    "New bookings waiting for approval",
+    "New booking requests that need business review",
   "dashboardNotifications.summary.rescheduleRequests": "Reschedule requests",
   "dashboardNotifications.summary.rescheduleRequestsBody":
-    "Customer changes waiting for approval",
+    "Customer changes that need business review",
   "dashboardNotifications.summary.totalAction": "Total action required",
   "dashboardNotifications.summary.totalActionBody":
     "Items needing business review",

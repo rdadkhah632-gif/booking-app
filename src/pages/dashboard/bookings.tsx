@@ -418,7 +418,7 @@ export default function Bookings() {
         error?.message ||
           t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer waiting for approval. Refresh bookings to see the latest status.",
+            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
           ),
       );
       return;
@@ -488,7 +488,7 @@ export default function Bookings() {
           )} ${t("dashboardBookings.error.databaseDetails", "Database details")}: ${supabaseErrorDetails(error)}`
         : t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer waiting for approval. Refresh bookings to see the latest status.",
+            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
           );
       setError(message);
       setActionError({ bookingId: booking.id, message });

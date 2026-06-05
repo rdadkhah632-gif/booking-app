@@ -155,7 +155,7 @@ export default function MyBookingCard({
               <div className="my-booking-card-row">
                 <div>
                   <p className="small" style={{ color: 'var(--accent)' }}>
-                    {t('myBookings.card.changeAwaiting', 'Requested change awaiting approval')}
+                    {t('myBookings.card.changeAwaiting', 'Requested change awaiting business review')}
                   </p>
                   <h3 style={{ marginTop: '0.25rem', marginBottom: '0.5rem' }}>
                     {t('myBookings.card.newRequestedTime', 'New requested appointment time')}

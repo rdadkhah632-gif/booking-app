@@ -32,7 +32,7 @@ export default function MyBookingsStats({
         <h3>{pendingCount}</h3>
         <p className="muted small">{t('myBookings.stats.waitingBody', 'Booking requests not confirmed yet')}</p>
         <p className="small" style={{ color: pendingCount > 0 ? 'var(--accent)' : 'var(--text-muted)', marginTop: '0.55rem' }}>
-          {pendingCount > 0 ? t('myBookings.stats.tapRequests', 'Tap to view requests ↓') : t('myBookings.stats.noApprovals', 'No waiting approvals')}
+          {pendingCount > 0 ? t('myBookings.stats.tapRequests', 'Tap to view requests ↓') : t('myBookings.stats.noApprovals', 'No requests waiting for confirmation')}
         </p>
       </button>
 

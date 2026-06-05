@@ -96,7 +96,7 @@ export default function ExploreBusinessCard({
           <span className="small explore-muted-pill">{serviceText}</span>
           <span className="small explore-muted-pill">{staffText}</span>
           <span className="small explore-muted-pill">
-            {stats.openDays} open day{stats.openDays === 1 ? '' : 's'}
+            {t('explore.card.availabilitySet', 'Availability set')}
           </span>
         </div>
 

@@ -32,7 +32,7 @@ export default function PendingRescheduleRequestsSection({
       <div>
         <p className="small muted">{t('notifications.actionStatus', 'Action status')}</p>
         <h2 style={{ fontFamily: 'var(--font-display)' }}>
-          {t('notifications.pendingReschedules.title', 'Reschedule requests waiting approval')}
+          {t('notifications.pendingReschedules.title', 'Reschedule requests awaiting business review')}
         </h2>
       </div>
 

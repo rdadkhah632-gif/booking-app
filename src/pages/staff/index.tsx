@@ -1348,7 +1348,10 @@ export default function StaffDashboardPage() {
                       {t("staff.filter.all", "All statuses")}
                     </option>
                     <option value="pending">
-                      {t("staff.status.pending", "Pending approval")}
+                      {t(
+                        "staff.status.pending",
+                        "Awaiting business approval",
+                      )}
                     </option>
                     <option value="confirmed">
                       {t("staff.status.confirmed", "Confirmed")}

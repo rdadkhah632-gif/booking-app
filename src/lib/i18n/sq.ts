@@ -237,6 +237,7 @@ export const sq: TranslationTree = {
     "Rezervo shërbime të disponueshme përmes Mirëbook. Klientët mund të kërkojnë ose konfirmojnë takime pa pagesë në Mirëbook.",
   "explore.card.bookable": "I rezervueshëm në Mirëbook",
   "explore.card.appointmentBooking": "Rezervim takimi",
+  "explore.card.availabilitySet": "Disponueshmëria është vendosur",
   "explore.card.viewTimes": "Shiko oraret dhe rezervo",
   "explore.card.bookNow": "Rezervo tani",
   "explore.card.locationComingSoon":
@@ -300,9 +301,15 @@ export const sq: TranslationTree = {
     "Klientët duhet të hyjnë në llogari para se të dërgojnë kërkesa rezervimi ose të konfirmojnë takime.",
   "publicBusiness.summary.customerRequired": "Kërkohet llogari klienti",
   "publicBusiness.summary.customerRequiredTitle":
-    "Kjo llogari nuk mund të rezervojë si klient",
+    "Përdor një llogari klienti për të rezervuar",
   "publicBusiness.summary.customerRequiredBody":
-    "Llogaritë e biznesit, stafit dhe operatorit mund ta shohin këtë faqe, por rezervimet duhet të bëhen nga një llogari klienti.",
+    "Përdor një llogari klienti për të testuar ose bërë një rezervim klienti.",
+  "publicBusiness.summary.ownerPreview": "Faqja e biznesit tënd",
+  "publicBusiness.summary.ownerPreviewTitle":
+    "Po shikon faqen e biznesit tënd",
+  "publicBusiness.summary.ownerPreviewBody":
+    "Për të testuar rezervimin si klient, përdor një llogari klienti. Menaxhoje këtë biznes nga paneli yt.",
+  "publicBusiness.summary.manageBusiness": "Menaxho këtë biznes",
   "publicBusiness.summary.policies": "Politikat e biznesit",
   "publicBusiness.summary.instantNotice":
     "Rezervimi yt do të konfirmohet menjëherë pasi ta dërgosh.",
@@ -385,7 +392,7 @@ export const sq: TranslationTree = {
   "myBookings.subtitle": "Shiko dhe menaxho takimet e tua në Mirëbook.",
   "myBookings.requestSent.kicker": "Kërkesa u dërgua",
   "myBookings.requestSent.title":
-    "Rezervimi yt është në pritje të miratimit nga biznesi.",
+    "Në pritje që biznesi ta konfirmojë.",
   "myBookings.requestSent.body":
     "Ky takim nuk është ende i konfirmuar. Mund ta gjurmosh kërkesën këtu ose te Njoftimet.",
   "myBookings.rescheduleSent.kicker": "Kërkesa për ndryshim orari u dërgua",
@@ -402,7 +409,7 @@ export const sq: TranslationTree = {
   "myBookings.stats.waitingApproval": "Kërkesa u dërgua",
   "myBookings.stats.waitingBody": "Kërkesa rezervimi ende të pakonfirmuara",
   "myBookings.stats.tapRequests": "Kliko për të parë kërkesat ↓",
-  "myBookings.stats.noApprovals": "Nuk ka miratime në pritje",
+  "myBookings.stats.noApprovals": "Nuk ka kërkesa në pritje të konfirmimit",
   "myBookings.stats.upcoming": "Të ardhshme",
   "myBookings.stats.upcomingBody": "Takime të ardhshme të konfirmuara",
   "myBookings.stats.tapSchedule": "Kliko për të parë orarin ↓",
@@ -440,7 +447,8 @@ export const sq: TranslationTree = {
   "myBookings.card.inactiveHint": "Ky takim nuk është më aktiv.",
   "myBookings.card.duration": "Kohëzgjatja",
   "myBookings.card.status": "Statusi",
-  "myBookings.card.changeAwaiting": "Ndryshimi i kërkuar pret miratim",
+  "myBookings.card.changeAwaiting":
+    "Ndryshimi i kërkuar pret shqyrtimin nga biznesi",
   "myBookings.card.newRequestedTime": "Orari i ri i kërkuar i takimit",
   "myBookings.card.businessApprovalNeeded": "Kërkohet miratim nga biznesi",
   "myBookings.card.requestedNewTime": "Orari i ri i kërkuar",
@@ -504,7 +512,7 @@ export const sq: TranslationTree = {
     "Ky orar është i rezervuar ndërsa pret miratimin nga biznesi.",
   "notifications.viewBooking": "Shiko rezervimin",
   "notifications.pendingReschedules.title":
-    "Kërkesa ndryshimi orari në pritje miratimi",
+    "Kërkesa ndryshimi orari në pritje të shqyrtimit nga biznesi",
   "notifications.currentConfirmedAppointment": "Takimi aktual i konfirmuar",
   "notifications.notRecorded": "Nuk është regjistruar",
   "notifications.requestedNewAppointment": "Takimi i ri i kërkuar",
@@ -1517,14 +1525,16 @@ export const sq: TranslationTree = {
   "dashboardNotifications.toolbar.mark": "Shëno",
   "dashboardNotifications.toolbar.read": "lexuar",
   "dashboardNotifications.toolbar.allRead": "Të gjitha të lexuara",
-  "dashboardNotifications.toolbar.pendingBookings": "Rezervime në pritje",
-  "dashboardNotifications.summary.bookingApprovals": "Miratime rezervimesh",
+  "dashboardNotifications.toolbar.pendingBookings":
+    "Rezervime që kërkojnë miratim",
+  "dashboardNotifications.summary.bookingApprovals":
+    "Rezervime që kërkojnë miratim",
   "dashboardNotifications.summary.bookingApprovalsBody":
-    "Rezervime të reja që presin miratim",
+    "Kërkesa të reja rezervimi që kërkojnë shqyrtim nga biznesi",
   "dashboardNotifications.summary.rescheduleRequests":
     "Kërkesa për ndryshim orari",
   "dashboardNotifications.summary.rescheduleRequestsBody":
-    "Ndryshime nga klientët që presin miratim",
+    "Ndryshime nga klientët që kërkojnë shqyrtim nga biznesi",
   "dashboardNotifications.summary.totalAction": "Veprime gjithsej të kërkuara",
   "dashboardNotifications.summary.totalActionBody":
     "Artikuj që kërkojnë shqyrtim nga biznesi",

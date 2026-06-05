@@ -39,9 +39,9 @@ export default function MyBookingsHeader({
       {bookingRequested && (
         <div className="card my-booking-route-banner">
           <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.35rem' }}>
-            {t('myBookings.requestSent.kicker', 'Booking request sent')}
+            {t('myBookings.requestSent.kicker', 'Request sent')}
           </p>
-          <strong>{t('myBookings.requestSent.title', 'Your booking is waiting for business approval.')}</strong>
+          <strong>{t('myBookings.requestSent.title', 'Waiting for the business to confirm.')}</strong>
           <p className="small muted" style={{ marginTop: '0.5rem' }}>
             {t('myBookings.requestSent.body', 'This appointment is not confirmed yet. You can track the request here or from Notifications.')}
           </p>

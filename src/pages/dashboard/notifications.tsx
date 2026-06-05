@@ -703,7 +703,7 @@ export default function BusinessNotifications() {
         error?.message ||
           t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer waiting for approval. Refresh notifications to see the latest status.",
+            "This booking is no longer available for that action. Refresh notifications to see the latest status.",
           ),
       );
       return;
@@ -779,7 +779,7 @@ export default function BusinessNotifications() {
           )} ${t("dashboardBookings.error.databaseDetails", "Database details")}: ${supabaseErrorDetails(error)}`
         : t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer waiting for approval. Refresh notifications to see the latest status.",
+            "This booking is no longer available for that action. Refresh notifications to see the latest status.",
           );
       setError(message);
       setActionError({ bookingId: booking.id, message });
@@ -1196,14 +1196,14 @@ export default function BusinessNotifications() {
           <p className="small muted">
             {t(
               "dashboardNotifications.summary.bookingApprovals",
-              "Booking approvals",
+              "Bookings needing approval",
             )}
           </p>
           <h3>{pendingBookings.length}</h3>
           <p className="muted small">
             {t(
               "dashboardNotifications.summary.bookingApprovalsBody",
-              "New bookings waiting for approval",
+              "New booking requests that need business review",
             )}
           </p>
         </div>
@@ -1227,7 +1227,7 @@ export default function BusinessNotifications() {
           <p className="muted small">
             {t(
               "dashboardNotifications.summary.rescheduleRequestsBody",
-              "Customer changes waiting for approval",
+              "Customer changes that need business review",
             )}
           </p>
         </div>

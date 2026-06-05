@@ -248,3 +248,30 @@ Manual QA should include:
 - staff can see assigned booking where applicable
 - booking status labels are consistent across views
 - EN/SQ text does not visibly regress on touched pages
+
+## Batch 7/8 - Final Stage 2 Polish and Closure QA Preparation
+
+Status: ready for closure QA.
+
+Completed:
+
+- Explore no longer exposes the raw business working-hours row count as an "open days" card label. Listed businesses now show the clearer "Availability set" indicator after passing the existing booking-readiness check.
+- Explore listing eligibility, slot generation and availability save logic were not changed.
+- Customer, business and staff booking status wording was checked across the Stage 2 surfaces.
+- Remaining customer pending wording now uses Request sent and Waiting for the business to confirm.
+- Staff pending wording uses Awaiting business approval.
+- Reschedule requests are described as awaiting business review rather than using the main booking-status wording.
+- Owners viewing their own public business page now see a clearer explanation to test with a customer account and manage the business from the dashboard.
+- Customer, business, staff, reschedule, support and general notification categories remain intact.
+- Stored notification text was not migrated.
+- `npm run build` passed.
+- `git diff --check` passed.
+
+Known non-blockers:
+
+- Older mixed English and Albanian strings may remain outside the Stage 2 booking, readiness and notification surfaces.
+- Staff workspace layout still uses the staff top navigation.
+
+Closure rule:
+
+- Do not mark Stage 2 complete until closure QA passes.
