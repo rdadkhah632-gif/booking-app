@@ -428,6 +428,7 @@ export const sq: TranslationTree = {
   "myBookings.card.originalConfirmedTime": "Orari origjinal i konfirmuar",
   "myBookings.card.completedTime": "Orari i takimit të përfunduar",
   "myBookings.card.cancelledTime": "Orari i takimit të anuluar",
+  "myBookings.card.declinedTime": "Orari i kërkesës së refuzuar",
   "myBookings.card.currentConfirmed": "Takimi aktual i konfirmuar",
   "myBookings.card.pendingHint":
     "Ky rezervim nuk konfirmohet derisa biznesi ta pranojë.",
@@ -456,6 +457,7 @@ export const sq: TranslationTree = {
   "myBookings.card.cancelBooking": "Anulo rezervimin",
   "myBookings.card.lockedCompleted": "Rekord i përfunduar i kyçur",
   "myBookings.card.lockedCancelled": "Rekord i anuluar i kyçur",
+  "myBookings.card.lockedDeclined": "Kërkesë e refuzuar e kyçur",
   "myBookings.card.pastRecord": "Rekord i një takimi të kaluar",
   "myBookings.card.lockedBody":
     "Ky rezervim nuk mund të ndryshohet ose anulohet më.",
@@ -1353,6 +1355,11 @@ export const sq: TranslationTree = {
   "dashboardBookings.error.load": "Rezervimet nuk u ngarkuan.",
   "dashboardBookings.error.actionNoLongerAvailable":
     "Ky rezervim nuk është më i disponueshëm për këtë veprim. Rifresko rezervimet për statusin më të fundit.",
+  "dashboardBookings.error.declinedStatusUnsupported":
+    "Baza e të dhënave live aktualisht nuk lejon statusin Refuzuar për rezervimet. Përditëso kufizimin e statusit të rezervimeve dhe provo përsëri.",
+  "dashboardBookings.error.declineFailed":
+    "Ky rezervim nuk mund të refuzohej.",
+  "dashboardBookings.error.databaseDetails": "Detajet e bazës së të dhënave",
   "dashboardBookings.businessPicker.kicker": "U gjetën disa biznese",
   "dashboardBookings.businessPicker.title": "Zgjidh një biznes për të vazhduar",
   "dashboardBookings.businessPicker.body":
@@ -1448,7 +1455,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.confirm.accept":
     "Ta pranosh këtë kërkesë rezervimi dhe ta konfirmosh takimin?",
   "dashboardBookings.confirm.decline":
-    "Ta refuzosh këtë kërkesë rezervimi? Klienti do ta shohë si të anuluar/jo të pranuar.",
+    "Ta refuzosh këtë kërkesë rezervimi? Klienti do ta shohë si të refuzuar.",
   "dashboardBookings.confirm.cancel":
     "Ta anulosh këtë rezervim? Do të shfaqet si i anuluar edhe për klientin.",
   "dashboardBookings.confirm.complete":

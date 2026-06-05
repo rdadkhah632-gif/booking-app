@@ -5,6 +5,10 @@ import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import {
+  isDeclinedStatusUnsupported,
+  supabaseErrorDetails,
+} from "@/lib/bookingStatusErrors";
 
 type RelatedBusiness = {
   name: string;
@@ -240,6 +244,10 @@ export default function BusinessNotifications() {
   const [businessIds, setBusinessIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{
+    bookingId: string;
+    message: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -249,6 +257,7 @@ export default function BusinessNotifications() {
   }) {
     if (!options?.silent) setLoading(true);
     setError(null);
+    setActionError(null);
     if (!options?.keepSuccess) setSuccess(null);
 
     try {
@@ -571,6 +580,7 @@ export default function BusinessNotifications() {
     if (!confirmed) return;
 
     setActionLoadingId(`booking-${booking.id}`);
+    setActionError(null);
     setError(null);
     setSuccess(null);
 
@@ -633,12 +643,13 @@ export default function BusinessNotifications() {
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.decline",
-        "Decline this booking request? The customer will see it as cancelled/not accepted.",
+        "Decline this booking request? The customer will see it as declined.",
       ),
     );
     if (!confirmed) return;
 
     setActionLoadingId(`booking-${booking.id}`);
+    setActionError(null);
     setError(null);
     setSuccess(null);
 
@@ -654,13 +665,21 @@ export default function BusinessNotifications() {
     setActionLoadingId(null);
 
     if (error || !updatedBooking) {
-      setError(
-        error?.message ||
-          t(
+      const message = error
+        ? `${t(
+            isDeclinedStatusUnsupported(error)
+              ? "dashboardBookings.error.declinedStatusUnsupported"
+              : "dashboardBookings.error.declineFailed",
+            isDeclinedStatusUnsupported(error)
+              ? "The live database does not currently allow the Declined booking status. Update the bookings status constraint, then try again."
+              : "Could not decline this booking.",
+          )} ${t("dashboardBookings.error.databaseDetails", "Database details")}: ${supabaseErrorDetails(error)}`
+        : t(
             "dashboardBookings.error.actionNoLongerAvailable",
             "This booking is no longer waiting for approval. Refresh notifications to see the latest status.",
-          ),
-      );
+          );
+      setError(message);
+      setActionError({ bookingId: booking.id, message });
       return;
     }
 
@@ -1507,11 +1526,26 @@ export default function BusinessNotifications() {
                       disabled={isWorking}
                       className="btn btn-danger"
                     >
-                      {t(
-                        "dashboardBookings.actions.decline",
-                        "Decline booking",
-                      )}
+                      {isWorking
+                        ? t("dashboardBookings.actions.working", "Working...")
+                        : t(
+                            "dashboardBookings.actions.decline",
+                            "Decline booking",
+                          )}
                     </button>
+
+                    {actionError?.bookingId === booking.id && (
+                      <p
+                        role="alert"
+                        className="small"
+                        style={{
+                          color: "var(--danger)",
+                          marginTop: "0.25rem",
+                        }}
+                      >
+                        {actionError.message}
+                      </p>
+                    )}
 
                     <Link
                       href={`/dashboard/bookings?businessId=${booking.business_id}&view=upcoming&status=pending`}

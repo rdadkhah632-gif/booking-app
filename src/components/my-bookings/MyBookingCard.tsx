@@ -43,7 +43,7 @@ export default function MyBookingCard({
   cardTone
 }: Props) {
   const { t } = useI18n()
-  const isLocked = booking.status === 'cancelled' || booking.status === 'completed' || mode === 'history'
+  const isLocked = booking.status === 'cancelled' || booking.status === 'declined' || booking.status === 'completed' || mode === 'history'
   const tone = cardTone(booking.status, Boolean(pendingRequest), mode)
 
   return (
@@ -122,6 +122,8 @@ export default function MyBookingCard({
                     ? t('myBookings.card.completedTime', 'Completed appointment time')
                     : booking.status === 'cancelled'
                       ? t('myBookings.card.cancelledTime', 'Cancelled appointment time')
+                      : booking.status === 'declined'
+                        ? t('myBookings.card.declinedTime', 'Declined requested time')
                       : t('myBookings.card.currentConfirmed', 'Current confirmed appointment')}
             </p>
 
@@ -216,13 +218,15 @@ export default function MyBookingCard({
             </>
           )}
 
-          {(booking.status === 'completed' || booking.status === 'cancelled' || mode === 'history') && booking.status !== 'pending' && (
+          {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'declined' || mode === 'history') && booking.status !== 'pending' && (
             <div className="card my-booking-locked-card">
               <p className="small" style={{ color: statusColor(booking.status) }}>
                 {booking.status === 'completed'
                   ? t('myBookings.card.lockedCompleted', 'Locked completed record')
                   : booking.status === 'cancelled'
                     ? t('myBookings.card.lockedCancelled', 'Locked cancelled record')
+                    : booking.status === 'declined'
+                      ? t('myBookings.card.lockedDeclined', 'Locked declined request')
                     : t('myBookings.card.pastRecord', 'Past appointment record')}
               </p>
               <p className="small muted" style={{ marginTop: '0.3rem' }}>

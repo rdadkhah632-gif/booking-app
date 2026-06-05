@@ -155,6 +155,33 @@ Follow-up QA:
 - Confirm the database accepts `declined` as a booking status in production data.
 - Re-test business accept/decline from both dashboard bookings and dashboard notifications.
 
+## Batch 4A - Decline Status Production Blocker
+
+Status: awaiting live database verification.
+
+Root cause evidence:
+
+- The application decline handlers correctly attempt `pending` to `declined`.
+- The same live action previously worked when decline was stored incorrectly as `cancelled`.
+- The repository has no database schema or migration files that can safely update the production booking status constraint.
+- The live QA failure began when the write value changed from `cancelled` to `declined`, so the production booking status constraint is the leading blocker.
+
+Code follow-up completed:
+
+- Failed decline writes now show an inline error beside the affected booking on both business bookings and business notifications.
+- Supabase error message, details, hint and error code are preserved in the visible error.
+- Status constraint or enum errors explicitly explain that the live database must allow `declined`.
+- Decline confirmation copy now says the customer will see the request as declined.
+- Decline buttons show the working state while the write is processing.
+- Customer history and booking update cards now present declined records as declined rather than as generic past/cancelled records.
+- `npm run build` passed.
+
+Closure requirement:
+
+- Update the live Supabase booking status constraint to allow `declined`, preserving all existing allowed values.
+- Re-run decline QA from business bookings and business notifications.
+- Do not mark Batch 4A complete until the live write succeeds and pending counts decrease.
+
 ## Suggested Batch 5 - Business Setup Readiness
 
 Make readiness checks accurately reflect whether a business can be booked:

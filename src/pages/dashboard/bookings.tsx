@@ -14,6 +14,10 @@ import {
 } from "@/components/dashboard-bookings/dashboardBookingsTypes";
 import { useBookingStatusLabel } from "@/components/dashboard-bookings/BookingStatusBadge";
 import { useI18n } from "@/lib/useI18n";
+import {
+  isDeclinedStatusUnsupported,
+  supabaseErrorDetails,
+} from "@/lib/bookingStatusErrors";
 
 function toDateInputValue(date: Date) {
   const yyyy = date.getFullYear();
@@ -59,6 +63,10 @@ export default function Bookings() {
 
   const [pageLoading, setPageLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{
+    bookingId: string;
+    message: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -155,6 +163,7 @@ export default function Bookings() {
     silent?: boolean;
   }) {
     setError(null);
+    setActionError(null);
     if (!options?.keepSuccess) setSuccess(null);
     if (!options?.silent) setPageLoading(true);
 
@@ -389,6 +398,7 @@ export default function Bookings() {
     if (!confirmed) return;
 
     setActionLoadingId(booking.id);
+    setActionError(null);
     setError(null);
     setSuccess(null);
 
@@ -445,12 +455,13 @@ export default function Bookings() {
     const confirmed = confirm(
       t(
         "dashboardBookings.confirm.decline",
-        "Decline this booking request? The customer will see it as cancelled/not accepted.",
+        "Decline this booking request? The customer will see it as declined.",
       ),
     );
     if (!confirmed) return;
 
     setActionLoadingId(booking.id);
+    setActionError(null);
     setError(null);
     setSuccess(null);
 
@@ -466,13 +477,21 @@ export default function Bookings() {
     setActionLoadingId(null);
 
     if (error || !updatedBooking) {
-      setError(
-        error?.message ||
-          t(
+      const message = error
+        ? `${t(
+            isDeclinedStatusUnsupported(error)
+              ? "dashboardBookings.error.declinedStatusUnsupported"
+              : "dashboardBookings.error.declineFailed",
+            isDeclinedStatusUnsupported(error)
+              ? "The live database does not currently allow the Declined booking status. Update the bookings status constraint, then try again."
+              : "Could not decline this booking.",
+          )} ${t("dashboardBookings.error.databaseDetails", "Database details")}: ${supabaseErrorDetails(error)}`
+        : t(
             "dashboardBookings.error.actionNoLongerAvailable",
             "This booking is no longer waiting for approval. Refresh bookings to see the latest status.",
-          ),
-      );
+          );
+      setError(message);
+      setActionError({ bookingId: booking.id, message });
       return;
     }
 
@@ -513,6 +532,7 @@ export default function Bookings() {
     if (!confirmed) return;
 
     setActionLoadingId(booking.id);
+    setActionError(null);
     setError(null);
     setSuccess(null);
 
@@ -575,6 +595,7 @@ export default function Bookings() {
     if (!confirmed) return;
 
     setActionLoadingId(booking.id);
+    setActionError(null);
     setError(null);
     setSuccess(null);
 
@@ -961,6 +982,11 @@ export default function Bookings() {
                   booking={booking}
                   businessId={business?.id}
                   actionLoadingId={actionLoadingId}
+                  actionError={
+                    actionError?.bookingId === booking.id
+                      ? actionError.message
+                      : null
+                  }
                   customerHistoryLink={customerHistoryLink}
                   acceptPendingBooking={acceptPendingBooking}
                   declinePendingBooking={declinePendingBooking}

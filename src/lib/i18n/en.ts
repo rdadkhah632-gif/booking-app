@@ -383,6 +383,7 @@ export const en: TranslationTree = {
     "Original confirmed appointment time",
   "myBookings.card.completedTime": "Completed appointment time",
   "myBookings.card.cancelledTime": "Cancelled appointment time",
+  "myBookings.card.declinedTime": "Declined requested time",
   "myBookings.card.currentConfirmed": "Current confirmed appointment",
   "myBookings.card.pendingHint":
     "This booking is not confirmed until the business accepts it.",
@@ -411,6 +412,7 @@ export const en: TranslationTree = {
   "myBookings.card.cancelBooking": "Cancel booking",
   "myBookings.card.lockedCompleted": "Locked completed record",
   "myBookings.card.lockedCancelled": "Locked cancelled record",
+  "myBookings.card.lockedDeclined": "Locked declined request",
   "myBookings.card.pastRecord": "Past appointment record",
   "myBookings.card.lockedBody":
     "This booking can no longer be rescheduled or cancelled.",
@@ -1339,6 +1341,10 @@ export const en: TranslationTree = {
   "dashboardBookings.error.load": "Could not load bookings.",
   "dashboardBookings.error.actionNoLongerAvailable":
     "This booking is no longer available for that action. Refresh bookings to see the latest status.",
+  "dashboardBookings.error.declinedStatusUnsupported":
+    "The live database does not currently allow the Declined booking status. Update the bookings status constraint, then try again.",
+  "dashboardBookings.error.declineFailed": "Could not decline this booking.",
+  "dashboardBookings.error.databaseDetails": "Database details",
   "dashboardBookings.businessPicker.kicker": "Multiple businesses found",
   "dashboardBookings.businessPicker.title": "Choose a business to continue",
   "dashboardBookings.businessPicker.body":
@@ -1433,7 +1439,7 @@ export const en: TranslationTree = {
   "dashboardBookings.confirm.accept":
     "Accept this booking request and confirm the appointment?",
   "dashboardBookings.confirm.decline":
-    "Decline this booking request? The customer will see it as cancelled/not accepted.",
+    "Decline this booking request? The customer will see it as declined.",
   "dashboardBookings.confirm.cancel":
     "Cancel this booking? This will also show as cancelled to the customer.",
   "dashboardBookings.confirm.complete": "Mark this appointment as completed?",

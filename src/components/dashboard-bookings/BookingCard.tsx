@@ -7,6 +7,7 @@ type Props = {
   booking: Booking;
   businessId?: string | null;
   actionLoadingId: string | null;
+  actionError?: string | null;
   customerHistoryLink: (booking: Booking) => string;
   acceptPendingBooking: (booking: Booking) => void;
   declinePendingBooking: (booking: Booking) => void;
@@ -18,6 +19,7 @@ export default function BookingCard({
   booking,
   businessId,
   actionLoadingId,
+  actionError,
   customerHistoryLink,
   acceptPendingBooking,
   declinePendingBooking,
@@ -236,8 +238,20 @@ export default function BookingCard({
                 className="btn btn-danger"
                 disabled={isWorking}
               >
-                {t("dashboardBookings.actions.decline", "Decline booking")}
+                {isWorking
+                  ? t("dashboardBookings.actions.working", "Working...")
+                  : t("dashboardBookings.actions.decline", "Decline booking")}
               </button>
+
+              {actionError && (
+                <p
+                  role="alert"
+                  className="small"
+                  style={{ color: "var(--danger)", marginTop: "0.25rem" }}
+                >
+                  {actionError}
+                </p>
+              )}
             </>
           )}
 

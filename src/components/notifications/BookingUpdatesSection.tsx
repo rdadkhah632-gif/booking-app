@@ -39,12 +39,12 @@ export default function BookingUpdatesSection({
           key={booking.id}
           className="card"
           style={{
-            opacity: booking.status === 'cancelled' ? 0.7 : 1,
+            opacity: booking.status === 'cancelled' || booking.status === 'declined' ? 0.7 : 1,
             borderColor: booking.status === 'confirmed'
               ? 'rgba(45,212,191,0.28)'
               : booking.status === 'completed'
                 ? 'rgba(255,107,53,0.28)'
-                : booking.status === 'cancelled'
+                : booking.status === 'cancelled' || booking.status === 'declined'
                   ? 'rgba(255,190,11,0.28)'
                   : 'var(--border)'
           }}
