@@ -233,6 +233,11 @@ export default function Home() {
             <p className="muted" style={{ marginTop: "0.5rem" }}>
               {t("home.trust.modelBody")}
             </p>
+            <div className="home-cta-row" style={{ marginBottom: 0 }}>
+              <Link href="/explore" className="btn btn-ghost">
+                {t("home.cta.explore")}
+              </Link>
+            </div>
           </div>
 
           <div className="card">
@@ -243,6 +248,11 @@ export default function Home() {
             <p className="muted" style={{ marginTop: "0.5rem" }}>
               {t("home.trust.supportBody")}
             </p>
+            <div className="home-cta-row" style={{ marginBottom: 0 }}>
+              <Link href="/support" className="btn btn-ghost">
+                {t("home.trust.supportCentre")}
+              </Link>
+            </div>
           </div>
 
           <div className="card">
@@ -253,6 +263,14 @@ export default function Home() {
             <p className="muted" style={{ marginTop: "0.5rem" }}>
               {t("home.trust.legalBody")}
             </p>
+            <div className="home-cta-row" style={{ marginBottom: 0 }}>
+              <Link href="/privacy" className="btn btn-ghost">
+                {t("common.privacy")}
+              </Link>
+              <Link href="/terms" className="btn btn-ghost">
+                {t("common.terms")}
+              </Link>
+            </div>
           </div>
         </div>
       </section>

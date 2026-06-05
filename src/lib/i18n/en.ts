@@ -58,10 +58,10 @@ export const en: TranslationTree = {
   "common.working": "Working...",
   "common.loading": "Loading...",
   "common.needHelp": "Need help?",
-  "home.eyebrow": "Mirëbook · live booking marketplace",
-  "home.title": "Book trusted local services with real availability.",
+  "home.eyebrow": "Local services, booked clearly",
+  "home.title": "Find the right local service and book with confidence.",
   "home.subtitle":
-    "Mirëbook helps customers discover barbers, salons, clinics, dentists and service businesses across Albania, the UK and international markets. Choose a service, pick a smart calendar date, see real available times and book instantly or request approval depending on the business.",
+    "Discover local service businesses, compare real availability and choose a time that works. Each business clearly shows whether your appointment is confirmed instantly or sent as a booking request.",
   "home.search.servicePlaceholder":
     "Haircut, nails, dental checkup, massage...",
   "home.search.cityPlaceholder": "Tirana, Coventry, London...",
@@ -69,15 +69,15 @@ export const en: TranslationTree = {
   "home.cta.explore": "Explore Mirëbook",
   "home.cta.myBookings": "My bookings",
   "home.cta.createAccount": "Create account",
-  "home.proof.availability": "✓ Smart calendar availability",
-  "home.proof.staff": "✓ Any staff or specific staff",
-  "home.proof.tracking": "✓ Approval and reschedule tracking",
-  "home.proof.language": "✓ English and Albanian language toggle",
+  "home.proof.availability": "Real available appointment times",
+  "home.proof.staff": "Choose any available staff or a specific person",
+  "home.proof.tracking": "Clear request and confirmation updates",
+  "home.proof.language": "Available in English and Albanian",
   "home.business.kicker": "For businesses",
   "home.business.title":
     "Run your service business from one Mirëbook workspace.",
   "home.business.body":
-    "Build your customer-facing profile, add services, assign staff, set working hours and manage approvals, reschedules and daily appointments from your dashboard. Customer bookings stay free at point of booking; Mirëbook is preparing for business subscription billing.",
+    "Build a customer-facing profile, add services, assign staff, set working hours and manage requests, reschedules and daily appointments from one dashboard.",
   "home.business.profileTitle": "Profile readiness",
   "home.business.profileBody":
     "Check services, staff, hours and publishing status.",
@@ -100,57 +100,57 @@ export const en: TranslationTree = {
   "home.customers.kicker": "Customers",
   "home.customers.title": "Book and track appointments",
   "home.customers.body":
-    "Browse bookable businesses, choose a service, pick from real available times, select Any available staff or a specific staff member, and track every appointment from your account. Customers do not pay Mirëbook to book appointments.",
+    "Browse bookable businesses, choose a service, pick from real available times, select any available staff or a specific person, and track every appointment from your account.",
   "home.customers.explore": "Explore marketplace",
   "home.customers.notifications": "Notifications",
   "home.businesses.kicker": "Businesses",
   "home.businesses.title": "Control how bookings are accepted",
   "home.businesses.body":
-    "Use instant confirmation for simple flows or manual approval when you want to review each booking request first. Mirëbook keeps pending, confirmed, rescheduled, completed and cancelled bookings separated, with business billing handled separately from customer appointment booking.",
+    "Use instant confirmation for simple flows or manual approval when you want to review each booking request first. Mirëbook keeps pending, confirmed, rescheduled, completed and cancelled bookings clearly separated.",
   "home.businesses.dashboard": "Business dashboard",
   "home.businesses.setup": "Setup profile",
-  "home.growth.kicker": "Built for international growth",
-  "home.growth.title": "Start local, scale across cities.",
+  "home.growth.kicker": "Made for local service businesses",
+  "home.growth.title": "Simple for one location, ready for a growing team.",
   "home.growth.body":
-    "Mirëbook is designed for independent service providers and growing teams across Albania, the UK and wider international markets. The product supports English and Albanian on public booking flows, with more region-aware improvements planned as the platform matures.",
+    "Mirëbook gives independent providers and growing teams a clear way to publish services, organise staff availability and keep customers informed.",
   "home.growth.customerTitle": "Find real availability fast",
   "home.growth.customerBody":
-    "Search by service or city, compare bookable businesses and choose a time that already fits staff availability, without a customer checkout step.",
+    "Search by service or city, compare bookable businesses and choose a time that already fits staff availability.",
   "home.growth.businessTitle": "Launch without messy admin",
   "home.growth.businessBody":
-    "Add services, staff and working hours, then publish a profile customers can book from directly. Subscription and billing controls are kept inside the business dashboard.",
+    "Add services, staff and working hours, then publish a profile customers can book from directly.",
   "home.growth.teamKicker": "For teams",
   "home.growth.teamTitle": "Keep every appointment clear",
   "home.growth.teamBody":
     "Track pending approvals, confirmed appointments, reschedule requests and completed bookings in one place.",
-  "home.trust.kicker": "Trust and launch readiness",
-  "home.trust.title": "Built for real onboarding, not just a demo.",
+  "home.trust.kicker": "Trust at every step",
+  "home.trust.title": "Clear information before and after every booking.",
   "home.trust.body":
-    "Mirëbook is being shaped around business setup, customer clarity, staff workflows, support pages and future app-store readiness.",
-  "home.trust.modelKicker": "Business model",
-  "home.trust.modelTitle": "Business subscription billing",
+    "Booking mode, appointment status, support and account details stay easy to find throughout the customer journey.",
+  "home.trust.modelKicker": "Booking clarity",
+  "home.trust.modelTitle": "Focused on the appointment",
   "home.trust.modelBody":
-    "Customers book appointments through Mirëbook, while businesses will later pay a monthly subscription to use the platform.",
+    "See the service, staff, time and booking status together before you commit.",
   "home.trust.billing": "Billing groundwork",
   "home.trust.supportKicker": "Support",
   "home.trust.supportTitle": "Help for customers, businesses and staff",
   "home.trust.supportBody":
-    "Support pages explain booking states, staff access, business setup and the current payment model clearly.",
+    "Role-specific support helps customers, businesses and staff find the right guidance quickly.",
   "home.trust.supportCentre": "Support centre",
   "home.trust.legalKicker": "Legal basics",
-  "home.trust.legalTitle": "Privacy and terms foundations",
+  "home.trust.legalTitle": "Privacy and terms",
   "home.trust.legalBody":
-    "Starter privacy and terms pages are in place for early testing and should be reviewed before public launch.",
+    "Review how Mirëbook handles platform use and personal information.",
 
   "explore.hero.kicker": "Mirëbook marketplace",
   "explore.hero.title": "Find and book local services",
   "explore.hero.subtitle":
-    "Browse bookable Mirëbook businesses with active services assigned to active staff and available working hours. Choose a service, pick a time, and send a booking request or receive instant confirmation.",
+    "Browse local businesses with services, staff and appointment times ready to book. Each profile clearly shows whether the business confirms instantly or reviews requests first.",
   "explore.badge.availability": "Availability-based booking",
   "explore.badge.noCheckout": "No customer checkout yet",
   "explore.filters.title": "Search bookable businesses",
   "explore.filters.subtitle":
-    "Search businesses that are currently bookable on Mirëbook. Explore only shows published businesses with an active service assigned to active staff and available working hours.",
+    "Search by business, service, category or city. Every result shown here currently has services, staff and availability ready for customers.",
   "explore.filters.search": "Search",
   "explore.filters.category": "Category",
   "explore.filters.city": "City",
@@ -171,13 +171,22 @@ export const en: TranslationTree = {
   "explore.results.loading": "Loading businesses...",
   "explore.results.clearCurrent": "Clear current filters",
   "explore.results.listBusiness": "List your business",
+  "explore.results.loadingBookable": "Loading available businesses...",
+  "explore.stats.bookableBusiness": "bookable business",
+  "explore.stats.bookableBusinesses": "bookable businesses",
+  "explore.stats.city": "city",
+  "explore.stats.cities": "cities",
   "explore.empty.title": "No businesses are live yet",
   "explore.empty.body":
-    "Businesses appear here when they are published and have active services, active staff and working hours configured. Customers can browse and request appointments without a Mirëbook checkout step.",
+    "New businesses will appear here as soon as their services, staff and appointment times are ready for customers.",
   "explore.empty.errorTitle": "Could not load marketplace results",
   "explore.empty.errorBody":
     "Refresh the marketplace or contact customer support if this keeps happening.",
   "explore.empty.retryMarketplace": "Retry marketplace",
+  "explore.empty.timeout":
+    "Mirëbook could not load marketplace results. Please refresh and try again.",
+  "explore.empty.genericError":
+    "Something went wrong while loading businesses.",
   "explore.empty.noBookableTitle": "No bookable businesses yet",
   "explore.empty.addFirstBusiness": "Add the first business",
   "explore.empty.noResultsTitle": "No businesses match your filters",
@@ -186,32 +195,42 @@ export const en: TranslationTree = {
   "explore.card.approvalRequired": "Approval required",
   "explore.card.instantConfirmation": "Instant confirmation",
   "explore.card.fallbackDescription":
-    "Book available services through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.",
+    "View available services, choose staff and find an appointment time that works for you.",
   "explore.card.bookable": "Bookable on Mirëbook",
   "explore.card.appointmentBooking": "Appointment booking",
   "explore.card.availabilitySet": "Availability set",
   "explore.card.viewTimes": "View times and book",
   "explore.card.bookNow": "Book now",
   "explore.card.locationComingSoon": "Location details coming soon",
+  "explore.categories.barbers": "Barbers",
+  "explore.categories.salons": "Salons",
+  "explore.categories.nails": "Nails",
+  "explore.categories.tattoos": "Tattoos",
+  "explore.categories.petGrooming": "Pet grooming",
+  "explore.categories.fitness": "Fitness",
+  "explore.categories.dental": "Dental",
+  "explore.categories.activities": "Activities",
+  "explore.categories.experiences": "Experiences",
+  "explore.categories.appointments": "Appointments",
   "explore.trust.customerKicker": "For customers",
-  "explore.trust.customerTitle": "Book without checkout friction",
+  "explore.trust.customerTitle": "Know what happens next",
   "explore.trust.customerBody":
-    "Mirëbook helps customers request or confirm appointments. Payment/deposit collection is not part of the current customer booking flow.",
+    "Every profile shows whether your booking is confirmed immediately or sent to the business for review.",
   "explore.trust.businessKicker": "For businesses",
-  "explore.trust.businessTitle": "Business billing is separate",
+  "explore.trust.businessTitle": "Profiles built around real availability",
   "explore.trust.businessBody":
-    "Business subscription controls are separate from the customer booking journey, so public booking stays focused on appointments.",
+    "Businesses publish services, assign staff and set working hours before they appear as bookable.",
   "explore.trust.billing": "Billing groundwork",
   "explore.trust.supportKicker": "Support and trust",
-  "explore.trust.supportTitle": "Clear launch foundations",
+  "explore.trust.supportTitle": "Help when you need it",
   "explore.trust.supportBody":
-    "Support, privacy and terms pages are in place for early testing and should be reviewed before public launch.",
+    "Customer support, privacy information and platform terms are easy to reach from the booking journey.",
 
   "publicBusiness.hero.bookableBusiness": "Bookable business",
   "publicBusiness.hero.availabilitySlots": "Availability-based slots",
   "publicBusiness.hero.noCheckout": "No customer checkout yet",
   "publicBusiness.hero.fallbackDescription":
-    "Book available appointments through Mirëbook. Customers can request or confirm appointments without a Mirëbook checkout step.",
+    "Choose a service, staff member and available appointment time through Mirëbook.",
   "publicBusiness.hero.location": "Location",
   "publicBusiness.hero.phone": "Phone",
   "publicBusiness.hero.bookingMode": "Booking mode",
@@ -341,8 +360,8 @@ export const en: TranslationTree = {
   "support.staff.body":
     "Get help with staff account linking, schedule access, availability problems or being connected to the wrong business.",
 
-  "myBookings.kicker": "Mirëbook customer dashboard",
-  "myBookings.title": "My Mirëbook bookings",
+  "myBookings.kicker": "Your appointments",
+  "myBookings.title": "My bookings",
   "myBookings.signedInAs": "Signed in as",
   "myBookings.subtitle": "View and manage your Mirëbook appointments.",
   "myBookings.requestSent.kicker": "Request sent",
@@ -424,8 +443,8 @@ export const en: TranslationTree = {
   "myBookings.card.pastRecord": "Past appointment record",
   "myBookings.card.lockedBody":
     "This booking can no longer be rescheduled or cancelled.",
-  "notifications.kicker": "Mirëbook customer notifications",
-  "notifications.title": "Customer notifications",
+  "notifications.kicker": "Booking updates",
+  "notifications.title": "Notifications",
   "notifications.subtitle":
     "Track booking approvals, reschedule decisions and appointment updates.",
   "notifications.refreshing": "Refreshing...",
@@ -436,7 +455,7 @@ export const en: TranslationTree = {
   "notifications.allRead": "All read",
   "notifications.refreshHint":
     "Mirëbook refreshes this page when you return to the tab. Use refresh if a recent booking update does not appear straight away.",
-  "notifications.stats.waitingApproval": "Request sent",
+  "notifications.stats.waitingApproval": "Requests in progress",
   "notifications.stats.waitingBody":
     "Booking and reschedule requests waiting for business action",
   "notifications.stats.history": "History",
@@ -449,7 +468,7 @@ export const en: TranslationTree = {
   "notifications.inbox.kicker": "Notification inbox",
   "notifications.inbox.title": "Recent Mirëbook updates",
   "notifications.inbox.body":
-    "These are real notification records created by booking and reschedule activity.",
+    "Your latest booking, schedule and support updates appear here.",
   "notifications.readStatus.read": "Read",
   "notifications.readStatus.unread": "Unread",
   "notifications.recently": "Recently",
@@ -512,6 +531,7 @@ export const en: TranslationTree = {
   "bookingConfirmation.actions.goToMyBookings": "Go to my bookings",
   "bookingConfirmation.actions.trackRequest": "Track booking request",
   "bookingConfirmation.actions.manageBooking": "View or manage this booking",
+  "bookingConfirmation.actions.backToBusiness": "Back to business",
   "bookingConfirmation.actions.explore": "Explore Mirëbook",
   "bookingConfirmation.actions.businessBookings": "Business bookings",
   "bookingConfirmation.note.pendingTitle": "Request sent",
@@ -1925,12 +1945,12 @@ export const en: TranslationTree = {
   "dashboardHome.ownerStaffNote.body":
     "You can manage the business as the owner without being bookable. If you also take appointments, add yourself as staff, assign services, and set your own working hours.",
   "dashboardHome.ownerStaffNote.cta": "Manage staff setup",
-  "myBookings.command.kicker": "Customer booking hub",
+  "myBookings.command.kicker": "Booking overview",
   "myBookings.command.actionTitle": "You have booking updates to track",
   "myBookings.command.nextTitle": "Your next appointment is coming up",
   "myBookings.command.historyTitle": "Your bookings are up to date",
   "myBookings.command.pendingBody":
-    "Some booking requests are waiting for the business to approve them.",
+    "Some booking requests are waiting for the business to confirm them.",
   "myBookings.command.changeBody":
     "You have requested booking changes waiting for business approval.",
   "myBookings.command.noActiveBody":
@@ -1939,6 +1959,9 @@ export const en: TranslationTree = {
   "myBookings.command.viewUpcoming": "View upcoming",
   "myBookings.command.viewHistory": "View history",
   "myBookings.command.bookAgain": "Book another service",
+  "myBookings.sections.historyTitle": "Booking history",
+  "myBookings.sections.historyBody":
+    "Completed, cancelled and past bookings stay here so you can review them whenever you need.",
   "myBookings.status.requestSent": "Request sent",
   "myBookings.status.confirmed": "Confirmed",
   "myBookings.status.declined": "Declined",

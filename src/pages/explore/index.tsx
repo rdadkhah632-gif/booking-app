@@ -9,9 +9,11 @@ import ExploreBusinessCard from '@/components/explore/ExploreBusinessCard'
 import ExploreEmptyState from '@/components/explore/ExploreEmptyState'
 import ExploreTrustSection from '@/components/explore/ExploreTrustSection'
 import { Business, BusinessCardStats, SortOption } from '@/components/explore/exploreTypes'
+import { useI18n } from '@/lib/useI18n'
 
 export default function Explore() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [search, setSearch] = useState('')
@@ -41,7 +43,7 @@ export default function Explore() {
 
     try {
       const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Mirëbook could not load marketplace results. Please refresh and try again.')), 8000)
+        setTimeout(() => reject(new Error(t('explore.empty.timeout'))), 8000)
       )
 
       const query = supabase
@@ -102,7 +104,7 @@ export default function Explore() {
       setBusinesses(normalisedBusinesses)
       setLoading(false)
     } catch (err: any) {
-      setError(err.message || 'Something went wrong while loading businesses.')
+      setError(err.message || t('explore.empty.genericError'))
       setBusinesses([])
       setLoading(false)
     }
@@ -154,14 +156,10 @@ export default function Explore() {
     return '✨'
   }
 
-  function bookingModeLabel(business: Business) {
-    return business.auto_accept_bookings === false ? 'Approval required' : 'Instant confirmation'
-  }
-
   function locationLabel(business: Business) {
     return [business.address, business.city, business.country]
       .filter(Boolean)
-      .join(', ') || 'Location details coming soon'
+      .join(', ') || t('explore.card.locationComingSoon')
   }
 
   function imageBackground(business: Business) {
@@ -285,7 +283,7 @@ export default function Explore() {
 
             {loading && (
               <div className="card">
-                <p className="muted">Loading bookable Mirëbook businesses...</p>
+                <p className="muted">{t('explore.results.loadingBookable')}</p>
               </div>
             )}
 
@@ -304,7 +302,6 @@ export default function Explore() {
                   business={business}
                   stats={getBusinessStats(business)}
                   businessIcon={businessIcon}
-                  bookingModeLabel={bookingModeLabel}
                   locationLabel={locationLabel}
                   imageBackground={imageBackground}
                 />

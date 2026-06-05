@@ -626,7 +626,7 @@ export default function MyBookings() {
           <div className="card my-bookings-command-card">
             <div>
               <p className="small muted">
-                {t("myBookings.command.kicker", "Customer booking hub")}
+                {t("myBookings.command.kicker", "Booking overview")}
               </p>
               <h2
                 style={{
@@ -653,7 +653,7 @@ export default function MyBookings() {
                 {pendingBookings.length > 0
                   ? t(
                       "myBookings.command.pendingBody",
-                      "Some booking requests are waiting for the business to approve them.",
+                      "Some booking requests are waiting for the business to confirm them.",
                     )
                   : pendingRescheduleCount > 0
                     ? t(
@@ -785,11 +785,11 @@ export default function MyBookings() {
                 kicker={t("dashboardBookings.summary.history", "History")}
                 title={t(
                   "myBookings.sections.historyTitle",
-                  "History and locked bookings",
+                  "Booking history",
                 )}
                 body={t(
                   "myBookings.sections.historyBody",
-                  "Completed, cancelled and past bookings stay here for your customer records. They cannot be changed from this page.",
+                  "Completed, cancelled and past bookings stay here so you can review them whenever you need.",
                 )}
               >
                 {historyBookings.map((booking) =>

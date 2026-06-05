@@ -105,10 +105,10 @@ export const sq: TranslationTree = {
   "common.working": "Duke punuar...",
   "common.loading": "Duke u ngarkuar...",
   "common.needHelp": "Keni nevojë për ndihmë?",
-  "home.eyebrow": "Mirëbook · treg rezervimesh live",
-  "home.title": "Rezervo shërbime lokale të besueshme me disponueshmëri reale.",
+  "home.eyebrow": "Shërbime lokale, rezervime të qarta",
+  "home.title": "Gjej shërbimin e duhur lokal dhe rezervo me siguri.",
   "home.subtitle":
-    "Mirëbook ndihmon klientët të gjejnë berberë, sallone, klinika, dentistë dhe biznese shërbimesh në Shqipëri, MB dhe tregje ndërkombëtare. Zgjidh një shërbim, një datë në kalendar, shiko oraret reale dhe rezervo menjëherë ose dërgo kërkesë miratimi sipas biznesit.",
+    "Gjej biznese lokale shërbimesh, krahaso disponueshmërinë reale dhe zgjidh orarin që të përshtatet. Çdo biznes tregon qartë nëse takimi konfirmohet menjëherë apo dërgohet si kërkesë rezervimi.",
   "home.search.servicePlaceholder":
     "Prerje flokësh, thonj, kontroll dentar, masazh...",
   "home.search.cityPlaceholder": "Tiranë, Coventry, Londër...",
@@ -116,15 +116,15 @@ export const sq: TranslationTree = {
   "home.cta.explore": "Eksploro Mirëbook",
   "home.cta.myBookings": "Rezervimet e mia",
   "home.cta.createAccount": "Krijo llogari",
-  "home.proof.availability": "✓ Disponueshmëri me kalendar inteligjent",
-  "home.proof.staff": "✓ Çdo staf ose staf specifik",
-  "home.proof.tracking": "✓ Gjurmim miratimesh dhe ndryshimesh orari",
-  "home.proof.language": "✓ Ndërrim gjuhe anglisht dhe shqip",
+  "home.proof.availability": "Orar real i disponueshëm për takime",
+  "home.proof.staff": "Zgjidh çdo staf të lirë ose një person specifik",
+  "home.proof.tracking": "Përditësime të qarta për kërkesat dhe konfirmimet",
+  "home.proof.language": "Në dispozicion në shqip dhe anglisht",
   "home.business.kicker": "Për bizneset",
   "home.business.title":
     "Menaxho biznesin tënd të shërbimeve nga një hapësirë Mirëbook.",
   "home.business.body":
-    "Ndërto profilin për klientët, shto shërbime, cakto staf, vendos oraret e punës dhe menaxho miratime, ndryshime orari dhe takime ditore nga paneli. Rezervimet e klientëve mbeten pa pagesë në momentin e rezervimit; Mirëbook po përgatitet për faturim abonimi për bizneset.",
+    "Ndërto profilin për klientët, shto shërbime, cakto staf, vendos oraret e punës dhe menaxho kërkesat, ndryshimet e orarit dhe takimet ditore nga një panel.",
   "home.business.profileTitle": "Gatishmëria e profilit",
   "home.business.profileBody":
     "Kontrollo shërbimet, stafin, oraret dhe statusin e publikimit.",
@@ -148,57 +148,58 @@ export const sq: TranslationTree = {
   "home.customers.kicker": "Klientët",
   "home.customers.title": "Rezervo dhe gjurmo takimet",
   "home.customers.body":
-    "Shfleto biznese të rezervueshme, zgjidh një shërbim, zgjidh nga oraret reale, zgjidh çdo staf të disponueshëm ose një staf specifik dhe gjurmo çdo takim nga llogaria jote. Klientët nuk paguajnë Mirëbook për të rezervuar takime.",
+    "Shfleto biznese të rezervueshme, zgjidh një shërbim, zgjidh nga oraret reale, zgjidh çdo staf të disponueshëm ose një person specifik dhe gjurmo çdo takim nga llogaria jote.",
   "home.customers.explore": "Eksploro tregun",
   "home.customers.notifications": "Njoftime",
   "home.businesses.kicker": "Bizneset",
   "home.businesses.title": "Kontrollo si pranohen rezervimet",
   "home.businesses.body":
-    "Përdor konfirmim të menjëhershëm për rrjedha të thjeshta ose miratim manual kur dëshiron të shqyrtosh çdo kërkesë rezervimi. Mirëbook ndan rezervimet në pritje, të konfirmuara, të ndryshuara, të përfunduara dhe të anuluara, ndërsa faturimi i biznesit qëndron veçmas nga rezervimi i takimeve.",
+    "Përdor konfirmim të menjëhershëm për rrjedha të thjeshta ose miratim manual kur dëshiron të shqyrtosh çdo kërkesë rezervimi. Mirëbook i ndan qartë rezervimet në pritje, të konfirmuara, të ndryshuara, të përfunduara dhe të anuluara.",
   "home.businesses.dashboard": "Paneli i biznesit",
   "home.businesses.setup": "Konfiguro profilin",
-  "home.growth.kicker": "Ndërtuar për rritje ndërkombëtare",
-  "home.growth.title": "Fillo lokalisht, zgjero në qytete të tjera.",
+  "home.growth.kicker": "Krijuar për biznese lokale shërbimesh",
+  "home.growth.title":
+    "I thjeshtë për një vendndodhje, gati për një ekip në rritje.",
   "home.growth.body":
-    "Mirëbook është krijuar për ofrues shërbimesh të pavarur dhe ekipe në rritje në Shqipëri, MB dhe tregje ndërkombëtare. Rrjedhat publike të rezervimit mbështesin anglisht dhe shqip, me më shumë përmirësime rajonale të planifikuara.",
+    "Mirëbook u jep ofruesve të pavarur dhe ekipeve në rritje një mënyrë të qartë për të publikuar shërbimet, organizuar disponueshmërinë e stafit dhe mbajtur klientët të informuar.",
   "home.growth.customerTitle": "Gjej shpejt disponueshmëri reale",
   "home.growth.customerBody":
-    "Kërko sipas shërbimit ose qytetit, krahaso bizneset e rezervueshme dhe zgjidh një orar që përshtatet me disponueshmërinë e stafit, pa pagesë nga klienti.",
+    "Kërko sipas shërbimit ose qytetit, krahaso bizneset e rezervueshme dhe zgjidh një orar që përshtatet me disponueshmërinë e stafit.",
   "home.growth.businessTitle": "Lançim pa administrim të çrregullt",
   "home.growth.businessBody":
-    "Shto shërbime, staf dhe orare pune, pastaj publiko një profil nga ku klientët mund të rezervojnë direkt. Kontrollet e abonimit dhe faturimit qëndrojnë në panelin e biznesit.",
+    "Shto shërbime, staf dhe orare pune, pastaj publiko një profil nga ku klientët mund të rezervojnë direkt.",
   "home.growth.teamKicker": "Për ekipet",
   "home.growth.teamTitle": "Mbaje çdo takim të qartë",
   "home.growth.teamBody":
     "Gjurmo miratimet në pritje, takimet e konfirmuara, kërkesat për ndryshim orari dhe rezervimet e përfunduara në një vend.",
-  "home.trust.kicker": "Besim dhe gatishmëri për lançim",
-  "home.trust.title": "Ndërtuar për onboarding real, jo vetëm demo.",
+  "home.trust.kicker": "Besim në çdo hap",
+  "home.trust.title": "Informacion i qartë para dhe pas çdo rezervimi.",
   "home.trust.body":
-    "Mirëbook po ndërtohet rreth konfigurimit të biznesit, qartësisë për klientët, rrjedhave të stafit, faqeve të ndihmës dhe gatishmërisë së ardhshme për app store.",
-  "home.trust.modelKicker": "Model biznesi",
-  "home.trust.modelTitle": "Faturim me abonim për bizneset",
+    "Mënyra e rezervimit, statusi i takimit, ndihma dhe të dhënat e llogarisë janë të lehta për t’u gjetur gjatë gjithë rrugëtimit të klientit.",
+  "home.trust.modelKicker": "Qartësia e rezervimit",
+  "home.trust.modelTitle": "Fokus te takimi",
   "home.trust.modelBody":
-    "Klientët rezervojnë takime përmes Mirëbook, ndërsa bizneset më vonë do të paguajnë abonim mujor për përdorimin e platformës.",
+    "Shiko së bashku shërbimin, stafin, orarin dhe statusin e rezervimit para se ta dërgosh.",
   "home.trust.billing": "Bazat e faturimit",
   "home.trust.supportKicker": "Ndihmë",
   "home.trust.supportTitle": "Ndihmë për klientë, biznese dhe staf",
   "home.trust.supportBody":
-    "Faqet e ndihmës shpjegojnë qartë gjendjet e rezervimit, aksesin e stafit, konfigurimin e biznesit dhe modelin aktual të pagesës.",
+    "Ndihma sipas rolit i ndihmon klientët, bizneset dhe stafin të gjejnë shpejt udhëzimin e duhur.",
   "home.trust.supportCentre": "Qendra e ndihmës",
   "home.trust.legalKicker": "Bazat ligjore",
-  "home.trust.legalTitle": "Themelet e privatësisë dhe kushteve",
+  "home.trust.legalTitle": "Privatësia dhe kushtet",
   "home.trust.legalBody":
-    "Faqet fillestare të privatësisë dhe kushteve janë vendosur për testim të hershëm dhe duhet të rishikohen para lançimit publik.",
+    "Shiko si i trajton Mirëbook përdorimin e platformës dhe informacionet personale.",
 
   "explore.hero.kicker": "Tregu Mirëbook",
   "explore.hero.title": "Gjej dhe rezervo shërbime lokale",
   "explore.hero.subtitle":
-    "Shfleto biznese Mirëbook me shërbime aktive të caktuara te staf aktiv dhe orare pune të disponueshme. Zgjidh shërbimin dhe orarin, pastaj dërgo kërkesë ose merr konfirmim të menjëhershëm.",
+    "Shfleto biznese lokale me shërbime, staf dhe orare takimesh gati për rezervim. Çdo profil tregon qartë nëse biznesi konfirmon menjëherë apo shqyrton kërkesat fillimisht.",
   "explore.badge.availability": "Rezervim sipas disponueshmërisë",
   "explore.badge.noCheckout": "Pa pagesë nga klienti tani për tani",
   "explore.filters.title": "Kërko biznese të rezervueshme",
   "explore.filters.subtitle":
-    "Kërko biznese që janë aktualisht të rezervueshme në Mirëbook. Explore shfaq vetëm biznese të publikuara me shërbim aktiv të caktuar te staf aktiv dhe orare pune të disponueshme.",
+    "Kërko sipas biznesit, shërbimit, kategorisë ose qytetit. Çdo rezultat këtu ka shërbime, staf dhe disponueshmëri gati për klientët.",
   "explore.filters.search": "Kërko",
   "explore.filters.category": "Kategori",
   "explore.filters.city": "Qytet",
@@ -219,13 +220,23 @@ export const sq: TranslationTree = {
   "explore.results.loading": "Duke ngarkuar bizneset...",
   "explore.results.clearCurrent": "Pastro filtrat aktualë",
   "explore.results.listBusiness": "Shto biznesin tënd",
+  "explore.results.loadingBookable":
+    "Duke ngarkuar bizneset e disponueshme...",
+  "explore.stats.bookableBusiness": "biznes i rezervueshëm",
+  "explore.stats.bookableBusinesses": "biznese të rezervueshme",
+  "explore.stats.city": "qytet",
+  "explore.stats.cities": "qytete",
   "explore.empty.title": "Nuk ka ende biznese aktive",
   "explore.empty.body":
-    "Bizneset shfaqen këtu pasi publikohen dhe kanë shërbime aktive, staf aktiv dhe orare pune. Klientët mund të shfletojnë dhe të kërkojnë takime pa pagesë në Mirëbook.",
+    "Bizneset e reja do të shfaqen këtu sapo shërbimet, stafi dhe oraret e takimeve të jenë gati për klientët.",
   "explore.empty.errorTitle": "Rezultatet e tregut nuk u ngarkuan",
   "explore.empty.errorBody":
     "Rifresko tregun ose kontakto ndihmën për klientë nëse kjo vazhdon.",
   "explore.empty.retryMarketplace": "Provo tregun përsëri",
+  "explore.empty.timeout":
+    "Mirëbook nuk mundi të ngarkojë rezultatet. Rifresko faqen dhe provo përsëri.",
+  "explore.empty.genericError":
+    "Ndodhi një problem gjatë ngarkimit të bizneseve.",
   "explore.empty.noBookableTitle": "Nuk ka ende biznese të rezervueshme",
   "explore.empty.addFirstBusiness": "Shto biznesin e parë",
   "explore.empty.noResultsTitle": "Asnjë biznes nuk përputhet me filtrat",
@@ -234,7 +245,7 @@ export const sq: TranslationTree = {
   "explore.card.approvalRequired": "Kërkon miratim",
   "explore.card.instantConfirmation": "Konfirmim i menjëhershëm",
   "explore.card.fallbackDescription":
-    "Rezervo shërbime të disponueshme përmes Mirëbook. Klientët mund të kërkojnë ose konfirmojnë takime pa pagesë në Mirëbook.",
+    "Shiko shërbimet e disponueshme, zgjidh stafin dhe gjej një orar që të përshtatet.",
   "explore.card.bookable": "I rezervueshëm në Mirëbook",
   "explore.card.appointmentBooking": "Rezervim takimi",
   "explore.card.availabilitySet": "Disponueshmëria është vendosur",
@@ -242,25 +253,36 @@ export const sq: TranslationTree = {
   "explore.card.bookNow": "Rezervo tani",
   "explore.card.locationComingSoon":
     "Detajet e vendndodhjes do të shtohen së shpejti",
+  "explore.categories.barbers": "Berberë",
+  "explore.categories.salons": "Sallone",
+  "explore.categories.nails": "Thonj",
+  "explore.categories.tattoos": "Tatuazhe",
+  "explore.categories.petGrooming": "Kujdes për kafshët",
+  "explore.categories.fitness": "Fitnes",
+  "explore.categories.dental": "Dentistë",
+  "explore.categories.activities": "Aktivitete",
+  "explore.categories.experiences": "Eksperienca",
+  "explore.categories.appointments": "Takime",
   "explore.trust.customerKicker": "Për klientët",
-  "explore.trust.customerTitle": "Rezervo pa pengesa pagese",
+  "explore.trust.customerTitle": "Dije çfarë ndodh më pas",
   "explore.trust.customerBody":
-    "Mirëbook ndihmon klientët të kërkojnë ose konfirmojnë takime. Pagesat/depozitat nuk janë pjesë e rrjedhës aktuale të rezervimit.",
+    "Çdo profil tregon nëse rezervimi konfirmohet menjëherë apo dërgohet te biznesi për shqyrtim.",
   "explore.trust.businessKicker": "Për bizneset",
-  "explore.trust.businessTitle": "Pagesa e biznesit është e veçantë",
+  "explore.trust.businessTitle":
+    "Profile të bazuara në disponueshmëri reale",
   "explore.trust.businessBody":
-    "Kontrollet e abonimit të biznesit janë të ndara nga rruga e rezervimit të klientit, që rezervimi publik të mbetet i fokusuar te takimet.",
+    "Bizneset publikojnë shërbimet, caktojnë stafin dhe vendosin oraret para se të shfaqen si të rezervueshme.",
   "explore.trust.billing": "Bazat e faturimit",
   "explore.trust.supportKicker": "Ndihmë dhe besim",
-  "explore.trust.supportTitle": "Themele të qarta për lançim",
+  "explore.trust.supportTitle": "Ndihmë kur të duhet",
   "explore.trust.supportBody":
-    "Faqet e ndihmës, privatësisë dhe kushteve janë vendosur për testim të hershëm dhe duhet të rishikohen para lançimit publik.",
+    "Ndihma për klientin, informacioni i privatësisë dhe kushtet e platformës arrihen lehtë nga rrjedha e rezervimit.",
 
   "publicBusiness.hero.bookableBusiness": "Biznes i rezervueshëm",
   "publicBusiness.hero.availabilitySlots": "Orar sipas disponueshmërisë",
   "publicBusiness.hero.noCheckout": "Pa pagesë nga klienti tani për tani",
   "publicBusiness.hero.fallbackDescription":
-    "Rezervo takime të disponueshme përmes Mirëbook. Klientët mund të kërkojnë ose konfirmojnë takime pa pagesë në Mirëbook.",
+    "Zgjidh një shërbim, anëtar stafi dhe orar të disponueshëm përmes Mirëbook.",
   "publicBusiness.hero.location": "Vendndodhja",
   "publicBusiness.hero.phone": "Telefoni",
   "publicBusiness.hero.bookingMode": "Mënyra e rezervimit",
@@ -386,8 +408,8 @@ export const sq: TranslationTree = {
   "support.staff.body":
     "Merrni ndihmë për lidhjen e llogarisë së stafit, aksesin në orar, disponueshmërinë ose lidhjen me biznesin e gabuar.",
 
-  "myBookings.kicker": "Paneli i klientit Mirëbook",
-  "myBookings.title": "Rezervimet e mia në Mirëbook",
+  "myBookings.kicker": "Takimet e tua",
+  "myBookings.title": "Rezervimet e mia",
   "myBookings.signedInAs": "Hyrë si",
   "myBookings.subtitle": "Shiko dhe menaxho takimet e tua në Mirëbook.",
   "myBookings.requestSent.kicker": "Kërkesa u dërgua",
@@ -469,8 +491,8 @@ export const sq: TranslationTree = {
   "myBookings.card.pastRecord": "Rekord i një takimi të kaluar",
   "myBookings.card.lockedBody":
     "Ky rezervim nuk mund të ndryshohet ose anulohet më.",
-  "notifications.kicker": "Njoftimet e klientit Mirëbook",
-  "notifications.title": "Njoftimet e klientit",
+  "notifications.kicker": "Përditësime rezervimesh",
+  "notifications.title": "Njoftimet",
   "notifications.subtitle":
     "Gjurmo miratimet e rezervimeve, vendimet për ndryshim orari dhe përditësimet e takimeve.",
   "notifications.refreshing": "Duke rifreskuar...",
@@ -481,7 +503,7 @@ export const sq: TranslationTree = {
   "notifications.allRead": "Të gjitha të lexuara",
   "notifications.refreshHint":
     "Mirëbook e rifreskon këtë faqe kur kthehesh në këtë tab. Përdor rifreskimin nëse një përditësim i fundit nuk shfaqet menjëherë.",
-  "notifications.stats.waitingApproval": "Kërkesa u dërgua",
+  "notifications.stats.waitingApproval": "Kërkesa në proces",
   "notifications.stats.waitingBody":
     "Kërkesa rezervimi dhe ndryshimi orari që presin veprim nga biznesi",
   "notifications.stats.history": "Historia",
@@ -495,7 +517,7 @@ export const sq: TranslationTree = {
   "notifications.inbox.kicker": "Inbox i njoftimeve",
   "notifications.inbox.title": "Përditësimet e fundit nga Mirëbook",
   "notifications.inbox.body":
-    "Këto janë njoftime reale të krijuara nga aktiviteti i rezervimeve dhe ndryshimeve të orarit.",
+    "Përditësimet e fundit për rezervimet, orarin dhe ndihmën shfaqen këtu.",
   "notifications.readStatus.read": "Lexuar",
   "notifications.readStatus.unread": "Pa lexuar",
   "notifications.recently": "Së fundmi",
@@ -559,6 +581,7 @@ export const sq: TranslationTree = {
   "bookingConfirmation.actions.trackRequest": "Gjurmo kërkesën e rezervimit",
   "bookingConfirmation.actions.manageBooking":
     "Shiko ose menaxho këtë rezervim",
+  "bookingConfirmation.actions.backToBusiness": "Kthehu te biznesi",
   "bookingConfirmation.actions.explore": "Eksploro Mirëbook",
   "bookingConfirmation.actions.businessBookings": "Rezervimet e biznesit",
   "bookingConfirmation.note.pendingTitle": "Kërkesa u dërgua",
@@ -2015,12 +2038,12 @@ export const sq: TranslationTree = {
   "dashboardHome.ownerStaffNote.body":
     "Mund ta menaxhosh biznesin si pronar pa qenë i rezervueshëm. Nëse merr edhe takime, shto veten si staf, cakto shërbimet dhe vendos orarin tënd.",
   "dashboardHome.ownerStaffNote.cta": "Menaxho konfigurimin e stafit",
-  "myBookings.command.kicker": "Qendra e rezervimeve të klientit",
+  "myBookings.command.kicker": "Përmbledhja e rezervimeve",
   "myBookings.command.actionTitle": "Ke përditësime rezervimesh për të ndjekur",
   "myBookings.command.nextTitle": "Takimi yt i radhës po afron",
   "myBookings.command.historyTitle": "Rezervimet e tua janë të përditësuara",
   "myBookings.command.pendingBody":
-    "Disa kërkesa rezervimi po presin miratim nga biznesi.",
+    "Disa kërkesa rezervimi po presin konfirmim nga biznesi.",
   "myBookings.command.changeBody":
     "Ke kërkuar ndryshime rezervimi që presin miratim nga biznesi.",
   "myBookings.command.noActiveBody":
@@ -2029,6 +2052,9 @@ export const sq: TranslationTree = {
   "myBookings.command.viewUpcoming": "Shiko të ardhshmet",
   "myBookings.command.viewHistory": "Shiko historikun",
   "myBookings.command.bookAgain": "Rezervo një shërbim tjetër",
+  "myBookings.sections.historyTitle": "Historia e rezervimeve",
+  "myBookings.sections.historyBody":
+    "Rezervimet e përfunduara, të anuluara dhe të kaluara qëndrojnë këtu që t’i shikosh kur të duash.",
   "myBookings.status.requestSent": "Kërkesa u dërgua",
   "myBookings.status.confirmed": "Konfirmuar",
   "myBookings.status.declined": "Refuzuar",

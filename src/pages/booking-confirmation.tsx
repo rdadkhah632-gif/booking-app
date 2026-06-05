@@ -621,6 +621,18 @@ export default function BookingConfirmation() {
                 {t("nav.notifications", "Notifications")}
               </Link>
 
+              {booking.business_id && (
+                <Link
+                  href={`/explore/${booking.business_id}`}
+                  className="btn btn-ghost"
+                >
+                  {t(
+                    "bookingConfirmation.actions.backToBusiness",
+                    "Back to business",
+                  )}
+                </Link>
+              )}
+
               <Link href="/explore" className="btn btn-ghost">
                 {t("bookingConfirmation.actions.explore", "Explore Mirëbook")}
               </Link>

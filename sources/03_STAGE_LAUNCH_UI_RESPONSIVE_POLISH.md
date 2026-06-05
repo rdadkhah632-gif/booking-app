@@ -112,6 +112,50 @@ Manual authenticated QA remaining:
 - Verify staff calendar scrolling, availability forms and notifications with a linked staff account.
 - Verify owner-as-staff navigation exposes both business and personal staff destinations.
 
+## Batch 2 - Public and Customer Trust Polish
+
+Status: implementation complete, ready for manual authenticated QA.
+
+Objective:
+
+Make the public and customer-facing journey feel clear, trustworthy and launch-ready without changing booking, account or marketplace eligibility logic.
+
+Implemented:
+
+- Reworked homepage copy around customer confidence, real availability and clear booking outcomes.
+- Added direct support, privacy and terms links to the homepage trust section.
+- Removed prototype-style billing, checkout and early-testing language from the touched public surfaces.
+- Translated remaining Explore loading, error, empty, filter-action, result-count and category labels in EN and SQ.
+- Simplified Explore business cards to one clear booking CTA and one booking-mode label.
+- Preserved the existing Explore listing rules and the `Availability set` signal.
+- Reduced repeated booking-mode messaging on the public business page while keeping request and instant-confirmation behavior clear.
+- Added a translated `Back to business` action to booking confirmation when a business ID is available.
+- Simplified customer My Bookings headings and history copy without adding or changing booking actions.
+- Reframed customer notifications as understandable booking updates rather than internal notification records.
+- Confirmed the existing stale-slot error already provides an explicit user-facing message, so no slot or insert logic was changed.
+
+Automated verification:
+
+- `npm run build` passed.
+- `git diff --check` passed.
+- EN and SQ translation dictionaries contain no duplicate keys.
+- Prettier is not installed in the local workspace.
+
+Browser verification:
+
+- Homepage trust copy and CTA hierarchy render without horizontal overflow at 1280px and 390px.
+- Explore loads four current bookable businesses with translated counts, clearer cards and no page-level horizontal overflow at 390px.
+- Public business profile renders with one booking-mode explanation and a contained mobile booking summary.
+- Albanian public booking-mode copy renders correctly after switching language.
+- No browser console-facing layout failure or visible error appeared on the checked public routes.
+
+Manual authenticated QA remaining:
+
+- Verify request-sent and confirmed booking confirmation states with real customer bookings.
+- Verify My Bookings pending, upcoming and history sections with populated customer data.
+- Verify customer notifications with unread, resolved, booking and support records.
+- Confirm the `Back to business` action returns to the correct public profile from a real booking.
+
 ## Known Follow-Ups
 
 - Older mixed English and Albanian strings may remain outside the active Stage 3 surfaces.
