@@ -156,6 +156,12 @@ export default function Explore() {
     return '✨'
   }
 
+  function bookingModeLabel(business: Business) {
+    return business.auto_accept_bookings === false
+      ? t('explore.card.approvalRequired')
+      : t('explore.card.instantConfirmation')
+  }
+
   function locationLabel(business: Business) {
     return [business.address, business.city, business.country]
       .filter(Boolean)
@@ -302,6 +308,7 @@ export default function Explore() {
                   business={business}
                   stats={getBusinessStats(business)}
                   businessIcon={businessIcon}
+                  bookingModeLabel={bookingModeLabel}
                   locationLabel={locationLabel}
                   imageBackground={imageBackground}
                 />
