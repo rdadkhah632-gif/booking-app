@@ -565,14 +565,17 @@ export default function Businesses() {
               <strong>{t('dashboardBusinesses.setupHub.availability', 'Availability')}</strong>
               <span>{t('dashboardBusinesses.setupHub.availabilityBody', 'Set the days and hours customers can book.')}</span>
             </a>
+          </div>
 
-            <a href={`/explore/${businesses[0].id}`} className="business-setup-card">
-              <strong>{t('dashboardBusinesses.profileTools.preview', 'Preview public page')}</strong>
-              <span>{t('dashboardBusinesses.setupHub.previewBody', 'See what customers see before you share your page.')}</span>
+          <div className="business-setup-support-row">
+            <span className="small muted">
+              {t('dashboardBusinesses.setupHub.secondaryActions', 'Preview and support')}
+            </span>
+            <a href={`/explore/${businesses[0].id}`}>
+              {t('dashboardBusinesses.profileTools.preview', 'Preview public page')}
             </a>
-            <a href="/support/business" className="business-setup-card">
-              <strong>{t('dashboardBusinesses.create.requestAnother', 'Request another business')}</strong>
-              <span>{t('dashboardBusinesses.setupHub.requestBody', 'Ask support to add another location or profile.')}</span>
+            <a href="/support/business">
+              {t('dashboardBusinesses.create.requestAnother', 'Request another business')}
             </a>
           </div>
         </div>
@@ -800,6 +803,12 @@ export default function Businesses() {
           color: var(--accent);
           text-decoration: none;
           font-weight: 700;
+        }
+
+        .business-setup-support-row a + a::before {
+          content: "·";
+          margin-right: 0.5rem;
+          color: var(--text-muted);
         }
 
         @media (max-width: 700px) {

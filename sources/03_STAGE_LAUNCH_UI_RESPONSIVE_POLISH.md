@@ -48,7 +48,7 @@ Do not add or redesign:
 
 ## Batch 1 - Mobile Responsive Polish
 
-Status: implementation complete, ready for manual authenticated QA.
+Status: PASS.
 
 Objective:
 
@@ -114,7 +114,7 @@ Manual authenticated QA remaining:
 
 ## Batch 2 - Public and Customer Trust Polish
 
-Status: implementation complete, ready for manual authenticated QA.
+Status: PASS with completed translation follow-up.
 
 Objective:
 
@@ -155,6 +155,63 @@ Manual authenticated QA remaining:
 - Verify My Bookings pending, upcoming and history sections with populated customer data.
 - Verify customer notifications with unread, resolved, booking and support records.
 - Confirm the `Back to business` action returns to the correct public profile from a real booking.
+
+Batch 2 translation follow-up:
+
+- Albanian Explore no-results title, guidance, search button, search placeholder and clear-filter controls now render through the translation dictionaries.
+- No Explore eligibility, filtering or card logic changed.
+
+## Batch 3 - Business Workspace Polish
+
+Status: implementation complete, ready for manual authenticated QA.
+
+Objective:
+
+Make the business owner workspace calmer, easier to scan and more operational without changing booking actions, readiness rules, account capabilities or data behavior.
+
+Implemented:
+
+- Rebalanced the dashboard summary around today, customer actions and recent activity.
+- Kept urgent booking and reschedule requests prominent while removing the less actionable revenue summary from the main overview.
+- Separated core setup tasks from secondary preview and support links in the business setup hub.
+- Preserved all profile, service, staff, availability and publishing readiness calculations.
+- Made booking action controls a consistent vertical group and corrected the locked-card presentation block.
+- Reduced duplicate service and staff status pills while keeping detailed assignment, account-link and availability information visible.
+- Added clearer visual emphasis to service bookability state.
+- Changed business availability to a two-column desktop layout with a single-column mobile layout and removed unnecessary fixed card height.
+- Simplified the business settings section heading and customer-policy wording without changing settings behavior.
+- Replaced prototype-like notification record wording with clearer operational copy.
+- Kept existing mobile stacking behavior for cards and action controls.
+
+Intentionally unchanged:
+
+- Billing, subscriptions and Stripe surfaces.
+- Dashboard analytics logic and data.
+- Booking accept, decline, cancel, complete and reschedule handlers.
+- Business readiness, publishing and Explore listing rules.
+- Staff invite, account-linking and owner-as-staff behavior.
+- Database, RLS, authentication and routing logic.
+
+Automated verification:
+
+- `npm run build` passed.
+- `git diff --check` passed.
+- EN and SQ translation dictionaries contain no duplicate keys.
+- Prettier is not installed in the local workspace.
+
+Browser verification:
+
+- Albanian Explore no-results state and search controls render correctly at 390px with no horizontal overflow.
+- Dashboard, businesses, bookings, services, staff, availability, settings and business notifications retain protected unauthenticated redirects to login.
+
+Manual authenticated QA remaining:
+
+- Verify dashboard summary counts and urgent-action navigation with a business owner account.
+- Verify setup hub readiness states and secondary preview/support links.
+- Verify pending, confirmed and historical booking cards with real data.
+- Verify service and staff cards across active, hidden, linked, invited and incomplete states.
+- Verify two-column availability editing and save feedback on desktop, plus single-column mobile behavior.
+- Verify settings forms and business notifications with populated records.
 
 ## Known Follow-Ups
 

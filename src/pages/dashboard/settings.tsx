@@ -239,10 +239,10 @@ export default function DashboardSettingsPage() {
       title={t("dashboardSettings.pageTitle", "Business settings")}
       subtitle={
         selectedBusiness
-          ? `${t("dashboardSettings.subtitleSelected", "Control booking approval, rules, policies and billing for")} ${selectedBusiness.name}.`
+          ? `${t("dashboardSettings.subtitleSelected", "Control booking approval, rules and customer policies for")} ${selectedBusiness.name}.`
           : t(
               "dashboardSettings.subtitle",
-              "Control booking approval, rules, policies and billing.",
+              "Control booking approval, rules and customer policies.",
             )
       }
     >
@@ -343,9 +343,6 @@ export default function DashboardSettingsPage() {
           )}
 
           <div className="settings-section-heading">
-            <p className="small muted">
-              {t("dashboardSettings.bookingSection.kicker", "Booking settings")}
-            </p>
             <h2>
               {t(
                 "dashboardSettings.bookingSection.title",
@@ -469,12 +466,13 @@ export default function DashboardSettingsPage() {
 
       <style jsx>{`
         .settings-section-heading {
-          margin: 1.25rem 0 0.75rem;
+          margin: 1.5rem 0 0.85rem;
+          padding-top: 0.25rem;
         }
 
         .settings-section-heading h2 {
           font-family: var(--font-display);
-          margin-top: 0.25rem;
+          margin-top: 0;
         }
         .settings-hero {
           display: flex;

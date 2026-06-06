@@ -191,7 +191,7 @@ export const en: TranslationTree = {
   "explore.empty.addFirstBusiness": "Add the first business",
   "explore.empty.noResultsTitle": "No businesses match your filters",
   "explore.empty.noResultsBody":
-    "Try changing your search, category or city filter, or clear filters to view all currently bookable businesses.",
+    "Change your search, category or city to find more services.",
   "explore.card.approvalRequired": "Approval required",
   "explore.card.instantConfirmation": "Instant confirmation",
   "explore.card.fallbackDescription":
@@ -845,6 +845,7 @@ export const en: TranslationTree = {
     "See what customers see before you share your page.",
   "dashboardBusinesses.setupHub.requestBody":
     "Ask support to add another location or profile.",
+  "dashboardBusinesses.setupHub.secondaryActions": "Preview and support",
   "dashboardBusinesses.setupHub.extraBusinessHint":
     "Need another business or location?",
   "dashboardBusinesses.profileTools.preview": "Preview public page",
@@ -1542,7 +1543,7 @@ export const en: TranslationTree = {
     "Items needing business review",
   "dashboardNotifications.summary.unreadUpdates": "Unread updates",
   "dashboardNotifications.summary.unreadUpdatesBody":
-    "Real Mirëbook notification records",
+    "Booking and account updates not read yet",
   "dashboardNotifications.loading": "Loading Mirëbook notifications...",
   "dashboardNotifications.empty.title": "No pending actions",
   "dashboardNotifications.empty.body":
@@ -1552,7 +1553,7 @@ export const en: TranslationTree = {
   "dashboardNotifications.inbox.kicker": "Notification inbox",
   "dashboardNotifications.inbox.title": "Recent business updates",
   "dashboardNotifications.inbox.body":
-    "These are real Mirëbook notification rows for your business account.",
+    "Recent booking, customer and support updates for this business.",
   "dashboardNotifications.inbox.recently": "Recently",
   "dashboardNotifications.actions.open": "Open",
   "dashboardNotifications.actions.markRead": "Mark read",

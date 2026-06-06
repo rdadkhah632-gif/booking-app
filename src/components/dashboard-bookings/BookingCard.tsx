@@ -391,8 +391,28 @@ export default function BookingCard({
         }
 
         .booking-manager-actions {
+          min-width: 190px;
+          flex-direction: column;
           align-items: flex-start;
           justify-content: flex-end;
+        }
+
+        .booking-manager-actions :global(.btn),
+        .booking-manager-actions button,
+        .booking-manager-actions a {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .booking-action-hint {
+          display: grid;
+          gap: 0.35rem;
+          padding: 0.8rem;
+          max-width: 240px;
+        }
+
+        .booking-action-hint p {
+          margin-top: 0;
         }
 
         @media (max-width: 700px) {
@@ -410,7 +430,9 @@ export default function BookingCard({
             width: 100%;
             justify-content: center;
           }
-booking-locked-card {
+        }
+
+        .booking-locked-card {
           display: grid;
           gap: 0.45rem;
           padding: 0.85rem;
@@ -419,6 +441,14 @@ booking-locked-card {
 
         .booking-locked-card p {
           margin-top: 0;
+        }
+
+        @media (max-width: 700px) {
+          .booking-locked-card,
+          .booking-action-hint {
+            max-width: none;
+            width: 100%;
+          }
         }
       `}</style>
     </div>

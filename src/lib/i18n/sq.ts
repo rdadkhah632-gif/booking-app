@@ -241,7 +241,7 @@ export const sq: TranslationTree = {
   "explore.empty.addFirstBusiness": "Shto biznesin e parë",
   "explore.empty.noResultsTitle": "Asnjë biznes nuk përputhet me filtrat",
   "explore.empty.noResultsBody":
-    "Provo të ndryshosh kërkimin, kategorinë ose qytetin, ose pastro filtrat për të parë të gjitha bizneset e rezervueshme.",
+    "Ndrysho kërkimin, kategorinë ose qytetin për të gjetur më shumë shërbime.",
   "explore.card.approvalRequired": "Kërkon miratim",
   "explore.card.instantConfirmation": "Konfirmim i menjëhershëm",
   "explore.card.fallbackDescription":
@@ -1563,7 +1563,7 @@ export const sq: TranslationTree = {
     "Artikuj që kërkojnë shqyrtim nga biznesi",
   "dashboardNotifications.summary.unreadUpdates": "Përditësime të palexuara",
   "dashboardNotifications.summary.unreadUpdatesBody":
-    "Rekorde reale njoftimesh Mirëbook",
+    "Përditësime rezervimesh dhe llogarie ende të palexuara",
   "dashboardNotifications.loading": "Duke ngarkuar njoftimet Mirëbook...",
   "dashboardNotifications.empty.title": "Nuk ka veprime në pritje",
   "dashboardNotifications.empty.body":
@@ -1573,7 +1573,7 @@ export const sq: TranslationTree = {
   "dashboardNotifications.inbox.kicker": "Kutia e njoftimeve",
   "dashboardNotifications.inbox.title": "Përditësime të fundit biznesi",
   "dashboardNotifications.inbox.body":
-    "Këto janë rekorde reale njoftimesh Mirëbook për llogarinë tënde të biznesit.",
+    "Përditësimet e fundit për rezervimet, klientët dhe ndihmën e këtij biznesi.",
   "dashboardNotifications.inbox.recently": "Së fundmi",
   "dashboardNotifications.actions.open": "Hap",
   "dashboardNotifications.actions.markRead": "Shëno si lexuar",
@@ -1794,6 +1794,7 @@ export const sq: TranslationTree = {
     "Shiko çfarë shohin klientët para se ta shpërndash faqen.",
   "dashboardBusinesses.setupHub.requestBody":
     "Kërko ndihmë për të shtuar një lokacion ose profil tjetër.",
+  "dashboardBusinesses.setupHub.secondaryActions": "Pamje dhe ndihmë",
   "dashboardBusinesses.setupHub.extraBusinessHint":
     "Të duhet një biznes ose lokacion tjetër?",
   "dashboardBusinesses.profileTools.preview": "Paraqit faqen publike",

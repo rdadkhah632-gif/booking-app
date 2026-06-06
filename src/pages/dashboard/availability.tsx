@@ -331,6 +331,7 @@ export default function Availability() {
         .availability-day-list {
           display: grid;
           gap: 0.75rem;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .availability-save-actions {
@@ -342,6 +343,10 @@ export default function Availability() {
         }
 
         @media (max-width: 760px) {
+          .availability-day-list {
+            grid-template-columns: 1fr;
+          }
+
           .availability-save-actions,
           .availability-save-actions :global(.btn),
           .availability-save-actions button,

@@ -1251,7 +1251,7 @@ export default function BusinessNotifications() {
           <p className="muted small">
             {t(
               "dashboardNotifications.summary.unreadUpdatesBody",
-              "Real Mirëbook notification records",
+              "Booking and account updates not read yet",
             )}
           </p>
         </div>
@@ -1327,7 +1327,7 @@ export default function BusinessNotifications() {
             <p className="muted small" style={{ marginTop: "0.35rem" }}>
               {t(
                 "dashboardNotifications.inbox.body",
-                "These are live business account notifications from bookings, approvals and customer actions.",
+                "Recent booking, customer and support updates for this business.",
               )}
             </p>
           </div>
