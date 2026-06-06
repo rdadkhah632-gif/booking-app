@@ -159,6 +159,7 @@ Manual authenticated QA remaining:
 Batch 2 translation follow-up:
 
 - Albanian Explore no-results title, guidance, search button, search placeholder and clear-filter controls now render through the translation dictionaries.
+- Accepted follow-up resolved: the no-results guidance now directs customers to change or clear filters, and the Albanian search placeholder reads `Kërko në Mirëbook`.
 - No Explore eligibility, filtering or card logic changed.
 
 ## Batch 3 - Business Workspace Polish

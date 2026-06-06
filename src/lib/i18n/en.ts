@@ -164,7 +164,7 @@ export const en: TranslationTree = {
   "explore.sort.name": "Business name",
   "explore.sort.city": "City",
   "explore.sort.services": "Most services",
-  "explore.search.placeholder": "Business, service, city...",
+  "explore.search.placeholder": "Search Mirëbook",
   "explore.category.placeholder": "Barber, nails, salon...",
   "explore.city.placeholder": "Tirana, Coventry, Milan...",
   "explore.results.kicker": "Mirëbook marketplace",
@@ -192,7 +192,7 @@ export const en: TranslationTree = {
   "explore.empty.addFirstBusiness": "Add the first business",
   "explore.empty.noResultsTitle": "No businesses match your filters",
   "explore.empty.noResultsBody":
-    "Change your search, category or city to find more services.",
+    "Try changing your search, category or city filter, or clear filters to view all currently bookable businesses.",
   "explore.card.approvalRequired": "Approval required",
   "explore.card.instantConfirmation": "Instant confirmation",
   "explore.card.fallbackDescription":

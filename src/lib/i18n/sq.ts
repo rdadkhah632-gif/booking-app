@@ -212,7 +212,7 @@ export const sq: TranslationTree = {
   "explore.sort.name": "Emri i biznesit",
   "explore.sort.city": "Qyteti",
   "explore.sort.services": "Më shumë shërbime",
-  "explore.search.placeholder": "Biznes, shërbim, qytet...",
+  "explore.search.placeholder": "Kërko në Mirëbook",
   "explore.category.placeholder": "Berber, thonj, sallon...",
   "explore.city.placeholder": "Tiranë, Coventry, Milano...",
   "explore.results.kicker": "Tregu Mirëbook",
@@ -241,7 +241,7 @@ export const sq: TranslationTree = {
   "explore.empty.addFirstBusiness": "Shto biznesin e parë",
   "explore.empty.noResultsTitle": "Asnjë biznes nuk përputhet me filtrat",
   "explore.empty.noResultsBody":
-    "Ndrysho kërkimin, kategorinë ose qytetin për të gjetur më shumë shërbime.",
+    "Provo të ndryshosh kërkimin, kategorinë ose filtrin e qytetit, ose pastro filtrat për të parë të gjitha bizneset që mund të rezervohen aktualisht.",
   "explore.card.approvalRequired": "Kërkon miratim",
   "explore.card.instantConfirmation": "Konfirmim i menjëhershëm",
   "explore.card.fallbackDescription":
