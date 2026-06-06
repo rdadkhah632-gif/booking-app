@@ -22,10 +22,10 @@ export default function NotificationsHeader({
 
   return (
     <div style={{ marginBottom: '1.5rem' }}>
-      <p className="small muted">{t('notifications.kicker', 'Mirëbook customer notifications')}</p>
+      <p className="small muted">{t('notifications.kicker', 'Booking updates')}</p>
 
       <h1 className="page-title">
-        {t('notifications.title', 'Customer notifications')}
+        {t('notifications.title', 'Notifications')}
       </h1>
 
       <p className="page-sub" style={{ marginTop: '0.5rem' }}>

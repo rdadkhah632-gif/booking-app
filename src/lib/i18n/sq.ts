@@ -252,7 +252,13 @@ export const sq: TranslationTree = {
   "explore.card.viewTimes": "Shiko oraret dhe rezervo",
   "explore.card.bookNow": "Rezervo tani",
   "explore.card.locationComingSoon":
-    "Detajet e vendndodhjes do të shtohen së shpejti",
+    "Vendndodhja nuk është dhënë",
+  "explore.brand.kicker": "Mirëbook",
+  "explore.brand.title": "Për bizneset që punojnë me rezervime",
+  "explore.brand.description":
+    "Nga sallonet dhe berberët te aktivitetet, përvojat dhe shërbimet e specializuara, Mirëbook i ndihmon klientët të gjejnë biznese, të rezervojnë takime dhe të qëndrojnë të organizuar.",
+  "explore.brand.footer":
+    "Krijuar për bizneset e pavarura dhe klientët e tyre.",
   "explore.categories.barbers": "Berberë",
   "explore.categories.salons": "Sallone",
   "explore.categories.nails": "Thonj",
@@ -1671,7 +1677,7 @@ export const sq: TranslationTree = {
   "publicBusiness.error.notAvailable":
     "Ky biznes nuk është aktualisht i disponueshëm për rezervime publike.",
   "publicBusiness.locationComingSoon":
-    "Detajet e vendndodhjes do të shtohen së shpejti",
+    "Vendndodhja nuk është dhënë",
   "publicBusiness.bookingMode.request": "Kërkesë rezervimi",
   "publicBusiness.bookingMode.instant": "Konfirmim i menjëhershëm",
   "publicBusiness.bookingMode.requestBody":
@@ -1938,6 +1944,9 @@ export const sq: TranslationTree = {
   "staff.summary.upcoming": "Në vijim",
   "staff.summary.upcomingBody":
     "Rezervime të ardhshme në pritje ose të konfirmuara",
+  "staff.summary.confirmedBody": "Takime të ardhshme të konfirmuara",
+  "staff.summary.pendingBody":
+    "Në pritje të miratimit nga biznesi. Nuk kërkohet veprim nga stafi.",
   "staff.summary.completed": "Të përfunduara",
   "staff.summary.completedBody": "Takime që ke përfunduar",
   "staff.requests.kicker": "Veprime nga klientët",
@@ -1946,6 +1955,8 @@ export const sq: TranslationTree = {
   "staff.requests.body":
     "Këto kërkesa shfaqen këtu për dijeni. Pronarët ose menaxherët i miratojnë ose refuzojnë nga paneli i biznesit.",
   "staff.requests.requested": "Kërkuar:",
+  "staff.requests.reschedule": "Kërkesë për ndryshim orari",
+  "staff.requests.bookingChange": "Ndryshim rezervimi",
   "staff.empty.title": "Nuk ka takime për këtë datë",
   "staff.empty.body":
     "Provo një datë tjetër me zgjedhësin e datës, ose ndrysho filtrin e statusit. Nëse prisje takime këtu, kërkoji pronarit të kontrollojë caktimin e stafit për shërbimin.",
@@ -2008,13 +2019,48 @@ export const sq: TranslationTree = {
   "staffCalendar.bookingSingle": "rezervim",
   "staffCalendar.bookingPlural": "rezervime",
   "staffCalendar.selectedDay": "Dita e zgjedhur",
-  "staffCalendar.emptyDay": "Nuk ka rezervime të caktuara për këtë datë.",
+  "staffCalendar.emptyTitle": "Nuk ka rezervime të caktuara për këtë datë",
+  "staffCalendar.emptyDay":
+    "Zgjidh një ditë tjetër për të parë orarin. Takimet e reja do të shfaqen këtu pasi të të caktohen.",
   "staff.summary.confirmedShort": "të konfirmuara",
   "staff.summary.pendingShort": "në pritje",
   "staff.pending.kicker": "Rezervime në pritje",
   "staff.pending.body":
     "Këto rezervime janë caktuar për ty, por ende kanë nevojë për miratim nga biznesi para se të bëhen takime të konfirmuara.",
   "staff.schedule.chooseDate": "Zgjidh datën e orarit",
+  "staffAvailability.error.invalidTime":
+    "Çdo ditë e hapur ka nevojë për orë fillimi dhe mbarimi të vlefshme. Ora e mbarimit duhet të jetë pas orës së fillimit.",
+  "staffAvailability.error.load":
+    "Nuk mundëm të ngarkojmë disponueshmërinë e stafit.",
+  "staffAvailability.loading":
+    "Duke ngarkuar disponueshmërinë tënde në Mirëbook...",
+  "staffAvailability.noProfile.title":
+    "Disponueshmëria e stafit nuk është ende e disponueshme",
+  "staffAvailability.noProfile.body":
+    "Kërkoji pronarit të biznesit të shtojë email-in tënd në faqen e stafit, pastaj hyr përsëri. Llogaritë e stafit menaxhojnë orarin dhe disponueshmërinë e tyre, ndërsa profili, shërbimet dhe çmimet mbeten te pronari.",
+  "staffAvailability.success.saved":
+    "Disponueshmëria u ruajt. Mirëbook do t'i përdorë këto orare kur klientët të rezervojnë me ty.",
+  "staffAvailability.upcoming.title":
+    "Kontrollo takimet ekzistuese para se të ndryshosh orarin",
+  "staffAvailability.upcoming.body":
+    "Ndryshimi i disponueshmërisë ndikon te oraret e reja të rezervimit. Takimet ekzistuese mbeten në vend derisa biznesi t'i ndryshojë.",
+  "staffAvailability.upcoming.empty":
+    "Nuk ka rezervime të ardhshme të caktuara. Takimet e reja do të shfaqen këtu pasi të të caktohen.",
+  "staffAvailability.upcoming.pendingBody":
+    "Rezervimet në pritje shfaqen për dijeni. Pronarët ose menaxherët i miratojnë nga paneli i biznesit.",
+  "staffNotifications.body":
+    "Përditësime vetëm për stafin, orarin, profilin dhe rezervimet e caktuara.",
+  "staffNotifications.loading": "Duke ngarkuar njoftimet e stafit...",
+  "staffNotifications.mark": "Shëno",
+  "staffNotifications.read": "si të lexuara",
+  "staffNotifications.allRead": "Të gjitha të lexuara",
+  "staffNotifications.markRead": "Shëno si të lexuar",
+  "staffNotifications.empty.title": "Ende nuk ka njoftime për stafin",
+  "staffNotifications.empty.body":
+    "Përditësimet e rezervimeve, ndryshimet e orarit dhe mesazhet e llogarisë së stafit do të shfaqen këtu.",
+  "staffNotifications.fallback.title": "Përditësim për stafin",
+  "staffNotifications.fallback.message":
+    "Ke një përditësim të ri për stafin.",
   "dashboardHome.ownerCommand.kicker": "Qendra e komandës së pronarit",
   "dashboardHome.ownerCommand.actionTitle":
     "Veprimet e klientëve kërkojnë rishikim",

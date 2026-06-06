@@ -16,6 +16,7 @@ export const en: TranslationTree = {
   "nav.notifications": "Notifications",
   "nav.account": "Account",
   "nav.logout": "Log out",
+  "auth.logout": "Log out",
   "login.checkingSession": "Checking your Mirëbook session...",
   "login.failed": "Login failed",
   "login.profileError": "Could not load user profile",
@@ -201,7 +202,13 @@ export const en: TranslationTree = {
   "explore.card.availabilitySet": "Availability set",
   "explore.card.viewTimes": "View times and book",
   "explore.card.bookNow": "Book now",
-  "explore.card.locationComingSoon": "Location details coming soon",
+  "explore.card.locationComingSoon": "Location not provided",
+  "explore.brand.kicker": "Mirëbook",
+  "explore.brand.title": "Built for businesses that run on bookings",
+  "explore.brand.description":
+    "From salons and barbers to experiences, activities and specialist services, Mirëbook helps customers discover businesses, book appointments and stay organised.",
+  "explore.brand.footer":
+    "Designed for independent businesses and their customers.",
   "explore.categories.barbers": "Barbers",
   "explore.categories.salons": "Salons",
   "explore.categories.nails": "Nails",
@@ -1647,7 +1654,7 @@ export const en: TranslationTree = {
   "dashboardAnalytics.recent.openManager": "Open appointment manager",
   "publicBusiness.error.notAvailable":
     "This business is not currently available for public booking.",
-  "publicBusiness.locationComingSoon": "Location details coming soon",
+  "publicBusiness.locationComingSoon": "Location not provided",
   "publicBusiness.bookingMode.request": "Booking request",
   "publicBusiness.bookingMode.instant": "Instant confirmation",
   "publicBusiness.bookingMode.requestBody":
@@ -1846,6 +1853,9 @@ export const en: TranslationTree = {
   "staff.summary.todayBody": "Assigned appointments today",
   "staff.summary.upcoming": "Upcoming",
   "staff.summary.upcomingBody": "Pending and confirmed future bookings",
+  "staff.summary.confirmedBody": "Confirmed upcoming appointments",
+  "staff.summary.pendingBody":
+    "Awaiting business approval. No staff action required.",
   "staff.summary.completed": "Completed",
   "staff.summary.completedBody": "Appointments you have completed",
   "staff.requests.kicker": "Customer actions",
@@ -1854,6 +1864,8 @@ export const en: TranslationTree = {
   "staff.requests.body":
     "These requests are visible here for awareness. Business owners or managers approve or decline them from the business dashboard; staff can prepare around likely schedule changes.",
   "staff.requests.requested": "Requested:",
+  "staff.requests.reschedule": "Reschedule request",
+  "staff.requests.bookingChange": "Booking change",
   "staff.empty.title": "No appointments for this date",
   "staff.empty.body":
     "Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.",
@@ -1916,13 +1928,72 @@ export const en: TranslationTree = {
   "staffCalendar.bookingSingle": "booking",
   "staffCalendar.bookingPlural": "bookings",
   "staffCalendar.selectedDay": "Selected day",
-  "staffCalendar.emptyDay": "No assigned bookings for this date.",
+  "staffCalendar.emptyTitle": "No assigned bookings for this date",
+  "staffCalendar.emptyDay":
+    "Choose another day to review your schedule. New appointments will appear here once they are assigned to you.",
   "staff.summary.confirmedShort": "confirmed",
   "staff.summary.pendingShort": "pending",
   "staff.pending.kicker": "Pending bookings",
   "staff.pending.body":
     "These bookings are assigned to you but still need business approval before they become confirmed appointments.",
   "staff.schedule.chooseDate": "Choose schedule date",
+  "staffAvailability.title": "Your working hours",
+  "staffAvailability.staffOnly": "Staff-only availability",
+  "staffAvailability.actions.saveAvailability": "Save availability",
+  "staffAvailability.note.title":
+    "These hours only control your own bookable staff availability.",
+  "staffAvailability.note.body":
+    "Customers can only book you when the business is published, the service is active, the service is assigned to you, and both business and staff availability allow the selected time. Existing bookings are not moved automatically when you change these hours.",
+  "staffAvailability.summary.openDays": "Open days",
+  "staffAvailability.summary.openDaysBody":
+    "Customers can book assigned active services on these days.",
+  "staffAvailability.summary.closedDays": "Closed days",
+  "staffAvailability.summary.closedDaysBody":
+    "Hidden from new customer bookings.",
+  "staffAvailability.summary.weeklyHours": "Weekly availability",
+  "staffAvailability.summary.weeklyHoursBody":
+    "Estimated bookable staff time.",
+  "staffAvailability.templates.body":
+    "Templates only update the form. Press Save availability to apply changes.",
+  "staffAvailability.templates.weekday": "Mon-Fri 9-5",
+  "staffAvailability.templates.extended": "Mon-Sat 9-7",
+  "staffAvailability.day.open": "Open",
+  "staffAvailability.day.closed": "Closed",
+  "staffAvailability.day.start": "Start",
+  "staffAvailability.day.end": "End",
+  "staffAvailability.day.closedBody":
+    "Customers cannot book you on this day unless the business reschedules an existing appointment manually.",
+  "staffAvailability.error.invalidTime":
+    "Each open day needs a valid start and end time. End time must be after start time.",
+  "staffAvailability.error.load": "Could not load staff availability.",
+  "staffAvailability.loading": "Loading your Mirëbook availability...",
+  "staffAvailability.noProfile.title":
+    "Staff availability is not available yet",
+  "staffAvailability.noProfile.body":
+    "Ask the business owner to add your email in their Staff setup page, then log in again. Staff accounts can manage their own schedule and availability, but business profile, services and pricing stay with the business owner.",
+  "staffAvailability.success.saved":
+    "Availability saved. Mirëbook will use these staff hours when customers book with you.",
+  "staffAvailability.upcoming.title":
+    "Check existing appointments before changing hours",
+  "staffAvailability.upcoming.body":
+    "Changing your availability affects new booking slots. Existing bookings stay in place unless the business reschedules them.",
+  "staffAvailability.upcoming.empty":
+    "No upcoming assigned bookings found. New appointments will appear here once they are assigned to you.",
+  "staffAvailability.upcoming.pendingBody":
+    "Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.",
+  "staffNotifications.title": "Updates",
+  "staffNotifications.body":
+    "Staff-only updates for your schedule, profile and assigned bookings.",
+  "staffNotifications.loading": "Loading staff notifications...",
+  "staffNotifications.mark": "Mark",
+  "staffNotifications.read": "read",
+  "staffNotifications.allRead": "All read",
+  "staffNotifications.markRead": "Mark read",
+  "staffNotifications.empty.title": "No staff notifications yet",
+  "staffNotifications.empty.body":
+    "Booking updates, schedule changes and staff account messages will appear here.",
+  "staffNotifications.fallback.title": "Staff update",
+  "staffNotifications.fallback.message": "You have a new staff update.",
   "dashboardHome.ownerCommand.kicker": "Owner command centre",
   "dashboardHome.ownerCommand.actionTitle": "Customer actions need review",
   "dashboardHome.ownerCommand.todayTitle":

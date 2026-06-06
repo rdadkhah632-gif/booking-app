@@ -223,16 +223,6 @@ export default function PublicBusinessSummary({
       )}
 
       <form onSubmit={onSubmit} className="public-business-form">
-        <div className="public-business-summary-box">
-          <p className="small muted">
-            {t("publicBusiness.summary.nextStep", "After submit")}
-          </p>
-          <strong>{bookingModeText()}</strong>
-          <p className="small muted" style={{ marginTop: "0.25rem" }}>
-            {bookingModeDescription()}
-          </p>
-        </div>
-
         <label className="small muted">
           {t("common.name", "Name")}
           <input

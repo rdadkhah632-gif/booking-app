@@ -95,13 +95,13 @@ function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60000);
 }
 
-function formatTimeRange(booking: Booking) {
+function formatTimeRange(booking: Booking, locale: string) {
   const start = new Date(booking.start_at);
   const end = booking.end_at
     ? new Date(booking.end_at)
     : addMinutes(start, booking.duration_minutes);
 
-  return `${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  return `${start.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 function formatHours(value: number) {
@@ -110,7 +110,18 @@ function formatHours(value: number) {
 
 export default function StaffAvailabilityPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
+
+  function statusLabel(status: string) {
+    if (status === "pending")
+      return t("staff.status.pending", "Awaiting business approval");
+    if (status === "confirmed") return t("staff.status.confirmed", "Confirmed");
+    if (status === "declined") return t("staff.status.declined", "Declined");
+    if (status === "completed") return t("staff.status.completed", "Completed");
+    if (status === "cancelled") return t("staff.status.cancelled", "Cancelled");
+    return status;
+  }
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
@@ -764,12 +775,17 @@ export default function StaffAvailabilityPage() {
                 style={{ display: "grid", gap: "0.75rem", marginTop: "1rem" }}
               >
                 {upcomingBookings.length === 0 && (
-                  <p className="muted">
-                    {t(
-                      "staffAvailability.upcoming.empty",
-                      "No upcoming assigned bookings found. If you expected appointments here, ask the business owner to check staff assignment for each service.",
-                    )}
-                  </p>
+                  <div className="staff-upcoming-empty">
+                    <p className="muted">
+                      {t(
+                        "staffAvailability.upcoming.empty",
+                        "No upcoming assigned bookings found. New appointments will appear here once they are assigned to you.",
+                      )}
+                    </p>
+                    <Link href="/staff/calendar" className="btn btn-ghost">
+                      {t("staffCalendar.title", "Calendar view")}
+                    </Link>
+                  </div>
                 )}
 
                 {upcomingBookings.map((booking) => (
@@ -782,13 +798,14 @@ export default function StaffAvailabilityPage() {
                     <p className="small muted">
                       {serviceName(booking, t("common.service", "Service"))} ·{" "}
                       {new Date(booking.start_at).toLocaleDateString(
-                        undefined,
+                        dateLocale,
                         { weekday: "long", day: "numeric", month: "long" },
                       )}{" "}
-                      · {formatTimeRange(booking)}
+                      · {formatTimeRange(booking, dateLocale)}
                     </p>
                     <p className="small muted">
-                      {t("common.status", "Status")}: {booking.status}
+                      {t("common.status", "Status")}:{" "}
+                      {statusLabel(booking.status)}
                     </p>
                     {booking.status === "pending" && (
                       <p className="small muted">
@@ -862,7 +879,6 @@ export default function StaffAvailabilityPage() {
           display: grid;
           gap: 1rem;
           align-content: start;
-          min-height: 185px;
         }
 
         .staff-day-card-header {
@@ -936,6 +952,12 @@ export default function StaffAvailabilityPage() {
         .staff-closed-copy {
           margin-top: 0;
           max-width: 32ch;
+        }
+
+        .staff-upcoming-empty {
+          display: grid;
+          gap: 0.75rem;
+          justify-items: start;
         }
 
         @media (max-width: 620px) {

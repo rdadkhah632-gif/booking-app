@@ -40,9 +40,6 @@ export default function PublicBusinessHero({
             {t('publicBusiness.hero.availabilitySlots')}
           </span>
 
-          <span className="small public-business-pill-muted">
-            {t('publicBusiness.hero.noCheckout')}
-          </span>
         </div>
 
         <h1 className="page-title">{business.name}</h1>

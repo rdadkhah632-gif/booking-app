@@ -69,7 +69,8 @@ function statusColor(status: string) {
 }
 
 export default function StaffCalendarPage() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
 
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
@@ -208,7 +209,7 @@ export default function StaffCalendarPage() {
     });
   }, [bookings, selectedDate]);
 
-  const monthTitle = monthCursor.toLocaleDateString(undefined, {
+  const monthTitle = monthCursor.toLocaleDateString(dateLocale, {
     month: "long",
     year: "numeric",
   });
@@ -370,7 +371,7 @@ export default function StaffCalendarPage() {
               <div>
                 <h2 style={{ fontFamily: "var(--font-display)", marginTop: 0 }}>
                   {new Date(`${selectedDate}T12:00:00`).toLocaleDateString(
-                    undefined,
+                    dateLocale,
                     {
                       weekday: "long",
                       day: "numeric",
@@ -382,12 +383,23 @@ export default function StaffCalendarPage() {
               </div>
 
               {selectedBookings.length === 0 ? (
-                <p className="muted" style={{ marginTop: "1rem" }}>
-                  {t(
-                    "staffCalendar.emptyDay",
-                    "No assigned bookings for this date.",
-                  )}
-                </p>
+                <div className="staff-calendar-empty">
+                  <h3>
+                    {t(
+                      "staffCalendar.emptyTitle",
+                      "No assigned bookings for this date",
+                    )}
+                  </h3>
+                  <p className="muted">
+                    {t(
+                      "staffCalendar.emptyDay",
+                      "Choose another day to review your schedule. New appointments will appear here once they are assigned to you.",
+                    )}
+                  </p>
+                  <Link href="/staff" className="btn btn-ghost">
+                    {t("staff.actions.dashboard", "Staff dashboard")}
+                  </Link>
+                </div>
               ) : (
                 <div className="staff-selected-bookings">
                   {selectedBookings.map((booking) => {
@@ -414,12 +426,12 @@ export default function StaffCalendarPage() {
                               t("common.service", "Service"),
                             )}{" "}
                             ·{" "}
-                            {start.toLocaleTimeString([], {
+                            {start.toLocaleTimeString(dateLocale, {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}{" "}
                             -{" "}
-                            {end.toLocaleTimeString([], {
+                            {end.toLocaleTimeString(dateLocale, {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
@@ -430,6 +442,14 @@ export default function StaffCalendarPage() {
                           >
                             {statusLabel(booking.status)}
                           </p>
+                          {booking.status === "pending" && (
+                            <p className="small muted">
+                              {t(
+                                "staff.booking.pendingHint",
+                                "Awaiting business approval. No staff action is needed yet.",
+                              )}
+                            </p>
+                          )}
                         </div>
 
                         <div className="staff-calendar-booking-actions">
@@ -544,6 +564,18 @@ export default function StaffCalendarPage() {
           display: grid;
           gap: 0.75rem;
           margin-top: 1rem;
+        }
+
+        .staff-calendar-empty {
+          display: grid;
+          gap: 0.75rem;
+          justify-items: start;
+          padding-top: 0.5rem;
+        }
+
+        .staff-calendar-empty h3,
+        .staff-calendar-empty p {
+          margin: 0;
         }
 
         .staff-calendar-booking {

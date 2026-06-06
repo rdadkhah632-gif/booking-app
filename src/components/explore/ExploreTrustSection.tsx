@@ -25,16 +25,16 @@ export default function ExploreTrustSection() {
         </p>
 
         <div className="explore-category-pills">
-          <span>💈 Barbers</span>
-          <span>✂️ Salons</span>
-          <span>💅 Nails</span>
-          <span>🖋️ Tattoos</span>
-          <span>🐾 Pet Grooming</span>
-          <span>🏋️ Fitness</span>
-          <span>🦷 Dental</span>
-          <span>🏄 Activities</span>
-          <span>🚤 Experiences</span>
-          <span>📅 Appointments</span>
+          <span>💈 {t('explore.categories.barbers')}</span>
+          <span>✂️ {t('explore.categories.salons')}</span>
+          <span>💅 {t('explore.categories.nails')}</span>
+          <span>🖋️ {t('explore.categories.tattoos')}</span>
+          <span>🐾 {t('explore.categories.petGrooming')}</span>
+          <span>🏋️ {t('explore.categories.fitness')}</span>
+          <span>🦷 {t('explore.categories.dental')}</span>
+          <span>🏄 {t('explore.categories.activities')}</span>
+          <span>🚤 {t('explore.categories.experiences')}</span>
+          <span>📅 {t('explore.categories.appointments')}</span>
         </div>
 
         <p className="explore-brand-footer">

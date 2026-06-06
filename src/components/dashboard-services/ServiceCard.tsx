@@ -108,20 +108,6 @@ export default function ServiceCard({
                   tone={isBookable ? "success" : "warning"}
                 />
 
-                {assignedStaff.length > 0 ? (
-                  <ServiceStatusBadge
-                    label={`${assignedStaff.length} ${t("dashboardServices.card.staffAssigned", "staff assigned")}`}
-                    tone="success"
-                  />
-                ) : (
-                  <ServiceStatusBadge
-                    label={t(
-                      "dashboardServices.card.noStaffAssigned",
-                      "No staff assigned",
-                    )}
-                    tone="warning"
-                  />
-                )}
               </div>
 
               {!isEditing && (
@@ -416,6 +402,9 @@ export default function ServiceCard({
           gap: 0.45rem;
           padding: 0.85rem;
           margin-top: 0.25rem;
+          border-color: ${isBookable
+            ? "rgba(45,212,191,0.22)"
+            : "rgba(255,190,11,0.25)"};
         }
 
         .service-bookability-card p {

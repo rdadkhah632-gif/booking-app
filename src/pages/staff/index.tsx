@@ -187,7 +187,9 @@ function firstRequestServiceName(request: BookingRequest) {
 
 export default function StaffDashboardPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
+
   function statusLabel(status: string) {
     if (status === "pending")
       return t("staff.status.pending", "Awaiting business approval");
@@ -196,6 +198,14 @@ export default function StaffDashboardPage() {
     if (status === "completed") return t("staff.status.completed", "Completed");
     if (status === "cancelled") return t("staff.status.cancelled", "Cancelled");
     return status;
+  }
+
+  function requestTypeLabel(requestType: string) {
+    if (requestType === "reschedule") {
+      return t("staff.requests.reschedule", "Reschedule request");
+    }
+
+    return t("staff.requests.bookingChange", "Booking change");
   }
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
@@ -545,12 +555,15 @@ export default function StaffDashboardPage() {
   }, [upcomingBookings]);
 
   const selectedDateLabel = useMemo(() => {
-    return new Date(`${selectedDate}T12:00:00`).toLocaleDateString(undefined, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  }, [selectedDate]);
+    return new Date(`${selectedDate}T12:00:00`).toLocaleDateString(
+      dateLocale,
+      {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      },
+    );
+  }, [dateLocale, selectedDate]);
 
   const selectedDateBookings = useMemo(() => {
     const selected = new Date(`${selectedDate}T12:00:00`);
@@ -605,15 +618,15 @@ export default function StaffDashboardPage() {
             ? t("staff.schedule.today", "Today")
             : index === 1
               ? t("staff.schedule.tomorrow", "Tomorrow")
-              : date.toLocaleDateString(undefined, { weekday: "short" }),
-        subLabel: date.toLocaleDateString(undefined, {
+              : date.toLocaleDateString(dateLocale, { weekday: "short" }),
+        subLabel: date.toLocaleDateString(dateLocale, {
           day: "numeric",
           month: "short",
         }),
         count,
       };
     });
-  }, [bookings]);
+  }, [bookings, dateLocale, t]);
   async function createCustomerNotification(params: {
     booking: Booking;
     type: string;
@@ -636,7 +649,7 @@ export default function StaffDashboardPage() {
   }
 
   function appointmentDateTime(booking: Booking) {
-    return new Date(booking.start_at).toLocaleString();
+    return new Date(booking.start_at).toLocaleString(dateLocale);
   }
   async function markBookingComplete(booking: Booking) {
     const confirmed = confirm(
@@ -718,18 +731,18 @@ export default function StaffDashboardPage() {
             </p>
 
             <p className="small muted" style={{ marginTop: "0.35rem" }}>
-              {start.toLocaleDateString(undefined, {
+              {start.toLocaleDateString(dateLocale, {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
               })}{" "}
               ·{" "}
-              {start.toLocaleTimeString([], {
+              {start.toLocaleTimeString(dateLocale, {
                 hour: "2-digit",
                 minute: "2-digit",
               })}{" "}
               -{" "}
-              {end.toLocaleTimeString([], {
+              {end.toLocaleTimeString(dateLocale, {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
@@ -979,7 +992,7 @@ export default function StaffDashboardPage() {
                 {t("nav.staffSupport", "Staff support")}
               </Link>
               <Link href="/account" className="btn btn-ghost">
-                {t("account.title", "Account settings")}
+                {t("nav.account", "Account")}
               </Link>
             </div>
           </div>
@@ -1154,7 +1167,7 @@ export default function StaffDashboardPage() {
                 </h2>
                 <p className="muted small" style={{ marginTop: "0.35rem" }}>
                   {nextBooking
-                    ? `${t("staff.today.nextPrefix", "Next appointment")}: ${nextBooking.customer_name || t("common.customer", "Customer")} · ${new Date(nextBooking.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                    ? `${t("staff.today.nextPrefix", "Next appointment")}: ${nextBooking.customer_name || t("common.customer", "Customer")} · ${new Date(nextBooking.start_at).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" })}`
                     : t(
                         "staff.today.noUpcoming",
                         "No upcoming assigned appointments are waiting in your schedule.",
@@ -1176,7 +1189,7 @@ export default function StaffDashboardPage() {
               </div>
             </div>
 
-            <div className="grid-3" style={{ marginBottom: "1.5rem" }}>
+            <div className="staff-summary-grid">
               <button
                 type="button"
                 className="card staff-summary-button"
@@ -1196,12 +1209,26 @@ export default function StaffDashboardPage() {
                 className="card staff-summary-button"
                 onClick={() => setStatusFilter("active")}
               >
-                <h3>{upcomingBookings.length}</h3>
+                <h3>{confirmedUpcomingBookings.length}</h3>
                 <p className="small muted">
-                  {confirmedUpcomingBookings.length}{" "}
-                  {t("staff.summary.confirmedShort", "confirmed")} ·{" "}
-                  {pendingBookings.length}{" "}
-                  {t("staff.summary.pendingShort", "pending")}
+                  {t(
+                    "staff.summary.confirmedBody",
+                    "Confirmed upcoming appointments",
+                  )}
+                </p>
+              </button>
+
+              <button
+                type="button"
+                className="card staff-summary-button staff-summary-pending"
+                onClick={() => setStatusFilter("pending")}
+              >
+                <h3>{pendingBookings.length}</h3>
+                <p className="small muted">
+                  {t(
+                    "staff.summary.pendingBody",
+                    "Awaiting business approval. No staff action required.",
+                  )}
                 </p>
               </button>
 
@@ -1219,25 +1246,6 @@ export default function StaffDashboardPage() {
                 </p>
               </button>
             </div>
-
-            {pendingBookings.length > 0 && (
-              <div className="card staff-pending-card">
-                <div>
-                  <h3>
-                    {pendingBookings.length}{" "}
-                    {pendingBookings.length === 1
-                      ? t("staff.requests.pendingSingle", "pending request")
-                      : t("staff.requests.pendingPlural", "pending requests")}
-                  </h3>
-                  <p className="small muted">
-                    {t(
-                      "staff.pending.body",
-                      "These bookings are assigned to you but still need business approval before they become confirmed appointments.",
-                    )}
-                  </p>
-                </div>
-              </div>
-            )}
 
             {requests.length > 0 && (
               <div
@@ -1277,7 +1285,7 @@ export default function StaffDashboardPage() {
                         className="small muted"
                         style={{ marginTop: "0.25rem" }}
                       >
-                        {request.request_type} ·{" "}
+                        {requestTypeLabel(request.request_type)} ·{" "}
                         {firstRequestServiceName(request) ||
                           t("common.service", "Service")}
                       </p>
@@ -1286,7 +1294,7 @@ export default function StaffDashboardPage() {
                           {t("staff.requests.requested", "Requested:")}{" "}
                           {new Date(
                             request.requested_start_at,
-                          ).toLocaleString()}
+                          ).toLocaleString(dateLocale)}
                         </p>
                       )}
                     </div>
@@ -1535,16 +1543,6 @@ export default function StaffDashboardPage() {
           justify-content: flex-end;
         }
 
-        .staff-pending-card {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: flex-start;
-          margin-bottom: 1.5rem;
-          border-color: rgba(255, 190, 11, 0.28);
-          background: rgba(255, 190, 11, 0.06);
-        }
-
         .staff-empty-action-card {
           background: var(--surface-2);
           margin-top: 1rem;
@@ -1563,7 +1561,6 @@ export default function StaffDashboardPage() {
 
         .staff-assigned-services-card,
         .staff-today-card,
-        .staff-pending-card,
         .staff-summary-button,
         .staff-booking-card {
           gap: 0.75rem;
@@ -1571,7 +1568,6 @@ export default function StaffDashboardPage() {
 
         .staff-assigned-services-card p,
         .staff-today-card p,
-        .staff-pending-card p,
         .staff-summary-button p,
         .staff-booking-card p {
           margin-top: 0;
@@ -1605,6 +1601,18 @@ export default function StaffDashboardPage() {
           gap: 0.5rem;
           color: var(--text);
           cursor: pointer;
+        }
+
+        .staff-summary-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .staff-summary-pending {
+          border-color: rgba(255, 190, 11, 0.28);
+          background: rgba(255, 190, 11, 0.06);
         }
 
         .staff-summary-button:hover {
@@ -1684,6 +1692,10 @@ export default function StaffDashboardPage() {
         }
 
         @media (max-width: 820px) {
+          .staff-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
           .staff-day-tabs {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
@@ -1693,7 +1705,6 @@ export default function StaffDashboardPage() {
           .staff-hero-card,
           .staff-profile-row,
           .staff-today-card,
-          .staff-pending-card,
           .staff-schedule-header,
           .staff-booking-card-inner {
             display: grid;
@@ -1733,6 +1744,10 @@ export default function StaffDashboardPage() {
           }
 
           .staff-day-tabs {
+            grid-template-columns: 1fr;
+          }
+
+          .staff-summary-grid {
             grid-template-columns: 1fr;
           }
         }

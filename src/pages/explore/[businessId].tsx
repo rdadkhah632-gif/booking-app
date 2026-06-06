@@ -405,7 +405,7 @@ export default function BusinessBookingPage() {
       [business?.address, business?.city, business?.country]
         .filter(Boolean)
         .join(", ") ||
-      t("publicBusiness.locationComingSoon", "Location details coming soon")
+      t("publicBusiness.locationComingSoon", "Location not provided")
     );
   }
 

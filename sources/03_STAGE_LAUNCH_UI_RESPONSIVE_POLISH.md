@@ -1,6 +1,6 @@
 # Stage 3 - Launch UI, Responsive Polish and Trust Pass
 
-Status: active.
+Status: active. Batches 1-5 implemented; ready for Stage 3 sweep QA.
 
 Stage 1 and Stage 2 are complete with accepted minor follow-ups.
 
@@ -163,7 +163,7 @@ Batch 2 translation follow-up:
 
 ## Batch 3 - Business Workspace Polish
 
-Status: implementation complete, ready for manual authenticated QA.
+Status: implemented, ready for manual authenticated QA.
 
 Objective:
 
@@ -213,8 +213,80 @@ Manual authenticated QA remaining:
 - Verify two-column availability editing and save feedback on desktop, plus single-column mobile behavior.
 - Verify settings forms and business notifications with populated records.
 
+## Batch 4 - Staff Workspace Polish
+
+Status: implemented, ready for manual authenticated QA.
+
+Objective:
+
+Make the existing staff top-navigation workspace feel role-specific, calm and operational without changing staff linking, routing, booking actions or availability persistence.
+
+Implemented:
+
+- Translated the staff navigation and kept schedule, calendar, availability, updates, account and logout reachable in the existing responsive top-navigation pattern.
+- Added the current unread/update count to the staff Updates destination without changing notification count queries.
+- Added the language control to the staff workspace navigation.
+- Rebalanced the staff dashboard summary into today, confirmed upcoming work, awaiting business approval and completed appointments.
+- Removed the repeated standalone pending-booking card while retaining a clear no-action-required pending summary.
+- Replaced the raw booking-request type with role-appropriate reschedule or booking-change wording.
+- Localized staff dates and times to the selected EN or SQ language.
+- Improved calendar empty guidance and made pending bookings explicitly informational for staff.
+- Replaced raw availability booking statuses with the standard staff-facing status labels.
+- Made staff availability day cards size naturally and improved the upcoming-bookings empty state.
+- Improved staff notification empty states, preserved staff and support links, and kept approval actions out of the staff workspace.
+
+Intentionally unchanged:
+
+- Staff top navigation was retained; no sidebar migration or routing rewrite was performed.
+- Staff profile linking, invite matching and owner-as-staff behavior.
+- Staff availability delete/insert save behavior.
+- Booking assignment queries and staff booking completion behavior.
+- Realtime subscriptions were not added for rapidly changing staff counts.
+
+Manual authenticated QA remaining:
+
+- Verify the staff navigation in EN and SQ with a linked staff account.
+- Verify today, confirmed, awaiting-approval and completed summary counts with populated bookings.
+- Verify pending, confirmed, declined, cancelled and completed cards remain non-actionable except for the existing allowed completion action.
+- Verify calendar day selection, customer contact links and empty-state navigation.
+- Verify availability templates, open/closed day editing and save feedback.
+- Verify booking, schedule, profile and support notifications link to staff-safe destinations.
+
+## Batch 5 - Translation, Copy and Empty-State Sweep
+
+Status: implemented, ready for Stage 3 sweep QA.
+
+Implemented:
+
+- Verified the Albanian Explore no-results title, guidance, search control, search placeholder and clear-filter copy use translation keys.
+- Added complete EN and SQ dictionary coverage for the touched staff availability and staff notification states that previously depended on English fallbacks.
+- Added EN and SQ copy for the clearer staff dashboard summaries, request types and calendar empty state.
+- Added missing EN and SQ dictionary entries for the Explore trust section so Albanian no longer falls back to English beneath filtered results.
+- Replaced raw staff availability status values with role-specific translated labels.
+- Replaced the prototype-style `Location details coming soon` copy with `Location not provided` on touched marketplace and public-business surfaces.
+- Confirmed no touched core page renders `Slotly`, `MirëbookCustomer`, raw object text or the older competing customer pending labels.
+- Kept old stored notification text unchanged.
+
+Accepted follow-ups:
+
+- The explicit stale-slot message already exists in the public booking flow; slot generation and booking insert logic were not changed.
+- Staff count lag after multiple rapid external status changes remains tracked for refresh-based QA; realtime subscriptions were intentionally not added.
+- Root-domain 502 investigation remains separate from application UI work.
+
+## Sweep Verification
+
+Required before Stage 3 closure QA:
+
+- `npm run build`
+- `git diff --check`
+- duplicate EN and SQ translation-key check
+- responsive browser smoke test for public Explore and protected staff routes
+- authenticated business and staff QA with populated records
+
 ## Known Follow-Ups
 
 - Older mixed English and Albanian strings may remain outside the active Stage 3 surfaces.
-- Staff workspace still uses its existing top-navigation structure.
-- Stage 3 should improve that navigation responsively without changing role routing or rebuilding the navigation architecture.
+- Staff workspace intentionally retains its polished top-navigation structure.
+- Staff dashboard counts may require refresh after rapid status changes made in another session.
+- Root-domain 502 remains an infrastructure follow-up unless an application route regression is found.
+- Do not mark Stage 3 complete until closure QA passes.

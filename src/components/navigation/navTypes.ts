@@ -25,7 +25,9 @@ export function notificationLabel(
   }
 
   if (role === "staff") {
-    return t("nav.updates", "Updates");
+    const label = t("nav.updates", "Updates");
+    if (notificationCount <= 0) return label;
+    return `${label} (${notificationCount})`;
   }
 
   const label = t("nav.notifications", "Notifications");

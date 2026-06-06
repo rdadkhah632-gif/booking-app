@@ -101,7 +101,6 @@ export default function AvailabilityDayRow({
           display: grid;
           gap: 1rem;
           align-content: start;
-          min-height: 185px;
         }
 
         .availability-day-header {

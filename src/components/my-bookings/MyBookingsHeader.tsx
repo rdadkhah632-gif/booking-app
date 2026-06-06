@@ -24,10 +24,10 @@ export default function MyBookingsHeader({
 
   return (
     <div style={{ marginBottom: '1.5rem' }}>
-      <p className="small muted">{t('myBookings.kicker', 'Mirëbook customer dashboard')}</p>
+      <p className="small muted">{t('myBookings.kicker', 'Your appointments')}</p>
 
       <h1 className="page-title">
-        {t('myBookings.title', 'My Mirëbook bookings')}
+        {t('myBookings.title', 'My bookings')}
       </h1>
 
       <p className="page-sub" style={{ marginTop: '0.5rem' }}>

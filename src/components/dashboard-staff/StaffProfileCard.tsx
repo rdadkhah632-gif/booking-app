@@ -92,11 +92,6 @@ export default function StaffProfileCard({
         "dashboardStaff.card.bookableDisabledBody",
         "This staff profile is saved but hidden from new customer bookings.",
       );
-  const setupStatusLabel =
-    activeAssignedCount > 0
-      ? `${activeAssignedCount} ${t("dashboardStaff.card.servicesAssigned", "services assigned")}`
-      : t("dashboardStaff.card.noServicesAssigned", "No services assigned");
-
   return (
     <div
       className="card staff-profile-card"
@@ -131,12 +126,6 @@ export default function StaffProfileCard({
               {bookableStatusLabel}
             </span>
 
-            <span
-              className={`small staff-status-pill ${activeAssignedCount > 0 ? "staff-status-success" : "staff-status-warning"}`}
-              title={t("dashboardStaff.card.setupStatus", "Setup status")}
-            >
-              {t("dashboardStaff.card.setup", "Setup")}: {setupStatusLabel}
-            </span>
           </div>
 
           {!isEditing && (

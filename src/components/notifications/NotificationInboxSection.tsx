@@ -198,7 +198,7 @@ export default function NotificationInboxSection({
         <p className="muted small" style={{ marginTop: "0.35rem" }}>
           {t(
             "notifications.inbox.body",
-            "These are real notification records created by booking and reschedule activity.",
+            "Your latest booking, schedule and support updates appear here.",
           )}
         </p>
       </div>

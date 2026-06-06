@@ -16,19 +16,19 @@ export default function ExploreResultsHeader({ loading, filteredCount, hasFilter
         <p className="small muted">{t('explore.hero.kicker')}</p>
         <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
           {loading
-            ? 'Loading businesses...'
+            ? t('explore.results.loading')
             : `${filteredCount} ${t('explore.results.title').toLowerCase()}`}
         </h2>
       </div>
 
       {hasFilters && (
         <button onClick={onClearFilters} className="btn btn-ghost">
-          Clear current filters
+          {t('explore.results.clearCurrent')}
         </button>
       )}
 
       <Link href="/register" className="btn btn-ghost">
-        List your business
+        {t('explore.results.listBusiness')}
       </Link>
 
       <Link href="/support/customer" className="btn btn-ghost">

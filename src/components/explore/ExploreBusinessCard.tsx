@@ -71,7 +71,7 @@ export default function ExploreBusinessCard({
               borderRadius: 999
             }}
           >
-            {business.auto_accept_bookings === false ? t('explore.card.approvalRequired') : t('explore.card.instantConfirmation')}
+            {bookingModeLabel(business)}
           </span>
         </div>
 
@@ -110,19 +110,11 @@ export default function ExploreBusinessCard({
           {t('explore.card.viewTimes')}
         </Link>
 
-        <Link href={`/book/${business.id}`} className="btn btn-ghost">
-          {t('explore.card.bookNow')}
-        </Link>
-
         {business.phone && (
           <span className="small muted">
             {business.phone}
           </span>
         )}
-
-        <span className="small muted">
-          {bookingModeLabel(business)}
-        </span>
       </div>
     </div>
   )

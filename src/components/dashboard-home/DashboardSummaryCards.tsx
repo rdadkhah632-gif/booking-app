@@ -16,11 +16,18 @@ type Props = {
 };
 
 export default function DashboardSummaryCards(props: Props) {
-  const { todayCount, analytics, bookingsLinkForView } = props;
+  const {
+    todayCount,
+    pendingActionCount,
+    pendingBookingsCount,
+    pendingRescheduleCount,
+    analytics,
+    bookingsLinkForView,
+  } = props;
   const { t } = useI18n();
 
   return (
-    <div className="grid-2" style={{ marginBottom: "1.5rem" }}>
+    <div className="dashboard-summary-grid">
       <Link
         href={bookingsLinkForView("today")}
         className="card dashboard-summary-card"
@@ -32,6 +39,30 @@ export default function DashboardSummaryCards(props: Props) {
         </p>
       </Link>
 
+      <Link
+        href="/dashboard/notifications"
+        className="card dashboard-summary-card"
+        style={{
+          borderColor:
+            pendingActionCount > 0
+              ? "rgba(255,107,53,0.35)"
+              : "var(--border)",
+        }}
+      >
+        <h3>{pendingActionCount}</h3>
+        <strong>
+          {t("dashboardHome.summary.actionRequired", "Action required")}
+        </strong>
+        <p className="muted small">
+          {pendingActionCount > 0
+            ? `${pendingBookingsCount} ${t("dashboardHome.summary.bookingApproval", "booking approval")} · ${pendingRescheduleCount} ${t("dashboardHome.summary.rescheduleRequest", "reschedule request")}`
+            : t(
+                "dashboardHome.priority.noActions",
+                "No pending customer actions",
+              )}
+        </p>
+      </Link>
+
       <Link href="/dashboard/analytics" className="card dashboard-summary-card">
         <h3>{analytics.recentBookings.length}</h3>
         <strong>{t("dashboardHome.summary.last30Days", "Last 30 days")}</strong>
@@ -40,27 +71,14 @@ export default function DashboardSummaryCards(props: Props) {
         </p>
       </Link>
 
-      <Link
-        href="/dashboard/analytics"
-        className="card dashboard-summary-card"
-        style={{ borderColor: "rgba(45,212,191,0.25)" }}
-      >
-        <h3>£{analytics.estimatedRevenue.toFixed(2)}</h3>
-        <strong>
-          {t(
-            "dashboardHome.summary.completedValue",
-            "Estimated completed value",
-          )}
-        </strong>
-        <p className="muted small">
-          {t(
-            "dashboardHome.summary.completedValueBody",
-            "Based on completed appointments in the last 30 days",
-          )}
-        </p>
-      </Link>
-
       <style jsx>{`
+        .dashboard-summary-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 1rem;
+          margin-bottom: 1.25rem;
+        }
+
         .dashboard-summary-card {
           display: grid;
           gap: 0.55rem;
@@ -78,6 +96,12 @@ export default function DashboardSummaryCards(props: Props) {
         .dashboard-summary-card h3,
         .dashboard-summary-card p {
           margin-top: 0;
+        }
+
+        @media (max-width: 760px) {
+          .dashboard-summary-grid {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
     </div>

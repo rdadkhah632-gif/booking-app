@@ -14,9 +14,9 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
   if (type === 'error') {
     return (
       <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,77,109,0.35)' }}>
-        <h3 style={{ color: 'var(--danger)' }}>Could not load marketplace results</h3>
+        <h3 style={{ color: 'var(--danger)' }}>{t('explore.empty.errorTitle')}</h3>
         <p className="muted small" style={{ marginTop: '0.5rem' }}>
-          Refresh the marketplace or contact customer support if this keeps happening.
+          {t('explore.empty.errorBody')}
         </p>
         {error && (
           <pre style={{
@@ -30,7 +30,7 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
         <div className="explore-empty-actions">
           {onRetry && (
             <button type="button" onClick={onRetry} className="btn btn-accent">
-              Retry marketplace
+              {t('explore.empty.retryMarketplace')}
             </button>
           )}
 
@@ -51,7 +51,7 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
         </p>
         <div className="explore-empty-actions">
           <Link href="/register" className="btn btn-accent">
-            Add the first business
+            {t('explore.empty.addFirstBusiness')}
           </Link>
 
           <Link href="/support/customer" className="btn btn-ghost">
@@ -64,19 +64,19 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
 
   return (
     <div className="card">
-      <h3>No businesses match your filters</h3>
+      <h3>{t('explore.empty.noResultsTitle')}</h3>
       <p className="muted" style={{ marginTop: '0.5rem' }}>
-        Try changing your search, category or city filter, or clear filters to view all currently bookable businesses.
+        {t('explore.empty.noResultsBody')}
       </p>
       <div className="explore-empty-actions">
         {onClearFilters && (
           <button onClick={onClearFilters} className="btn btn-accent">
-            Clear filters
+            {t('explore.filters.clear')}
           </button>
         )}
 
         <Link href="/register" className="btn btn-ghost">
-          List your business
+          {t('explore.results.listBusiness')}
         </Link>
       </div>
     </div>

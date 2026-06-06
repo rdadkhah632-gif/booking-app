@@ -158,7 +158,8 @@ function staffNotificationText(
 }
 
 export default function StaffNotificationsPage() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -178,7 +179,7 @@ export default function StaffNotificationsPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      window.location.href = "/login";
+      window.location.href = "/login?redirectTo=/staff/notifications";
       return;
     }
 
@@ -373,7 +374,7 @@ export default function StaffNotificationsPage() {
         )}
 
         {!loading && !error && filteredNotifications.length === 0 && (
-          <div className="card">
+          <div className="card staff-notification-empty">
             <h3>
               {filter === "unread"
                 ? t("staffNotifications.empty.unreadTitle", "No unread updates")
@@ -393,6 +394,14 @@ export default function StaffNotificationsPage() {
                     "Booking updates, schedule changes and staff account messages will appear here.",
                   )}
             </p>
+            <div className="staff-notification-empty-actions">
+              <Link href="/staff/calendar" className="btn btn-ghost">
+                {t("staffNotifications.actions.viewSchedule", "View schedule")}
+              </Link>
+              <Link href="/support/staff" className="btn btn-ghost">
+                {t("staffNotifications.actions.openSupport", "Open support")}
+              </Link>
+            </div>
           </div>
         )}
 
@@ -419,13 +428,14 @@ export default function StaffNotificationsPage() {
                     <p className="muted">{displayNotification.message}</p>
 
                     <p className="small muted">
-                      {new Date(item.created_at).toLocaleString()}
+                      {new Date(item.created_at).toLocaleString(dateLocale)}
                     </p>
                   </div>
 
                   <div className="staff-notification-actions">
                     {item.action_url &&
-                      item.action_url.startsWith("/staff") && (
+                      (item.action_url.startsWith("/staff") ||
+                        item.action_url.startsWith("/support")) && (
                         <Link href={item.action_url} className="btn btn-ghost">
                           {notificationActionLabel(item.type)}
                         </Link>
@@ -473,6 +483,23 @@ export default function StaffNotificationsPage() {
           gap: 1rem;
         }
 
+        .staff-notification-empty {
+          display: grid;
+          gap: 0.75rem;
+          justify-items: start;
+        }
+
+        .staff-notification-empty h3,
+        .staff-notification-empty p {
+          margin: 0;
+        }
+
+        .staff-notification-empty-actions {
+          display: flex;
+          gap: 0.65rem;
+          flex-wrap: wrap;
+        }
+
         .staff-notification-toolbar,
         .staff-notification-card {
           gap: 0.75rem;
@@ -512,14 +539,16 @@ export default function StaffNotificationsPage() {
           }
 
           .staff-notification-filters,
-          .staff-notification-actions {
+          .staff-notification-actions,
+          .staff-notification-empty-actions {
             justify-content: stretch;
           }
 
           .staff-notification-filters :global(.btn),
           .staff-notification-filters button,
           .staff-notification-actions :global(.btn),
-          .staff-notification-actions button {
+          .staff-notification-actions button,
+          .staff-notification-empty-actions :global(.btn) {
             width: 100%;
           }
 

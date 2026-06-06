@@ -44,7 +44,10 @@ export default function ExploreHero({ marketplaceStats }: Props) {
               borderRadius: 999
             }}
           >
-            {marketplaceStats.businesses} bookable business{marketplaceStats.businesses === 1 ? '' : 'es'}
+            {marketplaceStats.businesses}{' '}
+            {marketplaceStats.businesses === 1
+              ? t('explore.stats.bookableBusiness')
+              : t('explore.stats.bookableBusinesses')}
           </span>
 
           <span
@@ -57,7 +60,10 @@ export default function ExploreHero({ marketplaceStats }: Props) {
               border: '1px solid var(--border)'
             }}
           >
-            {marketplaceStats.cities} cit{marketplaceStats.cities === 1 ? 'y' : 'ies'}
+            {marketplaceStats.cities}{' '}
+            {marketplaceStats.cities === 1
+              ? t('explore.stats.city')
+              : t('explore.stats.cities')}
           </span>
 
           <span
@@ -73,18 +79,6 @@ export default function ExploreHero({ marketplaceStats }: Props) {
             {t('explore.badge.availability')}
           </span>
 
-          <span
-            className="small"
-            style={{
-              background: 'var(--surface-2)',
-              color: 'var(--text-muted)',
-              padding: '0.25rem 0.65rem',
-              borderRadius: 999,
-              border: '1px solid var(--border)'
-            }}
-          >
-            {t('explore.badge.noCheckout')}
-          </span>
         </div>
       </div>
     </div>
