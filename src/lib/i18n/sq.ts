@@ -2762,4 +2762,64 @@ export const sq: TranslationTree = {
   "admin.businesses.currentState": "Gjendja aktuale operative",
   "admin.businesses.saveScope":
     "Ruajtja këtu përditëson publikimin, kontaktin e faturimit dhe cilësimet e rezervimeve. Statusi i faturimit mbetet vetëm për lexim.",
+  "support.status.inProgress": "Në proces",
+  "support.status.waitingForUser": "Në pritje të përdoruesit",
+  "support.priority.low": "I ulët",
+  "support.messages.updated": "Përditësuar",
+  "support.customer.contextError":
+    "Nuk mundëm të ngarkonim llogarinë tënde të klientit për suport. Rifresko faqen dhe provo përsëri.",
+  "support.business.contextError":
+    "Nuk mundëm të ngarkonim llogarinë tënde të biznesit për suport. Rifresko faqen dhe provo përsëri.",
+  "support.staff.contextError":
+    "Nuk mundëm të ngarkonim llogarinë tënde të stafit për suport. Rifresko faqen dhe provo përsëri.",
+  "support.thread.adminReplyNotificationTitle":
+    "Përdoruesi iu përgjigj ticket-it të suportit",
+  "admin.support.loading": "Duke ngarkuar inbox-in e suportit...",
+  "admin.support.kicker": "Operatori i Mirëbook",
+  "admin.support.title": "Inbox-i i suportit",
+  "admin.support.subtitle":
+    "Shqyrto mesazhet e suportit nga klientët, stafi dhe bizneset, përgjigju nga hapësira e operatorit dhe zgjidh bisedat e përfunduara.",
+  "admin.support.dashboard": "Paneli i administratorit",
+  "admin.support.error.load": "Nuk mund të ngarkohej inbox-i i suportit.",
+  "admin.support.filters.all": "Të gjitha ticket-et",
+  "admin.support.inbox": "Inbox",
+  "admin.support.tickets": "ticket-e",
+  "admin.support.empty.title": "Nuk u gjetën ticket-e suporti",
+  "admin.support.empty.body":
+    "Mesazhet e reja nga klientët, stafi dhe bizneset do të shfaqen këtu.",
+  "admin.support.unknownUser": "Përdorues i panjohur",
+  "admin.support.select.title": "Zgjidh një ticket",
+  "admin.support.select.body":
+    "Zgjidh një kërkesë suporti nga inbox-i për të parë detajet dhe për t'u përgjigjur.",
+  "admin.support.unknownName": "Emër i panjohur",
+  "admin.support.noEmail": "Pa email",
+  "admin.support.replyGuidance":
+    "Përgjigjet e përdoruesit e rihapin ticket-in. Përgjigjet e operatorit njoftojnë automatikisht kërkuesin.",
+  "admin.support.accountType": "Lloji i llogarisë",
+  "admin.support.unknown": "E panjohur",
+  "admin.support.replyStatus": "Statusi i përgjigjes",
+  "admin.support.replied": "Iu përgjigj",
+  "admin.support.notReplied": "Pa përgjigje",
+  "admin.support.lastUpdated": "Përditësimi i fundit",
+  "admin.support.openRequester": "Hap llogarinë e kërkuesit",
+  "admin.support.openBusiness": "Hap biznesin e lidhur",
+  "admin.support.userMessage": "Mesazhi i kërkuesit",
+  "admin.support.operatorReply": "Përgjigje e operatorit",
+  "admin.support.userReply": "Përgjigje e përdoruesit",
+  "admin.support.replyAs": "Përgjigju si suporti i Mirëbook",
+  "admin.support.replyPlaceholder": "Shkruaj përgjigjen...",
+  "admin.support.markResolved": "Shëno si të zgjidhur",
+  "admin.support.ticketFallback": "Ticket suporti",
+  "admin.support.notification.resolvedTitle": "Ticket-i i suportit u zgjidh",
+  "admin.support.notification.resolvedBody":
+    "Suporti i Mirëbook e ka shënuar bisedën tënde të suportit si të zgjidhur.",
+  "admin.support.notification.replyTitle": "Suporti i Mirëbook u përgjigj",
+  "admin.support.success.resolved": "Ticket-i i suportit u shënua si i zgjidhur.",
+  "admin.support.success.updated": "Ticket-i i suportit u përditësua.",
+  "admin.support.success.replySent": "Përgjigjja u dërgua.",
+  "support.operator.flowKicker": "Rrjedha operative",
+  "support.operator.flowTitle":
+    "Kërkesat e suportit lidhen me inbox-in e operatorit",
+  "support.operator.flowBody":
+    "Formularët e suportit për klientë, staf dhe biznese krijojnë biseda të ruajtura dhe njoftojnë operatorët me një link direkt te ticket-i.",
 };

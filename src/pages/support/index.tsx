@@ -113,12 +113,20 @@ export default function SupportPage() {
               </div>
 
               <div className="card support-operator-note">
-                <p className="small muted">Production reminder</p>
-                <h2>Support notifications should go to admin</h2>
+                <p className="small muted">
+                  {t('support.operator.flowKicker', 'Operational flow')}
+                </p>
+                <h2>
+                  {t(
+                    'support.operator.flowTitle',
+                    'Support requests are connected to the operator inbox',
+                  )}
+                </h2>
                 <p className="muted" style={{ marginTop: "0.5rem" }}>
-                  The next step is updating the customer, staff and business
-                  support forms so every new support request creates an operator
-                  notification and appears in the admin support inbox.
+                  {t(
+                    'support.operator.flowBody',
+                    'Customer, staff and business support forms create saved conversations and notify operators with a direct link to the ticket.',
+                  )}
                 </p>
               </div>
             </>

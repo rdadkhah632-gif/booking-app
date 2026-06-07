@@ -2715,4 +2715,64 @@ export const en: TranslationTree = {
   "admin.businesses.currentState": "Current operational state",
   "admin.businesses.saveScope":
     "Saving here updates publishing, billing contact and booking settings only. Billing status remains read-only.",
+  "support.status.inProgress": "In progress",
+  "support.status.waitingForUser": "Waiting for user",
+  "support.priority.low": "Low",
+  "support.messages.updated": "Updated",
+  "support.customer.contextError":
+    "We could not load your customer account for support. Please refresh and try again.",
+  "support.business.contextError":
+    "We could not load your business account for support. Please refresh and try again.",
+  "support.staff.contextError":
+    "We could not load your staff account for support. Please refresh and try again.",
+  "support.thread.adminReplyNotificationTitle":
+    "User replied to support ticket",
+  "admin.support.loading": "Loading support inbox...",
+  "admin.support.kicker": "Mirëbook operator",
+  "admin.support.title": "Support inbox",
+  "admin.support.subtitle":
+    "Review customer, staff and business support messages, reply from the operator workspace and resolve completed conversations.",
+  "admin.support.dashboard": "Admin dashboard",
+  "admin.support.error.load": "Could not load support inbox.",
+  "admin.support.filters.all": "All tickets",
+  "admin.support.inbox": "Inbox",
+  "admin.support.tickets": "tickets",
+  "admin.support.empty.title": "No support tickets found",
+  "admin.support.empty.body":
+    "New customer, staff and business messages will appear here.",
+  "admin.support.unknownUser": "Unknown user",
+  "admin.support.select.title": "Select a ticket",
+  "admin.support.select.body":
+    "Choose a support request from the inbox to view details and reply.",
+  "admin.support.unknownName": "Unknown name",
+  "admin.support.noEmail": "No email",
+  "admin.support.replyGuidance":
+    "User replies reopen this ticket. Operator replies notify the requester automatically.",
+  "admin.support.accountType": "Account type",
+  "admin.support.unknown": "Unknown",
+  "admin.support.replyStatus": "Reply status",
+  "admin.support.replied": "Replied",
+  "admin.support.notReplied": "Not replied",
+  "admin.support.lastUpdated": "Last updated",
+  "admin.support.openRequester": "Open requester account",
+  "admin.support.openBusiness": "Open linked business",
+  "admin.support.userMessage": "Requester message",
+  "admin.support.operatorReply": "Operator reply",
+  "admin.support.userReply": "User reply",
+  "admin.support.replyAs": "Reply as Mirëbook support",
+  "admin.support.replyPlaceholder": "Type your reply...",
+  "admin.support.markResolved": "Mark resolved",
+  "admin.support.ticketFallback": "Support ticket",
+  "admin.support.notification.resolvedTitle": "Support ticket resolved",
+  "admin.support.notification.resolvedBody":
+    "Mirëbook support has marked your support conversation as resolved.",
+  "admin.support.notification.replyTitle": "Mirëbook support replied",
+  "admin.support.success.resolved": "Support ticket marked as resolved.",
+  "admin.support.success.updated": "Support ticket updated.",
+  "admin.support.success.replySent": "Reply sent.",
+  "support.operator.flowKicker": "Operational flow",
+  "support.operator.flowTitle":
+    "Support requests are connected to the operator inbox",
+  "support.operator.flowBody":
+    "Customer, staff and business support forms create saved conversations and notify operators with a direct link to the ticket.",
 };

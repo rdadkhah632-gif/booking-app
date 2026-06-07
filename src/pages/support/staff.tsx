@@ -58,6 +58,7 @@ export default function StaffSupportPage() {
 
   async function loadContext() {
     setLoading(true);
+    setError(null);
 
     const {
       data: { session },
@@ -68,11 +69,22 @@ export default function StaffSupportPage() {
       return;
     }
 
-    const { data: profileData } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("id, email, full_name")
       .eq("id", session.user.id)
       .single();
+
+    if (profileError) {
+      setError(
+        t(
+          "support.staff.contextError",
+          "We could not load your staff account for support. Please refresh and try again.",
+        ),
+      );
+      setLoading(false);
+      return;
+    }
 
     if (profileData) {
       setProfile(profileData);
@@ -80,7 +92,7 @@ export default function StaffSupportPage() {
       setEmail(profileData.email || "");
     }
 
-    const { data: staffData } = await supabase
+    const { data: staffData, error: staffError } = await supabase
       .from("staff_members")
       .select(
         "id, business_id, name, email, role_title, permission_role, active",
@@ -88,6 +100,17 @@ export default function StaffSupportPage() {
       .eq("user_id", session.user.id)
       .limit(1)
       .maybeSingle();
+
+    if (staffError) {
+      setError(
+        t(
+          "support.staff.contextError",
+          "We could not load your staff account for support. Please refresh and try again.",
+        ),
+      );
+      setLoading(false);
+      return;
+    }
 
     let resolvedStaff = staffData as StaffProfile | null;
 
@@ -122,7 +145,7 @@ export default function StaffSupportPage() {
         title,
         body,
         type: "support_request_staff",
-        action_url: "/admin/support",
+        action_url: `/admin/support?ticketId=${ticketId}`,
       })),
     );
   }
@@ -299,7 +322,7 @@ export default function StaffSupportPage() {
             </div>
           )}
 
-          {!loading && (
+          {!loading && profile && (
             <div className="support-grid">
               <form
                 onSubmit={submitSupportMessage}

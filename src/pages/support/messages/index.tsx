@@ -19,8 +19,12 @@ function statusLabel(status: string | null | undefined, t: (key: string, fallbac
   const value = String(status || 'open').toLowerCase()
 
   if (value === 'open') return t('support.status.open', 'Open')
-  if (value === 'waiting') return t('support.status.waiting', 'Waiting')
-  if (value === 'in_review') return t('support.status.inReview', 'In review')
+  if (value === 'waiting' || value === 'waiting_for_user') {
+    return t('support.status.waitingForUser', 'Waiting for user')
+  }
+  if (value === 'in_review' || value === 'in_progress') {
+    return t('support.status.inProgress', 'In progress')
+  }
   if (value === 'resolved') return t('support.status.resolved', 'Resolved')
   if (value === 'closed') return t('support.status.closed', 'Closed')
 
@@ -153,6 +157,9 @@ export default function SupportMessagesPage() {
                         </p>
                         <p className="small muted" style={{ marginTop: '0.4rem' }}>
                           {t('support.messages.created', 'Created')} {formatDate(message.created_at, unknownDate)}
+                          {message.updated_at && message.updated_at !== message.created_at
+                            ? ` · ${t('support.messages.updated', 'Updated')} ${formatDate(message.updated_at, unknownDate)}`
+                            : ''}
                         </p>
                       </div>
                       <span aria-hidden="true">→</span>

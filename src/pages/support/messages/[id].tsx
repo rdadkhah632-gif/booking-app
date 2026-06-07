@@ -15,6 +15,7 @@ type SupportMessage = {
   status?: string | null;
   priority?: string | null;
   created_at?: string | null;
+  updated_at?: string | null;
 };
 
 type SupportReply = {
@@ -32,8 +33,12 @@ function statusLabel(
   const value = String(status || "open").toLowerCase();
 
   if (value === "open") return t("support.status.open", "Open");
-  if (value === "waiting") return t("support.status.waiting", "Waiting");
-  if (value === "in_review") return t("support.status.inReview", "In review");
+  if (value === "waiting" || value === "waiting_for_user") {
+    return t("support.status.waitingForUser", "Waiting for user");
+  }
+  if (value === "in_review" || value === "in_progress") {
+    return t("support.status.inProgress", "In progress");
+  }
   if (value === "resolved") return t("support.status.resolved", "Resolved");
   if (value === "closed") return t("support.status.closed", "Closed");
   if (value === "normal") return t("support.priority.normal", "Normal");
@@ -135,10 +140,13 @@ export default function SupportThreadPage() {
     await supabase.from("notifications").insert(
       admins.map((admin: any) => ({
         user_id: admin.id,
-        title: "User replied to support ticket",
+        title: t(
+          "support.thread.adminReplyNotificationTitle",
+          "User replied to support ticket",
+        ),
         body: text.length > 120 ? `${text.slice(0, 117)}...` : text,
         type: "support_reply_user",
-        action_url: `/admin/support`,
+        action_url: `/admin/support?ticketId=${ticketId}`,
       })),
     );
   }
@@ -170,7 +178,8 @@ export default function SupportThreadPage() {
     await supabase
       .from("support_messages")
       .update({ status: "open" })
-      .eq("id", ticket.id);
+      .eq("id", ticket.id)
+      .eq("user_id", currentUserId);
 
     await notifyAdmins(ticket.id, text);
 
@@ -281,6 +290,17 @@ export default function SupportThreadPage() {
                     {t("support.messages.created", "Created")}
                   </p>
                   <strong>{formatDate(ticket.created_at, unknownDate)}</strong>
+                </div>
+                <div>
+                  <p className="small muted">
+                    {t("support.messages.updated", "Updated")}
+                  </p>
+                  <strong>
+                    {formatDate(
+                      ticket.updated_at || ticket.created_at,
+                      unknownDate,
+                    )}
+                  </strong>
                 </div>
               </div>
 
@@ -416,7 +436,7 @@ export default function SupportThreadPage() {
 
         .support-status-strip {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 0.75rem;
         }
 

@@ -56,6 +56,7 @@ export default function BusinessSupportPage() {
 
   async function loadContext() {
     setLoading(true);
+    setError(null);
 
     const {
       data: { session },
@@ -66,11 +67,22 @@ export default function BusinessSupportPage() {
       return;
     }
 
-    const { data: profileData } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("id, email, full_name")
       .eq("id", session.user.id)
       .single();
+
+    if (profileError) {
+      setError(
+        t(
+          "support.business.contextError",
+          "We could not load your business account for support. Please refresh and try again.",
+        ),
+      );
+      setLoading(false);
+      return;
+    }
 
     if (profileData) {
       setProfile(profileData);
@@ -78,11 +90,22 @@ export default function BusinessSupportPage() {
       setEmail(profileData.email || "");
     }
 
-    const { data: businessData } = await supabase
+    const { data: businessData, error: businessError } = await supabase
       .from("businesses")
       .select("id, name, published, subscription_status")
       .eq("user_id", session.user.id)
       .order("created_at", { ascending: false });
+
+    if (businessError) {
+      setError(
+        t(
+          "support.business.contextError",
+          "We could not load your business account for support. Please refresh and try again.",
+        ),
+      );
+      setLoading(false);
+      return;
+    }
 
     const rows = (businessData || []) as Business[];
     setBusinesses(rows);
@@ -105,7 +128,7 @@ export default function BusinessSupportPage() {
         title,
         body,
         type: "support_request_business",
-        action_url: "/admin/support",
+        action_url: `/admin/support?ticketId=${ticketId}`,
       })),
     );
   }
@@ -254,7 +277,7 @@ export default function BusinessSupportPage() {
             </div>
           )}
 
-          {!loading && (
+          {!loading && profile && (
             <div className="support-grid">
               <form
                 onSubmit={submitSupportMessage}

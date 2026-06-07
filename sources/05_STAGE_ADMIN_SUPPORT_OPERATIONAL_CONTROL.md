@@ -6,6 +6,8 @@ Batch 1 status: implemented; production build passed.
 
 Batch 2 status: implemented; production build passed.
 
+Batch 3 status: implemented; production build passed.
+
 Stage 1, Stage 2 and Stage 3 are complete and protected.
 
 Stage 4 billing foundation is complete with tracked operational follow-ups.
@@ -169,6 +171,121 @@ Implemented:
 Existing publishing and booking-setting controls remain unchanged. This batch
 does not add billing mutations or destructive operator actions.
 
+## Batch 3 - Support Message Flow And Admin Inbox
+
+Status: implemented; production build passed.
+
+### Support Route Protection
+
+The shared authenticated navigation now treats role-specific support routes as
+explicit workspaces:
+
+- `/support/customer` always renders the customer support navigation context
+- `/support/business` renders business navigation only when the account owns a
+  business; otherwise it remains in a safe customer context
+- `/support/staff` renders staff navigation only when the account has staff
+  access; otherwise it remains in a safe customer context
+- `/admin/support` remains admin-only and redirects non-admin users to the
+  public support hub
+
+This resolves the QA follow-up where direct customer-support navigation could
+briefly inherit an operator-style route presentation. It does not change the
+underlying account capability model or default login routing.
+
+Unauthenticated customer, business, staff and message routes continue to
+redirect to login with the intended support route as `redirectTo`.
+
+### Support Message Flow
+
+Customer, business and staff support forms:
+
+1. require an authenticated session
+2. load the current profile and relevant business/staff context
+3. show a clear translated error if that context cannot be loaded
+4. validate subject and message fields
+5. insert a real `support_messages` record with `user_id`, role context,
+   optional `business_id`, category, subject, status and priority
+6. show success only after the insert succeeds
+7. notify admin profiles with a link to the exact ticket
+8. link the requester to the saved conversation
+
+No email, live-chat or fake-success behavior was added.
+
+### Admin Support Inbox
+
+`/admin/support` now:
+
+- loads after the router is ready so exact-ticket links are reliable
+- honors `/admin/support?ticketId=<id>` from support notifications
+- separates open, in-progress/waiting and resolved queues
+- keeps the selected ticket inside the active filter
+- supports safe status changes to open, in progress, waiting for user and
+  resolved
+- uses the existing `in_review` stored value for the displayed In progress
+  state, avoiding an unverified new database status
+- shows requester name/email, account type, category, priority, status, reply
+  state, created time and last-updated time
+- resolves linked business names and links to the business operator view
+- links to the requester account when `user_id` is available
+- displays the original message and complete reply thread
+- notifies the requester after an operator reply or resolution
+- provides translated empty, loading, status and action states in EN and SQ
+
+No delete, impersonation, access-lock or billing-control action was added.
+
+### Message Visibility And Access
+
+`/support/messages` remains scoped to:
+
+```text
+support_messages.user_id = current authenticated user
+```
+
+`/support/messages/[id]` first loads the ticket using both its ID and the
+current user's ID. User replies also scope the ticket status update by both
+ticket ID and current user ID.
+
+Admins use `/admin/support`; the user conversation pages do not provide an
+admin bypass that could expose another user's ticket.
+
+The conversation list and detail page now display current In progress and
+Waiting for user labels consistently, plus the last-updated time when
+available.
+
+### Batch 3 QA Checklist
+
+- customer direct navigation to `/support/customer` shows customer support,
+  never an Admin only state
+- business owner can open `/support/business` with owned business context
+- linked or staff-intent account can open `/support/staff`
+- unauthenticated support form/message routes redirect to login safely
+- non-admin navigation to `/admin/support` returns to `/support`
+- customer, business and staff forms create real support records
+- failed profile/context loads show a visible error and do not fake success
+- successful form submission links to the created conversation
+- admin notification opens the exact ticket in `/admin/support`
+- open, in-progress/waiting and resolved filters show the correct tickets
+- status, priority, reply and resolution updates remain functional
+- admin inbox shows requester, role, business, timestamps and thread context
+- user message list contains only the current user's records
+- direct access to another user's ticket ID returns not found
+- EN and SQ labels render without raw translation keys
+- support pages remain contained on mobile
+- booking, Explore, Stripe, billing access and role defaults remain unchanged
+
+### Batch 3 Known Limitations
+
+- `support_messages` and `support_replies` exist in the live application but
+  their schema and RLS are not versioned in this repository.
+- Ticket creation and admin notification creation are separate best-effort
+  client operations rather than one atomic server transaction.
+- Operator replies and status changes still use authenticated Supabase client
+  writes protected by existing RLS.
+- There is no operator assignment, SLA, attachment, email delivery, search or
+  immutable support audit log.
+- `updated_at` depends on the existing support table behavior; Batch 3 does not
+  add a database trigger.
+
 ## Current Gaps And Risks
 
 - Admin route checks are performed in page code after the client session loads.
@@ -196,28 +313,30 @@ does not add billing mutations or destructive operator actions.
 
 ### Batch 3 - Safe Support Operations
 
-- improve admin support filters and user/business context links
-- show unread/open/waiting queues clearly
-- add operator ownership only if the support schema is deliberately extended
-- preserve user-scoped conversation access
-- avoid a full external inbox or email integration
+Implemented. See Batch 3 above.
 
-### Batch 4 - Protected Admin Mutations
+### Batch 4 - Manual Billing And Founding Controls
+
+- add protected server-side manual billing mutations for approved operators
+- support founding-business, agreed-price, trial and manual-comped changes
+- record who changed billing state, when and why
+- keep access and public listing behavior informational
+- do not expose private notes or Stripe identifiers to business owners
+
+### Batch 5 - Protected Admin Mutations
 
 - move role/admin access changes behind server-side privileged routes
 - add an operator action audit table before expanding controls
-- add protected manual billing adjustments only after audit requirements are
-  approved
 - do not add business deletion, impersonation or blanket lockout controls
 
-### Batch 5 - Legacy Billing Cleanup
+### Batch 6 - Legacy Billing Cleanup
 
 - compare legacy `businesses` subscription fields with `business_billing`
 - migrate any required historical values
 - update remaining admin user and notification displays
 - remove legacy writes only after live data is verified
 
-### Batch 6 - Closure QA
+### Batch 7 - Closure QA
 
 - verify admin/non-admin route behavior
 - verify customer, business and staff ticket creation and reply scoping

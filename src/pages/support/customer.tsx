@@ -47,6 +47,7 @@ export default function CustomerSupportPage() {
 
   async function loadProfile() {
     setLoading(true);
+    setError(null);
 
     const {
       data: { session },
@@ -57,11 +58,22 @@ export default function CustomerSupportPage() {
       return;
     }
 
-    const { data } = await supabase
+    const { data, error: profileError } = await supabase
       .from("profiles")
       .select("id, email, full_name, phone")
       .eq("id", session.user.id)
       .single();
+
+    if (profileError) {
+      setError(
+        t(
+          "support.customer.contextError",
+          "We could not load your customer account for support. Please refresh and try again.",
+        ),
+      );
+      setLoading(false);
+      return;
+    }
 
     if (data) {
       setProfile(data);
@@ -86,7 +98,7 @@ export default function CustomerSupportPage() {
         title,
         body,
         type: "support_request",
-        action_url: `/admin/support`,
+        action_url: `/admin/support?ticketId=${ticketId}`,
       })),
     );
   }
@@ -232,7 +244,7 @@ export default function CustomerSupportPage() {
             </div>
           )}
 
-          {!loading && (
+          {!loading && profile && (
             <div className="support-grid">
               <form
                 onSubmit={submitSupportMessage}
