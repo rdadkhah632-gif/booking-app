@@ -2723,4 +2723,43 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.overview.hidden": "I fshehur",
   "dashboardBusinesses.overview.publicBody":
     "Explore shfaq vetëm bizneset e publikuara që kalojnë kontrollet e gatishmërisë për rezervime.",
+  "admin.operations.businesses": "Bizneset",
+  "admin.operations.published": "të publikuara",
+  "admin.operations.draft": "drafte",
+  "admin.operations.needsAttention": "Kërkojnë vëmendje",
+  "admin.operations.needsAttentionBody":
+    "Konfigurim, faturim ose shqyrtim rezervimi në pritje",
+  "admin.operations.readyBusinesses": "Gati për rezervime",
+  "admin.operations.notReady": "jo gati",
+  "admin.operations.billingActiveTrial": "Provë / aktiv në faturim",
+  "admin.operations.paymentAttention": "me problem pagese",
+  "admin.operations.notConfigured": "pa konfiguruar",
+  "admin.operations.activeMonthlyValue": "Vlera mujore aktive",
+  "admin.operations.authoritativeBilling":
+    "Nga regjistrat autoritativë aktivë të faturimit",
+  "admin.operations.openSupport": "Kërkesa të hapura suporti",
+  "admin.operations.waitingSupport": "në pritje",
+  "admin.operations.totalSupport": "gjithsej",
+  "admin.operations.dataSources": "Burimet e të dhënave operative",
+  "admin.operations.readOnlyTitle": "Pamje vetëm për lexim para lançimit",
+  "admin.operations.readOnlyBody":
+    "Gatishmëria vjen nga konfigurimi i biznesit, numrat e suportit nga bisedat e suportit dhe faturimi nga tabela e sinkronizuar me Stripe.",
+  "admin.operations.unreadNotifications": "njoftime të palexuara",
+  "admin.operations.operatorNotices": "njoftime operatori të ngarkuara",
+  "admin.operations.reviewBusinesses": "Shqyrto bizneset",
+  "admin.operations.openInbox": "Hap inbox-in e suportit",
+  "admin.operations.priceNotSet": "Çmimi nuk është vendosur",
+  "admin.businesses.billing.kicker": "Gjendja autoritative e faturimit",
+  "admin.businesses.billing.readOnly":
+    "Këtu është vetëm për lexim. Webhook-et e Stripe dhe veprimet manuale të kontrolluara e zotërojnë këtë regjistër.",
+  "admin.businesses.billing.price": "Çmimi mujor i rënë dakord",
+  "admin.businesses.billing.trialEnd": "Fundi i provës",
+  "admin.businesses.billing.trialEnded": "Prova ka përfunduar",
+  "admin.businesses.billing.periodEnd": "Fundi i periudhës aktuale",
+  "admin.businesses.billing.offer": "Oferta tregtare",
+  "admin.businesses.billing.founding": "Biznes themelues",
+  "admin.businesses.billing.standard": "Plan standard lançimi",
+  "admin.businesses.currentState": "Gjendja aktuale operative",
+  "admin.businesses.saveScope":
+    "Ruajtja këtu përditëson publikimin, kontaktin e faturimit dhe cilësimet e rezervimeve. Statusi i faturimit mbetet vetëm për lexim.",
 };

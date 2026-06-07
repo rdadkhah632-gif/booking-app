@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
+import {
+  BillingState,
+  defaultBillingState,
+  formatBillingAmount
+} from '@/lib/billing'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type AdminProfile = {
   id: string
@@ -47,16 +53,18 @@ type BusinessCounts = {
 type NotificationSummary = {
   unread: number
   adminSent: number
-  supportNotice: number
+}
+
+type SupportSummary = {
+  open: number
+  waiting: number
+  resolved: number
+  total: number
 }
 
 function statusLabel(status?: string | null) {
   if (!status) return 'Trial'
   return status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
-}
-
-function formatMoney(value?: number | null) {
-  return `£${Number(value || 0).toFixed(2)}`
 }
 
 function formatDate(value?: string | null) {
@@ -73,12 +81,20 @@ function daysUntil(value?: string | null) {
 
 export default function AdminIndexPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null)
   const [businesses, setBusinesses] = useState<BusinessRow[]>([])
   const [users, setUsers] = useState<UserSummary[]>([])
   const [countsByBusiness, setCountsByBusiness] = useState<Record<string, BusinessCounts>>({})
-  const [notificationSummary, setNotificationSummary] = useState<NotificationSummary>({ unread: 0, adminSent: 0, supportNotice: 0 })
+  const [billingByBusiness, setBillingByBusiness] = useState<Record<string, BillingState>>({})
+  const [notificationSummary, setNotificationSummary] = useState<NotificationSummary>({ unread: 0, adminSent: 0 })
+  const [supportSummary, setSupportSummary] = useState<SupportSummary>({
+    open: 0,
+    waiting: 0,
+    resolved: 0,
+    total: 0
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -120,29 +136,44 @@ export default function AdminIndexPage() {
     return issues
   }
 
+  function getBillingState(businessId: string) {
+    return billingByBusiness[businessId] || defaultBillingState(businessId)
+  }
+
   function needsAttention(business: BusinessRow) {
     const counts = getCounts(business.id)
-    const trialDays = daysUntil(business.trial_ends_at)
+    const billing = getBillingState(business.id)
+    const trialDays = daysUntil(billing.trial_end)
 
     return (
       readinessIssues(business).length > 0 ||
       counts.pendingBookings > 0 ||
-      business.subscription_status === 'past_due' ||
-      business.subscription_status === 'paused' ||
-      ((business.subscription_status || 'trial') === 'trial' && trialDays !== null && trialDays <= 7)
+      ['past_due', 'paused', 'cancelled'].includes(billing.billing_status) ||
+      (billing.billing_status === 'free_trial' && trialDays !== null && trialDays <= 7)
     )
   }
 
   const summary = useMemo(() => {
     const published = businesses.filter((business) => business.published).length
     const draft = businesses.length - published
-    const trial = businesses.filter((business) => (business.subscription_status || 'trial') === 'trial').length
-    const active = businesses.filter((business) => business.subscription_status === 'active').length
-    const paused = businesses.filter((business) => business.subscription_status === 'paused' || business.subscription_status === 'past_due').length
+    const ready = businesses.filter((business) => readinessIssues(business).length === 0).length
+    const trial = businesses.filter((business) =>
+      ['free_trial', 'founding_free'].includes(getBillingState(business.id).billing_status)
+    ).length
+    const active = businesses.filter((business) =>
+      ['active', 'manual_comped'].includes(getBillingState(business.id).billing_status)
+    ).length
+    const paymentAttention = businesses.filter((business) =>
+      ['past_due', 'cancelled', 'paused'].includes(getBillingState(business.id).billing_status)
+    ).length
+    const notConfigured = businesses.filter((business) =>
+      getBillingState(business.id).billing_status === 'not_configured'
+    ).length
     const attention = businesses.filter((business) => needsAttention(business)).length
     const monthlyTotal = businesses.reduce((total, business) => {
-      if (business.subscription_status !== 'active') return total
-      return total + Number(business.subscription_price_monthly || 0)
+      const billing = getBillingState(business.id)
+      if (billing.billing_status !== 'active') return total
+      return total + Number(billing.price_amount || 0)
     }, 0)
 
     return {
@@ -152,28 +183,34 @@ export default function AdminIndexPage() {
       businesses: businesses.length,
       published,
       draft,
+      ready,
       trial,
       active,
-      paused,
+      paymentAttention,
+      notConfigured,
       attention,
       monthlyTotal
     }
-  }, [businesses, users, countsByBusiness])
+  }, [businesses, users, countsByBusiness, billingByBusiness])
 
   const attentionBusinesses = useMemo(() => {
     return businesses
       .filter((business) => needsAttention(business))
       .slice(0, 8)
-  }, [businesses, countsByBusiness])
+  }, [businesses, countsByBusiness, billingByBusiness])
 
   const trialEndingBusinesses = useMemo(() => {
     return businesses
-      .filter((business) => (business.subscription_status || 'trial') === 'trial')
-      .map((business) => ({ business, days: daysUntil(business.trial_ends_at) }))
+      .filter((business) => getBillingState(business.id).billing_status === 'free_trial')
+      .map((business) => ({
+        business,
+        billing: getBillingState(business.id),
+        days: daysUntil(getBillingState(business.id).trial_end)
+      }))
       .filter((row) => row.days !== null)
       .sort((a, b) => Number(a.days) - Number(b.days))
       .slice(0, 8)
-  }, [businesses])
+  }, [businesses, billingByBusiness])
 
   const latestBusinesses = useMemo(() => {
     return businesses.slice(0, 8)
@@ -204,6 +241,7 @@ export default function AdminIndexPage() {
         setBusinesses([])
         setUsers([])
         setCountsByBusiness({})
+        setBillingByBusiness({})
         setLoading(false)
         return
       }
@@ -245,8 +283,14 @@ export default function AdminIndexPage() {
 
       setUsers((userData || []) as UserSummary[])
 
-      await loadCounts(loadedBusinesses.map((business) => business.id))
-      await loadNotificationSummary()
+      const businessIds = loadedBusinesses.map((business) => business.id)
+
+      await Promise.all([
+        loadCounts(businessIds),
+        loadBillingState(businessIds),
+        loadNotificationSummary(),
+        loadSupportSummary()
+      ])
 
       setLoading(false)
     } catch (err: any) {
@@ -347,8 +391,69 @@ export default function AdminIndexPage() {
 
     setNotificationSummary({
       unread: rows.filter((row: any) => !row.read_at).length,
-      adminSent: rows.filter((row: any) => String(row.type || '').startsWith('admin_') || ['trial_reminder', 'billing_notice', 'support_notice', 'platform_update'].includes(String(row.type || ''))).length,
-      supportNotice: rows.filter((row: any) => row.type === 'support_notice').length
+      adminSent: rows.filter((row: any) => String(row.type || '').startsWith('admin_') || ['trial_reminder', 'billing_notice', 'support_notice', 'platform_update'].includes(String(row.type || ''))).length
+    })
+  }
+
+  async function loadBillingState(businessIds: string[]) {
+    if (businessIds.length === 0) {
+      setBillingByBusiness({})
+      return
+    }
+
+    const { data, error: billingError } = await supabase
+      .from('business_billing')
+      .select(`
+        id,
+        business_id,
+        billing_status,
+        plan_name,
+        price_amount,
+        currency,
+        trial_start,
+        trial_end,
+        founding_business,
+        second_month_free_eligible,
+        current_period_end,
+        created_at,
+        updated_at
+      `)
+      .in('business_id', businessIds)
+
+    if (billingError) throw billingError
+
+    const nextBilling = ((data || []) as BillingState[]).reduce(
+      (map: Record<string, BillingState>, billing) => {
+        map[billing.business_id] = billing
+        return map
+      },
+      {}
+    )
+
+    setBillingByBusiness(nextBilling)
+  }
+
+  async function loadSupportSummary() {
+    const { data, error: supportError } = await supabase
+      .from('support_messages')
+      .select('id, status')
+      .limit(1000)
+
+    if (supportError) throw supportError
+
+    const rows = data || []
+
+    setSupportSummary({
+      open: rows.filter((row: any) =>
+        ['open', 'new', 'pending'].includes(String(row.status || 'open'))
+      ).length,
+      waiting: rows.filter((row: any) =>
+        ['waiting', 'waiting_for_user', 'in_review'].includes(String(row.status || ''))
+      ).length,
+      resolved: rows.filter((row: any) =>
+        ['resolved', 'closed'].includes(String(row.status || ''))
+      ).length,
+      total: rows.length
     })
   }
 
@@ -451,27 +556,35 @@ export default function AdminIndexPage() {
 
           <div className="grid-4">
             <div className="card admin-metric-card">
-              <p className="small muted">Businesses</p>
+              <p className="small muted">{t('admin.operations.businesses', 'Businesses')}</p>
               <h2>{summary.businesses}</h2>
-              <p className="small muted">{summary.published} published · {summary.draft} draft</p>
+              <p className="small muted">
+                {summary.published} {t('admin.operations.published', 'published')} · {summary.draft} {t('admin.operations.draft', 'draft')}
+              </p>
             </div>
 
             <div className="card admin-metric-card" style={{ borderColor: summary.attention > 0 ? 'rgba(255,190,11,0.35)' : 'var(--border)' }}>
-              <p className="small muted">Needs attention</p>
+              <p className="small muted">{t('admin.operations.needsAttention', 'Needs attention')}</p>
               <h2>{summary.attention}</h2>
-              <p className="small muted">Setup, trial, billing or pending action</p>
+              <p className="small muted">
+                {t('admin.operations.needsAttentionBody', 'Setup, billing or pending booking review')}
+              </p>
             </div>
 
             <div className="card admin-metric-card">
-              <p className="small muted">Trial / active</p>
+              <p className="small muted">{t('admin.operations.readyBusinesses', 'Booking ready')}</p>
+              <h2>{summary.ready}</h2>
+              <p className="small muted">
+                {summary.businesses - summary.ready} {t('admin.operations.notReady', 'not ready')}
+              </p>
+            </div>
+
+            <div className="card admin-metric-card">
+              <p className="small muted">{t('admin.operations.billingActiveTrial', 'Billing active / trial')}</p>
               <h2>{summary.trial} / {summary.active}</h2>
-              <p className="small muted">{summary.paused} paused or past due</p>
-            </div>
-
-            <div className="card admin-metric-card">
-              <p className="small muted">Active monthly value</p>
-              <h2>{formatMoney(summary.monthlyTotal)}</h2>
-              <p className="small muted">Based on active businesses only</p>
+              <p className="small muted">
+                {summary.paymentAttention} {t('admin.operations.paymentAttention', 'payment attention')} · {summary.notConfigured} {t('admin.operations.notConfigured', 'not configured')}
+              </p>
             </div>
           </div>
 
@@ -489,16 +602,42 @@ export default function AdminIndexPage() {
             </div>
 
             <div className="card admin-metric-card">
-              <p className="small muted">Unread notifications</p>
-              <h2>{notificationSummary.unread}</h2>
-              <p className="small muted">Across loaded notification records</p>
+              <p className="small muted">{t('admin.operations.activeMonthlyValue', 'Active monthly value')}</p>
+              <h2>{formatBillingAmount(summary.monthlyTotal, 'GBP')}</h2>
+              <p className="small muted">{t('admin.operations.authoritativeBilling', 'From authoritative active billing rows')}</p>
             </div>
 
             <Link href="/admin/support" className="card admin-metric-card admin-metric-link-card">
-              <p className="small muted">Support inbox</p>
-              <h2>{notificationSummary.supportNotice}</h2>
-              <p className="small muted">Support notices and user help requests</p>
+              <p className="small muted">{t('admin.operations.openSupport', 'Open support requests')}</p>
+              <h2>{supportSummary.open}</h2>
+              <p className="small muted">
+                {supportSummary.waiting} {t('admin.operations.waitingSupport', 'waiting')} · {supportSummary.total} {t('admin.operations.totalSupport', 'total')}
+              </p>
             </Link>
+          </div>
+
+          <div className="card admin-operational-note">
+            <div>
+              <p className="small muted">{t('admin.operations.dataSources', 'Operational data sources')}</p>
+              <h2>{t('admin.operations.readOnlyTitle', 'Read-only launch visibility')}</h2>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                {t(
+                  'admin.operations.readOnlyBody',
+                  'Readiness comes from business setup records, support counts come from support conversations, and billing comes from the Stripe-synced business billing table.'
+                )}
+              </p>
+              <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                {notificationSummary.unread} {t('admin.operations.unreadNotifications', 'unread notifications')} · {notificationSummary.adminSent} {t('admin.operations.operatorNotices', 'operator notices loaded')}
+              </p>
+            </div>
+            <div className="admin-actions">
+              <Link href="/admin/businesses" className="btn btn-ghost">
+                {t('admin.operations.reviewBusinesses', 'Review businesses')}
+              </Link>
+              <Link href="/admin/support" className="btn btn-ghost">
+                {t('admin.operations.openInbox', 'Open support inbox')}
+              </Link>
+            </div>
           </div>
 
           <div className="grid-3">
@@ -560,7 +699,8 @@ export default function AdminIndexPage() {
                   {attentionBusinesses.map((business) => {
                     const counts = getCounts(business.id)
                     const issues = readinessIssues(business)
-                    const trialDays = daysUntil(business.trial_ends_at)
+                    const billing = getBillingState(business.id)
+                    const trialDays = daysUntil(billing.trial_end)
 
                     return (
                       <div key={business.id} className="admin-business-card">
@@ -583,7 +723,7 @@ export default function AdminIndexPage() {
                             {issues.length > 0 ? `Missing: ${issues.join(', ')}` : 'Setup fields look complete'} · {counts.pendingBookings} pending booking{counts.pendingBookings === 1 ? '' : 's'}
                           </p>
 
-                          {trialDays !== null && (business.subscription_status || 'trial') === 'trial' && (
+                          {trialDays !== null && billing.billing_status === 'free_trial' && (
                             <p className="small muted" style={{ marginTop: '0.35rem' }}>
                               Trial: {trialDays >= 0 ? `${trialDays} day${trialDays === 1 ? '' : 's'} left` : 'ended'}
                             </p>
@@ -622,7 +762,7 @@ export default function AdminIndexPage() {
                 </div>
               ) : (
                 <div className="admin-business-list">
-                  {trialEndingBusinesses.map(({ business, days }) => (
+                  {trialEndingBusinesses.map(({ business, billing, days }) => (
                     <div key={business.id} className="admin-business-card compact">
                       <div>
                         <div className="admin-business-title-row">
@@ -632,7 +772,7 @@ export default function AdminIndexPage() {
                           </span>
                         </div>
                         <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                          Ends {formatDate(business.trial_ends_at)} · {business.subscription_plan || 'starter'}
+                          Ends {formatDate(billing.trial_end)} · {billing.plan_name}
                         </p>
                       </div>
 
@@ -676,7 +816,7 @@ export default function AdminIndexPage() {
                           {business.published ? 'Published' : 'Draft'}
                         </span>
                         <span className="admin-pill admin-pill-accent">
-                          {statusLabel(business.subscription_status)}
+                          {statusLabel(getBillingState(business.id).billing_status)}
                         </span>
                       </div>
 
@@ -685,8 +825,17 @@ export default function AdminIndexPage() {
                       </p>
 
                       <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                        {business.subscription_plan || 'starter'} · {formatMoney(business.subscription_price_monthly)} / month
-                        {business.trial_ends_at ? ` · trial ends ${formatDate(business.trial_ends_at)}` : ''}
+                        {getBillingState(business.id).plan_name} · {
+                          getBillingState(business.id).price_amount === null
+                            ? t('admin.operations.priceNotSet', 'Price not set')
+                            : `${formatBillingAmount(
+                                Number(getBillingState(business.id).price_amount),
+                                getBillingState(business.id).currency
+                              )} / month`
+                        }
+                        {getBillingState(business.id).trial_end
+                          ? ` · trial ends ${formatDate(getBillingState(business.id).trial_end)}`
+                          : ''}
                       </p>
 
                       {business.billing_email && (
@@ -854,6 +1003,15 @@ export default function AdminIndexPage() {
           border-color: rgba(255,190,11,0.25);
         }
 
+        .admin-operational-note {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          border-color: rgba(45,212,191,0.25);
+          background: rgba(45,212,191,0.05);
+        }
+
         @media (max-width: 980px) {
           .admin-dashboard-grid {
             grid-template-columns: 1fr;
@@ -863,7 +1021,8 @@ export default function AdminIndexPage() {
         @media (max-width: 640px) {
           .admin-header,
           .admin-section-header,
-          .admin-business-card {
+          .admin-business-card,
+          .admin-operational-note {
             display: grid;
           }
 

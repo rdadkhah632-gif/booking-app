@@ -2676,4 +2676,43 @@ export const en: TranslationTree = {
   "dashboardBusinesses.overview.hidden": "Hidden",
   "dashboardBusinesses.overview.publicBody":
     "Explore only shows published businesses that pass the booking-readiness checks.",
+  "admin.operations.businesses": "Businesses",
+  "admin.operations.published": "published",
+  "admin.operations.draft": "draft",
+  "admin.operations.needsAttention": "Needs attention",
+  "admin.operations.needsAttentionBody":
+    "Setup, billing or pending booking review",
+  "admin.operations.readyBusinesses": "Booking ready",
+  "admin.operations.notReady": "not ready",
+  "admin.operations.billingActiveTrial": "Billing trial / active",
+  "admin.operations.paymentAttention": "payment attention",
+  "admin.operations.notConfigured": "not configured",
+  "admin.operations.activeMonthlyValue": "Active monthly value",
+  "admin.operations.authoritativeBilling":
+    "From authoritative active billing rows",
+  "admin.operations.openSupport": "Open support requests",
+  "admin.operations.waitingSupport": "waiting",
+  "admin.operations.totalSupport": "total",
+  "admin.operations.dataSources": "Operational data sources",
+  "admin.operations.readOnlyTitle": "Read-only launch visibility",
+  "admin.operations.readOnlyBody":
+    "Readiness comes from business setup records, support counts come from support conversations, and billing comes from the Stripe-synced business billing table.",
+  "admin.operations.unreadNotifications": "unread notifications",
+  "admin.operations.operatorNotices": "operator notices loaded",
+  "admin.operations.reviewBusinesses": "Review businesses",
+  "admin.operations.openInbox": "Open support inbox",
+  "admin.operations.priceNotSet": "Price not set",
+  "admin.businesses.billing.kicker": "Authoritative billing state",
+  "admin.businesses.billing.readOnly":
+    "Read-only here. Stripe webhooks and controlled manual operations own this record.",
+  "admin.businesses.billing.price": "Agreed monthly price",
+  "admin.businesses.billing.trialEnd": "Trial end",
+  "admin.businesses.billing.trialEnded": "Trial ended",
+  "admin.businesses.billing.periodEnd": "Current period end",
+  "admin.businesses.billing.offer": "Commercial offer",
+  "admin.businesses.billing.founding": "Founding business",
+  "admin.businesses.billing.standard": "Standard launch",
+  "admin.businesses.currentState": "Current operational state",
+  "admin.businesses.saveScope":
+    "Saving here updates publishing, billing contact and booking settings only. Billing status remains read-only.",
 };

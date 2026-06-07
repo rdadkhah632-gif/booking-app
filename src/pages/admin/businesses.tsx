@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
+import {
+  BILLING_STATUSES,
+  BillingState,
+  defaultBillingState,
+  formatBillingAmount
+} from '@/lib/billing'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type AdminProfile = {
   id: string
@@ -32,12 +39,6 @@ type BusinessRow = {
   published?: boolean | null
   created_at?: string | null
   billing_email?: string | null
-  subscription_status?: string | null
-  subscription_plan?: string | null
-  subscription_price_monthly?: number | null
-  stripe_customer_id?: string | null
-  stripe_subscription_id?: string | null
-  trial_ends_at?: string | null
   auto_accept_bookings?: boolean | null
   booking_interval_minutes?: number | null
   min_notice_minutes?: number | null
@@ -62,21 +63,6 @@ type BusinessCounts = {
   pendingBookings: number
 }
 
-const STATUS_OPTIONS = [
-  { value: 'trial', label: 'Trial' },
-  { value: 'active', label: 'Active' },
-  { value: 'past_due', label: 'Past due' },
-  { value: 'paused', label: 'Paused' },
-  { value: 'cancelled', label: 'Cancelled' }
-]
-
-const PLAN_OPTIONS = [
-  { value: 'starter', label: 'Starter' },
-  { value: 'growth', label: 'Growth' },
-  { value: 'pro', label: 'Pro' },
-  { value: 'custom', label: 'Custom' }
-]
-
 function ownerEmail(business: BusinessWithOwner) {
   return business.owner?.email || 'No owner email'
 }
@@ -89,22 +75,14 @@ function ownerId(business: BusinessWithOwner) {
   return business.owner?.id || business.user_id || ''
 }
 
-function formatMoney(value?: number | null, currency = 'GBP') {
-  const prefix = currency === 'EUR' ? '€' : currency === 'ALL' ? 'L ' : '£'
-  return `${prefix}${Number(value || 0).toFixed(2)}`
-}
-
 function formatDate(value?: string | null) {
   if (!value) return 'Not set'
   return new Date(value).toLocaleDateString()
 }
 
 function statusLabel(value?: string | null) {
-  return STATUS_OPTIONS.find((option) => option.value === value)?.label || 'Trial'
-}
-
-function planLabel(value?: string | null) {
-  return PLAN_OPTIONS.find((option) => option.value === value)?.label || 'Starter'
+  if (!value) return 'Not configured'
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 function daysUntil(value?: string | null) {
@@ -116,9 +94,11 @@ function daysUntil(value?: string | null) {
 
 export default function AdminBusinessesPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null)
   const [businesses, setBusinesses] = useState<BusinessWithOwner[]>([])
+  const [billingByBusiness, setBillingByBusiness] = useState<Record<string, BillingState>>({})
   const [selectedBusinessId, setSelectedBusinessId] = useState('')
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithOwner | null>(null)
   const [countsByBusiness, setCountsByBusiness] = useState<Record<string, BusinessCounts>>({})
@@ -169,16 +149,21 @@ export default function AdminBusinessesPage() {
     return issues
   }
 
+  function getBillingState(businessId?: string | null) {
+    if (!businessId) return defaultBillingState('')
+    return billingByBusiness[businessId] || defaultBillingState(businessId)
+  }
+
   function needsAttention(business: BusinessWithOwner) {
     const counts = getCounts(business.id)
-    const trialDays = daysUntil(business.trial_ends_at)
+    const billing = getBillingState(business.id)
+    const trialDays = daysUntil(billing.trial_end)
 
     return (
       readinessIssues(business).length > 0 ||
       counts.pendingBookings > 0 ||
-      business.subscription_status === 'past_due' ||
-      business.subscription_status === 'paused' ||
-      (business.subscription_status === 'trial' && trialDays !== null && trialDays <= 7)
+      ['past_due', 'paused', 'cancelled'].includes(billing.billing_status) ||
+      (billing.billing_status === 'free_trial' && trialDays !== null && trialDays <= 7)
     )
   }
 
@@ -200,7 +185,9 @@ export default function AdminBusinessesPage() {
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term))
 
-      const matchesStatus = statusFilter === 'all' || (business.subscription_status || 'trial') === statusFilter
+      const matchesStatus =
+        statusFilter === 'all' ||
+        getBillingState(business.id).billing_status === statusFilter
 
       const matchesPublished =
         publishedFilter === 'all' ||
@@ -212,11 +199,14 @@ export default function AdminBusinessesPage() {
         (attentionFilter === 'attention' && needsAttention(business)) ||
         (attentionFilter === 'ready' && readinessIssues(business).length === 0) ||
         (attentionFilter === 'pending' && counts.pendingBookings > 0) ||
-        (attentionFilter === 'trial_ending' && business.subscription_status === 'trial' && daysUntil(business.trial_ends_at) !== null && Number(daysUntil(business.trial_ends_at)) <= 7)
+        (attentionFilter === 'trial_ending' &&
+          getBillingState(business.id).billing_status === 'free_trial' &&
+          daysUntil(getBillingState(business.id).trial_end) !== null &&
+          Number(daysUntil(getBillingState(business.id).trial_end)) <= 7)
 
       return matchesSearch && matchesStatus && matchesPublished && matchesAttention
     })
-  }, [businesses, countsByBusiness, searchTerm, statusFilter, publishedFilter, attentionFilter])
+  }, [businesses, billingByBusiness, countsByBusiness, searchTerm, statusFilter, publishedFilter, attentionFilter])
 
   const visibleBusinesses = filteredBusinesses.slice(0, 75)
 
@@ -224,15 +214,23 @@ export default function AdminBusinessesPage() {
     return {
       total: businesses.length,
       published: businesses.filter((business) => business.published).length,
-      active: businesses.filter((business) => business.subscription_status === 'active').length,
-      trial: businesses.filter((business) => (business.subscription_status || 'trial') === 'trial').length,
+      active: businesses.filter((business) =>
+        ['active', 'manual_comped'].includes(getBillingState(business.id).billing_status)
+      ).length,
+      trial: businesses.filter((business) =>
+        ['free_trial', 'founding_free'].includes(getBillingState(business.id).billing_status)
+      ).length,
+      paymentAttention: businesses.filter((business) =>
+        ['past_due', 'cancelled', 'paused'].includes(getBillingState(business.id).billing_status)
+      ).length,
       attention: businesses.filter((business) => needsAttention(business)).length,
       monthlyValue: businesses.reduce((total, business) => {
-        if (business.subscription_status !== 'active') return total
-        return total + Number(business.subscription_price_monthly || 0)
+        const billing = getBillingState(business.id)
+        if (billing.billing_status !== 'active') return total
+        return total + Number(billing.price_amount || 0)
       }, 0)
     }
-  }, [businesses, countsByBusiness])
+  }, [businesses, billingByBusiness, countsByBusiness])
 
   async function loadAdminBusinesses() {
     setLoading(true)
@@ -258,6 +256,7 @@ export default function AdminBusinessesPage() {
       if (!profileData?.is_admin) {
         setAdminProfile(profileData as AdminProfile)
         setBusinesses([])
+        setBillingByBusiness({})
         setSelectedBusiness(null)
         setLoading(false)
         return
@@ -280,12 +279,6 @@ export default function AdminBusinessesPage() {
           published,
           created_at,
           billing_email,
-          subscription_status,
-          subscription_plan,
-          subscription_price_monthly,
-          stripe_customer_id,
-          stripe_subscription_id,
-          trial_ends_at,
           auto_accept_bookings,
           booking_interval_minutes,
           min_notice_minutes,
@@ -326,7 +319,12 @@ export default function AdminBusinessesPage() {
 
       setBusinesses(rows)
 
-      await loadCounts(rows.map((business) => business.id))
+      const businessIds = rows.map((business) => business.id)
+
+      await Promise.all([
+        loadCounts(businessIds),
+        loadBillingState(businessIds)
+      ])
 
       const queryBusinessId = typeof router.query.businessId === 'string' ? router.query.businessId : ''
       const nextSelected =
@@ -431,6 +429,44 @@ export default function AdminBusinessesPage() {
     setCountsByBusiness(nextCounts)
   }
 
+  async function loadBillingState(businessIds: string[]) {
+    if (businessIds.length === 0) {
+      setBillingByBusiness({})
+      return
+    }
+
+    const { data, error: billingError } = await supabase
+      .from('business_billing')
+      .select(`
+        id,
+        business_id,
+        billing_status,
+        plan_name,
+        price_amount,
+        currency,
+        trial_start,
+        trial_end,
+        founding_business,
+        second_month_free_eligible,
+        current_period_end,
+        created_at,
+        updated_at
+      `)
+      .in('business_id', businessIds)
+
+    if (billingError) throw billingError
+
+    const nextBilling = ((data || []) as BillingState[]).reduce(
+      (map: Record<string, BillingState>, billing) => {
+        map[billing.business_id] = billing
+        return map
+      },
+      {}
+    )
+
+    setBillingByBusiness(nextBilling)
+  }
+
   useEffect(() => {
     if (!router.isReady) return
     loadAdminBusinesses()
@@ -467,10 +503,6 @@ export default function AdminBusinessesPage() {
     const payload = {
       published: Boolean(selectedBusiness.published),
       billing_email: selectedBusiness.billing_email?.trim() || null,
-      subscription_status: selectedBusiness.subscription_status || 'trial',
-      subscription_plan: selectedBusiness.subscription_plan || 'starter',
-      subscription_price_monthly: Number(selectedBusiness.subscription_price_monthly || 0),
-      trial_ends_at: selectedBusiness.trial_ends_at || null,
       auto_accept_bookings: Boolean(selectedBusiness.auto_accept_bookings),
       booking_interval_minutes: Number(selectedBusiness.booking_interval_minutes || 30),
       min_notice_minutes: Number(selectedBusiness.min_notice_minutes || 120),
@@ -502,20 +534,6 @@ export default function AdminBusinessesPage() {
     )
 
     setSelectedBusiness(updatedSelected)
-  }
-
-  function quickSetTrial(days: number) {
-    if (!selectedBusiness) return
-
-    const trialDate = new Date()
-    trialDate.setDate(trialDate.getDate() + days)
-    trialDate.setHours(23, 59, 59, 999)
-
-    setSelectedBusiness({
-      ...selectedBusiness,
-      subscription_status: 'trial',
-      trial_ends_at: trialDate.toISOString()
-    })
   }
 
   function togglePublished() {
@@ -576,7 +594,8 @@ export default function AdminBusinessesPage() {
 
   const selectedCounts = getCounts(selectedBusiness?.id)
   const selectedIssues = selectedBusiness ? readinessIssues(selectedBusiness) : []
-  const trialDays = daysUntil(selectedBusiness?.trial_ends_at)
+  const selectedBilling = getBillingState(selectedBusiness?.id)
+  const trialDays = daysUntil(selectedBilling.trial_end)
 
   return (
     <main>
@@ -589,7 +608,7 @@ export default function AdminBusinessesPage() {
               <p className="small" style={{ color: 'var(--accent)' }}>Mirëbook operator</p>
               <h1 className="page-title">Business control centre</h1>
               <p className="page-sub" style={{ marginTop: '0.5rem' }}>
-                Manage business onboarding, publishing, trial access, billing status and account issues without using the business dashboard.
+                Review business onboarding, publishing, operational readiness and synchronized billing context without entering the business workspace.
               </p>
             </div>
 
@@ -629,13 +648,13 @@ export default function AdminBusinessesPage() {
             <div className="card">
               <p className="small muted">Trial / active</p>
               <h2>{summary.trial} / {summary.active}</h2>
-              <p className="small muted">Trial and active businesses</p>
+              <p className="small muted">{summary.paymentAttention} payment attention</p>
             </div>
 
             <div className="card">
               <p className="small muted">Active monthly value</p>
-              <h2>{formatMoney(summary.monthlyValue)}</h2>
-              <p className="small muted">Active businesses only</p>
+              <h2>{formatBillingAmount(summary.monthlyValue, 'GBP')}</h2>
+              <p className="small muted">Authoritative active billing rows</p>
             </div>
           </div>
 
@@ -660,8 +679,8 @@ export default function AdminBusinessesPage() {
 
                 <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                   <option value="all">All statuses</option>
-                  {STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                  {BILLING_STATUSES.map((status) => (
+                    <option key={status} value={status}>{statusLabel(status)}</option>
                   ))}
                 </select>
 
@@ -722,7 +741,7 @@ export default function AdminBusinessesPage() {
                             {business.published ? 'Published' : 'Draft'}
                           </span>
                           <span className="admin-pill admin-pill-accent">
-                            {statusLabel(business.subscription_status)}
+                            {statusLabel(getBillingState(business.id).billing_status)}
                           </span>
                           {attention && (
                             <span className="admin-pill admin-pill-warning">
@@ -748,7 +767,7 @@ export default function AdminBusinessesPage() {
                 <div className="admin-empty">
                   <h3>Select a business</h3>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    Choose a business to manage onboarding, trial and subscription controls.
+                    Choose a business to review onboarding, billing and operational context.
                   </p>
                 </div>
               ) : (
@@ -784,6 +803,63 @@ export default function AdminBusinessesPage() {
                     </div>
                   </div>
 
+                  <div className="admin-billing-box">
+                    <div className="admin-section-header">
+                      <div>
+                        <p className="small muted">
+                          {t('admin.businesses.billing.kicker', 'Authoritative billing state')}
+                        </p>
+                        <h3>{selectedBilling.plan_name}</h3>
+                        <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                          {t(
+                            'admin.businesses.billing.readOnly',
+                            'Read-only here. Stripe webhooks and controlled manual operations own this record.'
+                          )}
+                        </p>
+                      </div>
+                      <span className="admin-pill admin-pill-accent">
+                        {statusLabel(selectedBilling.billing_status)}
+                      </span>
+                    </div>
+
+                    <div className="admin-billing-grid">
+                      <div>
+                        <p className="small muted">{t('admin.businesses.billing.price', 'Agreed monthly price')}</p>
+                        <strong>
+                          {selectedBilling.price_amount === null
+                            ? t('admin.operations.priceNotSet', 'Price not set')
+                            : formatBillingAmount(
+                                selectedBilling.price_amount,
+                                selectedBilling.currency
+                              )}
+                        </strong>
+                      </div>
+                      <div>
+                        <p className="small muted">{t('admin.businesses.billing.trialEnd', 'Trial end')}</p>
+                        <strong>{formatDate(selectedBilling.trial_end)}</strong>
+                        {trialDays !== null && selectedBilling.billing_status === 'free_trial' && (
+                          <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                            {trialDays >= 0
+                              ? `${trialDays} day${trialDays === 1 ? '' : 's'} remaining`
+                              : t('admin.businesses.billing.trialEnded', 'Trial ended')}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="small muted">{t('admin.businesses.billing.periodEnd', 'Current period end')}</p>
+                        <strong>{formatDate(selectedBilling.current_period_end)}</strong>
+                      </div>
+                      <div>
+                        <p className="small muted">{t('admin.businesses.billing.offer', 'Commercial offer')}</p>
+                        <strong>
+                          {selectedBilling.founding_business
+                            ? t('admin.businesses.billing.founding', 'Founding business')
+                            : t('admin.businesses.billing.standard', 'Standard launch')}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="admin-editor-grid">
                     <div>
                       <label className="small muted">Published status</label>
@@ -797,64 +873,6 @@ export default function AdminBusinessesPage() {
                       <p className="small muted" style={{ marginTop: '0.35rem' }}>
                         Use this to manually hide a business while onboarding or if there is an issue.
                       </p>
-                    </div>
-
-                    <div>
-                      <label className="small muted">Subscription status</label>
-                      <select
-                        value={selectedBusiness.subscription_status || 'trial'}
-                        onChange={(event) => updateSelected('subscription_status', event.target.value)}
-                        style={{ marginTop: '0.4rem' }}
-                      >
-                        {STATUS_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="small muted">Plan</label>
-                      <select
-                        value={selectedBusiness.subscription_plan || 'starter'}
-                        onChange={(event) => updateSelected('subscription_plan', event.target.value)}
-                        style={{ marginTop: '0.4rem' }}
-                      >
-                        {PLAN_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="small muted">Monthly price</label>
-                      <input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={selectedBusiness.subscription_price_monthly ?? 0}
-                        onChange={(event) => updateSelected('subscription_price_monthly', Number(event.target.value))}
-                        style={{ marginTop: '0.4rem' }}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="small muted">Trial ends</label>
-                      <input
-                        type="date"
-                        value={selectedBusiness.trial_ends_at ? selectedBusiness.trial_ends_at.slice(0, 10) : ''}
-                        onChange={(event) => {
-                          updateSelected(
-                            'trial_ends_at',
-                            event.target.value ? new Date(`${event.target.value}T23:59:59`).toISOString() : null
-                          )
-                        }}
-                        style={{ marginTop: '0.4rem' }}
-                      />
-                      {trialDays !== null && (
-                        <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                          {trialDays >= 0 ? `${trialDays} day${trialDays === 1 ? '' : 's'} remaining` : 'Trial has ended'}
-                        </p>
-                      )}
                     </div>
 
                     <div>
@@ -924,26 +942,6 @@ export default function AdminBusinessesPage() {
                     </div>
                   </div>
 
-                  <div className="admin-quick-actions-box">
-                    <div>
-                      <p className="small muted">Quick subscription actions</p>
-                      <strong>Staged changes require Save changes</strong>
-                    </div>
-                    <div className="admin-quick-actions">
-                      <button type="button" className="btn btn-ghost" onClick={() => quickSetTrial(30)}>Give 30 day trial</button>
-                      <button type="button" className="btn btn-ghost" onClick={() => quickSetTrial(60)}>Give 60 day trial</button>
-                      <button type="button" className="btn btn-ghost" onClick={() => {
-                        updateSelected('subscription_status', 'active')
-                        updateSelected('trial_ends_at', null)
-                      }}>
-                        Mark active
-                      </button>
-                      <button type="button" className="btn btn-danger" onClick={() => updateSelected('subscription_status', 'paused')}>
-                        Pause access
-                      </button>
-                    </div>
-                  </div>
-
                   <div className="admin-readiness-box">
                     <p className="small muted">Operational snapshot</p>
                     <div className="grid-3" style={{ marginTop: '0.75rem' }}>
@@ -984,12 +982,19 @@ export default function AdminBusinessesPage() {
 
                   <div className="admin-save-footer">
                     <div>
-                      <p className="small muted">Current state</p>
+                      <p className="small muted">{t('admin.businesses.currentState', 'Current operational state')}</p>
                       <strong>
-                        {selectedBusiness.published ? 'Published' : 'Draft'} · {statusLabel(selectedBusiness.subscription_status)} · {planLabel(selectedBusiness.subscription_plan)} · {formatMoney(selectedBusiness.subscription_price_monthly, selectedBusiness.currency || 'GBP')} / month
+                        {selectedBusiness.published ? 'Published' : 'Draft'} · {
+                          selectedBusiness.auto_accept_bookings
+                            ? 'Instant confirmation'
+                            : 'Booking requests'
+                        }
                       </strong>
                       <p className="small muted" style={{ marginTop: '0.25rem' }}>
-                        Trial ends: {formatDate(selectedBusiness.trial_ends_at)}
+                        {t(
+                          'admin.businesses.saveScope',
+                          'Saving here updates publishing, billing contact and booking settings only. Billing status remains read-only.'
+                        )}
                       </p>
                     </div>
 
@@ -1024,8 +1029,7 @@ export default function AdminBusinessesPage() {
         }
 
         .admin-actions,
-        .admin-business-actions,
-        .admin-quick-actions {
+        .admin-business-actions {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
@@ -1126,9 +1130,9 @@ export default function AdminBusinessesPage() {
         .admin-empty,
         .admin-hint-box,
         .admin-alert-box,
+        .admin-billing-box,
         .admin-readiness-box,
-        .admin-owner-box,
-        .admin-quick-actions-box {
+        .admin-owner-box {
           padding: 1rem;
           background: var(--surface-2);
           border: 1px solid var(--border);
@@ -1151,6 +1155,13 @@ export default function AdminBusinessesPage() {
           gap: 1rem;
         }
 
+        .admin-billing-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+
         .admin-toggle {
           width: 100%;
           margin-top: 0.4rem;
@@ -1169,17 +1180,12 @@ export default function AdminBusinessesPage() {
           color: var(--success);
         }
 
-        .admin-quick-actions-box,
         .admin-owner-box {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
           align-items: center;
           flex-wrap: wrap;
-        }
-
-        .admin-quick-actions {
-          justify-content: flex-start;
         }
 
         .admin-save-footer {
@@ -1205,22 +1211,18 @@ export default function AdminBusinessesPage() {
           .admin-section-header,
           .admin-editor-header,
           .admin-save-footer,
-          .admin-owner-box,
-          .admin-quick-actions-box {
+          .admin-owner-box {
             display: grid;
           }
 
           .admin-actions,
           .admin-business-actions,
-          .admin-quick-actions,
           .admin-actions :global(.btn),
           .admin-business-actions :global(.btn),
-          .admin-quick-actions :global(.btn),
           .admin-save-footer :global(.btn),
           .admin-owner-box :global(.btn),
           .admin-actions a,
           .admin-business-actions a,
-          .admin-quick-actions button,
           .admin-save-footer button,
           .admin-owner-box a {
             width: 100%;

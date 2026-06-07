@@ -8,7 +8,7 @@ Before making code changes, always read:
 2. `/sources/01_STAGE_ACCOUNT_ROLE_STAFF_BUSINESS_FOUNDATION.md`
 3. `/sources/01_STAGE_1_CLOSURE_QA.md`
 4. The current active stage document, currently:
-   `/sources/04_STAGE_BILLING_PRICING_SUBSCRIPTION_FOUNDATION.md`
+   `/sources/05_STAGE_ADMIN_SUPPORT_OPERATIONAL_CONTROL.md`
 
 ## Current Status
 
@@ -29,17 +29,17 @@ Stage 2 is complete with accepted minor follow-ups.
 
 Stage 3 is complete with tracked minor follow-ups.
 
-Stage 4 is active.
+Stage 4 is complete with tracked follow-ups.
 
-Stage 4 focuses on:
+Stage 5 is active.
 
-- business subscription billing
-- one-plan launch pricing
-- founding-business offers and trials
-- billing status ownership
-- provider-ready subscription architecture
-- admin billing controls
-- Stripe preparation without customer appointment checkout
+Stage 5 focuses on:
+
+- admin operational visibility
+- business readiness and support context
+- read-only authoritative billing summaries
+- support ticket routing and ownership
+- safe launch operations without broad destructive controls
 
 ## Working Rules
 
@@ -47,7 +47,7 @@ Start each task by checking repository status.
 
 Protect Stage 1 foundations. Do not alter account identity, role/capability logic, staff-business linking, route protection or language preference persistence unless the current task clearly requires it.
 
-Customer booking must not become a payment or checkout flow during Stage 4. Business subscription billing remains separate from customer appointment payments.
+Customer booking must not become a payment or checkout flow during Stage 5. Business subscription billing remains separate from customer appointment payments.
 
 Use small grouped changes. After grouped edits, run formatting on changed files when a formatter is available, then run the build.
 
