@@ -2705,16 +2705,58 @@ export const en: TranslationTree = {
   "admin.businesses.billing.kicker": "Authoritative billing state",
   "admin.businesses.billing.readOnly":
     "Read-only here. Stripe webhooks and controlled manual operations own this record.",
+  "admin.businesses.billing.adminOnly":
+    "Admin only · Manual billing control",
+  "admin.businesses.billing.softAccess":
+    "Billing remains informational. These changes do not restrict bookings, staff access or public listing.",
+  "admin.businesses.billing.loadingControls":
+    "Loading private billing controls...",
+  "admin.businesses.billing.loadError":
+    "Could not load private billing controls.",
+  "admin.businesses.billing.managementContext": "Management context",
+  "admin.businesses.billing.stripeManaged": "Stripe-managed subscription",
+  "admin.businesses.billing.manualManaged": "Manual / founding record",
+  "admin.businesses.billing.stripeCustomer": "Stripe customer ID",
+  "admin.businesses.billing.stripeSubscription": "Stripe subscription ID",
+  "admin.businesses.billing.notSet": "Not set",
+  "admin.businesses.billing.status": "Billing status",
   "admin.businesses.billing.price": "Agreed monthly price",
+  "admin.businesses.billing.priceMajor": "Agreed monthly price",
+  "admin.businesses.billing.currency": "Currency",
+  "admin.businesses.billing.trialStart": "Trial start",
   "admin.businesses.billing.trialEnd": "Trial end",
   "admin.businesses.billing.trialEnded": "Trial ended",
   "admin.businesses.billing.periodEnd": "Current period end",
   "admin.businesses.billing.offer": "Commercial offer",
   "admin.businesses.billing.founding": "Founding business",
+  "admin.businesses.billing.foundingBody":
+    "Marks this business as part of the founding launch offer.",
+  "admin.businesses.billing.secondMonth": "Second free month eligible",
+  "admin.businesses.billing.secondMonthBody":
+    "Records eligibility only; it does not change Stripe automatically.",
+  "admin.businesses.billing.privateNotes": "Private billing notes",
+  "admin.businesses.billing.privateNotesPlaceholder":
+    "Internal commercial context. Never shown to the business.",
+  "admin.businesses.billing.changeReason": "Reason for this change",
+  "admin.businesses.billing.changeReasonPlaceholder":
+    "Required for operator accountability.",
+  "admin.businesses.billing.webhookPreservation":
+    "Stripe webhooks may update status and period dates later. Founding flags, agreed price and private notes remain manual fields.",
+  "admin.businesses.billing.riskyConfirm":
+    "Confirm this paused or cancelled billing status. This remains informational and will not restrict product access.",
+  "admin.businesses.billing.invalidPrice":
+    "Enter a valid non-negative monthly price.",
+  "admin.businesses.billing.save": "Save billing state",
+  "admin.businesses.billing.saving": "Saving billing...",
+  "admin.businesses.billing.saved":
+    "Manual billing state saved and audited.",
+  "admin.businesses.billing.savedWithoutAudit":
+    "Manual billing state saved. Install the Stage 5 audit SQL to retain a durable change record.",
+  "admin.businesses.billing.saveError": "Could not save billing changes.",
   "admin.businesses.billing.standard": "Standard launch",
   "admin.businesses.currentState": "Current operational state",
   "admin.businesses.saveScope":
-    "Saving here updates publishing, billing contact and booking settings only. Billing status remains read-only.",
+    "This button updates publishing, billing contact and booking settings only. Use the separate admin-only billing control for commercial state.",
   "support.status.inProgress": "In progress",
   "support.status.waitingForUser": "Waiting for user",
   "support.priority.low": "Low",

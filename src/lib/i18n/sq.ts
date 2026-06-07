@@ -2752,16 +2752,62 @@ export const sq: TranslationTree = {
   "admin.businesses.billing.kicker": "Gjendja autoritative e faturimit",
   "admin.businesses.billing.readOnly":
     "Këtu është vetëm për lexim. Webhook-et e Stripe dhe veprimet manuale të kontrolluara e zotërojnë këtë regjistër.",
+  "admin.businesses.billing.adminOnly":
+    "Vetëm për administratorin · Kontroll manual i faturimit",
+  "admin.businesses.billing.softAccess":
+    "Faturimi mbetet informues. Këto ndryshime nuk kufizojnë rezervimet, qasjen e stafit ose listimin publik.",
+  "admin.businesses.billing.loadingControls":
+    "Duke ngarkuar kontrollet private të faturimit...",
+  "admin.businesses.billing.loadError":
+    "Nuk mund të ngarkoheshin kontrollet private të faturimit.",
+  "admin.businesses.billing.managementContext": "Konteksti i menaxhimit",
+  "admin.businesses.billing.stripeManaged":
+    "Abonim i menaxhuar nga Stripe",
+  "admin.businesses.billing.manualManaged":
+    "Regjistër manual / biznes themelues",
+  "admin.businesses.billing.stripeCustomer": "ID-ja e klientit në Stripe",
+  "admin.businesses.billing.stripeSubscription": "ID-ja e abonimit në Stripe",
+  "admin.businesses.billing.notSet": "Nuk është vendosur",
+  "admin.businesses.billing.status": "Statusi i faturimit",
   "admin.businesses.billing.price": "Çmimi mujor i rënë dakord",
+  "admin.businesses.billing.priceMajor": "Çmimi mujor i rënë dakord",
+  "admin.businesses.billing.currency": "Monedha",
+  "admin.businesses.billing.trialStart": "Fillimi i provës",
   "admin.businesses.billing.trialEnd": "Fundi i provës",
   "admin.businesses.billing.trialEnded": "Prova ka përfunduar",
   "admin.businesses.billing.periodEnd": "Fundi i periudhës aktuale",
   "admin.businesses.billing.offer": "Oferta tregtare",
   "admin.businesses.billing.founding": "Biznes themelues",
+  "admin.businesses.billing.foundingBody":
+    "E shënon këtë biznes si pjesë të ofertës së lançimit për bizneset themeluese.",
+  "admin.businesses.billing.secondMonth":
+    "I kualifikuar për muajin e dytë falas",
+  "admin.businesses.billing.secondMonthBody":
+    "Regjistron vetëm kualifikimin; nuk e ndryshon automatikisht Stripe.",
+  "admin.businesses.billing.privateNotes": "Shënime private faturimi",
+  "admin.businesses.billing.privateNotesPlaceholder":
+    "Kontekst i brendshëm tregtar. Nuk i shfaqet kurrë biznesit.",
+  "admin.businesses.billing.changeReason": "Arsyeja e këtij ndryshimi",
+  "admin.businesses.billing.changeReasonPlaceholder":
+    "Kërkohet për përgjegjshmërinë e operatorit.",
+  "admin.businesses.billing.webhookPreservation":
+    "Webhook-et e Stripe mund të përditësojnë më vonë statusin dhe datat e periudhës. Shenjat e biznesit themelues, çmimi i rënë dakord dhe shënimet private mbeten fusha manuale.",
+  "admin.businesses.billing.riskyConfirm":
+    "Konfirmo këtë status faturimi të pezulluar ose të anuluar. Ai mbetet informues dhe nuk do të kufizojë qasjen në produkt.",
+  "admin.businesses.billing.invalidPrice":
+    "Vendos një çmim mujor të vlefshëm dhe jo negativ.",
+  "admin.businesses.billing.save": "Ruaj gjendjen e faturimit",
+  "admin.businesses.billing.saving": "Duke ruajtur faturimin...",
+  "admin.businesses.billing.saved":
+    "Gjendja manuale e faturimit u ruajt dhe u auditua.",
+  "admin.businesses.billing.savedWithoutAudit":
+    "Gjendja manuale e faturimit u ruajt. Instalo SQL-në e auditimit të Fazës 5 për të ruajtur një regjistër të qëndrueshëm të ndryshimeve.",
+  "admin.businesses.billing.saveError":
+    "Nuk mund të ruheshin ndryshimet e faturimit.",
   "admin.businesses.billing.standard": "Plan standard lançimi",
   "admin.businesses.currentState": "Gjendja aktuale operative",
   "admin.businesses.saveScope":
-    "Ruajtja këtu përditëson publikimin, kontaktin e faturimit dhe cilësimet e rezervimeve. Statusi i faturimit mbetet vetëm për lexim.",
+    "Ky buton përditëson vetëm publikimin, kontaktin e faturimit dhe cilësimet e rezervimeve. Përdor kontrollin e veçantë vetëm për administratorin për gjendjen tregtare.",
   "support.status.inProgress": "Në proces",
   "support.status.waitingForUser": "Në pritje të përdoruesit",
   "support.priority.low": "I ulët",

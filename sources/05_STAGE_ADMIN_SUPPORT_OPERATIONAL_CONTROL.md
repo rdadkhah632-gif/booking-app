@@ -8,6 +8,10 @@ Batch 2 status: implemented; production build passed.
 
 Batch 3 status: implemented; production build passed.
 
+Batch 4 status: implemented; production build passed.
+
+Batch 5 status: implemented; production build passed.
+
 Stage 1, Stage 2 and Stage 3 are complete and protected.
 
 Stage 4 billing foundation is complete with tracked operational follow-ups.
@@ -286,6 +290,137 @@ available.
 - `updated_at` depends on the existing support table behavior; Batch 3 does not
   add a database trigger.
 
+## Batch 4 - Manual Billing And Founding Controls
+
+Status: implemented; production build passed.
+
+### Protected Server Boundary
+
+`/api/admin/business-billing` now owns private manual billing reads and writes.
+The route:
+
+- requires an authenticated bearer token
+- verifies the user through Supabase Auth
+- verifies `profiles.is_admin` using the server-only service-role client
+- rejects non-admin requests before reading private billing data
+- validates billing status, currency, price, dates, flags and change reason
+- updates only the approved manual billing fields
+- never accepts Stripe customer or subscription IDs from the browser
+- never changes booking, publishing, readiness, role or access state
+
+The endpoint can read private notes and provider IDs for the protected operator
+view. Those fields remain absent from the owner-facing billing query.
+
+### Admin Business Billing Control
+
+The selected-business panel on `/admin/businesses` now provides:
+
+- all supported Mirëbook billing statuses
+- agreed monthly price and currency
+- trial start and end dates
+- founding-business status
+- second-free-month eligibility
+- private internal billing notes
+- a required reason for each manual update
+- read-only Stripe customer and subscription IDs
+- read-only current subscription period end
+- Stripe-managed versus manual/founding context
+- explicit confirmation before paused or cancelled states
+- success and failure feedback after each update
+
+The panel explicitly states that billing remains informational. Manual statuses
+do not block bookings, staff access, dashboard access or public listing.
+
+Stripe webhook behavior was not changed. Existing webhook payloads update only
+provider-owned status, customer/subscription identifiers and current period
+end. They do not overwrite founding flags, agreed price, trial dates or private
+notes.
+
+### Billing Audit SQL
+
+`sources/sql/05_business_billing_admin_audit.sql` adds an optional,
+server-only durable audit table containing:
+
+- business ID
+- admin user ID
+- action
+- required reason
+- previous billing state
+- next billing state
+- timestamp
+
+Run this idempotent script manually in the Supabase SQL editor. The billing
+update remains usable before the script is installed, but the operator receives
+a clear warning that no durable audit row was stored. The server still records
+a non-sensitive operational log entry.
+
+No additional changes to the existing `business_billing` schema are required.
+
+## Batch 5 - Operational Safety And Admin Closure Polish
+
+Status: implemented; production build passed.
+
+Confirmed:
+
+- `/admin` and all current admin subroutes keep their existing session and
+  `profiles.is_admin` checks
+- non-admin users do not receive admin business, billing, support or
+  notification datasets
+- the private billing endpoint adds a second server-side admin boundary for
+  money-related mutations
+- `/support/customer`, `/support/business` and `/support/staff` retain their
+  explicit role navigation contexts
+- `/admin/support` remains the separate admin-only support inbox
+- user support lists and threads remain scoped by the authenticated `user_id`
+- admin support status, priority, reply and resolution behavior remains intact
+- new billing controls stack responsively and provider identifiers wrap safely
+  on narrow screens
+- new operator billing copy is available in English and Albanian
+- no destructive delete, impersonation, Stripe cancellation or access-lock
+  control was added
+
+### Stage 5 Top-Level QA Checklist
+
+- sign in as a non-admin and verify `/admin`, `/admin/businesses`,
+  `/admin/users`, `/admin/support` and `/admin/notifications` expose no admin
+  data
+- sign in as an admin and verify each admin route loads cleanly
+- open a business and confirm authoritative billing data loads in the
+  admin-only panel
+- verify Stripe IDs and private notes appear only for the admin
+- set founding-business, trial dates, agreed price and currency, then reload
+  and confirm persistence
+- change billing status through each safe launch state
+- verify paused and cancelled require confirmation
+- verify a missing change reason is rejected
+- install the audit SQL and confirm an audit row records admin, reason,
+  previous state, next state and timestamp
+- complete a Stripe test webhook update and confirm manual founding, price and
+  notes fields remain intact
+- confirm billing changes do not affect Explore, booking, staff access or
+  business dashboard access
+- verify customer, business and staff support routes show the correct role
+  navigation
+- verify support users can read only their own conversations
+- verify the admin support inbox can filter, reply, change status and resolve
+  tickets
+- verify EN and SQ controls render without raw keys
+- verify `/admin/businesses` and `/admin/support` remain usable at approximately
+  390px with no horizontal overflow
+- rerun a booking smoke test and Stripe Checkout/webhook test before Stage 5
+  closure
+
+### Recommended Next Stage
+
+After Stage 5 top-level QA, start a launch verification stage focused on:
+
+- production environment and deployment checks
+- authenticated role-by-role regression testing
+- database/RLS and server-route security verification
+- Stripe test-mode operational runbook
+- observability, backup and incident-response basics
+- final launch checklist and go/no-go evidence
+
 ## Current Gaps And Risks
 
 - Admin route checks are performed in page code after the client session loads.
@@ -296,8 +431,8 @@ available.
   actions with an audit trail.
 - `/admin/notifications` can send broad notices. Delivery history exists, but
   there is no operator approval or immutable campaign audit log.
-- Billing manual changes still require controlled Supabase/admin operations;
-  Stage 5 does not add a browser-side billing editor.
+- Manual billing changes now use a protected server route, but the optional
+  durable audit table must be installed manually in Supabase.
 - Legacy subscription columns remain in some admin user and notification
   queries and can disagree with `business_billing`.
 - Support notifications are best-effort client writes after ticket creation.
@@ -317,16 +452,13 @@ Implemented. See Batch 3 above.
 
 ### Batch 4 - Manual Billing And Founding Controls
 
-- add protected server-side manual billing mutations for approved operators
-- support founding-business, agreed-price, trial and manual-comped changes
-- record who changed billing state, when and why
-- keep access and public listing behavior informational
-- do not expose private notes or Stripe identifiers to business owners
+Implemented. See Batch 4 above.
 
 ### Batch 5 - Protected Admin Mutations
 
-- move role/admin access changes behind server-side privileged routes
-- add an operator action audit table before expanding controls
+- move remaining role/admin access changes behind server-side privileged routes
+- require the billing audit SQL before production operator use
+- add equivalent audit coverage before expanding other privileged controls
 - do not add business deletion, impersonation or blanket lockout controls
 
 ### Batch 6 - Legacy Billing Cleanup

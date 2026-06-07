@@ -5,6 +5,7 @@ import AuthNav from '@/components/AuthNav'
 import {
   BILLING_STATUSES,
   BillingState,
+  BillingStatus,
   defaultBillingState,
   formatBillingAmount
 } from '@/lib/billing'
@@ -63,6 +64,43 @@ type BusinessCounts = {
   pendingBookings: number
 }
 
+type AdminBillingState = BillingState & {
+  stripe_customer_id?: string | null
+  stripe_subscription_id?: string | null
+  notes?: string | null
+}
+
+type BillingDraft = {
+  billingStatus: BillingStatus
+  priceMajor: string
+  currency: string
+  trialStart: string
+  trialEnd: string
+  foundingBusiness: boolean
+  secondMonthFreeEligible: boolean
+  notes: string
+  changeReason: string
+}
+
+function dateInputValue(value?: string | null) {
+  return value ? value.slice(0, 10) : ''
+}
+
+function billingDraftFromState(billing: AdminBillingState): BillingDraft {
+  return {
+    billingStatus: billing.billing_status,
+    priceMajor:
+      billing.price_amount === null ? '' : (billing.price_amount / 100).toFixed(2),
+    currency: billing.currency || 'GBP',
+    trialStart: dateInputValue(billing.trial_start),
+    trialEnd: dateInputValue(billing.trial_end),
+    foundingBusiness: billing.founding_business,
+    secondMonthFreeEligible: billing.second_month_free_eligible,
+    notes: billing.notes || '',
+    changeReason: ''
+  }
+}
+
 function ownerEmail(business: BusinessWithOwner) {
   return business.owner?.email || 'No owner email'
 }
@@ -108,6 +146,11 @@ export default function AdminBusinessesPage() {
   const [attentionFilter, setAttentionFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [billingLoading, setBillingLoading] = useState(false)
+  const [billingSaving, setBillingSaving] = useState(false)
+  const [adminBilling, setAdminBilling] = useState<AdminBillingState | null>(null)
+  const [billingDraft, setBillingDraft] = useState<BillingDraft | null>(null)
+  const [billingError, setBillingError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -472,12 +515,163 @@ export default function AdminBusinessesPage() {
     loadAdminBusinesses()
   }, [router.isReady])
 
+  useEffect(() => {
+    if (!adminProfile?.is_admin || !selectedBusinessId) return
+    loadAdminBilling(selectedBusinessId)
+  }, [adminProfile?.is_admin, selectedBusinessId])
+
+  async function loadAdminBilling(businessId: string) {
+    setBillingLoading(true)
+    setBillingError(null)
+    setAdminBilling(null)
+    setBillingDraft(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        router.replace('/login?redirectTo=/admin/businesses')
+        return
+      }
+
+      const response = await fetch(
+        `/api/admin/business-billing?businessId=${encodeURIComponent(businessId)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        }
+      )
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || t('admin.businesses.billing.loadError', 'Could not load private billing controls.'))
+      }
+
+      const billing = (result.billing || defaultBillingState(businessId)) as AdminBillingState
+      setAdminBilling(billing)
+      setBillingDraft(billingDraftFromState(billing))
+    } catch (err: any) {
+      setBillingError(
+        err.message ||
+          t('admin.businesses.billing.loadError', 'Could not load private billing controls.')
+      )
+    } finally {
+      setBillingLoading(false)
+    }
+  }
+
   function selectBusiness(business: BusinessWithOwner) {
     setSelectedBusinessId(business.id)
     setSelectedBusiness(business)
     setSuccess(null)
     setError(null)
+    setBillingError(null)
+    setAdminBilling(null)
+    setBillingDraft(null)
     router.replace(`/admin/businesses?businessId=${business.id}`, undefined, { shallow: true })
+  }
+
+  function updateBillingDraft<K extends keyof BillingDraft>(
+    key: K,
+    value: BillingDraft[K]
+  ) {
+    setBillingDraft((current) => {
+      if (!current) return current
+      return {
+        ...current,
+        [key]: value
+      }
+    })
+  }
+
+  async function saveBillingState() {
+    if (!selectedBusiness || !billingDraft || billingSaving) return
+
+    if (
+      ['cancelled', 'paused'].includes(billingDraft.billingStatus) &&
+      !confirm(
+        t(
+          'admin.businesses.billing.riskyConfirm',
+          'Confirm this paused or cancelled billing status. This remains informational and will not restrict product access.'
+        )
+      )
+    ) {
+      return
+    }
+
+    const majorPrice = billingDraft.priceMajor.trim()
+    const parsedPrice = majorPrice === '' ? null : Number(majorPrice)
+
+    if (parsedPrice !== null && (!Number.isFinite(parsedPrice) || parsedPrice < 0)) {
+      setBillingError(
+        t(
+          'admin.businesses.billing.invalidPrice',
+          'Enter a valid non-negative monthly price.'
+        )
+      )
+      return
+    }
+
+    setBillingSaving(true)
+    setBillingError(null)
+    setSuccess(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        router.replace('/login?redirectTo=/admin/businesses')
+        return
+      }
+
+      const response = await fetch('/api/admin/business-billing', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          businessId: selectedBusiness.id,
+          billingStatus: billingDraft.billingStatus,
+          priceAmount:
+            parsedPrice === null ? null : Math.round(parsedPrice * 100),
+          currency: billingDraft.currency,
+          trialStart: billingDraft.trialStart || null,
+          trialEnd: billingDraft.trialEnd || null,
+          foundingBusiness: billingDraft.foundingBusiness,
+          secondMonthFreeEligible: billingDraft.secondMonthFreeEligible,
+          notes: billingDraft.notes,
+          changeReason: billingDraft.changeReason
+        })
+      })
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || t('admin.businesses.billing.saveError', 'Could not save billing changes.'))
+      }
+
+      const billing = result.billing as AdminBillingState
+      setAdminBilling(billing)
+      setBillingDraft(billingDraftFromState(billing))
+      setBillingByBusiness((current) => ({
+        ...current,
+        [billing.business_id]: billing
+      }))
+      setSuccess(
+        result.auditStored
+          ? t('admin.businesses.billing.saved', 'Manual billing state saved and audited.')
+          : t(
+              'admin.businesses.billing.savedWithoutAudit',
+              'Manual billing state saved. Install the Stage 5 audit SQL to retain a durable change record.'
+            )
+      )
+    } catch (err: any) {
+      setBillingError(
+        err.message ||
+          t('admin.businesses.billing.saveError', 'Could not save billing changes.')
+      )
+    } finally {
+      setBillingSaving(false)
+    }
   }
 
   function updateSelected<K extends keyof BusinessWithOwner>(key: K, value: BusinessWithOwner[K]) {
@@ -594,7 +788,7 @@ export default function AdminBusinessesPage() {
 
   const selectedCounts = getCounts(selectedBusiness?.id)
   const selectedIssues = selectedBusiness ? readinessIssues(selectedBusiness) : []
-  const selectedBilling = getBillingState(selectedBusiness?.id)
+  const selectedBilling = adminBilling || getBillingState(selectedBusiness?.id)
   const trialDays = daysUntil(selectedBilling.trial_end)
 
   return (
@@ -807,13 +1001,13 @@ export default function AdminBusinessesPage() {
                     <div className="admin-section-header">
                       <div>
                         <p className="small muted">
-                          {t('admin.businesses.billing.kicker', 'Authoritative billing state')}
+                          {t('admin.businesses.billing.adminOnly', 'Admin only · Manual billing control')}
                         </p>
                         <h3>{selectedBilling.plan_name}</h3>
                         <p className="small muted" style={{ marginTop: '0.35rem' }}>
                           {t(
-                            'admin.businesses.billing.readOnly',
-                            'Read-only here. Stripe webhooks and controlled manual operations own this record.'
+                            'admin.businesses.billing.softAccess',
+                            'Billing remains informational. These changes do not restrict bookings, staff access or public listing.'
                           )}
                         </p>
                       </div>
@@ -858,6 +1052,243 @@ export default function AdminBusinessesPage() {
                         </strong>
                       </div>
                     </div>
+
+                    {billingLoading && (
+                      <div className="admin-hint-box" style={{ marginTop: '1rem' }}>
+                        <p className="small muted">
+                          {t('admin.businesses.billing.loadingControls', 'Loading private billing controls...')}
+                        </p>
+                      </div>
+                    )}
+
+                    {billingError && (
+                      <div className="admin-alert-box admin-alert-warning" style={{ marginTop: '1rem' }}>
+                        <p style={{ color: 'var(--danger)' }}>{billingError}</p>
+                      </div>
+                    )}
+
+                    {!billingLoading && billingDraft && adminBilling && (
+                      <>
+                        <div className="admin-provider-box">
+                          <div>
+                            <p className="small muted">
+                              {t('admin.businesses.billing.managementContext', 'Management context')}
+                            </p>
+                            <strong>
+                              {adminBilling.stripe_subscription_id
+                                ? t('admin.businesses.billing.stripeManaged', 'Stripe-managed subscription')
+                                : t('admin.businesses.billing.manualManaged', 'Manual / founding record')}
+                            </strong>
+                          </div>
+                          <div>
+                            <p className="small muted">
+                              {t('admin.businesses.billing.stripeCustomer', 'Stripe customer ID')}
+                            </p>
+                            <code>
+                              {adminBilling.stripe_customer_id ||
+                                t('admin.businesses.billing.notSet', 'Not set')}
+                            </code>
+                          </div>
+                          <div>
+                            <p className="small muted">
+                              {t('admin.businesses.billing.stripeSubscription', 'Stripe subscription ID')}
+                            </p>
+                            <code>
+                              {adminBilling.stripe_subscription_id ||
+                                t('admin.businesses.billing.notSet', 'Not set')}
+                            </code>
+                          </div>
+                        </div>
+
+                        <div className="admin-billing-editor">
+                          <div>
+                            <label className="small muted">
+                              {t('admin.businesses.billing.status', 'Billing status')}
+                            </label>
+                            <select
+                              value={billingDraft.billingStatus}
+                              onChange={(event) =>
+                                updateBillingDraft(
+                                  'billingStatus',
+                                  event.target.value as BillingStatus
+                                )
+                              }
+                            >
+                              {BILLING_STATUSES.map((status) => (
+                                <option key={status} value={status}>
+                                  {statusLabel(status)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="small muted">
+                              {t('admin.businesses.billing.priceMajor', 'Agreed monthly price')}
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={billingDraft.priceMajor}
+                              onChange={(event) =>
+                                updateBillingDraft('priceMajor', event.target.value)
+                              }
+                              placeholder="19.00"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="small muted">
+                              {t('admin.businesses.billing.currency', 'Currency')}
+                            </label>
+                            <input
+                              value={billingDraft.currency}
+                              maxLength={3}
+                              onChange={(event) =>
+                                updateBillingDraft(
+                                  'currency',
+                                  event.target.value.toUpperCase()
+                                )
+                              }
+                              placeholder="GBP"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="small muted">
+                              {t('admin.businesses.billing.trialStart', 'Trial start')}
+                            </label>
+                            <input
+                              type="date"
+                              value={billingDraft.trialStart}
+                              onChange={(event) =>
+                                updateBillingDraft('trialStart', event.target.value)
+                              }
+                            />
+                          </div>
+
+                          <div>
+                            <label className="small muted">
+                              {t('admin.businesses.billing.trialEnd', 'Trial end')}
+                            </label>
+                            <input
+                              type="date"
+                              value={billingDraft.trialEnd}
+                              onChange={(event) =>
+                                updateBillingDraft('trialEnd', event.target.value)
+                              }
+                            />
+                          </div>
+
+                          <label className="admin-check-row">
+                            <input
+                              type="checkbox"
+                              checked={billingDraft.foundingBusiness}
+                              onChange={(event) =>
+                                updateBillingDraft(
+                                  'foundingBusiness',
+                                  event.target.checked
+                                )
+                              }
+                            />
+                            <span>
+                              <strong>
+                                {t('admin.businesses.billing.founding', 'Founding business')}
+                              </strong>
+                              <small>
+                                {t(
+                                  'admin.businesses.billing.foundingBody',
+                                  'Marks this business as part of the founding launch offer.'
+                                )}
+                              </small>
+                            </span>
+                          </label>
+
+                          <label className="admin-check-row">
+                            <input
+                              type="checkbox"
+                              checked={billingDraft.secondMonthFreeEligible}
+                              onChange={(event) =>
+                                updateBillingDraft(
+                                  'secondMonthFreeEligible',
+                                  event.target.checked
+                                )
+                              }
+                            />
+                            <span>
+                              <strong>
+                                {t(
+                                  'admin.businesses.billing.secondMonth',
+                                  'Second free month eligible'
+                                )}
+                              </strong>
+                              <small>
+                                {t(
+                                  'admin.businesses.billing.secondMonthBody',
+                                  'Records eligibility only; it does not change Stripe automatically.'
+                                )}
+                              </small>
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="admin-billing-notes">
+                          <div>
+                            <label className="small muted">
+                              {t('admin.businesses.billing.privateNotes', 'Private billing notes')}
+                            </label>
+                            <textarea
+                              value={billingDraft.notes}
+                              onChange={(event) =>
+                                updateBillingDraft('notes', event.target.value)
+                              }
+                              maxLength={2000}
+                              placeholder={t(
+                                'admin.businesses.billing.privateNotesPlaceholder',
+                                'Internal commercial context. Never shown to the business.'
+                              )}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="small muted">
+                              {t('admin.businesses.billing.changeReason', 'Reason for this change')}
+                            </label>
+                            <textarea
+                              value={billingDraft.changeReason}
+                              onChange={(event) =>
+                                updateBillingDraft('changeReason', event.target.value)
+                              }
+                              maxLength={500}
+                              placeholder={t(
+                                'admin.businesses.billing.changeReasonPlaceholder',
+                                'Required for operator accountability.'
+                              )}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="admin-billing-save">
+                          <p className="small muted">
+                            {t(
+                              'admin.businesses.billing.webhookPreservation',
+                              'Stripe webhooks may update status and period dates later. Founding flags, agreed price and private notes remain manual fields.'
+                            )}
+                          </p>
+                          <button
+                            type="button"
+                            className="btn btn-accent"
+                            onClick={saveBillingState}
+                            disabled={billingSaving}
+                          >
+                            {billingSaving
+                              ? t('admin.businesses.billing.saving', 'Saving billing...')
+                              : t('admin.businesses.billing.save', 'Save billing state')}
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="admin-editor-grid">
@@ -993,7 +1424,7 @@ export default function AdminBusinessesPage() {
                       <p className="small muted" style={{ marginTop: '0.25rem' }}>
                         {t(
                           'admin.businesses.saveScope',
-                          'Saving here updates publishing, billing contact and booking settings only. Billing status remains read-only.'
+                          'This button updates publishing, billing contact and booking settings only. Use the separate admin-only billing control for commercial state.'
                         )}
                       </p>
                     </div>
@@ -1162,6 +1593,80 @@ export default function AdminBusinessesPage() {
           margin-top: 1rem;
         }
 
+        .admin-provider-box,
+        .admin-billing-editor,
+        .admin-billing-notes {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+
+        .admin-provider-box {
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+        }
+
+        .admin-provider-box code {
+          display: block;
+          margin-top: 0.25rem;
+          color: var(--text);
+          overflow-wrap: anywhere;
+          font-size: 0.78rem;
+        }
+
+        .admin-billing-editor > div,
+        .admin-billing-notes > div {
+          display: grid;
+          gap: 0.4rem;
+        }
+
+        .admin-check-row {
+          display: flex;
+          gap: 0.7rem;
+          align-items: flex-start;
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+        }
+
+        .admin-check-row input {
+          width: auto;
+          margin-top: 0.2rem;
+        }
+
+        .admin-check-row span {
+          display: grid;
+          gap: 0.2rem;
+        }
+
+        .admin-check-row small {
+          color: var(--text-muted);
+          line-height: 1.45;
+        }
+
+        .admin-billing-notes textarea {
+          min-height: 96px;
+          resize: vertical;
+        }
+
+        .admin-billing-save {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          margin-top: 1rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .admin-billing-save p {
+          max-width: 620px;
+        }
+
         .admin-toggle {
           width: 100%;
           margin-top: 0.4rem;
@@ -1215,6 +1720,10 @@ export default function AdminBusinessesPage() {
             display: grid;
           }
 
+          .admin-billing-save {
+            display: grid;
+          }
+
           .admin-actions,
           .admin-business-actions,
           .admin-actions :global(.btn),
@@ -1225,6 +1734,11 @@ export default function AdminBusinessesPage() {
           .admin-business-actions a,
           .admin-save-footer button,
           .admin-owner-box a {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .admin-billing-save :global(.btn) {
             width: 100%;
             justify-content: center;
           }
