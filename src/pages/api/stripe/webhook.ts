@@ -106,13 +106,15 @@ function mapSubscriptionStatus(
 }
 
 async function readRawBody(request: NextApiRequest) {
-  const chunks: Buffer[] = [];
+  return new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
 
-  for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-
-  return Buffer.concat(chunks);
+    request.on("data", (chunk: Buffer | Uint8Array | string) => {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    });
+    request.on("end", () => resolve(Buffer.concat(chunks)));
+    request.on("error", reject);
+  });
 }
 
 async function findBillingRow(identifiers: BillingIdentifiers) {
@@ -294,16 +296,20 @@ export default async function handler(
     return;
   }
 
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
 
   if (!stripeSecretKey || !webhookSecret) {
     response.status(500).json({ error: "Stripe webhook is not configured." });
     return;
   }
 
-  const signature = request.headers["stripe-signature"];
-  if (typeof signature !== "string") {
+  const signatureHeader = request.headers["stripe-signature"];
+  const signature = Array.isArray(signatureHeader)
+    ? signatureHeader[0]
+    : signatureHeader;
+
+  if (!signature) {
     response.status(400).json({ error: "Missing Stripe signature." });
     return;
   }
@@ -319,7 +325,9 @@ export default async function handler(
       webhookSecret,
     ) as StripeEvent;
   } catch (error) {
-    console.warn("Invalid Stripe webhook signature");
+    console.warn("Invalid Stripe webhook signature", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
     response.status(400).json({ error: "Invalid Stripe signature." });
     return;
   }
