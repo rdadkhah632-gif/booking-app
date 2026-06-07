@@ -7,8 +7,8 @@ Batch 1 status: audit and source planning complete after build verification.
 Batch 2 status: implementation complete; build passed. Manual Supabase
 deployment and live RLS QA remain.
 
-Stripe test Checkout status: implemented; webhook synchronization remains
-pending.
+Stripe test Checkout and webhook synchronization status: implemented; live
+deployment configuration and event QA remain.
 
 Stage 1 and Stage 2 are complete and protected.
 
@@ -276,7 +276,8 @@ Any later enforcement must define grace periods, owner access, data export, exis
 
 ### Batch 4 - Stripe Test-Mode Integration
 
-Status: Checkout implemented; webhook synchronization pending.
+Status: Checkout and webhook synchronization implemented; deployment QA
+pending.
 
 Implemented:
 
@@ -292,13 +293,51 @@ Implemented:
   billing page
 - enforces an `sk_test_` server key during this stage
 - keeps booking, listing, dashboard and staff access unchanged
+- added `POST /api/stripe/webhook` with raw request body handling
+- verifies every webhook using `STRIPE_WEBHOOK_SECRET`
+- uses a server-only Supabase service-role client for billing-state writes
+- acknowledges valid ignored events without exposing event payloads
+- logs missing billing matches using only safe event/provider identifiers
+- returns a retryable server error when a real Supabase synchronization write
+  fails
 
-Pending:
+Webhook events handled:
 
-- verified Stripe webhook route
-- automatic Stripe customer and subscription ID persistence
-- subscription status and current-period synchronization
-- idempotent billing event storage
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+
+Stripe status mapping:
+
+- `active` -> `active`
+- `trialing` -> `free_trial`
+- `past_due` -> `past_due`
+- `unpaid` -> `past_due`
+- `canceled` -> `cancelled`
+- `paused` -> `paused`
+
+The webhook updates Stripe customer/subscription references and the latest
+subscription-item period end where available. Repeated delivery is safe
+because events converge the same billing row to the same state.
+
+Server environment variables required:
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_ID_LAUNCH`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+`SUPABASE_SERVICE_ROLE_KEY` and Stripe secrets must remain server-only and
+must never use a `NEXT_PUBLIC_` prefix.
+
+Still pending:
+
+- persistent billing-event receipt/audit table
 - Customer Portal access
 - production/live-mode enablement
 
@@ -432,14 +471,13 @@ Implemented:
 Still absent:
 
 - no billing-portal route
-- no webhook handler
-- no automatic database subscription synchronization
+- no persistent webhook event-history table
 - no production/live-mode payment processing
 
 Checkout metadata includes the business and owner identifiers, but the
-application does not yet claim a local subscription is active after the
-success redirect. Stripe customer and subscription references will be stored
-only after a verified webhook flow is implemented.
+application does not trust the browser success redirect to activate a local
+subscription. Verified Stripe webhook events update the matching
+`business_billing` row.
 
 ### Supabase and Schema Status
 
@@ -551,8 +589,8 @@ server-side actions, then update admin summaries to read
 
 - SQL deployment is manual.
 - No online payment is taken.
-- Stripe Checkout exists in test mode; portal and webhook synchronization do
-  not.
+- Stripe Checkout and webhook synchronization exist in test mode; Customer
+  Portal access does not.
 - No invoice or renewal history is displayed.
 - Billing email remains on the legacy `businesses` record.
 - Legacy admin billing summaries and controls still read/write
@@ -573,8 +611,36 @@ Proceed with **Protected Admin Billing Operations**:
 6. Add billing change audit metadata or an event log.
 7. Remove or stop writing legacy subscription state on `businesses` only
    after live data has been migrated and checked.
-8. Keep webhook synchronization and portal access for the next approved
-   Stripe test-mode batch.
+8. Keep Customer Portal access and persistent webhook event-history storage
+   for the next approved Stripe test-mode batch.
+
+## Stripe Webhook QA
+
+Before testing:
+
+1. Apply `sources/sql/04_business_billing_foundation.sql` in Supabase.
+2. Add `STRIPE_WEBHOOK_SECRET` and `SUPABASE_SERVICE_ROLE_KEY` locally and in
+   Vercel.
+3. Configure the Stripe test webhook endpoint:
+   `https://<app-domain>/api/stripe/webhook`.
+4. Subscribe the endpoint to the six implemented event types.
+
+Test flow:
+
+1. Start Checkout as a real business owner.
+2. Complete Checkout with a Stripe test payment method.
+3. Confirm the matching `business_billing` row receives customer and
+   subscription IDs.
+4. Confirm `billing_status` becomes `active` or `free_trial`.
+5. Confirm `current_period_end` is populated when Stripe supplies a
+   subscription-item period end.
+6. Trigger payment-failed and payment-succeeded test events and confirm
+   `past_due` then `active`.
+7. Cancel the test subscription and confirm `cancelled`.
+8. Replay an event and confirm the same row remains consistent.
+9. Send an invalid signature and confirm the endpoint returns `400`.
+10. Confirm bookings, Explore listing, dashboard and staff access remain
+    unchanged for every billing status.
 
 ## Stage 4 Pass Standard
 

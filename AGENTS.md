@@ -8,7 +8,7 @@ Before making code changes, always read:
 2. `/sources/01_STAGE_ACCOUNT_ROLE_STAFF_BUSINESS_FOUNDATION.md`
 3. `/sources/01_STAGE_1_CLOSURE_QA.md`
 4. The current active stage document, currently:
-   `/sources/03_STAGE_LAUNCH_UI_RESPONSIVE_POLISH.md`
+   `/sources/04_STAGE_BILLING_PRICING_SUBSCRIPTION_FOUNDATION.md`
 
 ## Current Status
 
@@ -27,16 +27,19 @@ Stage 1 covered:
 
 Stage 2 is complete with accepted minor follow-ups.
 
-Stage 3 is active.
+Stage 3 is complete with tracked minor follow-ups.
 
-Stage 3 focuses on:
+Stage 4 is active.
 
-- mobile responsive polish
-- public and customer trust polish
-- business workspace polish
-- staff workspace polish
-- translation, copy and empty-state cleanup
-- launch UI closure QA
+Stage 4 focuses on:
+
+- business subscription billing
+- one-plan launch pricing
+- founding-business offers and trials
+- billing status ownership
+- provider-ready subscription architecture
+- admin billing controls
+- Stripe preparation without customer appointment checkout
 
 ## Working Rules
 
@@ -44,7 +47,7 @@ Start each task by checking repository status.
 
 Protect Stage 1 foundations. Do not alter account identity, role/capability logic, staff-business linking, route protection or language preference persistence unless the current task clearly requires it.
 
-Do not touch billing unless the user explicitly asks. Customer booking should not become a payment or checkout flow during Stage 3.
+Customer booking must not become a payment or checkout flow during Stage 4. Business subscription billing remains separate from customer appointment payments.
 
 Use small grouped changes. After grouped edits, run formatting on changed files when a formatter is available, then run the build.
 
