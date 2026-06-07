@@ -2473,8 +2473,11 @@ export const en: TranslationTree = {
   "billing.checkout.error":
     "Could not start Stripe Checkout. Please try again.",
   "billing.checkout.successTitle": "Test Checkout completed",
-  "billing.checkout.successBody":
-    "Stripe accepted the test subscription. Billing status will remain informational until webhook synchronization is added.",
+  "billing.checkout.successSyncedBody":
+    "Stripe accepted the test subscription and Mirëbook has synced the billing status.",
+  "billing.checkout.successPendingBody":
+    "Stripe accepted the test subscription. Billing status may take a moment to sync.",
+  "billing.checkout.runAgain": "Run another test Checkout",
   "billing.checkout.cancelledTitle": "Checkout cancelled",
   "billing.checkout.cancelledBody":
     "No test subscription was started. Your Mirëbook access has not changed.",

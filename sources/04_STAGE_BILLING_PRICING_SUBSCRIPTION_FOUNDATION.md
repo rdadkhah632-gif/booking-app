@@ -10,6 +10,18 @@ deployment and live RLS QA remain.
 Stripe test Checkout and webhook synchronization status: implemented; live
 deployment configuration and event QA remain.
 
+Webhook sync verification follow-up:
+
+- verified Stripe events update `business_billing`
+- confirmed the billing page displays `active` and the synchronized current
+  period end after test Checkout
+- updated Checkout return copy to distinguish synchronized active state from
+  a webhook update that is still arriving
+- active subscriptions now offer `Run another test Checkout` instead of the
+  first-time Checkout label
+- test mode remains informational and does not restrict booking, staff or
+  public listing access
+
 Stage 1 and Stage 2 are complete and protected.
 
 Stage 3 is complete with tracked minor follow-ups.

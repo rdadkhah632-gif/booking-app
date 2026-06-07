@@ -321,10 +321,15 @@ export default function DashboardBillingPage() {
                 )}
               </h3>
               <p className="muted" style={{ marginTop: "0.5rem" }}>
-                {t(
-                  "billing.checkout.successBody",
-                  "Stripe accepted the test subscription. Billing status will remain informational until webhook synchronization is added.",
-                )}
+                {billing.billing_status === "active"
+                  ? t(
+                      "billing.checkout.successSyncedBody",
+                      "Stripe accepted the test subscription and Mirëbook has synced the billing status.",
+                    )
+                  : t(
+                      "billing.checkout.successPendingBody",
+                      "Stripe accepted the test subscription. Billing status may take a moment to sync.",
+                    )}
               </p>
             </div>
           )}
@@ -555,7 +560,12 @@ export default function DashboardBillingPage() {
                       "billing.checkout.starting",
                       "Opening test Checkout...",
                     )
-                  : t("billing.checkout.start", "Start test Checkout")}
+                  : billing.billing_status === "active"
+                    ? t(
+                        "billing.checkout.runAgain",
+                        "Run another test Checkout",
+                      )
+                    : t("billing.checkout.start", "Start test Checkout")}
               </button>
             </div>
           </div>

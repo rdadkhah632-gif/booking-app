@@ -2533,8 +2533,11 @@ export const sq: TranslationTree = {
   "billing.checkout.error":
     "Checkout-i i Stripe nuk u nis dot. Provo përsëri.",
   "billing.checkout.successTitle": "Checkout-i testues përfundoi",
-  "billing.checkout.successBody":
-    "Stripe pranoi abonimin testues. Statusi i faturimit do të mbetet informues derisa të shtohet sinkronizimi me webhook.",
+  "billing.checkout.successSyncedBody":
+    "Stripe pranoi abonimin testues dhe Mirëbook ka sinkronizuar statusin e faturimit.",
+  "billing.checkout.successPendingBody":
+    "Stripe pranoi abonimin testues. Sinkronizimi i statusit të faturimit mund të zgjasë pak.",
+  "billing.checkout.runAgain": "Kryej përsëri Checkout-in testues",
   "billing.checkout.cancelledTitle": "Checkout-i u anulua",
   "billing.checkout.cancelledBody":
     "Nuk u nis asnjë abonim testues. Aksesi yt në Mirëbook nuk ka ndryshuar.",
