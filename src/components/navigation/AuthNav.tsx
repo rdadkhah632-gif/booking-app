@@ -23,6 +23,26 @@ function isStaffRoute(pathname: string) {
   return pathname.startsWith("/staff");
 }
 
+function supportRouteRole(
+  pathname: string,
+  capabilities: {
+    ownsBusiness: boolean;
+    hasStaffAccess: boolean;
+  },
+): Role {
+  if (pathname.startsWith("/support/customer")) return "customer";
+
+  if (pathname.startsWith("/support/business")) {
+    return capabilities.ownsBusiness ? "business" : "customer";
+  }
+
+  if (pathname.startsWith("/support/staff")) {
+    return capabilities.hasStaffAccess ? "staff" : "customer";
+  }
+
+  return null;
+}
+
 function navRoleForCapabilities(params: {
   activePath: string;
   isAdmin: boolean;
@@ -30,6 +50,14 @@ function navRoleForCapabilities(params: {
   hasStaffAccess: boolean;
 }): Role {
   if (params.isAdmin && isAdminRoute(params.activePath)) return "admin";
+
+  const explicitSupportRole = supportRouteRole(params.activePath, {
+    ownsBusiness: params.ownsBusiness,
+    hasStaffAccess: params.hasStaffAccess,
+  });
+
+  if (explicitSupportRole) return explicitSupportRole;
+
   if (params.hasStaffAccess && isStaffRoute(params.activePath)) return "staff";
   if (params.ownsBusiness && isBusinessRoute(params.activePath))
     return "business";
