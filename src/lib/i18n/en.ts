@@ -2400,6 +2400,84 @@ export const en: TranslationTree = {
   "billing.planCustom": "Custom",
   "billing.planCustomTitle": "Enterprise",
   "billing.planCustomBody": "Multi-location and tailored solutions.",
+  "billing.pageTitle": "Billing",
+  "billing.pageSubtitle": "View your Mirëbook business subscription details.",
+  "billing.pageSubtitleBusiness": "Subscription details for {{business}}.",
+  "billing.loading": "Loading billing details...",
+  "billing.error.load": "Could not load billing details.",
+  "billing.noBusinessTitle": "Create a business first",
+  "billing.noBusinessBody":
+    "Billing details become available after you create a Mirëbook business profile.",
+  "billing.openSetupHub": "Open setup hub",
+  "billing.selectedBusiness": "Selected business",
+  "billing.manualSetupPendingTitle": "Billing setup is being prepared",
+  "billing.manualSetupPendingBody":
+    "Your business can keep using bookings, staff tools and its public listing while Mirëbook prepares the manual billing record.",
+  "billing.heroKicker": "Business subscription",
+  "billing.launchPlan": "Mirëbook Launch",
+  "billing.heroBody":
+    "One clear subscription for the tools your business uses to manage bookings and customers.",
+  "billing.contactSupport": "Contact Mirëbook",
+  "billing.status.notConfigured": "Not configured",
+  "billing.status.freeTrial": "Free trial",
+  "billing.status.foundingFree": "Founding free period",
+  "billing.status.active": "Active",
+  "billing.status.manualComped": "Complimentary",
+  "billing.status.pastDue": "Past due",
+  "billing.status.cancelled": "Cancelled",
+  "billing.status.paused": "Paused",
+  "billing.status.notConfiguredBody":
+    "Mirëbook has not configured a manual billing record for this business yet.",
+  "billing.status.freeTrialBody":
+    "Your launch trial is active. No payment is being taken yet.",
+  "billing.status.foundingFreeBody":
+    "Your founding-business free period is active.",
+  "billing.status.activeBody":
+    "Your Mirëbook Launch subscription is recorded as active.",
+  "billing.status.manualCompedBody":
+    "Mirëbook has recorded complimentary access for this business.",
+  "billing.status.pastDueBody":
+    "Your billing record needs attention. Your booking tools remain available.",
+  "billing.status.cancelledBody":
+    "This subscription record is cancelled. Your booking tools are not restricted in this batch.",
+  "billing.status.pausedBody":
+    "This billing record is paused. Your booking tools remain available.",
+  "billing.agreedPrice": "Agreed monthly price",
+  "billing.priceNotSet": "Not agreed yet",
+  "billing.noChargeYet":
+    "No real payment is taken while Checkout is in test mode.",
+  "billing.offerStatus": "Offer status",
+  "billing.foundingBusiness": "Founding business",
+  "billing.standardLaunch": "Launch plan",
+  "billing.secondMonthFree": "Eligible for the second month free.",
+  "billing.offerRecordedManually":
+    "Offer details are recorded manually by Mirëbook.",
+  "billing.importantDates": "Important dates",
+  "billing.trialEnd": "Trial end",
+  "billing.currentPeriodEnd": "Current period end",
+  "billing.includedTitle": "Included in Mirëbook Launch",
+  "billing.included.bookings": "Booking management",
+  "billing.included.staffServices": "Staff and service management",
+  "billing.included.publicListing": "Public listing",
+  "billing.included.notifications": "Notifications",
+  "billing.included.noCommission": "No normal booking commission",
+  "billing.included.noCustomerFee": "No customer booking fee",
+  "billing.onlinePaymentsTitle": "Test subscription Checkout",
+  "billing.onlinePaymentsBody":
+    "Use Stripe test mode to check the Mirëbook Membership subscription flow. Test Checkout does not change platform access.",
+  "billing.noAccessRestriction":
+    "Billing status does not restrict bookings, staff access or your public listing in this stage.",
+  "billing.manualSetupHelp": "Ask about billing setup",
+  "billing.checkout.start": "Start test Checkout",
+  "billing.checkout.starting": "Opening test Checkout...",
+  "billing.checkout.error":
+    "Could not start Stripe Checkout. Please try again.",
+  "billing.checkout.successTitle": "Test Checkout completed",
+  "billing.checkout.successBody":
+    "Stripe accepted the test subscription. Billing status will remain informational until webhook synchronization is added.",
+  "billing.checkout.cancelledTitle": "Checkout cancelled",
+  "billing.checkout.cancelledBody":
+    "No test subscription was started. Your Mirëbook access has not changed.",
   "nav.operatorNotices": "Operator notices",
   "nav.needsAction": "Needs action",
   "nav.updates": "Updates",

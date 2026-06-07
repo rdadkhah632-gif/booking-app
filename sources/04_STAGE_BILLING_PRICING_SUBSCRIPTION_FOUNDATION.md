@@ -4,6 +4,12 @@ Status: active.
 
 Batch 1 status: audit and source planning complete after build verification.
 
+Batch 2 status: implementation complete; build passed. Manual Supabase
+deployment and live RLS QA remain.
+
+Stripe test Checkout status: implemented; webhook synchronization remains
+pending.
+
 Stage 1 and Stage 2 are complete and protected.
 
 Stage 3 is complete with tracked minor follow-ups.
@@ -252,56 +258,65 @@ Any later enforcement must define grace periods, owner access, data export, exis
 - identify current risks and gaps
 - make no application behavior changes
 
-### Batch 2 - Billing Domain and UI Contract
+### Batch 2 - Manual Billing State Foundation
 
-- verify the live `businesses` billing columns and RLS policies
-- define shared billing status, plan and currency types
-- replace scattered status and plan constants with one shared domain helper
-- change the business billing page from self-managed commercial state to a truthful one-plan account summary
-- allow only safe owner-managed contact fields
-- retain admin manual controls temporarily
+- add a repository-owned manual Supabase SQL foundation
+- create one billing record per business with explicit status and currency
+- store agreed pricing in minor currency units
+- define owner-read and admin-manage RLS groundwork
+- replace owner-editable billing state with a read-only launch-plan summary
 - add no Stripe SDK, API route, environment variable or payment processing
 
-### Batch 3 - Versioned Database Foundation
-
-- add a repository-owned Supabase migration structure
-- create or normalize subscription records and constraints
-- add explicit currency and minor-unit pricing
-- define owner read access and protected write access
-- add audit timestamps and provider ID uniqueness
-- migrate existing billing groundwork safely
-
-### Batch 4 - Admin Subscription Operations
+### Batch 3 - Protected Admin Subscription Operations
 
 - move manual status, trial and price changes behind protected server-side operations
 - add founding-offer metadata and expiry
 - separate booking readiness from billing attention in admin summaries
 - preserve current publishing and listing behavior
 
-### Batch 5 - Stripe Test-Mode Integration
+### Batch 4 - Stripe Test-Mode Integration
 
-- install the official Stripe server SDK only when approved
-- add server-only environment variables
-- create customer/subscription or checkout-session routes
-- create a verified webhook route
-- map one Mirëbook Business product to approved regional prices
-- keep payment processing in Stripe test mode
+Status: Checkout implemented; webhook synchronization pending.
 
-### Batch 6 - Business Checkout and Portal
+Implemented:
+
+- installed the official Stripe server SDK
+- reads Stripe keys, launch price and application URL from environment
+  variables only
+- added an authenticated subscription-mode Checkout Session API route
+- verifies the current Supabase user owns the selected business before
+  creating a session
+- uses the configured recurring `STRIPE_PRICE_ID_LAUNCH`
+- attaches business and owner references to Checkout and subscription metadata
+- returns successful and cancelled test Checkout sessions to the business
+  billing page
+- enforces an `sk_test_` server key during this stage
+- keeps booking, listing, dashboard and staff access unchanged
+
+Pending:
+
+- verified Stripe webhook route
+- automatic Stripe customer and subscription ID persistence
+- subscription status and current-period synchronization
+- idempotent billing event storage
+- Customer Portal access
+- production/live-mode enablement
+
+### Batch 5 - Business Checkout and Portal
 
 - add business-owner subscription checkout
 - add Stripe Customer Portal access
 - show invoices, renewal and cancellation state
 - keep customer appointment booking payment-free
 
-### Batch 7 - Soft Billing Guidance
+### Batch 6 - Soft Billing Guidance
 
 - add trial-ending and payment-attention messaging
 - add grace-period support guidance
 - notify business owners and operators
 - do not hard lock business operations without a separate approval
 
-### Batch 8 - Stage 4 QA and Controlled Rollout
+### Batch 7 - Stage 4 QA and Controlled Rollout
 
 - test trial, active, past-due, cancellation and recovery flows
 - verify webhook idempotency
@@ -332,8 +347,8 @@ Stage 4 must not change:
 
 Until explicitly approved, do not add:
 
-- Stripe checkout
-- payment processing
+- live-mode Stripe checkout
+- real payment processing outside Stripe test mode
 - customer appointment payments or deposits
 - saved customer cards
 - refunds
@@ -403,20 +418,28 @@ Once billing becomes real, owners must not be able to self-assign active status,
 
 ### Stripe Status
 
-Stripe is not integrated.
+The repository now has a Stripe test Checkout foundation.
 
-Confirmed absent:
+Implemented:
 
-- no `stripe` package in `package.json`
-- no Stripe API routes
-- no checkout-session route
+- official `stripe` server package
+- authenticated `POST /api/stripe/create-checkout-session`
+- business-owner verification before Checkout Session creation
+- subscription mode using the environment-provided launch price
+- success and cancellation return states on `/dashboard/billing`
+- test-key guard preventing live secret keys during this stage
+
+Still absent:
+
 - no billing-portal route
 - no webhook handler
-- no Stripe environment variables in `.env.example`
-- no server-side Stripe client
-- no payment processing
+- no automatic database subscription synchronization
+- no production/live-mode payment processing
 
-The app expects `stripe_customer_id` and `stripe_subscription_id` fields on `businesses`, but only reads and displays them. No inspected code creates or updates these references through Stripe.
+Checkout metadata includes the business and owner identifiers, but the
+application does not yet claim a local subscription is active after the
+success redirect. Stripe customer and subscription references will be stored
+only after a verified webhook flow is implemented.
 
 ### Supabase and Schema Status
 
@@ -457,22 +480,101 @@ Their live definitions, defaults, constraints and RLS policies cannot be verifie
 - no tax, invoice or regional-price decision
 - no soft enforcement policy or grace-period definition
 
-## Recommended Batch 2
+## Batch 2 - Manual Billing State Foundation
 
-Proceed with **Billing Domain and UI Contract** before adding schema or Stripe.
+Status: implementation complete and build verified. The SQL must be run
+manually in Supabase before live billing records appear.
 
-Recommended Batch 2 deliverables:
+Implemented:
 
-1. Verify the live billing columns and RLS policies outside the repository.
-2. Decide the launch currency and approve the working founding and launch prices.
-3. Add a shared billing domain helper for the existing statuses and one `mirebook_business` plan code.
-4. Remove owner-editable status, plan, price and trial controls from the business billing page.
-5. Keep billing email as the only owner-editable billing groundwork field, if live RLS safely permits it.
-6. Present a read-only one-plan summary, trial status and clear “payments not connected yet” state.
-7. Keep admin manual controls for the short term, but document that they must move server-side before Stripe.
-8. Produce the proposed migration and RLS design for Batch 3 without applying it yet.
+- added `src/lib/billing.ts` as the shared manual billing status and
+  minor-unit price formatting contract
+- added `sources/sql/04_business_billing_foundation.sql`
+- replaced the owner-editable groundwork form with a read-only Mirëbook
+  Launch subscription summary
+- added founding-business, second-month-free, trial, agreed-price and current
+  period presentation
+- added clear EN and SQ copy explaining that online subscription payment is
+  coming later
+- kept billing informational: it does not affect booking, dashboard, staff or
+  Explore access
+- added a soft setup state if the live `business_billing` table has not yet
+  been deployed
 
-Batch 2 must not install Stripe, add environment variables, create API routes, process payments or enforce subscription access.
+### Manual Schema
+
+The SQL creates `public.business_billing` with:
+
+- one unique billing record per business
+- `not_configured`, `free_trial`, `founding_free`, `active`,
+  `manual_comped`, `past_due`, `cancelled` and `paused` statuses
+- the one-plan launch name
+- agreed monthly price in minor currency units
+- explicit three-letter currency
+- trial start and end
+- founding-business and second-month-free eligibility
+- future Stripe customer and subscription references
+- current-period end
+- internal notes
+- created and updated timestamps
+
+It also:
+
+- creates records for existing businesses
+- creates a default record for each new business
+- gives business owners read access to their own safe billing fields
+- gives authenticated admin profiles RLS permission to manage billing rows
+- excludes internal notes and Stripe references from authenticated client
+  select grants
+- leaves anonymous users without access
+
+This repository has no migration runner. Run
+`sources/sql/04_business_billing_foundation.sql` manually in the Supabase SQL
+editor and verify its policies against the live `profiles` and `businesses`
+tables before production use.
+
+### Admin and Manual Operations
+
+The existing admin business page still edits legacy billing columns on
+`businesses`; it does not edit the new authoritative `business_billing` row.
+
+For Batch 2, manual records must be managed through the Supabase table editor
+or SQL editor. A new client-side admin editor was deliberately not added
+because the app does not yet have a protected server mutation boundary.
+
+The SQL includes an admin RLS management policy as groundwork. The next
+implementation batch should move admin billing operations into protected
+server-side actions, then update admin summaries to read
+`business_billing`.
+
+### Current Limitations
+
+- SQL deployment is manual.
+- No online payment is taken.
+- Stripe Checkout exists in test mode; portal and webhook synchronization do
+  not.
+- No invoice or renewal history is displayed.
+- Billing email remains on the legacy `businesses` record.
+- Legacy admin billing summaries and controls still read/write
+  `businesses`.
+- Billing status does not enforce access or publishing.
+- Founding and launch prices remain manually agreed values.
+
+## Recommended Next Batch
+
+Proceed with **Protected Admin Billing Operations**:
+
+1. Apply and verify the Batch 2 SQL in Supabase.
+2. Confirm owner read and non-owner denial with real accounts.
+3. Add protected server-side admin read/update operations.
+4. Move the admin business billing controls to `business_billing`.
+5. Update admin billing summaries to use the new statuses and minor-unit
+   prices.
+6. Add billing change audit metadata or an event log.
+7. Remove or stop writing legacy subscription state on `businesses` only
+   after live data has been migrated and checked.
+8. Keep webhook synchronization and portal access for the next approved
+   Stripe test-mode batch.
 
 ## Stage 4 Pass Standard
 

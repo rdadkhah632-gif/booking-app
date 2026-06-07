@@ -2460,6 +2460,84 @@ export const sq: TranslationTree = {
   "billing.trialActive": "Periudha provuese aktive",
   "billing.trialEndsOn": "Periudha provuese përfundon",
   "billing.noTrialConfigured": "Nuk është caktuar datë për periudhën provuese.",
+  "billing.pageTitle": "Faturimi",
+  "billing.pageSubtitle": "Shiko detajet e abonimit të biznesit në Mirëbook.",
+  "billing.pageSubtitleBusiness": "Detajet e abonimit për {{business}}.",
+  "billing.loading": "Po ngarkohen detajet e faturimit...",
+  "billing.error.load": "Detajet e faturimit nuk u ngarkuan dot.",
+  "billing.noBusinessTitle": "Krijo fillimisht një biznes",
+  "billing.noBusinessBody":
+    "Detajet e faturimit bëhen të disponueshme pasi të krijosh një profil biznesi në Mirëbook.",
+  "billing.openSetupHub": "Hap qendrën e konfigurimit",
+  "billing.selectedBusiness": "Biznesi i zgjedhur",
+  "billing.manualSetupPendingTitle": "Konfigurimi i faturimit po përgatitet",
+  "billing.manualSetupPendingBody":
+    "Biznesi yt mund të vazhdojë të përdorë rezervimet, mjetet e stafit dhe listimin publik ndërsa Mirëbook përgatit regjistrin manual të faturimit.",
+  "billing.heroKicker": "Abonimi i biznesit",
+  "billing.launchPlan": "Mirëbook Launch",
+  "billing.heroBody":
+    "Një abonim i qartë për mjetet që biznesi yt përdor për të menaxhuar rezervimet dhe klientët.",
+  "billing.contactSupport": "Kontakto Mirëbook",
+  "billing.status.notConfigured": "I pakonfiguruar",
+  "billing.status.freeTrial": "Provë falas",
+  "billing.status.foundingFree": "Periudhë falas për biznes themelues",
+  "billing.status.active": "Aktiv",
+  "billing.status.manualComped": "Falas me marrëveshje",
+  "billing.status.pastDue": "Pagesë e vonuar",
+  "billing.status.cancelled": "I anuluar",
+  "billing.status.paused": "I pezulluar",
+  "billing.status.notConfiguredBody":
+    "Mirëbook ende nuk ka konfiguruar një regjistër manual faturimi për këtë biznes.",
+  "billing.status.freeTrialBody":
+    "Periudha provuese e planit Launch është aktive. Ende nuk po merret pagesë.",
+  "billing.status.foundingFreeBody":
+    "Periudha falas për biznesin themelues është aktive.",
+  "billing.status.activeBody":
+    "Abonimi yt Mirëbook Launch është regjistruar si aktiv.",
+  "billing.status.manualCompedBody":
+    "Mirëbook ka regjistruar akses falas për këtë biznes.",
+  "billing.status.pastDueBody":
+    "Regjistri i faturimit kërkon vëmendje. Mjetet e rezervimit mbeten të disponueshme.",
+  "billing.status.cancelledBody":
+    "Ky regjistër abonimi është anuluar. Mjetet e rezervimit nuk kufizohen në këtë fazë.",
+  "billing.status.pausedBody":
+    "Ky regjistër faturimi është pezulluar. Mjetet e rezervimit mbeten të disponueshme.",
+  "billing.agreedPrice": "Çmimi mujor i rënë dakord",
+  "billing.priceNotSet": "Ende i papërcaktuar",
+  "billing.noChargeYet":
+    "Nuk merret pagesë reale ndërsa Checkout-i është në modalitet testues.",
+  "billing.offerStatus": "Statusi i ofertës",
+  "billing.foundingBusiness": "Biznes themelues",
+  "billing.standardLaunch": "Plani Launch",
+  "billing.secondMonthFree": "Përfiton muajin e dytë falas.",
+  "billing.offerRecordedManually":
+    "Detajet e ofertës regjistrohen manualisht nga Mirëbook.",
+  "billing.importantDates": "Datat e rëndësishme",
+  "billing.trialEnd": "Përfundimi i provës",
+  "billing.currentPeriodEnd": "Përfundimi i periudhës aktuale",
+  "billing.includedTitle": "Përfshihet në Mirëbook Launch",
+  "billing.included.bookings": "Menaxhimi i rezervimeve",
+  "billing.included.staffServices": "Menaxhimi i stafit dhe shërbimeve",
+  "billing.included.publicListing": "Listimi publik",
+  "billing.included.notifications": "Njoftimet",
+  "billing.included.noCommission": "Pa komision normal për rezervimet",
+  "billing.included.noCustomerFee": "Pa tarifë rezervimi për klientin",
+  "billing.onlinePaymentsTitle": "Checkout testues për abonimin",
+  "billing.onlinePaymentsBody":
+    "Përdor modalitetin testues të Stripe për të kontrolluar rrjedhën e abonimit Mirëbook Membership. Checkout-i testues nuk ndryshon aksesin në platformë.",
+  "billing.noAccessRestriction":
+    "Statusi i faturimit nuk kufizon rezervimet, aksesin e stafit ose listimin publik në këtë fazë.",
+  "billing.manualSetupHelp": "Pyet për konfigurimin e faturimit",
+  "billing.checkout.start": "Fillo Checkout-in testues",
+  "billing.checkout.starting": "Po hapet Checkout-i testues...",
+  "billing.checkout.error":
+    "Checkout-i i Stripe nuk u nis dot. Provo përsëri.",
+  "billing.checkout.successTitle": "Checkout-i testues përfundoi",
+  "billing.checkout.successBody":
+    "Stripe pranoi abonimin testues. Statusi i faturimit do të mbetet informues derisa të shtohet sinkronizimi me webhook.",
+  "billing.checkout.cancelledTitle": "Checkout-i u anulua",
+  "billing.checkout.cancelledBody":
+    "Nuk u nis asnjë abonim testues. Aksesi yt në Mirëbook nuk ka ndryshuar.",
   "nav.operatorNotices": "Njoftime operatori",
   "nav.needsAction": "Kërkon veprim",
   "nav.updates": "Përditësime",

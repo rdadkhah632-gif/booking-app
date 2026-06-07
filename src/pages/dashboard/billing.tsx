@@ -2,112 +2,113 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
+import {
+  BillingState,
+  defaultBillingState,
+  formatBillingAmount,
+} from "@/lib/billing";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 
-type BusinessBilling = {
+type Business = {
   id: string;
   name: string;
   published?: boolean | null;
-  subscription_status?: string | null;
-  subscription_plan?: string | null;
-  subscription_price_monthly?: number | null;
-  stripe_customer_id?: string | null;
-  stripe_subscription_id?: string | null;
-  trial_ends_at?: string | null;
-  billing_email?: string | null;
 };
 
-const PLAN_OPTIONS = [
-  { value: "starter" },
-  { value: "growth" },
-  { value: "pro" },
-  { value: "custom" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "trial" },
-  { value: "active" },
-  { value: "past_due" },
-  { value: "paused" },
-  { value: "cancelled" },
-];
-
-function defaultBilling(business: BusinessBilling): BusinessBilling {
-  return {
-    ...business,
-    subscription_status: business.subscription_status || "trial",
-    subscription_plan: business.subscription_plan || "starter",
-    subscription_price_monthly: Number(
-      business.subscription_price_monthly || 0,
-    ),
-    billing_email: business.billing_email || "",
-    trial_ends_at: business.trial_ends_at || null,
-  };
-}
-
-function statusTone(status?: string | null) {
-  if (status === "active") return "success";
-  if (status === "trial") return "accent";
-  if (status === "past_due") return "warning";
-  if (status === "paused") return "muted";
-  if (status === "cancelled") return "warning";
-  return "muted";
-}
-
-function statusLabel(
-  status: string | null | undefined,
-  t: (key: string, fallback?: string) => string,
-) {
-  if (status === "trial") return t("billing.status.trial", "Trial");
-  if (status === "active") return t("billing.status.active", "Active");
-  if (status === "past_due") return t("billing.status.pastDue", "Past due");
-  if (status === "paused") return t("billing.status.paused", "Paused");
-  if (status === "cancelled") return t("billing.status.cancelled", "Cancelled");
-  return t("billing.status.notSet", "Not set");
-}
-
-function planLabel(
-  plan: string | null | undefined,
-  t: (key: string, fallback?: string) => string,
-) {
-  if (plan === "growth") return t("billing.planGrowth", "Growth");
-  if (plan === "pro") return t("billing.planPro", "Pro");
-  if (plan === "custom") return t("billing.planCustom", "Custom");
-  return t("billing.planStarter", "Starter");
+function formatDate(value?: string | null) {
+  if (!value) return null;
+  return new Date(value).toLocaleDateString();
 }
 
 export default function DashboardBillingPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const [businesses, setBusinesses] = useState<BusinessBilling[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [billingByBusiness, setBillingByBusiness] = useState<
+    Record<string, BillingState>
+  >({});
   const [selectedBusinessId, setSelectedBusinessId] = useState("");
-  const [billing, setBilling] = useState<BusinessBilling | null>(null);
+  const [schemaAvailable, setSchemaAvailable] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [startingCheckout, setStartingCheckout] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  const selectedBusiness = useMemo(() => {
-    return (
-      businesses.find((business) => business.id === selectedBusinessId) || null
-    );
-  }, [businesses, selectedBusinessId]);
+  const selectedBusiness = useMemo(
+    () =>
+      businesses.find((business) => business.id === selectedBusinessId) || null,
+    [businesses, selectedBusinessId],
+  );
 
-  function trialEndsText() {
-    if (!billing?.trial_ends_at)
-      return t("billing.noTrialConfigured", "No trial date configured.");
+  const billing = useMemo(
+    () =>
+      billingByBusiness[selectedBusinessId] ||
+      defaultBillingState(selectedBusinessId),
+    [billingByBusiness, selectedBusinessId],
+  );
 
-    return t("billing.trialEndsOn", "Trial ends on {{date}}").replace(
-      "{{date}}",
-      new Date(billing.trial_ends_at).toLocaleDateString(),
+  function statusLabel(status: BillingState["billing_status"]) {
+    const labels: Record<BillingState["billing_status"], string> = {
+      not_configured: t("billing.status.notConfigured", "Not configured"),
+      free_trial: t("billing.status.freeTrial", "Free trial"),
+      founding_free: t("billing.status.foundingFree", "Founding free period"),
+      active: t("billing.status.active", "Active"),
+      manual_comped: t("billing.status.manualComped", "Complimentary"),
+      past_due: t("billing.status.pastDue", "Past due"),
+      cancelled: t("billing.status.cancelled", "Cancelled"),
+      paused: t("billing.status.paused", "Paused"),
+    };
+
+    return labels[status];
+  }
+
+  function statusBody(status: BillingState["billing_status"]) {
+    if (status === "free_trial")
+      return t(
+        "billing.status.freeTrialBody",
+        "Your launch trial is active. No payment is being taken yet.",
+      );
+    if (status === "founding_free")
+      return t(
+        "billing.status.foundingFreeBody",
+        "Your founding-business free period is active.",
+      );
+    if (status === "active")
+      return t(
+        "billing.status.activeBody",
+        "Your Mirëbook Launch subscription is recorded as active.",
+      );
+    if (status === "manual_comped")
+      return t(
+        "billing.status.manualCompedBody",
+        "Mirëbook has recorded complimentary access for this business.",
+      );
+    if (status === "past_due")
+      return t(
+        "billing.status.pastDueBody",
+        "Your billing record needs attention. Your booking tools remain available.",
+      );
+    if (status === "cancelled")
+      return t(
+        "billing.status.cancelledBody",
+        "This subscription record is cancelled. Your booking tools are not restricted in this batch.",
+      );
+    if (status === "paused")
+      return t(
+        "billing.status.pausedBody",
+        "This billing record is paused. Your booking tools remain available.",
+      );
+
+    return t(
+      "billing.status.notConfiguredBody",
+      "Mirëbook has not configured a manual billing record for this business yet.",
     );
   }
 
   async function loadBilling() {
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const {
@@ -119,54 +120,61 @@ export default function DashboardBillingPage() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data: businessData, error: businessError } = await supabase
         .from("businesses")
-        .select(
-          `
-          id,
-          name,
-          published,
-          subscription_status,
-          subscription_plan,
-          subscription_price_monthly,
-          stripe_customer_id,
-          stripe_subscription_id,
-          trial_ends_at,
-          billing_email
-        `,
-        )
+        .select("id, name, published")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: true });
 
-      if (error) throw error;
+      if (businessError) throw businessError;
 
-      const ownedBusinesses = (data || []) as BusinessBilling[];
+      const ownedBusinesses = (businessData || []) as Business[];
       setBusinesses(ownedBusinesses);
 
       const queryBusinessId =
         typeof router.query.businessId === "string"
           ? router.query.businessId
           : "";
-
-      const nextSelectedBusiness =
+      const nextBusiness =
         ownedBusinesses.find((business) => business.id === queryBusinessId) ||
         ownedBusinesses[0] ||
         null;
 
-      if (nextSelectedBusiness) {
-        setSelectedBusinessId(nextSelectedBusiness.id);
-        setBilling(defaultBilling(nextSelectedBusiness));
-      } else {
-        setSelectedBusinessId("");
-        setBilling(null);
-      }
+      setSelectedBusinessId(nextBusiness?.id || "");
 
-      setLoading(false);
+      if (ownedBusinesses.length > 0) {
+        const { data: billingData, error: billingError } = await supabase
+          .from("business_billing")
+          .select(
+            "id, business_id, billing_status, plan_name, price_amount, currency, trial_start, trial_end, founding_business, second_month_free_eligible, current_period_end, created_at, updated_at",
+          )
+          .in(
+            "business_id",
+            ownedBusinesses.map((business) => business.id),
+          );
+
+        if (billingError) {
+          setSchemaAvailable(false);
+          setBillingByBusiness({});
+        } else {
+          setSchemaAvailable(true);
+          setBillingByBusiness(
+            ((billingData || []) as BillingState[]).reduce(
+              (map, row) => {
+                map[row.business_id] = row;
+                return map;
+              },
+              {} as Record<string, BillingState>,
+            ),
+          );
+        }
+      }
     } catch (err: any) {
       setError(
         err.message ||
           t("billing.error.load", "Could not load billing details."),
       );
+    } finally {
       setLoading(false);
     }
   }
@@ -177,88 +185,75 @@ export default function DashboardBillingPage() {
   }, [router.isReady]);
 
   function selectBusiness(businessId: string) {
-    const business = businesses.find((item) => item.id === businessId);
-    if (!business) return;
-
-    setSelectedBusinessId(business.id);
-    setBilling(defaultBilling(business));
-    router.replace(`/dashboard/billing?businessId=${business.id}`, undefined, {
+    setSelectedBusinessId(businessId);
+    router.replace(`/dashboard/billing?businessId=${businessId}`, undefined, {
       shallow: true,
     });
   }
 
-  function updateBilling<K extends keyof BusinessBilling>(
-    key: K,
-    value: BusinessBilling[K],
-  ) {
-    setBilling((current) => {
-      if (!current) return current;
+  async function startCheckout() {
+    if (!selectedBusiness || startingCheckout) return;
 
-      return {
-        ...current,
-        [key]: value,
+    setStartingCheckout(true);
+    setCheckoutError(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        router.replace("/login?redirectTo=/dashboard/billing");
+        return;
+      }
+
+      const checkoutResponse = await fetch(
+        "/api/stripe/create-checkout-session",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            businessId: selectedBusiness.id,
+          }),
+        },
+      );
+      const checkoutData = (await checkoutResponse.json()) as {
+        url?: string;
+        error?: string;
       };
-    });
-  }
 
-  async function saveBillingGroundwork() {
-    if (!billing) return;
+      if (!checkoutResponse.ok || !checkoutData.url) {
+        throw new Error(
+          checkoutData.error ||
+            t(
+              "billing.checkout.error",
+              "Could not start Stripe Checkout. Please try again.",
+            ),
+        );
+      }
 
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-
-    const payload = {
-      subscription_status: billing.subscription_status || "trial",
-      subscription_plan: billing.subscription_plan || "starter",
-      subscription_price_monthly: Number(
-        billing.subscription_price_monthly || 0,
-      ),
-      billing_email: billing.billing_email?.trim() || null,
-      trial_ends_at: billing.trial_ends_at || null,
-    };
-
-    const { error } = await supabase
-      .from("businesses")
-      .update(payload)
-      .eq("id", billing.id);
-
-    setSaving(false);
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    setSuccess(
-      t("billing.success.saved", "Mirëbook billing groundwork saved."),
-    );
-    await loadBilling();
-  }
-
-  function stripeStatusText() {
-    if (!billing)
-      return t("billing.stripe.noBusiness", "No business selected.");
-
-    if (billing.stripe_subscription_id) {
-      return t(
-        "billing.stripe.subscriptionStored",
-        "Stripe subscription reference is stored for this business.",
+      window.location.assign(checkoutData.url);
+    } catch (checkoutError: any) {
+      setCheckoutError(
+        checkoutError.message ||
+          t(
+            "billing.checkout.error",
+            "Could not start Stripe Checkout. Please try again.",
+          ),
       );
+      setStartingCheckout(false);
     }
-
-    if (billing.stripe_customer_id) {
-      return t(
-        "billing.stripe.customerOnly",
-        "Stripe customer reference is stored, but no subscription reference is linked yet.",
-      );
-    }
-
-    return t(
-      "billing.stripe.notConnected",
-      "Stripe is not connected yet. This page is groundwork for business subscriptions, not customer booking payments.",
-    );
   }
+
+  const trialEnd = formatDate(billing.trial_end);
+  const currentPeriodEnd = formatDate(billing.current_period_end);
+  const monthlyPrice =
+    billing.price_amount === null
+      ? null
+      : formatBillingAmount(billing.price_amount, billing.currency);
 
   return (
     <DashboardLayout
@@ -267,36 +262,35 @@ export default function DashboardBillingPage() {
         selectedBusiness
           ? t(
               "billing.pageSubtitleBusiness",
-              "Manage Mirëbook subscription groundwork for {{business}}.",
+              "Subscription details for {{business}}.",
             ).replace("{{business}}", selectedBusiness.name)
           : t(
               "billing.pageSubtitle",
-              "Prepare business subscription billing for Mirëbook.",
+              "View your Mirëbook business subscription details.",
             )
       }
     >
       {loading && (
         <div className="card">
           <p className="muted">
-            {t("billing.loading", "Loading Mirëbook billing details...")}
+            {t("billing.loading", "Loading billing details...")}
           </p>
         </div>
       )}
 
-      {!loading && businesses.length === 0 && (
+      {!loading && error && (
+        <div className="card" style={{ borderColor: "rgba(255,77,109,0.35)" }}>
+          <p style={{ color: "var(--danger)" }}>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && businesses.length === 0 && (
         <div className="card">
-          <p className="small" style={{ color: "var(--warning)" }}>
-            {t("billing.noBusinessKicker", "No business profile found")}
-          </p>
-          <h2
-            style={{ fontFamily: "var(--font-display)", marginTop: "0.35rem" }}
-          >
-            {t("billing.noBusinessTitle", "Create a business first")}
-          </h2>
+          <h2>{t("billing.noBusinessTitle", "Create a business first")}</h2>
           <p className="muted" style={{ marginTop: "0.5rem" }}>
             {t(
               "billing.noBusinessBody",
-              "Billing becomes available after you create a Mirëbook business profile.",
+              "Billing details become available after you create a Mirëbook business profile.",
             )}
           </p>
           <Link
@@ -309,488 +303,261 @@ export default function DashboardBillingPage() {
         </div>
       )}
 
-      {!loading && businesses.length > 0 && billing && (
+      {!loading && !error && selectedBusiness && (
         <>
-          {error && (
+          {router.query.checkout === "success" && (
             <div
               className="card"
               style={{
-                borderColor: "rgba(255,77,109,0.35)",
-                marginBottom: "1rem",
+                marginBottom: "1.5rem",
+                borderColor: "rgba(45,212,191,0.35)",
+                background: "rgba(45,212,191,0.06)",
               }}
             >
-              <p style={{ color: "var(--danger)" }}>{error}</p>
+              <h3>
+                {t(
+                  "billing.checkout.successTitle",
+                  "Test Checkout completed",
+                )}
+              </h3>
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                {t(
+                  "billing.checkout.successBody",
+                  "Stripe accepted the test subscription. Billing status will remain informational until webhook synchronization is added.",
+                )}
+              </p>
             </div>
           )}
 
-          {success && (
+          {router.query.checkout === "cancelled" && (
             <div
               className="card"
               style={{
-                borderColor: "rgba(45,212,191,0.35)",
-                background: "rgba(45,212,191,0.06)",
-                marginBottom: "1rem",
+                marginBottom: "1.5rem",
+                borderColor: "rgba(255,190,11,0.35)",
               }}
             >
-              <p style={{ color: "var(--success)" }}>{success}</p>
+              <h3>
+                {t("billing.checkout.cancelledTitle", "Checkout cancelled")}
+              </h3>
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                {t(
+                  "billing.checkout.cancelledBody",
+                  "No test subscription was started. Your Mirëbook access has not changed.",
+                )}
+              </p>
+            </div>
+          )}
+
+          {checkoutError && (
+            <div
+              className="card"
+              style={{
+                marginBottom: "1.5rem",
+                borderColor: "rgba(255,77,109,0.35)",
+              }}
+            >
+              <p style={{ color: "var(--danger)" }}>{checkoutError}</p>
+            </div>
+          )}
+
+          {businesses.length > 1 && (
+            <div className="card" style={{ marginBottom: "1.5rem" }}>
+              <label className="small muted" htmlFor="billing-business">
+                {t("billing.selectedBusiness", "Selected business")}
+              </label>
+              <select
+                id="billing-business"
+                value={selectedBusinessId}
+                onChange={(event) => selectBusiness(event.target.value)}
+                style={{ marginTop: "0.5rem" }}
+              >
+                {businesses.map((business) => (
+                  <option key={business.id} value={business.id}>
+                    {business.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {!schemaAvailable && (
+            <div
+              className="card"
+              style={{
+                marginBottom: "1.5rem",
+                borderColor: "rgba(255,190,11,0.35)",
+              }}
+            >
+              <h3>
+                {t(
+                  "billing.manualSetupPendingTitle",
+                  "Billing setup is being prepared",
+                )}
+              </h3>
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                {t(
+                  "billing.manualSetupPendingBody",
+                  "Your business can keep using bookings, staff tools and its public listing while Mirëbook prepares the manual billing record.",
+                )}
+              </p>
             </div>
           )}
 
           <div className="billing-hero card">
             <div>
               <p className="small" style={{ color: "var(--accent)" }}>
-                {t("billing.heroKicker", "Business subscription billing")}
+                {t("billing.heroKicker", "Business subscription")}
               </p>
-              <h2
-                style={{
-                  fontFamily: "var(--font-display)",
-                  marginTop: "0.25rem",
-                }}
-              >
-                {t("billing.heroTitle", "Mirëbook billing groundwork")}
+              <h2 style={{ marginTop: "0.25rem" }}>
+                {billing.plan_name ||
+                  t("billing.launchPlan", "Mirëbook Launch")}
               </h2>
               <p className="muted" style={{ marginTop: "0.5rem" }}>
                 {t(
                   "billing.heroBody",
-                  "Customers should not pay to book appointments. This page is for future business subscription billing, where businesses pay Mirëbook monthly.",
+                  "One clear subscription for the tools your business uses to manage bookings and customers.",
                 )}
               </p>
             </div>
-
-            <div className="billing-hero-actions">
-              <Link href="/dashboard/settings" className="btn btn-ghost">
-                {t("billing.businessSettings", "Business settings")}
-              </Link>
-              <button
-                className="btn btn-accent"
-                onClick={saveBillingGroundwork}
-                disabled={saving}
-              >
-                {saving
-                  ? t("common.saving", "Saving...")
-                  : t("billing.saveGroundwork", "Save billing groundwork")}
-              </button>
-            </div>
-          </div>
-
-          <div
-            className="card billing-trial-banner"
-            style={{
-              marginBottom: "1.5rem",
-              borderColor:
-                billing.subscription_status === "trial"
-                  ? "rgba(45,212,191,0.35)"
-                  : "rgba(255,190,11,0.35)",
-            }}
-          >
-            <p className="small muted">
-              {t("billing.subscriptionStatus", "Subscription status")}
-            </p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {billing.subscription_status === "trial"
-                ? t("billing.trialActive", "Trial active")
-                : statusLabel(billing.subscription_status, t)}
-            </h3>
-            <p className="muted small" style={{ marginTop: "0.5rem" }}>
-              {trialEndsText()}
-            </p>
+            <Link href="/support/business" className="btn btn-ghost">
+              {t("billing.contactSupport", "Contact Mirëbook")}
+            </Link>
           </div>
 
           <div className="grid-3" style={{ marginBottom: "1.5rem" }}>
             <div className="card">
               <p className="small muted">
-                {t("billing.selectedBusiness", "Selected business")}
+                {t("billing.subscriptionStatus", "Billing status")}
               </p>
-              <h3>
-                {selectedBusiness?.name ||
-                  t("billing.businessFallback", "Business")}
-              </h3>
-              <p className="muted small">
-                {selectedBusiness?.published
-                  ? t("billing.published", "Published on Mirëbook")
-                  : t("billing.hiddenDraft", "Hidden / draft")}
+              <h3>{statusLabel(billing.billing_status)}</h3>
+              <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                {statusBody(billing.billing_status)}
               </p>
             </div>
 
-            <div
-              className="card"
-              style={{
-                borderColor:
-                  statusTone(billing.subscription_status) === "success"
-                    ? "rgba(45,212,191,0.28)"
-                    : "var(--border)",
-              }}
-            >
+            <div className="card">
               <p className="small muted">
-                {t("billing.subscriptionStatus", "Subscription status")}
+                {t("billing.agreedPrice", "Agreed monthly price")}
               </p>
-              <h3>{statusLabel(billing.subscription_status, t)}</h3>
-              <p className="muted small">
-                {t("billing.planSummary", "{{plan}} plan").replace(
-                  "{{plan}}",
-                  planLabel(billing.subscription_plan, t),
+              <h3>
+                {monthlyPrice ||
+                  t("billing.priceNotSet", "Not agreed yet")}
+              </h3>
+              <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                {t(
+                  "billing.noChargeYet",
+                  "No real payment is taken while Checkout is in test mode.",
                 )}
               </p>
             </div>
 
             <div className="card">
               <p className="small muted">
-                {t("billing.currentPlan", "Current plan")}
+                {t("billing.offerStatus", "Offer status")}
               </p>
-              <h3>{planLabel(billing.subscription_plan, t)}</h3>
-              <p className="muted small">
-                {statusLabel(billing.subscription_status, t)}
+              <h3>
+                {billing.founding_business
+                  ? t("billing.foundingBusiness", "Founding business")
+                  : t("billing.standardLaunch", "Launch plan")}
+              </h3>
+              <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                {billing.second_month_free_eligible
+                  ? t(
+                      "billing.secondMonthFree",
+                      "Eligible for the second month free.",
+                    )
+                  : t(
+                      "billing.offerRecordedManually",
+                      "Offer details are recorded manually by Mirëbook.",
+                    )}
               </p>
             </div>
           </div>
 
-          {businesses.length > 1 && (
+          {(trialEnd || currentPeriodEnd) && (
             <div className="card" style={{ marginBottom: "1.5rem" }}>
-              <p className="small muted">
-                {t("billing.manageAnotherBusiness", "Manage another business")}
-              </p>
-              <h2
-                style={{
-                  fontFamily: "var(--font-display)",
-                  marginTop: "0.25rem",
-                }}
-              >
-                {t("billing.chooseBillingProfile", "Choose billing profile")}
-              </h2>
-
-              <div className="billing-business-list">
-                {businesses.map((business) => (
-                  <button
-                    key={business.id}
-                    type="button"
-                    className={
-                      business.id === selectedBusinessId
-                        ? "billing-business-card billing-business-card-active"
-                        : "billing-business-card"
-                    }
-                    onClick={() => selectBusiness(business.id)}
-                  >
-                    <strong>{business.name}</strong>
-                    <span>
-                      {business.published
-                        ? t("billing.publishedShort", "Published")
-                        : t("billing.hiddenDraft", "Hidden / draft")}
-                    </span>
-                  </button>
-                ))}
+              <h2>{t("billing.importantDates", "Important dates")}</h2>
+              <div className="billing-date-grid">
+                {trialEnd && (
+                  <div>
+                    <p className="small muted">
+                      {t("billing.trialEnd", "Trial end")}
+                    </p>
+                    <strong>{trialEnd}</strong>
+                  </div>
+                )}
+                {currentPeriodEnd && (
+                  <div>
+                    <p className="small muted">
+                      {t("billing.currentPeriodEnd", "Current period end")}
+                    </p>
+                    <strong>{currentPeriodEnd}</strong>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           <div className="billing-grid">
-            <div className="card billing-card">
-              <div>
-                <p className="small muted">
-                  {t("billing.emailLabel", "Billing email")}
-                </p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {t("billing.paymentContact", "Payment contact")}
-                </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
+            <div className="card">
+              <h2>{t("billing.includedTitle", "Included in Mirëbook Launch")}</h2>
+              <ul className="billing-feature-list">
+                <li>{t("billing.included.bookings", "Booking management")}</li>
+                <li>
                   {t(
-                    "billing.paymentContactBody",
-                    "This should be the email used for future invoices, receipts and subscription notices.",
+                    "billing.included.staffServices",
+                    "Staff and service management",
                   )}
-                </p>
-              </div>
-
-              <input
-                type="email"
-                value={billing.billing_email || ""}
-                onChange={(e) => updateBilling("billing_email", e.target.value)}
-                placeholder="billing@example.com"
-              />
+                </li>
+                <li>{t("billing.included.publicListing", "Public listing")}</li>
+                <li>{t("billing.included.notifications", "Notifications")}</li>
+                <li>
+                  {t(
+                    "billing.included.noCommission",
+                    "No normal booking commission",
+                  )}
+                </li>
+                <li>
+                  {t(
+                    "billing.included.noCustomerFee",
+                    "No customer booking fee",
+                  )}
+                </li>
+              </ul>
             </div>
 
-            <div className="card billing-card">
-              <div>
-                <p className="small muted">{t("billing.plan", "Plan")}</p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {t("billing.businessPlan", "Business plan")}
-                </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                  {t(
-                    "billing.businessPlanBody",
-                    "Pricing can stay flexible while you onboard early Albanian and international businesses.",
-                  )}
-                </p>
-              </div>
-
-              <select
-                value={billing.subscription_plan || "starter"}
-                onChange={(e) =>
-                  updateBilling("subscription_plan", e.target.value)
-                }
+            <div className="card">
+              <h2>
+                {t("billing.onlinePaymentsTitle", "Test subscription Checkout")}
+              </h2>
+              <p className="muted" style={{ marginTop: "0.65rem" }}>
+                {t(
+                  "billing.onlinePaymentsBody",
+                  "Use Stripe test mode to check the Mirëbook Membership subscription flow. Test Checkout does not change platform access.",
+                )}
+              </p>
+              <p className="small muted" style={{ marginTop: "1rem" }}>
+                {t(
+                  "billing.noAccessRestriction",
+                  "Billing status does not restrict bookings, staff access or your public listing in this stage.",
+                )}
+              </p>
+              <button
+                type="button"
+                className="btn btn-accent"
+                style={{ marginTop: "1rem" }}
+                onClick={startCheckout}
+                disabled={startingCheckout}
               >
-                {PLAN_OPTIONS.map((plan) => (
-                  <option key={plan.value} value={plan.value}>
-                    {planLabel(plan.value, t)}
-                  </option>
-                ))}
-              </select>
+                {startingCheckout
+                  ? t(
+                      "billing.checkout.starting",
+                      "Opening test Checkout...",
+                    )
+                  : t("billing.checkout.start", "Start test Checkout")}
+              </button>
             </div>
-
-            <div className="card billing-card">
-              <div>
-                <p className="small muted">
-                  {t("billing.monthlyPrice", "Monthly price")}
-                </p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {t(
-                    "billing.subscriptionAmount",
-                    "Business subscription amount",
-                  )}
-                </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                  {t(
-                    "billing.subscriptionAmountBody",
-                    "This is an internal groundwork field for now. Stripe charging is not wired yet.",
-                  )}
-                </p>
-              </div>
-
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={billing.subscription_price_monthly ?? 0}
-                onChange={(e) =>
-                  updateBilling(
-                    "subscription_price_monthly",
-                    Number(e.target.value),
-                  )
-                }
-                placeholder="0.00"
-              />
-            </div>
-
-            <div className="card billing-card">
-              <div>
-                <p className="small muted">{t("billing.status", "Status")}</p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {t("billing.subscriptionState", "Subscription state")}
-                </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                  {t(
-                    "billing.subscriptionStateBody",
-                    "This can later control access, trial banners, payment reminders and subscription enforcement.",
-                  )}
-                </p>
-              </div>
-
-              <select
-                value={billing.subscription_status || "trial"}
-                onChange={(e) =>
-                  updateBilling("subscription_status", e.target.value)
-                }
-              >
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status.value} value={status.value}>
-                    {statusLabel(status.value, t)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="card billing-card">
-              <div>
-                <p className="small muted">
-                  {t("billing.trialEndDate", "Trial end date")}
-                </p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {t("billing.freeTrialTracking", "Free trial tracking")}
-                </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                  {t(
-                    "billing.freeTrialTrackingBody",
-                    "Useful for early onboarding offers, such as first month free or manual trial extensions.",
-                  )}
-                </p>
-              </div>
-
-              <input
-                type="date"
-                value={
-                  billing.trial_ends_at
-                    ? billing.trial_ends_at.slice(0, 10)
-                    : ""
-                }
-                onChange={(e) => {
-                  updateBilling(
-                    "trial_ends_at",
-                    e.target.value
-                      ? new Date(`${e.target.value}T12:00:00`).toISOString()
-                      : null,
-                  );
-                }}
-              />
-            </div>
-
-            <div className="card billing-card">
-              <div>
-                <p className="small muted">
-                  {t("billing.stripeReadiness", "Stripe readiness")}
-                </p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {t(
-                    "billing.paymentProviderStatus",
-                    "Payment provider status",
-                  )}
-                </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                  {stripeStatusText()}
-                </p>
-              </div>
-
-              <div className="billing-provider-box">
-                <p className="small muted">
-                  {t("billing.stripeCustomer", "Stripe customer")}
-                </p>
-                <strong>
-                  {billing.stripe_customer_id ||
-                    t("billing.notConnected", "Not connected")}
-                </strong>
-
-                <p className="small muted" style={{ marginTop: "0.75rem" }}>
-                  {t("billing.stripeSubscription", "Stripe subscription")}
-                </p>
-                <strong>
-                  {billing.stripe_subscription_id ||
-                    t("billing.notConnected", "Not connected")}
-                </strong>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="card"
-            style={{
-              marginTop: "1.5rem",
-              borderColor: "rgba(255,190,11,0.28)",
-            }}
-          >
-            <p className="small muted">
-              {t("billing.howItWorks", "How Mirëbook subscriptions work")}
-            </p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t(
-                "billing.businessSubscriptionsTitle",
-                "Business subscriptions power the platform",
-              )}
-            </h3>
-            <p className="muted small" style={{ marginTop: "0.5rem" }}>
-              {t(
-                "billing.businessSubscriptionsBody",
-                "Businesses pay Mirëbook a subscription to access booking tools, staff management, notifications and future platform features.",
-              )}
-            </p>
-            <p className="muted small" style={{ marginTop: "0.75rem" }}>
-              {t(
-                "billing.customerPaymentsSeparate",
-                "Customer appointment payments, deposits and checkout processes remain separate from the Mirëbook subscription.",
-              )}
-            </p>
-          </div>
-          <div className="grid-4" style={{ marginTop: "1.5rem" }}>
-            <div className="card">
-              <p className="small muted">
-                {t("billing.planStarter", "Starter")}
-              </p>
-              <h3>{t("billing.planStarterTitle", "Independent businesses")}</h3>
-              <p className="muted small">
-                {t(
-                  "billing.planStarterBody",
-                  "Early-stage businesses and solo operators.",
-                )}
-              </p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">{t("billing.planGrowth", "Growth")}</p>
-              <h3>{t("billing.planGrowthTitle", "Growing teams")}</h3>
-              <p className="muted small">
-                {t(
-                  "billing.planGrowthBody",
-                  "Additional staff and higher booking volume.",
-                )}
-              </p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">{t("billing.planPro", "Pro")}</p>
-              <h3>{t("billing.planProTitle", "Established businesses")}</h3>
-              <p className="muted small">
-                {t(
-                  "billing.planProBody",
-                  "Advanced tools and operational features.",
-                )}
-              </p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">{t("billing.planCustom", "Custom")}</p>
-              <h3>{t("billing.planCustomTitle", "Enterprise")}</h3>
-              <p className="muted small">
-                {t(
-                  "billing.planCustomBody",
-                  "Multi-location and tailored solutions.",
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="billing-final-actions">
-            <Link href="/dashboard/businesses" className="btn btn-ghost">
-              {t("billing.setupHub", "Setup hub")}
-            </Link>
-
-            <Link href="/dashboard/settings" className="btn btn-ghost">
-              {t("billing.businessSettings", "Business settings")}
-            </Link>
-
-            <button
-              className="btn btn-accent"
-              onClick={saveBillingGroundwork}
-              disabled={saving}
-            >
-              {saving
-                ? t("common.saving", "Saving...")
-                : t("billing.saveGroundwork", "Save billing groundwork")}
-            </button>
           </div>
         </>
       )}
@@ -798,96 +565,48 @@ export default function DashboardBillingPage() {
       <style jsx>{`
         .billing-hero {
           display: flex;
+          align-items: center;
           justify-content: space-between;
           gap: 1rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
           margin-bottom: 1.5rem;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 107, 53, 0.12),
-            rgba(45, 212, 191, 0.08)
-          );
-          border-color: rgba(255, 107, 53, 0.25);
-        }
-
-        .billing-hero-actions,
-        .billing-final-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
         }
 
         .billing-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 1rem;
         }
 
-        .billing-card {
+        .billing-date-grid {
           display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 1rem;
-          align-content: start;
-        }
-
-        .billing-business-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 0.75rem;
           margin-top: 1rem;
         }
 
-        .billing-business-card {
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text);
-          border-radius: var(--radius);
-          padding: 1rem;
-          text-align: left;
-          cursor: pointer;
+        .billing-feature-list {
+          display: grid;
+          gap: 0.7rem;
+          margin: 1rem 0 0;
+          padding-left: 1.2rem;
+          color: var(--muted);
         }
 
-        .billing-business-card span {
-          display: block;
-          color: var(--text-muted);
-          font-size: 0.85rem;
-          margin-top: 0.25rem;
-        }
-
-        .billing-business-card-active {
-          border-color: rgba(255, 107, 53, 0.45);
-          background: var(--accent-dim);
-        }
-
-        .billing-provider-box {
-          background: var(--surface-2);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 0.9rem;
-        }
-
-        .billing-final-actions {
-          margin-top: 1.5rem;
-          justify-content: flex-start;
-        }
-
-        @media (max-width: 640px) {
-          .billing-hero,
-          .billing-final-actions {
-            display: grid;
+        @media (max-width: 760px) {
+          .billing-hero {
+            align-items: flex-start;
+            flex-direction: column;
           }
 
-          .billing-hero-actions,
-          .billing-final-actions,
-          .billing-hero-actions :global(.btn),
-          .billing-final-actions :global(.btn),
-          .billing-hero-actions button,
-          .billing-final-actions button,
-          .billing-hero-actions a,
-          .billing-final-actions a {
+          .billing-hero :global(.btn),
+          .billing-grid,
+          .billing-date-grid {
             width: 100%;
-            justify-content: center;
+          }
+
+          .billing-grid,
+          .billing-date-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
