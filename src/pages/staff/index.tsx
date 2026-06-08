@@ -894,7 +894,7 @@ export default function StaffDashboardPage() {
                 : isStaffIntentAccount
                   ? t(
                       "staff.unlinked.body",
-                      "Your staff account is ready, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, or wait for the invite email when production email sending is enabled.",
+                      "Your staff account is ready, but it is not connected to a business staff profile yet.",
                     )
                   : t(
                       "staff.noProfile.body",
@@ -939,20 +939,32 @@ export default function StaffDashboardPage() {
                     {t("staff.unlinked.stepEmailTitle", "Use the same email")}
                   </strong>
                   <p className="small muted">
+                    {currentUserEmail ||
+                      t(
+                        "staff.unlinked.emailFallback",
+                        "Use the email address shown in your account.",
+                      )}
+                  </p>
+                </div>
+                <div className="staff-unlinked-step">
+                  <strong>
+                    {t("staff.unlinked.stepInviteTitle", "Ask the owner to invite you")}
+                  </strong>
+                  <p className="small muted">
                     {t(
-                      "staff.unlinked.stepEmailBody",
-                      "The business invite must use the same email address as this staff account.",
+                      "staff.unlinked.stepInviteBody",
+                      "The business owner should add this exact email from their Staff setup page.",
                     )}
                   </p>
                 </div>
                 <div className="staff-unlinked-step">
                   <strong>
-                    {t("staff.unlinked.stepLinkTitle", "Automatic linking")}
+                    {t("staff.unlinked.stepLinkTitle", "Refresh after linking")}
                   </strong>
                   <p className="small muted">
                     {t(
                       "staff.unlinked.stepLinkBody",
-                      "When a matching invite is available, Mirëbook will link it on your next login or page refresh.",
+                      "Once linked, your schedule, availability and staff notifications will appear here.",
                     )}
                   </p>
                 </div>
@@ -990,9 +1002,6 @@ export default function StaffDashboardPage() {
               )}
               <Link href="/support/staff" className="btn btn-ghost">
                 {t("nav.staffSupport", "Staff support")}
-              </Link>
-              <Link href="/account" className="btn btn-ghost">
-                {t("nav.account", "Account")}
               </Link>
             </div>
           </div>
@@ -1060,6 +1069,53 @@ export default function StaffDashboardPage() {
                     {t("staff.actions.businessDashboard", "Business dashboard")}
                   </Link>
                 )}
+              </div>
+            </div>
+
+            <div className="card staff-onboarding-card">
+              <div>
+                <h2>
+                  {hasBusinessWorkspace
+                    ? t(
+                        "staff.onboarding.ownerTitle",
+                        "Your personal work is separate from business management",
+                      )
+                    : t("staff.onboarding.title", "Your staff workspace")}
+                </h2>
+                <p className="small muted">
+                  {hasBusinessWorkspace
+                    ? t(
+                        "staff.onboarding.ownerBody",
+                        "Business dashboard manages services, staff, bookings and setup. My Work shows only your personal schedule and availability.",
+                      )
+                    : t(
+                        "staff.onboarding.body",
+                        "Use these staff tools for assigned appointments, your availability and work updates.",
+                      )}
+                </p>
+                {hasBusinessWorkspace && (
+                  <p className="small staff-onboarding-note">
+                    {t(
+                      "staff.onboarding.bookableRule",
+                      "Customers can book you only while your staff profile is active and assigned to services.",
+                    )}
+                  </p>
+                )}
+              </div>
+
+              <div className="staff-onboarding-actions">
+                <Link href="/staff/calendar" className="btn btn-ghost">
+                  {t("staff.onboarding.calendar", "View calendar")}
+                </Link>
+                <Link href="/staff/availability" className="btn btn-ghost">
+                  {t("staff.onboarding.availability", "Set availability")}
+                </Link>
+                <Link href="/staff/notifications" className="btn btn-ghost">
+                  {t("staff.onboarding.notifications", "Check notifications")}
+                </Link>
+                <Link href="/support/staff" className="btn btn-ghost">
+                  {t("staff.onboarding.support", "Contact support")}
+                </Link>
               </div>
             </div>
 
@@ -1457,7 +1513,7 @@ export default function StaffDashboardPage() {
 
         .staff-unlinked-steps {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
           gap: 0.75rem;
         }
 
@@ -1520,6 +1576,32 @@ export default function StaffDashboardPage() {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
+        }
+
+        .staff-onboarding-card {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          border-color: rgba(45,212,191,0.22);
+        }
+
+        .staff-onboarding-card h2,
+        .staff-onboarding-card p {
+          margin-top: 0;
+        }
+
+        .staff-onboarding-note {
+          color: var(--accent);
+          margin-top: 0.45rem !important;
+        }
+
+        .staff-onboarding-actions {
+          display: flex;
+          gap: 0.6rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
         }
 
         .staff-today-card {
@@ -1704,6 +1786,7 @@ export default function StaffDashboardPage() {
         @media (max-width: 620px) {
           .staff-hero-card,
           .staff-profile-row,
+          .staff-onboarding-card,
           .staff-today-card,
           .staff-schedule-header,
           .staff-booking-card-inner {
@@ -1722,6 +1805,7 @@ export default function StaffDashboardPage() {
           }
 
           .staff-hero-actions,
+          .staff-onboarding-actions,
           .staff-today-actions,
           .staff-empty-actions,
           .staff-filter-controls,
@@ -1730,6 +1814,7 @@ export default function StaffDashboardPage() {
           }
 
           .staff-hero-actions :global(.btn),
+          .staff-onboarding-actions :global(.btn),
           .staff-today-actions :global(.btn),
           .staff-today-actions button,
           .staff-empty-actions :global(.btn),

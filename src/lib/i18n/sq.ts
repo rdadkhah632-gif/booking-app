@@ -2596,13 +2596,31 @@ export const sq: TranslationTree = {
   "staff.unlinked.kicker": "Llogaria e stafit u krijua",
   "staff.unlinked.title": "Ende nuk ka biznes të lidhur",
   "staff.unlinked.body":
-    "Llogaria jote e stafit është gati, por ende nuk është lidhur me një profil stafi biznesi. Kërkoji biznesit të ftojë pikërisht këtë email, ose prit emailin e ftesës kur dërgimi i emaileve të aktivizohet në prodhim.",
+    "Llogaria jote e stafit është gati, por ende nuk është lidhur me një profil stafi biznesi.",
   "staff.unlinked.stepEmailTitle": "Përdor të njëjtin email",
   "staff.unlinked.stepEmailBody":
     "Ftesa e biznesit duhet të përdorë të njëjtën adresë emaili si kjo llogari stafi.",
-  "staff.unlinked.stepLinkTitle": "Lidhje automatike",
+  "staff.unlinked.emailFallback":
+    "Përdor adresën e emailit që shfaqet në llogarinë tënde.",
+  "staff.unlinked.stepInviteTitle": "Kërkoji pronarit të të ftojë",
+  "staff.unlinked.stepInviteBody":
+    "Pronari i biznesit duhet ta shtojë pikërisht këtë email nga faqja e konfigurimit të stafit.",
+  "staff.unlinked.stepLinkTitle": "Rifresko pas lidhjes",
   "staff.unlinked.stepLinkBody":
-    "Kur të ketë një ftesë që përputhet, Mirëbook do ta lidhë në hyrjen ose rifreskimin tjetër.",
+    "Pasi të lidhet, orari, disponueshmëria dhe njoftimet e stafit do të shfaqen këtu.",
+  "staff.onboarding.title": "Hapësira jote e stafit",
+  "staff.onboarding.body":
+    "Përdori këto mjete stafi për takimet e caktuara, disponueshmërinë dhe përditësimet e punës.",
+  "staff.onboarding.ownerTitle":
+    "Puna jote personale është e ndarë nga menaxhimi i biznesit",
+  "staff.onboarding.ownerBody":
+    "Paneli i biznesit menaxhon shërbimet, stafin, rezervimet dhe konfigurimin. Puna ime shfaq vetëm orarin dhe disponueshmërinë tënde personale.",
+  "staff.onboarding.bookableRule":
+    "Klientët mund të të rezervojnë vetëm kur profili yt i stafit është aktiv dhe i caktuar te shërbimet.",
+  "staff.onboarding.calendar": "Shiko kalendarin",
+  "staff.onboarding.availability": "Vendos disponueshmërinë",
+  "staff.onboarding.notifications": "Kontrollo njoftimet",
+  "staff.onboarding.support": "Kontakto suportin",
   "dashboardLayout.myWork.title": "Puna ime",
   "dashboardLayout.myWork.schedule": "Orari im",
   "dashboardLayout.myWork.availability": "Disponueshmëria ime",
@@ -2651,9 +2669,23 @@ export const sq: TranslationTree = {
   "account.ownerBooking.notLinkedTitle":
     "Ende nuk je konfiguruar si staf i rezervueshëm",
   "account.ownerBooking.linkedBody":
-    "Klientët mund të rezervojnë takime drejtpërdrejt me ty pasi të konfigurohen shërbimet dhe disponueshmëria jote.",
+    "Paneli i biznesit menaxhon shërbimet, stafin, rezervimet dhe konfigurimin. Puna ime menaxhon orarin dhe disponueshmërinë tënde personale.",
   "account.ownerBooking.notLinkedBody":
     "Nëse merr personalisht takime, konfiguroje veten si staf të rezervueshëm. Nëse vetëm menaxhon biznesin, mund ta lësh të çaktivizuar.",
+  "account.ownerBooking.bookableRule":
+    "Klientët mund të të rezervojnë vetëm kur profili yt i stafit është aktiv dhe i caktuar te shërbimet.",
+  "account.customerGuide.title": "Rrjedha jote e rezervimit",
+  "account.customerGuide.body":
+    "Gjej një biznes, ndiq kërkesat dhe menaxho takimet e konfirmuara nga hapësira jote e klientit.",
+  "account.customerGuide.explore": "Eksploro bizneset",
+  "account.customerGuide.exploreBody":
+    "Zgjidh një shërbim, anëtar stafi dhe orar të disponueshëm.",
+  "account.customerGuide.bookings": "Ndiq rezervimet",
+  "account.customerGuide.bookingsBody":
+    "Ndiq kërkesat, takimet e ardhshme dhe historikun.",
+  "account.customerGuide.notifications": "Kontrollo përditësimet",
+  "account.customerGuide.notificationsBody":
+    "Shiko konfirmimet, ndryshimet dhe përgjigjet e suportit.",
 
   "dashboardSettings.tools.ownerBooking": "Statusi i rezervimeve të pronarit",
   "dashboardSettings.tools.ownerBookingLinkedBody":
@@ -2671,6 +2703,33 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.missingSetup.assignmentCta":
     "Cakto stafin te shërbimi",
   "dashboardBusinesses.missingSetup.hoursCta": "Vendos disponueshmërinë",
+  "dashboardBusinesses.onboarding.profile": "Plotëso profilin e biznesit",
+  "dashboardBusinesses.onboarding.profileBody":
+    "Detajet e profilit ndërtojnë besimin e klientit. Ato përmirësojnë paraqitjen, por nuk zëvendësojnë gatishmërinë për rezervime.",
+  "dashboardBusinesses.onboarding.services": "Shto shërbime",
+  "dashboardBusinesses.onboarding.servicesBody":
+    "Krijo të paktën një shërbim aktiv që klientët mund të zgjedhin.",
+  "dashboardBusinesses.onboarding.staff": "Shto staf",
+  "dashboardBusinesses.onboarding.staffBody":
+    "Shto personat që ofrojnë takime, duke përfshirë veten vetëm kur është e përshtatshme.",
+  "dashboardBusinesses.onboarding.assignments":
+    "Cakto shërbimet te stafi",
+  "dashboardBusinesses.onboarding.assignmentsBody":
+    "Klientët mund të rezervojnë vetëm kur një anëtar aktiv stafi është caktuar te një shërbim aktiv.",
+  "dashboardBusinesses.onboarding.hours": "Vendos oraret e punës",
+  "dashboardBusinesses.onboarding.hoursBody":
+    "Oraret e punës krijojnë disponueshmërinë që klientët përdorin për të zgjedhur një orar.",
+  "dashboardBusinesses.onboarding.preview": "Parashiko faqen publike",
+  "dashboardBusinesses.onboarding.previewBody":
+    "Kontrollo përvojën e klientit para se ta bësh profilin të dukshëm.",
+  "dashboardBusinesses.onboarding.publish": "Publiko kur të jesh gati",
+  "dashboardBusinesses.onboarding.publishBody":
+    "Publikimi kontrollon dukshmërinë. Faturimi mbetet informues dhe nuk bllokon konfigurimin ose listimin.",
+  "dashboardBusinesses.onboarding.done": "Përfunduar",
+  "dashboardBusinesses.onboarding.next": "Hapi tjetër",
+  "dashboardBusinesses.onboarding.ownerStaffLinked":
+    "Paneli i biznesit menaxhon kompaninë. Puna ime menaxhon orarin dhe disponueshmërinë tënde personale.",
+  "dashboardBusinesses.onboarding.openMyWork": "Hap Punën time",
   "dashboardNotifications.inbox.bookingNowConfirmed":
     "Kjo kërkesë rezervimi është konfirmuar. Nuk ka më veprim miratimi.",
   "dashboardNotifications.inbox.bookingNowDeclined":

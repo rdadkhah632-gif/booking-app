@@ -372,11 +372,6 @@ export default function AccountPage() {
     );
   }
 
-  async function logout() {
-    await supabase.auth.signOut();
-    router.replace("/");
-  }
-
   return (
     <main>
       <AuthNav />
@@ -417,14 +412,6 @@ export default function AccountPage() {
                 </p>
               </div>
 
-              <div className="account-header-actions">
-                <Link href="/support" className="btn btn-ghost">
-                  {t("nav.support", "Support")}
-                </Link>
-                <button onClick={logout} className="btn btn-danger">
-                  {t("auth.logout", "Log out")}
-                </button>
-              </div>
             </div>
 
             {message && (
@@ -634,7 +621,7 @@ export default function AccountPage() {
                     {hasLinkedStaffProfile
                       ? t(
                           "account.ownerBooking.linkedBody",
-                          "Customers can book appointments with you personally once your services and availability are configured.",
+                          "Business dashboard manages services, staff, bookings and setup. My Work manages your personal schedule and availability.",
                         )
                       : t(
                           "account.ownerBooking.notLinkedBody",
@@ -659,10 +646,15 @@ export default function AccountPage() {
                       )}
                     </Link>
                   )}
-                  <Link href="/dashboard/staff" className="btn btn-ghost">
-                    {t("dashboardStaff.pageTitle", "Staff")}
-                  </Link>
                 </div>
+                {hasLinkedStaffProfile && (
+                  <p className="small account-owner-booking-rule">
+                    {t(
+                      "account.ownerBooking.bookableRule",
+                      "Customers can book you only while your staff profile is active and assigned to services.",
+                    )}
+                  </p>
+                )}
               </div>
             )}
 
@@ -695,6 +687,49 @@ export default function AccountPage() {
                       {t("dashboardHome.openNotifications", "Notifications")}
                     </Link>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {isCustomerOnly && (
+              <div className="card account-customer-guide">
+                <div>
+                  <h2>{t("account.customerGuide.title", "Your booking journey")}</h2>
+                  <p className="small muted">
+                    {t(
+                      "account.customerGuide.body",
+                      "Find a business, track requests and manage confirmed appointments from your customer workspace.",
+                    )}
+                  </p>
+                </div>
+                <div className="account-customer-guide-steps">
+                  <Link href="/explore">
+                    <strong>{t("account.customerGuide.explore", "Explore businesses")}</strong>
+                    <span>
+                      {t(
+                        "account.customerGuide.exploreBody",
+                        "Choose a service, staff member and available time.",
+                      )}
+                    </span>
+                  </Link>
+                  <Link href="/my-bookings">
+                    <strong>{t("account.customerGuide.bookings", "Track bookings")}</strong>
+                    <span>
+                      {t(
+                        "account.customerGuide.bookingsBody",
+                        "Follow requests, upcoming appointments and history.",
+                      )}
+                    </span>
+                  </Link>
+                  <Link href="/notifications">
+                    <strong>{t("account.customerGuide.notifications", "Check updates")}</strong>
+                    <span>
+                      {t(
+                        "account.customerGuide.notificationsBody",
+                        "See confirmations, changes and support replies.",
+                      )}
+                    </span>
+                  </Link>
                 </div>
               </div>
             )}
@@ -882,13 +917,19 @@ export default function AccountPage() {
 
               <div className="workspace-actions">
                 <Link
-                  href={hasStaffAccess ? "/support/staff" : "/support"}
+                  href={
+                    hasStaffAccess
+                      ? "/support/staff"
+                      : ownsBusiness
+                        ? "/support/business"
+                        : "/support/customer"
+                  }
                   className="btn btn-ghost"
                 >
                   {t("account.contactSupport", "Contact support")}
                 </Link>
                 <Link
-                  href={hasStaffAccess ? "/support/staff" : "/support/messages"}
+                  href="/support/messages"
                   className="btn btn-ghost"
                 >
                   {t(
@@ -896,15 +937,6 @@ export default function AccountPage() {
                     "All support messages",
                   )}
                 </Link>
-                <span
-                  className="language-pill"
-                  title={t("account.savedLanguage", "Saved account language")}
-                >
-                  {preferredLanguage === "sq" ? "SQ" : "EN"}
-                </span>
-                <button onClick={logout} className="btn btn-danger">
-                  {t("auth.logout", "Log out")}
-                </button>
               </div>
             </div>
           </div>
@@ -948,7 +980,6 @@ export default function AccountPage() {
           flex-wrap: wrap;
         }
 
-        .account-header-actions,
         .operator-account-actions,
         .workspace-actions,
         .account-card-actions {
@@ -1058,6 +1089,45 @@ export default function AccountPage() {
           );
         }
 
+        .account-owner-booking-rule {
+          margin-top: 0 !important;
+          color: var(--accent);
+        }
+
+        .account-customer-guide {
+          display: grid;
+          gap: 1rem;
+          border-color: rgba(45, 212, 191, 0.25);
+        }
+
+        .account-customer-guide h2,
+        .account-customer-guide p {
+          margin-top: 0;
+        }
+
+        .account-customer-guide-steps {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .account-customer-guide-steps a {
+          display: grid;
+          gap: 0.25rem;
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        .account-customer-guide-steps span {
+          color: var(--text-muted);
+          font-size: 0.84rem;
+          line-height: 1.4;
+        }
+
         .account-business-settings-card h3,
         .account-business-settings-card p,
         .account-owner-booking-card h3,
@@ -1069,21 +1139,6 @@ export default function AccountPage() {
           border-color: rgba(255, 190, 11, 0.22);
         }
 
-        .language-pill {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 2.2rem;
-          height: 2.35rem;
-          padding: 0 0.75rem;
-          border-radius: 999px;
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text-muted);
-          font-size: 0.8rem;
-          font-weight: 700;
-        }
-
         @media (max-width: 700px) {
           .account-header,
           .operator-account-row,
@@ -1091,15 +1146,12 @@ export default function AccountPage() {
             display: grid;
           }
 
-          .account-header-actions,
           .operator-account-actions,
           .workspace-actions,
           .account-card-actions,
-          .account-header-actions :global(.btn),
           .operator-account-actions :global(.btn),
           .workspace-actions :global(.btn),
           .account-card-actions :global(.btn),
-          .account-header-actions button,
           .operator-account-actions a,
           .workspace-actions a,
           .workspace-actions button,
@@ -1113,14 +1165,15 @@ export default function AccountPage() {
             grid-template-columns: 1fr;
           }
 
+          .account-customer-guide-steps {
+            grid-template-columns: 1fr;
+          }
+
           .account-save-button {
             width: 100%;
             justify-content: center;
           }
 
-          .language-pill {
-            width: 100%;
-          }
         }
       `}</style>
     </main>

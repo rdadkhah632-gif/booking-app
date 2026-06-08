@@ -2551,13 +2551,31 @@ export const en: TranslationTree = {
   "staff.unlinked.kicker": "Staff account created",
   "staff.unlinked.title": "No business linked yet",
   "staff.unlinked.body":
-    "Your staff account is ready, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, or wait for the invite email when production email sending is enabled.",
+    "Your staff account is ready, but it is not connected to a business staff profile yet.",
   "staff.unlinked.stepEmailTitle": "Use the same email",
   "staff.unlinked.stepEmailBody":
     "The business invite must use the same email address as this staff account.",
-  "staff.unlinked.stepLinkTitle": "Automatic linking",
+  "staff.unlinked.emailFallback":
+    "Use the email address shown in your account.",
+  "staff.unlinked.stepInviteTitle": "Ask the owner to invite you",
+  "staff.unlinked.stepInviteBody":
+    "The business owner should add this exact email from their Staff setup page.",
+  "staff.unlinked.stepLinkTitle": "Refresh after linking",
   "staff.unlinked.stepLinkBody":
-    "When a matching invite is available, Mirëbook will link it on your next login or page refresh.",
+    "Once linked, your schedule, availability and staff notifications will appear here.",
+  "staff.onboarding.title": "Your staff workspace",
+  "staff.onboarding.body":
+    "Use these staff tools for assigned appointments, your availability and work updates.",
+  "staff.onboarding.ownerTitle":
+    "Your personal work is separate from business management",
+  "staff.onboarding.ownerBody":
+    "Business dashboard manages services, staff, bookings and setup. My Work shows only your personal schedule and availability.",
+  "staff.onboarding.bookableRule":
+    "Customers can book you only while your staff profile is active and assigned to services.",
+  "staff.onboarding.calendar": "View calendar",
+  "staff.onboarding.availability": "Set availability",
+  "staff.onboarding.notifications": "Check notifications",
+  "staff.onboarding.support": "Contact support",
   "dashboardLayout.myWork.title": "My work",
   "dashboardLayout.myWork.schedule": "My schedule",
   "dashboardLayout.myWork.availability": "My availability",
@@ -2605,9 +2623,23 @@ export const en: TranslationTree = {
   "account.ownerBooking.linkedTitle": "You are set up as bookable staff",
   "account.ownerBooking.notLinkedTitle": "You are not set up as bookable staff",
   "account.ownerBooking.linkedBody":
-    "Customers can book appointments with you personally once your services and availability are configured.",
+    "Business dashboard manages services, staff, bookings and setup. My Work manages your personal schedule and availability.",
   "account.ownerBooking.notLinkedBody":
     "If you personally take appointments, set yourself up as bookable staff. If you only manage the business, you can leave this off.",
+  "account.ownerBooking.bookableRule":
+    "Customers can book you only while your staff profile is active and assigned to services.",
+  "account.customerGuide.title": "Your booking journey",
+  "account.customerGuide.body":
+    "Find a business, track requests and manage confirmed appointments from your customer workspace.",
+  "account.customerGuide.explore": "Explore businesses",
+  "account.customerGuide.exploreBody":
+    "Choose a service, staff member and available time.",
+  "account.customerGuide.bookings": "Track bookings",
+  "account.customerGuide.bookingsBody":
+    "Follow requests, upcoming appointments and history.",
+  "account.customerGuide.notifications": "Check updates",
+  "account.customerGuide.notificationsBody":
+    "See confirmations, changes and support replies.",
 
   "dashboardSettings.tools.ownerBooking": "Owner booking status",
   "dashboardSettings.tools.ownerBookingLinkedBody":
@@ -2625,6 +2657,32 @@ export const en: TranslationTree = {
   "dashboardBusinesses.missingSetup.assignmentCta":
     "Assign staff to service",
   "dashboardBusinesses.missingSetup.hoursCta": "Set availability",
+  "dashboardBusinesses.onboarding.profile": "Complete business profile",
+  "dashboardBusinesses.onboarding.profileBody":
+    "Profile details build customer trust. They improve presentation but do not replace booking readiness.",
+  "dashboardBusinesses.onboarding.services": "Add services",
+  "dashboardBusinesses.onboarding.servicesBody":
+    "Create at least one active service customers can select.",
+  "dashboardBusinesses.onboarding.staff": "Add staff",
+  "dashboardBusinesses.onboarding.staffBody":
+    "Add the people who deliver appointments, including yourself only when appropriate.",
+  "dashboardBusinesses.onboarding.assignments": "Assign services to staff",
+  "dashboardBusinesses.onboarding.assignmentsBody":
+    "Customers can book only when an active staff member is assigned to an active service.",
+  "dashboardBusinesses.onboarding.hours": "Set working hours",
+  "dashboardBusinesses.onboarding.hoursBody":
+    "Working hours create the availability customers use to choose a time.",
+  "dashboardBusinesses.onboarding.preview": "Preview public page",
+  "dashboardBusinesses.onboarding.previewBody":
+    "Review the customer experience before making the profile visible.",
+  "dashboardBusinesses.onboarding.publish": "Publish when ready",
+  "dashboardBusinesses.onboarding.publishBody":
+    "Publishing controls visibility. Billing remains informational and does not block setup or listing.",
+  "dashboardBusinesses.onboarding.done": "Done",
+  "dashboardBusinesses.onboarding.next": "Next",
+  "dashboardBusinesses.onboarding.ownerStaffLinked":
+    "Business dashboard manages the company. My Work manages your personal schedule and availability.",
+  "dashboardBusinesses.onboarding.openMyWork": "Open My Work",
   "dashboardNotifications.inbox.bookingNowConfirmed":
     "This booking request has been confirmed. No approval action remains.",
   "dashboardNotifications.inbox.bookingNowDeclined":

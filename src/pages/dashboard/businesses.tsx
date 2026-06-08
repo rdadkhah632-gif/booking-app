@@ -525,102 +525,136 @@ export default function Businesses() {
             </div>
           )}
 
-          <div className="business-setup-grid">
-            <a href="#business-profile" className="business-setup-card">
-              <strong>{t('dashboardBusinesses.setupHub.profile', 'Business profile')}</strong>
-              <span>{t('dashboardBusinesses.setupHub.profileBody', 'Edit public details, image, category and publish status.')}</span>
-            </a>
+          {primaryBusiness && primaryReadiness && (
+            <div className="business-onboarding-checklist">
+              {[
+                {
+                  number: 1,
+                  ready: primaryReadiness.profileComplete,
+                  href: '#business-profile',
+                  title: t('dashboardBusinesses.onboarding.profile', 'Complete business profile'),
+                  body: t(
+                    'dashboardBusinesses.onboarding.profileBody',
+                    'Profile details build customer trust. They improve presentation but do not replace booking readiness.'
+                  )
+                },
+                {
+                  number: 2,
+                  ready: primaryReadiness.hasActiveServices,
+                  href: '/dashboard/services',
+                  title: t('dashboardBusinesses.onboarding.services', 'Add services'),
+                  body: t(
+                    'dashboardBusinesses.onboarding.servicesBody',
+                    'Create at least one active service customers can select.'
+                  )
+                },
+                {
+                  number: 3,
+                  ready: primaryReadiness.hasActiveStaff,
+                  href: '/dashboard/staff',
+                  title: t('dashboardBusinesses.onboarding.staff', 'Add staff'),
+                  body: t(
+                    'dashboardBusinesses.onboarding.staffBody',
+                    'Add the people who deliver appointments, including yourself only when appropriate.'
+                  )
+                },
+                {
+                  number: 4,
+                  ready: primaryReadiness.hasStaffServiceAssignments,
+                  href: '/dashboard/staff',
+                  title: t('dashboardBusinesses.onboarding.assignments', 'Assign services to staff'),
+                  body: t(
+                    'dashboardBusinesses.onboarding.assignmentsBody',
+                    'Customers can book only when an active staff member is assigned to an active service.'
+                  )
+                },
+                {
+                  number: 5,
+                  ready: primaryReadiness.hasWorkingHours,
+                  href: '/dashboard/availability',
+                  title: t('dashboardBusinesses.onboarding.hours', 'Set working hours'),
+                  body: t(
+                    'dashboardBusinesses.onboarding.hoursBody',
+                    'Working hours create the availability customers use to choose a time.'
+                  )
+                },
+                {
+                  number: 6,
+                  ready: primaryReadiness.bookingReady,
+                  href: `/explore/${primaryBusiness.id}`,
+                  title: t('dashboardBusinesses.onboarding.preview', 'Preview public page'),
+                  body: t(
+                    'dashboardBusinesses.onboarding.previewBody',
+                    'Review the customer experience before making the profile visible.'
+                  )
+                },
+                {
+                  number: 7,
+                  ready: Boolean(primaryBusiness.published),
+                  href: '#business-profile',
+                  title: t('dashboardBusinesses.onboarding.publish', 'Publish when ready'),
+                  body: t(
+                    'dashboardBusinesses.onboarding.publishBody',
+                    'Publishing controls visibility. Billing remains informational and does not block setup or listing.'
+                  )
+                }
+              ].map((item) => (
+                <a
+                  key={item.number}
+                  href={item.href}
+                  className={item.ready ? 'business-onboarding-step ready' : 'business-onboarding-step'}
+                >
+                  <span className="business-onboarding-number">
+                    {item.ready ? '✓' : item.number}
+                  </span>
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>{item.body}</small>
+                  </span>
+                  <span className="business-onboarding-state">
+                    {item.ready
+                      ? t('dashboardBusinesses.onboarding.done', 'Done')
+                      : t('dashboardBusinesses.onboarding.next', 'Next')}
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
 
-            <a href="/dashboard/services" className="business-setup-card">
-              <strong>{t('support.business.services', 'Services')}</strong>
-              <span>{t('dashboardBusinesses.setupHub.servicesBody', 'Create the services customers can book.')}</span>
-            </a>
-
-            <a href="/dashboard/staff" className="business-setup-card">
-              <strong>{t('support.business.staff', 'Staff')}</strong>
-              <span>{t('dashboardBusinesses.setupHub.staffBody', 'Add staff and assign services to them.')}</span>
-            </a>
-
-            <button
-              type="button"
-              className="business-setup-card business-setup-card-button"
-              onClick={() => addOwnerAsStaff(businesses[0])}
-              disabled={!!ownerStaffProfile || creatingOwnerStaffId === businesses[0].id}
-            >
+          <div className="business-owner-staff-row">
+            <div>
               <strong>
                 {ownerStaffProfile
                   ? t('dashboardBusinesses.ownerStaff.linkedTitle', 'You are bookable staff')
                   : t('dashboardBusinesses.ownerStaff.title', 'Do you take appointments?')}
               </strong>
-              <span>
+              <p className="small muted">
                 {ownerStaffProfile
-                  ? t('dashboardBusinesses.ownerStaff.linkedBody', 'Your owner account is linked to a staff profile. Manage your services, assigned appointments and working hours from Staff.')
-                  : creatingOwnerStaffId === businesses[0].id
-                    ? t('dashboardBusinesses.ownerStaff.creating', 'Adding you as staff...')
-                    : t('dashboardBusinesses.ownerStaff.body', 'Add yourself as bookable staff only if customers can book appointments with you. If you only manage the business, leave yourself owner-only.')}
-              </span>
-            </button>
-
-            <a href="/dashboard/availability" className="business-setup-card">
-              <strong>{t('dashboardBusinesses.setupHub.availability', 'Availability')}</strong>
-              <span>{t('dashboardBusinesses.setupHub.availabilityBody', 'Set the days and hours customers can book.')}</span>
-            </a>
-          </div>
-
-          <div className="business-setup-support-row">
-            <span className="small muted">
-              {t('dashboardBusinesses.setupHub.secondaryActions', 'Preview and support')}
-            </span>
-            <a href={`/explore/${businesses[0].id}`}>
-              {t('dashboardBusinesses.profileTools.preview', 'Preview public page')}
-            </a>
-            <a href="/support/business">
-              {t('dashboardBusinesses.create.requestAnother', 'Request another business')}
-            </a>
-          </div>
-        </div>
-      )}
-
-      {primaryBusiness && primaryReadiness && (!primaryReadiness.bookingReady || !primaryReadiness.profileComplete || !primaryReadiness.hasBusinessImage) && (
-        <div className="card business-missing-card">
-          <div>
-            <p className="small muted">{t('dashboardBusinesses.missingSetup.kicker', 'Next setup actions')}</p>
-            <h3>
-              {primaryReadiness.bookingReady
-                ? t('dashboardBusinesses.missingSetup.polishTitle', 'Booking is ready; profile polish is still recommended')
-                : t('dashboardBusinesses.missingSetup.title', 'Finish booking setup before publishing')}
-            </h3>
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {!primaryReadiness.bookingReady
-                ? primaryReadiness.missingItems.join(', ')
-                : primaryReadiness.profileMissingItems.join(', ')}
-            </p>
-          </div>
-          <div className="business-missing-actions">
-            {!primaryReadiness.profileComplete && (
-              <a href="#business-profile" className="btn btn-ghost">
-                {t('dashboardBusinesses.missingSetup.profileCta', 'Add business details')}
+                  ? t(
+                      'dashboardBusinesses.onboarding.ownerStaffLinked',
+                      'Business dashboard manages the company. My Work manages your personal schedule and availability.'
+                    )
+                  : t(
+                      'dashboardBusinesses.ownerStaff.body',
+                      'Add yourself as bookable staff only if customers can book appointments with you. If you only manage the business, leave yourself owner-only.'
+                    )}
+              </p>
+            </div>
+            {ownerStaffProfile ? (
+              <a href="/staff" className="btn btn-ghost">
+                {t('dashboardBusinesses.onboarding.openMyWork', 'Open My Work')}
               </a>
-            )}
-            {!primaryReadiness.hasActiveServices && (
-              <a href="/dashboard/services" className="btn btn-ghost">
-                {t('dashboardBusinesses.missingSetup.servicesCta', 'Add service')}
-              </a>
-            )}
-            {!primaryReadiness.hasActiveStaff && (
-              <a href="/dashboard/staff" className="btn btn-ghost">
-                {t('dashboardBusinesses.missingSetup.staffCta', 'Add staff')}
-              </a>
-            )}
-            {primaryReadiness.hasActiveStaff && primaryReadiness.hasActiveServices && !primaryReadiness.hasStaffServiceAssignments && (
-              <a href="/dashboard/staff" className="btn btn-ghost">
-                {t('dashboardBusinesses.missingSetup.assignmentCta', 'Assign staff to service')}
-              </a>
-            )}
-            {!primaryReadiness.hasWorkingHours && (
-              <a href="/dashboard/availability" className="btn btn-ghost">
-                {t('dashboardBusinesses.missingSetup.hoursCta', 'Set availability')}
-              </a>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => addOwnerAsStaff(businesses[0])}
+                disabled={creatingOwnerStaffId === businesses[0].id}
+              >
+                {creatingOwnerStaffId === businesses[0].id
+                  ? t('dashboardBusinesses.ownerStaff.creating', 'Adding you as staff...')
+                  : t('staff.ownerSetup.addSelf', 'Add myself as bookable staff')}
+              </button>
             )}
           </div>
         </div>
@@ -737,33 +771,17 @@ export default function Businesses() {
           font-size: 0.76rem;
         }
 
-        .business-missing-card {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          margin-bottom: 1rem;
-          border-color: rgba(255,190,11,0.28);
-          background: rgba(255,190,11,0.06);
-        }
-
-        .business-missing-actions {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .business-setup-grid {
+        .business-onboarding-checklist {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.6rem;
+        }
+
+        .business-onboarding-step {
+          display: grid;
+          grid-template-columns: 2rem minmax(0, 1fr) auto;
           gap: 0.75rem;
-        }
-
-        .business-setup-card {
-          display: grid;
-          gap: 0.35rem;
-          padding: 1rem;
+          align-items: center;
+          padding: 0.8rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
@@ -771,62 +789,86 @@ export default function Businesses() {
           text-decoration: none;
         }
 
-        .business-setup-card span {
+        .business-onboarding-step.ready {
+          border-color: rgba(45,212,191,0.24);
+          background: rgba(45,212,191,0.05);
+        }
+
+        .business-onboarding-number {
+          width: 2rem;
+          height: 2rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: rgba(255,107,53,0.12);
+          color: var(--accent);
+          font-weight: 800;
+        }
+
+        .business-onboarding-step.ready .business-onboarding-number {
+          background: rgba(45,212,191,0.12);
+          color: var(--success);
+        }
+
+        .business-onboarding-step > span:nth-child(2) {
+          display: grid;
+          gap: 0.2rem;
+        }
+
+        .business-onboarding-step small {
           color: var(--text-muted);
           font-size: 0.85rem;
           line-height: 1.4;
         }
 
-        .business-setup-card-button {
-          appearance: none;
-          width: 100%;
-          text-align: left;
-          font: inherit;
-          cursor: pointer;
+        .business-onboarding-state {
+          color: var(--accent);
+          font-size: 0.78rem;
+          font-weight: 800;
         }
 
-        .business-setup-card-button:disabled {
-          cursor: default;
-          opacity: 0.78;
+        .business-onboarding-step.ready .business-onboarding-state {
+          color: var(--success);
         }
 
-        .business-setup-support-row {
+        .business-owner-staff-row {
           display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
+          justify-content: space-between;
+          gap: 1rem;
           align-items: center;
+          flex-wrap: wrap;
           padding-top: 0.75rem;
           border-top: 1px solid var(--border);
         }
 
-        .business-setup-support-row a {
-          color: var(--accent);
-          text-decoration: none;
-          font-weight: 700;
-        }
-
-        .business-setup-support-row a + a::before {
-          content: "·";
-          margin-right: 0.5rem;
-          color: var(--text-muted);
+        .business-owner-staff-row p {
+          margin-top: 0.25rem;
+          max-width: 680px;
         }
 
         @media (max-width: 700px) {
           .business-setup-hub-header,
-          .business-missing-card {
+          .business-owner-staff-row {
             display: grid;
           }
 
           .business-live-pill,
           .business-draft-pill,
-          .business-missing-card :global(.btn),
-          .business-missing-actions {
+          .business-owner-staff-row :global(.btn) {
             width: 100%;
           }
 
-          .business-readiness-strip,
-          .business-setup-grid {
+          .business-readiness-strip {
             grid-template-columns: 1fr;
+          }
+
+          .business-onboarding-step {
+            grid-template-columns: 2rem minmax(0, 1fr);
+          }
+
+          .business-onboarding-state {
+            grid-column: 2;
           }
         }
       `}</style>

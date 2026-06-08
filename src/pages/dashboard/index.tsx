@@ -3,7 +3,6 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
-import DashboardHomeHeader from "@/components/dashboard-home/DashboardHomeHeader";
 import DashboardSummaryCards from "@/components/dashboard-home/DashboardSummaryCards";
 import SchedulePreviewCard from "@/components/dashboard-home/SchedulePreviewCard";
 import SetupGuidanceList from "@/components/dashboard-home/SetupGuidanceList";
@@ -368,13 +367,6 @@ export default function DashboardHome() {
     (row) => row.is_closed !== true,
   ).length;
 
-  const businessSetupReady =
-    businesses.length > 0 &&
-    activeServices > 0 &&
-    activeStaff > 0 &&
-    openWorkingDays > 0 &&
-    publishedCount > 0;
-
   const setupWarnings = useMemo(() => {
     const warnings: SetupWarning[] = [];
 
@@ -545,8 +537,6 @@ export default function DashboardHome() {
         "A quick view of today’s appointments, customer actions and setup reminders.",
       )}
     >
-      <DashboardHomeHeader loading={loading} onRefresh={loadDashboard} />
-
       {error && (
         <div
           className="card"
@@ -607,12 +597,6 @@ export default function DashboardHome() {
                   )
                 : t("dashboardHome.ownerCommand.viewBookings", "View bookings")}
             </Link>
-            <Link href="/dashboard/businesses" className="btn btn-ghost">
-              {businessSetupReady
-                ? t("dashboardHome.ownerCommand.manageSetup", "Manage setup")
-                : t("dashboardHome.ownerCommand.finishSetup", "Finish setup")}
-            </Link>
-            {/* Staff link removed */}
           </div>
         </div>
       )}
