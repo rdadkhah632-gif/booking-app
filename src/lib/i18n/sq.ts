@@ -82,6 +82,15 @@ export const sq: TranslationTree = {
   "login.loading": "Duke kontrolluar llogarinë...",
   "login.noAccount": "Nuk ke ende llogari?",
   "login.createAccount": "Krijo një llogari Mirëbook",
+  "login.verification.title": "Verifiko email-in për të vazhduar",
+  "login.verification.body":
+    "Supabase nuk e ka konfirmuar ende këtë email. Verifikimi mbron pronësinë e llogarisë dhe aktivitetin e ardhshëm të lançimit.",
+  "login.verification.resent":
+    "Email-i i verifikimit u dërgua përsëri. Kontrollo inbox-in dhe dosjen spam.",
+  "login.verification.returned":
+    "Verifikimi i email-it përfundoi. Hyr për të vazhduar konfigurimin në Mirëbook.",
+  "verification.resend": "Ridërgo email-in e verifikimit",
+  "verification.resending": "Duke dërguar email-in e verifikimit...",
 
   "common.loadingAccount": "Po kontrollohet llogaria...",
   "common.marketplace": "Tregu",
@@ -1346,6 +1355,15 @@ export const sq: TranslationTree = {
   "account.operator.dashboard": "Dashboard operatori",
   "account.operator.users": "Përdorues",
   "account.email": "Email",
+  "account.verification.kicker": "Verifikimi i email-it",
+  "account.verification.verified": "Email-i është verifikuar",
+  "account.verification.unverified": "Email-i nuk është verifikuar ende",
+  "account.verification.verifiedBody":
+    "Supabase Auth ka konfirmuar pronësinë e këtij email-i hyrjeje.",
+  "account.verification.unverifiedBody":
+    "Verifiko këtë adresë para përdorimit në lançim. Llogaritë ekzistuese të testimit dhe aksesi aktual te rezervimet nuk bllokohen në këtë fazë.",
+  "account.verification.resent":
+    "Email-i i verifikimit u dërgua. Kontrollo inbox-in dhe dosjen spam.",
   "account.emailBody":
     "Përdoret për hyrje, konfirmime rezervimi, lidhje stafi dhe njoftime email në të ardhmen.",
   "account.accessSummary": "Përmbledhje aksesi",
@@ -1869,6 +1887,14 @@ export const sq: TranslationTree = {
     "Llogaria e stafit u krijua. Po të ridrejtojmë te zona e stafit...",
   "register.success.customer":
     "Llogaria e klientit u krijua. Po të ridrejtojmë te rezervimet...",
+  "register.error.noUser":
+    "Krijimi i llogarisë nuk përfundoi. Provo përsëri.",
+  "register.verification.required":
+    "Llogaria u krijua. Kontrollo email-in dhe verifiko adresën para se të hysh. Konfigurimi i zgjedhur i llogarisë do të vazhdojë pas verifikimit.",
+  "register.verification.resent":
+    "Email-i i verifikimit u dërgua përsëri. Kontrollo inbox-in dhe dosjen spam.",
+  "register.verification.softPolicy":
+    "Verifikimi është vetëm udhëzim në këtë fazë; Mirëbook nuk do të bllokojë llogaritë ekzistuese të testimit ose aksesin te rezervimet.",
   "register.business.nameRequired": "Emri i biznesit është i detyrueshëm.",
   "register.business.phoneRequired": "Telefoni i biznesit është i detyrueshëm.",
   "register.business.categoryRequired":
@@ -2922,6 +2948,14 @@ export const sq: TranslationTree = {
   "admin.support.success.resolved": "Ticket-i i suportit u shënua si i zgjidhur.",
   "admin.support.success.updated": "Ticket-i i suportit u përditësua.",
   "admin.support.success.replySent": "Përgjigjja u dërgua.",
+  "admin.users.verification.checking":
+    "Duke kontrolluar verifikimin e email-it...",
+  "admin.users.verification.verified": "Email-i është verifikuar",
+  "admin.users.verification.unverified": "Email-i nuk është verifikuar",
+  "admin.users.verification.unavailable": "Verifikimi nuk është i disponueshëm",
+  "admin.users.verification.confirmedAt": "Konfirmuar",
+  "admin.users.verification.error":
+    "Nuk mund të ngarkohej statusi i verifikimit.",
   "support.operator.flowKicker": "Rrjedha operative",
   "support.operator.flowTitle":
     "Kërkesat e suportit lidhen me inbox-in e operatorit",

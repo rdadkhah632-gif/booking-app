@@ -36,6 +36,15 @@ export const en: TranslationTree = {
   "login.loading": "Checking account...",
   "login.noAccount": "No account yet?",
   "login.createAccount": "Create a Mirëbook account",
+  "login.verification.title": "Verify your email to continue",
+  "login.verification.body":
+    "Supabase has not confirmed this email yet. Verification protects account ownership and future launch activity.",
+  "login.verification.resent":
+    "Verification email sent again. Check your inbox and spam folder.",
+  "login.verification.returned":
+    "Email verification completed. Sign in to continue your Mirëbook setup.",
+  "verification.resend": "Resend verification email",
+  "verification.resending": "Sending verification email...",
 
   "common.loadingAccount": "Checking account...",
   "common.marketplace": "Marketplace",
@@ -1336,6 +1345,15 @@ export const en: TranslationTree = {
   "account.operator.dashboard": "Operator dashboard",
   "account.operator.users": "Users",
   "account.email": "Email",
+  "account.verification.kicker": "Email verification",
+  "account.verification.verified": "Email verified",
+  "account.verification.unverified": "Email not verified yet",
+  "account.verification.verifiedBody":
+    "Supabase Auth has confirmed ownership of this login email.",
+  "account.verification.unverifiedBody":
+    "Verify this address before launch use. Existing test accounts and current booking access are not blocked during this foundation batch.",
+  "account.verification.resent":
+    "Verification email sent. Check your inbox and spam folder.",
   "account.emailBody":
     "Used for login, booking confirmations, staff linking and future email notifications.",
   "account.accessSummary": "Access summary",
@@ -1777,6 +1795,14 @@ export const en: TranslationTree = {
     "Staff account created. Redirecting to your staff area...",
   "register.success.customer":
     "Customer account created. Redirecting to your bookings...",
+  "register.error.noUser":
+    "Account creation did not complete. Please try again.",
+  "register.verification.required":
+    "Account created. Check your email and verify your address before signing in. Your selected account setup will continue after verification.",
+  "register.verification.resent":
+    "Verification email sent again. Check your inbox and spam folder.",
+  "register.verification.softPolicy":
+    "Verification is currently guidance only; Mirëbook will not block existing test accounts or booking access in this batch.",
   "register.business.nameRequired": "Business name is required.",
   "register.business.phoneRequired": "Business phone is required.",
   "register.business.categoryRequired": "Business category is required.",
@@ -2870,6 +2896,12 @@ export const en: TranslationTree = {
   "admin.support.success.resolved": "Support ticket marked as resolved.",
   "admin.support.success.updated": "Support ticket updated.",
   "admin.support.success.replySent": "Reply sent.",
+  "admin.users.verification.checking": "Checking email verification...",
+  "admin.users.verification.verified": "Email verified",
+  "admin.users.verification.unverified": "Email not verified",
+  "admin.users.verification.unavailable": "Verification unavailable",
+  "admin.users.verification.confirmedAt": "Confirmed",
+  "admin.users.verification.error": "Could not load verification status.",
   "support.operator.flowKicker": "Operational flow",
   "support.operator.flowTitle":
     "Support requests are connected to the operator inbox",

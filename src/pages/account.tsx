@@ -138,6 +138,8 @@ export default function AccountPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [resettingPassword, setResettingPassword] = useState(false);
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
   const [regionInfo, setRegionInfo] = useState<RegionInfo>({
     timezone: "Unknown",
     country: "Auto-detected",
@@ -175,6 +177,8 @@ export default function AccountPage() {
       router.replace("/login");
       return;
     }
+
+    setEmailVerified(Boolean(session.user.email_confirmed_at));
 
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
@@ -359,6 +363,36 @@ export default function AccountPage() {
     );
   }
 
+  async function resendVerification() {
+    if (!profile?.email) return;
+
+    setResendingVerification(true);
+    setError(null);
+    setMessage(null);
+
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: profile.email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+      },
+    });
+
+    setResendingVerification(false);
+
+    if (resendError) {
+      setError(resendError.message);
+      return;
+    }
+
+    setMessage(
+      t(
+        "account.verification.resent",
+        "Verification email sent. Check your inbox and spam folder.",
+      ),
+    );
+  }
+
   function publicBusinessHref() {
     return primaryBusinessId
       ? `/explore/${primaryBusinessId}`
@@ -425,6 +459,51 @@ export default function AccountPage() {
                 <p style={{ color: "var(--success)" }}>{message}</p>
               </div>
             )}
+
+            <div
+              className={`card account-verification-card ${
+                emailVerified
+                  ? "account-verification-card-verified"
+                  : "account-verification-card-unverified"
+              }`}
+            >
+              <div className="account-card-heading">
+                <p className="small muted">
+                  {t("account.verification.kicker", "Email verification")}
+                </p>
+                <h2>
+                  {emailVerified
+                    ? t("account.verification.verified", "Email verified")
+                    : t(
+                        "account.verification.unverified",
+                        "Email not verified yet",
+                      )}
+                </h2>
+                <p className="small muted">
+                  {emailVerified
+                    ? t(
+                        "account.verification.verifiedBody",
+                        "Supabase Auth has confirmed ownership of this login email.",
+                      )
+                    : t(
+                        "account.verification.unverifiedBody",
+                        "Verify this address before launch use. Existing test accounts and current booking access are not blocked during this foundation batch.",
+                      )}
+                </p>
+              </div>
+              {!emailVerified && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={resendVerification}
+                  disabled={resendingVerification}
+                >
+                  {resendingVerification
+                    ? t("verification.resending", "Sending verification email...")
+                    : t("verification.resend", "Resend verification email")}
+                </button>
+              )}
+            </div>
 
             <form
               onSubmit={saveProfile}
@@ -1047,6 +1126,24 @@ export default function AccountPage() {
           gap: 0.95rem;
         }
 
+        .account-verification-card {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .account-verification-card-verified {
+          border-color: rgba(45, 212, 191, 0.3);
+          background: rgba(45, 212, 191, 0.06);
+        }
+
+        .account-verification-card-unverified {
+          border-color: rgba(255, 190, 11, 0.3);
+          background: rgba(255, 190, 11, 0.07);
+        }
+
         .account-primary-card {
           border-color: rgba(45, 212, 191, 0.25);
         }
@@ -1158,6 +1255,15 @@ export default function AccountPage() {
           .account-card-actions a,
           .account-security-card button {
             width: 100%;
+            justify-content: center;
+          }
+
+          .account-verification-card,
+          .account-verification-card button {
+            width: 100%;
+          }
+
+          .account-verification-card button {
             justify-content: center;
           }
 

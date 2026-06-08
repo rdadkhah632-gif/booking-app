@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
+import { useI18n } from '@/lib/useI18n'
 
 type ProfileRow = {
   id: string
@@ -21,6 +22,13 @@ type UserCounts = {
   pendingBookings: number
   notifications: number
   sentAdminNotifications: number
+}
+
+type EmailVerification = {
+  loading: boolean
+  verified: boolean | null
+  emailConfirmedAt: string | null
+  error: string | null
 }
 
 type OwnedBusiness = {
@@ -82,6 +90,7 @@ function profileDisplayName(profile?: ProfileRow | null) {
 
 export default function AdminUsersPage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [adminProfile, setAdminProfile] = useState<ProfileRow | null>(null)
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
@@ -101,6 +110,12 @@ export default function AdminUsersPage() {
   const [savingAccess, setSavingAccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [emailVerification, setEmailVerification] = useState<EmailVerification>({
+    loading: false,
+    verified: null,
+    emailConfirmedAt: null,
+    error: null
+  })
 
   const filteredProfiles = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
@@ -370,6 +385,81 @@ export default function AdminUsersPage() {
     if (!router.isReady) return
     loadAdminUsers()
   }, [router.isReady])
+
+  useEffect(() => {
+    if (!selectedUserId || !adminProfile?.is_admin) {
+      setEmailVerification({
+        loading: false,
+        verified: null,
+        emailConfirmedAt: null,
+        error: null
+      })
+      return
+    }
+
+    let cancelled = false
+
+    async function loadEmailVerification() {
+      setEmailVerification({
+        loading: true,
+        verified: null,
+        emailConfirmedAt: null,
+        error: null
+      })
+
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token || cancelled) return
+
+      try {
+        const response = await fetch(
+          `/api/admin/user-email-verification?userId=${encodeURIComponent(selectedUserId)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`
+            }
+          }
+        )
+        const payload = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            payload.error ||
+              t(
+                'admin.users.verification.error',
+                'Could not load verification status.'
+              )
+          )
+        }
+        if (cancelled) return
+
+        setEmailVerification({
+          loading: false,
+          verified: Boolean(payload.verified),
+          emailConfirmedAt: payload.emailConfirmedAt || null,
+          error: null
+        })
+      } catch (err: any) {
+        if (cancelled) return
+        setEmailVerification({
+          loading: false,
+          verified: null,
+          emailConfirmedAt: null,
+          error:
+            err.message ||
+            t(
+              'admin.users.verification.error',
+              'Could not load verification status.'
+            )
+        })
+      }
+    }
+
+    loadEmailVerification()
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedUserId, adminProfile?.is_admin])
 
   function selectUser(profile: ProfileRow) {
     setSelectedUserId(profile.id)
@@ -705,6 +795,47 @@ export default function AdminUsersPage() {
                       <p className="small muted" style={{ marginTop: '0.35rem' }}>
                         {selectedUser.email || 'No email'} · joined {formatDate(selectedUser.created_at)}
                       </p>
+                      <div className="admin-row-meta" style={{ marginTop: '0.55rem' }}>
+                        <span
+                          className={`admin-pill ${
+                            emailVerification.verified
+                              ? 'admin-pill-success'
+                              : 'admin-pill-warning'
+                          }`}
+                        >
+                          {emailVerification.loading
+                            ? t(
+                                'admin.users.verification.checking',
+                                'Checking email verification...'
+                              )
+                            : emailVerification.verified
+                              ? t(
+                                  'admin.users.verification.verified',
+                                  'Email verified'
+                                )
+                              : emailVerification.verified === false
+                                ? t(
+                                    'admin.users.verification.unverified',
+                                    'Email not verified'
+                                  )
+                                : t(
+                                    'admin.users.verification.unavailable',
+                                    'Verification unavailable'
+                                  )}
+                        </span>
+                        {emailVerification.emailConfirmedAt && (
+                          <span className="small muted">
+                            {t(
+                              'admin.users.verification.confirmedAt',
+                              'Confirmed'
+                            )}{' '}
+                            {formatDateTime(emailVerification.emailConfirmedAt)}
+                          </span>
+                        )}
+                        {emailVerification.error && (
+                          <span className="small muted">{emailVerification.error}</span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="admin-actions">

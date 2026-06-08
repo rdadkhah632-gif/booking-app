@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { completePendingRegistration } from "@/lib/completePendingRegistration";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,9 +16,20 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(
+    null,
+  );
 
   async function redirectByRole(userId: string, fallbackEmail?: string) {
     const cleanEmail = fallbackEmail?.trim().toLowerCase() || "";
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) await completePendingRegistration(user);
 
     let capabilities = await getAccountCapabilities(userId, cleanEmail);
 
@@ -101,6 +113,12 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message);
+      if (
+        (error as { code?: string }).code === "email_not_confirmed" ||
+        error.message.toLowerCase().includes("email not confirmed")
+      ) {
+        setVerificationEmail(cleanEmail);
+      }
       setLoading(false);
       return;
     }
@@ -128,6 +146,36 @@ export default function LoginPage() {
     }
 
     setLoading(false);
+  }
+
+  async function resendVerification() {
+    if (!verificationEmail) return;
+
+    setResendingVerification(true);
+    setError(null);
+    setVerificationMessage(null);
+
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: verificationEmail,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+      },
+    });
+
+    setResendingVerification(false);
+
+    if (resendError) {
+      setError(resendError.message);
+      return;
+    }
+
+    setVerificationMessage(
+      t(
+        "login.verification.resent",
+        "Verification email sent again. Check your inbox and spam folder.",
+      ),
+    );
   }
 
   if (checkingSession) {
@@ -287,6 +335,48 @@ export default function LoginPage() {
               </p>
             )}
 
+            {router.query.verified === "1" && (
+              <p className="small login-verification-note">
+                {t(
+                  "login.verification.returned",
+                  "Email verification completed. Sign in to continue your Mirëbook setup.",
+                )}
+              </p>
+            )}
+
+            {verificationEmail && (
+              <div className="login-verification-box">
+                <strong>
+                  {t(
+                    "login.verification.title",
+                    "Verify your email to continue",
+                  )}
+                </strong>
+                <p className="small muted">
+                  {t(
+                    "login.verification.body",
+                    "Supabase has not confirmed this email yet. Verification protects account ownership and future launch activity.",
+                  )}
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={resendVerification}
+                  disabled={resendingVerification}
+                >
+                  {resendingVerification
+                    ? t("verification.resending", "Sending verification email...")
+                    : t("verification.resend", "Resend verification email")}
+                </button>
+              </div>
+            )}
+
+            {verificationMessage && (
+              <p className="small login-verification-note">
+                {verificationMessage}
+              </p>
+            )}
+
             <div className="login-bottom-actions">
               <p className="small muted">
                 {t("login.noAccount", "No account yet?")}{" "}
@@ -389,6 +479,21 @@ export default function LoginPage() {
           display: grid;
           gap: 0.65rem;
           margin-top: 1.5rem;
+        }
+
+        .login-verification-box {
+          display: grid;
+          gap: 0.65rem;
+          margin-top: 1rem;
+          padding: 0.9rem;
+          border: 1px solid rgba(255, 190, 11, 0.28);
+          border-radius: var(--radius);
+          background: rgba(255, 190, 11, 0.08);
+        }
+
+        .login-verification-note {
+          margin-top: 1rem;
+          color: var(--success);
         }
 
         @media (max-width: 860px) {

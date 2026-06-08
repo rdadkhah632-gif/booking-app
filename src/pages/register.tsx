@@ -34,6 +34,8 @@ export default function RegisterPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   async function redirectByRole(userId: string, fallbackEmail?: string) {
     const capabilities = await getAccountCapabilities(userId, fallbackEmail);
@@ -142,18 +144,54 @@ export default function RegisterPage() {
       email: cleanEmail,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/login?verified=1`,
         data: {
           // Keep staff sign-ups compatible with existing profile role constraints.
           // Staff intent is stored as account_mode='staff' and resolved by getAccountCapabilities.
           role: role === "staff" ? "customer" : role,
           account_mode: role,
           preferred_language: preferredLanguage,
+          pending_registration: true,
+          pending_business:
+            role === "business"
+              ? {
+                  name: businessName.trim(),
+                  phone: businessPhone.trim(),
+                  category: businessCategory.trim(),
+                  city: businessCity.trim(),
+                  country: businessCountry.trim(),
+                  ownerTakesBookings,
+                }
+              : null,
         },
       },
     });
 
     if (error) {
       setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!data.user) {
+      setError(
+        t(
+          "register.error.noUser",
+          "Account creation did not complete. Please try again.",
+        ),
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!data.session) {
+      setVerificationEmail(cleanEmail);
+      setMessage(
+        t(
+          "register.verification.required",
+          "Account created. Check your email and verify your address before signing in. Your selected account setup will continue after verification.",
+        ),
+      );
       setLoading(false);
       return;
     }
@@ -257,6 +295,35 @@ export default function RegisterPage() {
     }, 900);
 
     return;
+  }
+
+  async function resendVerification() {
+    if (!verificationEmail) return;
+
+    setResendingVerification(true);
+    setError(null);
+
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: verificationEmail,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+      },
+    });
+
+    setResendingVerification(false);
+
+    if (resendError) {
+      setError(resendError.message);
+      return;
+    }
+
+    setMessage(
+      t(
+        "register.verification.resent",
+        "Verification email sent again. Check your inbox and spam folder.",
+      ),
+    );
   }
 
   if (checkingSession) {
@@ -663,9 +730,35 @@ export default function RegisterPage() {
           )}
 
           {message && (
-            <p style={{ color: "var(--success)", marginTop: "1rem" }}>
-              {message}
-            </p>
+            <div className="card register-verification-card">
+              <p style={{ color: "var(--success)" }}>{message}</p>
+              {verificationEmail && (
+                <>
+                  <p className="small muted">
+                    {t(
+                      "register.verification.softPolicy",
+                      "Verification is currently guidance only; Mirëbook will not block existing test accounts or booking access in this batch.",
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={resendVerification}
+                    disabled={resendingVerification}
+                  >
+                    {resendingVerification
+                      ? t(
+                          "verification.resending",
+                          "Sending verification email...",
+                        )
+                      : t(
+                          "verification.resend",
+                          "Resend verification email",
+                        )}
+                  </button>
+                </>
+              )}
+            </div>
           )}
 
           <div className="register-bottom-actions">
@@ -789,6 +882,14 @@ export default function RegisterPage() {
           display: grid;
           gap: 0.65rem;
           margin-top: 1.5rem;
+        }
+
+        .register-verification-card {
+          display: grid;
+          gap: 0.75rem;
+          margin-top: 1rem;
+          border-color: rgba(45, 212, 191, 0.3);
+          background: rgba(45, 212, 191, 0.06);
         }
 
         @media (max-width: 760px) {

@@ -6,6 +6,11 @@ Batch 1 status: implemented; production build passed.
 
 Batch 2 status: implemented; production build passed.
 
+Batch 3 status: implemented; production build passed.
+
+Batch 4 status: implemented as a provider-disabled foundation; production
+build passed.
+
 Stages 1 through 5 are complete and protected.
 
 ## Purpose
@@ -211,26 +216,178 @@ This is a small navigation guide, not a modal tour or new dashboard.
 - setup and onboarding grids collapse to one column on narrow screens
 - staff and Account action groups retain full-width mobile controls
 
+## Batch 3 - Email Verification Foundation
+
+Status: implemented; production build passed.
+
+Mirëbook now uses Supabase Auth's existing email-confirmation state rather than
+creating a custom verification-token system.
+
+Implemented behavior:
+
+- registration supplies a Supabase confirmation redirect back to `/login`
+- when Supabase requires confirmation and returns no session, registration
+  shows a translated check-email state instead of attempting authenticated
+  profile or business writes
+- the selected customer, staff or business registration intent is retained in
+  auth metadata
+- after a confirmed user signs in, pending profile, business and optional
+  owner-as-staff setup is completed idempotently before capability routing
+- login detects Supabase's unconfirmed-email response and offers resend
+- Account shows verified or unverified status from
+  `session.user.email_confirmed_at`
+- unverified Account users can request another Supabase signup confirmation
+- `/admin/users` loads the selected auth user's verification state through a
+  service-role-backed, admin-authorized API route
+
+Verification remains a soft launch signal:
+
+- existing test accounts are not blocked
+- booking, business publishing, staff linking and workspace access are not
+  restricted
+- no role or capability is derived from verification state
+- no founding offer is granted automatically
+
+Future founding-offer eligibility must require:
+
+- a verified email
+- a unique customer/email identity
+- genuine confirmed or completed booking activity
+- manual operator review
+
+Raw signups must never qualify a business for a second free month.
+
+## Batch 4 - Email Notification Foundation
+
+Status: implemented as a provider-disabled foundation; production build
+passed.
+
+The repository had no email provider or email package. No package was
+installed.
+
+Implemented architecture:
+
+- typed transactional email events and results under `src/lib/email`
+- simple booking email templates with subject, core appointment details and a
+  Mirëbook action link
+- server-only `sendTransactionalEmail(...)` adapter
+- authenticated `/api/email/transactional` route
+- service-role recipient and booking-context lookup
+- authorization that permits customers to request only their newly created
+  booking event and business owners to request status events only for their
+  own business
+- safe `skipped` results while `EMAIL_PROVIDER=disabled`
+- server-only development logging without recipient addresses or message
+  bodies
+- API failures do not fail booking creation or booking status changes
+
+In-app notifications remain the authoritative delivery and status channel.
+
+Booking events currently wired:
+
+- customer booking request sent
+- customer instant booking confirmed
+- business owner new request needs approval
+- business owner new instant booking confirmed
+- customer booking confirmed
+- customer booking declined
+- customer booking cancelled
+- customer appointment completed
+- linked/identified staff assignment for confirmed bookings
+- linked/identified staff cancellation or decline update
+
+The same status-event hook is present on both current business booking action
+surfaces: `/dashboard/bookings` and `/dashboard/notifications`.
+
+Environment placeholders:
+
+```text
+EMAIL_PROVIDER=disabled
+EMAIL_FROM_ADDRESS=
+EMAIL_REPLY_TO=
+```
+
+No provider API key or real sender is defined. Setting an unsupported provider
+does not claim success; delivery remains skipped until a provider-specific
+adapter is deliberately implemented.
+
+Events defined but intentionally not wired in this batch:
+
+- support ticket received
+- support reply
+- staff invite
+- customer cancellation/reschedule email
+- appointment reminders
+- marketing or founding-offer email
+
+Support and staff-invite delivery need a real provider, deduplication policy
+and provider QA before they are connected. Existing in-app support and staff
+linking behavior remains unchanged.
+
+Current templates are English-only server templates. EN and SQ are aligned for
+all new verification UI. Localized transactional email templates should be
+added with the real provider implementation using the recipient's saved
+language.
+
 ## Known Limitations
 
 - authenticated role-by-role browser QA is still required with real customer,
   business, linked staff, unlinked staff and owner-as-staff accounts
-- Stage 6 does not yet verify email ownership
-- no transactional email or invitation email is sent
+- Supabase project email-confirmation settings still control whether new
+  registrations require inbox confirmation
+- verification is visible but does not enforce access
+- transactional email delivery is skipped while `EMAIL_PROVIDER=disabled`
+- no real provider credentials or provider-specific adapter exist
+- transactional booking templates are not localized yet
+- repeated API requests are authorized but do not yet have persistent
+  delivery idempotency; a provider batch must add event/delivery records
+- support, staff-invite, reschedule and reminder emails are not wired
 - onboarding progress is derived from current records and is not stored as a
   separate completion state
 - the business dashboard summary does not independently query staff-service
   assignments; the authoritative setup hub remains the detailed checklist
 - old translation gaps may remain outside the touched Stage 6 surfaces
 
-## Next Recommended Batch
+## Next Recommended Batches
 
-Stage 6 Batch 3 - Email verification foundation.
+Stage 6 Batch 5 - Notification preferences.
 
-Plan the verification state, Supabase Auth behavior, resend flow, safe
-unverified-user experience and role-specific access policy before changing
-authentication behavior. Do not add email notifications or reminder delivery
-inside the verification batch.
+Define channel preferences without weakening in-app notifications as the
+source of truth. Decide defaults, ownership and migration behavior before
+adding a preference table.
+
+Stage 6 Batch 6 - Appointment reminder foundation.
+
+Choose a real email provider, add delivery idempotency and plan a server-side
+schedule or queue before sending 24-hour reminders. Do not use browser timers
+or client-only scheduling.
+
+## Batch 3/4 QA Checklist
+
+- register with Supabase confirmation enabled and confirm no premature profile
+  or business write error appears
+- use the verification link and confirm login completes the intended customer,
+  staff or business setup
+- confirm owner-as-staff registration provisions only one owner staff record
+- confirm unconfirmed login offers resend without exposing account details
+- confirm Account shows verified/unverified state accurately
+- confirm resend uses the current login address
+- confirm an admin can see selected-user verification state
+- confirm a non-admin cannot call the admin verification API
+- create request-mode and instant bookings with email provider disabled
+- confirm booking succeeds and in-app notifications are still created
+- accept, decline, cancel and complete bookings from the booking manager
+- accept and decline a booking from business notifications
+- confirm email API responses report skipped rather than sent
+- confirm no client bundle contains service-role or future provider secrets
+- confirm Stage 1 role routing and staff linking remain unchanged
+
+Automated Batch 3/4 verification:
+
+- `npm run build`: passed
+- `git diff --check`: passed
+- EN and SQ translation dictionaries contain no duplicate keys
+- Prettier is unavailable in the local workspace
 
 ## Batch 1/2 QA Checklist
 
