@@ -173,7 +173,7 @@ export default function LoginPage() {
     setVerificationMessage(
       t(
         "login.verification.resent",
-        "Verification email sent again. Check your inbox and spam folder.",
+        "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
       ),
     );
   }

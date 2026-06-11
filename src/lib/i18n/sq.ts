@@ -86,7 +86,7 @@ export const sq: TranslationTree = {
   "login.verification.body":
     "Supabase nuk e ka konfirmuar ende këtë email. Verifikimi mbron pronësinë e llogarisë dhe aktivitetin e ardhshëm të lançimit.",
   "login.verification.resent":
-    "Email-i i verifikimit u dërgua përsëri. Kontrollo inbox-in dhe dosjen spam.",
+    "Kërkesa e verifikimit u pranua. Nëse konfirmimi me email është aktiv në Supabase, kontrollo inbox-in dhe dosjen spam.",
   "login.verification.returned":
     "Verifikimi i email-it përfundoi. Hyr për të vazhduar konfigurimin në Mirëbook.",
   "verification.resend": "Ridërgo email-in e verifikimit",
@@ -1357,13 +1357,62 @@ export const sq: TranslationTree = {
   "account.email": "Email",
   "account.verification.kicker": "Verifikimi i email-it",
   "account.verification.verified": "Email-i është verifikuar",
-  "account.verification.unverified": "Email-i nuk është verifikuar ende",
+  "account.verification.unverified": "Verifikimi është në pritje",
+  "account.verification.unknown":
+    "Statusi i verifikimit nuk është i disponueshëm",
   "account.verification.verifiedBody":
     "Supabase Auth ka konfirmuar pronësinë e këtij email-i hyrjeje.",
   "account.verification.unverifiedBody":
-    "Verifiko këtë adresë para përdorimit në lançim. Llogaritë ekzistuese të testimit dhe aksesi aktual te rezervimet nuk bllokohen në këtë fazë.",
+    "Supabase Auth e raporton këtë adresë si të pakonfirmuar. Verifikimi mbetet këshillues dhe nuk bllokon llogarinë ose rezervimet.",
+  "account.verification.unknownBody":
+    "Mirëbook nuk mundi ta përcaktojë statusin e verifikimit nga sesioni aktual i Supabase. Kjo nuk bllokon llogarinë ose rezervimet.",
   "account.verification.resent":
-    "Email-i i verifikimit u dërgua. Kontrollo inbox-in dhe dosjen spam.",
+    "Kërkesa e verifikimit u pranua. Nëse konfirmimi me email është aktiv në Supabase, kontrollo inbox-in dhe dosjen spam.",
+  "account.emailPreferences.kicker": "Preferencat e email-it",
+  "account.emailPreferences.title":
+    "Zgjidh përditësimet transaksionale me email",
+  "account.emailPreferences.body":
+    "Këto kontrolle ndikojnë vetëm dërgimin me email. Njoftimet brenda aplikacionit mbeten gjithmonë aktive dhe dërgimi me email varet nga konfigurimi i ofruesit.",
+  "account.emailPreferences.setupRequired": "Kërkohet konfigurim në Supabase",
+  "account.emailPreferences.setupRequiredBody":
+    "SQL-ja e preferencave nuk është instaluar ende. Parazgjedhjet e sigurta transaksionale mbeten aktive, por ndryshimet nuk mund të ruhen.",
+  "account.emailPreferences.customerTitle": "Email-et e rezervimeve të klientit",
+  "account.emailPreferences.bookingUpdates": "Përditësimet e rezervimeve",
+  "account.emailPreferences.bookingUpdatesBody":
+    "Kërkesa, konfirmime, refuzime dhe anulime.",
+  "account.emailPreferences.reminders": "Kujtesat e takimeve",
+  "account.emailPreferences.remindersBody":
+    "Një email i planifikuar rreth 24 orë para takimeve të konfirmuara.",
+  "account.emailPreferences.businessTitle": "Email-et e pronarit të biznesit",
+  "account.emailPreferences.businessBookings":
+    "Përditësimet e rezervimeve të biznesit",
+  "account.emailPreferences.businessBookingsBody":
+    "Kërkesa të reja, konfirmime të menjëhershme, anulime dhe riplanifikime.",
+  "account.emailPreferences.billing": "Përditësimet e faturimit",
+  "account.emailPreferences.billingBody":
+    "Përditësime të ardhshme me email për abonimin dhe pagesat që kërkojnë vëmendje.",
+  "account.emailPreferences.staffTitle": "Email-et e stafit",
+  "account.emailPreferences.staffBookings":
+    "Përditësimet e rezervimeve të caktuara",
+  "account.emailPreferences.staffBookingsBody":
+    "Caktime, konfirmime, anulime dhe ndryshime të orarit.",
+  "account.emailPreferences.staffReminders": "Kujtesat e stafit",
+  "account.emailPreferences.staffRemindersBody":
+    "Rezervuar për një fazë të ardhshme të kujtesave për stafin.",
+  "account.emailPreferences.supportTitle": "Email-et e suportit",
+  "account.emailPreferences.support": "Përditësimet e suportit",
+  "account.emailPreferences.supportBody":
+    "Kopje të ardhshme me email të përgjigjeve dhe përditësimeve të ticket-it.",
+  "account.emailPreferences.save": "Ruaj preferencat e email-it",
+  "account.emailPreferences.saving": "Duke ruajtur preferencat e email-it...",
+  "account.emailPreferences.saved":
+    "Preferencat e email-it u ruajtën. Njoftimet brenda aplikacionit mbeten aktive.",
+  "account.emailPreferences.loadError":
+    "Nuk mund të ngarkoheshin preferencat e ruajtura. Po shfaqen parazgjedhjet e sigurta.",
+  "account.emailPreferences.saveError":
+    "Nuk mund të ruheshin preferencat e email-it.",
+  "account.emailPreferences.schemaMissingError":
+    "Preferencat e email-it nuk mund të ruhen derisa SQL-ja e Stage 6 të instalohet në Supabase.",
   "account.emailBody":
     "Përdoret për hyrje, konfirmime rezervimi, lidhje stafi dhe njoftime email në të ardhmen.",
   "account.accessSummary": "Përmbledhje aksesi",
@@ -1892,7 +1941,7 @@ export const sq: TranslationTree = {
   "register.verification.required":
     "Llogaria u krijua. Kontrollo email-in dhe verifiko adresën para se të hysh. Konfigurimi i zgjedhur i llogarisë do të vazhdojë pas verifikimit.",
   "register.verification.resent":
-    "Email-i i verifikimit u dërgua përsëri. Kontrollo inbox-in dhe dosjen spam.",
+    "Kërkesa e verifikimit u pranua. Nëse konfirmimi me email është aktiv në Supabase, kontrollo inbox-in dhe dosjen spam.",
   "register.verification.softPolicy":
     "Verifikimi është vetëm udhëzim në këtë fazë; Mirëbook nuk do të bllokojë llogaritë ekzistuese të testimit ose aksesin te rezervimet.",
   "register.business.nameRequired": "Emri i biznesit është i detyrueshëm.",

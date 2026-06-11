@@ -6,6 +6,10 @@ import {
 export async function sendTransactionalEmail(
   message: TransactionalEmailMessage,
 ): Promise<TransactionalEmailResult> {
+  if (message.preferenceEnabled === false) {
+    return { status: "skipped", reason: "preference_disabled" };
+  }
+
   if (!message.to.trim()) {
     return { status: "skipped", reason: "recipient_missing" };
   }

@@ -434,7 +434,12 @@ export default function AdminUsersPage() {
 
         setEmailVerification({
           loading: false,
-          verified: Boolean(payload.verified),
+          verified:
+            payload.state === 'verified'
+              ? true
+              : payload.state === 'unverified'
+                ? false
+                : null,
           emailConfirmedAt: payload.emailConfirmedAt || null,
           error: null
         })
@@ -800,7 +805,9 @@ export default function AdminUsersPage() {
                           className={`admin-pill ${
                             emailVerification.verified
                               ? 'admin-pill-success'
-                              : 'admin-pill-warning'
+                              : emailVerification.verified === false
+                                ? 'admin-pill-warning'
+                                : 'admin-pill-muted'
                           }`}
                         >
                           {emailVerification.loading

@@ -3,7 +3,8 @@ export type TransactionalEmailEvent =
   | "booking_status_changed"
   | "support_created"
   | "support_replied"
-  | "staff_invited";
+  | "staff_invited"
+  | "appointment_reminder";
 
 export type BookingEmailStatus =
   | "pending"
@@ -29,6 +30,7 @@ export type TransactionalEmailMessage = {
   text: string;
   html?: string;
   replyTo?: string;
+  preferenceEnabled?: boolean;
 };
 
 export type TransactionalEmailResult =
@@ -38,7 +40,11 @@ export type TransactionalEmailResult =
     }
   | {
       status: "skipped";
-      reason: "provider_disabled" | "recipient_missing" | "unsupported_provider";
+      reason:
+        | "provider_disabled"
+        | "preference_disabled"
+        | "recipient_missing"
+        | "unsupported_provider";
     }
   | {
       status: "failed";

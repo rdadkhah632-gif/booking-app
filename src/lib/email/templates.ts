@@ -15,6 +15,7 @@ type BookingTemplateInput = {
   staffName?: string | null;
   startAt: string;
   actionUrl: string;
+  preferenceEnabled?: boolean;
 };
 
 function statusCopy(
@@ -109,5 +110,39 @@ In-app notifications remain the authoritative booking record.`;
     to: input.recipientEmail,
     subject: `Mirëbook: ${copy.subject}`,
     text,
+    preferenceEnabled: input.preferenceEnabled,
+  };
+}
+
+export function appointmentReminderEmailTemplate(input: {
+  recipientEmail: string;
+  businessName: string;
+  serviceName: string;
+  staffName?: string | null;
+  startAt: string;
+  actionUrl: string;
+  preferenceEnabled?: boolean;
+}): TransactionalEmailMessage {
+  const appointmentTime = new Date(input.startAt).toLocaleString("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: "UTC",
+  });
+  const staffLine = input.staffName ? `\nStaff: ${input.staffName}` : "";
+
+  return {
+    event: "appointment_reminder",
+    to: input.recipientEmail,
+    subject: "Mirëbook: Appointment reminder",
+    text: `Your appointment is coming up in about 24 hours.
+
+Business: ${input.businessName}
+Service: ${input.serviceName}${staffLine}
+Date and time: ${appointmentTime} UTC
+
+Open Mirëbook: ${input.actionUrl}
+
+In-app notifications remain the authoritative booking record.`,
+    preferenceEnabled: input.preferenceEnabled,
   };
 }

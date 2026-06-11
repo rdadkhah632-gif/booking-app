@@ -10,6 +10,7 @@ import PublicBusinessStaffPicker from "@/components/public-business/PublicBusine
 import PublicBusinessAvailability from "@/components/public-business/PublicBusinessAvailability";
 import PublicBusinessSummary from "@/components/public-business/PublicBusinessSummary";
 import { useI18n } from "@/lib/useI18n";
+import { requestTransactionalEmail } from "@/lib/email/client";
 
 type Service = {
   id: string;
@@ -1144,6 +1145,10 @@ export default function BusinessBookingPage() {
     );
 
     if (createdBooking?.id) {
+      void requestTransactionalEmail({
+        event: "booking_created",
+        bookingId: createdBooking.id,
+      });
       router.push(`/booking-confirmation?id=${createdBooking.id}`);
     } else {
       router.push(

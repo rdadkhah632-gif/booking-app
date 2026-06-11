@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
+import {
+  emailConfirmationTimestamp,
+  getEmailVerificationState,
+} from "@/lib/email/verification";
 
 function bearerToken(req: NextApiRequest) {
   const authorization = req.headers.authorization || "";
@@ -47,9 +51,12 @@ export default async function handler(
       return res.status(404).json({ error: "Auth user not found" });
     }
 
+    const state = getEmailVerificationState(data.user);
+
     return res.status(200).json({
-      verified: Boolean(data.user.email_confirmed_at),
-      emailConfirmedAt: data.user.email_confirmed_at || null,
+      state,
+      verified: state === "verified" ? true : state === "unverified" ? false : null,
+      emailConfirmedAt: emailConfirmationTimestamp(data.user),
     });
   } catch (error) {
     console.error("[admin] Email verification lookup failed", error);

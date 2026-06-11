@@ -40,7 +40,7 @@ export const en: TranslationTree = {
   "login.verification.body":
     "Supabase has not confirmed this email yet. Verification protects account ownership and future launch activity.",
   "login.verification.resent":
-    "Verification email sent again. Check your inbox and spam folder.",
+    "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
   "login.verification.returned":
     "Email verification completed. Sign in to continue your Mirëbook setup.",
   "verification.resend": "Resend verification email",
@@ -1347,13 +1347,59 @@ export const en: TranslationTree = {
   "account.email": "Email",
   "account.verification.kicker": "Email verification",
   "account.verification.verified": "Email verified",
-  "account.verification.unverified": "Email not verified yet",
+  "account.verification.unverified": "Verification pending",
+  "account.verification.unknown": "Verification status unavailable",
   "account.verification.verifiedBody":
     "Supabase Auth has confirmed ownership of this login email.",
   "account.verification.unverifiedBody":
-    "Verify this address before launch use. Existing test accounts and current booking access are not blocked during this foundation batch.",
+    "Supabase Auth reports this address as unconfirmed. Verification remains advisory and does not block current account or booking access.",
+  "account.verification.unknownBody":
+    "Mirëbook could not determine verification state from the current Supabase session. This does not block account or booking access.",
   "account.verification.resent":
-    "Verification email sent. Check your inbox and spam folder.",
+    "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+  "account.emailPreferences.kicker": "Email preferences",
+  "account.emailPreferences.title":
+    "Choose your transactional email updates",
+  "account.emailPreferences.body":
+    "These controls affect email delivery only. In-app notifications always stay on, and email delivery depends on provider setup.",
+  "account.emailPreferences.setupRequired": "Supabase setup required",
+  "account.emailPreferences.setupRequiredBody":
+    "The preferences SQL has not been installed yet. Safe transactional defaults remain enabled, but changes cannot be saved.",
+  "account.emailPreferences.customerTitle": "Customer booking emails",
+  "account.emailPreferences.bookingUpdates": "Booking updates",
+  "account.emailPreferences.bookingUpdatesBody":
+    "Requests, confirmations, declines and cancellations.",
+  "account.emailPreferences.reminders": "Appointment reminders",
+  "account.emailPreferences.remindersBody":
+    "A planned email about 24 hours before confirmed appointments.",
+  "account.emailPreferences.businessTitle": "Business owner emails",
+  "account.emailPreferences.businessBookings": "Business booking updates",
+  "account.emailPreferences.businessBookingsBody":
+    "New requests, instant confirmations, cancellations and reschedules.",
+  "account.emailPreferences.billing": "Billing updates",
+  "account.emailPreferences.billingBody":
+    "Future subscription and payment-attention email updates.",
+  "account.emailPreferences.staffTitle": "Staff emails",
+  "account.emailPreferences.staffBookings": "Assigned booking updates",
+  "account.emailPreferences.staffBookingsBody":
+    "Assignments, confirmations, cancellations and schedule changes.",
+  "account.emailPreferences.staffReminders": "Staff reminders",
+  "account.emailPreferences.staffRemindersBody":
+    "Reserved for a future staff reminder batch.",
+  "account.emailPreferences.supportTitle": "Support emails",
+  "account.emailPreferences.support": "Support updates",
+  "account.emailPreferences.supportBody":
+    "Future email copies of support replies and ticket updates.",
+  "account.emailPreferences.save": "Save email preferences",
+  "account.emailPreferences.saving": "Saving email preferences...",
+  "account.emailPreferences.saved":
+    "Email preferences saved. In-app notifications remain enabled.",
+  "account.emailPreferences.loadError":
+    "Could not load saved email preferences. Safe defaults are shown.",
+  "account.emailPreferences.saveError":
+    "Could not save email preferences.",
+  "account.emailPreferences.schemaMissingError":
+    "Email preferences cannot be saved until the Stage 6 preferences SQL is installed in Supabase.",
   "account.emailBody":
     "Used for login, booking confirmations, staff linking and future email notifications.",
   "account.accessSummary": "Access summary",
@@ -1800,7 +1846,7 @@ export const en: TranslationTree = {
   "register.verification.required":
     "Account created. Check your email and verify your address before signing in. Your selected account setup will continue after verification.",
   "register.verification.resent":
-    "Verification email sent again. Check your inbox and spam folder.",
+    "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
   "register.verification.softPolicy":
     "Verification is currently guidance only; Mirëbook will not block existing test accounts or booking access in this batch.",
   "register.business.nameRequired": "Business name is required.",

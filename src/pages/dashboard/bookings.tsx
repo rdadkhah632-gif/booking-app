@@ -18,6 +18,7 @@ import {
   isDeclinedStatusUnsupported,
   supabaseErrorDetails,
 } from "@/lib/bookingStatusErrors";
+import { requestTransactionalEmail } from "@/lib/email/client";
 
 function toDateInputValue(date: Date) {
   const yyyy = date.getFullYear();
@@ -439,6 +440,10 @@ export default function Bookings() {
       ),
       actionUrl: `/booking-confirmation?id=${booking.id}`,
     });
+    void requestTransactionalEmail({
+      event: "booking_status_changed",
+      bookingId: booking.id,
+    });
 
     setSuccess(
       t(
@@ -510,6 +515,10 @@ export default function Bookings() {
       ),
       actionUrl: "/my-bookings",
     });
+    void requestTransactionalEmail({
+      event: "booking_status_changed",
+      bookingId: booking.id,
+    });
 
     setSuccess(
       t(
@@ -573,6 +582,10 @@ export default function Bookings() {
       ),
       actionUrl: "/my-bookings",
     });
+    void requestTransactionalEmail({
+      event: "booking_status_changed",
+      bookingId: booking.id,
+    });
 
     setSuccess(
       t(
@@ -635,6 +648,10 @@ export default function Bookings() {
         "Your appointment has been marked as completed.",
       ),
       actionUrl: "/my-bookings",
+    });
+    void requestTransactionalEmail({
+      event: "booking_status_changed",
+      bookingId: booking.id,
     });
 
     setSuccess(

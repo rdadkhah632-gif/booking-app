@@ -6,10 +6,16 @@ Batch 1 status: implemented; production build passed.
 
 Batch 2 status: implemented; production build passed.
 
-Batch 3 status: implemented; production build passed.
+Batch 3 status: conditional pass patched; production build passed.
 
-Batch 4 status: implemented as a provider-disabled foundation; production
-build passed.
+Batch 4 status: conditional pass patched as a provider-disabled foundation;
+production build passed.
+
+Batch 5 status: implemented with a manual Supabase SQL step; production build
+passed.
+
+Batch 6 status: reminder foundation implemented without automatic scheduling;
+production build passed.
 
 Stages 1 through 5 are complete and protected.
 
@@ -218,7 +224,29 @@ This is a small navigation guide, not a modal tour or new dashboard.
 
 ## Batch 3 - Email Verification Foundation
 
-Status: implemented; production build passed.
+Status: conditional pass patched; production build passed.
+
+### Conditional QA Finding
+
+QA observed every tested account displaying `Email verified`, with no
+unverified state or resend action.
+
+The original Account code converted the timestamp directly to a boolean and
+did not distinguish an unavailable auth field from a confirmed timestamp. The
+admin endpoint also returned `Boolean(email_confirmed_at)`, which collapsed
+verification detail.
+
+The patch now uses three explicit states:
+
+- `verified`: `email_confirmed_at` or legacy `confirmed_at` contains a
+  timestamp
+- `unverified`: Supabase returned either confirmation field and its value is
+  null
+- `unknown`: the current auth response did not expose either confirmation
+  field
+
+Unknown is never displayed as verified. Resend is shown only for a genuinely
+unverified account.
 
 Mirëbook now uses Supabase Auth's existing email-confirmation state rather than
 creating a custom verification-token system.
@@ -235,7 +263,8 @@ Implemented behavior:
   owner-as-staff setup is completed idempotently before capability routing
 - login detects Supabase's unconfirmed-email response and offers resend
 - Account shows verified or unverified status from
-  `session.user.email_confirmed_at`
+  `session.user.email_confirmed_at` with `confirmed_at` as a compatibility
+  fallback
 - unverified Account users can request another Supabase signup confirmation
 - `/admin/users` loads the selected auth user's verification state through a
   service-role-backed, admin-authorized API route
@@ -256,6 +285,26 @@ Future founding-offer eligibility must require:
 - manual operator review
 
 Raw signups must never qualify a business for a second free month.
+
+### Supabase Confirmation Setting
+
+Supabase project configuration is authoritative.
+
+If **Confirm email** is disabled in Supabase Auth, new password users may be
+auto-confirmed immediately. In that configuration a confirmation timestamp
+can exist without the user completing a separate inbox verification step.
+
+Real launch verification therefore requires:
+
+1. enable email confirmation in Supabase Auth
+2. configure the confirmation URL/site URL and allowed redirect URLs
+3. configure and test the Supabase confirmation email template
+4. configure production email/domain delivery for Supabase Auth
+5. create a new account and verify the pending, resend and confirmed states
+
+Registration does not claim confirmation is required when Supabase returns an
+immediate authenticated session. Resend success copy says the request was
+accepted and conditions inbox delivery on confirmation being enabled.
 
 ## Batch 4 - Email Notification Foundation
 
@@ -299,6 +348,10 @@ Booking events currently wired:
 The same status-event hook is present on both current business booking action
 surfaces: `/dashboard/bookings` and `/dashboard/notifications`.
 
+Booking transactional delivery now checks stored email preferences when the
+preference table is available. If the table or row is unavailable, the server
+uses safe enabled transactional defaults and does not fail booking actions.
+
 Environment placeholders:
 
 ```text
@@ -329,19 +382,142 @@ all new verification UI. Localized transactional email templates should be
 added with the real provider implementation using the recipient's saved
 language.
 
+## Batch 5 - Notification And Email Preferences
+
+Status: implemented with a manual Supabase SQL step; production build passed.
+
+The Account page now provides role-aware email controls for:
+
+- customer booking requests, confirmations, declines and cancellations
+- customer appointment reminders
+- business booking requests, instant confirmations, customer cancellations
+  and reschedule updates
+- business billing updates
+- staff assignments and booking changes
+- future staff reminders
+- support updates
+
+The UI states clearly:
+
+- preferences affect email only
+- in-app notifications always remain enabled
+- email delivery depends on provider configuration
+- some event groups remain future delivery foundations
+
+Defaults keep important transactional email enabled. There are no marketing
+or SMS preferences.
+
+Preferences are stored in:
+
+```text
+public.notification_email_preferences
+```
+
+The SQL is idempotent and includes:
+
+- one preference row per `auth.users` account
+- safe `true` defaults for transactional fields
+- an `updated_at` trigger
+- RLS allowing authenticated users to read, insert and update only their own
+  row
+- no anonymous access
+
+Manual deployment step:
+
+```text
+Run sources/sql/06_notification_email_preferences_and_reminders.sql
+in the Supabase SQL editor.
+```
+
+Until the SQL is installed:
+
+- Account shows a setup-required notice
+- safe enabled defaults remain visible
+- saving is disabled
+- booking and notification flows continue normally
+- the server email adapter falls back to safe defaults
+
+The transactional email adapter returns `preference_disabled` when an event is
+disabled. Provider-disabled and preference-disabled results never fail the
+booking action.
+
+## Batch 6 - Appointment Reminder Foundation
+
+Status: foundation implemented; production build passed. No scheduler has been
+activated.
+
+Implemented:
+
+- `appointment_reminder` transactional email event and simple template
+- customer reminder preference on Account
+- server-only `/api/email/reminders`
+- a due window from 23.5 to 24.5 hours before a confirmed appointment
+- confirmed bookings only
+- no pending, declined, cancelled or completed reminder candidates
+- customer reminder preference enforcement
+- service-role booking and recipient lookup
+- secret protection using `REMINDER_CRON_SECRET`
+- a server-only reminder delivery table with a unique booking/user/type claim
+- safe provider-disabled reporting without claiming an email was sent
+
+The endpoint accepts `GET` or `POST` with either:
+
+```text
+Authorization: Bearer <REMINDER_CRON_SECRET>
+```
+
+or:
+
+```text
+x-reminder-secret: <REMINDER_CRON_SECRET>
+```
+
+Required environment variable:
+
+```text
+REMINDER_CRON_SECRET=
+```
+
+The endpoint also requires the existing server-only
+`SUPABASE_SERVICE_ROLE_KEY`. Missing server configuration returns a JSON `503`
+without exposing a stack trace.
+
+No browser timer, public endpoint, cron configuration or automatic schedule
+was added. A deployment scheduler must call the endpoint deliberately after
+the SQL and secret are installed.
+
+Reminder delivery states are stored in:
+
+```text
+public.appointment_reminder_deliveries
+```
+
+The table is server-only and prevents duplicate successful 24-hour reminders
+for the same booking and customer. When `EMAIL_PROVIDER=disabled`, the
+endpoint reports `skippedProvider`, removes the temporary processing claim and
+does not mark the reminder as sent.
+
+Staff and business reminders remain future work.
+
 ## Known Limitations
 
 - authenticated role-by-role browser QA is still required with real customer,
   business, linked staff, unlinked staff and owner-as-staff accounts
 - Supabase project email-confirmation settings still control whether new
   registrations require inbox confirmation
+- auto-confirmed Supabase users may have a confirmation timestamp without a
+  separate inbox click
 - verification is visible but does not enforce access
+- preferences require the Stage 6 SQL to be installed manually
 - transactional email delivery is skipped while `EMAIL_PROVIDER=disabled`
 - no real provider credentials or provider-specific adapter exist
 - transactional booking templates are not localized yet
-- repeated API requests are authorized but do not yet have persistent
-  delivery idempotency; a provider batch must add event/delivery records
-- support, staff-invite, reschedule and reminder emails are not wired
+- ordinary booking transactional emails do not yet have persistent delivery
+  idempotency
+- appointment reminders have a delivery claim, but no production scheduler is
+  configured
+- support, staff-invite, reschedule and staff/business reminder emails are not
+  wired
 - onboarding progress is derived from current records and is not stored as a
   separate completion state
 - the business dashboard summary does not independently query staff-service
@@ -350,17 +526,44 @@ language.
 
 ## Next Recommended Batches
 
-Stage 6 Batch 5 - Notification preferences.
+Stage 6 Batch 7 - Founding business offer tracking.
 
-Define channel preferences without weakening in-app notifications as the
-source of truth. Decide defaults, ownership and migration behavior before
-adding a preference table.
+Use verified customer identity, genuine confirmed/completed booking activity
+and manual operator review. Do not award the second free month from raw
+signups.
 
-Stage 6 Batch 6 - Appointment reminder foundation.
+Stage 6 Batch 8 - Stage 6 closure QA.
 
-Choose a real email provider, add delivery idempotency and plan a server-side
-schedule or queue before sending 24-hour reminders. Do not use browser timers
-or client-only scheduling.
+Include Supabase confirmation-enabled registration, manual SQL deployment,
+preference persistence, provider-disabled booking behavior, reminder endpoint
+authorization and idempotency checks.
+
+## Batch 3/4A And Batch 5/6 QA Checklist
+
+- enable Supabase email confirmation in a non-production test project
+- register a new account and confirm Account shows pending, not verified
+- confirm resend appears only for a pending account
+- confirm unknown auth state displays unavailable, not verified
+- follow the confirmation link and confirm Account shows verified
+- disable confirmation and confirm registration continues without a dead end
+- confirm admin verification displays verified, unverified or unavailable
+- install the Stage 6 SQL manually
+- save customer email preferences and reload Account
+- save business and staff preference groups on multi-capability accounts
+- confirm in-app notifications cannot be disabled
+- disable a booking email preference and confirm the adapter reports
+  `preference_disabled`
+- remove or rename the preference table in a test environment and confirm
+  booking actions still work with safe defaults
+- call `/api/email/reminders` without a secret and confirm rejection
+- call it with a valid secret before SQL installation and confirm a clear
+  setup-required response
+- create a confirmed appointment about 24 hours ahead and confirm it is due
+- confirm pending, declined, cancelled and completed bookings are excluded
+- with `EMAIL_PROVIDER=disabled`, confirm `sent` remains zero
+- confirm no reminder row is marked sent for a skipped provider
+- confirm repeated successful reminder processing cannot send the same
+  customer reminder twice
 
 ## Batch 3/4 QA Checklist
 

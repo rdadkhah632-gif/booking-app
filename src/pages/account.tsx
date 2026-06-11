@@ -6,6 +6,15 @@ import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
 import { Locale } from "@/lib/i18n";
+import {
+  EmailPreferences,
+  defaultEmailPreferences,
+  isPreferencesSchemaMissing,
+} from "@/lib/email/preferences";
+import {
+  EmailVerificationState,
+  getEmailVerificationState,
+} from "@/lib/email/verification";
 
 type Role = "customer" | "business" | "staff";
 
@@ -138,8 +147,16 @@ export default function AccountPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [resettingPassword, setResettingPassword] = useState(false);
-  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [emailVerificationState, setEmailVerificationState] =
+    useState<EmailVerificationState>("unknown");
   const [resendingVerification, setResendingVerification] = useState(false);
+  const [emailPreferences, setEmailPreferences] = useState<EmailPreferences>(
+    defaultEmailPreferences,
+  );
+  const [preferencesState, setPreferencesState] = useState<
+    "loading" | "available" | "schema_missing"
+  >("loading");
+  const [savingPreferences, setSavingPreferences] = useState(false);
   const [regionInfo, setRegionInfo] = useState<RegionInfo>({
     timezone: "Unknown",
     country: "Auto-detected",
@@ -178,7 +195,7 @@ export default function AccountPage() {
       return;
     }
 
-    setEmailVerified(Boolean(session.user.email_confirmed_at));
+    setEmailVerificationState(getEmailVerificationState(session.user));
 
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
@@ -219,12 +236,43 @@ export default function AccountPage() {
       (capabilities.linkedStaffProfiles[0] as StaffProfile | undefined) || null;
 
     setStaffProfile(resolvedStaffProfile);
+    await loadEmailPreferences(session.user.id);
     await loadStats(
       session.user.id,
       loadedBusinesses.map((business) => business.id),
       !!currentProfile.is_admin,
     );
     setLoading(false);
+  }
+
+  async function loadEmailPreferences(userId: string) {
+    const { data, error: preferencesError } = await supabase
+      .from("notification_email_preferences")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (preferencesError) {
+      setEmailPreferences(defaultEmailPreferences);
+      if (isPreferencesSchemaMissing(preferencesError)) {
+        setPreferencesState("schema_missing");
+      } else {
+        setPreferencesState("available");
+        setError(
+          t(
+            "account.emailPreferences.loadError",
+            "Could not load saved email preferences. Safe defaults are shown.",
+          ),
+        );
+      }
+      return;
+    }
+
+    setEmailPreferences({
+      ...defaultEmailPreferences,
+      ...(data || {}),
+    } as EmailPreferences);
+    setPreferencesState("available");
   }
 
   async function loadStats(
@@ -364,7 +412,11 @@ export default function AccountPage() {
   }
 
   async function resendVerification() {
-    if (!profile?.email) return;
+    if (
+      !profile?.email ||
+      emailVerificationState !== "unverified"
+    )
+      return;
 
     setResendingVerification(true);
     setError(null);
@@ -388,7 +440,67 @@ export default function AccountPage() {
     setMessage(
       t(
         "account.verification.resent",
-        "Verification email sent. Check your inbox and spam folder.",
+        "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+      ),
+    );
+  }
+
+  function updateEmailPreference(
+    key: keyof EmailPreferences,
+    checked: boolean,
+  ) {
+    setEmailPreferences((current) => ({
+      ...current,
+      [key]: checked,
+    }));
+  }
+
+  async function saveEmailPreferences() {
+    if (!profile) return;
+
+    setSavingPreferences(true);
+    setError(null);
+    setMessage(null);
+
+    const { error: saveError } = await supabase
+      .from("notification_email_preferences")
+      .upsert(
+        {
+          user_id: profile.id,
+          ...emailPreferences,
+        },
+        { onConflict: "user_id" },
+      );
+
+    setSavingPreferences(false);
+
+    if (saveError) {
+      if (isPreferencesSchemaMissing(saveError)) {
+        setPreferencesState("schema_missing");
+        setError(
+          t(
+            "account.emailPreferences.schemaMissingError",
+            "Email preferences cannot be saved until the Stage 6 preferences SQL is installed in Supabase.",
+          ),
+        );
+        return;
+      }
+
+      setError(
+        saveError.message ||
+          t(
+            "account.emailPreferences.saveError",
+            "Could not save email preferences.",
+          ),
+      );
+      return;
+    }
+
+    setPreferencesState("available");
+    setMessage(
+      t(
+        "account.emailPreferences.saved",
+        "Email preferences saved. In-app notifications remain enabled.",
       ),
     );
   }
@@ -405,6 +517,9 @@ export default function AccountPage() {
       t("account.linkedBusiness", "Linked business")
     );
   }
+
+  const emailIsVerified = emailVerificationState === "verified";
+  const emailIsUnverified = emailVerificationState === "unverified";
 
   return (
     <main>
@@ -462,9 +577,11 @@ export default function AccountPage() {
 
             <div
               className={`card account-verification-card ${
-                emailVerified
+                emailIsVerified
                   ? "account-verification-card-verified"
-                  : "account-verification-card-unverified"
+                  : emailIsUnverified
+                    ? "account-verification-card-unverified"
+                    : "account-verification-card-unknown"
               }`}
             >
               <div className="account-card-heading">
@@ -472,26 +589,36 @@ export default function AccountPage() {
                   {t("account.verification.kicker", "Email verification")}
                 </p>
                 <h2>
-                  {emailVerified
+                  {emailIsVerified
                     ? t("account.verification.verified", "Email verified")
-                    : t(
+                    : emailIsUnverified
+                      ? t(
                         "account.verification.unverified",
-                        "Email not verified yet",
-                      )}
+                        "Verification pending",
+                      )
+                      : t(
+                          "account.verification.unknown",
+                          "Verification status unavailable",
+                        )}
                 </h2>
                 <p className="small muted">
-                  {emailVerified
+                  {emailIsVerified
                     ? t(
                         "account.verification.verifiedBody",
                         "Supabase Auth has confirmed ownership of this login email.",
                       )
-                    : t(
-                        "account.verification.unverifiedBody",
-                        "Verify this address before launch use. Existing test accounts and current booking access are not blocked during this foundation batch.",
-                      )}
+                    : emailIsUnverified
+                      ? t(
+                          "account.verification.unverifiedBody",
+                          "Supabase Auth reports this address as unconfirmed. Verification remains advisory and does not block current account or booking access.",
+                        )
+                      : t(
+                          "account.verification.unknownBody",
+                          "Mirëbook could not determine verification state from the current Supabase session. This does not block account or booking access.",
+                        )}
                 </p>
               </div>
-              {!emailVerified && (
+              {emailIsUnverified && (
                 <button
                   type="button"
                   className="btn btn-ghost"
@@ -503,6 +630,329 @@ export default function AccountPage() {
                     : t("verification.resend", "Resend verification email")}
                 </button>
               )}
+            </div>
+
+            <div className="card account-email-preferences">
+              <div className="account-card-heading">
+                <p className="small muted">
+                  {t("account.emailPreferences.kicker", "Email preferences")}
+                </p>
+                <h2>
+                  {t(
+                    "account.emailPreferences.title",
+                    "Choose your transactional email updates",
+                  )}
+                </h2>
+                <p className="small muted">
+                  {t(
+                    "account.emailPreferences.body",
+                    "These controls affect email delivery only. In-app notifications always stay on, and email delivery depends on provider setup.",
+                  )}
+                </p>
+              </div>
+
+              {preferencesState === "schema_missing" && (
+                <div className="account-preferences-notice">
+                  <strong>
+                    {t(
+                      "account.emailPreferences.setupRequired",
+                      "Supabase setup required",
+                    )}
+                  </strong>
+                  <p className="small muted">
+                    {t(
+                      "account.emailPreferences.setupRequiredBody",
+                      "The preferences SQL has not been installed yet. Safe transactional defaults remain enabled, but changes cannot be saved.",
+                    )}
+                  </p>
+                </div>
+              )}
+
+              <div className="account-preference-groups">
+                {isCustomerOnly && (
+                  <div className="account-preference-group">
+                    <h3>
+                      {t(
+                        "account.emailPreferences.customerTitle",
+                        "Customer booking emails",
+                      )}
+                    </h3>
+                    <label className="account-preference-toggle">
+                      <input
+                        type="checkbox"
+                        checked={
+                          emailPreferences.email_booking_request_updates &&
+                          emailPreferences.email_booking_confirmations &&
+                          emailPreferences.email_booking_cancellations
+                        }
+                        onChange={(event) => {
+                          const checked = event.target.checked;
+                          updateEmailPreference(
+                            "email_booking_request_updates",
+                            checked,
+                          );
+                          updateEmailPreference(
+                            "email_booking_confirmations",
+                            checked,
+                          );
+                          updateEmailPreference(
+                            "email_booking_cancellations",
+                            checked,
+                          );
+                        }}
+                      />
+                      <span>
+                        <strong>
+                          {t(
+                            "account.emailPreferences.bookingUpdates",
+                            "Booking updates",
+                          )}
+                        </strong>
+                        <span className="small muted">
+                          {t(
+                            "account.emailPreferences.bookingUpdatesBody",
+                            "Requests, confirmations, declines and cancellations.",
+                          )}
+                        </span>
+                      </span>
+                    </label>
+                    <label className="account-preference-toggle">
+                      <input
+                        type="checkbox"
+                        checked={emailPreferences.email_booking_reminders}
+                        onChange={(event) =>
+                          updateEmailPreference(
+                            "email_booking_reminders",
+                            event.target.checked,
+                          )
+                        }
+                      />
+                      <span>
+                        <strong>
+                          {t(
+                            "account.emailPreferences.reminders",
+                            "Appointment reminders",
+                          )}
+                        </strong>
+                        <span className="small muted">
+                          {t(
+                            "account.emailPreferences.remindersBody",
+                            "A planned email about 24 hours before confirmed appointments.",
+                          )}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                )}
+
+                {ownsBusiness && (
+                  <div className="account-preference-group">
+                    <h3>
+                      {t(
+                        "account.emailPreferences.businessTitle",
+                        "Business owner emails",
+                      )}
+                    </h3>
+                    <label className="account-preference-toggle">
+                      <input
+                        type="checkbox"
+                        checked={
+                          emailPreferences.email_new_booking_requests &&
+                          emailPreferences.email_instant_booking_confirmations &&
+                          emailPreferences.email_customer_cancellations &&
+                          emailPreferences.email_reschedule_updates
+                        }
+                        onChange={(event) => {
+                          const checked = event.target.checked;
+                          updateEmailPreference(
+                            "email_new_booking_requests",
+                            checked,
+                          );
+                          updateEmailPreference(
+                            "email_instant_booking_confirmations",
+                            checked,
+                          );
+                          updateEmailPreference(
+                            "email_customer_cancellations",
+                            checked,
+                          );
+                          updateEmailPreference(
+                            "email_reschedule_updates",
+                            checked,
+                          );
+                        }}
+                      />
+                      <span>
+                        <strong>
+                          {t(
+                            "account.emailPreferences.businessBookings",
+                            "Business booking updates",
+                          )}
+                        </strong>
+                        <span className="small muted">
+                          {t(
+                            "account.emailPreferences.businessBookingsBody",
+                            "New requests, instant confirmations, cancellations and reschedules.",
+                          )}
+                        </span>
+                      </span>
+                    </label>
+                    <label className="account-preference-toggle">
+                      <input
+                        type="checkbox"
+                        checked={emailPreferences.email_billing_updates}
+                        onChange={(event) =>
+                          updateEmailPreference(
+                            "email_billing_updates",
+                            event.target.checked,
+                          )
+                        }
+                      />
+                      <span>
+                        <strong>
+                          {t(
+                            "account.emailPreferences.billing",
+                            "Billing updates",
+                          )}
+                        </strong>
+                        <span className="small muted">
+                          {t(
+                            "account.emailPreferences.billingBody",
+                            "Future subscription and payment-attention email updates.",
+                          )}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                )}
+
+                {hasStaffAccess && (
+                  <div className="account-preference-group">
+                    <h3>
+                      {t(
+                        "account.emailPreferences.staffTitle",
+                        "Staff emails",
+                      )}
+                    </h3>
+                    <label className="account-preference-toggle">
+                      <input
+                        type="checkbox"
+                        checked={
+                          emailPreferences.email_staff_booking_assignments &&
+                          emailPreferences.email_staff_booking_changes
+                        }
+                        onChange={(event) => {
+                          const checked = event.target.checked;
+                          updateEmailPreference(
+                            "email_staff_booking_assignments",
+                            checked,
+                          );
+                          updateEmailPreference(
+                            "email_staff_booking_changes",
+                            checked,
+                          );
+                        }}
+                      />
+                      <span>
+                        <strong>
+                          {t(
+                            "account.emailPreferences.staffBookings",
+                            "Assigned booking updates",
+                          )}
+                        </strong>
+                        <span className="small muted">
+                          {t(
+                            "account.emailPreferences.staffBookingsBody",
+                            "Assignments, confirmations, cancellations and schedule changes.",
+                          )}
+                        </span>
+                      </span>
+                    </label>
+                    <label className="account-preference-toggle">
+                      <input
+                        type="checkbox"
+                        checked={emailPreferences.email_staff_reminders}
+                        onChange={(event) =>
+                          updateEmailPreference(
+                            "email_staff_reminders",
+                            event.target.checked,
+                          )
+                        }
+                      />
+                      <span>
+                        <strong>
+                          {t(
+                            "account.emailPreferences.staffReminders",
+                            "Staff reminders",
+                          )}
+                        </strong>
+                        <span className="small muted">
+                          {t(
+                            "account.emailPreferences.staffRemindersBody",
+                            "Reserved for a future staff reminder batch.",
+                          )}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                )}
+
+                <div className="account-preference-group">
+                  <h3>
+                    {t(
+                      "account.emailPreferences.supportTitle",
+                      "Support emails",
+                    )}
+                  </h3>
+                  <label className="account-preference-toggle">
+                    <input
+                      type="checkbox"
+                      checked={emailPreferences.email_support_updates}
+                      onChange={(event) =>
+                        updateEmailPreference(
+                          "email_support_updates",
+                          event.target.checked,
+                        )
+                      }
+                    />
+                    <span>
+                      <strong>
+                        {t(
+                          "account.emailPreferences.support",
+                          "Support updates",
+                        )}
+                      </strong>
+                      <span className="small muted">
+                        {t(
+                          "account.emailPreferences.supportBody",
+                          "Future email copies of support replies and ticket updates.",
+                        )}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-accent account-preferences-save"
+                onClick={saveEmailPreferences}
+                disabled={
+                  savingPreferences ||
+                  preferencesState === "loading" ||
+                  preferencesState === "schema_missing"
+                }
+              >
+                {savingPreferences
+                  ? t(
+                      "account.emailPreferences.saving",
+                      "Saving email preferences...",
+                    )
+                  : t(
+                      "account.emailPreferences.save",
+                      "Save email preferences",
+                    )}
+              </button>
             </div>
 
             <form
@@ -1144,6 +1594,62 @@ export default function AccountPage() {
           background: rgba(255, 190, 11, 0.07);
         }
 
+        .account-verification-card-unknown {
+          border-color: var(--border);
+          background: var(--surface-2);
+        }
+
+        .account-email-preferences {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .account-preferences-notice {
+          display: grid;
+          gap: 0.35rem;
+          padding: 0.85rem;
+          border: 1px solid rgba(255, 190, 11, 0.28);
+          border-radius: var(--radius);
+          background: rgba(255, 190, 11, 0.07);
+        }
+
+        .account-preference-groups {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.85rem;
+        }
+
+        .account-preference-group {
+          display: grid;
+          gap: 0.75rem;
+          padding: 0.9rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          align-content: start;
+        }
+
+        .account-preference-toggle {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 0.7rem;
+          align-items: flex-start;
+          color: var(--text);
+        }
+
+        .account-preference-toggle input {
+          margin-top: 0.25rem;
+        }
+
+        .account-preference-toggle span {
+          display: grid;
+          gap: 0.2rem;
+        }
+
+        .account-preferences-save {
+          justify-self: flex-start;
+        }
+
         .account-primary-card {
           border-color: rgba(45, 212, 191, 0.25);
         }
@@ -1269,6 +1775,15 @@ export default function AccountPage() {
 
           .account-form-grid {
             grid-template-columns: 1fr;
+          }
+
+          .account-preference-groups {
+            grid-template-columns: 1fr;
+          }
+
+          .account-preferences-save {
+            width: 100%;
+            justify-content: center;
           }
 
           .account-customer-guide-steps {

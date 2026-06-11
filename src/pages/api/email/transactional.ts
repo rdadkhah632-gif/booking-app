@@ -7,6 +7,10 @@ import {
   TransactionalEmailRequest,
   TransactionalEmailResult,
 } from "@/lib/email/types";
+import {
+  EmailPreferences,
+  loadServerEmailPreferences,
+} from "@/lib/email/preferences";
 
 type BookingRow = {
   id: string;
@@ -47,6 +51,19 @@ async function emailForUser(
     .maybeSingle<{ email?: string | null }>();
 
   return data?.email || null;
+}
+
+function customerPreference(
+  preferences: EmailPreferences,
+  status: BookingEmailStatus,
+) {
+  if (status === "pending" || status === "declined") {
+    return preferences.email_booking_request_updates;
+  }
+  if (status === "confirmed" || status === "completed") {
+    return preferences.email_booking_confirmations;
+  }
+  return preferences.email_booking_cancellations;
 }
 
 export default async function handler(
@@ -133,11 +150,24 @@ export default async function handler(
       return res.status(403).json({ error: "Email event not permitted" });
     }
 
-    const [customerProfileEmail, ownerEmail, staffProfileEmail] =
+    const [
+      customerProfileEmail,
+      ownerEmail,
+      staffProfileEmail,
+      customerPreferenceResult,
+      ownerPreferenceResult,
+      staffPreferenceResult,
+    ] =
       await Promise.all([
         emailForUser(supabaseAdmin, booking.customer_user_id),
         emailForUser(supabaseAdmin, business.user_id),
         emailForUser(supabaseAdmin, staff?.user_id),
+        loadServerEmailPreferences(
+          supabaseAdmin,
+          booking.customer_user_id,
+        ),
+        loadServerEmailPreferences(supabaseAdmin, business.user_id),
+        loadServerEmailPreferences(supabaseAdmin, staff?.user_id),
       ]);
 
     const customerEmail = booking.customer_email || customerProfileEmail;
@@ -160,6 +190,10 @@ export default async function handler(
           staffName: staff?.name,
           startAt: booking.start_at,
           actionUrl: bookingUrl,
+          preferenceEnabled: customerPreference(
+            customerPreferenceResult.preferences,
+            booking.status,
+          ),
         }),
       );
     }
@@ -177,6 +211,11 @@ export default async function handler(
           staffName: staff?.name,
           startAt: booking.start_at,
           actionUrl: businessUrl,
+          preferenceEnabled:
+            booking.status === "pending"
+              ? ownerPreferenceResult.preferences.email_new_booking_requests
+              : ownerPreferenceResult.preferences
+                  .email_instant_booking_confirmations,
         }),
       );
     }
@@ -197,6 +236,12 @@ export default async function handler(
           staffName: staff?.name,
           startAt: booking.start_at,
           actionUrl: staffUrl,
+          preferenceEnabled:
+            request.event === "booking_created" &&
+            booking.status === "confirmed"
+              ? staffPreferenceResult.preferences
+                  .email_staff_booking_assignments
+              : staffPreferenceResult.preferences.email_staff_booking_changes,
         }),
       );
     }

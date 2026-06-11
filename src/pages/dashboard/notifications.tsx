@@ -9,6 +9,7 @@ import {
   isDeclinedStatusUnsupported,
   supabaseErrorDetails,
 } from "@/lib/bookingStatusErrors";
+import { requestTransactionalEmail } from "@/lib/email/client";
 
 type RelatedBusiness = {
   name: string;
@@ -730,6 +731,10 @@ export default function BusinessNotifications() {
       ),
       actionUrl: `/booking-confirmation?id=${booking.id}`,
     });
+    void requestTransactionalEmail({
+      event: "booking_status_changed",
+      bookingId: booking.id,
+    });
 
     setSuccess(
       t(
@@ -806,6 +811,10 @@ export default function BusinessNotifications() {
         "Your booking request was declined.",
       ),
       actionUrl: "/my-bookings",
+    });
+    void requestTransactionalEmail({
+      event: "booking_status_changed",
+      bookingId: booking.id,
     });
 
     setSuccess(
