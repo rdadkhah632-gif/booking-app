@@ -45,6 +45,7 @@ export type TransactionalEmailResult =
   | {
       status: "sent";
       provider: string;
+      providerMessageId?: string;
     }
   | {
       status: "skipped";
@@ -56,5 +57,5 @@ export type TransactionalEmailResult =
     }
   | {
       status: "failed";
-      reason: string;
+      reason: "config_missing" | "provider_error";
     };

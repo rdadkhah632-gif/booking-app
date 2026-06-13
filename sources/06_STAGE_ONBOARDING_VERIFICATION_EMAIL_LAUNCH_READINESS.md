@@ -811,6 +811,127 @@ Automated Batch 7A/7B verification:
 - EN and SQ translation dictionaries contain no duplicate keys
 - Prettier: unavailable in the local workspace
 
+## Batch 7C - Real Transactional Email Provider Adapter
+
+Status: implemented; production build passed. Ready for Batch 8 closure QA.
+
+The server-only transactional email adapter now supports two explicit modes:
+
+### Disabled Mode
+
+```text
+EMAIL_PROVIDER=disabled
+```
+
+Delivery returns `skipped` with `provider_disabled`. The application never
+claims an email was sent. Booking actions, support writes, staff invite
+creation and reminder processing continue using their existing safe fallback
+behavior.
+
+### Resend Mode
+
+```text
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=
+EMAIL_FROM_ADDRESS=
+EMAIL_REPLY_TO=
+SUPPORT_ADMIN_EMAIL=
+```
+
+The adapter sends through Resend's server API. It supports the existing plain
+text templates and optional minimal HTML, applies the configured reply-to
+address, and returns the Resend message ID only after the provider accepts the
+request.
+
+If `RESEND_API_KEY` or `EMAIL_FROM_ADDRESS` is missing, delivery returns
+`failed` with `config_missing`. Provider rejection or network failure returns
+`failed` with `provider_error`. Provider response bodies, API keys and message
+content are not logged or exposed.
+
+The adapter validates that the recipient is a non-empty email-like address
+before attempting provider delivery. Unsupported provider names continue to
+return `skipped` with `unsupported_provider`.
+
+No provider package was added. The implementation uses the existing server
+runtime and Resend's HTTPS API, so `package.json` and `package-lock.json` are
+unchanged.
+
+### Existing Flow Behavior
+
+- secure staff invite emails now send their acceptance link when Resend is
+  configured; disabled or failed delivery keeps the secure manual-link fallback
+- booking create and status-change email hooks use Resend without changing
+  booking creation, status transitions or in-app notifications
+- support requester receipts, operator alerts and admin replies use Resend
+  without changing ticket permissions or exposing ticket bodies
+- the reminder endpoint sends through Resend and marks a reminder sent only
+  after a real `sent` result
+- skipped and failed reminder attempts are not retained as successful delivery
+  claims, so they can be retried later
+- email preferences remain authoritative where already implemented
+
+All primary actions occur before email delivery and remain successful if the
+provider skips or fails.
+
+### Resend Production Activation
+
+Before enabling production delivery:
+
+1. create a restricted Resend API key
+2. verify the sending domain in Resend
+3. set `EMAIL_FROM_ADDRESS` to a sender on that verified domain, optionally
+   using `Mirëbook <notifications@example.com>` format
+4. set `EMAIL_REPLY_TO` to the monitored support or no-reply workflow address
+5. set `SUPPORT_ADMIN_EMAIL` for operator ticket alerts
+6. add the variables to the intended Vercel environments
+7. set `EMAIL_PROVIDER=resend`
+8. redeploy after changing Vercel environment variables
+9. verify real receipt before describing email or reminders as active
+
+Supabase Auth continues to send verification and recovery emails separately.
+Stripe controls its own billing emails separately. Resend handles only
+Mirëbook application transactional emails.
+
+### Batch 7C QA Checklist
+
+- confirm `EMAIL_PROVIDER=disabled` returns `skipped`, never `sent`
+- set `EMAIL_PROVIDER=resend` without a key and confirm `config_missing`
+- set a key without `EMAIL_FROM_ADDRESS` and confirm `config_missing`
+- configure a verified Resend sender and send a secure staff invitation
+- confirm the invite email opens the existing token acceptance flow
+- confirm a wrong-email account still cannot accept the invitation
+- create request-mode and instant bookings and verify intended recipients
+- accept, decline, cancel and complete bookings and verify role-specific emails
+- disable each relevant email preference and confirm delivery is skipped
+- create customer, business and staff support tickets
+- confirm requester receipts contain only the subject and conversation link
+- configure `SUPPORT_ADMIN_EMAIL` and confirm the operator receives a new-ticket
+  link without the ticket body
+- send an admin support reply and confirm only the ticket owner receives it
+- call the reminder endpoint with the correct secret for a confirmed booking
+  in the due window
+- confirm a successful Resend reminder stores `sent` and `sent_at`
+- force a provider failure and confirm the reminder is not marked sent
+- repeat reminder processing and confirm successful deliveries are not duplicated
+- inspect the browser bundle and Vercel logs for secret leakage
+
+### Batch 7C Known Limitations
+
+- application email templates remain English-only
+- ordinary booking and support emails do not yet have persistent delivery
+  idempotency
+- Resend delivery webhooks and bounce/complaint tracking are not implemented
+- no production reminder scheduler is configured
+- reschedule-specific, staff reminder, business reminder and billing-update
+  emails remain deferred
+
+Automated Batch 7C verification:
+
+- `npm run build`: passed
+- `git diff --check`: passed
+- EN and SQ translation dictionaries contain no duplicate keys
+- Prettier: unavailable in the local workspace
+
 ## Known Limitations
 
 - authenticated role-by-role browser QA is still required with real customer,
@@ -822,7 +943,8 @@ Automated Batch 7A/7B verification:
 - verification is visible but does not enforce access
 - preferences require the Stage 6 SQL to be installed manually
 - transactional email delivery is skipped while `EMAIL_PROVIDER=disabled`
-- no real provider credentials or provider-specific adapter exist
+- real delivery requires a verified Resend sender and server-only Vercel env
+  configuration
 - transactional booking templates are not localized yet
 - ordinary booking transactional emails do not yet have persistent delivery
   idempotency
