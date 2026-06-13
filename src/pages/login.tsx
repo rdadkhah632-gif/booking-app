@@ -290,28 +290,31 @@ export default function LoginPage() {
               )}
             </p>
 
-            <div className="login-role-strip">
-              <span>{t("nav.role.customer", "Customer")}</span>
-              <span>{t("nav.role.staff", "Staff")}</span>
-              <span>{t("nav.role.business", "Business")}</span>
-            </div>
-
             <form onSubmit={onLogin} className="form-grid">
-              <input
-                type="email"
-                placeholder={t("login.emailPlaceholder", "Email address")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <label className="login-field">
+                <span>{t("login.emailLabel", "Email address")}</span>
+                <input
+                  type="email"
+                  placeholder={t("login.emailPlaceholder", "you@example.com")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </label>
 
-              <input
-                type="password"
-                placeholder={t("login.passwordPlaceholder", "Password")}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <label className="login-field">
+                <span>{t("login.passwordLabel", "Password")}</span>
+                <input
+                  type="password"
+                  placeholder={t(
+                    "login.passwordPlaceholder",
+                    "Enter your password",
+                  )}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </label>
 
               <button
                 type="submit"
@@ -454,20 +457,16 @@ export default function LoginPage() {
           margin-bottom: 1rem;
         }
 
-        .login-role-strip {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-          margin-bottom: 1.5rem;
+        .login-field {
+          display: grid;
+          gap: 0.42rem;
+          color: var(--text);
+          font-size: 0.86rem;
+          font-weight: 700;
         }
 
-        .login-role-strip span {
-          border: 1px solid var(--border);
-          border-radius: 999px;
-          padding: 0.25rem 0.6rem;
-          color: var(--text-muted);
-          font-size: 0.78rem;
-          background: var(--surface-2);
+        .login-field input {
+          font-weight: 400;
         }
 
         .login-submit-button {
@@ -533,10 +532,6 @@ export default function LoginPage() {
 
           .login-form-panel h2 {
             font-size: 1.55rem !important;
-          }
-
-          .login-role-strip {
-            margin-bottom: 1rem;
           }
 
           .login-promo-panel {

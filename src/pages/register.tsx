@@ -368,16 +368,11 @@ export default function RegisterPage() {
             )}
           </p>
 
-          <div className="register-context-strip">
-            <span>{t("nav.role.customer", "Customer")}</span>
-            <span>{t("nav.role.staff", "Staff")}</span>
-            <span>{t("nav.role.business", "Business")}</span>
-          </div>
-
           <div className="register-role-grid register-role-grid-top">
             <button
               type="button"
               onClick={() => setRole("customer")}
+              aria-pressed={role === "customer"}
               style={{
                 background:
                   role === "customer"
@@ -405,6 +400,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => setRole("business")}
+              aria-pressed={role === "business"}
               style={{
                 background:
                   role === "business"
@@ -432,6 +428,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => setRole("staff")}
+              aria-pressed={role === "staff"}
               style={{
                 background:
                   role === "staff" ? "var(--accent-dim)" : "var(--surface-2)",
@@ -511,21 +508,33 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={onRegister} className="form-grid">
-            <input
-              type="email"
-              placeholder={t("register.emailPlaceholder", "Email address")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <label className="auth-field">
+              <span>{t("register.emailLabel", "Email address")}</span>
+              <input
+                type="email"
+                placeholder={t(
+                  "register.emailPlaceholder",
+                  "you@example.com",
+                )}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
 
-            <input
-              type="password"
-              placeholder={t("register.passwordPlaceholder", "Password")}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <label className="auth-field">
+              <span>{t("register.passwordLabel", "Password")}</span>
+              <input
+                type="password"
+                placeholder={t(
+                  "register.passwordPlaceholder",
+                  "At least 6 characters",
+                )}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </label>
 
             <div className="register-role-mobile">
               <label
@@ -590,77 +599,102 @@ export default function RegisterPage() {
                   </p>
                 </div>
 
-                <input
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder={t(
-                    "register.business.namePlaceholder",
-                    "Business name",
-                  )}
-                  required={role === "business"}
-                />
-
-                <input
-                  value={businessPhone}
-                  onChange={(e) => setBusinessPhone(e.target.value)}
-                  placeholder={t(
-                    "register.business.phonePlaceholder",
-                    "Business phone",
-                  )}
-                  required={role === "business"}
-                />
-
-                <select
-                  value={businessCategory}
-                  onChange={(e) => setBusinessCategory(e.target.value)}
-                  required={role === "business"}
-                >
-                  <option value="">
-                    {t(
-                      "register.business.categoryPlaceholder",
-                      "Choose business category",
+                <label className="auth-field">
+                  <span>
+                    {t("register.business.nameLabel", "Business name")}
+                  </span>
+                  <input
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder={t(
+                      "register.business.namePlaceholder",
+                      "Example: Studio Mira",
                     )}
-                  </option>
-                  <option value="Barber">
-                    {t("categories.barber", "Barber")}
-                  </option>
-                  <option value="Hair salon">
-                    {t("categories.hairSalon", "Hair salon")}
-                  </option>
-                  <option value="Nails">
-                    {t("categories.nails", "Nails")}
-                  </option>
-                  <option value="Beauty">
-                    {t("categories.beauty", "Beauty")}
-                  </option>
-                  <option value="Tattoo">
-                    {t("categories.tattoo", "Tattoo")}
-                  </option>
-                  <option value="Pet grooming">
-                    {t("categories.petGrooming", "Pet grooming")}
-                  </option>
-                  <option value="Other">
-                    {t("categories.other", "Other")}
-                  </option>
-                </select>
+                    required={role === "business"}
+                  />
+                </label>
+
+                <label className="auth-field">
+                  <span>
+                    {t("register.business.phoneLabel", "Business phone")}
+                  </span>
+                  <input
+                    value={businessPhone}
+                    onChange={(e) => setBusinessPhone(e.target.value)}
+                    placeholder={t(
+                      "register.business.phonePlaceholder",
+                      "Example: +355 69 123 4567",
+                    )}
+                    required={role === "business"}
+                  />
+                </label>
+
+                <label className="auth-field">
+                  <span>
+                    {t("register.business.categoryLabel", "Business category")}
+                  </span>
+                  <select
+                    className="register-category-select"
+                    value={businessCategory}
+                    onChange={(e) => setBusinessCategory(e.target.value)}
+                    required={role === "business"}
+                  >
+                    <option value="">
+                      {t(
+                        "register.business.categoryPlaceholder",
+                        "Choose a category",
+                      )}
+                    </option>
+                    <option value="Barber">
+                      {t("categories.barber", "Barber")}
+                    </option>
+                    <option value="Hair salon">
+                      {t("categories.hairSalon", "Hair salon")}
+                    </option>
+                    <option value="Nails">
+                      {t("categories.nails", "Nails")}
+                    </option>
+                    <option value="Beauty">
+                      {t("categories.beauty", "Beauty")}
+                    </option>
+                    <option value="Tattoo">
+                      {t("categories.tattoo", "Tattoo")}
+                    </option>
+                    <option value="Pet grooming">
+                      {t("categories.petGrooming", "Pet grooming")}
+                    </option>
+                    <option value="Other">
+                      {t("categories.other", "Other")}
+                    </option>
+                  </select>
+                </label>
 
                 <div className="register-business-location-grid">
-                  <input
-                    value={businessCity}
-                    onChange={(e) => setBusinessCity(e.target.value)}
-                    placeholder={t("register.business.cityPlaceholder", "City")}
-                    required={role === "business"}
-                  />
+                  <label className="auth-field">
+                    <span>{t("register.business.cityLabel", "City")}</span>
+                    <input
+                      value={businessCity}
+                      onChange={(e) => setBusinessCity(e.target.value)}
+                      placeholder={t(
+                        "register.business.cityPlaceholder",
+                        "Example: Tirana",
+                      )}
+                      required={role === "business"}
+                    />
+                  </label>
 
-                  <input
-                    value={businessCountry}
-                    onChange={(e) => setBusinessCountry(e.target.value)}
-                    placeholder={t(
-                      "register.business.countryPlaceholder",
-                      "Country",
-                    )}
-                    required={role === "business"}
-                  />
+                  <label className="auth-field">
+                    <span>{t("register.business.countryLabel", "Country")}</span>
+                    <input
+                      value={businessCountry}
+                      onChange={(e) => setBusinessCountry(e.target.value)}
+                      placeholder={t(
+                        "register.business.countryPlaceholder",
+                        "Example: Albania",
+                      )}
+                      required={role === "business"}
+                    />
+                  </label>
                 </div>
                 <label className="register-owner-staff-option">
                   <input
@@ -709,6 +743,21 @@ export default function RegisterPage() {
                       )}
               </p>
             </div>
+
+            <p className="small muted register-legal-copy">
+              {t(
+                "register.legal.prefix",
+                "By creating an account, you agree to Mirëbook’s",
+              )}{" "}
+              <Link href="/terms">
+                {t("register.legal.terms", "Terms")}
+              </Link>{" "}
+              {t("register.legal.and", "and")}{" "}
+              <Link href="/privacy">
+                {t("register.legal.privacy", "Privacy Policy")}
+              </Link>
+              .
+            </p>
 
             <button
               type="submit"
@@ -787,22 +836,6 @@ export default function RegisterPage() {
           margin-bottom: 1rem;
         }
 
-        .register-context-strip {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-          margin-bottom: 1.25rem;
-        }
-
-        .register-context-strip span {
-          border: 1px solid var(--border);
-          border-radius: 999px;
-          padding: 0.25rem 0.6rem;
-          color: var(--text-muted);
-          font-size: 0.78rem;
-          background: var(--surface-2);
-        }
-
         .register-role-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -825,6 +858,25 @@ export default function RegisterPage() {
 
         .register-business-fields h3 {
           font-family: var(--font-display);
+        }
+
+        .auth-field {
+          display: grid;
+          gap: 0.42rem;
+          color: var(--text);
+          font-size: 0.86rem;
+          font-weight: 700;
+        }
+
+        .auth-field input,
+        .auth-field select {
+          font-weight: 400;
+        }
+
+        .register-category-select {
+          cursor: pointer;
+          border-color: rgba(255, 107, 53, 0.32);
+          background-color: var(--surface);
         }
 
         .register-business-location-grid {
@@ -876,6 +928,18 @@ export default function RegisterPage() {
         .register-submit-button {
           width: 100%;
           justify-content: center;
+        }
+
+        .register-legal-copy {
+          margin: 0;
+          line-height: 1.6;
+          text-align: center;
+        }
+
+        .register-legal-copy :global(a) {
+          color: var(--accent);
+          text-decoration: underline;
+          text-underline-offset: 0.18rem;
         }
 
         .register-bottom-actions {

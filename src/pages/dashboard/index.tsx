@@ -622,6 +622,8 @@ export default function DashboardHome() {
         </div>
       )}
 
+      <SetupGuidanceList warnings={setupWarnings} />
+
       <DashboardSummaryCards
         todayCount={todayBookings.length}
         pendingActionCount={pendingActionCount}
@@ -686,10 +688,6 @@ export default function DashboardHome() {
         scheduleDays={scheduleDays}
         bookingsLinkForDate={bookingsLinkForDate}
       />
-
-      {/* owner/staff note block removed */}
-
-      <SetupGuidanceList warnings={setupWarnings} />
 
       <style jsx>{`
         .dashboard-owner-command-card {

@@ -499,6 +499,45 @@ does not mark the reminder as sent.
 
 Staff and business reminders remain future work.
 
+## Stage 6 UI Cohesion Patch
+
+Status: prepared locally and intentionally uncommitted pending the separate
+functional QA result.
+
+Issues addressed:
+
+- removed passive customer, staff and business chip strips that looked like
+  controls while preserving the real registration account-type selector
+- strengthened the selected registration card state with `aria-pressed`
+- added visible email, password and business setup labels so placeholders are
+  examples rather than the only field identification
+- added translated registration acknowledgement links to the existing Terms
+  and Privacy Policy pages
+- made the registration business-category control clearer through an explicit
+  label and stronger select treatment
+- added visible labels to the first-business and public-profile setup fields
+- moved business setup guidance ahead of dashboard summary and schedule cards
+  so the next launch task appears near the top
+- grouped staff work links separately from support, language, account and
+  logout controls without changing staff routes
+- reduced staff availability to one clearly named `Save weekly availability`
+  action and retained visible Open/Closed state text
+- preserved the existing `Mirëbook` plus `Staff` workspace badge; no visible
+  `MirëbookStaff` string remains in the inspected staff surfaces
+- used restrained border, spacing and accent changes instead of a theme
+  redesign
+
+Known limitations:
+
+- authenticated visual QA is still required for populated business and staff
+  workspaces
+- the staff workspace keeps its existing top-navigation architecture
+- the business category remains a native select during registration; later
+  profile editing remains a free-text field to avoid changing stored category
+  behavior
+- no booking, auth, role, availability, billing, support, email or reminder
+  logic was changed
+
 ## Known Limitations
 
 - authenticated role-by-role browser QA is still required with real customer,

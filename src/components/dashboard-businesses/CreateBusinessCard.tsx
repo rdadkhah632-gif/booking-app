@@ -89,11 +89,14 @@ export default function CreateBusinessCard({
       </div>
 
       <div className="business-create-row">
-        <input
-          placeholder={t('dashboardBusinesses.create.placeholder', 'Business name')}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
+        <label className="business-create-field">
+          <span>{t('dashboardBusinesses.create.nameLabel', 'Business name')}</span>
+          <input
+            placeholder={t('dashboardBusinesses.create.placeholder', 'Example: Studio Mira')}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        </label>
 
         <button className="btn btn-accent" disabled={loading} type="submit">
           {loading
@@ -113,6 +116,15 @@ export default function CreateBusinessCard({
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
           gap: 0.75rem;
+          align-items: end;
+        }
+
+        .business-create-field {
+          display: grid;
+          gap: 0.42rem;
+          color: var(--text);
+          font-size: 0.86rem;
+          font-weight: 700;
         }
 
         @media (max-width: 640px) {

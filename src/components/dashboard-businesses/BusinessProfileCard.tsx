@@ -272,41 +272,59 @@ export default function BusinessProfileCard({
           </p>
 
           <div className="business-profile-input-grid">
-            <input
-              placeholder={t('dashboardBusinesses.create.placeholder', 'Business name')}
-              value={business.name || ''}
-              onChange={(e) => updateLocalBusiness(business.id, 'name', e.target.value)}
-            />
+            <label className="business-profile-field">
+              <span>{t('dashboardBusinesses.profile.nameLabel', 'Business name')}</span>
+              <input
+                placeholder={t('dashboardBusinesses.create.placeholder', 'Example: Studio Mira')}
+                value={business.name || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'name', e.target.value)}
+              />
+            </label>
 
-            <input
-              placeholder={t('dashboardBusinesses.profile.categoryPlaceholder', 'Category e.g. Barber, Dentist, Salon')}
-              value={business.category || ''}
-              onChange={(e) => updateLocalBusiness(business.id, 'category', e.target.value)}
-            />
+            <label className="business-profile-field">
+              <span>{t('dashboardBusinesses.profile.categoryLabel', 'Category')}</span>
+              <input
+                placeholder={t('dashboardBusinesses.profile.categoryPlaceholder', 'Example: Barber or salon')}
+                value={business.category || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'category', e.target.value)}
+              />
+            </label>
 
-            <input
-              placeholder={t('dashboardBusinesses.profile.cityPlaceholder', 'City')}
-              value={business.city || ''}
-              onChange={(e) => updateLocalBusiness(business.id, 'city', e.target.value)}
-            />
+            <label className="business-profile-field">
+              <span>{t('dashboardBusinesses.profile.cityLabel', 'City')}</span>
+              <input
+                placeholder={t('dashboardBusinesses.profile.cityPlaceholder', 'Example: Tirana')}
+                value={business.city || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'city', e.target.value)}
+              />
+            </label>
 
-            <input
-              placeholder={t('dashboardBusinesses.profile.countryPlaceholder', 'Country')}
-              value={business.country || ''}
-              onChange={(e) => updateLocalBusiness(business.id, 'country', e.target.value)}
-            />
+            <label className="business-profile-field">
+              <span>{t('dashboardBusinesses.profile.countryLabel', 'Country')}</span>
+              <input
+                placeholder={t('dashboardBusinesses.profile.countryPlaceholder', 'Example: Albania')}
+                value={business.country || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'country', e.target.value)}
+              />
+            </label>
 
-            <input
-              placeholder={t('dashboardBusinesses.profile.addressPlaceholder', 'Address')}
-              value={business.address || ''}
-              onChange={(e) => updateLocalBusiness(business.id, 'address', e.target.value)}
-            />
+            <label className="business-profile-field">
+              <span>{t('dashboardBusinesses.profile.addressLabel', 'Address')}</span>
+              <input
+                placeholder={t('dashboardBusinesses.profile.addressPlaceholder', 'Street and area')}
+                value={business.address || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'address', e.target.value)}
+              />
+            </label>
 
-            <input
-              placeholder={t('common.phone', 'Phone')}
-              value={business.phone || ''}
-              onChange={(e) => updateLocalBusiness(business.id, 'phone', e.target.value)}
-            />
+            <label className="business-profile-field">
+              <span>{t('dashboardBusinesses.profile.phoneLabel', 'Phone')}</span>
+              <input
+                placeholder={t('dashboardBusinesses.profile.phonePlaceholder', 'Customer contact number')}
+                value={business.phone || ''}
+                onChange={(e) => updateLocalBusiness(business.id, 'phone', e.target.value)}
+              />
+            </label>
           </div>
 
           <BusinessImageUpload
@@ -316,13 +334,15 @@ export default function BusinessProfileCard({
             onRemove={onRemoveImage}
           />
 
-          <textarea
-            placeholder={t('dashboardBusinesses.profile.descriptionPlaceholder', 'Description shown to customers')}
-            value={business.description || ''}
-            onChange={(e) => updateLocalBusiness(business.id, 'description', e.target.value)}
-            rows={4}
-            style={{ marginTop: '0.75rem' }}
-          />
+          <label className="business-profile-field" style={{ marginTop: '0.75rem' }}>
+            <span>{t('dashboardBusinesses.profile.descriptionLabel', 'Business description')}</span>
+            <textarea
+              placeholder={t('dashboardBusinesses.profile.descriptionPlaceholder', 'Tell customers what you offer and what to expect')}
+              value={business.description || ''}
+              onChange={(e) => updateLocalBusiness(business.id, 'description', e.target.value)}
+              rows={4}
+            />
+          </label>
         </div>
 
         <div className="card" style={{ background: 'var(--surface-2)' }}>
@@ -506,6 +526,19 @@ export default function BusinessProfileCard({
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 0.75rem;
           margin-top: 1rem;
+        }
+
+        .business-profile-field {
+          display: grid;
+          gap: 0.42rem;
+          color: var(--text);
+          font-size: 0.86rem;
+          font-weight: 700;
+        }
+
+        .business-profile-field :global(input),
+        .business-profile-field :global(textarea) {
+          font-weight: 400;
         }
 
         .booking-approval-row {

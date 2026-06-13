@@ -489,19 +489,6 @@ export default function StaffAvailabilityPage() {
                     {t("staff.actions.businessDashboard", "Business dashboard")}
                   </Link>
                 )}
-                <button
-                  type="button"
-                  className="btn btn-accent"
-                  onClick={saveAvailability}
-                  disabled={saving}
-                >
-                  {saving
-                    ? t("common.saving", "Saving...")
-                    : t(
-                        "staffAvailability.actions.saveAvailability",
-                        "Save availability",
-                      )}
-                </button>
               </div>
             </div>
             <div className="card staff-availability-note">
@@ -607,7 +594,7 @@ export default function StaffAvailabilityPage() {
                   <p className="muted small">
                     {t(
                       "staffAvailability.templates.body",
-                      "Templates only update the form. Press Save availability to apply changes.",
+                      "Templates only update the form. Save your weekly availability when the hours look right.",
                     )}
                   </p>
                 </div>
@@ -635,7 +622,10 @@ export default function StaffAvailabilityPage() {
                   >
                     {saving
                       ? t("common.saving", "Saving...")
-                      : t("common.saveChanges", "Save changes")}
+                      : t(
+                          "staffAvailability.actions.saveWeekly",
+                          "Save weekly availability",
+                        )}
                   </button>
                 </div>
               </div>

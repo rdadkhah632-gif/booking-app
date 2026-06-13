@@ -24,6 +24,7 @@ export const sq: TranslationTree = {
   "staffAvailability.title": "Orari yt i punës",
   "staffAvailability.staffOnly": "Disponueshmëri vetëm për staf",
   "staffAvailability.actions.saveAvailability": "Ruaj disponueshmërinë",
+  "staffAvailability.actions.saveWeekly": "Ruaj disponueshmërinë javore",
   "staffAvailability.note.title":
     "Këto orare kontrollojnë vetëm disponueshmërinë tënde për rezervime.",
   "staffAvailability.note.body":
@@ -40,7 +41,7 @@ export const sq: TranslationTree = {
   "staffAvailability.templates.compactTitle": "Modele të shpejta",
   "staffAvailability.templates.title": "Modele të shpejta",
   "staffAvailability.templates.body":
-    "Modelet përditësojnë vetëm formularin. Shtyp Ruaj ndryshimet për t’i aplikuar.",
+    "Modelet përditësojnë vetëm formularin. Ruaj disponueshmërinë javore kur oraret të jenë gati.",
   "staffAvailability.templates.weekday": "Hën–Pre 9–5",
   "staffAvailability.templates.extended": "Hën–Sht 9–7",
   "staffAvailability.day.open": "Hapur",
@@ -76,8 +77,10 @@ export const sq: TranslationTree = {
   "login.title": "Hyr në Mirëbook",
   "login.subtitle":
     "Përdor llogarinë tënde si klient, biznes ose staf i ftuar. Mirëbook do të të çojë automatikisht te hapësira e duhur.",
-  "login.emailPlaceholder": "Adresa e email-it",
-  "login.passwordPlaceholder": "Fjalëkalimi",
+  "login.emailLabel": "Adresa e email-it",
+  "login.emailPlaceholder": "ti@shembull.com",
+  "login.passwordLabel": "Fjalëkalimi",
+  "login.passwordPlaceholder": "Shkruaj fjalëkalimin",
   "login.submit": "Hyr në Mirëbook",
   "login.loading": "Duke kontrolluar llogarinë...",
   "login.noAccount": "Nuk ke ende llogari?",
@@ -883,6 +886,7 @@ export const sq: TranslationTree = {
     "Llogaria juaj aktualisht është e kufizuar në një profil biznesi. Nëse keni nevojë për një lokacion, markë ose profil tjetër biznesi, kontaktoni mbështetjen e Mirëbook që të shtohet siç duhet.",
 
   "dashboardBusinesses.create.addAnother": "Kërko një biznes tjetër",
+  "dashboardBusinesses.create.nameLabel": "Emri i biznesit",
   "dashboardBusinesses.create.placeholder": "Emri i biznesit",
   "dashboardBusinesses.create.adding": "Duke shtuar...",
 
@@ -940,6 +944,15 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.profile.title": "Detajet e profilit",
   "dashboardBusinesses.profile.body":
     "Këto detaje shfaqen në marketplace-in publik Mirëbook, faqen e rezervimit dhe më vonë në pamjen e aplikacionit mobile.",
+  "dashboardBusinesses.profile.nameLabel": "Emri i biznesit",
+  "dashboardBusinesses.profile.categoryLabel": "Kategoria",
+  "dashboardBusinesses.profile.cityLabel": "Qyteti",
+  "dashboardBusinesses.profile.countryLabel": "Shteti",
+  "dashboardBusinesses.profile.addressLabel": "Adresa",
+  "dashboardBusinesses.profile.phoneLabel": "Telefoni",
+  "dashboardBusinesses.profile.phonePlaceholder":
+    "Numri i kontaktit për klientët",
+  "dashboardBusinesses.profile.descriptionLabel": "Përshkrimi i biznesit",
   "dashboardBusinesses.profile.categoryPlaceholder":
     "Kategori p.sh. Barber, Dentist, Salon",
   "dashboardBusinesses.profile.cityPlaceholder": "Qyteti",
@@ -1917,8 +1930,10 @@ export const sq: TranslationTree = {
   "register.noStaffInviteTitle": "Nuk u gjet ftesë stafi",
   "register.noStaffInviteBody":
     "Kërkoji biznesit të shtojë email-in tënd në listën e stafit më parë.",
-  "register.emailPlaceholder": "Adresa e email-it",
-  "register.passwordPlaceholder": "Fjalëkalimi",
+  "register.emailLabel": "Adresa e email-it",
+  "register.emailPlaceholder": "ti@shembull.com",
+  "register.passwordLabel": "Fjalëkalimi",
+  "register.passwordPlaceholder": "Të paktën 6 karaktere",
   "register.preferredLanguage": "Gjuha e preferuar",
   "register.creating": "Duke krijuar llogarinë...",
   "register.createBusiness": "Krijo llogari biznesi",
@@ -1954,11 +1969,20 @@ export const sq: TranslationTree = {
   "register.business.title": "Na trego për biznesin tënd",
   "register.business.body":
     "Këto detaje krijojnë profilin fillestar të biznesit. Shërbimet, stafin, imazhet dhe oraret mund t’i plotësosh pasi të hysh.",
-  "register.business.namePlaceholder": "Emri i biznesit",
-  "register.business.phonePlaceholder": "Telefoni i biznesit",
-  "register.business.categoryPlaceholder": "Zgjidh kategorinë e biznesit",
-  "register.business.cityPlaceholder": "Qyteti",
-  "register.business.countryPlaceholder": "Shteti",
+  "register.business.nameLabel": "Emri i biznesit",
+  "register.business.namePlaceholder": "Shembull: Studio Mira",
+  "register.business.phoneLabel": "Telefoni i biznesit",
+  "register.business.phonePlaceholder": "Shembull: +355 69 123 4567",
+  "register.business.categoryLabel": "Kategoria e biznesit",
+  "register.business.categoryPlaceholder": "Zgjidh një kategori",
+  "register.business.cityLabel": "Qyteti",
+  "register.business.cityPlaceholder": "Shembull: Tiranë",
+  "register.business.countryLabel": "Shteti",
+  "register.business.countryPlaceholder": "Shembull: Shqipëri",
+  "register.legal.prefix": "Duke krijuar një llogari, pranon",
+  "register.legal.terms": "Kushtet",
+  "register.legal.and": "dhe",
+  "register.legal.privacy": "Politikën e Privatësisë",
   "common.customer": "Klient",
   "common.status": "Statusi",
   "common.new": "E re",

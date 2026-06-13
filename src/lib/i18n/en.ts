@@ -30,8 +30,10 @@ export const en: TranslationTree = {
   "login.title": "Login to Mirëbook",
   "login.subtitle":
     "Use your customer, business or invited staff account. Mirëbook will send you to the right workspace automatically.",
-  "login.emailPlaceholder": "Email address",
-  "login.passwordPlaceholder": "Password",
+  "login.emailLabel": "Email address",
+  "login.emailPlaceholder": "you@example.com",
+  "login.passwordLabel": "Password",
+  "login.passwordPlaceholder": "Enter your password",
   "login.submit": "Login to Mirëbook",
   "login.loading": "Checking account...",
   "login.noAccount": "No account yet?",
@@ -843,6 +845,7 @@ export const en: TranslationTree = {
 
   "dashboardBusinesses.create.addAnother": "Request another business",
   "dashboardBusinesses.create.requestAnother": "Request another business",
+  "dashboardBusinesses.create.nameLabel": "Business name",
   "dashboardBusinesses.setupHub.kicker": "Setup",
   "dashboardBusinesses.setupHub.title": "Finish and manage your business setup",
   "dashboardBusinesses.setupHub.body":
@@ -921,6 +924,14 @@ export const en: TranslationTree = {
   "dashboardBusinesses.profile.title": "Profile details",
   "dashboardBusinesses.profile.body":
     "These details appear on the public Mirëbook marketplace, booking page and later in the mobile app view.",
+  "dashboardBusinesses.profile.nameLabel": "Business name",
+  "dashboardBusinesses.profile.categoryLabel": "Category",
+  "dashboardBusinesses.profile.cityLabel": "City",
+  "dashboardBusinesses.profile.countryLabel": "Country",
+  "dashboardBusinesses.profile.addressLabel": "Address",
+  "dashboardBusinesses.profile.phoneLabel": "Phone",
+  "dashboardBusinesses.profile.phonePlaceholder": "Customer contact number",
+  "dashboardBusinesses.profile.descriptionLabel": "Business description",
   "dashboardBusinesses.profile.categoryPlaceholder":
     "Category e.g. Barber, Dentist, Salon",
   "dashboardBusinesses.profile.cityPlaceholder": "City",
@@ -1823,8 +1834,10 @@ export const en: TranslationTree = {
   "register.noStaffInviteTitle": "No staff invite found",
   "register.noStaffInviteBody":
     "Ask the business to add your email to their staff list first.",
-  "register.emailPlaceholder": "Email address",
-  "register.passwordPlaceholder": "Password",
+  "register.emailLabel": "Email address",
+  "register.emailPlaceholder": "you@example.com",
+  "register.passwordLabel": "Password",
+  "register.passwordPlaceholder": "At least 6 characters",
   "register.preferredLanguage": "Preferred language",
   "register.creating": "Creating account...",
   "register.createBusiness": "Create business account",
@@ -1858,11 +1871,21 @@ export const en: TranslationTree = {
   "register.business.title": "Tell us about your business",
   "register.business.body":
     "These details create your starter business profile. You can complete services, staff, images and opening hours after signing in.",
-  "register.business.namePlaceholder": "Business name",
-  "register.business.phonePlaceholder": "Business phone",
-  "register.business.categoryPlaceholder": "Choose business category",
-  "register.business.cityPlaceholder": "City",
-  "register.business.countryPlaceholder": "Country",
+  "register.business.nameLabel": "Business name",
+  "register.business.namePlaceholder": "Example: Studio Mira",
+  "register.business.phoneLabel": "Business phone",
+  "register.business.phonePlaceholder": "Example: +355 69 123 4567",
+  "register.business.categoryLabel": "Business category",
+  "register.business.categoryPlaceholder": "Choose a category",
+  "register.business.cityLabel": "City",
+  "register.business.cityPlaceholder": "Example: Tirana",
+  "register.business.countryLabel": "Country",
+  "register.business.countryPlaceholder": "Example: Albania",
+  "register.legal.prefix":
+    "By creating an account, you agree to Mirëbook’s",
+  "register.legal.terms": "Terms",
+  "register.legal.and": "and",
+  "register.legal.privacy": "Privacy Policy",
   "nav.staffSupport": "Staff support",
   "common.customer": "Customer",
   "common.status": "Status",
@@ -2012,6 +2035,7 @@ export const en: TranslationTree = {
   "staffAvailability.title": "Your working hours",
   "staffAvailability.staffOnly": "Staff-only availability",
   "staffAvailability.actions.saveAvailability": "Save availability",
+  "staffAvailability.actions.saveWeekly": "Save weekly availability",
   "staffAvailability.note.title":
     "These hours only control your own bookable staff availability.",
   "staffAvailability.note.body":
@@ -2026,7 +2050,7 @@ export const en: TranslationTree = {
   "staffAvailability.summary.weeklyHoursBody":
     "Estimated bookable staff time.",
   "staffAvailability.templates.body":
-    "Templates only update the form. Press Save availability to apply changes.",
+    "Templates only update the form. Save your weekly availability when the hours look right.",
   "staffAvailability.templates.weekday": "Mon-Fri 9-5",
   "staffAvailability.templates.extended": "Mon-Sat 9-7",
   "staffAvailability.day.open": "Open",
