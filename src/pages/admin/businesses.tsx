@@ -82,6 +82,61 @@ type BillingDraft = {
   changeReason: string
 }
 
+type FoundingOfferReviewStatus =
+  | 'pending'
+  | 'needs_review'
+  | 'potentially_eligible'
+  | 'approved'
+  | 'declined'
+
+type FoundingOfferMetrics = {
+  windowStart: string
+  windowEnd: string
+  totalBookings: number
+  pendingBookings: number
+  confirmedBookings: number
+  completedBookings: number
+  cancelledBookings: number
+  declinedBookings: number
+  qualifyingBookings: number
+  uniqueCustomers: number
+  qualifyingUniqueCustomers: number
+  verifiedCustomers: number
+  unverifiedCustomers: number
+  unknownVerificationCustomers: number
+  concentratedActivity: boolean
+  guidance:
+    | 'not_founding'
+    | 'potentially_eligible'
+    | 'needs_manual_review'
+    | 'needs_more_activity'
+}
+
+type FoundingOfferReview = {
+  business_id: string
+  review_status: FoundingOfferReviewStatus
+  reviewed_at?: string | null
+  reviewed_by?: string | null
+  notes?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+type FoundingOfferState = {
+  metrics: FoundingOfferMetrics
+  review: FoundingOfferReview | null
+  reviewSchemaAvailable: boolean
+  sqlRequired?: string | null
+}
+
+const FOUNDING_REVIEW_STATUSES: FoundingOfferReviewStatus[] = [
+  'pending',
+  'needs_review',
+  'potentially_eligible',
+  'approved',
+  'declined'
+]
+
 function dateInputValue(value?: string | null) {
   return value ? value.slice(0, 10) : ''
 }
@@ -151,6 +206,13 @@ export default function AdminBusinessesPage() {
   const [adminBilling, setAdminBilling] = useState<AdminBillingState | null>(null)
   const [billingDraft, setBillingDraft] = useState<BillingDraft | null>(null)
   const [billingError, setBillingError] = useState<string | null>(null)
+  const [foundingOffer, setFoundingOffer] = useState<FoundingOfferState | null>(null)
+  const [foundingOfferLoading, setFoundingOfferLoading] = useState(false)
+  const [foundingOfferSaving, setFoundingOfferSaving] = useState(false)
+  const [foundingOfferError, setFoundingOfferError] = useState<string | null>(null)
+  const [foundingReviewStatus, setFoundingReviewStatus] =
+    useState<FoundingOfferReviewStatus>('pending')
+  const [foundingReviewNotes, setFoundingReviewNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -518,6 +580,7 @@ export default function AdminBusinessesPage() {
   useEffect(() => {
     if (!adminProfile?.is_admin || !selectedBusinessId) return
     loadAdminBilling(selectedBusinessId)
+    loadFoundingOffer(selectedBusinessId)
   }, [adminProfile?.is_admin, selectedBusinessId])
 
   async function loadAdminBilling(businessId: string) {
@@ -560,6 +623,150 @@ export default function AdminBusinessesPage() {
     }
   }
 
+  async function loadFoundingOffer(businessId: string) {
+    setFoundingOfferLoading(true)
+    setFoundingOfferError(null)
+    setFoundingOffer(null)
+    setFoundingReviewStatus('pending')
+    setFoundingReviewNotes('')
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        router.replace('/login?redirectTo=/admin/businesses')
+        return
+      }
+
+      const response = await fetch(
+        `/api/admin/founding-offer?businessId=${encodeURIComponent(businessId)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        }
+      )
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            t(
+              'admin.businesses.founding.loadError',
+              'Could not load founding offer tracking.'
+            )
+        )
+      }
+
+      const nextState = result as FoundingOfferState
+      setFoundingOffer(nextState)
+      setFoundingReviewStatus(nextState.review?.review_status || 'pending')
+      setFoundingReviewNotes(nextState.review?.notes || '')
+    } catch (err: any) {
+      setFoundingOfferError(
+        err.message ||
+          t(
+            'admin.businesses.founding.loadError',
+            'Could not load founding offer tracking.'
+          )
+      )
+    } finally {
+      setFoundingOfferLoading(false)
+    }
+  }
+
+  async function saveFoundingOfferReview() {
+    if (!selectedBusiness || !foundingOffer?.reviewSchemaAvailable) return
+
+    setFoundingOfferSaving(true)
+    setFoundingOfferError(null)
+    setSuccess(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        router.replace('/login?redirectTo=/admin/businesses')
+        return
+      }
+
+      const response = await fetch('/api/admin/founding-offer', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          businessId: selectedBusiness.id,
+          reviewStatus: foundingReviewStatus,
+          notes: foundingReviewNotes
+        })
+      })
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            t(
+              'admin.businesses.founding.saveError',
+              'Could not save founding offer review.'
+            )
+        )
+      }
+
+      const review = result.review as FoundingOfferReview
+      setFoundingOffer((current) =>
+        current ? { ...current, review } : current
+      )
+      setSuccess(
+        t(
+          'admin.businesses.founding.saved',
+          'Founding offer review saved. No billing action was taken.'
+        )
+      )
+    } catch (err: any) {
+      setFoundingOfferError(
+        err.message ||
+          t(
+            'admin.businesses.founding.saveError',
+            'Could not save founding offer review.'
+          )
+      )
+    } finally {
+      setFoundingOfferSaving(false)
+    }
+  }
+
+  function foundingGuidanceLabel(guidance: FoundingOfferMetrics['guidance']) {
+    if (guidance === 'potentially_eligible') {
+      return t(
+        'admin.businesses.founding.guidance.potential',
+        'Potentially eligible'
+      )
+    }
+    if (guidance === 'needs_manual_review') {
+      return t(
+        'admin.businesses.founding.guidance.review',
+        'Needs manual review'
+      )
+    }
+    if (guidance === 'needs_more_activity') {
+      return t(
+        'admin.businesses.founding.guidance.moreActivity',
+        'Not enough genuine activity yet'
+      )
+    }
+    return t(
+      'admin.businesses.founding.guidance.notFounding',
+      'Not marked as a founding business'
+    )
+  }
+
+  function foundingReviewStatusLabel(status: FoundingOfferReviewStatus) {
+    return t(
+      `admin.businesses.founding.reviewStatus.${status}`,
+      status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+    )
+  }
+
   function selectBusiness(business: BusinessWithOwner) {
     setSelectedBusinessId(business.id)
     setSelectedBusiness(business)
@@ -568,6 +775,8 @@ export default function AdminBusinessesPage() {
     setBillingError(null)
     setAdminBilling(null)
     setBillingDraft(null)
+    setFoundingOffer(null)
+    setFoundingOfferError(null)
     router.replace(`/admin/businesses?businessId=${business.id}`, undefined, { shallow: true })
   }
 
@@ -995,6 +1204,291 @@ export default function AdminBusinessesPage() {
                         {selectedIssues.length === 0 ? 'Core business setup is complete enough for marketplace publishing.' : `Missing: ${selectedIssues.join(', ')}.`}
                       </p>
                     </div>
+                  </div>
+
+                  <div className="admin-founding-box">
+                    <div className="admin-section-header">
+                      <div>
+                        <p className="small muted">
+                          {t(
+                            'admin.businesses.founding.kicker',
+                            'Admin only · Launch offer tracking'
+                          )}
+                        </p>
+                        <h3>
+                          {t(
+                            'admin.businesses.founding.title',
+                            'Founding offer review'
+                          )}
+                        </h3>
+                        <p className="small muted" style={{ marginTop: '0.35rem' }}>
+                          {t(
+                            'admin.businesses.founding.body',
+                            'Raw signups are not enough. Review confirmed and completed bookings, unique customers and verification status before granting a second free month.'
+                          )}
+                        </p>
+                      </div>
+                      {foundingOffer && (
+                        <span className="admin-pill admin-pill-warning">
+                          {foundingGuidanceLabel(foundingOffer.metrics.guidance)}
+                        </span>
+                      )}
+                    </div>
+
+                    {foundingOfferLoading && (
+                      <div className="admin-hint-box">
+                        <p className="small muted">
+                          {t(
+                            'admin.businesses.founding.loading',
+                            'Calculating first-month activity...'
+                          )}
+                        </p>
+                      </div>
+                    )}
+
+                    {foundingOfferError && (
+                      <div className="admin-alert-box admin-alert-warning">
+                        <p style={{ color: 'var(--danger)' }}>{foundingOfferError}</p>
+                      </div>
+                    )}
+
+                    {!foundingOfferLoading && foundingOffer && (
+                      <>
+                        <div className="admin-offer-window">
+                          <div>
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.offerWindow',
+                                'First offer window'
+                              )}
+                            </p>
+                            <strong>
+                              {formatDate(foundingOffer.metrics.windowStart)} -{' '}
+                              {formatDate(foundingOffer.metrics.windowEnd)}
+                            </strong>
+                          </div>
+                          <div>
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.billingContext',
+                                'Billing context'
+                              )}
+                            </p>
+                            <strong>
+                              {selectedBilling.founding_business
+                                ? t(
+                                    'admin.businesses.billing.founding',
+                                    'Founding business'
+                                  )
+                                : t(
+                                    'admin.businesses.billing.standard',
+                                    'Standard launch'
+                                  )}
+                            </strong>
+                          </div>
+                          <div>
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.currentDecision',
+                                'Current billing flag'
+                              )}
+                            </p>
+                            <strong>
+                              {selectedBilling.second_month_free_eligible
+                                ? t(
+                                    'admin.businesses.founding.flagEligible',
+                                    'Second month marked eligible'
+                                  )
+                                : t(
+                                    'admin.businesses.founding.flagNotEligible',
+                                    'Not marked eligible'
+                                  )}
+                            </strong>
+                          </div>
+                        </div>
+
+                        <div className="admin-founding-metrics">
+                          <div>
+                            <strong>{foundingOffer.metrics.qualifyingBookings}</strong>
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.qualifyingBookings',
+                                'Confirmed + completed'
+                              )}
+                            </p>
+                          </div>
+                          <div>
+                            <strong>
+                              {foundingOffer.metrics.qualifyingUniqueCustomers}
+                            </strong>
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.qualifyingCustomers',
+                                'Unique qualifying customers'
+                              )}
+                            </p>
+                          </div>
+                          <div>
+                            <strong>{foundingOffer.metrics.verifiedCustomers}</strong>
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.verifiedCustomers',
+                                'Verified customer accounts'
+                              )}
+                            </p>
+                          </div>
+                          <div>
+                            <strong>
+                              {foundingOffer.metrics.unknownVerificationCustomers}
+                            </strong>
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.unknownCustomers',
+                                'Unknown / guest verification'
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="admin-offer-breakdown">
+                          <span>
+                            {t('admin.businesses.founding.total', 'Total')}:{' '}
+                            <strong>{foundingOffer.metrics.totalBookings}</strong>
+                          </span>
+                          <span>
+                            {t('admin.businesses.founding.pending', 'Pending')}:{' '}
+                            <strong>{foundingOffer.metrics.pendingBookings}</strong>
+                          </span>
+                          <span>
+                            {t('admin.businesses.founding.confirmed', 'Confirmed')}:{' '}
+                            <strong>{foundingOffer.metrics.confirmedBookings}</strong>
+                          </span>
+                          <span>
+                            {t('admin.businesses.founding.completed', 'Completed')}:{' '}
+                            <strong>{foundingOffer.metrics.completedBookings}</strong>
+                          </span>
+                          <span>
+                            {t('admin.businesses.founding.cancelled', 'Cancelled')}:{' '}
+                            <strong>{foundingOffer.metrics.cancelledBookings}</strong>
+                          </span>
+                          <span>
+                            {t('admin.businesses.founding.declined', 'Declined')}:{' '}
+                            <strong>{foundingOffer.metrics.declinedBookings}</strong>
+                          </span>
+                          <span>
+                            {t(
+                              'admin.businesses.founding.unverified',
+                              'Unverified accounts'
+                            )}:{' '}
+                            <strong>{foundingOffer.metrics.unverifiedCustomers}</strong>
+                          </span>
+                        </div>
+
+                        {foundingOffer.metrics.concentratedActivity && (
+                          <div className="admin-alert-box admin-alert-warning">
+                            <p className="small">
+                              {t(
+                                'admin.businesses.founding.concentrated',
+                                'Activity is concentrated across relatively few customers. Review the booking pattern before making a decision.'
+                              )}
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="admin-hint-box">
+                          <p className="small muted">
+                            {t(
+                              'admin.businesses.founding.manualOnly',
+                              'Final eligibility is manually reviewed by Mirëbook. Saving a review does not grant free time, update Stripe or change the billing eligibility flag.'
+                            )}
+                          </p>
+                        </div>
+
+                        {foundingOffer.reviewSchemaAvailable ? (
+                          <div className="admin-founding-review">
+                            <label className="small muted">
+                              {t(
+                                'admin.businesses.founding.reviewStatus',
+                                'Manual review status'
+                              )}
+                              <select
+                                value={foundingReviewStatus}
+                                onChange={(event) =>
+                                  setFoundingReviewStatus(
+                                    event.target.value as FoundingOfferReviewStatus
+                                  )
+                                }
+                              >
+                                {FOUNDING_REVIEW_STATUSES.map((status) => (
+                                  <option key={status} value={status}>
+                                    {foundingReviewStatusLabel(status)}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+
+                            <label className="small muted">
+                              {t(
+                                'admin.businesses.founding.reviewNotes',
+                                'Private review notes'
+                              )}
+                              <textarea
+                                value={foundingReviewNotes}
+                                onChange={(event) =>
+                                  setFoundingReviewNotes(event.target.value)
+                                }
+                                maxLength={2000}
+                                placeholder={t(
+                                  'admin.businesses.founding.reviewNotesPlaceholder',
+                                  'Record the evidence reviewed and any follow-up needed.'
+                                )}
+                              />
+                            </label>
+
+                            <div className="admin-billing-save">
+                              <p className="small muted">
+                                {foundingOffer.review?.reviewed_at
+                                  ? `${t(
+                                      'admin.businesses.founding.lastReviewed',
+                                      'Last reviewed'
+                                    )}: ${formatDate(
+                                      foundingOffer.review.reviewed_at
+                                    )}`
+                                  : t(
+                                      'admin.businesses.founding.notReviewed',
+                                      'No manual review has been saved yet.'
+                                    )}
+                              </p>
+                              <button
+                                type="button"
+                                className="btn btn-accent"
+                                onClick={saveFoundingOfferReview}
+                                disabled={foundingOfferSaving}
+                              >
+                                {foundingOfferSaving
+                                  ? t(
+                                      'admin.businesses.founding.saving',
+                                      'Saving review...'
+                                    )
+                                  : t(
+                                      'admin.businesses.founding.save',
+                                      'Save offer review'
+                                    )}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="admin-alert-box admin-alert-warning">
+                            <p className="small muted">
+                              {t(
+                                'admin.businesses.founding.sqlRequired',
+                                'Metrics are available read-only. Run sources/sql/07_founding_offer_reviews.sql in Supabase to save review status and notes.'
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   <div className="admin-billing-box">
@@ -1561,6 +2055,7 @@ export default function AdminBusinessesPage() {
         .admin-empty,
         .admin-hint-box,
         .admin-alert-box,
+        .admin-founding-box,
         .admin-billing-box,
         .admin-readiness-box,
         .admin-owner-box {
@@ -1568,6 +2063,68 @@ export default function AdminBusinessesPage() {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
+        }
+
+        .admin-founding-box {
+          display: grid;
+          gap: 1rem;
+          border-color: rgba(255,190,11,0.28);
+          background: linear-gradient(
+            145deg,
+            rgba(255,190,11,0.07),
+            var(--surface-2)
+          );
+        }
+
+        .admin-offer-window,
+        .admin-founding-metrics {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 0.75rem;
+        }
+
+        .admin-offer-window > div,
+        .admin-founding-metrics > div {
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+        }
+
+        .admin-founding-metrics strong {
+          font-size: 1.35rem;
+        }
+
+        .admin-offer-breakdown {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .admin-offer-breakdown span {
+          padding: 0.35rem 0.6rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface);
+          color: var(--text-muted);
+          font-size: 0.78rem;
+        }
+
+        .admin-founding-review {
+          display: grid;
+          gap: 1rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .admin-founding-review > label {
+          display: grid;
+          gap: 0.4rem;
+        }
+
+        .admin-founding-review textarea {
+          min-height: 96px;
+          resize: vertical;
         }
 
         .admin-alert-success {

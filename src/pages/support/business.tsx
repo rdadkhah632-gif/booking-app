@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { requestTransactionalEmail } from "@/lib/email/client";
 
 type Profile = {
   id: string;
@@ -194,6 +195,10 @@ export default function BusinessSupportPage() {
         "New business support request",
         `${ticketSubject} · ${selectedBusiness?.name || name.trim() || profile.email || "Business owner"}`,
       );
+      void requestTransactionalEmail({
+        event: "support_created",
+        supportMessageId: ticketId,
+      });
     }
 
     setSuccess(t("support.business.success"));

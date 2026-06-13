@@ -146,3 +146,57 @@ In-app notifications remain the authoritative booking record.`,
     preferenceEnabled: input.preferenceEnabled,
   };
 }
+
+export function staffInviteEmailTemplate(input: {
+  recipientEmail: string;
+  businessName: string;
+  inviteUrl: string;
+}): TransactionalEmailMessage {
+  return {
+    event: "staff_invited",
+    to: input.recipientEmail,
+    subject: `You've been invited to join ${input.businessName} on Mirëbook`,
+    text: `${input.businessName} invited you to join their staff workspace on Mirëbook.
+
+Accept invite: ${input.inviteUrl}
+
+Open this link using the invited email address. If you do not have a Mirëbook account, you can create a staff account after opening the link.
+
+For your security, do not forward this invitation if it was not intended for you.`,
+  };
+}
+
+export function supportEmailTemplate(input: {
+  event: "support_created" | "support_replied";
+  recipientEmail: string;
+  subject: string;
+  actionUrl: string;
+  isAdminNotification?: boolean;
+  preferenceEnabled?: boolean;
+}): TransactionalEmailMessage {
+  const intro =
+    input.event === "support_replied"
+      ? "Mirëbook support replied to your support conversation."
+      : input.isAdminNotification
+        ? "A new support request is ready for operator review."
+        : "We received your Mirëbook support request.";
+
+  return {
+    event: input.event,
+    to: input.recipientEmail,
+    subject:
+      input.event === "support_replied"
+        ? "Mirëbook support replied"
+        : input.isAdminNotification
+          ? `Mirëbook support: ${input.subject}`
+          : "Mirëbook support request received",
+    text: `${intro}
+
+Subject: ${input.subject}
+
+Open the support conversation: ${input.actionUrl}
+
+The in-app support conversation remains the authoritative record.`,
+    preferenceEnabled: input.preferenceEnabled,
+  };
+}

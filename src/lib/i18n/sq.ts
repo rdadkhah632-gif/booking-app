@@ -2963,6 +2963,70 @@ export const sq: TranslationTree = {
   "admin.businesses.billing.saveError":
     "Nuk mund të ruheshin ndryshimet e faturimit.",
   "admin.businesses.billing.standard": "Plan standard lançimi",
+  "admin.businesses.founding.kicker":
+    "Vetëm për administratorin · Ndjekja e ofertës së lançimit",
+  "admin.businesses.founding.title":
+    "Shqyrtimi i ofertës për biznesin themelues",
+  "admin.businesses.founding.body":
+    "Regjistrimet e thjeshta nuk mjaftojnë. Shqyrto rezervimet e konfirmuara dhe të përfunduara, klientët unikë dhe statusin e verifikimit para se të japësh muajin e dytë falas.",
+  "admin.businesses.founding.loading":
+    "Duke llogaritur aktivitetin e muajit të parë...",
+  "admin.businesses.founding.loadError":
+    "Nuk mund të ngarkohej ndjekja e ofertës themeluese.",
+  "admin.businesses.founding.saveError":
+    "Nuk mund të ruhej shqyrtimi i ofertës themeluese.",
+  "admin.businesses.founding.saved":
+    "Shqyrtimi i ofertës u ruajt. Nuk u krye asnjë veprim faturimi.",
+  "admin.businesses.founding.guidance.potential":
+    "Mund të kualifikohet",
+  "admin.businesses.founding.guidance.review":
+    "Kërkon shqyrtim manual",
+  "admin.businesses.founding.guidance.moreActivity":
+    "Ende nuk ka aktivitet të mjaftueshëm real",
+  "admin.businesses.founding.guidance.notFounding":
+    "Nuk është shënuar si biznes themelues",
+  "admin.businesses.founding.offerWindow": "Periudha e parë e ofertës",
+  "admin.businesses.founding.billingContext": "Konteksti i faturimit",
+  "admin.businesses.founding.currentDecision": "Shenja aktuale e faturimit",
+  "admin.businesses.founding.flagEligible":
+    "Muaji i dytë është shënuar i kualifikuar",
+  "admin.businesses.founding.flagNotEligible": "Nuk është shënuar i kualifikuar",
+  "admin.businesses.founding.qualifyingBookings":
+    "Të konfirmuara + të përfunduara",
+  "admin.businesses.founding.qualifyingCustomers":
+    "Klientë unikë kualifikues",
+  "admin.businesses.founding.verifiedCustomers":
+    "Llogari klientësh të verifikuara",
+  "admin.businesses.founding.unknownCustomers":
+    "Verifikim i panjohur / mysafir",
+  "admin.businesses.founding.total": "Gjithsej",
+  "admin.businesses.founding.pending": "Në pritje",
+  "admin.businesses.founding.confirmed": "Të konfirmuara",
+  "admin.businesses.founding.completed": "Të përfunduara",
+  "admin.businesses.founding.cancelled": "Të anuluara",
+  "admin.businesses.founding.declined": "Të refuzuara",
+  "admin.businesses.founding.unverified": "Llogari të paverifikuara",
+  "admin.businesses.founding.concentrated":
+    "Aktiviteti është përqendruar te relativisht pak klientë. Shqyrto modelin e rezervimeve para vendimit.",
+  "admin.businesses.founding.manualOnly":
+    "Kualifikimi përfundimtar shqyrtohet manualisht nga Mirëbook. Ruajtja e shqyrtimit nuk jep kohë falas, nuk përditëson Stripe dhe nuk ndryshon shenjën e faturimit.",
+  "admin.businesses.founding.reviewStatus": "Statusi i shqyrtimit manual",
+  "admin.businesses.founding.reviewNotes": "Shënime private të shqyrtimit",
+  "admin.businesses.founding.reviewNotesPlaceholder":
+    "Regjistro provat e shqyrtuara dhe çdo hap vijues.",
+  "admin.businesses.founding.lastReviewed": "Shqyrtimi i fundit",
+  "admin.businesses.founding.notReviewed":
+    "Ende nuk është ruajtur një shqyrtim manual.",
+  "admin.businesses.founding.saving": "Duke ruajtur shqyrtimin...",
+  "admin.businesses.founding.save": "Ruaj shqyrtimin e ofertës",
+  "admin.businesses.founding.sqlRequired":
+    "Metrikat janë vetëm për lexim. Ekzekuto sources/sql/07_founding_offer_reviews.sql në Supabase për të ruajtur statusin dhe shënimet.",
+  "admin.businesses.founding.reviewStatus.pending": "Në pritje të shqyrtimit",
+  "admin.businesses.founding.reviewStatus.needs_review": "Kërkon shqyrtim",
+  "admin.businesses.founding.reviewStatus.potentially_eligible":
+    "Mund të kualifikohet",
+  "admin.businesses.founding.reviewStatus.approved": "Miratuar manualisht",
+  "admin.businesses.founding.reviewStatus.declined": "Refuzuar manualisht",
   "admin.businesses.currentState": "Gjendja aktuale operative",
   "admin.businesses.saveScope":
     "Ky buton përditëson vetëm publikimin, kontaktin e faturimit dhe cilësimet e rezervimeve. Përdor kontrollin e veçantë vetëm për administratorin për gjendjen tregtare.",
@@ -3034,4 +3098,30 @@ export const sq: TranslationTree = {
     "Kërkesat e suportit lidhen me inbox-in e operatorit",
   "support.operator.flowBody":
     "Formularët e suportit për klientë, staf dhe biznese krijojnë biseda të ruajtura dhe njoftojnë operatorët me një link direkt te ticket-i.",
+  "dashboardStaff.invite.savedNoEmail":
+    "Ftesa u ruajt. Dërgimi me email nuk është konfiguruar, prandaj ndaj manualisht linkun e sigurt ose kërkoji të hyjë me email-in e ftuar.",
+  "dashboardStaff.invite.emailSent":
+    "Ftesa u ruajt dhe email-i i ftesës u dërgua.",
+  "dashboardStaff.invite.savedManualLink":
+    "Ftesa u ruajt. Email-i u anashkalua në mënyrë të sigurt. Linku manual i ftesës:",
+  "staffInvite.kicker": "Ftesë për staf",
+  "staffInvite.title": "Bashkohu me hapësirën e stafit në Mirëbook",
+  "staffInvite.checking": "Duke kontrolluar këtë ftesë...",
+  "staffInvite.readyBody":
+    "Prano këtë ftesë duke përdorur adresën e email-it ku u dërgua.",
+  "staffInvite.accepting": "Duke pranuar...",
+  "staffInvite.accept": "Prano ftesën",
+  "staffInvite.login": "Hyr për ta pranuar",
+  "staffInvite.register": "Krijo llogari stafi",
+  "staffInvite.invalid":
+    "Kjo ftesë është e pavlefshme, ka skaduar ose është përdorur. Kërkoji biznesit të dërgojë një ftesë të re.",
+  "staffInvite.setup":
+    "Linket e ftesave me email nuk janë aktive ende. Mund të hysh me email-in e ftuar dhe të përdorësh rrjedhën ekzistuese të lidhjes së stafit.",
+  "staffInvite.linkedTitle": "Llogaria e stafit u lidh",
+  "staffInvite.linkedBody":
+    "Profili yt i stafit u lidh. Po hapim hapësirën e stafit...",
+  "staffInvite.error.wrongEmail":
+    "Kjo ftesë u dërgua në një adresë tjetër email-i. Hyr me llogarinë e ftuar.",
+  "staffInvite.error.accept":
+    "Kjo ftesë nuk mund të pranohej. Mund të ketë skaduar ose të jetë përdorur.",
 };

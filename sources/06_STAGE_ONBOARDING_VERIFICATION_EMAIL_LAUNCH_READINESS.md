@@ -499,6 +499,119 @@ does not mark the reminder as sent.
 
 Staff and business reminders remain future work.
 
+## Batch 7 - Founding Business Offer Tracking
+
+Status: implemented; production build passed.
+
+The selected-business panel on `/admin/businesses` now includes an admin-only
+founding offer review section. It is decision support only and does not change
+Stripe, billing periods, product access, bookings or public listing.
+
+### Offer Window And Activity
+
+The server uses the first 30 days from:
+
+1. `business_billing.trial_start` when present
+2. otherwise the business creation timestamp
+3. otherwise the billing record creation timestamp
+
+The review shows:
+
+- total bookings created during the first offer window
+- pending bookings separately
+- confirmed bookings
+- completed bookings
+- cancelled bookings
+- declined bookings
+- confirmed plus completed bookings as potential qualifying activity
+- unique customer identities with any booking
+- unique customer identities with confirmed/completed activity
+- verified customer accounts when Supabase Auth state is available
+- unverified customer accounts
+- unknown or guest verification identities
+- a simple concentrated-activity warning when many qualifying bookings come
+  from relatively few customer identities
+
+Cancelled and declined bookings are excluded from the potential qualifying
+count. Pending requests are visible but are not treated as qualifying
+activity.
+
+### Guidance, Not Automatic Eligibility
+
+The UI may describe a business as:
+
+- potentially eligible
+- needing more genuine activity
+- needing manual review
+- not marked as a founding business
+
+This guidance is not an automatic pass/fail decision. Raw signups are never
+used as the qualification metric. The existing
+`business_billing.second_month_free_eligible` field remains a separate manual
+billing flag, and the review endpoint never changes it.
+
+The review panel explicitly tells operators that saving a review:
+
+- does not grant a free month
+- does not update Stripe
+- does not change subscription dates
+- does not change the billing eligibility flag
+
+### Optional Review SQL
+
+Run this file manually in the Supabase SQL editor:
+
+```text
+sources/sql/07_founding_offer_reviews.sql
+```
+
+It creates the server-only `public.founding_offer_reviews` table with:
+
+- review status
+- reviewed timestamp
+- reviewing admin user
+- private notes
+- created and updated timestamps
+
+The table has no `anon` or `authenticated` grants. The protected admin API
+uses the existing service-role pattern after verifying both the bearer token
+and `profiles.is_admin`.
+
+If the SQL is not installed, the admin panel still shows read-only metrics and
+clear setup guidance. Save controls are unavailable without breaking the rest
+of the admin business page.
+
+### Batch 7 Limitations
+
+- the 30-customer/activity threshold is guidance only and is not a fraud model
+- email verification can be counted only for bookings linked to a Supabase
+  Auth user; guest/email-only bookings remain unknown
+- concentrated activity is only a review prompt, not proof of abuse
+- historical businesses need an accurate trial start or creation timestamp
+  for the first-window calculation
+- review approval does not synchronize to Stripe or grant commercial access
+
+### Batch 7 QA Checklist
+
+- confirm a non-admin receives `403` from `/api/admin/founding-offer`
+- confirm customers, staff and business owners cannot read offer review data
+- open a founding business in `/admin/businesses` and verify the 30-day window
+- confirm pending bookings are shown separately
+- confirm confirmed and completed bookings form the potential qualifying count
+- confirm cancelled and declined bookings are excluded from that count
+- confirm repeated bookings from one customer do not inflate unique customers
+- confirm verified, unverified and unknown/guest customer counts remain
+  distinct
+- confirm concentrated activity shows review guidance without blocking anything
+- verify metrics still load before the optional review SQL is installed
+- verify review save controls remain unavailable before SQL installation
+- run `sources/sql/07_founding_offer_reviews.sql` manually in Supabase
+- save each manual review status and confirm private notes reload
+- confirm saving a review does not change
+  `business_billing.second_month_free_eligible`
+- confirm saving a review does not change Stripe subscription or period data
+- confirm booking, staff access and public listing remain unaffected
+
 ## Stage 6 UI Cohesion Patch
 
 Status: prepared locally and intentionally uncommitted pending the separate
@@ -538,6 +651,166 @@ Known limitations:
 - no booking, auth, role, availability, billing, support, email or reminder
   logic was changed
 
+## Batch 7A/7B - Production Communication Activation Foundation
+
+Status: implemented; production build passed. Ready for Batch 8 closure QA.
+
+### Supabase Auth Email Activation
+
+Supabase Auth remains the separate sender for account verification and
+authentication emails. Before production launch:
+
+1. enable email confirmations in the Supabase Auth provider settings
+2. set the Supabase Site URL to the production Mirëbook domain
+3. add the production domain, Vercel domain and required local URLs to the
+   allowed redirect URL list
+4. review the Supabase confirmation and recovery email templates
+5. confirm the verification link returns through `/login?verified=1`
+6. test customer, staff and business registrations with confirmation enabled
+7. test resend from Login and Account
+
+If Supabase is configured to auto-confirm users, Mirëbook may correctly show a
+verified timestamp immediately. Verification remains visible rather than a
+booking, login or workspace lockout in this stage.
+
+### Secure Staff Invite Join Flow
+
+The business Staff page now keeps its existing invite record as the
+authoritative fallback and also requests a server-generated email invite.
+The server:
+
+- verifies the authenticated caller owns the staff member's business
+- generates a cryptographically random 32-byte token
+- stores only its SHA-256 hash
+- expires the invitation after seven days
+- revokes older unused links for that staff profile
+- sends the invite through the provider-neutral email adapter
+- returns a manual secure link when provider delivery is skipped
+
+The `/staff/invite` page verifies the token without revealing staff or
+business private data. Acceptance requires an authenticated account whose
+normalized email exactly matches the invited email. Existing account users
+can sign in and return to the invite; new users can register as staff, verify
+their email when required and resume the invite. The original exact-email RPC
+linking path remains available and unchanged.
+
+Run this optional server-only SQL before enabling emailed invite links:
+
+```text
+sources/sql/08_staff_invite_tokens.sql
+```
+
+If the SQL is absent, the staff member remains marked invited, email delivery
+is not attempted with an insecure identifier, and the existing manual
+exact-email linking flow remains available.
+
+### Communication Coverage Matrix
+
+| Event | Status |
+| --- | --- |
+| Customer booking request/instant booking created | Wired to provider-neutral adapter |
+| Customer confirmed/declined/cancelled/completed update | Wired |
+| Business new request/instant confirmation | Wired |
+| Staff assigned/confirmed/cancelled/declined update | Wired |
+| Customer 24-hour appointment reminder | Implemented, secret-protected and scheduler-ready |
+| Staff invite | Secure link and template wired; optional SQL required |
+| Support ticket requester receipt | Wired and preference-aware |
+| New support ticket operator email | Wired when `SUPPORT_ADMIN_EMAIL` is set |
+| Admin support reply to requester | Wired and preference-aware |
+| Reschedule-specific email | Deferred; in-app notifications remain authoritative |
+| Staff reminders | Deferred |
+| Business reminders | Deferred |
+| Billing update email | Deferred; Stripe and in-app billing state remain separate |
+
+Email requests run only after the underlying booking, invite or support write
+succeeds. A skipped or failed email cannot undo or fail that authoritative
+action.
+
+### Reminder Activation And Security
+
+`/api/email/reminders`:
+
+- requires `REMINDER_CRON_SECRET`
+- requires Supabase service-role access
+- targets only confirmed bookings starting within the 24-hour window
+- excludes pending, declined, cancelled and completed bookings
+- respects the customer reminder preference
+- uses the server-only reminder delivery table to prevent duplicates
+- removes the claim when provider delivery is skipped, so skipped delivery is
+  never reported as sent
+
+Production still needs an authenticated scheduler call. Reminders must not be
+described as active until that scheduler and real provider delivery are QA
+verified.
+
+### Provider And Environment Readiness
+
+Required or optional server environment:
+
+```text
+NEXT_PUBLIC_APP_URL=
+EMAIL_PROVIDER=disabled
+EMAIL_FROM_ADDRESS=
+EMAIL_REPLY_TO=
+SUPPORT_ADMIN_EMAIL=
+REMINDER_CRON_SECRET=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+`EMAIL_PROVIDER=disabled` remains the safe default. The current adapter records
+delivery as skipped and never claims success. No provider-specific API key or
+package is included yet. Configure a supported server-only adapter and Vercel
+environment variables, then verify real receipt before production activation.
+
+Supabase Auth verification emails, Mirëbook application transactional emails
+and Stripe billing emails are three separate delivery systems.
+
+### Batch 7A/7B QA Checklist
+
+- enable Supabase email confirmation in a test project and verify all account
+  types can complete registration after the inbox link
+- confirm production and Vercel domains are allowed Supabase redirect URLs
+- install `sources/sql/08_staff_invite_tokens.sql`
+- invite staff with `EMAIL_PROVIDER=disabled` and confirm the staff record is
+  saved, delivery is described as skipped and a secure manual link is shown
+- confirm the database stores only a token hash
+- open the invite signed out and verify Login and Register return to it
+- accept with the invited email and confirm the staff workspace opens
+- attempt acceptance with another email and confirm no staff profile links
+- resend an invite and confirm the older unused link no longer works
+- confirm an expired or used invite does not reveal private details
+- create customer, business and staff support tickets and confirm the in-app
+  records succeed while email is disabled
+- confirm a non-owner cannot request a support receipt for another ticket
+- confirm a non-admin cannot request a support reply email
+- set `SUPPORT_ADMIN_EMAIL` only in a test environment and verify no ticket
+  body is included in the operator email
+- run the existing booking create and status-action email smoke tests
+- call the reminder endpoint without or with the wrong secret and confirm
+  rejection
+- confirm provider-disabled results are `skipped`, never `sent`
+- confirm no secret or service-role value appears in a client bundle
+
+### Batch 7A/7B Known Limitations
+
+- no real application email provider adapter is included yet
+- staff invite and support templates are English-only email content; the
+  corresponding in-app invite UI is translated EN/SQ
+- staff invite token SQL must be installed manually
+- support and ordinary booking email delivery do not yet have persistent
+  delivery idempotency
+- reschedule, staff reminder, business reminder and billing update emails are
+  deferred
+- no production reminder scheduler is configured
+- email verification remains non-blocking
+
+Automated Batch 7A/7B verification:
+
+- `npm run build`: passed
+- `git diff --check`: passed
+- EN and SQ translation dictionaries contain no duplicate keys
+- Prettier: unavailable in the local workspace
+
 ## Known Limitations
 
 - authenticated role-by-role browser QA is still required with real customer,
@@ -555,8 +828,7 @@ Known limitations:
   idempotency
 - appointment reminders have a delivery claim, but no production scheduler is
   configured
-- support, staff-invite, reschedule and staff/business reminder emails are not
-  wired
+- reschedule and staff/business reminder emails are not wired
 - onboarding progress is derived from current records and is not stored as a
   separate completion state
 - the business dashboard summary does not independently query staff-service
@@ -565,17 +837,13 @@ Known limitations:
 
 ## Next Recommended Batches
 
-Stage 6 Batch 7 - Founding business offer tracking.
-
-Use verified customer identity, genuine confirmed/completed booking activity
-and manual operator review. Do not award the second free month from raw
-signups.
-
 Stage 6 Batch 8 - Stage 6 closure QA.
 
 Include Supabase confirmation-enabled registration, manual SQL deployment,
 preference persistence, provider-disabled booking behavior, reminder endpoint
-authorization and idempotency checks.
+authorization and idempotency checks, founding-offer metric verification,
+admin-only review security and confirmation that review decisions do not
+change Stripe or billing automatically.
 
 ## Batch 3/4A And Batch 5/6 QA Checklist
 

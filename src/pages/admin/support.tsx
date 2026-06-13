@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
 import { useI18n } from '@/lib/useI18n'
+import { requestTransactionalEmail } from '@/lib/email/client'
 
 type SupportMessage = {
   id: string
@@ -343,6 +344,10 @@ export default function AdminSupportPage() {
       replyText.length > 120 ? `${replyText.slice(0, 117)}...` : replyText,
       'support_reply'
     )
+    void requestTransactionalEmail({
+      event: 'support_replied',
+      supportMessageId: selectedMessage.id
+    })
 
     setReplyBody('')
     setSaving(false)

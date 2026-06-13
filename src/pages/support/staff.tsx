@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { requestTransactionalEmail } from "@/lib/email/client";
 
 type Profile = {
   id: string;
@@ -219,6 +220,10 @@ export default function StaffSupportPage() {
         t("support.staff.adminNotificationTitle", "New staff support request"),
         `${ticketSubject} · ${staffProfile?.business_name || staffProfile?.name || name.trim() || profile.email || "Staff member"}`,
       );
+      void requestTransactionalEmail({
+        event: "support_created",
+        supportMessageId: ticketId,
+      });
     }
 
     setSuccess(

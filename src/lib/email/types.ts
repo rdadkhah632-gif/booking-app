@@ -21,6 +21,14 @@ export type TransactionalEmailRequest =
   | {
       event: "booking_status_changed";
       bookingId: string;
+    }
+  | {
+      event: "support_created";
+      supportMessageId: string;
+    }
+  | {
+      event: "support_replied";
+      supportMessageId: string;
     };
 
 export type TransactionalEmailMessage = {

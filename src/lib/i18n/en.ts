@@ -2908,6 +2908,67 @@ export const en: TranslationTree = {
     "Manual billing state saved. Install the Stage 5 audit SQL to retain a durable change record.",
   "admin.businesses.billing.saveError": "Could not save billing changes.",
   "admin.businesses.billing.standard": "Standard launch",
+  "admin.businesses.founding.kicker":
+    "Admin only · Launch offer tracking",
+  "admin.businesses.founding.title": "Founding offer review",
+  "admin.businesses.founding.body":
+    "Raw signups are not enough. Review confirmed and completed bookings, unique customers and verification status before granting a second free month.",
+  "admin.businesses.founding.loading":
+    "Calculating first-month activity...",
+  "admin.businesses.founding.loadError":
+    "Could not load founding offer tracking.",
+  "admin.businesses.founding.saveError":
+    "Could not save founding offer review.",
+  "admin.businesses.founding.saved":
+    "Founding offer review saved. No billing action was taken.",
+  "admin.businesses.founding.guidance.potential": "Potentially eligible",
+  "admin.businesses.founding.guidance.review": "Needs manual review",
+  "admin.businesses.founding.guidance.moreActivity":
+    "Not enough genuine activity yet",
+  "admin.businesses.founding.guidance.notFounding":
+    "Not marked as a founding business",
+  "admin.businesses.founding.offerWindow": "First offer window",
+  "admin.businesses.founding.billingContext": "Billing context",
+  "admin.businesses.founding.currentDecision": "Current billing flag",
+  "admin.businesses.founding.flagEligible":
+    "Second month marked eligible",
+  "admin.businesses.founding.flagNotEligible": "Not marked eligible",
+  "admin.businesses.founding.qualifyingBookings":
+    "Confirmed + completed",
+  "admin.businesses.founding.qualifyingCustomers":
+    "Unique qualifying customers",
+  "admin.businesses.founding.verifiedCustomers":
+    "Verified customer accounts",
+  "admin.businesses.founding.unknownCustomers":
+    "Unknown / guest verification",
+  "admin.businesses.founding.total": "Total",
+  "admin.businesses.founding.pending": "Pending",
+  "admin.businesses.founding.confirmed": "Confirmed",
+  "admin.businesses.founding.completed": "Completed",
+  "admin.businesses.founding.cancelled": "Cancelled",
+  "admin.businesses.founding.declined": "Declined",
+  "admin.businesses.founding.unverified": "Unverified accounts",
+  "admin.businesses.founding.concentrated":
+    "Activity is concentrated across relatively few customers. Review the booking pattern before making a decision.",
+  "admin.businesses.founding.manualOnly":
+    "Final eligibility is manually reviewed by Mirëbook. Saving a review does not grant free time, update Stripe or change the billing eligibility flag.",
+  "admin.businesses.founding.reviewStatus": "Manual review status",
+  "admin.businesses.founding.reviewNotes": "Private review notes",
+  "admin.businesses.founding.reviewNotesPlaceholder":
+    "Record the evidence reviewed and any follow-up needed.",
+  "admin.businesses.founding.lastReviewed": "Last reviewed",
+  "admin.businesses.founding.notReviewed":
+    "No manual review has been saved yet.",
+  "admin.businesses.founding.saving": "Saving review...",
+  "admin.businesses.founding.save": "Save offer review",
+  "admin.businesses.founding.sqlRequired":
+    "Metrics are available read-only. Run sources/sql/07_founding_offer_reviews.sql in Supabase to save review status and notes.",
+  "admin.businesses.founding.reviewStatus.pending": "Pending review",
+  "admin.businesses.founding.reviewStatus.needs_review": "Needs review",
+  "admin.businesses.founding.reviewStatus.potentially_eligible":
+    "Potentially eligible",
+  "admin.businesses.founding.reviewStatus.approved": "Approved manually",
+  "admin.businesses.founding.reviewStatus.declined": "Declined manually",
   "admin.businesses.currentState": "Current operational state",
   "admin.businesses.saveScope":
     "This button updates publishing, billing contact and booking settings only. Use the separate admin-only billing control for commercial state.",
@@ -2977,4 +3038,30 @@ export const en: TranslationTree = {
     "Support requests are connected to the operator inbox",
   "support.operator.flowBody":
     "Customer, staff and business support forms create saved conversations and notify operators with a direct link to the ticket.",
+  "dashboardStaff.invite.savedNoEmail":
+    "Invite saved. Email delivery is not configured, so share the secure invite link manually or ask them to sign in with the invited email.",
+  "dashboardStaff.invite.emailSent":
+    "Invite saved and the invitation email was sent.",
+  "dashboardStaff.invite.savedManualLink":
+    "Invite saved. Email was skipped safely. Manual invite link:",
+  "staffInvite.kicker": "Staff invitation",
+  "staffInvite.title": "Join your Mirëbook staff workspace",
+  "staffInvite.checking": "Checking this invitation...",
+  "staffInvite.readyBody":
+    "Accept this invitation using the email address it was sent to.",
+  "staffInvite.accepting": "Accepting...",
+  "staffInvite.accept": "Accept invite",
+  "staffInvite.login": "Sign in to accept",
+  "staffInvite.register": "Create staff account",
+  "staffInvite.invalid":
+    "This invitation is invalid, expired or already used. Ask the business to send a new invite.",
+  "staffInvite.setup":
+    "Email invitation links are not active yet. You can still sign in with the invited email and use the existing staff linking flow.",
+  "staffInvite.linkedTitle": "Staff account linked",
+  "staffInvite.linkedBody":
+    "Your staff profile is linked. Opening your staff workspace...",
+  "staffInvite.error.wrongEmail":
+    "This invite was sent to a different email address. Sign in with the invited account.",
+  "staffInvite.error.accept":
+    "This invite could not be accepted. It may have expired or already been used.",
 };

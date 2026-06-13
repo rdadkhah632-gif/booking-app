@@ -39,8 +39,21 @@ export default function RegisterPage() {
 
   async function redirectByRole(userId: string, fallbackEmail?: string) {
     const capabilities = await getAccountCapabilities(userId, fallbackEmail);
-    router.replace(capabilities.defaultRoute);
+    const redirectTo =
+      typeof router.query.redirectTo === "string"
+        ? router.query.redirectTo
+        : null;
+    router.replace(
+      redirectTo?.startsWith("/staff/invite?token=")
+        ? redirectTo
+        : capabilities.defaultRoute,
+    );
   }
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (router.query.accountType === "staff") setRole("staff");
+  }, [router.isReady, router.query.accountType]);
 
   useEffect(() => {
     async function checkExistingSession() {
@@ -140,11 +153,20 @@ export default function RegisterPage() {
       }
     }
 
+    const redirectTo =
+      typeof router.query.redirectTo === "string" &&
+      router.query.redirectTo.startsWith("/staff/invite?token=")
+        ? router.query.redirectTo
+        : null;
+    const verificationRedirect = redirectTo
+      ? `${window.location.origin}/login?verified=1&redirectTo=${encodeURIComponent(redirectTo)}`
+      : `${window.location.origin}/login?verified=1`;
+
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+        emailRedirectTo: verificationRedirect,
         data: {
           // Keep staff sign-ups compatible with existing profile role constraints.
           // Staff intent is stored as account_mode='staff' and resolved by getAccountCapabilities.
@@ -269,7 +291,7 @@ export default function RegisterPage() {
     }
 
     const capabilities = await getAccountCapabilities(data.user.id, cleanEmail);
-    const nextRoute = capabilities.defaultRoute;
+    const nextRoute = redirectTo || capabilities.defaultRoute;
 
     setLoading(false);
 
@@ -307,7 +329,11 @@ export default function RegisterPage() {
       type: "signup",
       email: verificationEmail,
       options: {
-        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+        emailRedirectTo:
+          typeof router.query.redirectTo === "string" &&
+          router.query.redirectTo.startsWith("/staff/invite?token=")
+            ? `${window.location.origin}/login?verified=1&redirectTo=${encodeURIComponent(router.query.redirectTo)}`
+            : `${window.location.origin}/login?verified=1`,
       },
     });
 

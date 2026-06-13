@@ -492,16 +492,48 @@ export default function StaffPage() {
       .update({ invite_status: "invited", email: cleanStaffEmail })
       .eq("id", member.id);
 
-    setActionLoadingKey(null);
-
     if (error) {
+      setActionLoadingKey(null);
       setError(error.message);
       return;
     }
 
-    setSuccess(
-      `${member.name} ${t("dashboardStaff.invite.marked", "marked as invited. Ask them to register or log in with")} ${cleanStaffEmail}; ${t("dashboardStaff.invite.linkBody", "Mirëbook will link the staff account when the email matches.")}`,
+    let deliveryMessage = t(
+      "dashboardStaff.invite.savedNoEmail",
+      "Invite saved. Email delivery is not configured, so share the secure invite link manually or ask them to sign in with the invited email.",
     );
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const response = await fetch("/api/staff/invite", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ staffMemberId: member.id }),
+      });
+      const payload = await response.json();
+
+      if (response.ok && payload.delivery?.status === "sent") {
+        deliveryMessage = t(
+          "dashboardStaff.invite.emailSent",
+          "Invite saved and the invitation email was sent.",
+        );
+      } else if (response.ok && payload.manualInviteUrl) {
+        deliveryMessage = `${t(
+          "dashboardStaff.invite.savedManualLink",
+          "Invite saved. Email was skipped safely. Manual invite link:",
+        )} ${payload.manualInviteUrl}`;
+      }
+    } catch {
+      // The staff record is already saved; email delivery is best-effort only.
+    }
+
+    setActionLoadingKey(null);
+    setSuccess(`${member.name}: ${deliveryMessage}`);
     await loadPage();
   }
 

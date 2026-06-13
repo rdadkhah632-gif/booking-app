@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
-import { bookingEmailTemplate } from "@/lib/email/templates";
+import {
+  bookingEmailTemplate,
+  supportEmailTemplate,
+} from "@/lib/email/templates";
 import { sendTransactionalEmail } from "@/lib/email/sendTransactionalEmail";
 import {
   BookingEmailStatus,
@@ -79,9 +82,18 @@ export default async function handler(
   if (!token) return res.status(401).json({ error: "Authentication required" });
 
   const request = req.body as TransactionalEmailRequest;
+  const bookingEvent =
+    request?.event === "booking_created" ||
+    request?.event === "booking_status_changed";
+  const supportEvent =
+    request?.event === "support_created" ||
+    request?.event === "support_replied";
+
   if (
-    !request?.bookingId ||
-    !["booking_created", "booking_status_changed"].includes(request.event)
+    (!bookingEvent && !supportEvent) ||
+    (bookingEvent && !("bookingId" in request && request.bookingId)) ||
+    (supportEvent &&
+      !("supportMessageId" in request && request.supportMessageId))
   ) {
     return res.status(400).json({ error: "Unsupported email event" });
   }
@@ -95,6 +107,88 @@ export default async function handler(
 
     if (userError || !user) {
       return res.status(401).json({ error: "Invalid session" });
+    }
+
+    if (supportEvent && "supportMessageId" in request) {
+      const { data: ticket, error: ticketError } = await supabaseAdmin
+        .from("support_messages")
+        .select("id, user_id, email, subject")
+        .eq("id", request.supportMessageId)
+        .maybeSingle<{
+          id: string;
+          user_id?: string | null;
+          email?: string | null;
+          subject?: string | null;
+        }>();
+
+      if (ticketError || !ticket) {
+        return res.status(404).json({ error: "Support request not found" });
+      }
+
+      const { data: actorProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .maybeSingle<{ is_admin?: boolean | null }>();
+      const isAdmin = Boolean(actorProfile?.is_admin);
+
+      if (
+        (request.event === "support_created" &&
+          ticket.user_id !== user.id) ||
+        (request.event === "support_replied" && !isAdmin)
+      ) {
+        return res.status(403).json({ error: "Email event not permitted" });
+      }
+
+      const requesterEmail =
+        ticket.email || (await emailForUser(supabaseAdmin, ticket.user_id));
+      const requesterPreferences = await loadServerEmailPreferences(
+        supabaseAdmin,
+        ticket.user_id,
+      );
+      const supportUrl = `${appUrl()}/support/messages/${ticket.id}`;
+      const messages = [];
+
+      if (requesterEmail) {
+        messages.push(
+          supportEmailTemplate({
+            event: request.event,
+            recipientEmail: requesterEmail,
+            subject: ticket.subject || "Support request",
+            actionUrl: supportUrl,
+            preferenceEnabled:
+              requesterPreferences.preferences.email_support_updates,
+          }),
+        );
+      }
+
+      const supportAdminEmail = process.env.SUPPORT_ADMIN_EMAIL?.trim();
+      if (request.event === "support_created" && supportAdminEmail) {
+        messages.push(
+          supportEmailTemplate({
+            event: "support_created",
+            recipientEmail: supportAdminEmail,
+            subject: ticket.subject || "New support request",
+            actionUrl: `${appUrl()}/admin/support?ticketId=${ticket.id}`,
+            isAdminNotification: true,
+          }),
+        );
+      }
+
+      const delivery: TransactionalEmailResult[] = [];
+      for (const message of messages) {
+        delivery.push(await sendTransactionalEmail(message));
+      }
+
+      return res.status(200).json({
+        event: request.event,
+        delivery,
+        authoritativeChannel: "in_app_support",
+      });
+    }
+
+    if (!bookingEvent || !("bookingId" in request)) {
+      return res.status(400).json({ error: "Unsupported email event" });
     }
 
     const { data: booking, error: bookingError } = await supabaseAdmin

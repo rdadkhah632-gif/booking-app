@@ -61,12 +61,22 @@ export default function LoginPage() {
       );
     }
 
+    const redirectTo =
+      typeof router.query.redirectTo === "string"
+        ? router.query.redirectTo
+        : null;
+    const safeInviteRedirect =
+      redirectTo?.startsWith("/staff/invite?token=") ?? false;
+
+    if (safeInviteRedirect) {
+      router.replace(redirectTo!);
+      return;
+    }
+
     if (capabilities.defaultRoute === "/my-bookings") {
-      const redirectTo =
-        typeof router.query.redirectTo === "string"
-          ? router.query.redirectTo
-          : "/my-bookings";
-      router.replace(redirectTo.startsWith("/") ? redirectTo : "/my-bookings");
+      router.replace(
+        redirectTo?.startsWith("/") ? redirectTo : "/my-bookings",
+      );
       return;
     }
 

@@ -8,7 +8,7 @@ Before making code changes, always read:
 2. `/sources/01_STAGE_ACCOUNT_ROLE_STAFF_BUSINESS_FOUNDATION.md`
 3. `/sources/01_STAGE_1_CLOSURE_QA.md`
 4. The current active stage document, currently:
-   `/sources/05_STAGE_ADMIN_SUPPORT_OPERATIONAL_CONTROL.md`
+   `/sources/06_STAGE_ONBOARDING_VERIFICATION_EMAIL_LAUNCH_READINESS.md`
 
 ## Current Status
 
@@ -31,15 +31,17 @@ Stage 3 is complete with tracked minor follow-ups.
 
 Stage 4 is complete with tracked follow-ups.
 
-Stage 5 is active.
+Stage 5 is complete with tracked follow-ups.
 
-Stage 5 focuses on:
+Stage 6 is active.
 
-- admin operational visibility
-- business readiness and support context
-- read-only authoritative billing summaries
-- support ticket routing and ownership
-- safe launch operations without broad destructive controls
+Stage 6 focuses on:
+
+- final UI organization and role-specific onboarding
+- email verification and email notification foundations
+- notification preferences and appointment reminders
+- founding-business offer tracking
+- final launch readiness
 
 ## Working Rules
 
@@ -47,7 +49,7 @@ Start each task by checking repository status.
 
 Protect Stage 1 foundations. Do not alter account identity, role/capability logic, staff-business linking, route protection or language preference persistence unless the current task clearly requires it.
 
-Customer booking must not become a payment or checkout flow during Stage 5. Business subscription billing remains separate from customer appointment payments.
+Customer booking must not become a payment or checkout flow during Stage 6. Business subscription billing remains separate from customer appointment payments.
 
 Use small grouped changes. After grouped edits, run formatting on changed files when a formatter is available, then run the build.
 
