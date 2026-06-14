@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isBusinessAppHostname } from "./src/lib/appUrls";
+import { isBusinessAppHostname } from "./lib/appUrls";
 
 export function middleware(request: NextRequest) {
   const forwardedHost = request.headers.get("x-forwarded-host");

@@ -1,6 +1,7 @@
 # Stage 6 - Mirëbook / Mirëbook Business Platform Split And App-Ready Structure
 
-Status: active.
+Status: implementation complete; production redeploy and final live-domain
+verification required before closure.
 
 Batch 1 status: route, navigation and product-boundary audit implemented.
 Production build and static checks passed.
@@ -16,6 +17,11 @@ implemented. Production build, static checks and simulated hostname QA passed.
 
 Batch 5 status: customer and business public content separation implemented.
 Production build, static checks and responsive EN/SQ browser QA passed.
+
+Batch 6 status: cross-domain QA and regression review implemented. Production
+build, static checks and local simulated-hostname QA passed. A middleware
+placement bug found during live QA was fixed. The production business-domain
+root must be rechecked after deployment before Stage 6 is marked complete.
 
 Stages 1 through 5 remain complete or closed with tracked follow-ups. The
 earlier onboarding, email and launch-readiness work remains recorded in
@@ -644,9 +650,133 @@ Remaining follow-ups:
 - complete live-domain login, registration and email callback QA
 - review support landing-page ownership across customer and business domains
 
-Recommended Batch 6:
+## Batch 6 Cross-Domain QA And Closure Review
 
-- review business information architecture for daily work versus setup
-- align owner and staff terminology around Home, Bookings, Calendar, Team and
-  Settings
-- keep permissions, routes and operational logic unchanged
+### Bug found and fixed
+
+Live QA found that `https://business.mirebook.com/` still rendered the customer
+homepage while `https://business.mirebook.com/business` rendered Mirëbook
+Business correctly.
+
+The app uses `src/pages`, but the hostname middleware was at repository root.
+The production build did not include a middleware bundle, so the business root
+rewrite was never deployed. The unchanged root-only rewrite now lives at
+`src/middleware.ts`, where Next.js includes it as `ƒ Middleware`.
+
+The rewrite remains deliberately narrow:
+
+- only `/` is matched
+- only the configured business hostname is rewritten
+- the internal destination is `/business`
+- deeper business, staff, auth, billing and support routes are unchanged
+- customer and fallback hosts continue to render the customer homepage
+
+### Confirmed customer-product behavior
+
+- `https://mirebook.com/` renders the customer marketplace homepage
+- the customer homepage links to `https://business.mirebook.com/`
+- `/explore` renders current bookable businesses without raw translation keys
+- a public business profile renders service choice, booking mode and the
+  sign-in requirement before booking
+- customer homepage, Explore and the sampled public business profile did not
+  produce horizontal overflow at a 390px viewport
+- English and Albanian switching works on the local customer product
+- unauthenticated My bookings, notifications and account routes return to
+  login rather than exposing customer data
+
+### Confirmed business-product behavior
+
+- `/business` returns the Mirëbook Business public homepage
+- the business homepage links back to `https://mirebook.com/`
+- business login and registration retain their product-specific entry copy
+- unauthenticated `/dashboard` and `/staff` requests return to login safely
+- local simulated-hostname QA confirms the fixed business root renders the
+  Mirëbook Business homepage with no redirect loop
+- the sampled business homepage did not produce horizontal overflow at a
+  390px viewport
+
+### Cross-domain and fallback results
+
+- configured customer-to-business and business-to-customer links resolve to
+  the intended production origins
+- localhost remains usable without the optional split-domain environment
+  variables; links fall back to same-origin `/business`, login and registration
+  routes
+- a customer hostname and an unrelated/Vercel-style hostname remain on the
+  customer root during simulated-hostname QA
+- the previously documented
+  `https://booking-app-blush-nu.vercel.app/` URL currently returns Vercel
+  `DEPLOYMENT_NOT_FOUND`; replace it in Supabase Auth allowlists and QA notes if
+  the project now has a different stable Vercel hostname
+
+### Protected regression result
+
+The production build passed after the middleware move. Static inspection and
+unauthenticated route QA found no changes to:
+
+- account capability or default-route resolution
+- staff invite/linking or owner-as-staff behavior
+- booking creation, statuses, actions or availability generation
+- business readiness or Explore listing rules
+- notification behavior
+- Stripe Checkout, webhook sync or billing state
+- admin and support access controls
+- database schema, RLS or migrations
+
+Authenticated owner, staff, admin, billing, booking-action and support-thread
+workflows were not mutated in Batch 6. They still require a final manual smoke
+test with the appropriate production QA accounts.
+
+### Deployment gate
+
+Stage 6 must remain open until the middleware move is deployed and these checks
+pass:
+
+1. `https://business.mirebook.com/` shows Mirëbook Business while the browser
+   remains on `/`.
+2. `https://business.mirebook.com/business` returns 200.
+3. `https://mirebook.com/` remains the customer homepage.
+4. Customer and business login, registration, verification and password reset
+   callbacks succeed under the configured Supabase Auth allowlist.
+5. An owner can open `/dashboard`, linked staff can open `/staff`, and a
+   customer can complete one booking smoke test.
+
+### Remaining follow-ups
+
+- redeploy the middleware placement fix and repeat the production root checks
+- replace or remove the retired Vercel deployment URL from operational notes
+  and Supabase Auth redirects
+- complete authenticated owner, staff, admin, billing and booking smoke tests
+- verify email confirmation and password-reset callbacks from both domains
+- audit shared `/account` wording and support landing-page ownership
+- align the document language attribute with the selected Albanian locale for
+  accessibility
+
+## Recommended Stage 7 - App Preparation / Mobile Architecture
+
+Stage 7 should define application shells, navigation ownership, deep links,
+session handoff and release boundaries without rewriting the protected web
+logic.
+
+The future customer app should map:
+
+- Explore
+- public business profiles and booking
+- My bookings
+- customer notifications
+- account
+
+The future Mirëbook Business app should map:
+
+- calendar
+- bookings
+- services
+- staff
+- availability
+- business notifications
+- billing and settings
+
+Stage 7 should begin with an architecture and route-contract audit. Native or
+mobile-specific code should not start until the two production web domains,
+auth callbacks and role-based entry routes have passed the Stage 6 deployment
+gate.
