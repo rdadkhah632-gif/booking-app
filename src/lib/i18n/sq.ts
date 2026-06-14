@@ -17,6 +17,9 @@ export const sq: TranslationTree = {
   "nav.notifications": "Njoftime",
   "nav.account": "Llogaria",
   "nav.forBusinesses": "Për bizneset",
+  "nav.customerProduct": "Mirëbook për klientët",
+  "nav.businessLogin": "Hyrje biznesi",
+  "nav.startBusiness": "Fillo konfigurimin e biznesit",
   "product.business.suffix": "Biznes",
   "auth.logout": "Dil",
   "staff.schedule.title": "Orari im",
@@ -140,6 +143,23 @@ export const sq: TranslationTree = {
   "home.proof.staff": "Zgjidh çdo staf të lirë ose një person specifik",
   "home.proof.tracking": "Përditësime të qarta për kërkesat dhe konfirmimet",
   "home.proof.language": "Në dispozicion në shqip dhe anglisht",
+  "home.journey.kicker": "Rezervimi yt, i bërë i qartë",
+  "home.journey.title":
+    "Nga gjetja e shërbimit deri te njohja e hapit të ardhshëm.",
+  "home.journey.discover.title": "Shfleto biznese të rezervueshme",
+  "home.journey.discover.body":
+    "Kërko sipas shërbimit ose qytetit dhe krahaso bizneset gati për takime.",
+  "home.journey.choose.title": "Zgjidh shërbimin, stafin dhe orarin",
+  "home.journey.choose.body":
+    "Shiko disponueshmërinë reale dhe nëse rezervimi konfirmohet menjëherë apo kërkon miratim.",
+  "home.journey.track.title": "Gjurmo çdo përditësim rezervimi",
+  "home.journey.track.body":
+    "Mbaj kërkesat, takimet e konfirmuara dhe historikun së bashku te Rezervimet e mia.",
+  "home.customerBand.kicker": "Krijuar për klientët",
+  "home.customerBand.title":
+    "Rezervo takime lokale pa humbur detajet.",
+  "home.customerBand.body":
+    "Mirëbook mban së bashku biznesin, shërbimin, stafin, orarin dhe statusin, para dhe pas rezervimit.",
   "home.business.kicker": "Për bizneset",
   "home.business.title":
     "Menaxho biznesin tënd të shërbimeve nga një hapësirë Mirëbook.",
@@ -201,6 +221,13 @@ export const sq: TranslationTree = {
   "home.trust.modelTitle": "Fokus te takimi",
   "home.trust.modelBody":
     "Shiko së bashku shërbimin, stafin, orarin dhe statusin e rezervimit para se ta dërgosh.",
+  "home.trust.statusKicker": "Përditësimet e statusit",
+  "home.trust.statusTitle": "Dije nëse je i konfirmuar",
+  "home.trust.statusBody":
+    "Kërkesat e dërguara, takimet e konfirmuara, të refuzuara, të anuluara dhe të përfunduara mbeten të ndara qartë.",
+  "home.trust.supportCustomerTitle": "Ndihmë për klientët kur nevojitet",
+  "home.trust.supportCustomerBody":
+    "Ndihma për klientët, privatësia dhe udhëzimet për rezervimet janë të lehta për t’u arritur.",
   "home.trust.billing": "Bazat e faturimit",
   "home.trust.supportKicker": "Ndihmë",
   "home.trust.supportTitle": "Ndihmë për klientë, biznese dhe staf",
@@ -211,6 +238,9 @@ export const sq: TranslationTree = {
   "home.trust.legalTitle": "Privatësia dhe kushtet",
   "home.trust.legalBody":
     "Shiko si i trajton Mirëbook përdorimin e platformës dhe informacionet personale.",
+  "home.businessEntry.title":
+    "Menaxho rezervimet dhe operacionet ditore me Mirëbook Biznes.",
+  "home.businessEntry.cta": "Vizito Mirëbook Biznes",
 
   "businessHome.metaTitle":
     "Mirëbook Biznes | Rezervime, staf dhe disponueshmëri",
@@ -232,6 +262,12 @@ export const sq: TranslationTree = {
   "businessHome.proof.profile": "Profil publik për rezervime",
   "businessHome.proof.profileBody":
     "Klientët shohin shërbimet, stafin dhe oraret reale të lira.",
+  "businessHome.audience.kicker": "Krijuar për ditën e punës",
+  "businessHome.audience.title":
+    "Për pronarë, staf dhe pronarë që marrin edhe takime.",
+  "businessHome.audience.body":
+    "Pronarët menaxhojnë shërbimet, stafin, disponueshmërinë dhe vendimet e rezervimit. Stafi sheh punën e caktuar dhe disponueshmërinë personale. Bizneset ku pronari është edhe staf mund të mbajnë të lidhur menaxhimin dhe orarin personal.",
+  "businessHome.cta.dashboard": "Hap hapësirën e biznesit",
   "businessHome.features.kicker": "Operacionet ditore",
   "businessHome.features.title":
     "Mjetet që i duhen një biznesi shërbimesh për të qenë i organizuar.",

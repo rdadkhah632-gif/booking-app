@@ -9,6 +9,7 @@ import StaffNav from "./StaffNav";
 import AdminNav from "./AdminNav";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { getBusinessAppUrl } from "@/lib/appUrls";
 import { Role } from "./navTypes";
 
 function isAdminRoute(pathname: string) {
@@ -71,6 +72,7 @@ function navRoleForCapabilities(params: {
 export default function AuthNav() {
   const router = useRouter();
   const { t } = useI18n();
+  const isPublicBusinessEntry = router.pathname === "/business";
 
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<Role>(null);
@@ -257,22 +259,23 @@ export default function AuthNav() {
     if (role === "business") return "/dashboard";
     if (role === "staff") return "/staff";
     if (role === "customer") return "/explore";
+    if (isPublicBusinessEntry) return getBusinessAppUrl();
     return "/";
-  }, [role]);
+  }, [isPublicBusinessEntry, role]);
 
   const roleBadge = useMemo(() => {
     if (role === "admin") return t("nav.role.operator", "Operator");
-    if (role === "business" || role === "staff")
+    if (role === "business" || role === "staff" || isPublicBusinessEntry)
       return t("product.business.suffix", "Business");
     return null;
-  }, [role, t]);
+  }, [isPublicBusinessEntry, role, t]);
 
   return (
     <nav
       className={[
         "nav-simple",
         role === "admin" ? "nav-operator" : "",
-        !role && router.pathname === "/business" ? "nav-public-business" : "",
+        !role && isPublicBusinessEntry ? "nav-public-business" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -280,7 +283,7 @@ export default function AuthNav() {
       <div className="nav-simple-inner">
         <Link href={logoHref} className="logo">
           Mirë<span>book</span>
-          {roleBadge && <em>{roleBadge}</em>}
+          {roleBadge && <em className="product-role-badge">{roleBadge}</em>}
         </Link>
 
         <div className="auth-nav-links">
@@ -351,7 +354,7 @@ export default function AuthNav() {
           gap: 0.45rem;
         }
 
-        .logo em {
+        .product-role-badge {
           font-style: normal;
           font-size: 0.7rem;
           line-height: 1;
@@ -413,13 +416,18 @@ export default function AuthNav() {
             display: none;
           }
 
-          .logo em {
+          .product-role-badge {
             font-size: 0.66rem;
             padding: 0.18rem 0.4rem;
           }
         }
 
         @media (max-width: 540px) {
+          :global(.nav-mobile-optional),
+          :global(.public-register-link) {
+            display: none;
+          }
+
           :global(.nav-public-business .public-explore-link),
           :global(.nav-public-business .public-business-link) {
             display: none;
@@ -437,7 +445,7 @@ export default function AuthNav() {
             font-size: 1rem;
           }
 
-          .logo em {
+          .product-role-badge {
             max-width: 5.5rem;
             overflow: hidden;
             text-overflow: ellipsis;

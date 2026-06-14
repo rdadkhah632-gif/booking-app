@@ -17,6 +17,9 @@ export const en: TranslationTree = {
   "nav.account": "Account",
   "nav.logout": "Log out",
   "nav.forBusinesses": "For businesses",
+  "nav.customerProduct": "Customer Mirëbook",
+  "nav.businessLogin": "Business login",
+  "nav.startBusiness": "Start business setup",
   "product.business.suffix": "Business",
   "auth.logout": "Log out",
   "login.checkingSession": "Checking your Mirëbook session...",
@@ -93,6 +96,23 @@ export const en: TranslationTree = {
   "home.proof.staff": "Choose any available staff or a specific person",
   "home.proof.tracking": "Clear request and confirmation updates",
   "home.proof.language": "Available in English and Albanian",
+  "home.journey.kicker": "Your booking, made clear",
+  "home.journey.title":
+    "From finding a service to knowing what happens next.",
+  "home.journey.discover.title": "Browse bookable businesses",
+  "home.journey.discover.body":
+    "Search by service or city and compare businesses ready to take appointments.",
+  "home.journey.choose.title": "Choose service, staff and time",
+  "home.journey.choose.body":
+    "See real availability and whether your booking confirms instantly or needs approval.",
+  "home.journey.track.title": "Track every booking update",
+  "home.journey.track.body":
+    "Keep requests, confirmed appointments and history together in My bookings.",
+  "home.customerBand.kicker": "Made for customers",
+  "home.customerBand.title":
+    "Book local appointments without losing track of the details.",
+  "home.customerBand.body":
+    "Mirëbook keeps the business, service, staff member, time and booking status together, before and after you book.",
   "home.business.kicker": "For businesses",
   "home.business.title":
     "Run your service business from one Mirëbook workspace.",
@@ -152,6 +172,13 @@ export const en: TranslationTree = {
   "home.trust.modelTitle": "Focused on the appointment",
   "home.trust.modelBody":
     "See the service, staff, time and booking status together before you commit.",
+  "home.trust.statusKicker": "Status updates",
+  "home.trust.statusTitle": "Know whether you are confirmed",
+  "home.trust.statusBody":
+    "Request sent, confirmed, declined, cancelled and completed appointments stay clearly separated.",
+  "home.trust.supportCustomerTitle": "Customer help when needed",
+  "home.trust.supportCustomerBody":
+    "Customer support, privacy information and booking guidance remain easy to reach.",
   "home.trust.billing": "Billing groundwork",
   "home.trust.supportKicker": "Support",
   "home.trust.supportTitle": "Help for customers, businesses and staff",
@@ -162,6 +189,9 @@ export const en: TranslationTree = {
   "home.trust.legalTitle": "Privacy and terms",
   "home.trust.legalBody":
     "Review how Mirëbook handles platform use and personal information.",
+  "home.businessEntry.title":
+    "Run bookings and daily operations with Mirëbook Business.",
+  "home.businessEntry.cta": "Visit Mirëbook Business",
 
   "businessHome.metaTitle":
     "Mirëbook Business | Bookings, staff and availability",
@@ -183,6 +213,12 @@ export const en: TranslationTree = {
   "businessHome.proof.profile": "A bookable public profile",
   "businessHome.proof.profileBody":
     "Customers see services, staff and real available times.",
+  "businessHome.audience.kicker": "Built for the working day",
+  "businessHome.audience.title":
+    "For owners, staff and owners who also take appointments.",
+  "businessHome.audience.body":
+    "Owners manage services, staff, availability and booking decisions. Staff sees assigned work and personal availability. Owner-as-staff businesses can keep management and their own schedule connected.",
+  "businessHome.cta.dashboard": "Open business workspace",
   "businessHome.features.kicker": "Daily operations",
   "businessHome.features.title":
     "The tools a service business needs to stay organised.",

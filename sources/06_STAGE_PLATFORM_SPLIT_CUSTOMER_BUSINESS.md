@@ -14,6 +14,9 @@ implemented. Production build and static checks passed.
 Batch 4 status: business-domain root behavior and cross-domain QA hardening
 implemented. Production build, static checks and simulated hostname QA passed.
 
+Batch 5 status: customer and business public content separation implemented.
+Production build, static checks and responsive EN/SQ browser QA passed.
+
 Stages 1 through 5 remain complete or closed with tracked follow-ups. The
 earlier onboarding, email and launch-readiness work remains recorded in
 `sources/06_STAGE_ONBOARDING_VERIFICATION_EMAIL_LAUNCH_READINESS.md`; this
@@ -374,16 +377,18 @@ available, excluding `business.localhost`.
 
 ### Batch 5 - Customer Product Boundary
 
-- audit customer navigation, support and account links
-- remove business-operational language from customer surfaces
-- define customer-app-ready page ownership without moving routes
+Implemented:
 
-Recommended next batch:
-
-- audit customer navigation, support and shared account entry points
-- remove remaining operational business copy from the customer homepage
-- define how shared `/account` presents customer versus Mirëbook Business entry
-  without creating separate identity systems
+- removed the large business operations card from the customer homepage hero
+- removed business setup, team administration and SaaS growth sections from
+  the customer homepage
+- centered `/` on local-service discovery, real availability, booking mode,
+  appointment status and My bookings
+- retained one compact `For businesses` entry to Mirëbook Business
+- made signed-out navigation business-aware without changing auth resolution
+- added a clear owner, staff and owner-as-staff audience section to the
+  Mirëbook Business homepage
+- preserved shared login, registration and account infrastructure
 
 ### Batch 6 - Business Information Architecture
 
@@ -602,3 +607,46 @@ Recommended Batch 5:
 - audit customer navigation, account and support entry points
 - reduce business-operational content on the customer homepage
 - preserve the shared identity and capability model
+
+## Batch 5 Public Content Separation
+
+Customer homepage:
+
+- leads with local-service search and Explore
+- explains service, staff and time selection
+- explains request versus instant-confirmation outcomes
+- points customers to My bookings, customer support and account creation
+- contains only one compact entry to Mirëbook Business
+- no longer presents business billing, staff administration, publishing or
+  operational dashboard features as primary customer-home content
+
+Mirëbook Business homepage:
+
+- remains the main public sales and product explanation surface for owners
+- covers booking management, calendar, services, staff, availability, booking
+  modes, public profiles, notifications and launch membership
+- now names owners, staff and owner-as-staff businesses explicitly
+- links to business registration, business login and the existing dashboard
+- avoids claims about deposits, customer checkout, calendar sync or other
+  unimplemented features
+
+Public navigation:
+
+- customer pages retain Mirëbook, Explore and a small `For businesses` link
+- the business homepage shows a link back to customer Mirëbook, business
+  support, business login and business setup
+- language selection remains available on both product entries
+- authenticated role and capability routing remains unchanged
+
+Remaining follow-ups:
+
+- audit shared `/account` wording and workspace entry hierarchy
+- complete live-domain login, registration and email callback QA
+- review support landing-page ownership across customer and business domains
+
+Recommended Batch 6:
+
+- review business information architecture for daily work versus setup
+- align owner and staff terminology around Home, Bookings, Calendar, Team and
+  Settings
+- keep permissions, routes and operational logic unchanged

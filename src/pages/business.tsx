@@ -20,6 +20,7 @@ export default function BusinessHomePage() {
     "/register?accountType=business",
   );
   const businessLoginUrl = getBusinessAppUrl("/login?product=business");
+  const businessDashboardUrl = getBusinessAppUrl("/dashboard");
 
   return (
     <main className="business-site">
@@ -111,6 +112,33 @@ export default function BusinessHomePage() {
                 "Customers see services, staff and real available times.",
               )}
             </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="business-audience-band">
+        <div className="container business-audience-grid">
+          <div>
+            <p className="business-section-kicker">
+              {t("businessHome.audience.kicker", "Built for the working day")}
+            </p>
+            <h2>
+              {t(
+                "businessHome.audience.title",
+                "For owners, staff and owners who also take appointments.",
+              )}
+            </h2>
+          </div>
+          <div>
+            <p>
+              {t(
+                "businessHome.audience.body",
+                "Owners manage services, staff, availability and booking decisions. Staff sees assigned work and personal availability. Owner-as-staff businesses can keep management and their own schedule connected.",
+              )}
+            </p>
+            <Link href={businessDashboardUrl} className="btn btn-ghost">
+              {t("businessHome.cta.dashboard", "Open business workspace")}
+            </Link>
           </div>
         </div>
       </section>
@@ -390,6 +418,42 @@ export default function BusinessHomePage() {
           padding: 88px 0;
         }
 
+        .business-audience-band {
+          padding: 68px 0;
+          border-bottom: 1px solid var(--border);
+          background: #111822;
+        }
+
+        .business-audience-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+          gap: 4rem;
+          align-items: start;
+        }
+
+        .business-audience-grid h2 {
+          margin: 0;
+          font-family: var(--font-display);
+          font-size: clamp(2rem, 4vw, 3.2rem);
+          line-height: 1.08;
+          letter-spacing: 0;
+        }
+
+        .business-audience-grid > div:last-child {
+          display: grid;
+          gap: 1.25rem;
+        }
+
+        .business-audience-grid > div:last-child p {
+          margin: 0;
+          color: var(--text-muted);
+          line-height: 1.7;
+        }
+
+        .business-audience-grid :global(.btn) {
+          justify-self: start;
+        }
+
         .business-section-heading {
           max-width: 760px;
           margin-bottom: 2.2rem;
@@ -550,7 +614,8 @@ export default function BusinessHomePage() {
           }
 
           .business-team-layout,
-          .business-membership {
+          .business-membership,
+          .business-audience-grid {
             grid-template-columns: 1fr;
             gap: 2rem;
           }

@@ -5,13 +5,14 @@ import { useRouter } from "next/router";
 import { useI18n } from "@/lib/useI18n";
 import { getBusinessAppUrl } from "@/lib/appUrls";
 
+const journeySteps = ["discover", "choose", "track"] as const;
+
 export default function Home() {
   const router = useRouter();
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
   const businessHomeUrl = getBusinessAppUrl();
-  const businessLoginUrl = getBusinessAppUrl("/login?product=business");
 
   function searchBusinesses(e: React.FormEvent) {
     e.preventDefault();
@@ -29,16 +30,14 @@ export default function Home() {
     <main>
       <AuthNav />
 
-      <section className="home-hero">
+      <section className="home-hero customer-home-hero">
         <div className="home-glow home-glow-one" />
         <div className="home-glow home-glow-two" />
 
         <div className="container home-hero-grid">
           <div className="home-copy">
             <div className="home-eyebrow">{t("home.eyebrow")}</div>
-
             <h1 className="home-title">{t("home.title")}</h1>
-
             <p className="home-subtitle">{t("home.subtitle")}</p>
 
             <form onSubmit={searchBusinesses} className="home-search">
@@ -48,118 +47,98 @@ export default function Home() {
                 placeholder={t("home.search.servicePlaceholder")}
                 className="home-search-input"
               />
-
               <input
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder={t("home.search.cityPlaceholder")}
                 className="home-search-input"
               />
-
               <button className="btn btn-accent home-search-button">
                 {t("home.search.button")}
               </button>
             </form>
 
             <div className="home-cta-row">
-              <Link href={businessHomeUrl} className="btn btn-ghost">
-                {t("home.business.openBusiness", "Mirëbook Business")}
+              <Link href="/explore" className="btn btn-ghost">
+                {t("home.cta.explore", "Explore Mirëbook")}
+              </Link>
+              <Link href="/my-bookings" className="btn btn-ghost">
+                {t("home.cta.myBookings", "My bookings")}
               </Link>
             </div>
 
-            <div className="home-proof-row">
-              <span className="small muted">
-                {t("home.proof.availability")}
-              </span>
-              <span className="small muted">{t("home.proof.staff")}</span>
-              <span className="small muted">{t("home.proof.tracking")}</span>
-              <span className="small muted">{t("home.proof.language")}</span>
-            </div>
           </div>
 
-          <aside className="card home-business-card">
-            <p
-              className="small"
-              style={{ color: "var(--accent)", marginBottom: "0.35rem" }}
-            >
-              {t("home.business.kicker")}
+          <aside className="customer-journey-panel">
+            <p className="customer-panel-kicker">
+              {t("home.journey.kicker", "Your booking, made clear")}
             </p>
-
-            <h2 className="home-card-title">{t("home.business.title")}</h2>
-
-            <p className="muted" style={{ marginBottom: 24 }}>
-              {t("home.business.body")}
-            </p>
-
-            <div className="home-business-links">
-              <div className="card home-mini-card">
-                <strong>{t("home.business.profileTitle")}</strong>
-                <p className="small muted">{t("home.business.profileBody")}</p>
-              </div>
-
-              <div className="card home-mini-card">
-                <strong>{t("home.business.actionTitle")}</strong>
-                <p className="small muted">{t("home.business.actionBody")}</p>
-              </div>
-
-              <div className="card home-mini-card">
-                <strong>{t("home.business.managerTitle")}</strong>
-                <p className="small muted">{t("home.business.managerBody")}</p>
-              </div>
-            </div>
-
-            <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href={businessHomeUrl} className="btn btn-accent">
-                {t("home.business.openBusiness", "Mirëbook Business")}
-              </Link>
-
-              <Link href={businessLoginUrl} className="btn btn-ghost">
-                {t("home.business.login")}
-              </Link>
+            <h2>
+              {t(
+                "home.journey.title",
+                "From finding a service to knowing what happens next.",
+              )}
+            </h2>
+            <div className="customer-journey-list">
+              {journeySteps.map((step, index) => (
+                <div key={step} className="customer-journey-step">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <strong>
+                      {t(
+                        `home.journey.${step}.title`,
+                        {
+                          discover: "Browse bookable businesses",
+                          choose: "Choose service, staff and time",
+                          track: "Track every booking update",
+                        }[step],
+                      )}
+                    </strong>
+                    <p>
+                      {t(
+                        `home.journey.${step}.body`,
+                        {
+                          discover:
+                            "Search by service or city and compare businesses ready to take appointments.",
+                          choose:
+                            "See real availability and whether your booking confirms instantly or needs approval.",
+                          track:
+                            "Keep requests, confirmed appointments and history together in My bookings.",
+                        }[step],
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </aside>
         </div>
       </section>
 
-      <section className="container home-confidence-section">
-        <div className="home-section-heading">
-          <p
-            className="small"
-            style={{ color: "var(--accent)", marginBottom: "0.5rem" }}
-          >
-            {t("home.confidence.kicker")}
-          </p>
-          <h2>{t("home.confidence.title")}</h2>
-          <p className="muted">{t("home.confidence.body")}</p>
-        </div>
-
-        <div className="grid-2">
-          <div className="card">
-            <p className="small muted">{t("home.customers.kicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.customers.title")}
-            </h3>
-            <p className="muted" style={{ margin: "0.5rem 0 1rem" }}>
-              {t("home.customers.body")}
+      <section className="home-customer-band">
+        <div className="container home-customer-band-inner">
+          <div>
+            <p>{t("home.customerBand.kicker", "Made for customers")}</p>
+            <h2>
+              {t(
+                "home.customerBand.title",
+                "Book local appointments without losing track of the details.",
+              )}
+            </h2>
+          </div>
+          <div className="home-customer-band-copy">
+            <p>
+              {t(
+                "home.customerBand.body",
+                "Mirëbook keeps the business, service, staff member, time and booking status together, before and after you book.",
+              )}
             </p>
-            <div className="home-cta-row" style={{ marginBottom: 0 }}>
+            <div className="home-cta-row">
               <Link href="/explore" className="btn btn-accent">
-                {t("home.customers.explore")}
+                {t("home.customers.explore", "Explore marketplace")}
               </Link>
-            </div>
-          </div>
-
-          <div className="card">
-            <p className="small muted">{t("home.businesses.kicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.businesses.title")}
-            </h3>
-            <p className="muted" style={{ margin: "0.5rem 0 1rem" }}>
-              {t("home.businesses.body")}
-            </p>
-            <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href={businessHomeUrl} className="btn btn-accent">
-                {t("home.business.openBusiness", "Mirëbook Business")}
+              <Link href="/register" className="btn btn-ghost">
+                {t("home.cta.createAccount", "Create account")}
               </Link>
             </div>
           </div>
@@ -168,55 +147,7 @@ export default function Home() {
 
       <section className="container home-confidence-section">
         <div className="home-section-heading">
-          <p
-            className="small"
-            style={{ color: "var(--accent)", marginBottom: "0.5rem" }}
-          >
-            {t("home.growth.kicker")}
-          </p>
-          <h2>{t("home.growth.title")}</h2>
-          <p className="muted">{t("home.growth.body")}</p>
-        </div>
-
-        <div className="grid-3">
-          <div className="card">
-            <p className="small muted">{t("explore.trust.customerKicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.growth.customerTitle")}
-            </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
-              {t("home.growth.customerBody")}
-            </p>
-          </div>
-
-          <div className="card">
-            <p className="small muted">{t("explore.trust.businessKicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.growth.businessTitle")}
-            </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
-              {t("home.growth.businessBody")}
-            </p>
-          </div>
-
-          <div className="card">
-            <p className="small muted">{t("home.growth.teamKicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.growth.teamTitle")}
-            </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
-              {t("home.growth.teamBody")}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="container home-confidence-section">
-        <div className="home-section-heading">
-          <p
-            className="small"
-            style={{ color: "var(--accent)", marginBottom: "0.5rem" }}
-          >
+          <p className="small" style={{ color: "var(--accent)" }}>
             {t("home.trust.kicker")}
           </p>
           <h2>{t("home.trust.title")}</h2>
@@ -224,55 +155,228 @@ export default function Home() {
         </div>
 
         <div className="grid-3">
-          <div className="card">
-            <p className="small muted">{t("home.trust.modelKicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.trust.modelTitle")}
-            </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
-              {t("home.trust.modelBody")}
+          <article className="card">
+            <p className="small muted">
+              {t("home.trust.modelKicker")}
             </p>
-            <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href="/explore" className="btn btn-ghost">
-                {t("home.cta.explore")}
-              </Link>
-            </div>
-          </div>
-
-          <div className="card">
+            <h3>{t("home.trust.modelTitle")}</h3>
+            <p className="muted">{t("home.trust.modelBody")}</p>
+          </article>
+          <article className="card">
+            <p className="small muted">
+              {t("home.trust.statusKicker", "Status updates")}
+            </p>
+            <h3>
+              {t("home.trust.statusTitle", "Know whether you are confirmed")}
+            </h3>
+            <p className="muted">
+              {t(
+                "home.trust.statusBody",
+                "Request sent, confirmed, declined, cancelled and completed appointments stay clearly separated.",
+              )}
+            </p>
+          </article>
+          <article className="card">
             <p className="small muted">{t("home.trust.supportKicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.trust.supportTitle")}
+            <h3>
+              {t("home.trust.supportCustomerTitle", "Customer help when needed")}
             </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
-              {t("home.trust.supportBody")}
+            <p className="muted">
+              {t(
+                "home.trust.supportCustomerBody",
+                "Customer support, privacy information and booking guidance remain easy to reach.",
+              )}
             </p>
-            <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href="/support" className="btn btn-ghost">
-                {t("home.trust.supportCentre")}
-              </Link>
-            </div>
-          </div>
-
-          <div className="card">
-            <p className="small muted">{t("home.trust.legalKicker")}</p>
-            <h3 style={{ marginTop: "0.25rem" }}>
-              {t("home.trust.legalTitle")}
-            </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
-              {t("home.trust.legalBody")}
-            </p>
-            <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href="/privacy" className="btn btn-ghost">
-                {t("common.privacy")}
-              </Link>
-              <Link href="/terms" className="btn btn-ghost">
-                {t("common.terms")}
-              </Link>
-            </div>
-          </div>
+            <Link href="/support/customer" className="home-text-link">
+              {t("nav.customerSupport", "Customer support")}
+            </Link>
+          </article>
         </div>
       </section>
+
+      <section className="home-business-entry">
+        <div className="container home-business-entry-inner">
+          <div>
+            <p>{t("home.business.kicker", "For businesses")}</p>
+            <h2>
+              {t(
+                "home.businessEntry.title",
+                "Run bookings and daily operations with Mirëbook Business.",
+              )}
+            </h2>
+          </div>
+          <Link href={businessHomeUrl} className="btn btn-ghost">
+            {t("home.businessEntry.cta", "Visit Mirëbook Business")}
+          </Link>
+        </div>
+      </section>
+
+      <style jsx>{`
+        .customer-home-hero {
+          min-height: calc(100vh - 118px);
+          min-height: calc(100dvh - 118px);
+          padding: 44px 0;
+        }
+
+        .customer-home-hero :global(.home-title) {
+          font-size: clamp(2.6rem, 5vw, 4rem);
+        }
+
+        .customer-home-hero :global(.home-subtitle) {
+          margin-bottom: 24px;
+        }
+
+        .customer-journey-panel {
+          align-self: center;
+          padding: 1.35rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: rgba(17, 24, 34, 0.92);
+        }
+
+        .customer-panel-kicker,
+        .home-customer-band p:first-child,
+        .home-business-entry p {
+          margin: 0 0 0.65rem;
+          color: var(--accent);
+          font-size: 0.78rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .customer-journey-panel h2,
+        .home-customer-band h2,
+        .home-business-entry h2 {
+          margin: 0;
+          font-family: var(--font-display);
+          letter-spacing: 0;
+        }
+
+        .customer-journey-panel h2 {
+          font-size: 1.8rem;
+          line-height: 1.14;
+        }
+
+        .customer-journey-list {
+          display: grid;
+          margin-top: 1.5rem;
+        }
+
+        .customer-journey-step {
+          display: grid;
+          grid-template-columns: 2rem minmax(0, 1fr);
+          gap: 0.8rem;
+          padding: 1rem 0;
+          border-top: 1px solid var(--border);
+        }
+
+        .customer-journey-step > span {
+          color: var(--accent);
+          font-size: 0.75rem;
+          font-weight: 800;
+        }
+
+        .customer-journey-step p {
+          margin: 0.35rem 0 0;
+          color: var(--text-muted);
+          font-size: 0.88rem;
+          line-height: 1.55;
+        }
+
+        .home-customer-band {
+          padding: 72px 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          background: #111822;
+        }
+
+        .home-customer-band-inner {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+          gap: 4rem;
+          align-items: start;
+        }
+
+        .home-customer-band h2 {
+          max-width: 700px;
+          font-size: clamp(2rem, 4vw, 3.25rem);
+          line-height: 1.08;
+        }
+
+        .home-customer-band-copy > p {
+          margin: 0 0 1.4rem;
+          color: var(--text-muted);
+          line-height: 1.7;
+        }
+
+        .home-confidence-section h3 {
+          margin: 0.35rem 0 0.55rem;
+        }
+
+        .home-confidence-section .card > p:last-of-type {
+          line-height: 1.65;
+        }
+
+        .home-text-link {
+          display: inline-block;
+          margin-top: 1rem;
+          color: var(--accent);
+          font-weight: 700;
+        }
+
+        .home-business-entry {
+          padding: 44px 0;
+          border-top: 1px solid var(--border);
+          background: var(--surface);
+        }
+
+        .home-business-entry-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 2rem;
+        }
+
+        .home-business-entry h2 {
+          max-width: 720px;
+          font-size: clamp(1.5rem, 3vw, 2.3rem);
+          line-height: 1.14;
+        }
+
+        .home-business-entry :global(.btn) {
+          flex: 0 0 auto;
+        }
+
+        @media (max-width: 860px) {
+          .customer-home-hero {
+            min-height: auto;
+          }
+
+          .home-customer-band-inner {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+          }
+        }
+
+        @media (max-width: 620px) {
+          .customer-journey-panel {
+            padding: 1rem;
+          }
+
+          .home-customer-band {
+            padding: 52px 0;
+          }
+
+          .home-business-entry-inner {
+            display: grid;
+          }
+
+          .home-business-entry :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </main>
   );
 }
