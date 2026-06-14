@@ -6,6 +6,10 @@ Batch 1 status: full page, menu and launch-readiness audit implemented.
 Application behavior is unchanged. Production build and static validation must
 pass before Batch 1 is closed.
 
+Batch 2 status: Mirëbook Business workspace simplification implemented.
+Production build, static validation and focused responsive QA must pass before
+Batch 2 is closed.
+
 Stages 1 through 6 are complete and protected.
 
 ## Goal
@@ -396,6 +400,40 @@ prematurely extracting code.
 - clarify action ownership between Notifications and Bookings
 - consolidate Setup hub and Settings entry hierarchy
 - retain existing routes and all protected logic
+
+Implementation notes:
+
+- the business shell now presents five primary destinations: Home, Bookings,
+  Services, Team and More
+- pending booking attention is shown on Bookings rather than as a separate
+  Needs action destination
+- Home links urgent booking work to filtered Bookings and provides compact
+  shortcuts for Bookings, Services, Team and business availability
+- Staff is labelled Team in the owner workspace, with services and business
+  availability grouped as supporting setup links
+- `/dashboard/settings` is the More hub for setup, availability, notifications,
+  analytics, billing, owner booking status, support, account and logout
+- owner personal staff routes remain available through More without occupying
+  permanent owner navigation
+- business Notifications remains fully functional and accessible under More,
+  while its copy directs appointment actions to Bookings
+- all existing secondary URLs remain available; no route, capability, booking,
+  readiness, billing, staff-linking or owner-as-staff logic was changed
+- new and changed launch-facing labels are available in English and Albanian
+- Prettier is not installed in this repository, so formatting relies on the
+  existing source style and build validation
+
+Deliberate limitation:
+
+- existing booking action handlers on business Notifications were retained to
+  avoid a behavior change in this simplification batch; navigation and copy now
+  establish Bookings as the authoritative daily action surface
+
+Recommended next batch:
+
+- proceed with Batch 3 staff workspace and owner-as-staff simplification after
+  focused desktop/mobile English/Albanian QA confirms the five-destination
+  business shell, More hub and Team page have no Critical or High regression
 
 ### Batch 3 - Staff Workspace And Owner-As-Staff Simplification
 

@@ -731,13 +731,13 @@ export default function StaffPage() {
 
   return (
     <DashboardLayout
-      title={t("dashboardStaff.pageTitle", "Staff")}
+      title={t("dashboardLayout.nav.team", "Team")}
       subtitle={
         business
-          ? `${t("dashboardStaff.pageSubtitleSelected", "Manage staff, service assignments and booking readiness for")} ${business.name}.`
+          ? `${t("dashboardStaff.teamSubtitleSelected", "Manage bookable team members, service assignments and working hours for")} ${business.name}.`
           : t(
-              "dashboardStaff.pageSubtitle",
-              "Create your business first, then add staff.",
+              "dashboardStaff.teamSubtitle",
+              "Create your business first, then build the team customers can book.",
             )
       }
     >
@@ -807,6 +807,37 @@ export default function StaffPage() {
               </p>
             </div>
           )}
+
+          <div className="card team-navigation-card">
+            <div>
+              <p className="small muted">
+                {t("dashboardStaff.teamTools.kicker", "Team setup")}
+              </p>
+              <h3>
+                {t(
+                  "dashboardStaff.teamTools.title",
+                  "Keep people, services and hours connected",
+                )}
+              </h3>
+              <p className="small muted">
+                {t(
+                  "dashboardStaff.teamTools.body",
+                  "Team members become bookable when they are active, assigned to services and have working hours.",
+                )}
+              </p>
+            </div>
+            <div className="team-navigation-actions">
+              <Link href="/dashboard/services" className="btn btn-ghost">
+                {t("dashboardServices.pageTitle", "Services")}
+              </Link>
+              <Link href="/dashboard/availability" className="btn btn-ghost">
+                {t(
+                  "dashboardStaff.teamTools.businessHours",
+                  "Business availability",
+                )}
+              </Link>
+            </div>
+          </div>
 
           <StaffSetupHero business={business} />
           <div className="card staff-owner-note">
@@ -965,6 +996,26 @@ export default function StaffPage() {
           border-color: rgba(45, 212, 191, 0.24);
         }
 
+        .team-navigation-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .team-navigation-card h3,
+        .team-navigation-card p {
+          margin-top: 0;
+        }
+
+        .team-navigation-actions {
+          display: flex;
+          gap: 0.65rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
         .staff-owner-note-copy {
           flex: 1;
           min-width: 260px;
@@ -1012,11 +1063,14 @@ export default function StaffPage() {
         }
 
         @media (max-width: 700px) {
+          .team-navigation-card,
           .staff-owner-note,
           .staff-owner-note-actions {
             display: grid;
           }
 
+          .team-navigation-actions,
+          .team-navigation-actions :global(.btn),
           .staff-owner-note-actions,
           .staff-owner-note-actions :global(.btn) {
             width: 100%;

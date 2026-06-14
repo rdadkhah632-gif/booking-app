@@ -846,6 +846,23 @@ export const sq: TranslationTree = {
   "dashboardSettings.tools.title": "Kontrolle të tjera biznesi",
   "dashboardSettings.tools.body":
     "Përdori kur duhet të rregullosh oraret, faturimin ose suportin e biznesit.",
+  "dashboardSettings.more.subtitle":
+    "Konfigurimi i biznesit, cilësimet e rezervimeve, raportet, faturimi, ndihma dhe mjetet e llogarisë.",
+  "dashboardSettings.more.kicker": "Më shumë",
+  "dashboardSettings.more.title": "Konfigurimi i biznesit dhe mjetet e llogarisë",
+  "dashboardSettings.more.body":
+    "Puna ditore qëndron te Kryefaqja, Rezervimet, Shërbimet dhe Ekipi. Përdor këto mjete dytësore kur duhet të ndryshosh konfigurimin ose të shikosh llogarinë.",
+  "dashboardSettings.more.setupBody":
+    "Menaxho profilin publik, gatishmërinë dhe publikimin.",
+  "dashboardSettings.more.notifications": "Njoftimet e biznesit",
+  "dashboardSettings.more.notificationsBody":
+    "Shiko përditësimet e biznesit, pastaj përdor Rezervimet për veprimet e takimeve.",
+  "dashboardSettings.more.analyticsBody":
+    "Shiko aktivitetin e rezervimeve dhe prirjet e shërbimeve.",
+  "dashboardSettings.more.accountBody":
+    "Menaxho të dhënat personale, gjuhën, sigurinë dhe preferencat e emailit.",
+  "dashboardSettings.more.logoutBody":
+    "Mbyll këtë sesion të Mirëbook Biznes në këtë pajisje.",
   "dashboardSettings.tools.availability": "Disponueshmëria",
   "dashboardSettings.tools.availabilityBody":
     "Vendos ditët dhe oraret e përgjithshme të hapjes së biznesit.",
@@ -964,6 +981,12 @@ export const sq: TranslationTree = {
     "Menaxho profile biznesi, status publikimi, foto dhe konfigurimin kryesor.",
   "dashboardHome.shortcuts.services.title": "Shërbimet",
   "dashboardHome.shortcuts.services.body": "Ndrysho emrat e shërbimeve, kohëz.",
+  "dashboardHome.shortcuts.team.title": "Ekipi",
+  "dashboardHome.shortcuts.team.body":
+    "Menaxho stafin e rezervueshëm, caktimet e shërbimeve, ftesat dhe pronarin si staf.",
+  "dashboardHome.shortcuts.availability.title": "Vendos disponueshmërinë",
+  "dashboardHome.shortcuts.availability.body":
+    "Vendos ditët dhe oraret e biznesit kur klientët mund të rezervojnë.",
   "dashboardBusinesses.pageTitle": "Qendra e konfigurimit të biznesit",
   "dashboardBusinesses.pageSubtitle":
     "Kontrollo profilin që shikon klienti, cilësimet e rezervimit, shërbimet, stafin dhe oraret nga një vend.",
@@ -1266,6 +1289,16 @@ export const sq: TranslationTree = {
   "dashboardStaff.pageSubtitle": "Zgjidh cilin staf biznesi do të menaxhosh.",
   "dashboardStaff.pageSubtitleSelected":
     "Menaxho stafin, caktimet e shërbimeve dhe gatishmërinë e rezervimeve për",
+  "dashboardStaff.teamSubtitle":
+    "Krijo biznesin fillimisht, pastaj ndërto ekipin që klientët mund të rezervojnë.",
+  "dashboardStaff.teamSubtitleSelected":
+    "Menaxho ekipin e rezervueshëm, caktimet e shërbimeve dhe oraret e punës për",
+  "dashboardStaff.teamTools.kicker": "Konfigurimi i ekipit",
+  "dashboardStaff.teamTools.title":
+    "Mbaj të lidhur njerëzit, shërbimet dhe oraret",
+  "dashboardStaff.teamTools.body":
+    "Anëtarët e ekipit bëhen të rezervueshëm kur janë aktivë, të caktuar te shërbimet dhe kanë orare pune.",
+  "dashboardStaff.teamTools.businessHours": "Disponueshmëria e biznesit",
   "dashboardStaff.loading": "Duke ngarkuar konfigurimin e stafit Mirëbook...",
   "dashboardStaff.error.noAccess": "Nuk ke akses te ky biznes.",
   "dashboardStaff.error.load": "Stafi nuk u ngarkua.",
@@ -1447,8 +1480,13 @@ export const sq: TranslationTree = {
   "common.days.friday": "E premte",
   "common.days.saturday": "E shtunë",
   "dashboardLayout.nav.overview": "Përmbledhje",
+  "dashboardLayout.nav.home": "Kryefaqja",
+  "dashboardLayout.nav.team": "Ekipi",
+  "dashboardLayout.nav.more": "Më shumë",
   "dashboardLayout.nav.setupHub": "Qendra e konfigurimit të biznesit",
   "dashboardLayout.nav.accountSettings": "Cilësimet e llogarisë",
+  "dashboardLayout.moreHint":
+    "Konfigurimi, disponueshmëria, njoftimet, analizat, faturimi dhe mjetet e llogarisë janë te Më shumë.",
   "dashboardLayout.controlCentre": "Qendra e kontrollit të biznesit",
   "dashboardLayout.sections.business": "Biznesi",
   "dashboardLayout.sections.setup": "Konfigurimi",
@@ -1705,7 +1743,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.success.actionCompleted": "Veprimi u përfundua",
   "common.dismiss": "Mbyll",
   "dashboardNotifications.pageSubtitle":
-    "Shqyrto miratimet e rezervimeve, kërkesat e klientëve për ndryshim orari dhe veprimet që kërkojnë vëmendjen tënde.",
+    "Shiko përditësimet e biznesit këtu. Përdor Rezervimet si hapësirën kryesore për vendimet dhe veprimet e orarit.",
   "dashboardNotifications.error.load": "Njoftimet nuk u ngarkuan.",
   "dashboardNotifications.success.markedRead":
     "Njoftimet e biznesit u shënuan si të lexuara.",
@@ -1739,7 +1777,7 @@ export const sq: TranslationTree = {
   "dashboardNotifications.status.unread": "Pa lexuar",
   "dashboardNotifications.status.waitingApproval": "Kërkon miratim",
   "dashboardNotifications.toolbar.body":
-    "Shqyrto miratimet e rezervimeve, kërkesat për ndryshim orari dhe njoftimet e biznesit. Veprimet e përditësojnë këtë faqe menjëherë pas përfundimit.",
+    "Njoftimet tregojnë çfarë ndryshoi. Hap Rezervimet për të dhënat e plota, filtrat dhe veprimet e takimeve.",
   "dashboardNotifications.toolbar.refreshing": "Duke rifreskuar...",
   "dashboardNotifications.toolbar.refresh": "Rifresko njoftimet",
   "dashboardNotifications.toolbar.mark": "Shëno",

@@ -22,8 +22,6 @@ export default function DashboardLayout({
   const { t } = useI18n();
   const [pendingCount, setPendingCount] = useState(0);
   const [checkingAccess, setCheckingAccess] = useState(true);
-  const [hasPersonalStaffWorkspace, setHasPersonalStaffWorkspace] =
-    useState(false);
   const [isStaffOnlyWorkspace, setIsStaffOnlyWorkspace] = useState(false);
 
   useEffect(() => {
@@ -35,7 +33,6 @@ export default function DashboardLayout({
       } = await supabase.auth.getSession();
 
       if (!session) {
-        setHasPersonalStaffWorkspace(false);
         router.replace(
           workspace === "staff"
             ? `/login?redirectTo=${encodeURIComponent(router.asPath)}`
@@ -49,7 +46,6 @@ export default function DashboardLayout({
         session.user.email,
       );
 
-      setHasPersonalStaffWorkspace(capabilities.hasLinkedStaffProfile);
       setIsStaffOnlyWorkspace(
         workspace === "staff" && !capabilities.canUseBusiness,
       );
@@ -101,67 +97,25 @@ export default function DashboardLayout({
 
   const businessMainLinks = [
     { href: "/dashboard", label: t("dashboardLayout.nav.home", "Home") },
-    ...(pendingCount > 0
-      ? [
-          {
-            href: "/dashboard/notifications",
-            label: `${t("account.needsAction", "Needs action")} (${pendingCount > 9 ? "9+" : pendingCount})`,
-            urgent: true,
-          },
-        ]
-      : []),
     {
       href: "/dashboard/bookings",
-      label: t("support.business.bookings", "Bookings"),
+      label:
+        pendingCount > 0
+          ? `${t("support.business.bookings", "Bookings")} (${pendingCount > 9 ? "9+" : pendingCount})`
+          : t("support.business.bookings", "Bookings"),
+      urgent: pendingCount > 0,
     },
     {
       href: "/dashboard/services",
       label: t("dashboardServices.pageTitle", "Services"),
     },
-    { href: "/dashboard/staff", label: t("dashboardStaff.pageTitle", "Staff") },
     {
-      href: "/dashboard/analytics",
-      label: t("dashboardHome.viewAnalytics", "Analytics"),
-    },
-  ];
-
-  const businessPersonalStaffLinks = hasPersonalStaffWorkspace
-    ? [
-        {
-          href: "/staff",
-          label: t("dashboardLayout.myWork.schedule", "My schedule"),
-        },
-        {
-          href: "/staff/availability",
-          label: t("dashboardLayout.myWork.availability", "My availability"),
-        },
-        {
-          href: "/staff/notifications",
-          label: t(
-            "dashboardLayout.myWork.notifications",
-            "My notifications",
-          ),
-        },
-      ]
-    : [];
-
-  const businessLowerLinks = [
-    {
-      href: "/dashboard/availability",
-      label: t("dashboardAvailability.pageTitle", "Availability"),
+      href: "/dashboard/staff",
+      label: t("dashboardLayout.nav.team", "Team"),
     },
     {
       href: "/dashboard/settings",
-      label: t("dashboardSettings.pageTitle", "Business settings"),
-    },
-    { href: "/dashboard/billing", label: t("billing.pageTitle", "Billing") },
-    {
-      href: "/support/business",
-      label: t("nav.businessSupport", "Business support"),
-    },
-    {
-      href: "/account",
-      label: t("dashboardLayout.nav.accountSettings", "My account"),
+      label: t("dashboardLayout.nav.more", "More"),
     },
   ];
 
@@ -183,7 +137,7 @@ export default function DashboardLayout({
     },
   ];
 
-  const staffLowerLinks = [
+  const staffSecondaryLinks = [
     {
       href: "/support/staff",
       label: t("nav.staffSupport", "Staff support"),
@@ -197,14 +151,28 @@ export default function DashboardLayout({
   const mainLinks = isStaffOnlyWorkspace
     ? staffMainLinks
     : businessMainLinks;
-  const personalStaffLinks = isStaffOnlyWorkspace
-    ? []
-    : businessPersonalStaffLinks;
-  const lowerLinks = isStaffOnlyWorkspace
-    ? staffLowerLinks
-    : businessLowerLinks;
+  const secondaryLinks = isStaffOnlyWorkspace ? staffSecondaryLinks : [];
+
+  const moreRoutes = [
+    "/dashboard/settings",
+    "/dashboard/businesses",
+    "/dashboard/availability",
+    "/dashboard/notifications",
+    "/dashboard/analytics",
+    "/dashboard/billing",
+    "/support/business",
+    "/account",
+    "/staff",
+  ];
 
   function isActiveLink(href: string) {
+    if (!isStaffOnlyWorkspace && href === "/dashboard/settings") {
+      return moreRoutes.some(
+        (route) =>
+          router.pathname === route || router.pathname.startsWith(`${route}/`),
+      );
+    }
+
     return (
       router.pathname === href ||
       (href !== "/staff" && router.pathname.startsWith(`${href}/`))
@@ -259,12 +227,9 @@ export default function DashboardLayout({
             ))}
           </div>
 
-          {personalStaffLinks.length > 0 && (
-            <div className="sidebar-personal-links">
-              <p className="sidebar-section-label">
-                {t("dashboardLayout.myWork.title", "My work")}
-              </p>
-              {personalStaffLinks.map((link) => (
+          {secondaryLinks.length > 0 && (
+            <div className="sidebar-lower-links">
+              {secondaryLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -273,28 +238,27 @@ export default function DashboardLayout({
                   <span>{link.label}</span>
                 </Link>
               ))}
+
+              <button
+                type="button"
+                onClick={logout}
+                className="sidebar-link sidebar-logout"
+              >
+                {t("auth.logout", "Log out")}
+              </button>
             </div>
           )}
 
-          <div className="sidebar-lower-links">
-            {lowerLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""}`.trim()}
-              >
-                <span>{link.label}</span>
-              </Link>
-            ))}
-
-            <button
-              type="button"
-              onClick={logout}
-              className="sidebar-link sidebar-logout"
-            >
-              {t("auth.logout", "Log out")}
-            </button>
-          </div>
+          {!isStaffOnlyWorkspace && (
+            <div className="sidebar-business-note">
+              <span>
+                {t(
+                  "dashboardLayout.moreHint",
+                  "Setup, availability, notifications, analytics, billing and account tools are under More.",
+                )}
+              </span>
+            </div>
+          )}
         </nav>
       </aside>
 
@@ -344,13 +308,11 @@ export default function DashboardLayout({
         }
 
         .sidebar-main-links,
-        .sidebar-personal-links,
         .sidebar-lower-links {
           display: grid;
           gap: 0.3rem;
         }
 
-        .sidebar-personal-links,
         .sidebar-lower-links {
           margin-top: 0.25rem;
           padding-top: 1rem;
@@ -425,6 +387,16 @@ export default function DashboardLayout({
           background: rgba(255, 107, 53, 0.16);
         }
 
+        .sidebar-business-note {
+          margin-top: 1rem;
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          line-height: 1.45;
+        }
+
         .dashboard-page-header {
           display: flex;
           justify-content: space-between;
@@ -442,12 +414,12 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links,
-          .sidebar-personal-links,
           .sidebar-lower-links {
             display: contents;
           }
 
-          .sidebar-section-label {
+          .sidebar-section-label,
+          .sidebar-business-note {
             display: none;
           }
 
@@ -484,12 +456,12 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links,
-          .sidebar-personal-links,
           .sidebar-lower-links {
             display: contents;
           }
 
-          .sidebar-section-label {
+          .sidebar-section-label,
+          .sidebar-business-note {
             display: none;
           }
 

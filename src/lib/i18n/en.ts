@@ -794,6 +794,23 @@ export const en: TranslationTree = {
   "dashboardSettings.tools.title": "Other business controls",
   "dashboardSettings.tools.body":
     "Use these when you need to adjust opening times, billing or business support.",
+  "dashboardSettings.more.subtitle":
+    "Business setup, booking settings, reports, billing, support and account tools.",
+  "dashboardSettings.more.kicker": "More",
+  "dashboardSettings.more.title": "Business setup and account tools",
+  "dashboardSettings.more.body":
+    "Daily work stays in Home, Bookings, Services and Team. Use these secondary tools when you need to change setup or review account details.",
+  "dashboardSettings.more.setupBody":
+    "Manage the public profile, readiness and publishing.",
+  "dashboardSettings.more.notifications": "Business notifications",
+  "dashboardSettings.more.notificationsBody":
+    "Review business updates, then use Bookings for appointment actions.",
+  "dashboardSettings.more.analyticsBody":
+    "Review booking activity and service trends.",
+  "dashboardSettings.more.accountBody":
+    "Manage personal details, language, security and email preferences.",
+  "dashboardSettings.more.logoutBody":
+    "End this Mirëbook Business session on this device.",
   "dashboardSettings.tools.availability": "Availability",
   "dashboardSettings.tools.availabilityBody":
     "Set business-wide opening days and hours.",
@@ -916,6 +933,12 @@ export const en: TranslationTree = {
   "dashboardHome.shortcuts.staff.title": "Staff",
   "dashboardHome.shortcuts.staff.body":
     "Manage staff profiles, assignments, schedules and availability.",
+  "dashboardHome.shortcuts.team.title": "Team",
+  "dashboardHome.shortcuts.team.body":
+    "Manage bookable staff, service assignments, invites and owner-as-staff setup.",
+  "dashboardHome.shortcuts.availability.title": "Set availability",
+  "dashboardHome.shortcuts.availability.body":
+    "Set the business-wide days and hours customers can book.",
   "dashboardHome.shortcuts.settings.title": "Business settings",
   "dashboardHome.shortcuts.settings.body":
     "Control booking approval, notice rules, buffers, policies and region settings.",
@@ -1241,6 +1264,16 @@ export const en: TranslationTree = {
   "dashboardStaff.pageSubtitle": "Choose which business staff to manage.",
   "dashboardStaff.pageSubtitleSelected":
     "Manage staff, service assignments and booking readiness for",
+  "dashboardStaff.teamSubtitle":
+    "Create your business first, then build the team customers can book.",
+  "dashboardStaff.teamSubtitleSelected":
+    "Manage bookable team members, service assignments and working hours for",
+  "dashboardStaff.teamTools.kicker": "Team setup",
+  "dashboardStaff.teamTools.title":
+    "Keep people, services and hours connected",
+  "dashboardStaff.teamTools.body":
+    "Team members become bookable when they are active, assigned to services and have working hours.",
+  "dashboardStaff.teamTools.businessHours": "Business availability",
   "dashboardStaff.loading": "Loading Mirëbook staff setup...",
   "dashboardStaff.error.noAccess": "You do not have access to this business.",
   "dashboardStaff.error.load": "Could not load staff.",
@@ -1435,8 +1468,13 @@ export const en: TranslationTree = {
   "common.days.friday": "Friday",
   "common.days.saturday": "Saturday",
   "dashboardLayout.nav.overview": "Overview",
+  "dashboardLayout.nav.home": "Home",
+  "dashboardLayout.nav.team": "Team",
+  "dashboardLayout.nav.more": "More",
   "dashboardLayout.nav.setupHub": "Business setup hub",
   "dashboardLayout.nav.accountSettings": "Account settings",
+  "dashboardLayout.moreHint":
+    "Setup, availability, notifications, analytics, billing and account tools are under More.",
   "dashboardLayout.controlCentre": "Business control centre",
   "dashboardLayout.sections.business": "Business",
   "dashboardLayout.sections.setup": "Setup",
@@ -1681,7 +1719,7 @@ export const en: TranslationTree = {
   "dashboardBookings.success.actionCompleted": "Action completed",
   "common.dismiss": "Dismiss",
   "dashboardNotifications.pageSubtitle":
-    "Review Mirëbook booking approvals, customer reschedule requests and actions that need your attention.",
+    "Review business updates here. Use Bookings as the main workspace for booking decisions and schedule actions.",
   "dashboardNotifications.error.load": "Could not load notifications.",
   "dashboardNotifications.success.markedRead":
     "Business notifications marked as read.",
@@ -1715,7 +1753,7 @@ export const en: TranslationTree = {
   "dashboardNotifications.status.unread": "Unread",
   "dashboardNotifications.status.waitingApproval": "Needs approval",
   "dashboardNotifications.toolbar.body":
-    "Review customer booking approvals, reschedule requests and business notifications. Actions update this page immediately after completion.",
+    "Notifications highlight what changed. Open Bookings for the full appointment record, filters and booking actions.",
   "dashboardNotifications.toolbar.refreshing": "Refreshing...",
   "dashboardNotifications.toolbar.refresh": "Refresh notifications",
   "dashboardNotifications.toolbar.mark": "Mark",

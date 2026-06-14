@@ -11,29 +11,19 @@ export default function DashboardShortcuts() {
       body: t('dashboardHome.shortcuts.bookings.body', 'Review customer appointments, pending approvals and completed bookings.')
     },
     {
-      href: '/dashboard/businesses',
-      title: t('dashboardHome.shortcuts.setup.title', 'Setup hub'),
-      body: t('dashboardHome.shortcuts.setup.body', 'Manage business profiles, publish status, photos and core setup.')
-    },
-    {
       href: '/dashboard/services',
       title: t('dashboardHome.shortcuts.services.title', 'Services'),
       body: t('dashboardHome.shortcuts.services.body', 'Edit service names, durations, prices, images and active status.')
     },
     {
       href: '/dashboard/staff',
-      title: t('dashboardHome.shortcuts.staff.title', 'Staff'),
-      body: t('dashboardHome.shortcuts.staff.body', 'Manage staff profiles, assignments, schedules and availability.')
+      title: t('dashboardHome.shortcuts.team.title', 'Team'),
+      body: t('dashboardHome.shortcuts.team.body', 'Manage bookable staff, service assignments, invites and owner-as-staff setup.')
     },
     {
-      href: '/dashboard/settings',
-      title: t('dashboardHome.shortcuts.settings.title', 'Business settings'),
-      body: t('dashboardHome.shortcuts.settings.body', 'Control booking approval, notice rules, buffers, policies and region settings.')
-    },
-    {
-      href: '/dashboard/billing',
-      title: t('dashboardHome.shortcuts.billing.title', 'Billing'),
-      body: t('dashboardHome.shortcuts.billing.body', 'Review trial, subscription and billing setup for Mirëbook.')
+      href: '/dashboard/availability',
+      title: t('dashboardHome.shortcuts.availability.title', 'Set availability'),
+      body: t('dashboardHome.shortcuts.availability.body', 'Set the business-wide days and hours customers can book.')
     }
   ]
 

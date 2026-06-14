@@ -234,17 +234,18 @@ export default function DashboardSettingsPage() {
     return `${approvalModeLabel} · ${settings.booking_interval_minutes || 30} ${t("dashboardSettings.summary.minuteSlots", "minute slots")} · ${settings.min_notice_minutes || 0} ${t("dashboardSettings.summary.minuteNotice", "minute notice")} · ${settings.max_advance_days || 60} ${t("dashboardSettings.summary.daysAhead", "days ahead")}`;
   }
 
+  async function logout() {
+    await supabase.auth.signOut();
+    router.replace("/");
+  }
+
   return (
     <DashboardLayout
-      title={t("dashboardSettings.pageTitle", "Business settings")}
-      subtitle={
-        selectedBusiness
-          ? `${t("dashboardSettings.subtitleSelected", "Control booking approval, rules and customer policies for")} ${selectedBusiness.name}.`
-          : t(
-              "dashboardSettings.subtitle",
-              "Control booking approval, rules and customer policies.",
-            )
-      }
+      title={t("dashboardLayout.nav.more", "More")}
+      subtitle={t(
+        "dashboardSettings.more.subtitle",
+        "Business setup, booking settings, reports, billing, support and account tools.",
+      )}
     >
       {loading && (
         <div className="card">
@@ -254,6 +255,160 @@ export default function DashboardSettingsPage() {
               "Loading Mirëbook business settings...",
             )}
           </p>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="card settings-tools-card">
+          <div>
+            <p className="small muted">
+              {t("dashboardSettings.more.kicker", "More")}
+            </p>
+            <h2>
+              {t(
+                "dashboardSettings.more.title",
+                "Business setup and account tools",
+              )}
+            </h2>
+            <p className="small muted" style={{ marginTop: "0.35rem" }}>
+              {t(
+                "dashboardSettings.more.body",
+                "Daily work stays in Home, Bookings, Services and Team. Use these secondary tools when you need to change setup or review account details.",
+              )}
+            </p>
+          </div>
+
+          <div className="settings-tools-grid">
+            <Link href="/dashboard/businesses" className="settings-tool-link">
+              <strong>
+                {t("dashboardLayout.nav.setupHub", "Business setup hub")}
+              </strong>
+              <span>
+                {t(
+                  "dashboardSettings.more.setupBody",
+                  "Manage the public profile, readiness and publishing.",
+                )}
+              </span>
+            </Link>
+
+            <Link
+              href="/dashboard/availability"
+              className="settings-tool-link"
+            >
+              <strong>
+                {t("dashboardSettings.tools.availability", "Availability")}
+              </strong>
+              <span>
+                {t(
+                  "dashboardSettings.tools.availabilityBody",
+                  "Set business-wide opening days and hours.",
+                )}
+              </span>
+            </Link>
+
+            <Link
+              href="/dashboard/notifications"
+              className="settings-tool-link"
+            >
+              <strong>
+                {t(
+                  "dashboardSettings.more.notifications",
+                  "Business notifications",
+                )}
+              </strong>
+              <span>
+                {t(
+                  "dashboardSettings.more.notificationsBody",
+                  "Review business updates, then use Bookings for appointment actions.",
+                )}
+              </span>
+            </Link>
+
+            <Link href="/dashboard/analytics" className="settings-tool-link">
+              <strong>
+                {t("dashboardHome.viewAnalytics", "Analytics")}
+              </strong>
+              <span>
+                {t(
+                  "dashboardSettings.more.analyticsBody",
+                  "Review booking activity and service trends.",
+                )}
+              </span>
+            </Link>
+
+            <Link href="/dashboard/billing" className="settings-tool-link">
+              <strong>
+                {t("dashboardSettings.tools.billing", "Billing")}
+              </strong>
+              <span>
+                {t(
+                  "dashboardSettings.tools.billingBody",
+                  "View plan, trial and payment settings.",
+                )}
+              </span>
+            </Link>
+
+            <Link
+              href="/staff"
+              className="settings-tool-link settings-tool-link-owner"
+            >
+              <strong>
+                {t(
+                  "dashboardSettings.tools.ownerBooking",
+                  "Owner booking status",
+                )}
+              </strong>
+              <span>
+                {ownerIsBookableStaff
+                  ? t(
+                      "dashboardSettings.tools.ownerBookingLinkedBody",
+                      "You are set up as bookable staff. Manage your personal schedule and availability.",
+                    )
+                  : t(
+                      "dashboardSettings.tools.ownerBookingBody",
+                      "Set yourself up as bookable staff only if customers should book appointments directly with you.",
+                    )}
+              </span>
+            </Link>
+
+            <Link href="/support/business" className="settings-tool-link">
+              <strong>
+                {t("dashboardSettings.tools.support", "Business support")}
+              </strong>
+              <span>
+                {t(
+                  "dashboardSettings.tools.supportBody",
+                  "Get help with setup, bookings or account changes.",
+                )}
+              </span>
+            </Link>
+
+            <Link href="/account" className="settings-tool-link">
+              <strong>
+                {t("dashboardLayout.nav.accountSettings", "My account")}
+              </strong>
+              <span>
+                {t(
+                  "dashboardSettings.more.accountBody",
+                  "Manage personal details, language, security and email preferences.",
+                )}
+              </span>
+            </Link>
+
+            <button
+              type="button"
+              className="settings-tool-link settings-tool-button"
+              onClick={logout}
+            >
+              <strong>{t("auth.logout", "Log out")}</strong>
+              <span>
+                {t(
+                  "dashboardSettings.more.logoutBody",
+                  "End this Mirëbook Business session on this device.",
+                )}
+              </span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -374,87 +529,6 @@ export default function DashboardSettingsPage() {
 
           <PolicySettings settings={settings} updateSetting={updateSetting} />
 
-          <div className="card settings-tools-card">
-            <div>
-              <p className="small muted">
-                {t("dashboardSettings.tools.kicker", "Related settings")}
-              </p>
-              <h3>
-                {t("dashboardSettings.tools.title", "Other business controls")}
-              </h3>
-              <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                {t(
-                  "dashboardSettings.tools.body",
-                  "Use these when you need to adjust opening times, billing or business support.",
-                )}
-              </p>
-            </div>
-
-            <div className="settings-tools-grid">
-              <Link
-                href="/dashboard/availability"
-                className="settings-tool-link"
-              >
-                <strong>
-                  {t("dashboardSettings.tools.availability", "Availability")}
-                </strong>
-                <span>
-                  {t(
-                    "dashboardSettings.tools.availabilityBody",
-                    "Set business-wide opening days and hours.",
-                  )}
-                </span>
-              </Link>
-
-              <Link
-                href="/staff"
-                className="settings-tool-link settings-tool-link-owner"
-              >
-                <strong>
-                  {t(
-                    "dashboardSettings.tools.ownerBooking",
-                    "Owner booking status",
-                  )}
-                </strong>
-                <span>
-                  {ownerIsBookableStaff
-                    ? t(
-                        "dashboardSettings.tools.ownerBookingLinkedBody",
-                        "You are set up as bookable staff. Manage your personal schedule and availability.",
-                      )
-                    : t(
-                        "dashboardSettings.tools.ownerBookingBody",
-                        "Set yourself up as bookable staff only if customers should book appointments directly with you.",
-                      )}
-                </span>
-              </Link>
-
-              <Link href="/dashboard/billing" className="settings-tool-link">
-                <strong>
-                  {t("dashboardSettings.tools.billing", "Billing")}
-                </strong>
-                <span>
-                  {t(
-                    "dashboardSettings.tools.billingBody",
-                    "View plan, trial and payment settings.",
-                  )}
-                </span>
-              </Link>
-
-              <Link href="/support/business" className="settings-tool-link">
-                <strong>
-                  {t("dashboardSettings.tools.support", "Business support")}
-                </strong>
-                <span>
-                  {t(
-                    "dashboardSettings.tools.supportBody",
-                    "Get help with setup, bookings or account changes.",
-                  )}
-                </span>
-              </Link>
-            </div>
-          </div>
-
           <BusinessSettingsActions
             selectedBusiness={selectedBusiness}
             publicHref={selectedBusinessPublicHref}
@@ -505,7 +579,7 @@ export default function DashboardSettingsPage() {
 
         .settings-tools-grid {
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0.75rem;
         }
 
@@ -518,6 +592,13 @@ export default function DashboardSettingsPage() {
           background: var(--surface-2);
           color: var(--text);
           text-decoration: none;
+          text-align: left;
+        }
+
+        .settings-tool-button {
+          width: 100%;
+          font: inherit;
+          cursor: pointer;
         }
 
         .settings-tool-link-owner {

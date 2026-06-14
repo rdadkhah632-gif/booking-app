@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import DashboardSummaryCards from "@/components/dashboard-home/DashboardSummaryCards";
+import DashboardShortcuts from "@/components/dashboard-home/DashboardShortcuts";
 import SchedulePreviewCard from "@/components/dashboard-home/SchedulePreviewCard";
 import SetupGuidanceList from "@/components/dashboard-home/SetupGuidanceList";
 import {
@@ -585,7 +586,7 @@ export default function DashboardHome() {
             <Link
               href={
                 pendingActionCount > 0
-                  ? "/dashboard/notifications"
+                  ? bookingsLinkForView("upcoming", "pending")
                   : bookingsLinkForView("upcoming")
               }
               className="btn btn-accent"
@@ -623,6 +624,8 @@ export default function DashboardHome() {
       )}
 
       <SetupGuidanceList warnings={setupWarnings} />
+
+      {businesses.length > 0 && <DashboardShortcuts />}
 
       <DashboardSummaryCards
         todayCount={todayBookings.length}

@@ -40,7 +40,7 @@ export default function DashboardSummaryCards(props: Props) {
       </Link>
 
       <Link
-        href="/dashboard/notifications"
+        href={bookingsLinkForView("upcoming", "pending")}
         className="card dashboard-summary-card"
         style={{
           borderColor:

@@ -1129,7 +1129,7 @@ export default function BusinessNotifications() {
       title={t("account.needsAction", "Needs action")}
       subtitle={t(
         "dashboardNotifications.pageSubtitle",
-        "Review booking approvals, customer changes and business activity updates.",
+        "Review business updates here. Use Bookings as the main workspace for booking decisions and schedule actions.",
       )}
     >
       {success && (
@@ -1167,7 +1167,7 @@ export default function BusinessNotifications() {
         <p className="small muted">
           {t(
             "dashboardNotifications.toolbar.body",
-            "Customer requests that need a business decision appear here.",
+            "Notifications highlight what changed. Open Bookings for the full appointment record, filters and booking actions.",
           )}
         </p>
 
