@@ -18,6 +18,10 @@ Batch 3 status: Staff workspace and owner-as-staff simplification implemented.
 Production build and static validation pass. Authenticated desktop/mobile EN/SQ
 visual QA remains required before Batch 3 is closed.
 
+Batch 4 status: Customer journey polish implemented. Production build and
+static validation pass. Authenticated booking, notification and reschedule QA
+remains required before Batch 4 is closed.
+
 Stages 1 through 6 are complete and protected.
 
 ## Goal
@@ -550,11 +554,70 @@ Recommended next batch:
 
 ### Batch 4 - Customer Journey Polish
 
-- simplify shared Account into understandable role sections
-- tighten My bookings and Notifications hierarchy
-- make support conversation navigation role-aware
-- decompose public booking presentation only where low risk
-- retain booking logic and Explore rules
+Implemented:
+
+- the customer homepage keeps discovery, booking guidance, trust and one compact
+  Mirëbook Business entry; a repeated customer marketing/CTA band was removed
+- Explore results no longer advertise business registration or repeat customer
+  support actions in the results header
+- Explore business cards retain booking mode, services, staff, location and one
+  clear booking action while removing repeated bookability/availability pills
+  and public phone clutter
+- Explore empty states are customer-directed, and the lower marketplace trust
+  section now explains the customer booking journey instead of leading with
+  business SaaS wording
+- public business owner preview uses one compact Mirëbook Business management
+  link, and booking interval copy is less technical
+- My Bookings remains the authoritative customer booking-management surface;
+  duplicate overview guidance, navigation buttons and Notifications handoffs
+  were removed while all booking actions and lifecycle sections remain
+- Notifications is now a calm update inbox with one clear My Bookings handoff
+  instead of duplicating full request, appointment and history card sections
+- booking confirmation keeps one status hero, appointment details and focused
+  next actions instead of repeating the same status in a second card
+- registration retains the role selector and role-specific setup but removes
+  the duplicated account-type explainer and repeated chooser guidance
+- customer reschedule presentation is translated and clearer across errors,
+  current/new appointment summaries, calendar, time and staff selection; the
+  existing customer/business save branches and calculations are unchanged
+- Account and Login were deliberately left structurally unchanged because their
+  current product wording already distinguishes Mirëbook customer use from
+  Mirëbook Business; Account decomposition remains a later responsibility
+
+Protected behavior:
+
+- no booking creation, cancellation, reschedule, slot generation, staff
+  assignment, notification generation, auth, role, readiness, listing,
+  billing, Supabase, middleware or domain behavior changed
+- no route was removed
+
+Validation:
+
+- production build: pass
+- `git diff --check`: pass
+- EN/SQ duplicate translation key check: pass
+- Prettier: unavailable because it is not installed in this repository
+- public desktop/mobile browser QA: pass for Home, Explore, Login and Register;
+  tested at approximately 390px with no horizontal overflow or raw translation
+  keys, including Albanian Explore service/staff counts
+- unauthenticated route QA: pass; My Bookings preserves its login return path,
+  Notifications retains its existing login redirect and the business hostname
+  continues to serve the Mirëbook Business landing page
+- authenticated booking, My Bookings, Notifications and reschedule QA: pending
+  because the local browser session does not have a customer login and test
+  booking
+
+Remaining follow-ups:
+
+- complete an authenticated customer booking smoke test in English and Albanian
+- verify booking confirmation and reschedule states with real pending and
+  confirmed bookings
+- split the shared Account page into smaller role-aware sections only in a
+  separate controlled refactor
+
+Recommended next batch:
+
+- Stage 7 Batch 5 - Email Auth, Verification and Password Reset Readiness
 
 ### Batch 5 - Email Auth, Verification And Password Reset Readiness
 

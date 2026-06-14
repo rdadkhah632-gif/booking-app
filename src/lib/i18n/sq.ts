@@ -372,16 +372,21 @@ export const sq: TranslationTree = {
   "explore.card.bookable": "I rezervueshëm në Mirëbook",
   "explore.card.appointmentBooking": "Rezervim takimi",
   "explore.card.availabilitySet": "Disponueshmëria është vendosur",
+  "explore.card.serviceSingle": "shërbim",
+  "explore.card.servicePlural": "shërbime",
+  "explore.card.staffSingle": "anëtar stafi",
+  "explore.card.staffPlural": "anëtarë stafi",
   "explore.card.viewTimes": "Shiko oraret dhe rezervo",
   "explore.card.bookNow": "Rezervo tani",
   "explore.card.locationComingSoon":
     "Vendndodhja nuk është dhënë",
   "explore.brand.kicker": "Mirëbook",
-  "explore.brand.title": "Për bizneset që punojnë me rezervime",
+  "explore.brand.title":
+    "Gjej shërbime lokale dhe mbaj të qartë çdo takim",
   "explore.brand.description":
-    "Nga sallonet dhe berberët te aktivitetet, përvojat dhe shërbimet e specializuara, Mirëbook i ndihmon klientët të gjejnë biznese, të rezervojnë takime dhe të qëndrojnë të organizuar.",
+    "Shfleto biznese të rezervueshme, zgjidh një shërbim dhe orar të lirë, pastaj ndiq kërkesat dhe takimet e konfirmuara në një vend.",
   "explore.brand.footer":
-    "Krijuar për bizneset e pavarura dhe klientët e tyre.",
+    "Status i qartë nga kërkesa deri te takimi i përfunduar.",
   "explore.categories.barbers": "Berberë",
   "explore.categories.salons": "Sallone",
   "explore.categories.nails": "Thonj",
@@ -1937,10 +1942,11 @@ export const sq: TranslationTree = {
   "publicBusiness.loading": "Duke ngarkuar faqen e rezervimit Mirëbook...",
   "publicBusiness.backToResults": "Kthehu te rezultatet",
   "publicBusiness.timesShownIn": "Orët shfaqen në",
-  "publicBusiness.minuteSlotGrid": "minuta interval rezervimi",
+  "publicBusiness.minuteSlotGrid": "minuta intervale takimesh",
 
   "publicBusiness.preview.kicker": "Pamje paraprake e pronarit",
   "publicBusiness.preview.title": "Po shikon faqen tënde të biznesit",
+  "publicBusiness.preview.manage": "Menaxho në Mirëbook Biznes",
   "publicBusiness.preview.publishedBody":
     "Kjo është faqja publike që klientët mund të përdorin për të rezervuar. Ndryshimet duhet të bëhen nga dashboard-i.",
   "publicBusiness.preview.draftBody":
@@ -3329,4 +3335,83 @@ export const sq: TranslationTree = {
     "Kjo ftesë u dërgua në një adresë tjetër email-i. Hyr me llogarinë e ftuar.",
   "staffInvite.error.accept":
     "Kjo ftesë nuk mund të pranohej. Mund të ketë skaduar ose të jetë përdorur.",
+  "notifications.bookingHandoff.title":
+    "Hollësitë dhe veprimet e rezervimit qëndrojnë te Rezervimet e mia",
+  "notifications.bookingHandoff.body":
+    "Hap Rezervimet e mia për të parë kërkesat, takimet e konfirmuara, ndryshimet dhe historikun.",
+  "reschedule.loading": "Duke ngarkuar rezervimin në Mirëbook...",
+  "reschedule.error.title": "Orari nuk mund të ndryshohet",
+  "reschedule.kicker.business": "Ndryshim orari nga biznesi",
+  "reschedule.kicker.customer": "Kërkesë klienti për ndryshim orari",
+  "reschedule.title": "Ndrysho orarin e rezervimit",
+  "reschedule.subtitle.business":
+    "Zgjidh një datë, orë dhe anëtar stafi të disponueshëm. Rezervimi përditësohet menjëherë.",
+  "reschedule.subtitle.customer":
+    "Zgjidh një datë, orë dhe anëtar stafi të disponueshëm. Takimi fillestar mbetet i konfirmuar derisa biznesi ta miratojë ndryshimin.",
+  "reschedule.mode.direct": "Ndryshim i drejtpërdrejtë",
+  "reschedule.mode.approval": "Kërkohet miratim",
+  "reschedule.mode.businessBody":
+    "Ruajtja këtu e ndryshon menjëherë rezervimin e klientit.",
+  "reschedule.mode.customerBody":
+    "Takimi fillestar mbetet i konfirmuar derisa biznesi të pranojë orarin e ri të kërkuar.",
+  "reschedule.mode.businessNotification":
+    "Mirëbook do të njoftojë klientin pasi të ruash orarin e ri.",
+  "reschedule.mode.customerNotification":
+    "Mirëbook do të njoftojë biznesin kur të dërgosh ose përditësosh kërkesën.",
+  "reschedule.current.title": "Rezervimi aktual",
+  "reschedule.current.staff": "Anëtari aktual i stafit",
+  "reschedule.current.time": "Orari aktual",
+  "reschedule.requested.title": "Takimi i ri i kërkuar",
+  "reschedule.requested.chooseDateTime": "Zgjidh një datë dhe orë të re",
+  "reschedule.requested.chooseStaff":
+    "Zgjidh një orë, pastaj çdo anëtar stafi të disponueshëm ose një person të caktuar.",
+  "reschedule.form.title": "Orari i ri i takimit",
+  "reschedule.form.calendar": "Datat e disponueshme",
+  "reschedule.availableAt": "I disponueshëm në",
+  "reschedule.actions.businessBookings": "Rezervimet e biznesit",
+  "reschedule.actions.sending": "Duke dërguar kërkesën...",
+  "reschedule.actions.saving": "Duke ruajtur orarin e ri...",
+  "reschedule.actions.sendRequest": "Dërgo kërkesën për ndryshim",
+  "reschedule.actions.saveTime": "Ruaj orarin e ri të takimit",
+  "reschedule.actions.backBusiness": "Kthehu te rezervimet e biznesit",
+  "reschedule.actions.backCustomer": "Kthehu te rezervimet e mia",
+  "reschedule.error.missingReference": "Mungon referenca e rezervimit.",
+  "reschedule.error.notFound": "Rezervimi nuk u gjet.",
+  "reschedule.error.noPermission":
+    "Nuk ke leje për të ndryshuar orarin e këtij rezervimi.",
+  "reschedule.error.cancelled":
+    "Rezervimet e anuluara nuk mund të ndryshojnë orar.",
+  "reschedule.error.completed":
+    "Rezervimet e përfunduara nuk mund të ndryshojnë orar.",
+  "reschedule.error.pending":
+    "Ky rezervim ende pret miratimin e biznesit. Mund të ndryshohet pasi të konfirmohet.",
+  "reschedule.error.chooseStaff":
+    "Zgjidh çdo anëtar stafi të disponueshëm ose një nga personat e lirë në këtë orar.",
+  "reschedule.error.slotUnavailable":
+    "Ky orar nuk është më i disponueshëm. Zgjidh një orar tjetër.",
+  "reschedule.error.noChange":
+    "Zgjidh një datë, orë ose anëtar stafi tjetër para se të dërgosh ndryshimin.",
+  "reschedule.success.business": "Orari i rezervimit u ndryshua me sukses.",
+  "reschedule.success.customer":
+    "Kërkesa për ndryshim iu dërgua biznesit për miratim.",
+  "reschedule.calendar.currentMonth": "Kthehu te ky muaj",
+  "reschedule.calendar.staffFilter": "Filtër opsional i stafit",
+  "reschedule.calendar.anyStaff": "Çdo staf",
+  "reschedule.calendar.allDays": "Shfaq të gjitha ditët e rezervueshme",
+  "reschedule.calendar.selected": "Zgjedhur",
+  "reschedule.calendar.filteredTo": "filtruar për",
+  "reschedule.times.title": "Oraret e disponueshme",
+  "reschedule.times.chooseDate": "Zgjidh fillimisht një datë të disponueshme.",
+  "reschedule.times.empty":
+    "Nuk ka orare të lira për këtë shërbim në datën e zgjedhur.",
+  "reschedule.times.available": "të disponueshëm",
+  "reschedule.staff.title": "Zgjedhja e stafit",
+  "reschedule.staff.chooseDate": "Zgjidh fillimisht një datë.",
+  "reschedule.staff.chooseTime":
+    "Zgjidh fillimisht një orë, pastaj çdo anëtar stafi të disponueshëm ose një person të caktuar.",
+  "reschedule.staff.availableFor": "Të disponueshëm për",
+  "reschedule.staff.isAvailable": "është i disponueshëm",
+  "reschedule.staff.availableCount": "anëtarë stafi të disponueshëm",
+  "reschedule.staff.autoAssign":
+    "Mirëbook do të caktojë një nga anëtarët e disponueshëm të stafit për këtë orar.",
 };

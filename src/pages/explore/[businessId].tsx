@@ -1309,11 +1309,11 @@ export default function BusinessBookingPage() {
                   )}
             </p>
             <div className="booking-action-row compact">
-              <Link href="/dashboard/businesses" className="btn btn-ghost">
-                {t("dashboardSettings.setupHub", "Setup hub")}
-              </Link>
               <Link href="/dashboard/settings" className="btn btn-ghost">
-                {t("dashboardSettings.pageTitle", "Business settings")}
+                {t(
+                  "publicBusiness.preview.manage",
+                  "Manage in Mirëbook Business",
+                )}
               </Link>
             </div>
           </div>
@@ -1355,7 +1355,7 @@ export default function BusinessBookingPage() {
           <p className="small muted" style={{ marginTop: "0.75rem" }}>
             {t("publicBusiness.timesShownIn", "Times shown in")}{" "}
             {businessTimezoneLabel()} · {bookingIntervalMinutes()}{" "}
-            {t("publicBusiness.minuteSlotGrid", "minute slot grid")}
+            {t("publicBusiness.minuteSlotGrid", "minute appointment intervals")}
           </p>
         </div>
 

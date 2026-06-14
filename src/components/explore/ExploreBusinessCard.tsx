@@ -20,8 +20,16 @@ export default function ExploreBusinessCard({
   imageBackground
 }: Props) {
   const { t } = useI18n()
-  const serviceText = `${stats.assignedServices} ${t('common.service').toLowerCase()}${stats.assignedServices === 1 ? '' : 's'}`
-  const staffText = `${stats.activeStaff} ${t('common.staff').toLowerCase()}`
+  const serviceText = `${stats.assignedServices} ${
+    stats.assignedServices === 1
+      ? t('explore.card.serviceSingle', 'service')
+      : t('explore.card.servicePlural', 'services')
+  }`
+  const staffText = `${stats.activeStaff} ${
+    stats.activeStaff === 1
+      ? t('explore.card.staffSingle', 'staff member')
+      : t('explore.card.staffPlural', 'staff members')
+  }`
 
   return (
     <div className="card explore-business-card">
@@ -80,24 +88,8 @@ export default function ExploreBusinessCard({
         </p>
 
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
-          <span
-            className="small"
-            style={{
-              background: 'rgba(45,212,191,0.12)',
-              color: 'var(--success)',
-              padding: '0.2rem 0.55rem',
-              borderRadius: 999
-            }}
-          >
-            {t('explore.card.bookable')}
-          </span>
-
-          <span className="small explore-muted-pill">{t('explore.card.appointmentBooking')}</span>
           <span className="small explore-muted-pill">{serviceText}</span>
           <span className="small explore-muted-pill">{staffText}</span>
-          <span className="small explore-muted-pill">
-            {t('explore.card.availabilitySet', 'Availability set')}
-          </span>
         </div>
 
         <p className="small muted">
@@ -109,12 +101,6 @@ export default function ExploreBusinessCard({
         <Link href={`/explore/${business.id}`} className="btn btn-accent">
           {t('explore.card.viewTimes')}
         </Link>
-
-        {business.phone && (
-          <span className="small muted">
-            {business.phone}
-          </span>
-        )}
       </div>
     </div>
   )

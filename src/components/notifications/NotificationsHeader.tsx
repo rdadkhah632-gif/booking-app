@@ -39,14 +39,6 @@ export default function NotificationsHeader({
           {t('nav.myBookings')}
         </Link>
 
-        <button onClick={onRefresh} className="btn btn-ghost" disabled={loading}>
-          {loading ? t('notifications.refreshing', 'Refreshing...') : t('notifications.refresh', 'Refresh notifications')}
-        </button>
-
-        <Link href="/explore" className="btn btn-ghost">
-          {t('home.cta.explore')}
-        </Link>
-
         <button onClick={onMarkAllRead} className="btn btn-ghost" disabled={markingRead || unreadCount === 0}>
           {markingRead
             ? t('notifications.markingRead', 'Marking read...')
@@ -56,9 +48,9 @@ export default function NotificationsHeader({
         </button>
       </div>
 
-      <p className="small muted" style={{ marginTop: '0.75rem' }}>
-        {t('notifications.refreshHint', 'Mirëbook refreshes this page when you return to the tab. Use refresh if a recent booking update does not appear straight away.')}
-      </p>
+      <button onClick={onRefresh} className="notifications-refresh-link" disabled={loading}>
+        {loading ? t('notifications.refreshing', 'Refreshing...') : t('notifications.refresh', 'Refresh notifications')}
+      </button>
     </div>
   )
 }

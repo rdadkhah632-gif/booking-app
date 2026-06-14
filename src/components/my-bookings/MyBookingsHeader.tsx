@@ -75,18 +75,6 @@ export default function MyBookingsHeader({
       )}
 
       <div className="my-bookings-header-actions">
-        <Link href="/account" className="btn btn-ghost">
-          {t('nav.account', 'Account')}
-        </Link>
-
-        <Link href="/notifications" className="btn btn-ghost">
-          {t('nav.notifications', 'Notifications')}
-        </Link>
-
-        <Link href="/support/customer" className="btn btn-ghost">
-          {t('nav.customerSupport', 'Customer support')}
-        </Link>
-
         <button onClick={onRefresh} className="btn btn-ghost" disabled={loading}>
           {loading ? t('myBookings.refreshing', 'Refreshing...') : t('myBookings.refresh', 'Refresh bookings')}
         </button>
@@ -96,9 +84,6 @@ export default function MyBookingsHeader({
         </Link>
       </div>
 
-      <p className="small muted" style={{ marginTop: '0.75rem' }}>
-        {t('myBookings.refreshHint', 'Booking changes update this page after each action. It also refreshes when you return to the tab.')}
-      </p>
     </div>
   )
 }

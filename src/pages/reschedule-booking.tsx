@@ -141,7 +141,9 @@ export default function RescheduleBooking() {
     }
 
     if (!id || Array.isArray(id)) {
-      setError("Missing booking reference.");
+      setError(
+        t("reschedule.error.missingReference", "Missing booking reference."),
+      );
       setLoading(false);
       return;
     }
@@ -173,7 +175,10 @@ export default function RescheduleBooking() {
       .single();
 
     if (bookingError || !bookingData) {
-      setError(bookingError?.message || "Booking not found.");
+      setError(
+        bookingError?.message ||
+          t("reschedule.error.notFound", "Booking not found."),
+      );
       setLoading(false);
       return;
     }
@@ -205,26 +210,44 @@ export default function RescheduleBooking() {
     setRole(isBusinessOwner && !isCustomerOwner ? "business" : "customer");
 
     if (!isCustomerOwner && !isBusinessOwner) {
-      setError("You do not have permission to reschedule this booking.");
+      setError(
+        t(
+          "reschedule.error.noPermission",
+          "You do not have permission to reschedule this booking.",
+        ),
+      );
       setLoading(false);
       return;
     }
 
     if (normalisedBooking.status === "cancelled") {
-      setError("Cancelled bookings cannot be rescheduled.");
+      setError(
+        t(
+          "reschedule.error.cancelled",
+          "Cancelled bookings cannot be rescheduled.",
+        ),
+      );
       setLoading(false);
       return;
     }
 
     if (normalisedBooking.status === "completed") {
-      setError("Completed bookings cannot be rescheduled.");
+      setError(
+        t(
+          "reschedule.error.completed",
+          "Completed bookings cannot be rescheduled.",
+        ),
+      );
       setLoading(false);
       return;
     }
 
     if (normalisedBooking.status === "pending") {
       setError(
-        "This booking is still waiting for business approval. It can be changed after it is confirmed.",
+        t(
+          "reschedule.error.pending",
+          "This booking is still waiting for business approval. It can be changed after it is confirmed.",
+        ),
       );
       setLoading(false);
       return;
@@ -700,7 +723,10 @@ export default function RescheduleBooking() {
     if (!staffMemberIdForReschedule) {
       setSaving(false);
       setError(
-        "Please choose Any available staff or one of the staff available for this time.",
+        t(
+          "reschedule.error.chooseStaff",
+          "Please choose any available staff member or one of the people available for this time.",
+        ),
       );
       return;
     }
@@ -718,7 +744,12 @@ export default function RescheduleBooking() {
 
     if (!freshSlots.includes(selectedTime)) {
       setSaving(false);
-      setError("This time is no longer available. Please choose another slot.");
+      setError(
+        t(
+          "reschedule.error.slotUnavailable",
+          "This time is no longer available. Please choose another slot.",
+        ),
+      );
       setSelectedTime("");
       return;
     }
@@ -729,7 +760,10 @@ export default function RescheduleBooking() {
     ) {
       setSaving(false);
       setError(
-        "Choose a different date, time or staff member before submitting a reschedule.",
+        t(
+          "reschedule.error.noChange",
+          "Choose a different date, time or staff member before submitting a reschedule.",
+        ),
       );
       return;
     }
@@ -863,8 +897,14 @@ export default function RescheduleBooking() {
 
     setSuccess(
       role === "business"
-        ? "Booking rescheduled successfully."
-        : "Reschedule request sent to the business for approval.",
+        ? t(
+            "reschedule.success.business",
+            "Booking rescheduled successfully.",
+          )
+        : t(
+            "reschedule.success.customer",
+            "Reschedule request sent to the business for approval.",
+          ),
     );
 
     if (role === "business") {
@@ -890,7 +930,9 @@ export default function RescheduleBooking() {
       <section className="container" style={{ padding: "42px 24px 80px" }}>
         {loading && (
           <div className="card">
-            <p className="muted">Loading Mirëbook booking...</p>
+            <p className="muted">
+              {t("reschedule.loading", "Loading Mirëbook booking...")}
+            </p>
           </div>
         )}
 
@@ -899,7 +941,9 @@ export default function RescheduleBooking() {
             className="card"
             style={{ borderColor: "rgba(255,77,109,0.35)" }}
           >
-            <h1 className="page-title">Cannot reschedule</h1>
+            <h1 className="page-title">
+              {t("reschedule.error.title", "Cannot reschedule")}
+            </h1>
             <p style={{ color: "var(--danger)", marginTop: "0.75rem" }}>
               {error}
             </p>
@@ -913,12 +957,17 @@ export default function RescheduleBooking() {
               }}
             >
               <Link href="/my-bookings" className="btn btn-accent">
-                My bookings
+                {t("nav.myBookings", "My bookings")}
               </Link>
 
-              <Link href="/dashboard/bookings" className="btn btn-ghost">
-                Business bookings
-              </Link>
+              {role === "business" && (
+                <Link href="/dashboard/bookings" className="btn btn-ghost">
+                  {t(
+                    "reschedule.actions.businessBookings",
+                    "Business bookings",
+                  )}
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -935,14 +984,25 @@ export default function RescheduleBooking() {
             <div>
               <p className="small muted">
                 {role === "business"
-                  ? "Business reschedule"
-                  : "Customer reschedule request"}
+                  ? t("reschedule.kicker.business", "Business reschedule")
+                  : t(
+                      "reschedule.kicker.customer",
+                      "Customer reschedule request",
+                    )}
               </p>
-              <h1 className="page-title">Reschedule booking</h1>
+              <h1 className="page-title">
+                {t("reschedule.title", "Reschedule booking")}
+              </h1>
               <p className="page-sub" style={{ marginTop: "0.5rem" }}>
                 {role === "business"
-                  ? "Choose a smart calendar date, available time and staff choice. This updates the booking immediately."
-                  : "Choose a smart calendar date, available time and staff choice. Your original appointment stays confirmed until the business approves the change. Customers do not pay Mirëbook to request a reschedule."}
+                  ? t(
+                      "reschedule.subtitle.business",
+                      "Choose an available date, time and staff member. This updates the booking immediately.",
+                    )
+                  : t(
+                      "reschedule.subtitle.customer",
+                      "Choose an available date, time and staff member. Your original appointment stays confirmed until the business approves the change.",
+                    )}
               </p>
             </div>
 
@@ -967,18 +1027,30 @@ export default function RescheduleBooking() {
                 }}
               >
                 {role === "business"
-                  ? "Direct reschedule"
-                  : "Approval required"}
+                  ? t("reschedule.mode.direct", "Direct reschedule")
+                  : t("reschedule.mode.approval", "Approval required")}
               </p>
               <strong>
                 {role === "business"
-                  ? "Saving here immediately changes the customer booking."
-                  : "Your original appointment stays confirmed until the business accepts your new requested time."}
+                  ? t(
+                      "reschedule.mode.businessBody",
+                      "Saving here immediately changes the customer booking.",
+                    )
+                  : t(
+                      "reschedule.mode.customerBody",
+                      "Your original appointment stays confirmed until the business accepts your new requested time.",
+                    )}
               </strong>
               <p className="small muted" style={{ marginTop: "0.45rem" }}>
                 {role === "business"
-                  ? "Mirëbook will notify the customer after you save the new appointment time."
-                  : "Mirëbook will notify the business when you send or update a reschedule request."}
+                  ? t(
+                      "reschedule.mode.businessNotification",
+                      "Mirëbook will notify the customer after you save the new appointment time.",
+                    )
+                  : t(
+                      "reschedule.mode.customerNotification",
+                      "Mirëbook will notify the business when you send or update a reschedule request.",
+                    )}
               </p>
             </div>
 
@@ -1003,24 +1075,42 @@ export default function RescheduleBooking() {
                   marginBottom: "1rem",
                 }}
               >
-                Current booking
+                {t("reschedule.current.title", "Current booking")}
               </h2>
 
               <div style={{ display: "grid", gap: "0.75rem" }}>
                 <div>
-                  <p className="small muted">Business</p>
-                  <strong>{booking.businesses?.name || "Business"}</strong>
-                </div>
-
-                <div>
-                  <p className="small muted">Service</p>
-                  <strong>{booking.services?.name || "Service"}</strong>
-                </div>
-
-                <div>
-                  <p className="small muted">Current staff member</p>
+                  <p className="small muted">
+                    {t("common.business", "Business")}
+                  </p>
                   <strong>
-                    {booking.staff_members?.name || "Staff not recorded"}
+                    {booking.businesses?.name ||
+                      t("common.business", "Business")}
+                  </strong>
+                </div>
+
+                <div>
+                  <p className="small muted">
+                    {t("common.service", "Service")}
+                  </p>
+                  <strong>
+                    {booking.services?.name || t("common.service", "Service")}
+                  </strong>
+                </div>
+
+                <div>
+                  <p className="small muted">
+                    {t(
+                      "reschedule.current.staff",
+                      "Current staff member",
+                    )}
+                  </p>
+                  <strong>
+                    {booking.staff_members?.name ||
+                      t(
+                        "dashboardBookings.card.noStaff",
+                        "Staff not recorded",
+                      )}
                     {booking.staff_members?.role_title
                       ? ` — ${booking.staff_members.role_title}`
                       : ""}
@@ -1028,19 +1118,25 @@ export default function RescheduleBooking() {
                 </div>
 
                 <div>
-                  <p className="small muted">Current time</p>
+                  <p className="small muted">
+                    {t("reschedule.current.time", "Current time")}
+                  </p>
                   <strong>{new Date(booking.start_at).toLocaleString()}</strong>
                 </div>
 
                 <div>
-                  <p className="small muted">Status</p>
+                  <p className="small muted">
+                    {t("common.status", "Status")}
+                  </p>
                   <strong style={{ textTransform: "capitalize" }}>
                     {booking.status}
                   </strong>
                 </div>
 
                 <div>
-                  <p className="small muted">Customer</p>
+                  <p className="small muted">
+                    {t("common.customer", "Customer")}
+                  </p>
                   <strong>{booking.customer_name}</strong>
                   <p className="small muted">{booking.customer_email}</p>
                 </div>
@@ -1048,11 +1144,19 @@ export default function RescheduleBooking() {
             </div>
 
             <div className="card" style={{ background: "var(--surface-2)" }}>
-              <p className="small muted">New requested appointment</p>
+              <p className="small muted">
+                {t(
+                  "reschedule.requested.title",
+                  "New requested appointment",
+                )}
+              </p>
               <h3 style={{ marginTop: "0.25rem" }}>
                 {requestedStart
                   ? `${requestedStart.toLocaleString()}${requestedEnd ? ` - ${requestedEnd.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`
-                  : "Choose a new date and time"}
+                  : t(
+                      "reschedule.requested.chooseDateTime",
+                      "Choose a new date and time",
+                    )}
               </h3>
               <p className="small muted" style={{ marginTop: "0.45rem" }}>
                 {selectedTime
@@ -1061,10 +1165,14 @@ export default function RescheduleBooking() {
                     : availableStaffForSelectedTime.length === 1
                       ? `Assigned automatically: ${availableStaffForSelectedTime[0].name}`
                       : `Any available staff · ${availableStaffForSelectedTime.length} staff can do this time`
-                  : "Choose a time to select Any available staff or a specific person."}
+                  : t(
+                      "reschedule.requested.chooseStaff",
+                      "Choose a time, then select any available staff member or a specific person.",
+                    )}
               </p>
               <p className="small muted">
-                {booking.services?.name || "Service"} · {newDuration} minutes
+                {booking.services?.name || t("common.service", "Service")} ·{" "}
+                {newDuration} {t("common.minutes", "minutes")}
               </p>
             </div>
 
@@ -1073,11 +1181,13 @@ export default function RescheduleBooking() {
               className="card reschedule-form-card"
             >
               <h2 style={{ fontFamily: "var(--font-display)" }}>
-                New appointment time
+                {t("reschedule.form.title", "New appointment time")}
               </h2>
 
               <div>
-                <label className="small muted">Smart calendar</label>
+                <label className="small muted">
+                  {t("reschedule.form.calendar", "Available dates")}
+                </label>
 
                 {selectableStaff.length === 0 && (
                   <p className="small muted" style={{ marginTop: "0.5rem" }}>
@@ -1143,13 +1253,19 @@ export default function RescheduleBooking() {
                         className="btn btn-ghost"
                         style={{ padding: "0.45rem 0.75rem" }}
                       >
-                        Back to this month
+                        {t(
+                          "reschedule.calendar.currentMonth",
+                          "Back to this month",
+                        )}
                       </button>
                     </div>
 
                     <div style={{ marginBottom: "0.85rem" }}>
                       <label className="small muted">
-                        Optional staff filter
+                        {t(
+                          "reschedule.calendar.staffFilter",
+                          "Optional staff filter",
+                        )}
                       </label>
                       <div
                         className="reschedule-staff-filter-grid"
@@ -1184,8 +1300,15 @@ export default function RescheduleBooking() {
                             color: "var(--text)",
                           }}
                         >
-                          <strong>Any staff</strong>
-                          <p className="small muted">Show all bookable days</p>
+                          <strong>
+                            {t("reschedule.calendar.anyStaff", "Any staff")}
+                          </strong>
+                          <p className="small muted">
+                            {t(
+                              "reschedule.calendar.allDays",
+                              "Show all bookable days",
+                            )}
+                          </p>
                         </button>
 
                         {selectableStaff.map((staff) => (
@@ -1215,7 +1338,8 @@ export default function RescheduleBooking() {
                           >
                             <strong>{staff.name}</strong>
                             <p className="small muted">
-                              {staff.role_title || "Staff member"}
+                              {staff.role_title ||
+                                t("staff.fallback.member", "Staff member")}
                             </p>
                           </button>
                         ))}
@@ -1231,7 +1355,15 @@ export default function RescheduleBooking() {
                         marginBottom: "0.35rem",
                       }}
                     >
-                      {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                      {[
+                        t("calendar.weekdays.sun", "Sun"),
+                        t("calendar.weekdays.mon", "Mon"),
+                        t("calendar.weekdays.tue", "Tue"),
+                        t("calendar.weekdays.wed", "Wed"),
+                        t("calendar.weekdays.thu", "Thu"),
+                        t("calendar.weekdays.fri", "Fri"),
+                        t("calendar.weekdays.sat", "Sat"),
+                      ].map(
                         (day) => (
                           <p
                             key={day}
@@ -1320,12 +1452,12 @@ export default function RescheduleBooking() {
                         className="small muted"
                         style={{ marginTop: "0.75rem" }}
                       >
-                        Selected:{" "}
+                        {t("reschedule.calendar.selected", "Selected")}:{" "}
                         <strong style={{ color: "var(--text)" }}>
                           {selectedDateLabel}
                         </strong>
                         {staffFilter !== "any" && selectedFilterStaff
-                          ? ` · filtered to ${selectedFilterStaff.name}`
+                          ? ` · ${t("reschedule.calendar.filteredTo", "filtered to")} ${selectedFilterStaff.name}`
                           : ""}
                       </p>
                     )}
@@ -1334,18 +1466,25 @@ export default function RescheduleBooking() {
               </div>
 
               <div>
-                <label className="small muted">Available times</label>
+                <label className="small muted">
+                  {t("reschedule.times.title", "Available times")}
+                </label>
 
                 {!selectedDate && (
                   <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                    Pick a smart calendar date first.
+                    {t(
+                      "reschedule.times.chooseDate",
+                      "Choose an available date first.",
+                    )}
                   </p>
                 )}
 
                 {selectedDate && timeSlots.length === 0 && (
                   <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                    No free slots are available for this service on the selected
-                    date.
+                    {t(
+                      "reschedule.times.empty",
+                      "No free times are available for this service on the selected date.",
+                    )}
                   </p>
                 )}
 
@@ -1384,7 +1523,8 @@ export default function RescheduleBooking() {
                             opacity: 0.8,
                           }}
                         >
-                          {slot.staffIds.length} available
+                          {slot.staffIds.length}{" "}
+                          {t("reschedule.times.available", "available")}
                         </span>
                       )}
                     </button>
@@ -1393,18 +1533,22 @@ export default function RescheduleBooking() {
               </div>
 
               <div>
-                <label className="small muted">Staff choice</label>
+                <label className="small muted">
+                  {t("reschedule.staff.title", "Staff choice")}
+                </label>
 
                 {!selectedDate && (
                   <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                    Select a date first.
+                    {t("reschedule.staff.chooseDate", "Select a date first.")}
                   </p>
                 )}
 
                 {selectedDate && !selectedTime && (
                   <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                    Choose a time first, then pick Any available staff or a
-                    specific staff member for that exact time.
+                    {t(
+                      "reschedule.staff.chooseTime",
+                      "Choose a time first, then select any available staff member or a specific person.",
+                    )}
                   </p>
                 )}
 
@@ -1424,12 +1568,13 @@ export default function RescheduleBooking() {
                       }}
                     >
                       <p className="small muted">
-                        Available for {selectedTime}
+                        {t("reschedule.staff.availableFor", "Available for")}{" "}
+                        {selectedTime}
                       </p>
                       <strong>
                         {availableStaffForSelectedTime.length === 1
-                          ? `${availableStaffForSelectedTime[0].name} is available`
-                          : `${availableStaffForSelectedTime.length} staff available`}
+                          ? `${availableStaffForSelectedTime[0].name} ${t("reschedule.staff.isAvailable", "is available")}`
+                          : `${availableStaffForSelectedTime.length} ${t("reschedule.staff.availableCount", "staff available")}`}
                       </strong>
                     </div>
 
@@ -1451,13 +1596,20 @@ export default function RescheduleBooking() {
                         color: "var(--text)",
                       }}
                     >
-                      <strong>Any available staff</strong>
+                      <strong>
+                        {t(
+                          "publicBusiness.staff.anyAvailable",
+                          "Any available staff",
+                        )}
+                      </strong>
                       <p
                         className="small muted"
                         style={{ marginTop: "0.25rem" }}
                       >
-                        Mirëbook will assign one of the available staff for this
-                        exact time.
+                        {t(
+                          "reschedule.staff.autoAssign",
+                          "Mirëbook will assign one of the available staff members for this exact time.",
+                        )}
                       </p>
                     </button>
 
@@ -1484,7 +1636,8 @@ export default function RescheduleBooking() {
                         >
                           <strong>{staff.name}</strong>
                           <p className="small muted">
-                            {staff.role_title || "Staff member"}
+                            {staff.role_title ||
+                              t("staff.fallback.member", "Staff member")}
                           </p>
                           <p
                             className="small"
@@ -1493,7 +1646,8 @@ export default function RescheduleBooking() {
                               marginTop: "0.25rem",
                             }}
                           >
-                            Available at {selectedTime}
+                            {t("reschedule.availableAt", "Available at")}{" "}
+                            {selectedTime}
                           </p>
                         </button>
                       );
@@ -1514,11 +1668,17 @@ export default function RescheduleBooking() {
               >
                 {saving
                   ? role === "customer"
-                    ? "Sending request..."
-                    : "Saving new time..."
+                    ? t("reschedule.actions.sending", "Sending request...")
+                    : t("reschedule.actions.saving", "Saving new time...")
                   : role === "customer"
-                    ? "Send reschedule request"
-                    : "Save new appointment time"}
+                    ? t(
+                        "reschedule.actions.sendRequest",
+                        "Send reschedule request",
+                      )
+                    : t(
+                        "reschedule.actions.saveTime",
+                        "Save new appointment time",
+                      )}
               </button>
             </form>
 
@@ -1535,11 +1695,14 @@ export default function RescheduleBooking() {
                   href={`/dashboard/bookings?businessId=${booking.business_id}`}
                   className="btn btn-ghost"
                 >
-                  Back to business bookings
+                  {t(
+                    "reschedule.actions.backBusiness",
+                    "Back to business bookings",
+                  )}
                 </Link>
               ) : (
                 <Link href="/my-bookings" className="btn btn-ghost">
-                  Back to my bookings
+                  {t("reschedule.actions.backCustomer", "Back to my bookings")}
                 </Link>
               )}
             </div>

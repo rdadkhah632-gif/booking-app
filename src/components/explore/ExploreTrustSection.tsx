@@ -13,14 +13,14 @@ export default function ExploreTrustSection() {
         <h2>
           {t(
             'explore.brand.title',
-            'Built for businesses that run on bookings'
+            'Find local services and keep every appointment clear'
           )}
         </h2>
 
         <p className="muted explore-brand-description">
           {t(
             'explore.brand.description',
-            'From salons and barbers to experiences, activities and specialist services, Mirëbook helps customers discover businesses, book appointments and stay organised.'
+            'Browse bookable businesses, choose a service and available time, then track requests and confirmed appointments in one place.'
           )}
         </p>
 
@@ -40,7 +40,7 @@ export default function ExploreTrustSection() {
         <p className="explore-brand-footer">
           {t(
             'explore.brand.footer',
-            'Designed for independent businesses and their customers.'
+            'Clear booking status from request to completed appointment.'
           )}
         </p>
       </div>

@@ -50,11 +50,7 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
           {t('explore.empty.body')}
         </p>
         <div className="explore-empty-actions">
-          <Link href="/register" className="btn btn-accent">
-            {t('explore.empty.addFirstBusiness')}
-          </Link>
-
-          <Link href="/support/customer" className="btn btn-ghost">
+          <Link href="/support/customer" className="btn btn-accent">
             {t('nav.customerSupport')}
           </Link>
         </div>
@@ -74,10 +70,6 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
             {t('explore.filters.clear')}
           </button>
         )}
-
-        <Link href="/register" className="btn btn-ghost">
-          {t('explore.results.listBusiness')}
-        </Link>
       </div>
     </div>
   )

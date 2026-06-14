@@ -115,36 +115,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-customer-band">
-        <div className="container home-customer-band-inner">
-          <div>
-            <p>{t("home.customerBand.kicker", "Made for customers")}</p>
-            <h2>
-              {t(
-                "home.customerBand.title",
-                "Book local appointments without losing track of the details.",
-              )}
-            </h2>
-          </div>
-          <div className="home-customer-band-copy">
-            <p>
-              {t(
-                "home.customerBand.body",
-                "Mirëbook keeps the business, service, staff member, time and booking status together, before and after you book.",
-              )}
-            </p>
-            <div className="home-cta-row">
-              <Link href="/explore" className="btn btn-accent">
-                {t("home.customers.explore", "Explore marketplace")}
-              </Link>
-              <Link href="/register" className="btn btn-ghost">
-                {t("home.cta.createAccount", "Create account")}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="container home-confidence-section">
         <div className="home-section-heading">
           <p className="small" style={{ color: "var(--accent)" }}>
@@ -235,7 +205,6 @@ export default function Home() {
         }
 
         .customer-panel-kicker,
-        .home-customer-band p:first-child,
         .home-business-entry p {
           margin: 0 0 0.65rem;
           color: var(--accent);
@@ -245,7 +214,6 @@ export default function Home() {
         }
 
         .customer-journey-panel h2,
-        .home-customer-band h2,
         .home-business-entry h2 {
           margin: 0;
           font-family: var(--font-display);
@@ -281,32 +249,6 @@ export default function Home() {
           color: var(--text-muted);
           font-size: 0.88rem;
           line-height: 1.55;
-        }
-
-        .home-customer-band {
-          padding: 72px 0;
-          border-top: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-          background: #111822;
-        }
-
-        .home-customer-band-inner {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
-          gap: 4rem;
-          align-items: start;
-        }
-
-        .home-customer-band h2 {
-          max-width: 700px;
-          font-size: clamp(2rem, 4vw, 3.25rem);
-          line-height: 1.08;
-        }
-
-        .home-customer-band-copy > p {
-          margin: 0 0 1.4rem;
-          color: var(--text-muted);
-          line-height: 1.7;
         }
 
         .home-confidence-section h3 {
@@ -352,19 +294,11 @@ export default function Home() {
             min-height: auto;
           }
 
-          .home-customer-band-inner {
-            grid-template-columns: 1fr;
-            gap: 2rem;
-          }
         }
 
         @media (max-width: 620px) {
           .customer-journey-panel {
             padding: 1rem;
-          }
-
-          .home-customer-band {
-            padding: 52px 0;
           }
 
           .home-business-entry-inner {

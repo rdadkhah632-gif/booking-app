@@ -189,23 +189,17 @@ export default function MyBookingCard({
 
         <div className="my-booking-card-actions">
           {booking.status === 'pending' && (
-            <>
-              <Link href="/notifications" className="btn btn-ghost">
-                {t('myBookings.card.trackRequest', 'Track request')}
-              </Link>
-
-              <button onClick={() => onCancel(booking)} className="btn btn-danger" disabled={isWorking}>
-                {isWorking ? t('common.working', 'Working...') : t('myBookings.card.cancelRequest', 'Cancel request')}
-              </button>
-            </>
+            <button onClick={() => onCancel(booking)} className="btn btn-danger" disabled={isWorking}>
+              {isWorking ? t('common.working', 'Working...') : t('myBookings.card.cancelRequest', 'Cancel request')}
+            </button>
           )}
 
           {booking.status === 'confirmed' && mode !== 'history' && (
             <>
               {pendingRequest ? (
-                <Link href="/notifications" className="btn btn-ghost" title={t('myBookings.card.pendingRequestTitle', 'The business needs to approve your latest requested time before you can request another change.')}>
-                  {t('myBookings.card.viewPendingRequest', 'View pending request')}
-                </Link>
+                <span className="small muted">
+                  {t('myBookings.card.pendingRequestTitle', 'The business needs to approve your latest requested time before you can request another change.')}
+                </span>
               ) : (
                 <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
                   {t('myBookings.card.reschedule', 'Reschedule')}

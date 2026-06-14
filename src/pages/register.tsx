@@ -514,41 +514,6 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <div className="card register-role-explainer">
-            <p className="small muted">
-              {t("register.roleExplainer.kicker", "Account type guide")}
-            </p>
-            <strong>
-              {role === "business"
-                ? t(
-                    "register.roleExplainer.businessTitle",
-                    "Business owner account",
-                  )
-                : role === "staff"
-                  ? t("register.roleExplainer.staffTitle", "Staff account")
-                  : t(
-                      "register.roleExplainer.customerTitle",
-                      "Customer account",
-                    )}
-            </strong>
-            <p className="small muted" style={{ marginTop: "0.35rem" }}>
-              {role === "business"
-                ? t(
-                    "register.roleExplainer.businessBody",
-                    "Use this if you own or manage a business and need to set up services, staff, availability and customer bookings.",
-                  )
-                : role === "staff"
-                  ? t(
-                      "register.roleExplainer.staffBody",
-                      "Use this if you work for a business on Mirëbook. Your staff account can exist before it is linked to a business, then it will unlock schedule and availability once an invite matches this email.",
-                    )
-                  : t(
-                      "register.roleExplainer.customerBody",
-                      "Use this if you want to find businesses, book services and manage your appointments.",
-                    )}
-            </p>
-          </div>
-
           {role === "staff" && (
             <div className="card register-staff-notice">
               <p className="small" style={{ color: "var(--warning)" }}>
@@ -878,12 +843,6 @@ export default function RegisterPage() {
               <Link href={loginUrl} style={{ color: "var(--accent)" }}>
                 {t("register.loginLink", "Login")}
               </Link>
-            </p>
-            <p className="small muted">
-              {t(
-                "register.helperText",
-                "Not sure which account type to choose? Customers book services, businesses manage the platform setup, and staff need an invite from a business.",
-              )}
             </p>
           </div>
         </div>

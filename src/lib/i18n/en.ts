@@ -321,15 +321,20 @@ export const en: TranslationTree = {
   "explore.card.bookable": "Bookable on Mirëbook",
   "explore.card.appointmentBooking": "Appointment booking",
   "explore.card.availabilitySet": "Availability set",
+  "explore.card.serviceSingle": "service",
+  "explore.card.servicePlural": "services",
+  "explore.card.staffSingle": "staff member",
+  "explore.card.staffPlural": "staff members",
   "explore.card.viewTimes": "View times and book",
   "explore.card.bookNow": "Book now",
   "explore.card.locationComingSoon": "Location not provided",
   "explore.brand.kicker": "Mirëbook",
-  "explore.brand.title": "Built for businesses that run on bookings",
+  "explore.brand.title":
+    "Find local services and keep every appointment clear",
   "explore.brand.description":
-    "From salons and barbers to experiences, activities and specialist services, Mirëbook helps customers discover businesses, book appointments and stay organised.",
+    "Browse bookable businesses, choose a service and available time, then track requests and confirmed appointments in one place.",
   "explore.brand.footer":
-    "Designed for independent businesses and their customers.",
+    "Clear booking status from request to completed appointment.",
   "explore.categories.barbers": "Barbers",
   "explore.categories.salons": "Salons",
   "explore.categories.nails": "Nails",
@@ -1908,10 +1913,11 @@ export const en: TranslationTree = {
   "publicBusiness.loading": "Loading Mirëbook booking page...",
   "publicBusiness.backToResults": "Back to results",
   "publicBusiness.timesShownIn": "Times shown in",
-  "publicBusiness.minuteSlotGrid": "minute slot grid",
+  "publicBusiness.minuteSlotGrid": "minute appointment intervals",
 
   "publicBusiness.preview.kicker": "Owner preview",
   "publicBusiness.preview.title": "You are previewing your own business page",
+  "publicBusiness.preview.manage": "Manage in Mirëbook Business",
   "publicBusiness.preview.publishedBody":
     "This is the public page customers can use to book. Changes should be made from your dashboard.",
   "publicBusiness.preview.draftBody":
@@ -3266,4 +3272,81 @@ export const en: TranslationTree = {
     "This invite was sent to a different email address. Sign in with the invited account.",
   "staffInvite.error.accept":
     "This invite could not be accepted. It may have expired or already been used.",
+  "notifications.bookingHandoff.title":
+    "Booking details and actions stay in My bookings",
+  "notifications.bookingHandoff.body":
+    "Open My bookings to review requests, confirmed appointments, changes and history.",
+  "reschedule.loading": "Loading Mirëbook booking...",
+  "reschedule.error.title": "Cannot reschedule",
+  "reschedule.kicker.business": "Business reschedule",
+  "reschedule.kicker.customer": "Customer reschedule request",
+  "reschedule.title": "Reschedule booking",
+  "reschedule.subtitle.business":
+    "Choose an available date, time and staff member. This updates the booking immediately.",
+  "reschedule.subtitle.customer":
+    "Choose an available date, time and staff member. Your original appointment stays confirmed until the business approves the change.",
+  "reschedule.mode.direct": "Direct reschedule",
+  "reschedule.mode.approval": "Approval required",
+  "reschedule.mode.businessBody":
+    "Saving here immediately changes the customer booking.",
+  "reschedule.mode.customerBody":
+    "Your original appointment stays confirmed until the business accepts your new requested time.",
+  "reschedule.mode.businessNotification":
+    "Mirëbook will notify the customer after you save the new appointment time.",
+  "reschedule.mode.customerNotification":
+    "Mirëbook will notify the business when you send or update a reschedule request.",
+  "reschedule.current.title": "Current booking",
+  "reschedule.current.staff": "Current staff member",
+  "reschedule.current.time": "Current time",
+  "reschedule.requested.title": "New requested appointment",
+  "reschedule.requested.chooseDateTime": "Choose a new date and time",
+  "reschedule.requested.chooseStaff":
+    "Choose a time, then select any available staff member or a specific person.",
+  "reschedule.form.title": "New appointment time",
+  "reschedule.form.calendar": "Available dates",
+  "reschedule.availableAt": "Available at",
+  "reschedule.actions.businessBookings": "Business bookings",
+  "reschedule.actions.sending": "Sending request...",
+  "reschedule.actions.saving": "Saving new time...",
+  "reschedule.actions.sendRequest": "Send reschedule request",
+  "reschedule.actions.saveTime": "Save new appointment time",
+  "reschedule.actions.backBusiness": "Back to business bookings",
+  "reschedule.actions.backCustomer": "Back to my bookings",
+  "reschedule.error.missingReference": "Missing booking reference.",
+  "reschedule.error.notFound": "Booking not found.",
+  "reschedule.error.noPermission":
+    "You do not have permission to reschedule this booking.",
+  "reschedule.error.cancelled": "Cancelled bookings cannot be rescheduled.",
+  "reschedule.error.completed": "Completed bookings cannot be rescheduled.",
+  "reschedule.error.pending":
+    "This booking is still waiting for business approval. It can be changed after it is confirmed.",
+  "reschedule.error.chooseStaff":
+    "Please choose any available staff member or one of the people available for this time.",
+  "reschedule.error.slotUnavailable":
+    "This time is no longer available. Please choose another slot.",
+  "reschedule.error.noChange":
+    "Choose a different date, time or staff member before submitting a reschedule.",
+  "reschedule.success.business": "Booking rescheduled successfully.",
+  "reschedule.success.customer":
+    "Reschedule request sent to the business for approval.",
+  "reschedule.calendar.currentMonth": "Back to this month",
+  "reschedule.calendar.staffFilter": "Optional staff filter",
+  "reschedule.calendar.anyStaff": "Any staff",
+  "reschedule.calendar.allDays": "Show all bookable days",
+  "reschedule.calendar.selected": "Selected",
+  "reschedule.calendar.filteredTo": "filtered to",
+  "reschedule.times.title": "Available times",
+  "reschedule.times.chooseDate": "Choose an available date first.",
+  "reschedule.times.empty":
+    "No free times are available for this service on the selected date.",
+  "reschedule.times.available": "available",
+  "reschedule.staff.title": "Staff choice",
+  "reschedule.staff.chooseDate": "Select a date first.",
+  "reschedule.staff.chooseTime":
+    "Choose a time first, then select any available staff member or a specific person.",
+  "reschedule.staff.availableFor": "Available for",
+  "reschedule.staff.isAvailable": "is available",
+  "reschedule.staff.availableCount": "staff available",
+  "reschedule.staff.autoAssign":
+    "Mirëbook will assign one of the available staff members for this exact time.",
 };

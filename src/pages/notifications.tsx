@@ -4,13 +4,9 @@ import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
 import NotificationsHeader from "@/components/notifications/NotificationsHeader";
-import NotificationsStats from "@/components/notifications/NotificationsStats";
 import NotificationEmptyState from "@/components/notifications/NotificationEmptyState";
 import NotificationInboxSection from "@/components/notifications/NotificationInboxSection";
-import PendingBookingRequestsSection from "@/components/notifications/PendingBookingRequestsSection";
-import PendingRescheduleRequestsSection from "@/components/notifications/PendingRescheduleRequestsSection";
-import ResolvedRescheduleRequestsSection from "@/components/notifications/ResolvedRescheduleRequestsSection";
-import BookingUpdatesSection from "@/components/notifications/BookingUpdatesSection";
+import Link from "next/link";
 import {
   Booking,
   BookingRequest,
@@ -424,12 +420,6 @@ export default function CustomerNotifications() {
           onMarkAllRead={markAllNotificationsRead}
         />
 
-        <NotificationsStats
-          actionCount={actionCount}
-          historyCount={historyCount}
-          unreadCount={unreadCount}
-        />
-
         {error && (
           <div
             className="card"
@@ -464,54 +454,26 @@ export default function CustomerNotifications() {
           />
         )}
 
-        {!loading && pendingBookingRequests.length > 0 && (
-          <PendingBookingRequestsSection
-            bookings={pendingBookingRequests}
-            bookingBusinessName={bookingBusinessName}
-            bookingServiceName={bookingServiceName}
-            bookingStaffName={bookingStaffName}
-            statusLabel={statusLabel}
-            statusColor={statusColor}
-            statusBackground={statusBackground}
-          />
-        )}
-
-        {!loading && pendingRescheduleRequests.length > 0 && (
-          <PendingRescheduleRequestsSection
-            requests={pendingRescheduleRequests}
-            requestBooking={requestBooking}
-            bookingBusinessName={bookingBusinessName}
-            bookingServiceName={bookingServiceName}
-            requestedStaffName={requestedStaffName}
-            statusLabel={statusLabel}
-            statusColor={statusColor}
-            statusBackground={statusBackground}
-          />
-        )}
-
-        {!loading && resolvedRescheduleRequests.length > 0 && (
-          <ResolvedRescheduleRequestsSection
-            requests={resolvedRescheduleRequests}
-            requestBooking={requestBooking}
-            bookingBusinessName={bookingBusinessName}
-            bookingServiceName={bookingServiceName}
-            requestedStaffName={requestedStaffName}
-            statusLabel={statusLabel}
-            statusColor={statusColor}
-            statusBackground={statusBackground}
-          />
-        )}
-
-        {!loading && resolvedBookingUpdates.length > 0 && (
-          <BookingUpdatesSection
-            bookings={resolvedBookingUpdates}
-            bookingBusinessName={bookingBusinessName}
-            bookingServiceName={bookingServiceName}
-            bookingStaffName={bookingStaffName}
-            statusLabel={statusLabel}
-            statusColor={statusColor}
-            statusBackground={statusBackground}
-          />
+        {!loading && (actionCount > 0 || historyCount > 0) && (
+          <div className="customer-booking-handoff">
+            <div>
+              <strong>
+                {t(
+                  "notifications.bookingHandoff.title",
+                  "Booking details and actions stay in My bookings",
+                )}
+              </strong>
+              <p className="small muted">
+                {t(
+                  "notifications.bookingHandoff.body",
+                  "Open My bookings to review requests, confirmed appointments, changes and history.",
+                )}
+              </p>
+            </div>
+            <Link href="/my-bookings">
+              {t("nav.myBookings", "My bookings")}
+            </Link>
+          </div>
         )}
       </section>
 
@@ -529,6 +491,36 @@ export default function CustomerNotifications() {
           margin-bottom: 2rem;
         }
 
+        :global(.notifications-refresh-link) {
+          margin-top: 0.75rem;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: var(--text-muted);
+          cursor: pointer;
+          font-size: 0.82rem;
+          text-decoration: underline;
+        }
+
+        .customer-booking-handoff {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .customer-booking-handoff p {
+          margin: 0.3rem 0 0;
+        }
+
+        .customer-booking-handoff a {
+          color: var(--accent);
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
         .customer-notification-card-row {
           display: flex;
           justify-content: space-between;
@@ -544,6 +536,10 @@ export default function CustomerNotifications() {
         }
 
         @media (max-width: 640px) {
+          .customer-booking-handoff {
+            display: grid;
+          }
+
           .customer-notification-actions :global(.btn),
           .customer-notification-actions button,
           .customer-notification-actions a,

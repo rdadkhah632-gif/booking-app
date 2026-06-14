@@ -524,15 +524,6 @@ export default function MyBookings() {
     );
   }, [bookings]);
 
-  const nextConfirmedBooking = useMemo(() => {
-    return (
-      [...confirmedUpcomingBookings].sort(
-        (a, b) =>
-          new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
-      )[0] || null
-    );
-  }, [confirmedUpcomingBookings]);
-
   const historyBookings = useMemo(() => {
     return bookings.filter(
       (booking) =>
@@ -545,9 +536,6 @@ export default function MyBookings() {
   }, [bookings]);
 
   const pendingRescheduleCount = Object.keys(pendingRequestByBookingId).length;
-
-  const hasCustomerActions =
-    pendingBookings.length > 0 || pendingRescheduleCount > 0;
 
   function scrollToSection(
     section: "pending" | "upcoming" | "changes" | "history",
@@ -649,80 +637,6 @@ export default function MyBookings() {
             <p className="muted">
               {t("myBookings.loading", "Loading your Mirëbook bookings...")}
             </p>
-          </div>
-        )}
-
-        {!loading && bookings.length > 0 && (
-          <div className="card my-bookings-command-card">
-            <div>
-              <p className="small muted">
-                {t("myBookings.command.kicker", "Booking overview")}
-              </p>
-              <h2
-                style={{
-                  fontFamily: "var(--font-display)",
-                  marginTop: "0.25rem",
-                }}
-              >
-                {hasCustomerActions
-                  ? t(
-                      "myBookings.command.actionTitle",
-                      "You have booking updates to track",
-                    )
-                  : nextConfirmedBooking
-                    ? t(
-                        "myBookings.command.nextTitle",
-                        "Your next appointment is coming up",
-                      )
-                    : t(
-                        "myBookings.command.historyTitle",
-                        "Your bookings are up to date",
-                      )}
-              </h2>
-              <p className="small muted" style={{ marginTop: "0.4rem" }}>
-                {pendingBookings.length > 0
-                  ? t(
-                      "myBookings.command.pendingBody",
-                      "Some booking requests are waiting for the business to confirm them.",
-                    )
-                  : pendingRescheduleCount > 0
-                    ? t(
-                        "myBookings.command.changeBody",
-                        "You have requested booking changes waiting for business approval.",
-                      )
-                    : nextConfirmedBooking
-                      ? `${businessName(nextConfirmedBooking)} · ${serviceName(nextConfirmedBooking)} · ${new Date(nextConfirmedBooking.start_at).toLocaleString()}`
-                      : t(
-                          "myBookings.command.noActiveBody",
-                          "No active customer action is needed right now. Your older bookings remain in history.",
-                        )}
-              </p>
-            </div>
-
-            <div className="my-bookings-command-actions">
-              <button
-                type="button"
-                className="btn btn-accent"
-                onClick={() =>
-                  scrollToSection(
-                    pendingBookings.length > 0
-                      ? "pending"
-                      : nextConfirmedBooking
-                        ? "upcoming"
-                        : "history",
-                  )
-                }
-              >
-                {pendingBookings.length > 0
-                  ? t("myBookings.command.viewPending", "View pending requests")
-                  : nextConfirmedBooking
-                    ? t("myBookings.command.viewUpcoming", "View upcoming")
-                    : t("myBookings.command.viewHistory", "View history")}
-              </button>
-              <a href="/explore" className="btn btn-ghost">
-                {t("myBookings.command.bookAgain", "Book another service")}
-              </a>
-            </div>
           </div>
         )}
 
@@ -831,27 +745,6 @@ export default function MyBookings() {
         )}
       </section>
       <style jsx>{`
-        .my-bookings-command-card {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          margin-bottom: 1.5rem;
-          border-color: rgba(255, 107, 53, 0.24);
-          background: linear-gradient(
-            135deg,
-            rgba(255, 107, 53, 0.08),
-            rgba(31, 28, 44, 0.72)
-          );
-        }
-
-        .my-bookings-command-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
         .my-bookings-header-actions,
         .my-booking-empty-actions {
           display: flex;
@@ -938,14 +831,6 @@ export default function MyBookings() {
         }
 
         @media (max-width: 640px) {
-          .my-bookings-command-card {
-            display: grid;
-          }
-
-          .my-bookings-command-actions,
-          .my-bookings-command-actions :global(.btn),
-          .my-bookings-command-actions button,
-          .my-bookings-command-actions a,
           .my-bookings-header-actions :global(.btn),
           .my-bookings-header-actions button,
           .my-bookings-header-actions a,

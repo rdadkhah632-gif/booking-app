@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { useI18n } from '@/lib/useI18n'
 
 type Props = {
@@ -27,13 +26,6 @@ export default function ExploreResultsHeader({ loading, filteredCount, hasFilter
         </button>
       )}
 
-      <Link href="/register" className="btn btn-ghost">
-        {t('explore.results.listBusiness')}
-      </Link>
-
-      <Link href="/support/customer" className="btn btn-ghost">
-        {t('nav.customerSupport')}
-      </Link>
     </div>
   )
 }

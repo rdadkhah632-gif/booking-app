@@ -383,102 +383,6 @@ export default function BookingConfirmation() {
               </p>
             </div>
 
-            <div
-              className="card"
-              style={{
-                borderColor: isPendingApproval()
-                  ? "rgba(255,107,53,0.28)"
-                  : booking.status === "declined"
-                    ? "rgba(255,190,11,0.28)"
-                    : "rgba(45,212,191,0.28)",
-                background: isPendingApproval()
-                  ? "rgba(255,107,53,0.06)"
-                  : booking.status === "declined"
-                    ? "rgba(255,190,11,0.06)"
-                    : "rgba(45,212,191,0.06)",
-              }}
-            >
-              <div className="booking-confirmation-note-row">
-                <div
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 999,
-                    background: isPendingApproval()
-                      ? "rgba(255,107,53,0.12)"
-                      : "rgba(45,212,191,0.12)",
-                    color: isPendingApproval()
-                      ? "var(--accent)"
-                      : booking.status === "declined"
-                        ? "var(--warning)"
-                        : "var(--success)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 800,
-                    flexShrink: 0,
-                  }}
-                >
-                  {isPendingApproval() ? "!" : "✓"}
-                </div>
-
-                <div>
-                  <strong>
-                    {booking.status === "pending"
-                      ? t(
-                          "bookingConfirmation.note.pendingTitle",
-                          "Request sent",
-                        )
-                      : booking.status === "confirmed"
-                        ? t(
-                            "bookingConfirmation.note.confirmedTitle",
-                            "Confirmed",
-                          )
-                        : booking.status === "completed"
-                          ? t(
-                              "bookingConfirmation.note.completedTitle",
-                              "Completed",
-                            )
-                          : booking.status === "declined"
-                            ? t(
-                                "bookingConfirmation.note.declinedTitle",
-                                "Declined",
-                              )
-                            : t(
-                                "bookingConfirmation.note.cancelledTitle",
-                                "Cancelled",
-                              )}
-                  </strong>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                    {booking.status === "pending"
-                      ? t(
-                          "bookingConfirmation.note.pendingBody",
-                          "Waiting for the business to confirm.",
-                        )
-                      : booking.status === "confirmed"
-                        ? t(
-                            "bookingConfirmation.note.confirmedBody",
-                            "Your booking is confirmed.",
-                          )
-                        : booking.status === "completed"
-                          ? t(
-                              "bookingConfirmation.note.completedBody",
-                              "This booking is complete.",
-                            )
-                          : booking.status === "declined"
-                            ? t(
-                                "bookingConfirmation.note.declinedBody",
-                                "The business declined this request.",
-                              )
-                            : t(
-                                "bookingConfirmation.note.cancelledBody",
-                                "This booking has been cancelled.",
-                              )}
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <div className="card">
               <div className="booking-confirmation-details-header">
                 <h2 style={{ fontFamily: "var(--font-display)" }}>
@@ -617,10 +521,6 @@ export default function BookingConfirmation() {
                     )}
               </Link>
 
-              <Link href="/notifications" className="btn btn-ghost">
-                {t("nav.notifications", "Notifications")}
-              </Link>
-
               {booking.business_id && (
                 <Link
                   href={`/explore/${booking.business_id}`}
@@ -677,12 +577,6 @@ export default function BookingConfirmation() {
           margin: 0 auto 1rem;
         }
 
-        .booking-confirmation-note-row {
-          display: flex;
-          gap: 0.75rem;
-          align-items: flex-start;
-        }
-
         .booking-confirmation-details-header {
           display: flex;
           justify-content: space-between;
@@ -711,10 +605,6 @@ export default function BookingConfirmation() {
           }
           .booking-confirmation-hero {
             padding: 1.5rem;
-          }
-
-          .booking-confirmation-note-row {
-            display: grid;
           }
 
           .booking-confirmation-actions :global(.btn),
