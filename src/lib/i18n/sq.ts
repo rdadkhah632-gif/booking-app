@@ -25,7 +25,7 @@ export const sq: TranslationTree = {
   "staff.schedule.title": "Orari im",
   "staffCalendar.title": "Kalendari",
   "staff.actions.updateAvailability": "Disponueshmëria ime",
-  "staffNotifications.title": "Përditësime",
+  "staffNotifications.title": "Njoftime",
   "staffAvailability.title": "Orari yt i punës",
   "staffAvailability.staffOnly": "Disponueshmëri vetëm për staf",
   "staffAvailability.actions.saveAvailability": "Ruaj disponueshmërinë",
@@ -1306,7 +1306,7 @@ export const sq: TranslationTree = {
   "dashboardStaff.teamSubtitle":
     "Krijo biznesin fillimisht, pastaj ndërto ekipin që klientët mund të rezervojnë.",
   "dashboardStaff.teamSubtitleSelected":
-    "Menaxho ekipin e rezervueshëm, caktimet e shërbimeve dhe oraret e punës për",
+    "Menaxho stafin dhe personat e rezervueshëm që klientët mund të zgjedhin te",
   "dashboardStaff.teamTools.kicker": "Konfigurimi i ekipit",
   "dashboardStaff.teamTools.title":
     "Mbaj të lidhur njerëzit, shërbimet dhe oraret",
@@ -2058,9 +2058,9 @@ export const sq: TranslationTree = {
   "dashboardStaff.multiBusinessNotice":
     "Kjo llogari ka më shumë se një biznes. Për këtë version lançimi, Mirëbook po përdor biznesin kryesor. Kontakto suportin nëse duhet ndryshuar.",
   "dashboardStaff.list.kicker": "Lista e stafit",
-  "dashboardStaff.list.title": "Stafi yt",
+  "dashboardStaff.list.title": "Ekipi yt",
   "dashboardStaff.list.body":
-    "Stafi bëhet i rezervueshëm kur është aktiv, i caktuar te shërbimet dhe ka orare pune të vendosura.",
+    "Ekipi përfshin stafin dhe çdo pronar që klientët mund të rezervojnë. Një person bëhet i rezervueshëm kur është aktiv, i caktuar te shërbimet dhe ka orar pune.",
   "dashboardStaff.readiness.bookable": "I rezervueshëm në Mirëbook",
   "dashboardStaff.readiness.setupNeeded": "Duhet konfigurim",
   "dashboardStaff.image.uploadStaffError": "Imazhi i stafit nuk u ngarkua.",
@@ -2895,6 +2895,26 @@ export const sq: TranslationTree = {
   "dashboardLayout.myWork.schedule": "Orari im",
   "dashboardLayout.myWork.availability": "Disponueshmëria ime",
   "dashboardLayout.myWork.notifications": "Njoftimet e mia",
+  "dashboardLayout.staffNav.home": "Kreu",
+  "dashboardLayout.staffNav.calendar": "Kalendari",
+  "dashboardLayout.staffNav.availability": "Disponueshmëria",
+  "dashboardLayout.staffNav.notifications": "Njoftimet",
+  "dashboardLayout.staffNav.manageBusiness": "Menaxho biznesin",
+
+  "staff.home.todayKicker": "Sot",
+  "staff.home.todayAppointments": "sot",
+  "staff.home.upcomingConfirmed": "të ardhshme",
+  "staff.home.awaitingApproval": "në pritje të miratimit",
+  "staff.home.calendarBody":
+    "Shiko hollësitë e takimeve dhe punën e ardhshme.",
+  "staff.home.availabilityBody":
+    "Vendos ditët dhe oraret kur klientët mund të të rezervojnë.",
+  "staff.home.notificationsBody":
+    "Shiko përditësimet e rezervimeve, orarit dhe profilit.",
+  "staff.home.ownerContext":
+    "Menaxhimi i biznesit mbetet te Menaxho biznesin.",
+  "staff.assignedServices.emptyCompact":
+    "Ende nuk të është caktuar asnjë shërbim. Kërkoji pronarit të biznesit të përditësojë profilin tënd te Ekipi.",
 
   "staff.ownerSetup.noBusiness":
     "Nuk u gjet profil biznesi për këtë llogari pronari.",
@@ -2917,7 +2937,17 @@ export const sq: TranslationTree = {
   "staff.ownerSetup.stepBookableTitle": "Profil personal stafi",
   "staff.ownerSetup.stepBookableBody":
     "Shtoje veten këtu vetëm nëse klientët duhet të mund të rezervojnë takime drejtpërdrejt me ty.",
+  "staff.ownerSetup.compactRule":
+    "Aksesi yt si pronar mbetet i pandryshuar. Shto një profil stafi vetëm kur klientët duhet të rezervojnë takime drejtpërdrejt me ty.",
   "staff.ownerSetup.addSelf": "Më shto si staf të rezervueshëm",
+  "staffAvailability.note.compactBody":
+    "Këto orare kontrollojnë kur klientët mund të të rezervojnë. Takimet ekzistuese nuk zhvendosen kur ndryshon orarin.",
+  "staffAvailability.summary.hoursShort": "orë në javë",
+  "staffAvailability.upcoming.count":
+    "takime të ardhshme mbeten të pandryshuara kur ndryshon orarin.",
+  "staffAvailability.upcoming.emptyCompact":
+    "Asnjë takim i ardhshëm nuk ndikohet.",
+  "staffAvailability.upcoming.openCalendar": "Hap kalendarin",
   "dashboardStaff.card.accountLink": "Lidhja e llogarisë",
   "dashboardStaff.card.bookableStatus": "Statusi i rezervimit",
   "dashboardStaff.card.bookableActive": "I rezervueshëm: aktiv",
@@ -2939,7 +2969,7 @@ export const sq: TranslationTree = {
   "account.ownerBooking.notLinkedTitle":
     "Ende nuk je konfiguruar si staf i rezervueshëm",
   "account.ownerBooking.linkedBody":
-    "Paneli i biznesit menaxhon shërbimet, stafin, rezervimet dhe konfigurimin. Puna ime menaxhon orarin dhe disponueshmërinë tënde personale.",
+    "Menaxho biznesin në Mirëbook Biznes. Përdor Kreun e stafit për kalendarin dhe disponueshmërinë tënde kur klientët mund të të rezervojnë.",
   "account.ownerBooking.notLinkedBody":
     "Nëse merr personalisht takime, konfiguroje veten si staf të rezervueshëm. Nëse vetëm menaxhon biznesin, mund ta lësh të çaktivizuar.",
   "account.ownerBooking.bookableRule":

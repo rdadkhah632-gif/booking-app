@@ -13,6 +13,8 @@ type StaffProfile = {
 
 type Booking = {
   id: string;
+  business_id: string;
+  customer_user_id?: string | null;
   customer_name: string;
   customer_email?: string | null;
   customer_phone?: string | null;
@@ -79,7 +81,9 @@ export default function StaffCalendarPage() {
   );
   const [monthCursor, setMonthCursor] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     loadCalendar();
@@ -148,6 +152,8 @@ export default function StaffCalendarPage() {
       .select(
         `
         id,
+        business_id,
+        customer_user_id,
         customer_name,
         customer_email,
         customer_phone,
@@ -223,6 +229,48 @@ export default function StaffCalendarPage() {
     return status;
   }
 
+  async function markBookingComplete(booking: Booking) {
+    const confirmed = confirm(
+      t("staff.booking.confirmComplete", "Mark this appointment as completed?"),
+    );
+    if (!confirmed || !staffProfile) return;
+
+    setActionLoadingId(booking.id);
+    setError(null);
+    setSuccess(null);
+
+    const { error: updateError } = await supabase
+      .from("bookings")
+      .update({ status: "completed" })
+      .eq("id", booking.id)
+      .eq("staff_member_id", staffProfile.id);
+
+    if (updateError) {
+      setActionLoadingId(null);
+      setError(updateError.message);
+      return;
+    }
+
+    if (booking.customer_user_id) {
+      await supabase.from("notifications").insert({
+        user_id: booking.customer_user_id,
+        business_id: booking.business_id,
+        booking_id: booking.id,
+        audience: "customer",
+        type: "booking_completed",
+        title: t("staff.notification.completedTitle", "Appointment completed"),
+        message: `${t("staff.notification.completedStart", "Your appointment for")} ${serviceName(booking, t("staff.fallback.appointment", "your appointment"))} ${t("staff.notification.completedMiddle", "on")} ${new Date(booking.start_at).toLocaleString(dateLocale)} ${t("staff.notification.completedEnd", "has been marked as completed by staff.")}`,
+        action_url: "/my-bookings",
+      });
+    }
+
+    setSuccess(
+      t("staff.booking.completedSuccess", "Appointment marked as completed."),
+    );
+    setActionLoadingId(null);
+    await loadCalendar();
+  }
+
   return (
     <DashboardLayout workspace="staff">
       <section className="staff-workspace-page">
@@ -232,7 +280,7 @@ export default function StaffCalendarPage() {
               {t("staffCalendar.kicker", "Staff calendar")}
             </p>
             <h1 className="page-title">
-              {t("staffCalendar.title", "Calendar view")}
+              {t("staffCalendar.title", "Calendar")}
             </h1>
             <p className="page-sub" style={{ marginTop: "0.5rem" }}>
               {staffProfile
@@ -267,6 +315,12 @@ export default function StaffCalendarPage() {
             style={{ borderColor: "rgba(255,77,109,0.35)" }}
           >
             <p style={{ color: "var(--danger)" }}>{error}</p>
+          </div>
+        )}
+
+        {success && (
+          <div className="staff-calendar-success">
+            <p>{success}</p>
           </div>
         )}
 
@@ -460,6 +514,22 @@ export default function StaffCalendarPage() {
                                 )}
                               </a>
                             )}
+                          {booking.status === "confirmed" &&
+                            start <= new Date() && (
+                              <button
+                                type="button"
+                                className="btn btn-accent"
+                                disabled={actionLoadingId === booking.id}
+                                onClick={() => markBookingComplete(booking)}
+                              >
+                                {actionLoadingId === booking.id
+                                  ? t("common.saving", "Saving...")
+                                  : t(
+                                      "staff.booking.markComplete",
+                                      "Mark complete",
+                                    )}
+                              </button>
+                            )}
                         </div>
                       </div>
                     );
@@ -484,6 +554,19 @@ export default function StaffCalendarPage() {
           align-items: flex-start;
           border-color: rgba(255, 107, 53, 0.18);
           margin-bottom: 1rem;
+        }
+
+        .staff-calendar-success {
+          margin-bottom: 1rem;
+          padding: 0.85rem 1rem;
+          border: 1px solid rgba(45, 212, 191, 0.28);
+          border-radius: var(--radius);
+          color: var(--success);
+          background: rgba(45, 212, 191, 0.06);
+        }
+
+        .staff-calendar-success p {
+          margin: 0;
         }
 
         .staff-calendar-grid {

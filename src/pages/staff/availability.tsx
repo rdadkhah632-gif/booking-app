@@ -44,19 +44,6 @@ type StaffAvailability = {
 
 type Booking = {
   id: string;
-  customer_name: string;
-  start_at: string;
-  end_at?: string | null;
-  duration_minutes: number;
-  status: string;
-  services?:
-    | {
-        name: string;
-      }
-    | {
-        name: string;
-      }[]
-    | null;
 };
 
 const DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -84,44 +71,13 @@ function businessName(staff: StaffMember | null, fallback = "Your business") {
     : staff.businesses.name || fallback;
 }
 
-function serviceName(booking: Booking, fallback = "Service") {
-  if (!booking.services) return fallback;
-  return Array.isArray(booking.services)
-    ? booking.services[0]?.name || fallback
-    : booking.services.name || fallback;
-}
-
-function addMinutes(date: Date, minutes: number) {
-  return new Date(date.getTime() + minutes * 60000);
-}
-
-function formatTimeRange(booking: Booking, locale: string) {
-  const start = new Date(booking.start_at);
-  const end = booking.end_at
-    ? new Date(booking.end_at)
-    : addMinutes(start, booking.duration_minutes);
-
-  return `${start.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}`;
-}
-
 function formatHours(value: number) {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
 }
 
 export default function StaffAvailabilityPage() {
   const router = useRouter();
-  const { locale, t } = useI18n();
-  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
-
-  function statusLabel(status: string) {
-    if (status === "pending")
-      return t("staff.status.pending", "Awaiting business approval");
-    if (status === "confirmed") return t("staff.status.confirmed", "Confirmed");
-    if (status === "declined") return t("staff.status.declined", "Declined");
-    if (status === "completed") return t("staff.status.completed", "Completed");
-    if (status === "cancelled") return t("staff.status.cancelled", "Cancelled");
-    return status;
-  }
+  const { t } = useI18n();
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
@@ -221,19 +177,7 @@ export default function StaffAvailabilityPage() {
 
       const { data: bookingData, error: bookingError } = await supabase
         .from("bookings")
-        .select(
-          `
-          id,
-          customer_name,
-          start_at,
-          end_at,
-          duration_minutes,
-          status,
-          services (
-            name
-          )
-        `,
-        )
+        .select("id")
         .eq("staff_member_id", normalisedStaff.id)
         .in("status", ["pending", "confirmed"])
         .gte("start_at", new Date().toISOString())
@@ -475,20 +419,12 @@ export default function StaffAvailabilityPage() {
               </div>
 
             </div>
-            <div className="card staff-availability-note">
-              <h3>
-                {t(
-                  "staffAvailability.note.title",
-                  "These hours only control your own bookable staff availability.",
-                )}
-              </h3>
-              <p className="muted small">
-                {t(
-                  "staffAvailability.note.body",
-                  "Customers can only book you when the business is published, the service is active, the service is assigned to you, and both business and staff availability allow the selected time. Existing bookings are not moved automatically when you change these hours.",
-                )}
-              </p>
-            </div>
+            <p className="staff-availability-note">
+              {t(
+                "staffAvailability.note.compactBody",
+                "These hours control when customers can book you. Existing appointments are not moved when your hours change.",
+              )}
+            </p>
             {error && (
               <div
                 className="card"
@@ -514,51 +450,19 @@ export default function StaffAvailabilityPage() {
               </div>
             )}
 
-            <div
-              className="grid-3 staff-summary-grid"
-              style={{ marginBottom: "1.5rem" }}
-            >
-              <div className="card staff-summary-card">
-                <h3>{openDays}</h3>
-                <strong>
-                  {t("staffAvailability.summary.openDays", "Open days")}
-                </strong>
-                <p className="small muted">
-                  {t(
-                    "staffAvailability.summary.openDaysBody",
-                    "Customers can book assigned active services on these days.",
-                  )}
-                </p>
-              </div>
-
-              <div className="card staff-summary-card">
-                <h3>{closedDays}</h3>
-                <strong>
-                  {t("staffAvailability.summary.closedDays", "Closed days")}
-                </strong>
-                <p className="small muted">
-                  {t(
-                    "staffAvailability.summary.closedDaysBody",
-                    "Hidden from new customer bookings.",
-                  )}
-                </p>
-              </div>
-
-              <div className="card staff-summary-card">
-                <h3>{formatHours(totalWeeklyHours)} hrs</h3>
-                <strong>
-                  {t(
-                    "staffAvailability.summary.weeklyHours",
-                    "Weekly availability",
-                  )}
-                </strong>
-                <p className="small muted">
-                  {t(
-                    "staffAvailability.summary.weeklyHoursBody",
-                    "Estimated bookable staff time.",
-                  )}
-                </p>
-              </div>
+            <div className="staff-availability-summary">
+              <span>
+                <strong>{openDays}</strong>{" "}
+                {t("staffAvailability.summary.openDays", "open days")}
+              </span>
+              <span>
+                <strong>{closedDays}</strong>{" "}
+                {t("staffAvailability.summary.closedDays", "closed days")}
+              </span>
+              <span>
+                <strong>{formatHours(totalWeeklyHours)}</strong>{" "}
+                {t("staffAvailability.summary.hoursShort", "hours per week")}
+              </span>
             </div>
 
             <div
@@ -716,74 +620,18 @@ export default function StaffAvailabilityPage() {
               })}
             </div>
 
-            <div
-              className="card staff-upcoming-card"
-              style={{ marginTop: "1.5rem" }}
-            >
-              <div className="staff-template-header">
-                <div>
-                  <h2
-                    style={{ fontFamily: "var(--font-display)", marginTop: 0 }}
-                  >
-                    {t(
-                      "staffAvailability.upcoming.title",
-                      "Check existing appointments before changing hours",
+            <div className="staff-calendar-note">
+              <span>
+                {upcomingBookings.length > 0
+                  ? `${upcomingBookings.length} ${t("staffAvailability.upcoming.count", "upcoming appointments remain unchanged when you edit hours.")}`
+                  : t(
+                      "staffAvailability.upcoming.emptyCompact",
+                      "No upcoming appointments are affected.",
                     )}
-                  </h2>
-                  <p className="muted small">
-                    {t(
-                      "staffAvailability.upcoming.body",
-                      "Changing your availability affects new booking slots. Existing bookings stay in place unless the business reschedules them.",
-                    )}
-                  </p>
-                </div>
-
-              </div>
-
-              <div
-                style={{ display: "grid", gap: "0.75rem", marginTop: "1rem" }}
-              >
-                {upcomingBookings.length === 0 && (
-                  <div className="staff-upcoming-empty">
-                    <p className="muted">
-                      {t(
-                        "staffAvailability.upcoming.empty",
-                        "No upcoming assigned bookings found. New appointments will appear here once they are assigned to you.",
-                      )}
-                    </p>
-                  </div>
-                )}
-
-                {upcomingBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="card"
-                    style={{ background: "var(--surface-2)" }}
-                  >
-                    <strong>{booking.customer_name}</strong>
-                    <p className="small muted">
-                      {serviceName(booking, t("common.service", "Service"))} ·{" "}
-                      {new Date(booking.start_at).toLocaleDateString(
-                        dateLocale,
-                        { weekday: "long", day: "numeric", month: "long" },
-                      )}{" "}
-                      · {formatTimeRange(booking, dateLocale)}
-                    </p>
-                    <p className="small muted">
-                      {t("common.status", "Status")}:{" "}
-                      {statusLabel(booking.status)}
-                    </p>
-                    {booking.status === "pending" && (
-                      <p className="small muted">
-                        {t(
-                          "staffAvailability.upcoming.pendingBody",
-                          "Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.",
-                        )}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
+              </span>
+              <Link href="/staff/calendar">
+                {t("staffAvailability.upcoming.openCalendar", "Open calendar")}
+              </Link>
             </div>
           </>
         )}
@@ -811,15 +659,14 @@ export default function StaffAvailabilityPage() {
           justify-content: flex-end;
         }
         .staff-availability-note {
-          margin-bottom: 1.5rem;
-          border-color: rgba(255, 107, 53, 0.22);
-          background: rgba(255, 107, 53, 0.06);
+          margin: -0.5rem 0 1.25rem;
+          color: var(--text-muted);
+          font-size: 0.88rem;
         }
 
         .staff-availability-note,
         .staff-template-header,
         .staff-day-card,
-        .staff-upcoming-card,
         .staff-summary-grid :global(.card) {
           gap: 0.75rem;
         }
@@ -827,9 +674,42 @@ export default function StaffAvailabilityPage() {
         .staff-availability-note p,
         .staff-template-header p,
         .staff-day-card p,
-        .staff-upcoming-card p,
         .staff-summary-grid p {
           margin-top: 0;
+        }
+
+        .staff-availability-summary {
+          display: flex;
+          gap: 1.25rem;
+          flex-wrap: wrap;
+          margin-bottom: 1.5rem;
+          padding: 0.85rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          color: var(--text-muted);
+          font-size: 0.85rem;
+        }
+
+        .staff-availability-summary strong {
+          color: var(--text);
+        }
+
+        .staff-calendar-note {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          margin-top: 1.5rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+          color: var(--text-muted);
+          font-size: 0.85rem;
+        }
+
+        .staff-calendar-note a {
+          color: var(--accent);
+          font-weight: 800;
+          text-decoration: none;
+          white-space: nowrap;
         }
         .staff-template-header {
           display: flex;

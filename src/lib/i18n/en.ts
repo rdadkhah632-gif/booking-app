@@ -1281,7 +1281,7 @@ export const en: TranslationTree = {
   "dashboardStaff.teamSubtitle":
     "Create your business first, then build the team customers can book.",
   "dashboardStaff.teamSubtitleSelected":
-    "Manage bookable team members, service assignments and working hours for",
+    "Manage the staff and bookable people customers can choose at",
   "dashboardStaff.teamTools.kicker": "Team setup",
   "dashboardStaff.teamTools.title":
     "Keep people, services and hours connected",
@@ -1342,9 +1342,9 @@ export const en: TranslationTree = {
   "dashboardStaff.multiBusinessNotice":
     "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
   "dashboardStaff.list.kicker": "Staff list",
-  "dashboardStaff.list.title": "Your staff",
+  "dashboardStaff.list.title": "Your team",
   "dashboardStaff.list.body":
-    "Staff become bookable when they are active, assigned to services and have working hours set.",
+    "Team includes staff and any owner customers can book. A person becomes bookable when active, assigned to services and given working hours.",
   "dashboardStaff.readiness.bookable": "Bookable on Mirëbook",
   "dashboardStaff.readiness.setupNeeded": "Setup needed",
   "dashboardStaff.image.uploadStaffError": "Could not upload staff image.",
@@ -2181,7 +2181,7 @@ export const en: TranslationTree = {
   "staffNotifications.type.schedule": "Schedule",
   "staffNotifications.type.profile": "Profile",
   "staffCalendar.kicker": "Staff calendar",
-  "staffCalendar.title": "Calendar view",
+  "staffCalendar.title": "Calendar",
   "staffCalendar.body":
     "Look ahead across your assigned bookings and plan your working days.",
   "staffCalendar.loading": "Loading staff calendar...",
@@ -2245,7 +2245,7 @@ export const en: TranslationTree = {
     "No upcoming assigned bookings found. New appointments will appear here once they are assigned to you.",
   "staffAvailability.upcoming.pendingBody":
     "Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.",
-  "staffNotifications.title": "Updates",
+  "staffNotifications.title": "Notifications",
   "staffNotifications.body":
     "Staff-only updates for your schedule, profile and assigned bookings.",
   "staffNotifications.loading": "Loading staff notifications...",
@@ -2846,6 +2846,24 @@ export const en: TranslationTree = {
   "dashboardLayout.myWork.schedule": "My schedule",
   "dashboardLayout.myWork.availability": "My availability",
   "dashboardLayout.myWork.notifications": "My notifications",
+  "dashboardLayout.staffNav.home": "Home",
+  "dashboardLayout.staffNav.calendar": "Calendar",
+  "dashboardLayout.staffNav.availability": "Availability",
+  "dashboardLayout.staffNav.notifications": "Notifications",
+  "dashboardLayout.staffNav.manageBusiness": "Manage business",
+
+  "staff.home.todayKicker": "Today",
+  "staff.home.todayAppointments": "today",
+  "staff.home.upcomingConfirmed": "upcoming",
+  "staff.home.awaitingApproval": "awaiting approval",
+  "staff.home.calendarBody": "Review appointment details and upcoming work.",
+  "staff.home.availabilityBody":
+    "Set the days and hours customers can book you.",
+  "staff.home.notificationsBody":
+    "See booking, schedule and profile updates.",
+  "staff.home.ownerContext": "Business management stays in Manage business.",
+  "staff.assignedServices.emptyCompact":
+    "No services are assigned yet. Ask the business owner to update your Team profile.",
 
   "staff.ownerSetup.noBusiness":
     "No business profile was found for this owner account.",
@@ -2868,7 +2886,17 @@ export const en: TranslationTree = {
   "staff.ownerSetup.stepBookableTitle": "Personal staff profile",
   "staff.ownerSetup.stepBookableBody":
     "Only add yourself here if customers should be able to book appointments directly with you.",
+  "staff.ownerSetup.compactRule":
+    "Your owner access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
   "staff.ownerSetup.addSelf": "Add myself as bookable staff",
+  "staffAvailability.note.compactBody":
+    "These hours control when customers can book you. Existing appointments are not moved when your hours change.",
+  "staffAvailability.summary.hoursShort": "hours per week",
+  "staffAvailability.upcoming.count":
+    "upcoming appointments remain unchanged when you edit hours.",
+  "staffAvailability.upcoming.emptyCompact":
+    "No upcoming appointments are affected.",
+  "staffAvailability.upcoming.openCalendar": "Open calendar",
   "dashboardStaff.card.accountLink": "Account link",
   "dashboardStaff.card.bookableStatus": "Bookable status",
   "dashboardStaff.card.bookableActive": "Bookable: active",
@@ -2889,7 +2917,7 @@ export const en: TranslationTree = {
   "account.ownerBooking.linkedTitle": "You are set up as bookable staff",
   "account.ownerBooking.notLinkedTitle": "You are not set up as bookable staff",
   "account.ownerBooking.linkedBody":
-    "Business dashboard manages services, staff, bookings and setup. My Work manages your personal schedule and availability.",
+    "Manage the business in Mirëbook Business. Use Staff Home for your own calendar and availability when customers can book you.",
   "account.ownerBooking.notLinkedBody":
     "If you personally take appointments, set yourself up as bookable staff. If you only manage the business, you can leave this off.",
   "account.ownerBooking.bookableRule":

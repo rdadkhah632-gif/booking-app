@@ -48,73 +48,9 @@ type StaffService = {
 
 type Booking = {
   id: string;
-  business_id: string;
-  service_id?: string | null;
-  staff_member_id?: string | null;
-  customer_user_id?: string | null;
   customer_name: string;
-  customer_email?: string | null;
-  customer_phone?: string | null;
-  customer_notes?: string | null;
-  internal_notes?: string | null;
   start_at: string;
-  end_at?: string | null;
-  duration_minutes: number;
   status: string;
-  services?:
-    | {
-        name: string;
-        price?: number | null;
-      }
-    | {
-        name: string;
-        price?: number | null;
-      }[]
-    | null;
-  businesses?:
-    | {
-        name: string;
-      }
-    | {
-        name: string;
-      }[]
-    | null;
-};
-
-type BookingRequest = {
-  id: string;
-  booking_id: string;
-  business_id: string;
-  request_type: string;
-  requested_by: string;
-  status: string;
-  current_start_at?: string | null;
-  requested_start_at?: string | null;
-  message?: string | null;
-  bookings?:
-    | {
-        customer_name: string;
-        services?:
-          | {
-              name: string;
-            }
-          | {
-              name: string;
-            }[]
-          | null;
-      }
-    | {
-        customer_name: string;
-        services?:
-          | {
-              name: string;
-            }
-          | {
-              name: string;
-            }[]
-          | null;
-      }[]
-    | null;
 };
 
 function startOfDay(date: Date) {
@@ -129,84 +65,10 @@ function endOfDay(date: Date) {
   return copy;
 }
 
-function addDays(date: Date, days: number) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() + days);
-  return copy;
-}
-
-function formatDateInputValue(date: Date) {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function statusColor(status: string) {
-  if (status === "pending") return "var(--accent)";
-  if (status === "confirmed") return "var(--success)";
-  if (status === "completed") return "var(--success)";
-  if (status === "declined") return "var(--warning)";
-  if (status === "cancelled") return "var(--warning)";
-  return "var(--text-muted)";
-}
-
-function statusBackground(status: string) {
-  if (status === "pending") return "rgba(255,107,53,0.12)";
-  if (status === "confirmed") return "rgba(45,212,191,0.12)";
-  if (status === "completed") return "rgba(45,212,191,0.12)";
-  if (status === "declined") return "rgba(255,190,11,0.12)";
-  if (status === "cancelled") return "rgba(255,190,11,0.12)";
-  return "var(--surface-2)";
-}
-
-function firstServiceName(booking: Booking) {
-  return Array.isArray(booking.services)
-    ? booking.services[0]?.name
-    : booking.services?.name;
-}
-
-function firstBusinessName(booking: Booking) {
-  return Array.isArray(booking.businesses)
-    ? booking.businesses[0]?.name
-    : booking.businesses?.name;
-}
-
-function firstRequestBooking(request: BookingRequest) {
-  return Array.isArray(request.bookings)
-    ? request.bookings[0]
-    : request.bookings;
-}
-
-function firstRequestServiceName(request: BookingRequest) {
-  const requestBooking = firstRequestBooking(request);
-  const services = requestBooking?.services;
-
-  return Array.isArray(services) ? services[0]?.name : services?.name;
-}
-
 export default function StaffDashboardPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
-
-  function statusLabel(status: string) {
-    if (status === "pending")
-      return t("staff.status.pending", "Awaiting business approval");
-    if (status === "confirmed") return t("staff.status.confirmed", "Confirmed");
-    if (status === "declined") return t("staff.status.declined", "Declined");
-    if (status === "completed") return t("staff.status.completed", "Completed");
-    if (status === "cancelled") return t("staff.status.cancelled", "Cancelled");
-    return status;
-  }
-
-  function requestTypeLabel(requestType: string) {
-    if (requestType === "reschedule") {
-      return t("staff.requests.reschedule", "Reschedule request");
-    }
-
-    return t("staff.requests.bookingChange", "Booking change");
-  }
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
@@ -215,14 +77,8 @@ export default function StaffDashboardPage() {
   const [addingOwnerStaff, setAddingOwnerStaff] = useState(false);
   const [isStaffIntentAccount, setIsStaffIntentAccount] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [assignedServices, setAssignedServices] = useState<Service[]>([]);
-  const [selectedDate, setSelectedDate] = useState(
-    formatDateInputValue(new Date()),
-  );
-  const [statusFilter, setStatusFilter] = useState("active");
   const [loading, setLoading] = useState(true);
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -255,7 +111,6 @@ export default function StaffDashboardPage() {
       if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
         setStaffProfile(null);
         setBookings([]);
-        setRequests([]);
         setAssignedServices([]);
         setLoading(false);
         return;
@@ -292,7 +147,6 @@ export default function StaffDashboardPage() {
       if (!linkedStaff) {
         setStaffProfile(null);
         setBookings([]);
-        setRequests([]);
         setAssignedServices([]);
         setLoading(false);
         return;
@@ -333,26 +187,9 @@ export default function StaffDashboardPage() {
         .select(
           `
           id,
-          business_id,
-          service_id,
-          staff_member_id,
-          customer_user_id,
           customer_name,
-          customer_email,
-          customer_phone,
-          customer_notes,
-          internal_notes,
           start_at,
-          end_at,
-          duration_minutes,
-          status,
-          services (
-            name,
-            price
-          ),
-          businesses (
-            name
-          )
+          status
         `,
         )
         .eq("staff_member_id", linkedStaff.id)
@@ -361,41 +198,6 @@ export default function StaffDashboardPage() {
       if (bookingError) throw bookingError;
 
       setBookings((bookingData || []) as unknown as Booking[]);
-
-      const bookingIds = (bookingData || []).map((booking: any) => booking.id);
-
-      if (bookingIds.length > 0) {
-        const { data: requestData, error: requestError } = await supabase
-          .from("booking_requests")
-          .select(
-            `
-            id,
-            booking_id,
-            business_id,
-            request_type,
-            requested_by,
-            status,
-            current_start_at,
-            requested_start_at,
-            message,
-            bookings (
-              customer_name,
-              services (
-                name
-              )
-            )
-          `,
-          )
-          .in("booking_id", bookingIds)
-          .eq("status", "pending")
-          .order("created_at", { ascending: false });
-
-        if (requestError) throw requestError;
-
-        setRequests((requestData || []) as unknown as BookingRequest[]);
-      } else {
-        setRequests([]);
-      }
 
       setLoading(false);
     } catch (err: any) {
@@ -533,10 +335,6 @@ export default function StaffDashboardPage() {
     );
   }, [bookings, now]);
 
-  const completedBookings = useMemo(() => {
-    return bookings.filter((booking) => booking.status === "completed");
-  }, [bookings]);
-
   const nextBooking = useMemo(() => {
     return (
       [...upcomingBookings].sort(
@@ -553,286 +351,6 @@ export default function StaffDashboardPage() {
   const confirmedUpcomingBookings = useMemo(() => {
     return upcomingBookings.filter((booking) => booking.status === "confirmed");
   }, [upcomingBookings]);
-
-  const selectedDateLabel = useMemo(() => {
-    return new Date(`${selectedDate}T12:00:00`).toLocaleDateString(
-      dateLocale,
-      {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-      },
-    );
-  }, [dateLocale, selectedDate]);
-
-  const selectedDateBookings = useMemo(() => {
-    const selected = new Date(`${selectedDate}T12:00:00`);
-    const start = startOfDay(selected);
-    const end = endOfDay(selected);
-
-    return bookings.filter((booking) => {
-      const startAt = new Date(booking.start_at);
-      const matchesDate = startAt >= start && startAt <= end;
-
-      if (!matchesDate) return false;
-
-      if (statusFilter === "active") {
-        return booking.status === "pending" || booking.status === "confirmed";
-      }
-
-      if (statusFilter === "history") {
-        return (
-          booking.status === "completed" ||
-          booking.status === "cancelled" ||
-          booking.status === "declined"
-        );
-      }
-
-      if (statusFilter === "all") return true;
-
-      return booking.status === statusFilter;
-    });
-  }, [bookings, selectedDate, statusFilter]);
-
-  const nextSevenDays = useMemo(() => {
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(new Date(), index);
-      const dateString = formatDateInputValue(date);
-      const start = startOfDay(date);
-      const end = endOfDay(date);
-
-      const count = bookings.filter((booking) => {
-        const startAt = new Date(booking.start_at);
-        return (
-          startAt >= start &&
-          startAt <= end &&
-          ["pending", "confirmed"].includes(booking.status)
-        );
-      }).length;
-
-      return {
-        date,
-        dateString,
-        label:
-          index === 0
-            ? t("staff.schedule.today", "Today")
-            : index === 1
-              ? t("staff.schedule.tomorrow", "Tomorrow")
-              : date.toLocaleDateString(dateLocale, { weekday: "short" }),
-        subLabel: date.toLocaleDateString(dateLocale, {
-          day: "numeric",
-          month: "short",
-        }),
-        count,
-      };
-    });
-  }, [bookings, dateLocale, t]);
-  async function createCustomerNotification(params: {
-    booking: Booking;
-    type: string;
-    title: string;
-    message: string;
-    actionUrl: string;
-  }) {
-    if (!params.booking.customer_user_id) return;
-
-    await supabase.from("notifications").insert({
-      user_id: params.booking.customer_user_id,
-      business_id: params.booking.business_id,
-      booking_id: params.booking.id,
-      audience: "customer",
-      type: params.type,
-      title: params.title,
-      message: params.message,
-      action_url: params.actionUrl,
-    });
-  }
-
-  function appointmentDateTime(booking: Booking) {
-    return new Date(booking.start_at).toLocaleString(dateLocale);
-  }
-  async function markBookingComplete(booking: Booking) {
-    const confirmed = confirm(
-      t("staff.booking.confirmComplete", "Mark this appointment as completed?"),
-    );
-    if (!confirmed) return;
-
-    setActionLoadingId(booking.id);
-    setError(null);
-    setSuccess(null);
-
-    const { error } = await supabase
-      .from("bookings")
-      .update({ status: "completed" })
-      .eq("id", booking.id)
-      .eq("staff_member_id", staffProfile?.id || "");
-
-    setActionLoadingId(null);
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-    await createCustomerNotification({
-      booking,
-      type: "booking_completed",
-      title: t("staff.notification.completedTitle", "Appointment completed"),
-      message: `${t("staff.notification.completedStart", "Your appointment for")} ${firstServiceName(booking) || t("staff.fallback.appointment", "your appointment")} ${t("staff.notification.completedMiddle", "on")} ${appointmentDateTime(booking)} ${t("staff.notification.completedEnd", "has been marked as completed by staff.")}`,
-      actionUrl: "/my-bookings",
-    });
-    setSuccess(
-      t("staff.booking.completedSuccess", "Appointment marked as completed."),
-    );
-    await loadStaffDashboard();
-  }
-
-  function renderBookingCard(booking: Booking) {
-    const start = new Date(booking.start_at);
-    const end = booking.end_at
-      ? new Date(booking.end_at)
-      : new Date(start.getTime() + booking.duration_minutes * 60000);
-
-    const isWorking = actionLoadingId === booking.id;
-    const canComplete = booking.status === "confirmed" && start <= new Date();
-    const isUpcoming =
-      ["pending", "confirmed"].includes(booking.status) && start >= new Date();
-
-    return (
-      <div key={booking.id} className="card staff-booking-card">
-        <div className="staff-booking-card-inner">
-          <div>
-            <div
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <h3>
-                {booking.customer_name || t("common.customer", "Customer")}
-              </h3>
-              <span
-                className="small"
-                style={{
-                  background: statusBackground(booking.status),
-                  color: statusColor(booking.status),
-                  padding: "0.2rem 0.55rem",
-                  borderRadius: 999,
-                }}
-              >
-                {statusLabel(booking.status)}
-              </span>
-            </div>
-
-            <p className="muted small" style={{ marginTop: "0.35rem" }}>
-              {firstServiceName(booking) || t("common.service", "Service")} ·{" "}
-              {booking.duration_minutes} {t("common.minutes", "minutes")}
-            </p>
-
-            <p className="small muted" style={{ marginTop: "0.35rem" }}>
-              {start.toLocaleDateString(dateLocale, {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}{" "}
-              ·{" "}
-              {start.toLocaleTimeString(dateLocale, {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}{" "}
-              -{" "}
-              {end.toLocaleTimeString(dateLocale, {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-
-            {isUpcoming && (
-              <p
-                className="small"
-                style={{ color: "var(--accent)", marginTop: "0.35rem" }}
-              >
-                {booking.status === "pending"
-                  ? t(
-                      "staff.booking.pendingHint",
-                      "Awaiting business approval. No staff action is needed yet.",
-                    )
-                  : t("staff.booking.upcomingHint", "Upcoming appointment")}
-              </p>
-            )}
-
-            {(booking.customer_email || booking.customer_phone) && (
-              <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                {[booking.customer_email, booking.customer_phone]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            )}
-            {(booking.customer_notes || booking.internal_notes) && (
-              <div className="staff-notes-box">
-                {booking.customer_notes && (
-                  <>
-                    <p className="small muted">
-                      {t("staff.booking.customerNote", "Customer note")}
-                    </p>
-                    <p className="small">{booking.customer_notes}</p>
-                  </>
-                )}
-
-                {booking.internal_notes && (
-                  <>
-                    <p
-                      className="small muted"
-                      style={{
-                        marginTop: booking.customer_notes ? "0.65rem" : 0,
-                      }}
-                    >
-                      {t("staff.booking.internalNote", "Internal note")}
-                    </p>
-                    <p className="small">{booking.internal_notes}</p>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="staff-booking-actions">
-            {booking.customer_email && (
-              <a
-                href={`mailto:${booking.customer_email}`}
-                className="btn btn-ghost"
-              >
-                {t("staff.booking.emailCustomer", "Email customer")}
-              </a>
-            )}
-
-            {!booking.customer_email && booking.customer_phone && (
-              <a
-                href={`tel:${booking.customer_phone}`}
-                className="btn btn-ghost"
-              >
-                {t("staff.booking.callCustomer", "Call customer")}
-              </a>
-            )}
-
-            {canComplete && (
-              <button
-                type="button"
-                className="btn btn-accent"
-                disabled={isWorking}
-                onClick={() => markBookingComplete(booking)}
-              >
-                {isWorking
-                  ? t("common.saving", "Saving...")
-                  : t("staff.booking.markComplete", "Mark complete")}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -893,36 +411,12 @@ export default function StaffDashboardPage() {
                     )}
             </p>
             {hasBusinessWorkspace ? (
-              <div className="staff-unlinked-steps">
-                <div className="staff-unlinked-step">
-                  <strong>
-                    {t(
-                      "staff.ownerSetup.stepManageTitle",
-                      "Owner access stays separate",
-                    )}
-                  </strong>
-                  <p className="small muted">
-                    {t(
-                      "staff.ownerSetup.stepManageBody",
-                      "Your business dashboard remains your default workspace for managing bookings, staff, services and business settings.",
-                    )}
-                  </p>
-                </div>
-                <div className="staff-unlinked-step">
-                  <strong>
-                    {t(
-                      "staff.ownerSetup.stepBookableTitle",
-                      "Personal staff profile",
-                    )}
-                  </strong>
-                  <p className="small muted">
-                    {t(
-                      "staff.ownerSetup.stepBookableBody",
-                      "Only add yourself here if customers should be able to book appointments directly with you.",
-                    )}
-                  </p>
-                </div>
-              </div>
+              <p className="small staff-owner-setup-note">
+                {t(
+                  "staff.ownerSetup.compactRule",
+                  "Your owner access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
+                )}
+              </p>
             ) : (
               <div className="staff-unlinked-steps">
                 <div className="staff-unlinked-step">
@@ -1039,107 +533,6 @@ export default function StaffDashboardPage() {
                   </p>
                 </div>
               </div>
-
-              <div className="staff-hero-actions">
-                <Link href="/staff/calendar" className="btn btn-accent">
-                  {t("staffCalendar.title", "Calendar view")}
-                </Link>
-              </div>
-            </div>
-
-            <div className="card staff-onboarding-card">
-              <div>
-                <h2>
-                  {hasBusinessWorkspace
-                    ? t(
-                        "staff.onboarding.ownerTitle",
-                        "Your personal work is separate from business management",
-                      )
-                    : t("staff.onboarding.title", "Your staff workspace")}
-                </h2>
-                <p className="small muted">
-                  {hasBusinessWorkspace
-                    ? t(
-                        "staff.onboarding.ownerBody",
-                        "Business dashboard manages services, staff, bookings and setup. My Work shows only your personal schedule and availability.",
-                      )
-                    : t(
-                        "staff.onboarding.body",
-                        "Use these staff tools for assigned appointments, your availability and work updates.",
-                      )}
-                </p>
-                {hasBusinessWorkspace && (
-                  <p className="small staff-onboarding-note">
-                    {t(
-                      "staff.onboarding.bookableRule",
-                      "Customers can book you only while your staff profile is active and assigned to services.",
-                    )}
-                  </p>
-                )}
-              </div>
-
-            </div>
-
-            <div className="card staff-assigned-services-card">
-              <div>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: 0,
-                  }}
-                >
-                  {t(
-                    "staff.assignedServices.title",
-                    "What you can be booked for",
-                  )}
-                </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                  {t(
-                    "staff.assignedServices.body",
-                    "These services are controlled by the business owner. Your availability affects when customers can book you for them.",
-                  )}
-                </p>
-              </div>
-
-              {assignedServices.length === 0 ? (
-                <div className="card staff-empty-action-card">
-                  <p className="small muted">
-                    {t(
-                      "staff.assignedServices.empty",
-                      "No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.",
-                    )}
-                  </p>
-                  <Link
-                    href="/support/staff"
-                    className="btn btn-ghost"
-                    style={{ marginTop: "0.75rem" }}
-                  >
-                    {t("nav.staffSupport", "Staff support")}
-                  </Link>
-                </div>
-              ) : (
-                <div className="staff-assigned-services-grid">
-                  {assignedServices.map((service) => (
-                    <div
-                      key={service.id}
-                      className="staff-assigned-service-pill"
-                    >
-                      <strong>{service.name}</strong>
-                      <span>
-                        {service.duration_minutes
-                          ? `${service.duration_minutes} min`
-                          : t(
-                              "staff.assignedServices.durationNotSet",
-                              "Duration not set",
-                            )}
-                        {service.price
-                          ? ` · £${Number(service.price).toFixed(2)}`
-                          : ""}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             {success && (
@@ -1169,12 +562,10 @@ export default function StaffDashboardPage() {
 
             <div className="card staff-today-card">
               <div>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: 0,
-                  }}
-                >
+                <p className="small muted">
+                  {t("staff.home.todayKicker", "Today")}
+                </p>
+                <h2>
                   {todayBookings.length > 0
                     ? t(
                         "staff.today.titleWithBookings",
@@ -1192,264 +583,88 @@ export default function StaffDashboardPage() {
                 </p>
               </div>
 
-              <div className="staff-today-actions">
-                <button
-                  type="button"
-                  className="btn btn-accent"
-                  onClick={() => {
-                    setSelectedDate(formatDateInputValue(new Date()));
-                    setStatusFilter("active");
-                  }}
-                >
-                  {t("staff.today.viewToday", "View today")}
-                </button>
-              </div>
-            </div>
-
-            <div className="staff-summary-grid">
-              <button
-                type="button"
-                className="card staff-summary-button"
-                onClick={() => {
-                  setSelectedDate(formatDateInputValue(new Date()));
-                  setStatusFilter("active");
-                }}
-              >
-                <h3>{todayBookings.length}</h3>
-                <p className="small muted">
-                  {t("staff.summary.todayBody", "Assigned appointments today")}
-                </p>
-              </button>
-
-              <button
-                type="button"
-                className="card staff-summary-button"
-                onClick={() => setStatusFilter("active")}
-              >
-                <h3>{confirmedUpcomingBookings.length}</h3>
-                <p className="small muted">
-                  {t(
-                    "staff.summary.confirmedBody",
-                    "Confirmed upcoming appointments",
-                  )}
-                </p>
-              </button>
-
-              <button
-                type="button"
-                className="card staff-summary-button staff-summary-pending"
-                onClick={() => setStatusFilter("pending")}
-              >
-                <h3>{pendingBookings.length}</h3>
-                <p className="small muted">
-                  {t(
-                    "staff.summary.pendingBody",
-                    "Awaiting business approval. No staff action required.",
-                  )}
-                </p>
-              </button>
-
-              <button
-                type="button"
-                className="card staff-summary-button"
-                onClick={() => setStatusFilter("history")}
-              >
-                <h3>{completedBookings.length}</h3>
-                <p className="small muted">
-                  {t(
-                    "staff.summary.completedBody",
-                    "Appointments you have completed",
-                  )}
-                </p>
-              </button>
-            </div>
-
-            {requests.length > 0 && (
-              <div
-                className="card"
-                style={{
-                  marginBottom: "1.5rem",
-                  borderColor: "rgba(255,107,53,0.35)",
-                }}
-              >
-                <h3>
-                  {requests.length}{" "}
-                  {requests.length === 1
-                    ? t("staff.requests.pendingSingle", "pending request")
-                    : t("staff.requests.pendingPlural", "pending requests")}
-                </h3>
-                <p className="muted small" style={{ marginTop: "0.4rem" }}>
-                  {t(
-                    "staff.requests.body",
-                    "These requests are visible here for awareness. Business owners or managers approve or decline them from the business dashboard; staff can prepare around likely schedule changes.",
-                  )}
-                </p>
-
-                <div
-                  style={{ display: "grid", gap: "0.75rem", marginTop: "1rem" }}
-                >
-                  {requests.slice(0, 3).map((request) => (
-                    <div
-                      key={request.id}
-                      className="card"
-                      style={{ background: "var(--surface-2)" }}
-                    >
-                      <strong>
-                        {firstRequestBooking(request)?.customer_name ||
-                          t("common.customer", "Customer")}
-                      </strong>
-                      <p
-                        className="small muted"
-                        style={{ marginTop: "0.25rem" }}
-                      >
-                        {requestTypeLabel(request.request_type)} ·{" "}
-                        {firstRequestServiceName(request) ||
-                          t("common.service", "Service")}
-                      </p>
-                      {request.requested_start_at && (
-                        <p className="small muted">
-                          {t("staff.requests.requested", "Requested:")}{" "}
-                          {new Date(
-                            request.requested_start_at,
-                          ).toLocaleString(dateLocale)}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="card" style={{ marginBottom: "1.5rem" }}>
-              <div className="staff-schedule-header">
+              <div className="staff-home-stats">
                 <div>
-                  <h2
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      marginTop: 0,
-                    }}
-                  >
-                    {t("staff.schedule.title", "Your appointments")} ·{" "}
-                    {selectedDateLabel}
-                  </h2>
-                  <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                    {t(
-                      "staff.schedule.body",
-                      "Mirëbook shows only appointments assigned to your staff profile. Use the date picker to look further ahead than the quick 7-day view.",
-                    )}
-                  </p>
+                  <strong>{todayBookings.length}</strong>
+                  <span>{t("staff.home.todayAppointments", "today")}</span>
                 </div>
-
-                <div className="staff-filter-controls">
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => {
-                      setSelectedDate(formatDateInputValue(new Date()));
-                      setStatusFilter("active");
-                    }}
-                  >
-                    {t("staff.schedule.today", "Today")}
-                  </button>
-
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    aria-label={t(
-                      "staff.schedule.chooseDate",
-                      "Choose schedule date",
-                    )}
-                  />
-
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="active">
-                      {t("staff.filter.active", "Active")}
-                    </option>
-                    <option value="all">
-                      {t("staff.filter.all", "All statuses")}
-                    </option>
-                    <option value="pending">
-                      {t(
-                        "staff.status.pending",
-                        "Awaiting business approval",
-                      )}
-                    </option>
-                    <option value="confirmed">
-                      {t("staff.status.confirmed", "Confirmed")}
-                    </option>
-                    <option value="completed">
-                      {t("staff.status.completed", "Completed")}
-                    </option>
-                    <option value="cancelled">
-                      {t("staff.status.cancelled", "Cancelled")}
-                    </option>
-                    <option value="history">
-                      {t("staff.filter.history", "History")}
-                    </option>
-                  </select>
+                <div>
+                  <strong>{confirmedUpcomingBookings.length}</strong>
+                  <span>{t("staff.home.upcomingConfirmed", "upcoming")}</span>
                 </div>
-              </div>
-
-              <div className="staff-day-tabs">
-                {nextSevenDays.map((day) => (
-                  <button
-                    key={day.dateString}
-                    type="button"
-                    onClick={() => {
-                      setSelectedDate(day.dateString);
-                      setStatusFilter("active");
-                    }}
-                    className={
-                      selectedDate === day.dateString
-                        ? "staff-day-tab-active"
-                        : ""
-                    }
-                  >
-                    <strong>{day.label}</strong>
-                    <span>{day.subLabel}</span>
-                    <small>
-                      {day.count}{" "}
-                      {day.count === 1
-                        ? t("staff.filter.activeSingle", "active booking")
-                        : t("staff.filter.activePlural", "active bookings")}
-                    </small>
-                  </button>
-                ))}
+                <div>
+                  <strong>{pendingBookings.length}</strong>
+                  <span>
+                    {t("staff.home.awaitingApproval", "awaiting approval")}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="staff-booking-list">
-              {selectedDateBookings.length === 0 && (
-                <div className="card staff-empty-action-card">
-                  <h3>
-                    {t("staff.empty.title", "No appointments for this date")}
-                  </h3>
-                  <p className="muted" style={{ marginTop: "0.5rem" }}>
-                    {t(
-                      "staff.empty.body",
-                      "Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.",
-                    )}
-                  </p>
-                  <div className="staff-empty-actions">
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() => {
-                        setSelectedDate(formatDateInputValue(new Date()));
-                        setStatusFilter("active");
-                      }}
-                    >
-                      {t("staff.schedule.today", "Today")}
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div className="staff-quick-links">
+              <Link href="/staff/calendar" className="staff-quick-link">
+                <strong>
+                  {t("dashboardLayout.staffNav.calendar", "Calendar")}
+                </strong>
+                <span>
+                  {t(
+                    "staff.home.calendarBody",
+                    "Review appointment details and upcoming work.",
+                  )}
+                </span>
+              </Link>
+              <Link href="/staff/availability" className="staff-quick-link">
+                <strong>
+                  {t("dashboardLayout.staffNav.availability", "Availability")}
+                </strong>
+                <span>
+                  {t(
+                    "staff.home.availabilityBody",
+                    "Set the days and hours customers can book you.",
+                  )}
+                </span>
+              </Link>
+              <Link href="/staff/notifications" className="staff-quick-link">
+                <strong>
+                  {t(
+                    "dashboardLayout.staffNav.notifications",
+                    "Notifications",
+                  )}
+                </strong>
+                <span>
+                  {t(
+                    "staff.home.notificationsBody",
+                    "See booking, schedule and profile updates.",
+                  )}
+                </span>
+              </Link>
+            </div>
 
-              {selectedDateBookings.map(renderBookingCard)}
+            <div className="staff-service-summary">
+              <div>
+                <strong>
+                  {t(
+                    "staff.assignedServices.title",
+                    "What you can be booked for",
+                  )}
+                </strong>
+                <p className="small muted">
+                  {assignedServices.length > 0
+                    ? assignedServices.map((service) => service.name).join(" · ")
+                    : t(
+                        "staff.assignedServices.emptyCompact",
+                        "No services are assigned yet. Ask the business owner to update your Team profile.",
+                      )}
+                </p>
+              </div>
+              {hasBusinessWorkspace && (
+                <span className="staff-owner-context">
+                  {t(
+                    "staff.home.ownerContext",
+                    "Business management stays in Manage business.",
+                  )}
+                </span>
+              )}
             </div>
           </>
         )}
@@ -1501,6 +716,13 @@ export default function StaffDashboardPage() {
           gap: 0.75rem;
           flex-wrap: wrap;
         }
+
+        .staff-owner-setup-note {
+          margin: 0;
+          padding-top: 0.85rem;
+          border-top: 1px solid var(--border);
+          color: var(--text-muted);
+        }
         .staff-hero-card {
           display: flex;
           justify-content: space-between;
@@ -1538,31 +760,6 @@ export default function StaffDashboardPage() {
           object-fit: cover;
         }
 
-        .staff-hero-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-
-        .staff-onboarding-card {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          margin-bottom: 1.5rem;
-          border-color: rgba(45,212,191,0.22);
-        }
-
-        .staff-onboarding-card h2,
-        .staff-onboarding-card p {
-          margin-top: 0;
-        }
-
-        .staff-onboarding-note {
-          color: var(--accent);
-          margin-top: 0.45rem !important;
-        }
-
         .staff-today-card {
           display: flex;
           justify-content: space-between;
@@ -1577,179 +774,105 @@ export default function StaffDashboardPage() {
           );
         }
 
-        .staff-today-actions {
-          display: flex;
+        .staff-home-stats {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(5rem, 1fr));
           gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
+          min-width: min(100%, 22rem);
         }
 
-        .staff-empty-action-card {
-          background: var(--surface-2);
-          margin-top: 1rem;
+        .staff-home-stats div {
+          display: grid;
+          gap: 0.2rem;
+          padding-left: 0.75rem;
+          border-left: 1px solid var(--border);
         }
 
-        .staff-empty-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          margin-top: 1rem;
+        .staff-home-stats strong {
+          font-size: 1.25rem;
         }
 
-        .staff-assigned-services-card {
+        .staff-home-stats span {
+          color: var(--text-muted);
+          font-size: 0.78rem;
+        }
+
+        .staff-quick-links {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 1rem;
           margin-bottom: 1.5rem;
         }
 
-        .staff-assigned-services-card,
-        .staff-today-card,
-        .staff-summary-button,
-        .staff-booking-card {
+        .staff-quick-link {
+          display: grid;
+          gap: 0.35rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          color: var(--text);
+          text-decoration: none;
+          background: var(--surface);
+        }
+
+        .staff-quick-link:hover {
+          border-color: rgba(255, 107, 53, 0.35);
+        }
+
+        .staff-quick-link span {
+          color: var(--text-muted);
+          font-size: 0.84rem;
+          line-height: 1.45;
+        }
+
+        .staff-service-summary {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+          padding-top: 1.25rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .staff-service-summary p {
+          margin: 0.35rem 0 0;
+        }
+
+        .staff-owner-context {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          text-align: right;
+        }
+
+        .staff-today-card {
           gap: 0.75rem;
         }
 
-        .staff-assigned-services-card p,
-        .staff-today-card p,
-        .staff-summary-button p,
-        .staff-booking-card p {
+        .staff-today-card p {
           margin-top: 0;
         }
 
-        .staff-assigned-services-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-          gap: 0.75rem;
-          margin-top: 1rem;
-        }
-
-        .staff-assigned-service-pill {
-          display: grid;
-          gap: 0.25rem;
-          padding: 0.85rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: var(--surface-2);
-        }
-
-        .staff-assigned-service-pill span {
-          color: var(--text-muted);
-          font-size: 0.85rem;
-        }
-
-        .staff-summary-button {
-          width: 100%;
-          text-align: left;
-          display: grid;
-          gap: 0.5rem;
-          color: var(--text);
-          cursor: pointer;
-        }
-
-        .staff-summary-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .staff-summary-pending {
-          border-color: rgba(255, 190, 11, 0.28);
-          background: rgba(255, 190, 11, 0.06);
-        }
-
-        .staff-summary-button:hover {
-          border-color: rgba(255, 107, 53, 0.35);
-          transform: translateY(-1px);
-        }
-
-        .staff-schedule-header {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
-        }
-
-        .staff-filter-controls {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          align-items: center;
-        }
-
-        .staff-day-tabs {
-          display: grid;
-          grid-template-columns: repeat(7, minmax(0, 1fr));
-          gap: 0.5rem;
-          margin-top: 1rem;
-        }
-
-        .staff-day-tabs button {
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text);
-          border-radius: 14px;
-          padding: 0.7rem;
-          text-align: left;
-          cursor: pointer;
-        }
-
-        .staff-day-tabs button span,
-        .staff-day-tabs button small {
-          display: block;
-          color: var(--text-muted);
-          margin-top: 0.2rem;
-        }
-
-        .staff-day-tabs button.staff-day-tab-active {
-          border-color: rgba(255, 107, 53, 0.5);
-          background: var(--accent-dim);
-        }
-
-        .staff-booking-list {
-          display: grid;
-          gap: 1rem;
-        }
-
-        .staff-booking-card-inner {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
-        }
-
-        .staff-booking-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-        .staff-notes-box {
-          margin-top: 0.75rem;
-          padding: 0.8rem;
-          border-radius: var(--radius);
-          background: var(--surface-2);
-          border: 1px solid var(--border);
-        }
-
         @media (max-width: 820px) {
-          .staff-summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-
-          .staff-day-tabs {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+          .staff-quick-links {
+            grid-template-columns: 1fr;
           }
         }
 
         @media (max-width: 620px) {
           .staff-hero-card,
           .staff-profile-row,
-          .staff-onboarding-card,
           .staff-today-card,
-          .staff-schedule-header,
-          .staff-booking-card-inner {
+          .staff-service-summary {
             display: grid;
+          }
+
+          .staff-home-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            min-width: 0;
+          }
+
+          .staff-owner-context {
+            text-align: left;
           }
 
           .staff-unlinked-steps {
@@ -1763,35 +886,6 @@ export default function StaffDashboardPage() {
             justify-content: center;
           }
 
-          .staff-hero-actions,
-          .staff-today-actions,
-          .staff-empty-actions,
-          .staff-filter-controls,
-          .staff-booking-actions {
-            width: 100%;
-          }
-
-          .staff-hero-actions :global(.btn),
-          .staff-today-actions :global(.btn),
-          .staff-today-actions button,
-          .staff-empty-actions :global(.btn),
-          .staff-filter-controls :global(.btn),
-          .staff-filter-controls input,
-          .staff-filter-controls select,
-          .staff-booking-actions :global(.btn),
-          .staff-booking-actions button,
-          .staff-booking-actions a {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .staff-day-tabs {
-            grid-template-columns: 1fr;
-          }
-
-          .staff-summary-grid {
-            grid-template-columns: 1fr;
-          }
         }
       `}</style>
     </DashboardLayout>

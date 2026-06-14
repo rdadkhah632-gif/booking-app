@@ -22,7 +22,7 @@ export default function DashboardLayout({
   const { t } = useI18n();
   const [pendingCount, setPendingCount] = useState(0);
   const [checkingAccess, setCheckingAccess] = useState(true);
-  const [isStaffOnlyWorkspace, setIsStaffOnlyWorkspace] = useState(false);
+  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
 
   useEffect(() => {
     async function loadPendingNotifications() {
@@ -46,9 +46,7 @@ export default function DashboardLayout({
         session.user.email,
       );
 
-      setIsStaffOnlyWorkspace(
-        workspace === "staff" && !capabilities.canUseBusiness,
-      );
+      setHasBusinessWorkspace(capabilities.canUseBusiness);
 
       if (workspace === "staff") {
         if (!capabilities.canUseStaff && !capabilities.canUseBusiness) {
@@ -122,22 +120,34 @@ export default function DashboardLayout({
   const staffMainLinks = [
     {
       href: "/staff",
-      label: t("dashboardLayout.myWork.schedule", "My schedule"),
+      label: t("dashboardLayout.staffNav.home", "Home"),
+    },
+    {
+      href: "/staff/calendar",
+      label: t("dashboardLayout.staffNav.calendar", "Calendar"),
     },
     {
       href: "/staff/availability",
-      label: t("dashboardLayout.myWork.availability", "My availability"),
+      label: t("dashboardLayout.staffNav.availability", "Availability"),
     },
     {
       href: "/staff/notifications",
-      label: t(
-        "dashboardLayout.myWork.notifications",
-        "My notifications",
-      ),
+      label: t("dashboardLayout.staffNav.notifications", "Notifications"),
     },
   ];
 
   const staffSecondaryLinks = [
+    ...(hasBusinessWorkspace
+      ? [
+          {
+            href: "/dashboard",
+            label: t(
+              "dashboardLayout.staffNav.manageBusiness",
+              "Manage business",
+            ),
+          },
+        ]
+      : []),
     {
       href: "/support/staff",
       label: t("nav.staffSupport", "Staff support"),
@@ -148,10 +158,8 @@ export default function DashboardLayout({
     },
   ];
 
-  const mainLinks = isStaffOnlyWorkspace
-    ? staffMainLinks
-    : businessMainLinks;
-  const secondaryLinks = isStaffOnlyWorkspace ? staffSecondaryLinks : [];
+  const mainLinks = workspace === "staff" ? staffMainLinks : businessMainLinks;
+  const secondaryLinks = workspace === "staff" ? staffSecondaryLinks : [];
 
   const moreRoutes = [
     "/dashboard/settings",
@@ -166,7 +174,7 @@ export default function DashboardLayout({
   ];
 
   function isActiveLink(href: string) {
-    if (!isStaffOnlyWorkspace && href === "/dashboard/settings") {
+    if (workspace !== "staff" && href === "/dashboard/settings") {
       return moreRoutes.some(
         (route) =>
           router.pathname === route || router.pathname.startsWith(`${route}/`),
@@ -201,7 +209,7 @@ export default function DashboardLayout({
       <aside className="sidebar">
         <div className="sidebar-logo">
           <Link
-            href={isStaffOnlyWorkspace ? "/staff" : "/dashboard"}
+            href={workspace === "staff" ? "/staff" : "/dashboard"}
             className="logo"
           >
             Mirë<span>book</span>
@@ -211,7 +219,7 @@ export default function DashboardLayout({
 
         <nav className="sidebar-nav">
           <div className="sidebar-main-links">
-            {isStaffOnlyWorkspace && (
+            {workspace === "staff" && (
               <p className="sidebar-section-label">
                 {t("staff.workspace.kicker", "Staff workspace")}
               </p>

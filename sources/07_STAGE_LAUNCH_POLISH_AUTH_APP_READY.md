@@ -14,6 +14,10 @@ Batch 2B status: Mirëbook Business workspace layout cleanup implemented.
 Production build and static validation pass. Authenticated desktop/mobile EN/SQ
 visual QA remains required before Batch 2B is closed.
 
+Batch 3 status: Staff workspace and owner-as-staff simplification implemented.
+Production build and static validation pass. Authenticated desktop/mobile EN/SQ
+visual QA remains required before Batch 3 is closed.
+
 Stages 1 through 6 are complete and protected.
 
 ## Goal
@@ -493,11 +497,56 @@ Recommended next batch:
 
 ### Batch 3 - Staff Workspace And Owner-As-Staff Simplification
 
-- make staff Home focused on today's work
-- consolidate Schedule and Calendar concepts
-- standardize linked-business identity
-- provide a clear owner Manage business versus My work transition
-- retain invite, staff-link and availability behavior
+Implemented:
+
+- Staff Home is now an operational summary with linked business identity,
+  today's work, upcoming/approval counts, assigned services and three compact
+  destinations: Calendar, Availability and Notifications
+- the duplicated date tabs, filters, request feed and full appointment-card
+  schedule were removed from Staff Home
+- Calendar is the detailed staff schedule and status surface; the existing
+  mark-complete behavior moved there so capability was not lost
+- Availability now focuses on working hours and templates; duplicated
+  appointment cards were replaced by a compact count and Calendar link
+- staff primary navigation is Home, Calendar, Availability and Notifications;
+  account, support and owner-only Manage business access remain secondary
+- owner-as-staff identity is shown compactly without repeating large guidance
+  cards across every staff page
+- Team wording now covers staff and any owner who is personally bookable while
+  preserving invite, linking, service assignment and availability behavior
+- Account received only a small directional copy change: business management
+  stays in Mirëbook Business and personal bookable work starts from Staff Home
+- EN/SQ labels were added together for all newly touched staff navigation,
+  summary and availability copy
+
+Protected behavior:
+
+- no booking status, booking action, invite, linking, owner-as-staff data,
+  availability-save, auth, billing, readiness, route, Supabase, middleware or
+  domain behavior changed
+- no route was removed
+
+Validation:
+
+- production build: pass
+- `git diff --check`: pass
+- EN/SQ duplicate translation key check: pass
+- Prettier: unavailable because it is not installed in this repository
+- unauthenticated route check: pass; `/staff` redirects to Login with its return
+  path preserved and no browser console errors
+- authenticated desktop/mobile visual QA: pending because the local browser
+  session does not have an owner or staff login
+
+Remaining follow-ups:
+
+- complete authenticated desktop/mobile QA for all staff routes, Team and
+  business availability in English and Albanian
+- split the shared Account page into clearer role-aware sections in a later
+  batch; Batch 3 intentionally avoided an Account redesign
+
+Recommended next batch:
+
+- Stage 7 Batch 4 - Customer Journey Polish
 
 ### Batch 4 - Customer Journey Polish
 

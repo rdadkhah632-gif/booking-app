@@ -1150,7 +1150,7 @@ export default function AccountPage() {
                     {hasLinkedStaffProfile
                       ? t(
                           "account.ownerBooking.linkedBody",
-                          "Business dashboard manages services, staff, bookings and setup. My Work manages your personal schedule and availability.",
+                          "Manage the business in Mirëbook Business. Use Staff Home for your own calendar and availability when customers can book you.",
                         )
                       : t(
                           "account.ownerBooking.notLinkedBody",

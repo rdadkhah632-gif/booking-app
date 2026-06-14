@@ -733,7 +733,7 @@ export default function StaffPage() {
       title={t("dashboardLayout.nav.team", "Team")}
       subtitle={
         business
-          ? `${t("dashboardStaff.teamSubtitleSelected", "Manage bookable team members, service assignments and working hours for")} ${business.name}.`
+          ? `${t("dashboardStaff.teamSubtitleSelected", "Manage the staff and bookable people customers can choose at")} ${business.name}.`
           : t(
               "dashboardStaff.teamSubtitle",
               "Create your business first, then build the team customers can book.",
@@ -883,11 +883,11 @@ export default function StaffPage() {
           )}
 
           <div className="staff-section-heading">
-            <h2>{t("dashboardStaff.list.title", "Your staff")}</h2>
+            <h2>{t("dashboardStaff.list.title", "Your team")}</h2>
             <p className="small muted">
               {t(
                 "dashboardStaff.list.body",
-                "Staff become bookable only when they are active, assigned to services, and have working hours set. Owner-only users do not need to appear here unless customers can book them.",
+                "Team includes staff and any owner customers can book. A person becomes bookable when active, assigned to services and given working hours.",
               )}
               {staff.length > 0 && (
                 <span className="staff-login-summary">

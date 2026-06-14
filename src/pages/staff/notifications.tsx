@@ -275,7 +275,7 @@ export default function StaffNotificationsPage() {
         <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
           <div>
             <h1 className="page-title">
-              {t("staffNotifications.title", "Updates")}
+              {t("staffNotifications.title", "Notifications")}
             </h1>
             <p className="page-sub" style={{ marginTop: "0.5rem" }}>
               {hasBusinessWorkspace
