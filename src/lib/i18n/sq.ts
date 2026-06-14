@@ -16,6 +16,7 @@ export const sq: TranslationTree = {
   "nav.myBookings": "Rezervimet e mia",
   "nav.notifications": "Njoftime",
   "nav.account": "Llogaria",
+  "product.business.suffix": "Biznes",
   "auth.logout": "Dil",
   "staff.schedule.title": "Orari im",
   "staffCalendar.title": "Kalendari",

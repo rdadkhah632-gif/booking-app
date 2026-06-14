@@ -262,9 +262,8 @@ export default function AuthNav() {
 
   const roleBadge = useMemo(() => {
     if (role === "admin") return t("nav.role.operator", "Operator");
-    if (role === "business") return t("nav.role.business", "Business");
-    if (role === "staff") return t("nav.role.staff", "Staff");
-    if (role === "customer") return t("nav.role.customer", "Customer");
+    if (role === "business" || role === "staff")
+      return t("product.business.suffix", "Business");
     return null;
   }, [role, t]);
 

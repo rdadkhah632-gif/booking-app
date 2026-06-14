@@ -237,6 +237,7 @@ export default function DashboardLayout({
             className="logo"
           >
             Mirë<span>book</span>
+            <em>{t("product.business.suffix", "Business")}</em>
           </Link>
         </div>
 
@@ -323,6 +324,23 @@ export default function DashboardLayout({
           display: flex;
           flex-direction: column;
           gap: 1.4rem;
+        }
+
+        .sidebar-logo :global(.logo) {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+        }
+
+        .sidebar-logo em {
+          font-style: normal;
+          font-size: 0.7rem;
+          line-height: 1;
+          padding: 0.22rem 0.45rem;
+          border-radius: 999px;
+          color: var(--accent);
+          background: var(--accent-dim);
+          border: 1px solid rgba(255, 107, 53, 0.24);
         }
 
         .sidebar-main-links,

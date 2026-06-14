@@ -8,7 +8,7 @@ Before making code changes, always read:
 2. `/sources/01_STAGE_ACCOUNT_ROLE_STAFF_BUSINESS_FOUNDATION.md`
 3. `/sources/01_STAGE_1_CLOSURE_QA.md`
 4. The current active stage document, currently:
-   `/sources/06_STAGE_ONBOARDING_VERIFICATION_EMAIL_LAUNCH_READINESS.md`
+   `/sources/06_STAGE_PLATFORM_SPLIT_CUSTOMER_BUSINESS.md`
 
 ## Current Status
 
@@ -37,11 +37,10 @@ Stage 6 is active.
 
 Stage 6 focuses on:
 
-- final UI organization and role-specific onboarding
-- email verification and email notification foundations
-- notification preferences and appointment reminders
-- founding-business offer tracking
-- final launch readiness
+- a clear Mirëbook customer marketplace and booking experience
+- a connected Mirëbook Business workspace for owners and staff
+- app-ready route and layout boundaries without separate repositories
+- shared auth, backend and business logic across both product experiences
 
 ## Working Rules
 

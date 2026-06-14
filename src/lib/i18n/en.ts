@@ -16,6 +16,7 @@ export const en: TranslationTree = {
   "nav.notifications": "Notifications",
   "nav.account": "Account",
   "nav.logout": "Log out",
+  "product.business.suffix": "Business",
   "auth.logout": "Log out",
   "login.checkingSession": "Checking your Mirëbook session...",
   "login.failed": "Login failed",
