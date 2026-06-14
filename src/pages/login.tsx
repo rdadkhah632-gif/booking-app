@@ -7,10 +7,15 @@ import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { completePendingRegistration } from "@/lib/completePendingRegistration";
 import { safeInternalRedirect } from "@/lib/safeInternalRedirect";
+import { getBusinessAppUrl } from "@/lib/appUrls";
 
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useI18n();
+  const isBusinessEntry = router.query.product === "business";
+  const registrationUrl = isBusinessEntry
+    ? getBusinessAppUrl("/register?accountType=business")
+    : "/register";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -229,6 +234,9 @@ export default function LoginPage() {
             <div style={{ position: "relative", zIndex: 1 }}>
               <div className="logo login-promo-logo">
                 Mirë<span>book</span>
+                {isBusinessEntry && (
+                  <em>{t("product.business.suffix", "Business")}</em>
+                )}
               </div>
 
               <h1
@@ -240,14 +248,24 @@ export default function LoginPage() {
                   marginBottom: 16,
                 }}
               >
-                {t("login.promoTitle", "Welcome back to Mirëbook")}
+                {isBusinessEntry
+                  ? t(
+                      "login.business.promoTitle",
+                      "Welcome back to Mirëbook Business.",
+                    )
+                  : t("login.promoTitle", "Welcome back to Mirëbook")}
               </h1>
 
               <p className="muted">
-                {t(
-                  "login.promoBody",
-                  "Sign in and Mirëbook will take you to the right workspace for your account: customer, staff, business or operator.",
-                )}
+                {isBusinessEntry
+                  ? t(
+                      "login.business.promoBody",
+                      "Business owners and invited staff use the same secure login, then continue to the workspace their account can access.",
+                    )
+                  : t(
+                      "login.promoBody",
+                      "Sign in and Mirëbook will take you to the right workspace for your account.",
+                    )}
               </p>
             </div>
 
@@ -294,14 +312,21 @@ export default function LoginPage() {
                 marginBottom: 8,
               }}
             >
-              {t("login.title", "Login to Mirëbook")}
+              {isBusinessEntry
+                ? t("login.business.title", "Login to Mirëbook Business")
+                : t("login.title", "Login to Mirëbook")}
             </h2>
 
             <p className="muted login-subtitle">
-              {t(
-                "login.subtitle",
-                "Use one login. Mirëbook detects whether this account is a customer, staff member, business owner or operator.",
-              )}
+              {isBusinessEntry
+                ? t(
+                    "login.business.subtitle",
+                    "Use your business owner or invited staff account. Existing access and routing stay connected to the same Mirëbook login.",
+                  )
+                : t(
+                    "login.subtitle",
+                    "Use one login. Mirëbook opens the right product for your account.",
+                  )}
             </p>
 
             <form onSubmit={onLogin} className="form-grid">
@@ -397,7 +422,7 @@ export default function LoginPage() {
             <div className="login-bottom-actions">
               <p className="small muted">
                 {t("login.noAccount", "No account yet?")}{" "}
-                <Link href="/register" style={{ color: "var(--accent)" }}>
+                <Link href={registrationUrl} style={{ color: "var(--accent)" }}>
                   {t("login.createAccount", "Create account")}
                 </Link>
               </p>
@@ -436,7 +461,21 @@ export default function LoginPage() {
         }
 
         .login-promo-logo {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
           margin-bottom: 2rem;
+        }
+
+        .login-promo-logo em {
+          font-style: normal;
+          font-size: 0.7rem;
+          line-height: 1;
+          padding: 0.22rem 0.45rem;
+          border-radius: 999px;
+          color: var(--accent);
+          background: var(--accent-dim);
+          border: 1px solid rgba(255, 107, 53, 0.24);
         }
 
         .login-proof-list {

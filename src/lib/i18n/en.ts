@@ -16,21 +16,28 @@ export const en: TranslationTree = {
   "nav.notifications": "Notifications",
   "nav.account": "Account",
   "nav.logout": "Log out",
+  "nav.forBusinesses": "For businesses",
   "product.business.suffix": "Business",
   "auth.logout": "Log out",
   "login.checkingSession": "Checking your Mirëbook session...",
   "login.failed": "Login failed",
   "login.profileError": "Could not load user profile",
-  "login.promoTitle": "Welcome back to your Mirëbook workspace.",
+  "login.promoTitle": "One account for Mirëbook and Mirëbook Business.",
   "login.promoBody":
-    "Customers can manage appointments, businesses can manage bookings, and invited staff can access their own schedule from one account.",
+    "Customers return to bookings in Mirëbook. Business owners and invited staff continue into Mirëbook Business with the access linked to their account.",
   "login.proof.routing": "✓ Customer, business and staff routing",
   "login.proof.availability": "✓ Smart booking availability",
   "login.proof.workflows": "✓ Approval, reschedule and notification workflows",
   "login.kicker": "Sign in",
   "login.title": "Login to Mirëbook",
   "login.subtitle":
-    "Use your customer, business or invited staff account. Mirëbook will send you to the right workspace automatically.",
+    "Use one login. Mirëbook opens customer bookings or Mirëbook Business automatically from your account capabilities.",
+  "login.business.promoTitle": "Welcome back to Mirëbook Business.",
+  "login.business.promoBody":
+    "Business owners and invited staff use the same secure login, then continue to the workspace their account can access.",
+  "login.business.title": "Login to Mirëbook Business",
+  "login.business.subtitle":
+    "Use your business owner or invited staff account. Existing access and routing stay connected to the same Mirëbook login.",
   "login.emailLabel": "Email address",
   "login.emailPlaceholder": "you@example.com",
   "login.passwordLabel": "Password",
@@ -104,6 +111,7 @@ export const en: TranslationTree = {
   "home.business.billingBody":
     "Prepare monthly subscription details for your business account.",
   "home.business.join": "List your business",
+  "home.business.openBusiness": "Mirëbook Business",
   "home.business.login": "Business login",
   "home.business.support": "Get support",
   "home.confidence.kicker": "Built for confidence",
@@ -154,6 +162,71 @@ export const en: TranslationTree = {
   "home.trust.legalTitle": "Privacy and terms",
   "home.trust.legalBody":
     "Review how Mirëbook handles platform use and personal information.",
+
+  "businessHome.metaTitle":
+    "Mirëbook Business | Bookings, staff and availability",
+  "businessHome.metaDescription":
+    "Manage bookings, staff, services, availability and your public business profile with Mirëbook Business.",
+  "businessHome.hero.title":
+    "Keep bookings, staff and the working day in one clear place.",
+  "businessHome.hero.body":
+    "Mirëbook Business helps service businesses manage booking requests, confirmed appointments, services, staff availability and the public profile customers book from.",
+  "businessHome.cta.start": "Start business setup",
+  "businessHome.cta.login": "Log in to Mirëbook Business",
+  "businessHome.cta.customer": "View customer Mirëbook",
+  "businessHome.proof.booking": "One booking view",
+  "businessHome.proof.bookingBody":
+    "Pending, confirmed and completed work stays distinct.",
+  "businessHome.proof.team": "Owners and staff",
+  "businessHome.proof.teamBody":
+    "Staff works inside Mirëbook Business with role-appropriate access.",
+  "businessHome.proof.profile": "A bookable public profile",
+  "businessHome.proof.profileBody":
+    "Customers see services, staff and real available times.",
+  "businessHome.features.kicker": "Daily operations",
+  "businessHome.features.title":
+    "The tools a service business needs to stay organised.",
+  "businessHome.features.body":
+    "Start with one location and keep customer bookings, team availability and next actions connected.",
+  "businessHome.features.calendar.title": "Calendar and booking management",
+  "businessHome.features.calendar.body":
+    "Review the working day and keep pending, confirmed, cancelled and completed appointments easy to scan.",
+  "businessHome.features.staff.title": "Staff and availability",
+  "businessHome.features.staff.body":
+    "Assign services and set business-wide or personal staff working hours.",
+  "businessHome.features.bookingModes.title":
+    "Requests or instant confirmation",
+  "businessHome.features.bookingModes.body":
+    "Choose whether new bookings confirm immediately or wait for business approval.",
+  "businessHome.features.profile.title": "Your online business profile",
+  "businessHome.features.profile.body":
+    "Publish services, staff and availability on a customer-facing Mirëbook page.",
+  "businessHome.features.notifications.title":
+    "Clear operational notifications",
+  "businessHome.features.notifications.body":
+    "See booking requests, reschedule activity and updates that need attention.",
+  "businessHome.features.operations.title": "Owner and staff workspaces",
+  "businessHome.features.operations.body":
+    "Owners manage the business while staff sees only assigned work, availability and updates.",
+  "businessHome.team.kicker": "One business product",
+  "businessHome.team.title": "Staff is part of Mirëbook Business.",
+  "businessHome.team.body":
+    "Business owners manage setup, bookings and the team. Linked staff gets a focused workspace for assigned appointments, personal availability and work notifications.",
+  "businessHome.team.ownerBody":
+    "Owners who also take appointments can keep business management and their personal schedule connected without switching products.",
+  "businessHome.membership.kicker": "Launch membership",
+  "businessHome.membership.title":
+    "One simple Mirëbook Business membership.",
+  "businessHome.membership.body":
+    "The launch membership brings bookings, services, staff tools, public listing and notifications together. Mirëbook does not add a normal customer booking fee or booking commission.",
+  "businessHome.membership.offer":
+    "Founding-business offers are set up directly with Mirëbook.",
+  "businessHome.membership.payment":
+    "Online subscription payment is being prepared. Current access and launch offers are managed through the existing billing foundation.",
+  "businessHome.membership.support": "Contact business support",
+  "businessHome.final.kicker": "Ready to get organised?",
+  "businessHome.final.title":
+    "Set up the business customers can find and your team can run.",
 
   "explore.hero.kicker": "Mirëbook marketplace",
   "explore.hero.title": "Find and book local services",
@@ -1821,7 +1894,10 @@ export const en: TranslationTree = {
   "register.kicker": "Create account",
   "register.title": "Create your Mirëbook account",
   "register.subtitle":
-    "Choose the account type that fits how you will use Mirëbook.",
+    "Choose whether you are booking as a customer or entering Mirëbook Business as an owner or invited staff member.",
+  "register.businessAccountTitle": "Start with Mirëbook Business",
+  "register.businessAccountSubtitle":
+    "Create one Mirëbook account, add your starter business profile and continue into Mirëbook Business setup.",
   "register.role.customer": "Customer",
   "register.role.customerBody": "Book and manage appointments.",
   "register.role.business": "Business",

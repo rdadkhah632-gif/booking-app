@@ -269,7 +269,13 @@ export default function AuthNav() {
 
   return (
     <nav
-      className={role === "admin" ? "nav-simple nav-operator" : "nav-simple"}
+      className={[
+        "nav-simple",
+        role === "admin" ? "nav-operator" : "",
+        !role && router.pathname === "/business" ? "nav-public-business" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <div className="nav-simple-inner">
         <Link href={logoHref} className="logo">
@@ -414,6 +420,11 @@ export default function AuthNav() {
         }
 
         @media (max-width: 540px) {
+          :global(.nav-public-business .public-explore-link),
+          :global(.nav-public-business .public-business-link) {
+            display: none;
+          }
+
           .auth-nav-links :global(a),
           .auth-nav-links button {
             width: auto;

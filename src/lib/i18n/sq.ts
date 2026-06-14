@@ -16,6 +16,7 @@ export const sq: TranslationTree = {
   "nav.myBookings": "Rezervimet e mia",
   "nav.notifications": "Njoftime",
   "nav.account": "Llogaria",
+  "nav.forBusinesses": "Për bizneset",
   "product.business.suffix": "Biznes",
   "auth.logout": "Dil",
   "staff.schedule.title": "Orari im",
@@ -68,16 +69,22 @@ export const sq: TranslationTree = {
   "login.checkingSession": "Duke kontrolluar sesionin tënd Mirëbook...",
   "login.failed": "Hyrja dështoi",
   "login.profileError": "Profili i përdoruesit nuk u ngarkua",
-  "login.promoTitle": "Mirë se u ktheve në hapësirën tënde Mirëbook.",
+  "login.promoTitle": "Një llogari për Mirëbook dhe Mirëbook Biznes.",
   "login.promoBody":
-    "Klientët mund të menaxhojnë takimet, bizneset mund të menaxhojnë rezervimet dhe stafi i ftuar mund të aksesojë orarin e vet nga një llogari.",
+    "Klientët kthehen te rezervimet në Mirëbook. Pronarët e bizneseve dhe stafi i ftuar vazhdojnë në Mirëbook Biznes me aksesin e lidhur me llogarinë e tyre.",
   "login.proof.routing": "✓ Rrugëzim për klientë, biznese dhe staf",
   "login.proof.availability": "✓ Disponueshmëri inteligjente për rezervime",
   "login.proof.workflows": "✓ Miratime, ndryshime orari dhe njoftime",
   "login.kicker": "Hyr",
   "login.title": "Hyr në Mirëbook",
   "login.subtitle":
-    "Përdor llogarinë tënde si klient, biznes ose staf i ftuar. Mirëbook do të të çojë automatikisht te hapësira e duhur.",
+    "Përdor një hyrje. Mirëbook hap automatikisht rezervimet e klientit ose Mirëbook Biznes sipas aksesit të llogarisë.",
+  "login.business.promoTitle": "Mirë se u ktheve në Mirëbook Biznes.",
+  "login.business.promoBody":
+    "Pronarët e bizneseve dhe stafi i ftuar përdorin të njëjtën hyrje të sigurt dhe vazhdojnë te hapësira ku ka akses llogaria e tyre.",
+  "login.business.title": "Hyr në Mirëbook Biznes",
+  "login.business.subtitle":
+    "Përdor llogarinë e pronarit ose stafit të ftuar. Aksesi dhe rrugëzimi ekzistues mbeten të lidhur me të njëjtën hyrje Mirëbook.",
   "login.emailLabel": "Adresa e email-it",
   "login.emailPlaceholder": "ti@shembull.com",
   "login.passwordLabel": "Fjalëkalimi",
@@ -151,6 +158,7 @@ export const sq: TranslationTree = {
   "home.business.billingBody":
     "Përgatit detajet e abonimit mujor për llogarinë e biznesit.",
   "home.business.join": "Regjistro biznesin tënd",
+  "home.business.openBusiness": "Mirëbook Biznes",
   "home.business.login": "Hyrje biznesi",
   "home.business.support": "Merr ndihmë",
   "home.confidence.kicker": "Ndërtuar për siguri",
@@ -203,6 +211,72 @@ export const sq: TranslationTree = {
   "home.trust.legalTitle": "Privatësia dhe kushtet",
   "home.trust.legalBody":
     "Shiko si i trajton Mirëbook përdorimin e platformës dhe informacionet personale.",
+
+  "businessHome.metaTitle":
+    "Mirëbook Biznes | Rezervime, staf dhe disponueshmëri",
+  "businessHome.metaDescription":
+    "Menaxho rezervimet, stafin, shërbimet, disponueshmërinë dhe profilin publik të biznesit me Mirëbook Biznes.",
+  "businessHome.hero.title":
+    "Mbaj rezervimet, stafin dhe ditën e punës në një vend të qartë.",
+  "businessHome.hero.body":
+    "Mirëbook Biznes ndihmon bizneset e shërbimeve të menaxhojnë kërkesat e rezervimit, takimet e konfirmuara, shërbimet, disponueshmërinë e stafit dhe profilin publik ku rezervojnë klientët.",
+  "businessHome.cta.start": "Fillo konfigurimin e biznesit",
+  "businessHome.cta.login": "Hyr në Mirëbook Biznes",
+  "businessHome.cta.customer": "Shiko Mirëbook për klientët",
+  "businessHome.proof.booking": "Një pamje rezervimesh",
+  "businessHome.proof.bookingBody":
+    "Puna në pritje, e konfirmuar dhe e përfunduar mbetet e ndarë.",
+  "businessHome.proof.team": "Pronarë dhe staf",
+  "businessHome.proof.teamBody":
+    "Stafi punon brenda Mirëbook Biznes me akses sipas rolit.",
+  "businessHome.proof.profile": "Profil publik për rezervime",
+  "businessHome.proof.profileBody":
+    "Klientët shohin shërbimet, stafin dhe oraret reale të lira.",
+  "businessHome.features.kicker": "Operacionet ditore",
+  "businessHome.features.title":
+    "Mjetet që i duhen një biznesi shërbimesh për të qenë i organizuar.",
+  "businessHome.features.body":
+    "Fillo me një vendndodhje dhe mbaj të lidhura rezervimet, disponueshmërinë e ekipit dhe veprimet e ardhshme.",
+  "businessHome.features.calendar.title":
+    "Kalendari dhe menaxhimi i rezervimeve",
+  "businessHome.features.calendar.body":
+    "Shqyrto ditën e punës dhe mbaj të qarta takimet në pritje, të konfirmuara, të anuluara dhe të përfunduara.",
+  "businessHome.features.staff.title": "Stafi dhe disponueshmëria",
+  "businessHome.features.staff.body":
+    "Cakto shërbime dhe vendos oraret e punës për biznesin ose stafin individual.",
+  "businessHome.features.bookingModes.title":
+    "Kërkesa ose konfirmim i menjëhershëm",
+  "businessHome.features.bookingModes.body":
+    "Zgjidh nëse rezervimet e reja konfirmohen menjëherë apo presin miratimin e biznesit.",
+  "businessHome.features.profile.title": "Profili yt online i biznesit",
+  "businessHome.features.profile.body":
+    "Publiko shërbimet, stafin dhe disponueshmërinë në një faqe Mirëbook për klientët.",
+  "businessHome.features.notifications.title":
+    "Njoftime të qarta operative",
+  "businessHome.features.notifications.body":
+    "Shiko kërkesat e rezervimit, aktivitetin e ndryshimit të orarit dhe përditësimet që kërkojnë vëmendje.",
+  "businessHome.features.operations.title": "Hapësira për pronarë dhe staf",
+  "businessHome.features.operations.body":
+    "Pronarët menaxhojnë biznesin, ndërsa stafi sheh vetëm punën, disponueshmërinë dhe përditësimet e caktuara.",
+  "businessHome.team.kicker": "Një produkt biznesi",
+  "businessHome.team.title": "Stafi është pjesë e Mirëbook Biznes.",
+  "businessHome.team.body":
+    "Pronarët menaxhojnë konfigurimin, rezervimet dhe ekipin. Stafi i lidhur merr një hapësirë të fokusuar për takimet e caktuara, disponueshmërinë personale dhe njoftimet e punës.",
+  "businessHome.team.ownerBody":
+    "Pronarët që marrin edhe takime mund të mbajnë të lidhur menaxhimin e biznesit dhe orarin personal pa ndërruar produkt.",
+  "businessHome.membership.kicker": "Anëtarësimi i lançimit",
+  "businessHome.membership.title":
+    "Një anëtarësim i thjeshtë Mirëbook Biznes.",
+  "businessHome.membership.body":
+    "Anëtarësimi i lançimit bashkon rezervimet, shërbimet, mjetet e stafit, listimin publik dhe njoftimet. Mirëbook nuk shton tarifë normale rezervimi për klientin ose komision rezervimi.",
+  "businessHome.membership.offer":
+    "Ofertat për bizneset themeluese konfigurohen drejtpërdrejt me Mirëbook.",
+  "businessHome.membership.payment":
+    "Pagesa online e abonimit po përgatitet. Aksesi aktual dhe ofertat e lançimit menaxhohen përmes bazës ekzistuese të faturimit.",
+  "businessHome.membership.support": "Kontakto ndihmën për biznes",
+  "businessHome.final.kicker": "Gati për t'u organizuar?",
+  "businessHome.final.title":
+    "Konfiguro biznesin që klientët mund të gjejnë dhe ekipi mund të menaxhojë.",
 
   "explore.hero.kicker": "Tregu Mirëbook",
   "explore.hero.title": "Gjej dhe rezervo shërbime lokale",
@@ -1917,7 +1991,10 @@ export const sq: TranslationTree = {
   "register.kicker": "Krijo llogari",
   "register.title": "Krijo llogarinë tënde Mirëbook",
   "register.subtitle":
-    "Zgjidh llojin e llogarisë që i përshtatet mënyrës si do ta përdorësh Mirëbook.",
+    "Zgjidh nëse po rezervon si klient apo po hyn në Mirëbook Biznes si pronar ose staf i ftuar.",
+  "register.businessAccountTitle": "Fillo me Mirëbook Biznes",
+  "register.businessAccountSubtitle":
+    "Krijo një llogari Mirëbook, shto profilin fillestar të biznesit dhe vazhdo te konfigurimi në Mirëbook Biznes.",
   "register.role.customer": "Klient",
   "register.role.customerBody": "Rezervo dhe menaxho takimet.",
   "register.role.business": "Biznes",

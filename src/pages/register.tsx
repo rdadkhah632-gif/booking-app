@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/useI18n";
 import { Locale } from "@/lib/i18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { safeInternalRedirect } from "@/lib/safeInternalRedirect";
+import { getBusinessAppUrl } from "@/lib/appUrls";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,6 +38,10 @@ export default function RegisterPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendingVerification, setResendingVerification] = useState(false);
+  const loginUrl =
+    role === "business"
+      ? getBusinessAppUrl("/login?product=business")
+      : "/login";
 
   async function redirectByRole(userId: string, fallbackEmail?: string) {
     const capabilities = await getAccountCapabilities(userId, fallbackEmail);
@@ -51,6 +56,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (!router.isReady) return;
     if (router.query.accountType === "staff") setRole("staff");
+    if (router.query.accountType === "business") setRole("business");
   }, [router.isReady, router.query.accountType]);
 
   useEffect(() => {
@@ -386,14 +392,24 @@ export default function RegisterPage() {
               marginBottom: 8,
             }}
           >
-            {t("register.title", "Create your Mirëbook account")}
+            {role === "business"
+              ? t(
+                  "register.businessAccountTitle",
+                  "Start with Mirëbook Business",
+                )
+              : t("register.title", "Create your Mirëbook account")}
           </h1>
 
           <p className="muted register-subtitle">
-            {t(
-              "register.subtitle",
-              "Choose how you will use Mirëbook. Customers book services, staff manage assigned appointments, and businesses manage setup and bookings.",
-            )}
+            {role === "business"
+              ? t(
+                  "register.businessAccountSubtitle",
+                  "Create one Mirëbook account, add your starter business profile and continue into Mirëbook Business setup.",
+                )
+              : t(
+                  "register.subtitle",
+                  "Choose how you will use Mirëbook. Customers book services, while owners and staff use Mirëbook Business.",
+                )}
           </p>
 
           <div className="register-role-grid register-role-grid-top">
@@ -859,7 +875,7 @@ export default function RegisterPage() {
           <div className="register-bottom-actions">
             <p className="small muted">
               {t("register.alreadyHaveAccount", "Already have an account?")}{" "}
-              <Link href="/login" style={{ color: "var(--accent)" }}>
+              <Link href={loginUrl} style={{ color: "var(--accent)" }}>
                 {t("register.loginLink", "Login")}
               </Link>
             </p>

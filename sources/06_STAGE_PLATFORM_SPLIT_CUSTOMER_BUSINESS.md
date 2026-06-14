@@ -5,6 +5,12 @@ Status: active.
 Batch 1 status: route, navigation and product-boundary audit implemented.
 Production build and static checks passed.
 
+Batch 2 status: Mirëbook Business public homepage and domain-ready entry split
+implemented. Production build and static checks passed.
+
+Batch 3 status: domain-aware URL helpers and deployment preparation
+implemented. Production build and static checks passed.
+
 Stages 1 through 5 remain complete or closed with tracked follow-ups. The
 earlier onboarding, email and launch-readiness work remains recorded in
 `sources/06_STAGE_ONBOARDING_VERIFICATION_EMAIL_LAUNCH_READINESS.md`; this
@@ -305,30 +311,74 @@ Do not regress:
 
 ### Batch 2 - Shared Entry And Account Clarity
 
-- audit login, registration and account copy against the two-product model
-- make business and staff next destinations clearly part of Mirëbook Business
-- keep one auth flow and avoid duplicated account settings
+Implemented:
 
-### Batch 3 - Customer Product Boundary
+- added `/business` as the public Mirëbook Business sales and entry homepage
+- kept `/` focused on customer discovery and booking
+- linked public navigation and customer-home business prompts to `/business`
+- added business-selected registration through
+  `/register?accountType=business`
+- added a business-aware presentation at `/login?product=business` without
+  changing authentication or capability routing
+- kept one auth flow and avoided duplicated account settings
+
+The `/business` page presents only current or deliberately qualified product
+capabilities:
+
+- booking and calendar management
+- staff, service assignments and availability
+- request or instant-confirmation booking modes
+- customer-facing public profiles
+- role-appropriate notifications and workspaces
+- the existing one-membership and founding-offer direction
+
+It does not claim customer checkout, deposits, calendar sync, multi-location
+switching or unimplemented analytics.
+
+### Batch 3 - Domain-Aware Routing And Vercel Split Preparation
+
+Implemented:
+
+- added `src/lib/appUrls.ts` with safe customer and business app URL helpers
+- documented optional `NEXT_PUBLIC_CUSTOMER_APP_URL` and
+  `NEXT_PUBLIC_BUSINESS_APP_URL` values in `.env.example`
+- kept relative same-origin fallbacks when the optional values are absent
+- updated only cross-product homepage, login and registration links
+- added an unused `isBusinessAppHostname` detector for a future routing batch
+- did not enable hostname redirects, rewrites or middleware
+- kept `/business` directly accessible on local and existing deployments
+
+Configured public origins are accepted only when they are valid HTTP or HTTPS
+URLs without embedded credentials. Invalid values fall back to the current
+same-origin route behavior.
+
+### Batch 4 - Customer Product Boundary
 
 - audit customer navigation, support and account links
 - remove business-operational language from customer surfaces
 - define customer-app-ready page ownership without moving routes
 
-### Batch 4 - Business Information Architecture
+Recommended next batch:
+
+- audit customer navigation, support and shared account entry points
+- remove remaining operational business copy from the customer homepage
+- define how shared `/account` presents customer versus Mirëbook Business entry
+  without creating separate identity systems
+
+### Batch 5 - Business Information Architecture
 
 - review dashboard navigation grouping for daily work versus setup
 - align owner and staff terminology around Home, Bookings, Calendar, Team and
   Settings
 - keep permissions and URLs unchanged
 
-### Batch 5 - Shared Domain And API Audit
+### Batch 6 - Shared Domain And API Audit
 
 - identify UI-coupled data access that future mobile clients cannot reuse
 - document candidate server endpoints and shared types
 - do not create a second backend or duplicate booking logic
 
-### Batch 6 - App-Readiness QA
+### Batch 7 - App-Readiness QA
 
 - verify customer, owner, owner-as-staff and staff-only journeys
 - verify product labels in EN and SQ
@@ -366,3 +416,105 @@ Manual QA remaining:
 - verify customer navigation shows plain `Mirëbook` without a Customer badge
 - verify business and staff support routes use the business-product label
 - verify Operator navigation retains its separate Operator badge
+
+## Batch 2 Domain-Ready Plan
+
+Current route behavior:
+
+```text
+mirebook.com
+  / -> Mirëbook customer homepage
+  /explore -> customer marketplace
+  /business -> Mirëbook Business public homepage
+  /dashboard/* -> authenticated owner workspace
+  /staff/* -> authenticated staff workspace
+```
+
+Target future domain behavior:
+
+```text
+mirebook.com -> customer homepage and booking routes
+business.mirebook.com -> Mirëbook Business homepage and owner/staff entry
+```
+
+The future business domain can initially map its root request to the existing
+`/business` page while authenticated owner and staff routes remain unchanged.
+A later domain-routing batch may make `/business` render as the subdomain root
+without moving page modules or duplicating application logic.
+
+Future Vercel work:
+
+- add `business.mirebook.com` to the same Vercel project
+- configure DNS for the business subdomain
+- add both customer and business origins to Supabase allowed redirect URLs
+- decide whether middleware or platform routing maps the business-domain root
+  to `/business`
+- verify auth email redirects return to an allowed shared origin
+
+No Vercel configuration was changed in Batch 2.
+
+No new environment variables were added. Future optional public URL variables
+may be documented as:
+
+- `NEXT_PUBLIC_CUSTOMER_APP_URL`
+- `NEXT_PUBLIC_BUSINESS_APP_URL`
+
+They are not required while both product entries use same-origin routes.
+
+No Supabase schema, RLS, project or authentication change is required for the
+soft domain split. Supabase dashboard URL allowlists will need both origins
+before the business subdomain becomes active.
+
+## Batch 3 Deployment Preparation
+
+Optional public environment variables:
+
+```text
+NEXT_PUBLIC_CUSTOMER_APP_URL=https://mirebook.com
+NEXT_PUBLIC_BUSINESS_APP_URL=https://business.mirebook.com
+```
+
+These variables are not required for local development or the current Vercel
+URL. When they are absent:
+
+- customer links remain relative to `/`
+- the business homepage remains `/business`
+- business login and registration remain the existing shared `/login` and
+  `/register` routes with their product query parameters
+
+The URL helper also exposes hostname detection for future use. Batch 3 does
+not call it and does not redirect requests based on hostname.
+
+Future Vercel setup:
+
+1. Add `mirebook.com` to the current Vercel project.
+2. Add `business.mirebook.com` to the same project.
+3. Configure the required DNS records for both domains.
+4. Set `NEXT_PUBLIC_CUSTOMER_APP_URL` to `https://mirebook.com`.
+5. Set `NEXT_PUBLIC_BUSINESS_APP_URL` to
+   `https://business.mirebook.com`.
+6. Redeploy after the environment variables are saved.
+7. In a later routing batch, decide whether the business hostname root should
+   rewrite to `/business` or render the same page through middleware.
+
+Both domains should initially point to the same Vercel project, repository and
+Supabase backend. Separate deployments and separate codebases are not needed.
+
+Future Supabase Auth setup:
+
+- keep the existing Supabase project and schema
+- add both real origins to the allowed redirect URL configuration
+- review the primary Site URL when the production customer domain is active
+- allow login, registration verification and password reset callback URLs for
+  both customer and business domains
+- test login, registration, verification and reset flows from both domains
+  before enabling hostname-aware routing
+
+No Supabase schema, migration, RLS or authentication-resolution code change is
+required for this domain split.
+
+Recommended Batch 4:
+
+- audit the customer navigation, account and support surfaces
+- remove remaining business-operational wording from customer-owned pages
+- clarify shared account entry points without duplicating identity or auth

@@ -3,12 +3,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useI18n } from "@/lib/useI18n";
+import { getBusinessAppUrl } from "@/lib/appUrls";
 
 export default function Home() {
   const router = useRouter();
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
+  const businessHomeUrl = getBusinessAppUrl();
+  const businessLoginUrl = getBusinessAppUrl("/login?product=business");
 
   function searchBusinesses(e: React.FormEvent) {
     e.preventDefault();
@@ -59,8 +62,8 @@ export default function Home() {
             </form>
 
             <div className="home-cta-row">
-              <Link href="/register" className="btn btn-ghost">
-                {t("home.business.join", "List your business")}
+              <Link href={businessHomeUrl} className="btn btn-ghost">
+                {t("home.business.openBusiness", "Mirëbook Business")}
               </Link>
             </div>
 
@@ -106,11 +109,11 @@ export default function Home() {
             </div>
 
             <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href="/register" className="btn btn-accent">
-                {t("home.business.join")}
+              <Link href={businessHomeUrl} className="btn btn-accent">
+                {t("home.business.openBusiness", "Mirëbook Business")}
               </Link>
 
-              <Link href="/login" className="btn btn-ghost">
+              <Link href={businessLoginUrl} className="btn btn-ghost">
                 {t("home.business.login")}
               </Link>
             </div>
@@ -155,8 +158,8 @@ export default function Home() {
               {t("home.businesses.body")}
             </p>
             <div className="home-cta-row" style={{ marginBottom: 0 }}>
-              <Link href="/dashboard" className="btn btn-accent">
-                {t("home.businesses.dashboard")}
+              <Link href={businessHomeUrl} className="btn btn-accent">
+                {t("home.business.openBusiness", "Mirëbook Business")}
               </Link>
             </div>
           </div>
