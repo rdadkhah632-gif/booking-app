@@ -11,6 +11,9 @@ implemented. Production build and static checks passed.
 Batch 3 status: domain-aware URL helpers and deployment preparation
 implemented. Production build and static checks passed.
 
+Batch 4 status: business-domain root behavior and cross-domain QA hardening
+implemented. Production build, static checks and simulated hostname QA passed.
+
 Stages 1 through 5 remain complete or closed with tracked follow-ups. The
 earlier onboarding, email and launch-readiness work remains recorded in
 `sources/06_STAGE_ONBOARDING_VERIFICATION_EMAIL_LAUNCH_READINESS.md`; this
@@ -273,7 +276,7 @@ Do not regress:
 - separate authentication systems
 - native or mobile application code
 - route moves or breaking URL changes
-- subdomain or deployment routing
+- separate customer and business deployments
 - database or RLS changes
 - automatic owner-as-staff creation
 - booking, billing, admin, support, invite or email logic changes
@@ -352,7 +355,24 @@ Configured public origins are accepted only when they are valid HTTP or HTTPS
 URLs without embedded credentials. Invalid values fall back to the current
 same-origin route behavior.
 
-### Batch 4 - Customer Product Boundary
+### Batch 4 - Business Domain Root Behavior
+
+Implemented:
+
+- added a narrow root-only Next.js middleware rewrite
+- `business.mirebook.com/` internally renders the existing `/business` page
+- `mirebook.com/` continues to render the customer homepage
+- `/business` remains directly accessible on every connected hostname
+- localhost and ordinary Vercel preview roots remain unchanged
+- cross-product links continue to use the optional configured app origins
+- no visible redirect, route move or second deployment was introduced
+
+The middleware checks only `/` and uses
+`NEXT_PUBLIC_BUSINESS_APP_URL` as the authoritative hostname when configured.
+If that variable is absent, a guarded `business.*` hostname fallback is
+available, excluding `business.localhost`.
+
+### Batch 5 - Customer Product Boundary
 
 - audit customer navigation, support and account links
 - remove business-operational language from customer surfaces
@@ -365,20 +385,20 @@ Recommended next batch:
 - define how shared `/account` presents customer versus Mirëbook Business entry
   without creating separate identity systems
 
-### Batch 5 - Business Information Architecture
+### Batch 6 - Business Information Architecture
 
 - review dashboard navigation grouping for daily work versus setup
 - align owner and staff terminology around Home, Bookings, Calendar, Team and
   Settings
 - keep permissions and URLs unchanged
 
-### Batch 6 - Shared Domain And API Audit
+### Batch 7 - Shared Domain And API Audit
 
 - identify UI-coupled data access that future mobile clients cannot reuse
 - document candidate server endpoints and shared types
 - do not create a second backend or duplicate booking logic
 
-### Batch 7 - App-Readiness QA
+### Batch 8 - App-Readiness QA
 
 - verify customer, owner, owner-as-staff and staff-only journeys
 - verify product labels in EN and SQ
@@ -513,8 +533,72 @@ Future Supabase Auth setup:
 No Supabase schema, migration, RLS or authentication-resolution code change is
 required for this domain split.
 
-Recommended Batch 4:
+## Batch 4 Live Domain Setup And QA
 
-- audit the customer navigation, account and support surfaces
-- remove remaining business-operational wording from customer-owned pages
-- clarify shared account entry points without duplicating identity or auth
+The production domains have been prepared manually:
+
+- `mirebook.com` was purchased
+- Fasthosts is used for DNS and hostname configuration
+- `mirebook.com` and `business.mirebook.com` are connected to the same Vercel
+  project
+
+Expected root behavior:
+
+```text
+https://mirebook.com/ -> customer Mirëbook homepage
+https://business.mirebook.com/ -> Mirëbook Business homepage
+https://business.mirebook.com/business -> direct business homepage route
+```
+
+The business root uses an internal middleware rewrite to `/business`. The
+browser remains on `https://business.mirebook.com/`; there is no redirect
+chain. All other paths continue through the existing Pages Router unchanged.
+
+Required Vercel public environment variables:
+
+```text
+NEXT_PUBLIC_CUSTOMER_APP_URL=https://mirebook.com
+NEXT_PUBLIC_BUSINESS_APP_URL=https://business.mirebook.com
+```
+
+Both values must be available to the production deployment, followed by a
+redeploy. No secret values are introduced by these variables.
+
+Supabase Auth URL configuration to verify:
+
+```text
+https://mirebook.com/**
+https://www.mirebook.com/**
+https://business.mirebook.com/**
+https://booking-app-blush-nu.vercel.app/**
+http://localhost:3000/**
+http://localhost:3001/**
+```
+
+The production customer origin should also be reviewed as the Supabase Site
+URL. Login, registration, email verification and password reset should be
+tested from both production domains. No Supabase schema, migration, RLS or
+authentication-resolution code change is needed.
+
+Manual QA:
+
+1. Visit `https://mirebook.com/` and confirm the customer homepage.
+2. Visit `https://business.mirebook.com/` and confirm the business homepage.
+3. Visit `https://business.mirebook.com/business` directly.
+4. Visit `https://mirebook.com/explore`.
+5. Test login from both domains.
+6. Test registration from both domains.
+7. Open `/dashboard` from the business domain with an owner account.
+8. Open `/staff` from the business domain with a linked staff account.
+9. Complete a customer booking smoke test.
+10. Confirm admin, support and billing routes retain their current behavior.
+
+Customer homepage content is intentionally not broadly cleaned up in Batch 4.
+A later customer product-boundary batch should reduce remaining business SaaS
+messaging on customer-owned pages.
+
+Recommended Batch 5:
+
+- audit customer navigation, account and support entry points
+- reduce business-operational content on the customer homepage
+- preserve the shared identity and capability model
