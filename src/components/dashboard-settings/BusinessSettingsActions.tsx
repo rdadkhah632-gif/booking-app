@@ -1,17 +1,14 @@
-import Link from 'next/link'
 import { useI18n } from '@/lib/useI18n'
 import { Business } from './dashboardSettingsTypes'
 
 type Props = {
   selectedBusiness: Business | null
-  publicHref: string
   saving: boolean
   onSave: () => void
 }
 
 export default function BusinessSettingsActions({
   selectedBusiness,
-  publicHref,
   saving,
   onSave
 }: Props) {
@@ -19,23 +16,30 @@ export default function BusinessSettingsActions({
 
   return (
     <div className="settings-final-actions">
-      <Link href="/dashboard/businesses" className="btn btn-ghost">
-        {t('dashboardSettings.backToSetup', 'Back to setup hub')}
-      </Link>
-
-      {selectedBusiness && (
-        <Link href={publicHref} className="btn btn-ghost">
-          {t('account.publicPage', 'Public page')}
-        </Link>
-      )}
-
-      <Link href="/dashboard/notifications" className="btn btn-ghost">
-        {t('account.needsAction', 'Needs action')}
-      </Link>
-
       <button className="btn btn-accent" onClick={onSave} disabled={saving || !selectedBusiness}>
         {saving ? t('account.saving', 'Saving...') : t('dashboardSettings.saveMirebookSettings', 'Save Mirëbook settings')}
       </button>
+
+      <style jsx>{`
+        .settings-final-actions {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 1.5rem;
+          padding-top: 1.25rem;
+          border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 640px) {
+          .settings-final-actions,
+          .settings-final-actions :global(.btn) {
+            width: 100%;
+          }
+
+          .settings-final-actions :global(.btn) {
+            justify-content: center;
+          }
+        }
+      `}</style>
     </div>
   )
 }

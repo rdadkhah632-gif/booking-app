@@ -10,6 +10,10 @@ Batch 2 status: Mirëbook Business workspace simplification implemented.
 Production build, static validation and focused responsive QA must pass before
 Batch 2 is closed.
 
+Batch 2B status: Mirëbook Business workspace layout cleanup implemented.
+Production build and static validation pass. Authenticated desktop/mobile EN/SQ
+visual QA remains required before Batch 2B is closed.
+
 Stages 1 through 6 are complete and protected.
 
 ## Goal
@@ -434,6 +438,58 @@ Recommended next batch:
 - proceed with Batch 3 staff workspace and owner-as-staff simplification after
   focused desktop/mobile English/Albanian QA confirms the five-destination
   business shell, More hub and Team page have no Critical or High regression
+
+### Batch 2B - Mirëbook Business Workspace Layout Cleanup
+
+Implementation notes:
+
+- More is divided into Business setup, Business operations and Account and
+  billing sections instead of one dense undifferentiated tool block
+- each More destination has one title, one short description and one clear
+  action, with consistent card height, spacing and mobile stacking
+- the public page is available once in Business setup; owner personal work is
+  shown only when the owner has a linked staff profile
+- business booking settings no longer repeat Setup hub, Needs action, Billing
+  and Public page buttons above and below the form
+- the booking settings page has one save action, a simpler editor heading and
+  no repeated three-card settings summary
+- confirmation mode controls now own their dark-theme button styling and
+  accessible selected state inside the component that renders them
+- booking-rule selects and policy controls use dark surfaces and dark browser
+  color scheme without changing saved values
+- Team no longer stacks separate navigation and setup hero cards; it keeps the
+  staff creation flow, required service warning, staff list and one compact
+  owner-as-staff status row
+- Services opens directly into service creation and management without a
+  duplicate Team/Public page hero
+- Home keeps urgent guidance, booking summaries and the schedule, while
+  removing duplicate route shortcuts and the second readiness-summary strip
+- the shared business/staff workspace now uses a stable centered content width
+  and the explanatory sidebar box was removed
+
+Protected behavior:
+
+- no booking, settings-save, invitation, linking, owner-as-staff, billing,
+  route, auth, readiness, Stripe, Supabase or middleware logic changed
+- no existing route was removed
+
+Validation:
+
+- production build: pass
+- `git diff --check`: pass
+- EN/SQ duplicate translation key check: pass
+- Prettier: unavailable because it is not installed in this repository
+- authenticated desktop/mobile visual QA: pending because the local browser
+  session does not have an owner login
+
+Remaining follow-up:
+
+- run authenticated QA on the listed business routes in English and Albanian,
+  including approximately 390px mobile width, before closing Batch 2B
+
+Recommended next batch:
+
+- Stage 7 Batch 3 - Staff Workspace and Owner-as-Staff Simplification
 
 ### Batch 3 - Staff Workspace And Owner-As-Staff Simplification
 

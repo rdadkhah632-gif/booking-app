@@ -1,24 +1,17 @@
-import Link from 'next/link'
 import { useI18n } from '@/lib/useI18n'
 import { Business } from './dashboardSettingsTypes'
 
 type Props = {
   selectedBusiness: Business | null
-  publicHref: string
-  saving: boolean
-  onSave: () => void
 }
 
 export default function BusinessSettingsHeader({
-  selectedBusiness,
-  publicHref,
-  saving,
-  onSave
+  selectedBusiness
 }: Props) {
   const { t } = useI18n()
 
   return (
-    <div className="settings-hero card">
+    <div className="settings-editor-header">
       <div>
         <p className="small" style={{ color: 'var(--accent)' }}>
           {t('dashboardSettings.kicker', 'Business settings')}
@@ -35,29 +28,18 @@ export default function BusinessSettingsHeader({
         </p>
       </div>
 
-      <div className="settings-hero-actions">
-        <Link href="/dashboard/businesses" className="btn btn-ghost">
-          {t('dashboardSettings.setupHub', 'Setup hub')}
-        </Link>
+      <style jsx>{`
+        .settings-editor-header {
+          margin: 2rem 0 1rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid var(--border);
+        }
 
-        <Link href="/dashboard/notifications" className="btn btn-ghost">
-          {t('account.needsAction', 'Needs action')}
-        </Link>
-
-        <Link href="/dashboard/billing" className="btn btn-ghost">
-          {t('home.trust.billing', 'Billing')}
-        </Link>
-
-        {selectedBusiness && (
-          <Link href={publicHref} className="btn btn-ghost">
-            {t('account.publicPage', 'Public page')}
-          </Link>
-        )}
-
-        <button className="btn btn-accent" onClick={onSave} disabled={saving || !selectedBusiness}>
-          {saving ? t('account.saving', 'Saving...') : t('dashboardSettings.saveSettings', 'Save settings')}
-        </button>
-      </div>
+        .settings-editor-header h2,
+        .settings-editor-header p {
+          margin-bottom: 0;
+        }
+      `}</style>
     </div>
   )
 }

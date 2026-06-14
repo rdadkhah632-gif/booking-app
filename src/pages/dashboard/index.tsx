@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import DashboardSummaryCards from "@/components/dashboard-home/DashboardSummaryCards";
-import DashboardShortcuts from "@/components/dashboard-home/DashboardShortcuts";
 import SchedulePreviewCard from "@/components/dashboard-home/SchedulePreviewCard";
 import SetupGuidanceList from "@/components/dashboard-home/SetupGuidanceList";
 import {
@@ -625,8 +624,6 @@ export default function DashboardHome() {
 
       <SetupGuidanceList warnings={setupWarnings} />
 
-      {businesses.length > 0 && <DashboardShortcuts />}
-
       <DashboardSummaryCards
         todayCount={todayBookings.length}
         pendingActionCount={pendingActionCount}
@@ -635,57 +632,6 @@ export default function DashboardHome() {
         analytics={dashboardAnalytics}
         bookingsLinkForView={bookingsLinkForView}
       />
-
-      {businesses.length > 0 && (
-        <div className="dashboard-readiness-strip">
-          <div
-            className={
-              activeServices > 0
-                ? "dashboard-readiness-item ready"
-                : "dashboard-readiness-item"
-            }
-          >
-            <strong>{activeServices}</strong>
-            <span>
-              {t("dashboardHome.readiness.services", "active services")}
-            </span>
-          </div>
-          <div
-            className={
-              activeStaff > 0
-                ? "dashboard-readiness-item ready"
-                : "dashboard-readiness-item"
-            }
-          >
-            <strong>{activeStaff}</strong>
-            <span>{t("dashboardHome.readiness.staff", "active staff")}</span>
-          </div>
-          <div
-            className={
-              openWorkingDays > 0
-                ? "dashboard-readiness-item ready"
-                : "dashboard-readiness-item"
-            }
-          >
-            <strong>{openWorkingDays}</strong>
-            <span>
-              {t("dashboardHome.readiness.workingDays", "open working days")}
-            </span>
-          </div>
-          <div
-            className={
-              publishedCount > 0
-                ? "dashboard-readiness-item ready"
-                : "dashboard-readiness-item"
-            }
-          >
-            <strong>{publishedCount}</strong>
-            <span>
-              {t("dashboardHome.readiness.published", "published profiles")}
-            </span>
-          </div>
-        </div>
-      )}
 
       <SchedulePreviewCard
         scheduleDays={scheduleDays}
@@ -719,36 +665,6 @@ export default function DashboardHome() {
           align-items: center;
         }
 
-        .dashboard-readiness-strip {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 0.75rem;
-          margin: 0 0 1.25rem;
-        }
-
-        .dashboard-readiness-item {
-          border: 1px solid rgba(255, 190, 11, 0.28);
-          border-radius: 1rem;
-          padding: 0.9rem;
-          background: rgba(255, 190, 11, 0.06);
-          display: grid;
-          gap: 0.35rem;
-        }
-
-        .dashboard-readiness-item.ready {
-          border-color: rgba(45, 212, 191, 0.28);
-          background: rgba(45, 212, 191, 0.06);
-        }
-
-        .dashboard-readiness-item strong {
-          font-size: 1.25rem;
-        }
-
-        .dashboard-readiness-item span {
-          color: var(--text-muted);
-          font-size: 0.82rem;
-        }
-
         @media (max-width: 760px) {
           .dashboard-owner-command-card {
             display: grid;
@@ -758,16 +674,6 @@ export default function DashboardHome() {
           .dashboard-owner-command-actions :global(.btn) {
             width: 100%;
             justify-content: center;
-          }
-
-          .dashboard-readiness-strip {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-
-        @media (max-width: 480px) {
-          .dashboard-readiness-strip {
-            grid-template-columns: 1fr;
           }
         }
       `}</style>

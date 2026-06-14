@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 
-import StaffSetupHero from "@/components/dashboard-staff/StaffSetupHero";
 import CreateStaffCard from "@/components/dashboard-staff/CreateStaffCard";
 import StaffProfileCard from "@/components/dashboard-staff/StaffProfileCard";
 import {
@@ -808,41 +807,9 @@ export default function StaffPage() {
             </div>
           )}
 
-          <div className="card team-navigation-card">
-            <div>
-              <p className="small muted">
-                {t("dashboardStaff.teamTools.kicker", "Team setup")}
-              </p>
-              <h3>
-                {t(
-                  "dashboardStaff.teamTools.title",
-                  "Keep people, services and hours connected",
-                )}
-              </h3>
-              <p className="small muted">
-                {t(
-                  "dashboardStaff.teamTools.body",
-                  "Team members become bookable when they are active, assigned to services and have working hours.",
-                )}
-              </p>
-            </div>
-            <div className="team-navigation-actions">
-              <Link href="/dashboard/services" className="btn btn-ghost">
-                {t("dashboardServices.pageTitle", "Services")}
-              </Link>
-              <Link href="/dashboard/availability" className="btn btn-ghost">
-                {t(
-                  "dashboardStaff.teamTools.businessHours",
-                  "Business availability",
-                )}
-              </Link>
-            </div>
-          </div>
-
-          <StaffSetupHero business={business} />
           <div className="card staff-owner-note">
             <div className="staff-owner-note-copy">
-              <h3>
+              <strong>
                 {ownerStaffProfile
                   ? t(
                       "dashboardStaff.ownerAsStaff.linkedTitle",
@@ -852,29 +819,23 @@ export default function StaffPage() {
                       "dashboardStaff.ownerAsStaff.title",
                       "Only add people who can be booked by customers",
                     )}
-              </h3>
+              </strong>
               <p className="small muted">
                 {ownerStaffProfile
                   ? t(
-                      "dashboardStaff.ownerAsStaff.linkedBody",
-                      "This owner account is linked to a staff profile, so the owner can manage the business and also use the staff workspace for their own appointments.",
+                      "dashboardStaff.ownerAsStaff.linkedBodyCompact",
+                      "Your owner account is also bookable and has a personal staff workspace.",
                     )
                   : t(
-                      "dashboardStaff.ownerAsStaff.body",
-                      "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only. Deactivating a staff profile hides it from new bookings but does not delete the personal account.",
+                      "dashboardStaff.ownerAsStaff.bodyCompact",
+                      "Owners only need a staff profile when customers should book them directly.",
                     )}
               </p>
             </div>
             {ownerStaffProfile && (
               <div className="staff-owner-note-actions">
                 <Link href="/staff" className="btn btn-ghost">
-                  {t("staff.pageTitle", "Staff workspace")}
-                </Link>
-                <Link
-                  href={`/dashboard/availability?businessId=${ownerStaffProfile.business_id}&staffId=${ownerStaffProfile.id}`}
-                  className="btn btn-ghost"
-                >
-                  {t("staff.actions.updateAvailability", "Update availability")}
+                  {t("dashboardSettings.more.myWork", "My staff work")}
                 </Link>
               </div>
             )}
@@ -996,36 +957,15 @@ export default function StaffPage() {
           border-color: rgba(45, 212, 191, 0.24);
         }
 
-        .team-navigation-card {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .team-navigation-card h3,
-        .team-navigation-card p {
-          margin-top: 0;
-        }
-
-        .team-navigation-actions {
-          display: flex;
-          gap: 0.65rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
         .staff-owner-note-copy {
           flex: 1;
           min-width: 260px;
           display: grid;
-          gap: 0.45rem;
+          gap: 0.25rem;
         }
 
-        .staff-owner-note-copy h3,
         .staff-owner-note-copy p {
-          margin-top: 0;
+          margin: 0;
         }
 
         .staff-owner-note-actions {
@@ -1063,14 +1003,11 @@ export default function StaffPage() {
         }
 
         @media (max-width: 700px) {
-          .team-navigation-card,
           .staff-owner-note,
           .staff-owner-note-actions {
             display: grid;
           }
 
-          .team-navigation-actions,
-          .team-navigation-actions :global(.btn),
           .staff-owner-note-actions,
           .staff-owner-note-actions :global(.btn) {
             width: 100%;

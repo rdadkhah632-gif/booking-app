@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import { uploadMirebookImage } from "@/lib/imageUpload";
-import ServicesSetupHero from "@/components/dashboard-services/ServicesSetupHero";
 import CreateServiceCard from "@/components/dashboard-services/CreateServiceCard";
 import ServiceCard from "@/components/dashboard-services/ServiceCard";
 import {
@@ -574,8 +573,6 @@ export default function Services() {
               </p>
             </div>
           )}
-          <ServicesSetupHero business={business} />
-
           <CreateServiceCard
             formExpanded={formExpanded}
             loading={loading}

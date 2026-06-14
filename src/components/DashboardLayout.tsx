@@ -249,39 +249,31 @@ export default function DashboardLayout({
             </div>
           )}
 
-          {!isStaffOnlyWorkspace && (
-            <div className="sidebar-business-note">
-              <span>
-                {t(
-                  "dashboardLayout.moreHint",
-                  "Setup, availability, notifications, analytics, billing and account tools are under More.",
-                )}
-              </span>
-            </div>
-          )}
         </nav>
       </aside>
 
       <section className="dashboard-main">
-        <div className="dashboard-page-header">
-          <div>
-            {title && (
-              <h1
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "2rem",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                {title}
-              </h1>
-            )}
+        <div className="dashboard-content">
+          <div className="dashboard-page-header">
+            <div>
+              {title && (
+                <h1
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "2rem",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  {title}
+                </h1>
+              )}
 
-            {subtitle && <p className="muted">{subtitle}</p>}
+              {subtitle && <p className="muted">{subtitle}</p>}
+            </div>
           </div>
-        </div>
 
-        {children}
+          {children}
+        </div>
       </section>
       <style jsx>{`
         .sidebar-nav {
@@ -387,14 +379,9 @@ export default function DashboardLayout({
           background: rgba(255, 107, 53, 0.16);
         }
 
-        .sidebar-business-note {
-          margin-top: 1rem;
-          padding: 0.85rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          color: var(--text-muted);
-          font-size: 0.76rem;
-          line-height: 1.45;
+        .dashboard-content {
+          width: min(100%, 1320px);
+          margin: 0 auto;
         }
 
         .dashboard-page-header {
@@ -418,8 +405,7 @@ export default function DashboardLayout({
             display: contents;
           }
 
-          .sidebar-section-label,
-          .sidebar-business-note {
+          .sidebar-section-label {
             display: none;
           }
 
@@ -460,8 +446,7 @@ export default function DashboardLayout({
             display: contents;
           }
 
-          .sidebar-section-label,
-          .sidebar-business-note {
+          .sidebar-section-label {
             display: none;
           }
 

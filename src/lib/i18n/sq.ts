@@ -854,6 +854,20 @@ export const sq: TranslationTree = {
     "Puna ditore qëndron te Kryefaqja, Rezervimet, Shërbimet dhe Ekipi. Përdor këto mjete dytësore kur duhet të ndryshosh konfigurimin ose të shikosh llogarinë.",
   "dashboardSettings.more.setupBody":
     "Menaxho profilin publik, gatishmërinë dhe publikimin.",
+  "dashboardSettings.more.setupTitle": "Konfigurimi i biznesit",
+  "dashboardSettings.more.setupSectionBody":
+    "Menaxho profilin dhe oraret që klientët përdorin gjatë rezervimit.",
+  "dashboardSettings.more.publicPageBody":
+    "Shiko profilin dhe rrjedhën e rezervimit që shohin klientët.",
+  "dashboardSettings.more.operationsTitle": "Operacionet e biznesit",
+  "dashboardSettings.more.operationsBody":
+    "Shiko përditësimet dhe performancën jashtë punës së përditshme me rezervimet.",
+  "dashboardSettings.more.myWork": "Puna ime si staf",
+  "dashboardSettings.more.myWorkBody":
+    "Hap orarin personal dhe disponueshmërinë tënde si staf.",
+  "dashboardSettings.more.accountTitle": "Llogaria dhe faturimi",
+  "dashboardSettings.more.accountSectionBody":
+    "Menaxho abonimin, llogarinë personale dhe ndihmën.",
   "dashboardSettings.more.notifications": "Njoftimet e biznesit",
   "dashboardSettings.more.notificationsBody":
     "Shiko përditësimet e biznesit, pastaj përdor Rezervimet për veprimet e takimeve.",
@@ -2230,6 +2244,8 @@ export const sq: TranslationTree = {
     "Shto vetëm personat që mund të rezervohen nga klientët",
   "dashboardStaff.ownerAsStaff.body":
     "Pronarët e biznesit mund ta menaxhojnë biznesin pa qenë staf i rezervueshëm. Nëse pronari merr edhe takime, shtoje ose lidhe si anëtar stafi, cakto shërbimet dhe më pas vendos orarin. Nëse vetëm menaxhon biznesin, lëre vetëm si pronar.",
+  "dashboardStaff.ownerAsStaff.bodyCompact":
+    "Pronarët kanë nevojë për profil stafi vetëm kur klientët duhet t'i rezervojnë drejtpërdrejt.",
   "nav.role.operator": "Operator",
   "nav.role.business": "Biznes",
   "nav.role.staff": "Staf",
@@ -2830,6 +2846,8 @@ export const sq: TranslationTree = {
     "Pronari është konfiguruar edhe si staf i rezervueshëm",
   "dashboardStaff.ownerAsStaff.linkedBody":
     "Kjo llogari pronari është e lidhur me një profil stafi, kështu pronari mund të menaxhojë biznesin dhe të përdorë edhe hapësirën e stafit për takimet e veta.",
+  "dashboardStaff.ownerAsStaff.linkedBodyCompact":
+    "Llogaria jote e pronarit është gjithashtu e rezervueshme dhe ka një hapësirë personale stafi.",
   "dashboardStaff.ownerAsStaff.confirmDeactivateSelf":
     "Ky profil stafi është i lidhur me llogarinë tënde. Çaktivizimi nuk do të heqë aksesin tënd si pronar biznesi, por do ta ndalojë këtë profil stafi të shfaqet si i rezervueshëm për takime të reja. Të vazhdohet?",
 

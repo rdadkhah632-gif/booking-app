@@ -802,6 +802,20 @@ export const en: TranslationTree = {
     "Daily work stays in Home, Bookings, Services and Team. Use these secondary tools when you need to change setup or review account details.",
   "dashboardSettings.more.setupBody":
     "Manage the public profile, readiness and publishing.",
+  "dashboardSettings.more.setupTitle": "Business setup",
+  "dashboardSettings.more.setupSectionBody":
+    "Manage the profile and hours customers use when booking.",
+  "dashboardSettings.more.publicPageBody":
+    "Preview the profile and booking journey customers see.",
+  "dashboardSettings.more.operationsTitle": "Business operations",
+  "dashboardSettings.more.operationsBody":
+    "Review updates and performance outside daily booking work.",
+  "dashboardSettings.more.myWork": "My staff work",
+  "dashboardSettings.more.myWorkBody":
+    "Open your personal schedule and staff availability.",
+  "dashboardSettings.more.accountTitle": "Account and billing",
+  "dashboardSettings.more.accountSectionBody":
+    "Manage the subscription, personal account and support.",
   "dashboardSettings.more.notifications": "Business notifications",
   "dashboardSettings.more.notificationsBody":
     "Review business updates, then use Bookings for appointment actions.",
@@ -2134,6 +2148,8 @@ export const en: TranslationTree = {
     "Only add people who can be booked by customers",
   "dashboardStaff.ownerAsStaff.body":
     "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.",
+  "dashboardStaff.ownerAsStaff.bodyCompact":
+    "Owners only need a staff profile when customers should book them directly.",
   "nav.role.operator": "Operator",
   "nav.role.business": "Business",
   "nav.role.staff": "Staff",
@@ -2781,6 +2797,8 @@ export const en: TranslationTree = {
     "Owner is also set up as bookable staff",
   "dashboardStaff.ownerAsStaff.linkedBody":
     "This owner account is linked to a staff profile, so the owner can manage the business and also use the staff workspace for their own appointments.",
+  "dashboardStaff.ownerAsStaff.linkedBodyCompact":
+    "Your owner account is also bookable and has a personal staff workspace.",
   "dashboardStaff.ownerAsStaff.confirmDeactivateSelf":
     "This staff profile is linked to your own account. Deactivating it will not remove your business owner access, but it will stop this staff profile from appearing as bookable for new appointments. Continue?",
 

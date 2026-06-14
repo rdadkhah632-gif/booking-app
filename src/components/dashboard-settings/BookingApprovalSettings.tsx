@@ -30,11 +30,20 @@ export default function BookingApprovalSettings({
         </p>
       </div>
 
-      <div className="settings-mode-grid" role="radiogroup" aria-label="Booking confirmation mode">
+      <div
+        className="settings-mode-grid"
+        role="radiogroup"
+        aria-label={t(
+          'dashboardSettings.approval.title',
+          'Confirmation mode'
+        )}
+      >
         <button
           type="button"
           className={settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
           onClick={() => updateSetting('auto_accept_bookings', true)}
+          role="radio"
+          aria-checked={Boolean(settings.auto_accept_bookings)}
         >
           <span className="settings-mode-title">
             {t('dashboardSettings.approval.instantTitle', 'Instant confirmation')}
@@ -48,6 +57,8 @@ export default function BookingApprovalSettings({
           type="button"
           className={!settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
           onClick={() => updateSetting('auto_accept_bookings', false)}
+          role="radio"
+          aria-checked={!settings.auto_accept_bookings}
         >
           <span className="settings-mode-title">
             {t('dashboardSettings.approval.manualTitle', 'Manual approval')}
@@ -64,6 +75,64 @@ export default function BookingApprovalSettings({
         </p>
         <strong>{approvalModeLabel}</strong>
       </div>
+
+      <style jsx>{`
+        .settings-mode-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.85rem;
+        }
+
+        .settings-mode-card {
+          display: grid;
+          gap: 0.55rem;
+          min-height: 7.5rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          font: inherit;
+          text-align: left;
+          cursor: pointer;
+          appearance: none;
+        }
+
+        .settings-mode-card:hover {
+          border-color: rgba(255, 107, 53, 0.38);
+        }
+
+        .settings-mode-card-active {
+          border-color: var(--accent);
+          background: var(--accent-dim);
+          box-shadow: inset 3px 0 0 var(--accent);
+        }
+
+        .settings-mode-title {
+          color: var(--text);
+          font-size: 1rem;
+          font-weight: 800;
+        }
+
+        .settings-current-mode {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          padding: 0.8rem 0;
+          border-top: 1px solid var(--border);
+        }
+
+        .settings-current-mode p {
+          margin: 0;
+        }
+
+        @media (max-width: 640px) {
+          .settings-mode-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   )
 }

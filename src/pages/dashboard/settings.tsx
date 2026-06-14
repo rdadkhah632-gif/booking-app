@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import BusinessSettingsActions from "@/components/dashboard-settings/BusinessSettingsActions";
 import BusinessSettingsHeader from "@/components/dashboard-settings/BusinessSettingsHeader";
-import BusinessSettingsSummary from "@/components/dashboard-settings/BusinessSettingsSummary";
 import BookingApprovalSettings from "@/components/dashboard-settings/BookingApprovalSettings";
 import BookingRuleSettings from "@/components/dashboard-settings/BookingRuleSettings";
 import PolicySettings from "@/components/dashboard-settings/PolicySettings";
@@ -38,27 +37,6 @@ export default function DashboardSettingsPage() {
   const ownerIsBookableStaff = selectedBusinessId
     ? ownerStaffBusinessIds.includes(selectedBusinessId)
     : false;
-
-  const settingsReadyScore = useMemo(() => {
-    if (!settings) return 0;
-
-    const checks = [
-      Boolean(settings.booking_interval_minutes),
-      settings.min_notice_minutes !== null &&
-        settings.min_notice_minutes !== undefined,
-      Boolean(settings.max_advance_days),
-      settings.buffer_before_minutes !== null &&
-        settings.buffer_before_minutes !== undefined,
-      settings.buffer_after_minutes !== null &&
-        settings.buffer_after_minutes !== undefined,
-      Boolean(settings.cancellation_policy?.trim()),
-      Boolean(settings.reschedule_policy?.trim()),
-      Boolean(settings.timezone),
-      Boolean(settings.currency),
-    ];
-
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-  }, [settings]);
 
   const selectedBusinessPublicHref = settings
     ? `/explore/${settings.id}`
@@ -224,16 +202,6 @@ export default function DashboardSettingsPage() {
     await loadSettings();
   }
 
-  function settingSummary() {
-    if (!settings)
-      return t(
-        "dashboardSettings.chooseBusiness",
-        "Choose a business to manage its booking settings.",
-      );
-
-    return `${approvalModeLabel} · ${settings.booking_interval_minutes || 30} ${t("dashboardSettings.summary.minuteSlots", "minute slots")} · ${settings.min_notice_minutes || 0} ${t("dashboardSettings.summary.minuteNotice", "minute notice")} · ${settings.max_advance_days || 60} ${t("dashboardSettings.summary.daysAhead", "days ahead")}`;
-  }
-
   async function logout() {
     await supabase.auth.signOut();
     router.replace("/");
@@ -259,183 +227,205 @@ export default function DashboardSettingsPage() {
       )}
 
       {!loading && (
-        <div className="card settings-tools-card">
-          <div>
-            <p className="small muted">
-              {t("dashboardSettings.more.kicker", "More")}
-            </p>
-            <h2>
-              {t(
-                "dashboardSettings.more.title",
-                "Business setup and account tools",
-              )}
-            </h2>
-            <p className="small muted" style={{ marginTop: "0.35rem" }}>
-              {t(
-                "dashboardSettings.more.body",
-                "Daily work stays in Home, Bookings, Services and Team. Use these secondary tools when you need to change setup or review account details.",
-              )}
-            </p>
-          </div>
+        <div className="more-sections">
+          <section className="more-section">
+            <div className="more-section-heading">
+              <h2>
+                {t("dashboardSettings.more.setupTitle", "Business setup")}
+              </h2>
+              <p className="small muted">
+                {t(
+                  "dashboardSettings.more.setupSectionBody",
+                  "Manage the profile and hours customers use when booking.",
+                )}
+              </p>
+            </div>
+            <div className="settings-tools-grid">
+              <Link href="/dashboard/businesses" className="settings-tool-link">
+                <strong>
+                  {t("dashboardLayout.nav.setupHub", "Business setup hub")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.more.setupBody",
+                    "Manage the public profile, readiness and publishing.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+              <Link
+                href="/dashboard/availability"
+                className="settings-tool-link"
+              >
+                <strong>
+                  {t("dashboardSettings.tools.availability", "Availability")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.tools.availabilityBody",
+                    "Set business-wide opening days and hours.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+              <Link
+                href={selectedBusinessPublicHref}
+                className="settings-tool-link"
+              >
+                <strong>{t("account.publicPage", "Public page")}</strong>
+                <span>
+                  {t(
+                    "dashboardSettings.more.publicPageBody",
+                    "Preview the profile and booking journey customers see.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+            </div>
+          </section>
 
-          <div className="settings-tools-grid">
-            <Link href="/dashboard/businesses" className="settings-tool-link">
-              <strong>
-                {t("dashboardLayout.nav.setupHub", "Business setup hub")}
-              </strong>
-              <span>
+          <section className="more-section">
+            <div className="more-section-heading">
+              <h2>
                 {t(
-                  "dashboardSettings.more.setupBody",
-                  "Manage the public profile, readiness and publishing.",
+                  "dashboardSettings.more.operationsTitle",
+                  "Business operations",
                 )}
-              </span>
-            </Link>
-
-            <Link
-              href="/dashboard/availability"
-              className="settings-tool-link"
-            >
-              <strong>
-                {t("dashboardSettings.tools.availability", "Availability")}
-              </strong>
-              <span>
+              </h2>
+              <p className="small muted">
                 {t(
-                  "dashboardSettings.tools.availabilityBody",
-                  "Set business-wide opening days and hours.",
+                  "dashboardSettings.more.operationsBody",
+                  "Review updates and performance outside daily booking work.",
                 )}
-              </span>
-            </Link>
-
-            <Link
-              href="/dashboard/notifications"
-              className="settings-tool-link"
-            >
-              <strong>
-                {t(
-                  "dashboardSettings.more.notifications",
-                  "Business notifications",
-                )}
-              </strong>
-              <span>
-                {t(
-                  "dashboardSettings.more.notificationsBody",
-                  "Review business updates, then use Bookings for appointment actions.",
-                )}
-              </span>
-            </Link>
-
-            <Link href="/dashboard/analytics" className="settings-tool-link">
-              <strong>
-                {t("dashboardHome.viewAnalytics", "Analytics")}
-              </strong>
-              <span>
-                {t(
-                  "dashboardSettings.more.analyticsBody",
-                  "Review booking activity and service trends.",
-                )}
-              </span>
-            </Link>
-
-            <Link href="/dashboard/billing" className="settings-tool-link">
-              <strong>
-                {t("dashboardSettings.tools.billing", "Billing")}
-              </strong>
-              <span>
-                {t(
-                  "dashboardSettings.tools.billingBody",
-                  "View plan, trial and payment settings.",
-                )}
-              </span>
-            </Link>
-
-            <Link
-              href="/staff"
-              className="settings-tool-link settings-tool-link-owner"
-            >
-              <strong>
-                {t(
-                  "dashboardSettings.tools.ownerBooking",
-                  "Owner booking status",
-                )}
-              </strong>
-              <span>
-                {ownerIsBookableStaff
-                  ? t(
-                      "dashboardSettings.tools.ownerBookingLinkedBody",
-                      "You are set up as bookable staff. Manage your personal schedule and availability.",
-                    )
-                  : t(
-                      "dashboardSettings.tools.ownerBookingBody",
-                      "Set yourself up as bookable staff only if customers should book appointments directly with you.",
+              </p>
+            </div>
+            <div className="settings-tools-grid">
+              <Link
+                href="/dashboard/notifications"
+                className="settings-tool-link"
+              >
+                <strong>
+                  {t(
+                    "dashboardSettings.more.notifications",
+                    "Business notifications",
+                  )}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.more.notificationsBody",
+                    "Review business updates, then use Bookings for appointment actions.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+              <Link href="/dashboard/analytics" className="settings-tool-link">
+                <strong>{t("dashboardHome.viewAnalytics", "Analytics")}</strong>
+                <span>
+                  {t(
+                    "dashboardSettings.more.analyticsBody",
+                    "Review booking activity and service trends.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+              {ownerIsBookableStaff && (
+                <Link
+                  href="/staff"
+                  className="settings-tool-link settings-tool-link-owner"
+                >
+                  <strong>
+                    {t("dashboardSettings.more.myWork", "My staff work")}
+                  </strong>
+                  <span>
+                    {t(
+                      "dashboardSettings.more.myWorkBody",
+                      "Open your personal schedule and staff availability.",
                     )}
-              </span>
-            </Link>
+                  </span>
+                  <em>{t("common.open", "Open")}</em>
+                </Link>
+              )}
+            </div>
+          </section>
 
-            <Link href="/support/business" className="settings-tool-link">
-              <strong>
-                {t("dashboardSettings.tools.support", "Business support")}
-              </strong>
-              <span>
+          <section className="more-section">
+            <div className="more-section-heading">
+              <h2>
                 {t(
-                  "dashboardSettings.tools.supportBody",
-                  "Get help with setup, bookings or account changes.",
+                  "dashboardSettings.more.accountTitle",
+                  "Account and billing",
                 )}
-              </span>
-            </Link>
-
-            <Link href="/account" className="settings-tool-link">
-              <strong>
-                {t("dashboardLayout.nav.accountSettings", "My account")}
-              </strong>
-              <span>
+              </h2>
+              <p className="small muted">
                 {t(
-                  "dashboardSettings.more.accountBody",
-                  "Manage personal details, language, security and email preferences.",
+                  "dashboardSettings.more.accountSectionBody",
+                  "Manage the subscription, personal account and support.",
                 )}
-              </span>
-            </Link>
-
-            <button
-              type="button"
-              className="settings-tool-link settings-tool-button"
-              onClick={logout}
-            >
-              <strong>{t("auth.logout", "Log out")}</strong>
-              <span>
-                {t(
-                  "dashboardSettings.more.logoutBody",
-                  "End this Mirëbook Business session on this device.",
-                )}
-              </span>
-            </button>
-          </div>
+              </p>
+            </div>
+            <div className="settings-tools-grid">
+              <Link href="/dashboard/billing" className="settings-tool-link">
+                <strong>
+                  {t("dashboardSettings.tools.billing", "Billing")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.tools.billingBody",
+                    "View plan, trial and payment settings.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+              <Link href="/account" className="settings-tool-link">
+                <strong>
+                  {t("dashboardLayout.nav.accountSettings", "My account")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.more.accountBody",
+                    "Manage personal details, language, security and email preferences.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+              <Link href="/support/business" className="settings-tool-link">
+                <strong>
+                  {t("dashboardSettings.tools.support", "Business support")}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardSettings.tools.supportBody",
+                    "Get help with setup, bookings or account changes.",
+                  )}
+                </span>
+                <em>{t("common.open", "Open")}</em>
+              </Link>
+              <button
+                type="button"
+                className="settings-tool-link settings-tool-button"
+                onClick={logout}
+              >
+                <strong>{t("auth.logout", "Log out")}</strong>
+                <span>
+                  {t(
+                    "dashboardSettings.more.logoutBody",
+                    "End this Mirëbook Business session on this device.",
+                  )}
+                </span>
+                <em>{t("auth.logout", "Log out")}</em>
+              </button>
+            </div>
+          </section>
         </div>
       )}
 
       {!loading && businesses.length === 0 && (
-        <div className="card">
-          <p className="small" style={{ color: "var(--warning)" }}>
-            {t("dashboardSettings.empty.kicker", "No business profile found")}
-          </p>
-          <h2
-            style={{ fontFamily: "var(--font-display)", marginTop: "0.35rem" }}
-          >
-            {t("dashboardSettings.empty.title", "Create a business first")}
-          </h2>
-          <p className="muted" style={{ marginTop: "0.5rem" }}>
-            {t(
-              "dashboardSettings.empty.body",
-              "Business settings become available after you create a Mirëbook business profile.",
-            )}
-          </p>
-          <Link
-            href="/dashboard/businesses"
-            className="btn btn-accent"
-            style={{ marginTop: "1rem" }}
-          >
-            {t("dashboardSettings.setupHub", "Open setup hub")}
-          </Link>
-        </div>
+        <p className="more-inline-notice">
+          {t(
+            "dashboardSettings.empty.body",
+            "Business settings become available after you create a Mirëbook business profile.",
+          )}
+        </p>
       )}
 
       {!loading && businesses.length > 0 && settings && (
@@ -465,20 +455,7 @@ export default function DashboardSettingsPage() {
             </div>
           )}
 
-          <BusinessSettingsHeader
-            selectedBusiness={selectedBusiness}
-            publicHref={selectedBusinessPublicHref}
-            saving={saving}
-            onSave={saveSettings}
-          />
-
-          <BusinessSettingsSummary
-            selectedBusiness={selectedBusiness}
-            settings={settings}
-            settingsReadyScore={settingsReadyScore}
-            approvalModeLabel={approvalModeLabel}
-            settingSummary={settingSummary()}
-          />
+          <BusinessSettingsHeader selectedBusiness={selectedBusiness} />
 
           {businesses.length > 1 && (
             <div
@@ -531,7 +508,6 @@ export default function DashboardSettingsPage() {
 
           <BusinessSettingsActions
             selectedBusiness={selectedBusiness}
-            publicHref={selectedBusinessPublicHref}
             saving={saving}
             onSave={saveSettings}
           />
@@ -548,51 +524,60 @@ export default function DashboardSettingsPage() {
           font-family: var(--font-display);
           margin-top: 0;
         }
-        .settings-hero {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
-          margin-bottom: 1.5rem;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 107, 53, 0.12),
-            rgba(45, 212, 191, 0.08)
-          );
-          border-color: rgba(255, 107, 53, 0.25);
-        }
-
-        .settings-hero-actions,
-        .settings-final-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .settings-tools-card {
+        .more-sections {
           display: grid;
-          gap: 1rem;
-          margin: 1rem 0;
+          gap: 2rem;
+          margin-bottom: 2rem;
+        }
+
+        .more-section {
+          display: grid;
+          gap: 0.9rem;
+        }
+
+        .more-section + .more-section {
+          padding-top: 1.5rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .more-section-heading {
+          display: grid;
+          gap: 0.3rem;
+        }
+
+        .more-section-heading h2,
+        .more-section-heading p {
+          margin: 0;
+        }
+
+        .more-inline-notice {
+          margin: -0.75rem 0 1.5rem;
+          color: var(--text-muted);
+          font-size: 0.9rem;
         }
 
         .settings-tools-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.75rem;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1rem;
         }
 
         .settings-tool-link {
           display: grid;
-          gap: 0.35rem;
-          padding: 1rem;
+          grid-template-rows: auto 1fr auto;
+          gap: 0.65rem;
+          min-height: 10rem;
+          padding: 1.1rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          background: var(--surface-2);
+          background: var(--surface);
           color: var(--text);
           text-decoration: none;
           text-align: left;
+        }
+
+        .settings-tool-link:hover {
+          border-color: rgba(255, 107, 53, 0.35);
         }
 
         .settings-tool-button {
@@ -609,7 +594,14 @@ export default function DashboardSettingsPage() {
         .settings-tool-link span {
           color: var(--text-muted);
           font-size: 0.85rem;
-          line-height: 1.4;
+          line-height: 1.5;
+        }
+
+        .settings-tool-link em {
+          color: var(--accent);
+          font-size: 0.82rem;
+          font-style: normal;
+          font-weight: 800;
         }
 
         .settings-grid {
@@ -618,81 +610,49 @@ export default function DashboardSettingsPage() {
           gap: 1rem;
         }
 
-        .settings-card {
+        :global(.settings-card) {
           display: grid;
           gap: 1rem;
           align-content: start;
         }
 
-        .settings-two-column {
+        :global(.settings-card h2),
+        :global(.settings-card p) {
+          margin-bottom: 0;
+        }
+
+        :global(.settings-two-column) {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
           gap: 0.75rem;
         }
 
-        .settings-approval-card {
+        :global(.settings-approval-card) {
           grid-column: 1 / -1;
         }
 
-        .settings-mode-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 0.85rem;
-        }
-
-        .settings-mode-card {
-          display: grid;
-          gap: 0.45rem;
-          text-align: left;
+        :global(.settings-card select),
+        :global(.settings-card textarea) {
+          width: 100%;
           border: 1px solid var(--border);
           background: var(--surface-2);
           color: var(--text);
           border-radius: var(--radius);
-          padding: 1rem;
-          min-height: 130px;
+          color-scheme: dark;
         }
 
-        .settings-mode-card-active {
-          border-color: rgba(255, 107, 53, 0.45);
-          background: var(--accent-dim);
-        }
-
-        .settings-mode-title {
-          font-weight: 800;
-          font-size: 1rem;
-        }
-
-        .settings-current-mode {
-          background: var(--surface-2);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 0.85rem;
-        }
-
-        .settings-final-actions {
-          margin-top: 1.5rem;
-          justify-content: flex-start;
+        :global(.settings-card select) {
+          min-height: 2.75rem;
+          padding: 0.65rem 0.75rem;
         }
 
         @media (max-width: 640px) {
-          .settings-hero,
-          .settings-final-actions,
-          .settings-mode-grid,
           .settings-tools-grid {
-            display: grid;
             grid-template-columns: 1fr;
           }
 
-          .settings-hero-actions,
-          .settings-final-actions,
-          .settings-hero-actions :global(.btn),
-          .settings-final-actions :global(.btn),
-          .settings-hero-actions button,
-          .settings-final-actions button,
-          .settings-hero-actions a,
-          .settings-final-actions a {
-            width: 100%;
-            justify-content: center;
+          .settings-tool-link {
+            min-height: 0;
           }
         }
       `}</style>
