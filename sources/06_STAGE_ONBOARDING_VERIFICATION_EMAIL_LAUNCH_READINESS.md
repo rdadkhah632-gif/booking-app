@@ -711,6 +711,7 @@ exact-email linking flow remains available.
 | Customer booking request/instant booking created | Wired to provider-neutral adapter |
 | Customer confirmed/declined/cancelled/completed update | Wired |
 | Business new request/instant confirmation | Wired |
+| Business customer-cancellation notice | Wired and preference-aware |
 | Staff assigned/confirmed/cancelled/declined update | Wired |
 | Customer 24-hour appointment reminder | Implemented, secret-protected and scheduler-ready |
 | Staff invite | Secure link and template wired; optional SQL required |
@@ -1015,6 +1016,80 @@ change Stripe or billing automatically.
 - confirm Stage 1 role routing and staff linking remain unchanged
 
 Automated Batch 3/4 verification:
+
+- `npm run build`: passed
+- `git diff --check`: passed
+- EN and SQ translation dictionaries contain no duplicate keys
+- Prettier is unavailable in the local workspace
+
+## Batch 7D - Closure Hardening Patch
+
+Status: implemented; production build and static checks passed. Ready for
+browser closure QA.
+
+The closure audit identified no Critical issue and one booking-state integrity
+issue. This patch keeps the existing Stage 1-6 architecture intact while
+hardening the affected edges:
+
+- customer cancellation now requires the authenticated customer, the matching
+  `customer_user_id` and a current `pending` or `confirmed` status
+- stale customer cancellation attempts return a translated status-changed
+  message instead of overwriting a finalized booking
+- successful customer cancellation requests a dedicated authenticated
+  business-owner email event after the booking and in-app notification writes
+- the cancellation email is sent only to the stored business owner, respects
+  `email_customer_cancellations` and cannot be used as an arbitrary-recipient
+  endpoint
+- staff invite resend stops before creating a new token if revoking existing
+  unused tokens fails
+- staff invite acceptance checks the token-finalization write and attempts to
+  roll back a newly created staff link if finalization fails
+- login and registration use a shared internal-redirect validator that rejects
+  protocol-relative, external, backslash and malformed redirects
+- Login verification resend preserves a valid staff invite return path
+- server-generated staff invite, support, booking and reminder links require a
+  valid production `NEXT_PUBLIC_APP_URL`; development may still use localhost
+- missing or invalid production application URL reports `config_missing` or a
+  setup response without claiming an email was sent
+- Resend requests use a ten-second `AbortController` timeout and retain the
+  existing safe `provider_error` result
+
+No booking creation, slot generation, role routing, Stripe, support-table or
+RLS architecture was changed.
+
+### Batch 7D Tracked Follow-Ups
+
+- reminder delivery claims can still remain `processing` if provider
+  acceptance succeeds but the subsequent database update fails; stale-claim
+  recovery should be added with a deliberate retry policy rather than a risky
+  closure patch
+- support privacy passed static route and client review, but live Supabase RLS
+  verification remains required during browser QA
+- foundational `support_messages`, `support_replies`, `profiles` and
+  notification RLS definitions are not fully versioned under the current
+  Stage 6 SQL files, so local inspection cannot prove live policy behavior
+- reschedule-specific transactional email and broad reschedule translation
+  remain outside this patch
+
+### Batch 7D Browser QA
+
+- attempt customer cancellation from a stale page after the business completes
+  or cancels the booking and confirm the finalized status is preserved
+- cancel pending and confirmed customer bookings and confirm the business
+  receives its in-app notification and, when enabled, its cancellation email
+- disable the business cancellation preference and confirm email is skipped
+- resend a staff invite and confirm the older unused link is rejected
+- simulate invite-token update failure in a non-production environment and
+  confirm no success state is shown
+- test `//example.com`, backslash, external-scheme and valid internal login
+  redirects
+- resend verification from an invited-staff login and confirm the invite return
+  path survives
+- remove `NEXT_PUBLIC_APP_URL` in a non-production deployment configured as
+  production and confirm no email contains a localhost link
+- verify customer and admin support ticket isolation against live Supabase RLS
+
+Automated Batch 7D verification:
 
 - `npm run build`: passed
 - `git diff --check`: passed

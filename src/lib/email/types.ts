@@ -1,6 +1,7 @@
 export type TransactionalEmailEvent =
   | "booking_created"
   | "booking_status_changed"
+  | "booking_customer_cancelled"
   | "support_created"
   | "support_replied"
   | "staff_invited"
@@ -20,6 +21,10 @@ export type TransactionalEmailRequest =
     }
   | {
       event: "booking_status_changed";
+      bookingId: string;
+    }
+  | {
+      event: "booking_customer_cancelled";
       bookingId: string;
     }
   | {

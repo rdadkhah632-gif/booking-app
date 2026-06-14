@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { completePendingRegistration } from "@/lib/completePendingRegistration";
+import { safeInternalRedirect } from "@/lib/safeInternalRedirect";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,21 +62,15 @@ export default function LoginPage() {
       );
     }
 
-    const redirectTo =
-      typeof router.query.redirectTo === "string"
-        ? router.query.redirectTo
-        : null;
-    const safeInviteRedirect =
-      redirectTo?.startsWith("/staff/invite?token=") ?? false;
-
-    if (safeInviteRedirect) {
-      router.replace(redirectTo!);
+    const redirectTo = safeInternalRedirect(router.query.redirectTo);
+    if (redirectTo?.startsWith("/staff/invite?token=")) {
+      router.replace(redirectTo);
       return;
     }
 
     if (capabilities.defaultRoute === "/my-bookings") {
       router.replace(
-        redirectTo?.startsWith("/") ? redirectTo : "/my-bookings",
+        redirectTo || "/my-bookings",
       );
       return;
     }
@@ -165,11 +160,20 @@ export default function LoginPage() {
     setError(null);
     setVerificationMessage(null);
 
+    const redirectTo = safeInternalRedirect(router.query.redirectTo);
+    const verificationRedirect = new URL(
+      "/login?verified=1",
+      window.location.origin,
+    );
+    if (redirectTo?.startsWith("/staff/invite?token=")) {
+      verificationRedirect.searchParams.set("redirectTo", redirectTo);
+    }
+
     const { error: resendError } = await supabase.auth.resend({
       type: "signup",
       email: verificationEmail,
       options: {
-        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+        emailRedirectTo: verificationRedirect.toString(),
       },
     });
 

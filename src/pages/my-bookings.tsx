@@ -12,6 +12,7 @@ import {
   BookingRequest,
 } from "@/components/my-bookings/myBookingsTypes";
 import { useI18n } from "@/lib/useI18n";
+import { requestTransactionalEmail } from "@/lib/email/client";
 
 export default function MyBookings() {
   const router = useRouter();
@@ -231,15 +232,40 @@ export default function MyBookings() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      setActionLoadingId(null);
+      router.replace("/login?redirectTo=/my-bookings");
+      return;
+    }
+
+    const { data: cancelledBooking, error } = await supabase
       .from("bookings")
       .update({ status: "cancelled" })
-      .eq("id", booking.id);
+      .eq("id", booking.id)
+      .eq("customer_user_id", session.user.id)
+      .in("status", ["pending", "confirmed"])
+      .select("id")
+      .maybeSingle();
 
     setActionLoadingId(null);
 
-    if (error) {
-      setError(error.message);
+    if (error || !cancelledBooking) {
+      if (error && process.env.NODE_ENV !== "production") {
+        console.warn("[my-bookings] Cancellation guard rejected update", {
+          code: error.code,
+        });
+      }
+      setError(
+        t(
+          "myBookings.error.cancellationStatusChanged",
+          "This booking can no longer be cancelled because its status has changed.",
+        ),
+      );
+      await loadBookings({ silent: true });
       return;
     }
 
@@ -255,6 +281,10 @@ export default function MyBookings() {
       t("myBookings.notification.cancelledTitle", "Customer cancelled booking"),
       `${booking.customer_name || t("publicBusiness.customerFallback", "A customer")} ${t("myBookings.notification.cancelledWord", "cancelled their booking for")} ${serviceName(booking)} ${t("publicBusiness.notification.forWord", "for")} ${new Date(booking.start_at).toLocaleString()}.`,
     );
+    void requestTransactionalEmail({
+      event: "booking_customer_cancelled",
+      bookingId: booking.id,
+    });
 
     setSuccess(
       booking.status === "pending"

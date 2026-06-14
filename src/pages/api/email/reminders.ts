@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 import { loadServerEmailPreferences } from "@/lib/email/preferences";
 import { sendTransactionalEmail } from "@/lib/email/sendTransactionalEmail";
 import { appointmentReminderEmailTemplate } from "@/lib/email/templates";
+import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
 
 type ReminderBooking = {
   id: string;
@@ -23,13 +24,6 @@ function requestSecret(req: NextApiRequest) {
 
   const header = req.headers["x-reminder-secret"];
   return Array.isArray(header) ? header[0] || "" : header || "";
-}
-
-function appUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  );
 }
 
 function isReminderSchemaMissing(error: unknown) {
@@ -67,6 +61,14 @@ export default async function handler(
 
   if (requestSecret(req) !== configuredSecret) {
     return res.status(401).json({ error: "Invalid reminder secret" });
+  }
+
+  const appUrl = getAppBaseUrl();
+  if (!appUrl) {
+    return res.status(503).json({
+      error: "Reminder links require a valid application URL",
+      sent: 0,
+    });
   }
 
   let supabaseAdmin: ReturnType<typeof createSupabaseAdminClient>;
@@ -220,7 +222,7 @@ export default async function handler(
         serviceName: service?.name || "Appointment",
         staffName: staff?.name,
         startAt: booking.start_at,
-        actionUrl: `${appUrl()}/booking-confirmation?id=${booking.id}`,
+        actionUrl: `${appUrl}/booking-confirmation?id=${booking.id}`,
         preferenceEnabled: preferences.email_booking_reminders,
       }),
     );

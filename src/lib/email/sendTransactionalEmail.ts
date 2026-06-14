@@ -4,6 +4,7 @@ import {
 } from "./types";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const RESEND_TIMEOUT_MS = 10_000;
 
 function validRecipient(value: string) {
   return EMAIL_PATTERN.test(value.trim());
@@ -27,8 +28,11 @@ async function sendWithResend(
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), RESEND_TIMEOUT_MS);
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
@@ -41,7 +45,7 @@ async function sendWithResend(
         ...(message.html ? { html: message.html } : {}),
         ...(replyTo ? { reply_to: replyTo } : {}),
       }),
-    });
+    }).finally(() => clearTimeout(timeout));
 
     const payload = (await response.json().catch(() => null)) as {
       id?: string;

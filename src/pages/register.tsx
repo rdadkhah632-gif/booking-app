@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { Locale } from "@/lib/i18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { safeInternalRedirect } from "@/lib/safeInternalRedirect";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -39,10 +40,7 @@ export default function RegisterPage() {
 
   async function redirectByRole(userId: string, fallbackEmail?: string) {
     const capabilities = await getAccountCapabilities(userId, fallbackEmail);
-    const redirectTo =
-      typeof router.query.redirectTo === "string"
-        ? router.query.redirectTo
-        : null;
+    const redirectTo = safeInternalRedirect(router.query.redirectTo);
     router.replace(
       redirectTo?.startsWith("/staff/invite?token=")
         ? redirectTo
@@ -153,11 +151,10 @@ export default function RegisterPage() {
       }
     }
 
-    const redirectTo =
-      typeof router.query.redirectTo === "string" &&
-      router.query.redirectTo.startsWith("/staff/invite?token=")
-        ? router.query.redirectTo
-        : null;
+    const safeRedirectTo = safeInternalRedirect(router.query.redirectTo);
+    const redirectTo = safeRedirectTo?.startsWith("/staff/invite?token=")
+      ? safeRedirectTo
+      : null;
     const verificationRedirect = redirectTo
       ? `${window.location.origin}/login?verified=1&redirectTo=${encodeURIComponent(redirectTo)}`
       : `${window.location.origin}/login?verified=1`;
@@ -325,15 +322,20 @@ export default function RegisterPage() {
     setResendingVerification(true);
     setError(null);
 
+    const safeRedirectTo = safeInternalRedirect(router.query.redirectTo);
+    const verificationRedirect = new URL(
+      "/login?verified=1",
+      window.location.origin,
+    );
+    if (safeRedirectTo?.startsWith("/staff/invite?token=")) {
+      verificationRedirect.searchParams.set("redirectTo", safeRedirectTo);
+    }
+
     const { error: resendError } = await supabase.auth.resend({
       type: "signup",
       email: verificationEmail,
       options: {
-        emailRedirectTo:
-          typeof router.query.redirectTo === "string" &&
-          router.query.redirectTo.startsWith("/staff/invite?token=")
-            ? `${window.location.origin}/login?verified=1&redirectTo=${encodeURIComponent(router.query.redirectTo)}`
-            : `${window.location.origin}/login?verified=1`,
+        emailRedirectTo: verificationRedirect.toString(),
       },
     });
 

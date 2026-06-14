@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { staffInviteEmailTemplate } from "@/lib/email/templates";
 import { sendTransactionalEmail } from "@/lib/email/sendTransactionalEmail";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
+import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
 
 function bearerToken(req: NextApiRequest) {
   const authorization = req.headers.authorization || "";
@@ -13,13 +14,6 @@ function bearerToken(req: NextApiRequest) {
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
-}
-
-function appUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  );
 }
 
 function inviteStorageMissing(error: unknown) {
@@ -134,17 +128,42 @@ export default async function handler(
         return res.status(409).json({ error: "Staff account already linked" });
       }
 
-      const rawToken = randomBytes(32).toString("base64url");
-      const expiresAt = new Date(
-        Date.now() + 7 * 24 * 60 * 60 * 1000,
-      ).toISOString();
+      const appUrl = getAppBaseUrl();
+      if (!appUrl) {
+        return res.status(200).json({
+          inviteSaved: true,
+          delivery: { status: "failed", reason: "config_missing" },
+          manualInviteUrl: null,
+        });
+      }
 
-      await supabaseAdmin
+      const { error: revokeError } = await supabaseAdmin
         .from("staff_invite_tokens")
         .update({ revoked_at: new Date().toISOString() })
         .eq("staff_member_id", staff.id)
         .is("accepted_at", null)
         .is("revoked_at", null);
+
+      if (revokeError) {
+        if (inviteStorageMissing(revokeError)) {
+          return res.status(200).json({
+            inviteSaved: true,
+            delivery: {
+              status: "skipped",
+              reason: "invite_storage_not_configured",
+            },
+            sqlRequired: "sources/sql/08_staff_invite_tokens.sql",
+          });
+        }
+        return res.status(500).json({
+          error: "Could not safely replace the existing invite link",
+        });
+      }
+
+      const rawToken = randomBytes(32).toString("base64url");
+      const expiresAt = new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
 
       const { error: insertError } = await supabaseAdmin
         .from("staff_invite_tokens")
@@ -171,7 +190,7 @@ export default async function handler(
         return res.status(500).json({ error: "Could not create invite link" });
       }
 
-      const inviteUrl = `${appUrl()}/staff/invite?token=${encodeURIComponent(rawToken)}`;
+      const inviteUrl = `${appUrl}/staff/invite?token=${encodeURIComponent(rawToken)}`;
       const delivery = await sendTransactionalEmail(
         staffInviteEmailTemplate({
           recipientEmail: staff.email,
@@ -237,6 +256,7 @@ export default async function handler(
       return res.status(409).json({ error: "Staff profile already linked" });
     }
 
+    const newlyLinked = !currentStaff.user_id;
     const { data: linkedStaff, error: linkError } = currentStaff.user_id
       ? { data: currentStaff, error: null }
       : await supabaseAdmin
@@ -251,13 +271,40 @@ export default async function handler(
       return res.status(409).json({ error: "Staff profile could not be linked" });
     }
 
-    await supabaseAdmin
+    const { data: acceptedInvite, error: acceptError } = await supabaseAdmin
       .from("staff_invite_tokens")
       .update({
         accepted_at: new Date().toISOString(),
         accepted_by: user.id,
       })
-      .eq("id", invite.id);
+      .eq("id", invite.id)
+      .is("accepted_at", null)
+      .is("revoked_at", null)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+
+    if (acceptError || !acceptedInvite) {
+      if (newlyLinked) {
+        const { error: rollbackError } = await supabaseAdmin
+          .from("staff_members")
+          .update({ user_id: null, invite_status: "invited" })
+          .eq("id", invite.staff_member_id)
+          .eq("user_id", user.id);
+
+        if (rollbackError) {
+          console.error(
+            "[staff-invite] Could not roll back incomplete acceptance",
+            {
+              staffMemberId: invite.staff_member_id,
+            },
+          );
+        }
+      }
+
+      return res.status(500).json({
+        error: "Invite acceptance could not be finalized. Please try again.",
+      });
+    }
 
     return res.status(200).json({ linked: true, redirectTo: "/staff" });
   } catch (error) {

@@ -30,6 +30,13 @@ function statusCopy(
       };
     }
 
+    if (status === "cancelled") {
+      return {
+        subject: "Customer cancelled booking",
+        intro: "A customer cancelled their booking.",
+      };
+    }
+
     return {
       subject: "New booking confirmed",
       intro: "A new booking has been confirmed.",

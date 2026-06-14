@@ -527,6 +527,14 @@ export default function StaffPage() {
           "dashboardStaff.invite.savedManualLink",
           "Invite saved. Email was skipped safely. Manual invite link:",
         )} ${payload.manualInviteUrl}`;
+      } else if (
+        response.ok &&
+        payload.delivery?.reason === "config_missing"
+      ) {
+        deliveryMessage = t(
+          "dashboardStaff.invite.appUrlMissing",
+          "Invite saved, but email could not be sent because the production application URL is not configured.",
+        );
       }
     } catch {
       // The staff record is already saved; email delivery is best-effort only.

@@ -3044,6 +3044,10 @@ export const en: TranslationTree = {
     "Invite saved and the invitation email was sent.",
   "dashboardStaff.invite.savedManualLink":
     "Invite saved. Email was skipped safely. Manual invite link:",
+  "dashboardStaff.invite.appUrlMissing":
+    "Invite saved, but email could not be sent because the production application URL is not configured.",
+  "myBookings.error.cancellationStatusChanged":
+    "This booking can no longer be cancelled because its status has changed.",
   "staffInvite.kicker": "Staff invitation",
   "staffInvite.title": "Join your Mirëbook staff workspace",
   "staffInvite.checking": "Checking this invitation...",

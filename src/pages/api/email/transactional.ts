@@ -14,6 +14,7 @@ import {
   EmailPreferences,
   loadServerEmailPreferences,
 } from "@/lib/email/preferences";
+import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
 
 type BookingRow = {
   id: string;
@@ -32,13 +33,6 @@ function bearerToken(req: NextApiRequest) {
   return authorization.startsWith("Bearer ")
     ? authorization.slice("Bearer ".length)
     : "";
-}
-
-function appUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  );
 }
 
 async function emailForUser(
@@ -84,7 +78,8 @@ export default async function handler(
   const request = req.body as TransactionalEmailRequest;
   const bookingEvent =
     request?.event === "booking_created" ||
-    request?.event === "booking_status_changed";
+    request?.event === "booking_status_changed" ||
+    request?.event === "booking_customer_cancelled";
   const supportEvent =
     request?.event === "support_created" ||
     request?.event === "support_replied";
@@ -146,7 +141,16 @@ export default async function handler(
         supabaseAdmin,
         ticket.user_id,
       );
-      const supportUrl = `${appUrl()}/support/messages/${ticket.id}`;
+      const appUrl = getAppBaseUrl();
+      if (!appUrl) {
+        return res.status(200).json({
+          event: request.event,
+          delivery: [{ status: "failed", reason: "config_missing" }],
+          authoritativeChannel: "in_app_support",
+        });
+      }
+
+      const supportUrl = `${appUrl}/support/messages/${ticket.id}`;
       const messages = [];
 
       if (requesterEmail) {
@@ -169,7 +173,7 @@ export default async function handler(
             event: "support_created",
             recipientEmail: supportAdminEmail,
             subject: ticket.subject || "New support request",
-            actionUrl: `${appUrl()}/admin/support?ticketId=${ticket.id}`,
+            actionUrl: `${appUrl}/admin/support?ticketId=${ticket.id}`,
             isAdminNotification: true,
           }),
         );
@@ -239,9 +243,20 @@ export default async function handler(
 
     if (
       (request.event === "booking_created" && !isCustomer) ||
-      (request.event === "booking_status_changed" && !isBusinessOwner)
+      (request.event === "booking_status_changed" && !isBusinessOwner) ||
+      (request.event === "booking_customer_cancelled" &&
+        (!isCustomer || booking.status !== "cancelled"))
     ) {
       return res.status(403).json({ error: "Email event not permitted" });
+    }
+
+    const appUrl = getAppBaseUrl();
+    if (!appUrl) {
+      return res.status(200).json({
+        event: request.event,
+        delivery: [{ status: "failed", reason: "config_missing" }],
+        authoritativeChannel: "in_app_notifications",
+      });
     }
 
     const [
@@ -266,12 +281,12 @@ export default async function handler(
 
     const customerEmail = booking.customer_email || customerProfileEmail;
     const staffEmail = staff?.email || staffProfileEmail;
-    const bookingUrl = `${appUrl()}/booking-confirmation?id=${booking.id}`;
-    const businessUrl = `${appUrl()}/dashboard/bookings?businessId=${booking.business_id}`;
-    const staffUrl = `${appUrl()}/staff/calendar`;
+    const bookingUrl = `${appUrl}/booking-confirmation?id=${booking.id}`;
+    const businessUrl = `${appUrl}/dashboard/bookings?businessId=${booking.business_id}`;
+    const staffUrl = `${appUrl}/staff/calendar`;
     const messages = [];
 
-    if (customerEmail) {
+    if (customerEmail && request.event !== "booking_customer_cancelled") {
       messages.push(
         bookingEmailTemplate({
           event: request.event,
@@ -314,7 +329,27 @@ export default async function handler(
       );
     }
 
+    if (request.event === "booking_customer_cancelled" && ownerEmail) {
+      messages.push(
+        bookingEmailTemplate({
+          event: request.event,
+          recipientEmail: ownerEmail,
+          recipientRole: "business",
+          bookingStatus: "cancelled",
+          businessName: business.name,
+          customerName: booking.customer_name || "Customer",
+          serviceName: service?.name || "Appointment",
+          staffName: staff?.name,
+          startAt: booking.start_at,
+          actionUrl: businessUrl,
+          preferenceEnabled:
+            ownerPreferenceResult.preferences.email_customer_cancellations,
+        }),
+      );
+    }
+
     if (
+      request.event !== "booking_customer_cancelled" &&
       staffEmail &&
       ["confirmed", "cancelled", "declined"].includes(booking.status)
     ) {
