@@ -127,8 +127,8 @@ export default function BusinessProfileCard({
 
             <span className="small" style={{ background: readiness.profileComplete ? 'rgba(45,212,191,0.12)' : 'var(--surface-2)', color: readiness.profileComplete ? 'var(--success)' : 'var(--text-muted)', padding: '0.2rem 0.55rem', borderRadius: 999 }}>
               {readiness.profileComplete
-                ? t('dashboardBusinesses.profileComplete', 'Profile complete')
-                : t('dashboardBusinesses.profileNeedsPolish', 'Profile needs details')}
+                ? t('dashboardBusinesses.profileComplete', 'Profile details ready')
+                : t('dashboardBusinesses.profileNeedsPolish', 'Add profile details')}
             </span>
           </div>
         </div>
@@ -151,7 +151,7 @@ export default function BusinessProfileCard({
       <div className="business-readiness-overview">
         <div className={readiness.profileComplete ? 'business-readiness-panel ready' : 'business-readiness-panel'}>
           <p className="small muted">
-            {t('dashboardBusinesses.overview.profileTitle', 'Profile completeness')}
+            {t('dashboardBusinesses.overview.profileTitle', 'Profile details')}
           </p>
           <strong>
             {readiness.profileComplete

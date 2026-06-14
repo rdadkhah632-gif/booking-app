@@ -137,7 +137,7 @@ export const sq: TranslationTree = {
     "Menaxho biznesin tënd të shërbimeve nga një hapësirë Mirëbook.",
   "home.business.body":
     "Ndërto profilin për klientët, shto shërbime, cakto staf, vendos oraret e punës dhe menaxho kërkesat, ndryshimet e orarit dhe takimet ditore nga një panel.",
-  "home.business.profileTitle": "Gatishmëria e profilit",
+  "home.business.profileTitle": "Profili i biznesit",
   "home.business.profileBody":
     "Kontrollo shërbimet, stafin, oraret dhe statusin e publikimit.",
   "home.business.actionTitle": "Qendra e veprimeve",
@@ -149,7 +149,7 @@ export const sq: TranslationTree = {
   "home.business.billingTitle": "Faturimi i biznesit",
   "home.business.billingBody":
     "Përgatit detajet e abonimit mujor për llogarinë e biznesit.",
-  "home.business.join": "Bashkohu si biznes",
+  "home.business.join": "Regjistro biznesin tënd",
   "home.business.login": "Hyrje biznesi",
   "home.business.support": "Merr ndihmë",
   "home.confidence.kicker": "Ndërtuar për siguri",
@@ -909,8 +909,8 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.readyToBook": "Gati për rezervime",
   "dashboardBusinesses.setupIncomplete": "Konfigurim jo i plotë",
   "dashboardBusinesses.imageNeeded": "Duhet imazh",
-  "dashboardBusinesses.profileComplete": "Profili është i plotë",
-  "dashboardBusinesses.profileNeedsPolish": "Profilit i duhen detaje",
+  "dashboardBusinesses.profileComplete": "Detajet e profilit janë gati",
+  "dashboardBusinesses.profileNeedsPolish": "Shto detajet e profilit",
   "dashboardBusinesses.hideMarketplace": "Fshihe nga marketplace",
   "dashboardBusinesses.publish": "Publiko në Mirëbook",
   "dashboardBusinesses.finishSetup": "Përfundo konfigurimin fillimisht",
@@ -1923,6 +1923,7 @@ export const sq: TranslationTree = {
   "register.role.businessBody": "Krijo shërbime, staf dhe rezervime.",
   "register.role.staff": "Staf",
   "register.role.staffBody": "Bashkohu me një biznes ku je ftuar.",
+  "register.role.selected": "Zgjedhur",
   "register.accountType": "Lloji i llogarisë",
   "register.staffInviteFound": "U gjet ftesë për staf",
   "register.staffInviteBody":
@@ -2469,10 +2470,10 @@ export const sq: TranslationTree = {
     "Shiko orarin e stafit dhe hap mjetet e disponueshmërisë.",
   "support.quickLinks.accountBody":
     "Përditëso emrin, telefonin dhe hap hapësirat e lidhura.",
-  "support.inboxStatus.kicker": "Para lançimit",
-  "support.inboxStatus.title": "Statusi i inbox-it të suportit",
+  "support.inboxStatus.kicker": "Si funksionon suporti",
+  "support.inboxStatus.title": "Bisedat e tua qëndrojnë të lidhura",
   "support.inboxStatus.body":
-    "Suporti i Mirëbook është ndarë në rrjedha sipas rolit. Formularët e rinj krijojnë ticket-e që mund të shqyrtohen, përgjigjen dhe mbyllen nga zona e adminit.",
+    "Zgjidh zonën e suportit që përputhet me llogarinë tënde. Kërkesa ruhet si bisedë që të mund të kthehesh te përgjigjet dhe përditësimet.",
   "support.faq.kicker": "Pyetje të zakonshme",
   "support.faq.title": "Pyetje të shpeshta",
   "support.faq.pendingTitle":
@@ -2650,7 +2651,7 @@ export const sq: TranslationTree = {
   "explore.filters.clearButton": "Pastro filtrat",
   "explore.filters.refreshButton": "Rifresko rezultatet",
   "staff.workspace.ownerStaffWorkspace":
-    "Hapësirë stafi e lidhur me llogarinë tënde të pronarit",
+    "Puna ime brenda llogarisë së biznesit",
   "staff.actions.businessDashboard": "Paneli i biznesit",
 
   "staffAvailability.ownerStaffAvailability":
@@ -2723,7 +2724,7 @@ export const sq: TranslationTree = {
   "dashboardLayout.myWork.title": "Puna ime",
   "dashboardLayout.myWork.schedule": "Orari im",
   "dashboardLayout.myWork.availability": "Disponueshmëria ime",
-  "dashboardLayout.myWork.notifications": "Njoftime stafi",
+  "dashboardLayout.myWork.notifications": "Njoftimet e mia",
 
   "staff.ownerSetup.noBusiness":
     "Nuk u gjet profil biznesi për këtë llogari pronari.",
@@ -2802,7 +2803,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.missingSetup.assignmentCta":
     "Cakto stafin te shërbimi",
   "dashboardBusinesses.missingSetup.hoursCta": "Vendos disponueshmërinë",
-  "dashboardBusinesses.onboarding.profile": "Plotëso profilin e biznesit",
+  "dashboardBusinesses.onboarding.profile": "Shto detajet e biznesit",
   "dashboardBusinesses.onboarding.profileBody":
     "Detajet e profilit ndërtojnë besimin e klientit. Ato përmirësojnë paraqitjen, por nuk zëvendësojnë gatishmërinë për rezervime.",
   "dashboardBusinesses.onboarding.services": "Shto shërbime",
@@ -2864,7 +2865,7 @@ export const sq: TranslationTree = {
   "staffNotifications.actions.openSchedule": "Hap orarin",
   "staffNotifications.actions.openSupport": "Hap mbështetjen",
   "staffNotifications.actions.openUpdate": "Hap përditësimin",
-  "dashboardBusinesses.overview.profileTitle": "Plotësia e profilit",
+  "dashboardBusinesses.overview.profileTitle": "Detajet e profilit",
   "dashboardBusinesses.overview.complete": "I plotë",
   "dashboardBusinesses.overview.needsDetails": "Duhen detaje",
   "dashboardBusinesses.overview.profileBody":

@@ -59,12 +59,8 @@ export default function Home() {
             </form>
 
             <div className="home-cta-row">
-              <Link href="/explore" className="btn btn-accent">
-                {t("home.cta.explore")}
-              </Link>
-
               <Link href="/register" className="btn btn-ghost">
-                {t("home.cta.createAccount")}
+                {t("home.business.join", "List your business")}
               </Link>
             </div>
 

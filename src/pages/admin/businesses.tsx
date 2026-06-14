@@ -1190,9 +1190,6 @@ export default function AdminBusinessesPage() {
                         <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">Owner account</Link>
                       )}
                       <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">Notify</Link>
-                      <button type="button" className="btn btn-accent" onClick={saveSelectedBusiness} disabled={saving}>
-                        {saving ? 'Saving...' : 'Save changes'}
-                      </button>
                     </div>
                   </div>
 
@@ -1897,12 +1894,6 @@ export default function AdminBusinessesPage() {
                       </p>
                     </div>
 
-                    <div className="admin-actions">
-                      {ownerId(selectedBusiness) && (
-                        <Link href={`/admin/users?userId=${ownerId(selectedBusiness)}`} className="btn btn-ghost">Manage owner</Link>
-                      )}
-                      <Link href={`/admin/notifications?businessId=${selectedBusiness.id}`} className="btn btn-ghost">Send notice</Link>
-                    </div>
                   </div>
 
                   <div className="admin-save-footer">

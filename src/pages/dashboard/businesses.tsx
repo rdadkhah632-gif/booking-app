@@ -532,7 +532,7 @@ export default function Businesses() {
                   number: 1,
                   ready: primaryReadiness.profileComplete,
                   href: '#business-profile',
-                  title: t('dashboardBusinesses.onboarding.profile', 'Complete business profile'),
+                  title: t('dashboardBusinesses.onboarding.profile', 'Add business details'),
                   body: t(
                     'dashboardBusinesses.onboarding.profileBody',
                     'Profile details build customer trust. They improve presentation but do not replace booking readiness.'

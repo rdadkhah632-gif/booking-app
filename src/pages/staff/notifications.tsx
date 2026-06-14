@@ -1,4 +1,4 @@
-import AuthNav from "@/components/AuthNav";
+import DashboardLayout from "@/components/DashboardLayout";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -270,10 +270,8 @@ export default function StaffNotificationsPage() {
   }
 
   return (
-    <main>
-      <AuthNav />
-
-      <section className="page-shell">
+    <DashboardLayout workspace="staff">
+      <section className="staff-workspace-page">
         <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
           <div>
             <h1 className="page-title">
@@ -293,11 +291,6 @@ export default function StaffNotificationsPage() {
           </div>
 
           <div className="page-header-actions">
-            {hasBusinessWorkspace && (
-              <Link href="/dashboard" className="btn btn-ghost">
-                {t("staff.actions.businessDashboard", "Business dashboard")}
-              </Link>
-            )}
             <button
               type="button"
               onClick={markAllRead}
@@ -458,6 +451,11 @@ export default function StaffNotificationsPage() {
       </section>
 
       <style jsx>{`
+        .staff-workspace-page {
+          width: 100%;
+          min-width: 0;
+        }
+
         .staff-notification-toolbar {
           display: flex;
           justify-content: space-between;
@@ -559,6 +557,6 @@ export default function StaffNotificationsPage() {
           }
         }
       `}</style>
-    </main>
+    </DashboardLayout>
   );
 }

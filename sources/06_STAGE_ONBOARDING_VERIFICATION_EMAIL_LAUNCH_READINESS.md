@@ -1096,6 +1096,129 @@ Automated Batch 7D verification:
 - EN and SQ translation dictionaries contain no duplicate keys
 - Prettier is unavailable in the local workspace
 
+## Batch 7E - Final UI Simplification And Launch Polish
+
+Status: implemented; production build and static checks passed. Ready for
+browser closure QA.
+
+This final presentation-only pass reduced visible repetition and clarified
+launch terminology without changing account, booking, invite, support, billing
+or admin behavior.
+
+Implemented:
+
+- simplified the homepage hero so the search form is the primary customer
+  action and `List your business` is the single adjacent business action
+- added a clear translated `Selected` marker and stable dimensions to the
+  Customer, Business and Staff registration choices
+- replaced non-blocking `Profile completeness` wording with `Profile details`
+  while preserving the separate authoritative `Booking readiness` checks
+- renamed the first business onboarding task to `Add business details`
+- removed repeated Calendar links from the staff availability appointment
+  section; the page keeps one clear Calendar action in its header and one Save
+  action beside the availability templates
+- changed support role cards from nested button-looking labels to clear
+  card-link cues
+- removed pre-launch/internal support wording from the normal user support hub
+  and described saved support conversations in customer-facing language
+- removed the duplicate top Save button and repeated owner/notification links
+  from the selected-business admin editor; the deliberate save footer remains
+  the single save action
+- updated all directly touched copy in EN and SQ together
+
+Intentional non-changes:
+
+- Stripe test-mode wording remains visible on the business billing page because
+  it prevents businesses from mistaking test Checkout for a live charge
+- existing readiness, publishing, founding-offer and billing calculations were
+  not changed
+- staff continues using its existing top-navigation workspace
+- broad translation cleanup on older admin and reschedule surfaces remains
+  outside this targeted pass
+- no responsive architecture or theme redesign was attempted
+
+### Batch 7E Browser QA
+
+- verify the homepage search and business CTA hierarchy at desktop and mobile
+- verify all three registration choices show an obvious selected state without
+  shifting or overflowing
+- confirm business setup clearly separates profile details, booking readiness
+  and public listing
+- confirm staff availability has one clear save action and no repeated Calendar
+  actions below the fold
+- confirm support route cards remain fully clickable and readable at narrow
+  widths
+- confirm the admin business editor has one save action and retains owner and
+  notification links in its header
+- complete the remaining authenticated Stage 6 closure QA when browser access
+  is available
+
+Automated Batch 7E verification:
+
+- `npm run build`: passed
+- `git diff --check`: passed
+- EN and SQ translation dictionaries contain no duplicate keys
+- Prettier is unavailable in the local workspace
+
+## Batch 7F - Workspace Navigation Unification Polish
+
+Status: implemented; production build and static checks passed. Ready for
+browser closure QA.
+
+This layout-only pass unifies authenticated staff navigation without changing
+permissions, account capabilities, staff linking, booking behavior or route
+protection.
+
+Implemented:
+
+- extended the existing dashboard shell with a role-aware staff workspace mode
+- kept owner-as-staff pages inside the full business dashboard sidebar, where
+  personal staff routes remain grouped under `My work`
+- gave staff-only users the same sidebar-style shell with only My schedule, My
+  availability, My notifications, staff support and account access
+- wrapped the authenticated staff schedule, calendar, availability and
+  notification pages in the shared shell
+- kept the public staff invitation route on its existing authentication layout
+- removed repeated business-dashboard, availability, support and notification
+  navigation buttons from staff page headers and onboarding cards
+- retained one Calendar view action on the staff schedule page so the dedicated
+  calendar remains discoverable without repeated links
+- made grouped sidebar links flatten into the existing horizontally scrollable
+  mobile navigation pattern
+- clarified owner-as-staff copy as `My work inside your business account` and
+  aligned `My notifications` in EN and SQ
+
+Intentional non-changes:
+
+- no auth redirect, role/capability, staff invite or staff linking logic changed
+- no booking, availability save, notification data or support permission logic
+  changed
+- staff-only users do not receive business setup, billing, services, staff
+  management or admin navigation
+- no routes were renamed and the `/staff/invite` flow was not moved
+
+### Batch 7F Browser QA
+
+- as an owner-as-staff user, open My schedule, My availability and My
+  notifications and confirm the business sidebar remains visible
+- confirm owner-as-staff can return directly to bookings, setup, staff and
+  billing from those pages
+- as a staff-only user, confirm the sidebar contains only staff-appropriate
+  routes plus support and account
+- verify the staff schedule retains one Calendar view action and no repeated
+  navigation blocks
+- verify the shared navigation scrolls without page overflow on narrow mobile
+  widths
+- confirm the signed-out and invited-staff `/staff/invite` flow retains its
+  existing authentication header
+
+Automated Batch 7F verification:
+
+- `npm run build`: passed
+- `git diff --check`: passed
+- EN and SQ translation dictionaries contain no duplicate keys
+- Prettier is unavailable in the local workspace
+
 ## Batch 1/2 QA Checklist
 
 - customer Account shows Explore, Track bookings and Check updates

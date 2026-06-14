@@ -90,7 +90,7 @@ export const en: TranslationTree = {
     "Run your service business from one Mirëbook workspace.",
   "home.business.body":
     "Build a customer-facing profile, add services, assign staff, set working hours and manage requests, reschedules and daily appointments from one dashboard.",
-  "home.business.profileTitle": "Profile readiness",
+  "home.business.profileTitle": "Business profile",
   "home.business.profileBody":
     "Check services, staff, hours and publishing status.",
   "home.business.actionTitle": "Action centre",
@@ -102,7 +102,7 @@ export const en: TranslationTree = {
   "home.business.billingTitle": "Business billing",
   "home.business.billingBody":
     "Prepare monthly subscription details for your business account.",
-  "home.business.join": "Join as a business",
+  "home.business.join": "List your business",
   "home.business.login": "Business login",
   "home.business.support": "Get support",
   "home.confidence.kicker": "Built for confidence",
@@ -889,8 +889,8 @@ export const en: TranslationTree = {
   "dashboardBusinesses.readyToBook": "Ready to book",
   "dashboardBusinesses.setupIncomplete": "Setup incomplete",
   "dashboardBusinesses.imageNeeded": "Image needed",
-  "dashboardBusinesses.profileComplete": "Profile complete",
-  "dashboardBusinesses.profileNeedsPolish": "Profile needs details",
+  "dashboardBusinesses.profileComplete": "Profile details ready",
+  "dashboardBusinesses.profileNeedsPolish": "Add profile details",
   "dashboardBusinesses.hideMarketplace": "Hide from marketplace",
   "dashboardBusinesses.publish": "Publish to Mirëbook",
   "dashboardBusinesses.finishSetup": "Finish setup first",
@@ -1827,6 +1827,7 @@ export const en: TranslationTree = {
   "register.role.businessBody": "Create services, staff and bookings.",
   "register.role.staff": "Staff",
   "register.role.staffBody": "Join a business you have been invited to.",
+  "register.role.selected": "Selected",
   "register.accountType": "Account type",
   "register.staffInviteFound": "Staff invite found",
   "register.staffInviteBody":
@@ -2391,10 +2392,10 @@ export const en: TranslationTree = {
     "View staff schedule and access staff availability tools.",
   "support.quickLinks.accountBody":
     "Update name, phone and open your connected workspaces.",
-  "support.inboxStatus.kicker": "Before launch",
-  "support.inboxStatus.title": "Support inbox status",
+  "support.inboxStatus.kicker": "How support works",
+  "support.inboxStatus.title": "Your conversations stay connected",
   "support.inboxStatus.body":
-    "Mirëbook support is split into role-specific flows. New support forms create tickets that can be reviewed, replied to and closed from the admin area.",
+    "Choose the support area that matches your account. Your request is saved as a conversation so you can return to replies and updates.",
   "support.faq.kicker": "Common questions",
   "support.faq.title": "Frequently asked questions",
   "support.faq.pendingTitle": "My booking is pending. What does that mean?",
@@ -2602,7 +2603,7 @@ export const en: TranslationTree = {
   "explore.filters.refreshButton": "Refresh results",
   "staffAvailability.templates.compactTitle": "Quick templates",
   "staff.workspace.ownerStaffWorkspace":
-    "Staff workspace linked to your owner account",
+    "My work inside your business account",
   "staff.actions.businessDashboard": "Business dashboard",
 
   "staffAvailability.ownerStaffAvailability":
@@ -2675,7 +2676,7 @@ export const en: TranslationTree = {
   "dashboardLayout.myWork.title": "My work",
   "dashboardLayout.myWork.schedule": "My schedule",
   "dashboardLayout.myWork.availability": "My availability",
-  "dashboardLayout.myWork.notifications": "Staff notifications",
+  "dashboardLayout.myWork.notifications": "My notifications",
 
   "staff.ownerSetup.noBusiness":
     "No business profile was found for this owner account.",
@@ -2753,7 +2754,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.missingSetup.assignmentCta":
     "Assign staff to service",
   "dashboardBusinesses.missingSetup.hoursCta": "Set availability",
-  "dashboardBusinesses.onboarding.profile": "Complete business profile",
+  "dashboardBusinesses.onboarding.profile": "Add business details",
   "dashboardBusinesses.onboarding.profileBody":
     "Profile details build customer trust. They improve presentation but do not replace booking readiness.",
   "dashboardBusinesses.onboarding.services": "Add services",
@@ -2813,7 +2814,7 @@ export const en: TranslationTree = {
   "staffNotifications.actions.openSchedule": "Open schedule",
   "staffNotifications.actions.openSupport": "Open support",
   "staffNotifications.actions.openUpdate": "Open update",
-  "dashboardBusinesses.overview.profileTitle": "Profile completeness",
+  "dashboardBusinesses.overview.profileTitle": "Profile details",
   "dashboardBusinesses.overview.complete": "Complete",
   "dashboardBusinesses.overview.needsDetails": "Needs details",
   "dashboardBusinesses.overview.profileBody":

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import AuthNav from "@/components/AuthNav";
+import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
@@ -836,12 +836,8 @@ export default function StaffDashboardPage() {
 
   if (loading) {
     return (
-      <main>
-        <AuthNav />
-        <section
-          className="container"
-          style={{ paddingTop: 40, paddingBottom: 48 }}
-        >
+      <DashboardLayout workspace="staff">
+        <section className="staff-workspace-page">
           <div className="card">
             <p className="muted">
               {t(
@@ -851,18 +847,13 @@ export default function StaffDashboardPage() {
             </p>
           </div>
         </section>
-      </main>
+      </DashboardLayout>
     );
   }
 
   return (
-    <main>
-      <AuthNav />
-
-      <section
-        className="container"
-        style={{ paddingTop: 32, paddingBottom: 48 }}
-      >
+    <DashboardLayout workspace="staff">
+      <section className="staff-workspace-page">
         {!staffProfile && (
           <div className="card staff-unlinked-card">
             <p className="small" style={{ color: "var(--warning)" }}>
@@ -995,14 +986,6 @@ export default function StaffDashboardPage() {
               >
                 {t("common.refresh", "Refresh")}
               </button>
-              {hasBusinessWorkspace && (
-                <Link href="/dashboard" className="btn btn-ghost">
-                  {t("staff.actions.businessDashboard", "Business dashboard")}
-                </Link>
-              )}
-              <Link href="/support/staff" className="btn btn-ghost">
-                {t("nav.staffSupport", "Staff support")}
-              </Link>
             </div>
           </div>
         )}
@@ -1061,14 +1044,6 @@ export default function StaffDashboardPage() {
                 <Link href="/staff/calendar" className="btn btn-accent">
                   {t("staffCalendar.title", "Calendar view")}
                 </Link>
-                <Link href="/staff/availability" className="btn btn-ghost">
-                  {t("staff.actions.updateAvailability", "Update availability")}
-                </Link>
-                {hasBusinessWorkspace && (
-                  <Link href="/dashboard" className="btn btn-ghost">
-                    {t("staff.actions.businessDashboard", "Business dashboard")}
-                  </Link>
-                )}
               </div>
             </div>
 
@@ -1103,20 +1078,6 @@ export default function StaffDashboardPage() {
                 )}
               </div>
 
-              <div className="staff-onboarding-actions">
-                <Link href="/staff/calendar" className="btn btn-ghost">
-                  {t("staff.onboarding.calendar", "View calendar")}
-                </Link>
-                <Link href="/staff/availability" className="btn btn-ghost">
-                  {t("staff.onboarding.availability", "Set availability")}
-                </Link>
-                <Link href="/staff/notifications" className="btn btn-ghost">
-                  {t("staff.onboarding.notifications", "Check notifications")}
-                </Link>
-                <Link href="/support/staff" className="btn btn-ghost">
-                  {t("staff.onboarding.support", "Contact support")}
-                </Link>
-              </div>
             </div>
 
             <div className="card staff-assigned-services-card">
@@ -1495,6 +1456,11 @@ export default function StaffDashboardPage() {
       </section>
 
       <style jsx>{`
+        .staff-workspace-page {
+          width: 100%;
+          min-width: 0;
+        }
+
         .staff-unlinked-card {
           display: grid;
           gap: 0.85rem;
@@ -1595,13 +1561,6 @@ export default function StaffDashboardPage() {
         .staff-onboarding-note {
           color: var(--accent);
           margin-top: 0.45rem !important;
-        }
-
-        .staff-onboarding-actions {
-          display: flex;
-          gap: 0.6rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
         }
 
         .staff-today-card {
@@ -1805,7 +1764,6 @@ export default function StaffDashboardPage() {
           }
 
           .staff-hero-actions,
-          .staff-onboarding-actions,
           .staff-today-actions,
           .staff-empty-actions,
           .staff-filter-controls,
@@ -1814,7 +1772,6 @@ export default function StaffDashboardPage() {
           }
 
           .staff-hero-actions :global(.btn),
-          .staff-onboarding-actions :global(.btn),
           .staff-today-actions :global(.btn),
           .staff-today-actions button,
           .staff-empty-actions :global(.btn),
@@ -1837,6 +1794,6 @@ export default function StaffDashboardPage() {
           }
         }
       `}</style>
-    </main>
+    </DashboardLayout>
   );
 }

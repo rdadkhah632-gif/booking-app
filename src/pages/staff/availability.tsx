@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import AuthNav from "@/components/AuthNav";
+import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
@@ -398,9 +398,8 @@ export default function StaffAvailabilityPage() {
 
   if (loading) {
     return (
-      <main>
-        <AuthNav />
-        <section className="container" style={{ paddingTop: 40 }}>
+      <DashboardLayout workspace="staff">
+        <section className="staff-workspace-page">
           <div className="card">
             <p className="muted">
               {t(
@@ -410,18 +409,13 @@ export default function StaffAvailabilityPage() {
             </p>
           </div>
         </section>
-      </main>
+      </DashboardLayout>
     );
   }
 
   return (
-    <main>
-      <AuthNav />
-
-      <section
-        className="container"
-        style={{ paddingTop: 32, paddingBottom: 48 }}
-      >
+    <DashboardLayout workspace="staff">
+      <section className="staff-workspace-page">
         {!staffProfile && (
           <div className="card">
             <h1 style={{ fontFamily: "var(--font-display)", marginTop: 0 }}>
@@ -480,16 +474,6 @@ export default function StaffAvailabilityPage() {
                 </p>
               </div>
 
-              <div className="staff-availability-actions">
-                <Link href="/staff/calendar" className="btn btn-ghost">
-                  {t("staffCalendar.title", "Calendar view")}
-                </Link>
-                {hasBusinessWorkspace && (
-                  <Link href="/dashboard" className="btn btn-ghost">
-                    {t("staff.actions.businessDashboard", "Business dashboard")}
-                  </Link>
-                )}
-              </div>
             </div>
             <div className="card staff-availability-note">
               <h3>
@@ -754,11 +738,6 @@ export default function StaffAvailabilityPage() {
                   </p>
                 </div>
 
-                <div className="staff-template-actions">
-                  <Link href="/staff/calendar" className="btn btn-ghost">
-                    {t("staffCalendar.title", "Calendar view")}
-                  </Link>
-                </div>
               </div>
 
               <div
@@ -772,9 +751,6 @@ export default function StaffAvailabilityPage() {
                         "No upcoming assigned bookings found. New appointments will appear here once they are assigned to you.",
                       )}
                     </p>
-                    <Link href="/staff/calendar" className="btn btn-ghost">
-                      {t("staffCalendar.title", "Calendar view")}
-                    </Link>
                   </div>
                 )}
 
@@ -814,6 +790,11 @@ export default function StaffAvailabilityPage() {
       </section>
 
       <style jsx>{`
+        .staff-workspace-page {
+          width: 100%;
+          min-width: 0;
+        }
+
         .staff-availability-hero {
           display: flex;
           justify-content: space-between;
@@ -823,7 +804,6 @@ export default function StaffAvailabilityPage() {
           margin-bottom: 1.5rem;
         }
 
-        .staff-availability-actions,
         .staff-template-actions {
           display: flex;
           gap: 0.75rem;
@@ -956,14 +936,11 @@ export default function StaffAvailabilityPage() {
             display: grid;
           }
 
-          .staff-availability-actions,
           .staff-template-actions {
             display: grid;
           }
 
-          .staff-availability-actions,
           .staff-template-actions,
-          .staff-availability-actions :global(.btn),
           .staff-template-actions :global(.btn) {
             width: 100%;
             justify-content: center;
@@ -978,6 +955,6 @@ export default function StaffAvailabilityPage() {
           }
         }
       `}</style>
-    </main>
+    </DashboardLayout>
   );
 }

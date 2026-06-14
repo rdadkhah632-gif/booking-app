@@ -9,15 +9,22 @@ type Props = {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
+  workspace?: "business" | "staff";
 };
 
-export default function DashboardLayout({ children, title, subtitle }: Props) {
+export default function DashboardLayout({
+  children,
+  title,
+  subtitle,
+  workspace = "business",
+}: Props) {
   const router = useRouter();
   const { t } = useI18n();
   const [pendingCount, setPendingCount] = useState(0);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [hasPersonalStaffWorkspace, setHasPersonalStaffWorkspace] =
     useState(false);
+  const [isStaffOnlyWorkspace, setIsStaffOnlyWorkspace] = useState(false);
 
   useEffect(() => {
     async function loadPendingNotifications() {
@@ -29,7 +36,11 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
 
       if (!session) {
         setHasPersonalStaffWorkspace(false);
-        router.replace("/login");
+        router.replace(
+          workspace === "staff"
+            ? `/login?redirectTo=${encodeURIComponent(router.asPath)}`
+            : "/login",
+        );
         return;
       }
 
@@ -38,13 +49,28 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         session.user.email,
       );
 
-      if (!capabilities.canUseBusiness) {
+      setHasPersonalStaffWorkspace(capabilities.hasLinkedStaffProfile);
+      setIsStaffOnlyWorkspace(
+        workspace === "staff" && !capabilities.canUseBusiness,
+      );
+
+      if (workspace === "staff") {
+        if (!capabilities.canUseStaff && !capabilities.canUseBusiness) {
+          setPendingCount(0);
+          router.replace(capabilities.defaultRoute);
+          return;
+        }
+
+        if (!capabilities.canUseBusiness) {
+          setPendingCount(0);
+          setCheckingAccess(false);
+          return;
+        }
+      } else if (!capabilities.canUseBusiness) {
         setPendingCount(0);
         router.replace(capabilities.defaultRoute);
         return;
       }
-
-      setHasPersonalStaffWorkspace(capabilities.hasLinkedStaffProfile);
 
       const businessIds = capabilities.ownedBusinesses.map(
         (business) => business.id,
@@ -71,9 +97,9 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     }
 
     loadPendingNotifications();
-  }, [router.pathname]);
+  }, [router.pathname, workspace]);
 
-  const mainLinks = [
+  const businessMainLinks = [
     { href: "/dashboard", label: t("dashboardLayout.nav.home", "Home") },
     ...(pendingCount > 0
       ? [
@@ -99,7 +125,7 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     },
   ];
 
-  const personalStaffLinks = hasPersonalStaffWorkspace
+  const businessPersonalStaffLinks = hasPersonalStaffWorkspace
     ? [
         {
           href: "/staff",
@@ -113,13 +139,13 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
           href: "/staff/notifications",
           label: t(
             "dashboardLayout.myWork.notifications",
-            "Staff notifications",
+            "My notifications",
           ),
         },
       ]
     : [];
 
-  const lowerLinks = [
+  const businessLowerLinks = [
     {
       href: "/dashboard/availability",
       label: t("dashboardAvailability.pageTitle", "Availability"),
@@ -139,8 +165,50 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     },
   ];
 
+  const staffMainLinks = [
+    {
+      href: "/staff",
+      label: t("dashboardLayout.myWork.schedule", "My schedule"),
+    },
+    {
+      href: "/staff/availability",
+      label: t("dashboardLayout.myWork.availability", "My availability"),
+    },
+    {
+      href: "/staff/notifications",
+      label: t(
+        "dashboardLayout.myWork.notifications",
+        "My notifications",
+      ),
+    },
+  ];
+
+  const staffLowerLinks = [
+    {
+      href: "/support/staff",
+      label: t("nav.staffSupport", "Staff support"),
+    },
+    {
+      href: "/account",
+      label: t("dashboardLayout.nav.accountSettings", "My account"),
+    },
+  ];
+
+  const mainLinks = isStaffOnlyWorkspace
+    ? staffMainLinks
+    : businessMainLinks;
+  const personalStaffLinks = isStaffOnlyWorkspace
+    ? []
+    : businessPersonalStaffLinks;
+  const lowerLinks = isStaffOnlyWorkspace
+    ? staffLowerLinks
+    : businessLowerLinks;
+
   function isActiveLink(href: string) {
-    return router.pathname === href || router.pathname.startsWith(`${href}/`);
+    return (
+      router.pathname === href ||
+      (href !== "/staff" && router.pathname.startsWith(`${href}/`))
+    );
   }
 
   async function logout() {
@@ -164,13 +232,21 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
     <main className="dashboard-layout">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <Link href="/dashboard" className="logo">
+          <Link
+            href={isStaffOnlyWorkspace ? "/staff" : "/dashboard"}
+            className="logo"
+          >
             Mirë<span>book</span>
           </Link>
         </div>
 
         <nav className="sidebar-nav">
           <div className="sidebar-main-links">
+            {isStaffOnlyWorkspace && (
+              <p className="sidebar-section-label">
+                {t("staff.workspace.kicker", "Staff workspace")}
+              </p>
+            )}
             {mainLinks.map((link) => (
               <Link
                 key={link.href}
@@ -341,6 +417,22 @@ export default function DashboardLayout({ children, title, subtitle }: Props) {
         }
 
         @media (max-width: 720px) {
+          .sidebar-nav {
+            flex-direction: row;
+            gap: 0.5rem;
+            overflow-x: auto;
+          }
+
+          .sidebar-main-links,
+          .sidebar-personal-links,
+          .sidebar-lower-links {
+            display: contents;
+          }
+
+          .sidebar-section-label {
+            display: none;
+          }
+
           .dashboard-page-header {
             display: grid;
           }

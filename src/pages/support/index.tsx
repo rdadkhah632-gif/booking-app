@@ -156,11 +156,8 @@ export default function SupportPage() {
                   <p className="muted small" style={{ marginTop: "0.5rem" }}>
                     {t("support.customer.body")}
                   </p>
-                  <span
-                    className="btn btn-accent"
-                    style={{ marginTop: "1rem" }}
-                  >
-                    {t("nav.customerSupport")}
+                  <span className="support-route-cta">
+                    {t("nav.customerSupport")} <span aria-hidden="true">→</span>
                   </span>
                 </Link>
 
@@ -175,11 +172,8 @@ export default function SupportPage() {
                   <p className="muted small" style={{ marginTop: "0.5rem" }}>
                     {t("support.business.body")}
                   </p>
-                  <span
-                    className="btn btn-accent"
-                    style={{ marginTop: "1rem" }}
-                  >
-                    {t("nav.businessSupport")}
+                  <span className="support-route-cta">
+                    {t("nav.businessSupport")} <span aria-hidden="true">→</span>
                   </span>
                 </Link>
 
@@ -191,11 +185,8 @@ export default function SupportPage() {
                   <p className="muted small" style={{ marginTop: "0.5rem" }}>
                     {t("support.staff.body")}
                   </p>
-                  <span
-                    className="btn btn-accent"
-                    style={{ marginTop: "1rem" }}
-                  >
-                    {t("support.staff.title")}
+                  <span className="support-route-cta">
+                    {t("support.staff.title")} <span aria-hidden="true">→</span>
                   </span>
                 </Link>
               </div>
@@ -280,10 +271,13 @@ export default function SupportPage() {
                 <div className="card support-content">
                   <div>
                     <p className="small muted">
-                      {t("support.inboxStatus.kicker", "Before launch")}
+                      {t("support.inboxStatus.kicker", "How support works")}
                     </p>
                     <h2>
-                      {t("support.inboxStatus.title", "Support inbox status")}
+                      {t(
+                        "support.inboxStatus.title",
+                        "Your conversations stay connected",
+                      )}
                     </h2>
                   </div>
 
@@ -486,6 +480,17 @@ export default function SupportPage() {
         .support-route-card:hover {
           transform: translateY(-2px);
           border-color: rgba(255, 107, 53, 0.35);
+        }
+
+        .support-route-cta {
+          display: inline-flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          margin-top: auto;
+          padding-top: 1rem;
+          color: var(--accent);
+          font-weight: 800;
         }
 
         .support-content,

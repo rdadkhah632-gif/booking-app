@@ -399,6 +399,7 @@ export default function RegisterPage() {
           <div className="register-role-grid register-role-grid-top">
             <button
               type="button"
+              className="register-role-option"
               onClick={() => setRole("customer")}
               aria-pressed={role === "customer"}
               style={{
@@ -416,6 +417,11 @@ export default function RegisterPage() {
                 textAlign: "left",
               }}
             >
+              {role === "customer" && (
+                <span className="register-role-selected">
+                  {t("register.role.selected", "Selected")}
+                </span>
+              )}
               <strong>{t("register.role.customer", "Customer")}</strong>
               <p className="small muted">
                 {t(
@@ -427,6 +433,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
+              className="register-role-option"
               onClick={() => setRole("business")}
               aria-pressed={role === "business"}
               style={{
@@ -444,6 +451,11 @@ export default function RegisterPage() {
                 textAlign: "left",
               }}
             >
+              {role === "business" && (
+                <span className="register-role-selected">
+                  {t("register.role.selected", "Selected")}
+                </span>
+              )}
               <strong>{t("register.role.business", "Business")}</strong>
               <p className="small muted">
                 {t(
@@ -455,6 +467,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
+              className="register-role-option"
               onClick={() => setRole("staff")}
               aria-pressed={role === "staff"}
               style={{
@@ -470,6 +483,11 @@ export default function RegisterPage() {
                 textAlign: "left",
               }}
             >
+              {role === "staff" && (
+                <span className="register-role-selected">
+                  {t("register.role.selected", "Selected")}
+                </span>
+              )}
               <strong>{t("register.role.staff", "Staff")}</strong>
               <p className="small muted">
                 {t(
@@ -873,6 +891,30 @@ export default function RegisterPage() {
 
         .register-role-mobile {
           display: none;
+        }
+
+        .register-role-option {
+          position: relative;
+          display: grid;
+          gap: 0.35rem;
+          min-height: 132px;
+          align-content: start;
+          cursor: pointer;
+        }
+
+        .register-role-option:focus-visible {
+          outline: 2px solid var(--accent);
+          outline-offset: 2px;
+        }
+
+        .register-role-selected {
+          width: fit-content;
+          padding: 0.18rem 0.5rem;
+          border-radius: 999px;
+          background: var(--accent);
+          color: white;
+          font-size: 0.72rem;
+          font-weight: 800;
         }
 
         .register-business-fields {

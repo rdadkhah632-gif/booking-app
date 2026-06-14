@@ -1,5 +1,4 @@
-import AuthNav from "@/components/AuthNav";
-import Link from "next/link";
+import DashboardLayout from "@/components/DashboardLayout";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
@@ -225,10 +224,8 @@ export default function StaffCalendarPage() {
   }
 
   return (
-    <main>
-      <AuthNav />
-
-      <section className="page-shell">
+    <DashboardLayout workspace="staff">
+      <section className="staff-workspace-page">
         <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
           <div>
             <p className="small muted">
@@ -254,16 +251,6 @@ export default function StaffCalendarPage() {
             </p>
           </div>
 
-          <div className="page-header-actions">
-            <Link href="/staff/availability" className="btn btn-accent">
-              {t("staff.actions.updateAvailability", "Update availability")}
-            </Link>
-            {hasBusinessWorkspace && (
-              <Link href="/dashboard" className="btn btn-ghost">
-                {t("staff.actions.businessDashboard", "Business dashboard")}
-              </Link>
-            )}
-          </div>
         </div>
 
         {loading && (
@@ -396,9 +383,6 @@ export default function StaffCalendarPage() {
                       "Choose another day to review your schedule. New appointments will appear here once they are assigned to you.",
                     )}
                   </p>
-                  <Link href="/staff" className="btn btn-ghost">
-                    {t("staff.actions.dashboard", "Staff dashboard")}
-                  </Link>
                 </div>
               ) : (
                 <div className="staff-selected-bookings">
@@ -488,6 +472,11 @@ export default function StaffCalendarPage() {
       </section>
 
       <style jsx>{`
+        .staff-workspace-page {
+          width: 100%;
+          min-width: 0;
+        }
+
         .staff-calendar-toolbar {
           display: flex;
           justify-content: space-between;
@@ -628,6 +617,6 @@ export default function StaffCalendarPage() {
           }
         }
       `}</style>
-    </main>
+    </DashboardLayout>
   );
 }
