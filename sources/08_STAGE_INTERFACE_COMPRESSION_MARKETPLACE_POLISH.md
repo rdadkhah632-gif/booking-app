@@ -70,3 +70,20 @@ Wave 2B did not add persistence, schema, booking rules, listing rules or billing
 changes. Customers navigation was not added to the business sidebar because the
 repo currently has customer history/detail routes, not a safe standalone
 customer-list route.
+
+## Stage 8.5 Implemented
+
+- reduced business primary navigation to Today, Calendar, Bookings, Setup and
+  Inbox
+- demoted Account, Membership, Help and Log out into the user/account area
+- removed duplicate business logout from the setup/sidebar link group
+- renamed the business dashboard label from Home to Today while keeping the
+  `/dashboard` route stable
+- kept setup pages accessible through the Setup route and existing deep links
+- improved the empty Calendar state with setup, service, working-hours and
+  public-profile preview actions
+- kept staff navigation focused on Today, Calendar, Availability and Inbox,
+  with owner/business management only shown for accounts that can use it
+
+Stage 8.5 did not change booking logic, availability calculation, auth, RLS,
+staff linking, billing writes, notification generation or route protection.

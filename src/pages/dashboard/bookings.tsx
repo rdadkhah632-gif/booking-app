@@ -1071,21 +1071,50 @@ export default function Bookings() {
 
       {!pageLoading && business && bookings.length === 0 && (
         <section className="calendar-empty-state">
-          <h2>{t("dashboardBookings.emptyCalendar.title", "No appointments yet")}</h2>
-          <p className="muted">
-            {t(
-              "dashboardBookings.emptyCalendar.body",
-              "Once customers book, today’s requests and confirmed appointments will appear here in your calendar.",
-            )}
-          </p>
-          <div className="calendar-empty-actions">
-            <Link href="/dashboard/businesses" className="btn btn-ghost">
-              {t("dashboardBookings.empty.checkSetup", "Check setup")}
+          <div>
+            <h2>{t("dashboardBookings.emptyCalendar.title", "No appointments yet")}</h2>
+            <p className="muted">
+              {t(
+                "dashboardBookings.emptyCalendar.body",
+                "When customers book, appointment requests and confirmed bookings will appear here.",
+              )}
+            </p>
+          </div>
+
+          <div className="calendar-empty-ready-card">
+            <strong>
+              {t("dashboardBookings.emptyCalendar.readyTitle", "Ready to take bookings?")}
+            </strong>
+            <p className="small muted">
+              {t(
+                "dashboardBookings.emptyCalendar.readyBody",
+                "Complete setup, preview the customer profile, then share the booking page when you are ready.",
+              )}
+            </p>
+          </div>
+
+          <div className="calendar-empty-action-grid">
+            <Link href="/dashboard/businesses" className="calendar-empty-action">
+              <strong>{t("dashboardLayout.nav.setup", "Setup")}</strong>
+              <span>{t("dashboardBookings.empty.completeSetup", "Complete setup")}</span>
             </Link>
-            <Link href={`/explore/${business.id}`} className="btn btn-ghost">
-              {t("dashboardLayout.previewBusiness", "Preview business page")}
+            <Link href="/dashboard/services" className="calendar-empty-action">
+              <strong>{t("dashboardLayout.nav.services", "Services")}</strong>
+              <span>{t("dashboardBookings.empty.addService", "Add first service")}</span>
+            </Link>
+            <Link href="/dashboard/availability" className="calendar-empty-action">
+              <strong>{t("dashboardHome.setup.hours", "Working hours")}</strong>
+              <span>{t("dashboardBookings.empty.setAvailability", "Set availability")}</span>
+            </Link>
+            <Link href={`/explore/${business.id}`} className="calendar-empty-action">
+              <strong>{t("dashboardHome.setup.preview", "See what customers see")}</strong>
+              <span>{t("dashboardBookings.empty.previewProfile", "Preview public profile")}</span>
             </Link>
           </div>
+
+          <Link href="/dashboard" className="btn btn-ghost calendar-empty-today">
+            {t("dashboardLayout.nav.today", "Today")}
+          </Link>
         </section>
       )}
 
@@ -1524,6 +1553,49 @@ export default function Bookings() {
           flex-wrap: wrap;
         }
 
+        .calendar-empty-ready-card {
+          display: grid;
+          gap: 0.25rem;
+          padding: 0.85rem;
+          border: 1px solid rgba(255, 107, 53, 0.2);
+          border-radius: var(--radius);
+          background: rgba(255, 107, 53, 0.06);
+        }
+
+        .calendar-empty-ready-card p {
+          margin: 0;
+        }
+
+        .calendar-empty-action-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 0.65rem;
+        }
+
+        .calendar-empty-action {
+          display: grid;
+          gap: 0.2rem;
+          min-width: 0;
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        .calendar-empty-action span {
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .calendar-empty-today {
+          width: fit-content;
+        }
+
         .booking-success-row {
           display: flex;
           justify-content: space-between;
@@ -1548,6 +1620,7 @@ export default function Bookings() {
           .pending-strip,
           .pending-strip-list,
           .pending-pill,
+          .calendar-empty-action-grid,
           .calendar-empty-actions,
           .calendar-empty-actions :global(.btn),
           .calendar-empty-actions a {
@@ -1577,8 +1650,17 @@ export default function Bookings() {
             display: grid;
           }
 
+          .calendar-empty-action-grid {
+            grid-template-columns: 1fr;
+          }
+
           .booking-success-row :global(.btn),
           .booking-success-row button {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .calendar-empty-today {
             width: 100%;
             justify-content: center;
           }

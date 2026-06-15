@@ -839,8 +839,9 @@ export const en: TranslationTree = {
   "dashboardSettings.tools.support": "Business support",
   "dashboardSettings.tools.supportBody":
     "Get help with setup, bookings or account changes.",
-  "dashboardHome.title": "Home",
-  "dashboardHome.subtitle": "Today’s appointments, actions and the week ahead.",
+  "dashboardHome.title": "Today",
+  "dashboardHome.subtitle":
+    "Appointments, requests and setup progress for today.",
   "dashboardHome.checkingAccount": "Checking your account...",
   "dashboardHome.refreshHint":
     "Mirëbook refreshes this dashboard when you return to the tab. Use refresh if a customer action does not appear straight away.",
@@ -3467,4 +3468,17 @@ export const en: TranslationTree = {
   "dashboardLayout.nav.availability": "Availability",
   "dashboardLayout.nav.settings": "Settings",
   "dashboardLayout.nav.setup": "Setup",
+  "dashboardLayout.nav.today": "Today",
+  "dashboardLayout.nav.bookings": "Bookings",
+  "dashboardLayout.nav.membership": "Membership",
+  "dashboardLayout.nav.help": "Help",
+  "dashboardLayout.staffNav.today": "Today",
+  "dashboardLayout.staffNav.inbox": "Inbox",
+  "dashboardBookings.emptyCalendar.readyTitle": "Ready to take bookings?",
+  "dashboardBookings.emptyCalendar.readyBody":
+    "Complete setup, preview the customer profile, then share the booking page when you are ready.",
+  "dashboardBookings.empty.completeSetup": "Complete setup",
+  "dashboardBookings.empty.addService": "Add first service",
+  "dashboardBookings.empty.setAvailability": "Set availability",
+  "dashboardBookings.empty.previewProfile": "Preview public profile",
 };

@@ -441,10 +441,10 @@ export default function DashboardHome() {
 
   return (
     <DashboardLayout
-      title={t("dashboardHome.title", "Home")}
+      title={t("dashboardHome.title", "Today")}
       subtitle={t(
         "dashboardHome.subtitle",
-        "Today’s appointments, actions and the week ahead.",
+        "Appointments, requests and setup progress for today.",
       )}
     >
       {error && (

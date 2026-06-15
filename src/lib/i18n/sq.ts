@@ -891,9 +891,9 @@ export const sq: TranslationTree = {
   "dashboardSettings.tools.support": "Ndihmë për biznes",
   "dashboardSettings.tools.supportBody":
     "Merr ndihmë për konfigurim, rezervime ose ndryshime llogarie.",
-  "dashboardHome.title": "Kryefaqja",
+  "dashboardHome.title": "Sot",
   "dashboardHome.subtitle":
-    "Takimet e sotme, veprimet dhe java në vazhdim.",
+    "Takimet, kërkesat dhe progresi i konfigurimit për sot.",
   "dashboardHome.checkingAccount": "Duke kontrolluar llogarinë...",
   "dashboardHome.refreshHint":
     "Mirëbook e rifreskon këtë panel kur kthehesh në këtë tab. Përdor rifreskimin nëse një veprim i klientit nuk shfaqet menjëherë.",
@@ -3535,4 +3535,17 @@ export const sq: TranslationTree = {
   "dashboardLayout.nav.availability": "Disponueshmëria",
   "dashboardLayout.nav.settings": "Cilësimet",
   "dashboardLayout.nav.setup": "Konfigurimi",
+  "dashboardLayout.nav.today": "Sot",
+  "dashboardLayout.nav.bookings": "Rezervime",
+  "dashboardLayout.nav.membership": "Anëtarësimi",
+  "dashboardLayout.nav.help": "Ndihmë",
+  "dashboardLayout.staffNav.today": "Sot",
+  "dashboardLayout.staffNav.inbox": "Inbox",
+  "dashboardBookings.emptyCalendar.readyTitle": "Gati për rezervime?",
+  "dashboardBookings.emptyCalendar.readyBody":
+    "Përfundo konfigurimin, shiko profilin e klientit dhe ndaje faqen e rezervimit kur të jesh gati.",
+  "dashboardBookings.empty.completeSetup": "Përfundo konfigurimin",
+  "dashboardBookings.empty.addService": "Shto shërbimin e parë",
+  "dashboardBookings.empty.setAvailability": "Vendos disponueshmërinë",
+  "dashboardBookings.empty.previewProfile": "Shiko profilin publik",
 };

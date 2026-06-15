@@ -107,9 +107,9 @@ export default function DashboardLayout({
   }, [router.pathname, workspace]);
 
   const businessMainLinks = [
-    { href: "/dashboard", label: t("dashboardLayout.nav.home", "Home") },
+    { href: "/dashboard", label: t("dashboardLayout.nav.today", "Today") },
     {
-      href: "/dashboard/bookings",
+      href: "/dashboard/bookings?view=today",
       label:
         pendingCount > 0
           ? `${t("dashboardLayout.nav.calendar", "Calendar")} (${pendingCount > 9 ? "9+" : pendingCount})`
@@ -117,8 +117,12 @@ export default function DashboardLayout({
       urgent: pendingCount > 0,
     },
     {
+      href: "/dashboard/bookings?view=upcoming",
+      label: t("dashboardLayout.nav.bookings", "Bookings"),
+    },
+    {
       href: "/dashboard/businesses",
-      label: t("dashboardLayout.nav.myBusiness", "My Business"),
+      label: t("dashboardLayout.nav.setup", "Setup"),
     },
     {
       href: "/dashboard/notifications",
@@ -129,7 +133,7 @@ export default function DashboardLayout({
   const staffMainLinks = [
     {
       href: "/staff",
-      label: t("dashboardLayout.staffNav.home", "Home"),
+      label: t("dashboardLayout.staffNav.today", "Today"),
     },
     {
       href: "/staff/calendar",
@@ -141,7 +145,7 @@ export default function DashboardLayout({
     },
     {
       href: "/staff/notifications",
-      label: t("dashboardLayout.staffNav.notifications", "Notifications"),
+      label: t("dashboardLayout.staffNav.inbox", "Inbox"),
     },
   ];
 
@@ -167,28 +171,9 @@ export default function DashboardLayout({
     },
   ];
 
-  const businessSecondaryLinks = [
-    {
-      href: "/dashboard/services",
-      label: t("dashboardLayout.nav.services", "Services"),
-    },
-    {
-      href: "/dashboard/staff",
-      label: t("dashboardLayout.nav.team", "Team"),
-    },
-    {
-      href: "/dashboard/availability",
-      label: t("dashboardLayout.nav.availability", "Availability"),
-    },
-    {
-      href: "/dashboard/settings",
-      label: t("dashboardLayout.nav.settings", "Settings"),
-    },
-  ];
-
   const mainLinks = workspace === "staff" ? staffMainLinks : businessMainLinks;
   const secondaryLinks =
-    workspace === "staff" ? staffSecondaryLinks : businessSecondaryLinks;
+    workspace === "staff" ? staffSecondaryLinks : [];
 
   const myBusinessRoutes = [
     "/dashboard/businesses",
@@ -202,16 +187,40 @@ export default function DashboardLayout({
   ];
 
   function isActiveLink(href: string) {
-    if (workspace !== "staff" && href === "/dashboard/businesses") {
+    const [hrefPath, hrefQuery = ""] = href.split("?");
+    const params = new URLSearchParams(hrefQuery);
+    const hrefView = params.get("view");
+
+    if (workspace !== "staff" && hrefPath === "/dashboard/businesses") {
       return myBusinessRoutes.some(
         (route) =>
           router.pathname === route || router.pathname.startsWith(`${route}/`),
       );
     }
 
+    if (workspace !== "staff" && hrefPath === "/dashboard/bookings") {
+      if (router.pathname !== "/dashboard/bookings") return false;
+
+      const currentView =
+        typeof router.query.view === "string" ? router.query.view : "";
+
+      if (hrefView === "today") {
+        return !currentView || currentView === "today" || Boolean(router.query.date);
+      }
+
+      if (hrefView === "upcoming") {
+        return (
+          currentView === "upcoming" ||
+          currentView === "week" ||
+          currentView === "history" ||
+          Boolean(router.query.status)
+        );
+      }
+    }
+
     return (
-      router.pathname === href ||
-      (href !== "/staff" && router.pathname.startsWith(`${href}/`))
+      router.pathname === hrefPath ||
+      (hrefPath !== "/staff" && router.pathname.startsWith(`${hrefPath}/`))
     );
   }
 
@@ -265,12 +274,6 @@ export default function DashboardLayout({
 
           {secondaryLinks.length > 0 && (
             <div className="sidebar-lower-links">
-              {workspace === "business" && (
-                <p className="sidebar-section-label">
-                  {t("dashboardLayout.nav.setup", "Setup")}
-                </p>
-              )}
-
               {secondaryLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -281,13 +284,15 @@ export default function DashboardLayout({
                 </Link>
               ))}
 
-              <button
-                type="button"
-                onClick={logout}
-                className="sidebar-link sidebar-logout"
-              >
-                {t("auth.logout", "Log out")}
-              </button>
+              {workspace === "staff" && (
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="sidebar-link sidebar-logout"
+                >
+                  {t("auth.logout", "Log out")}
+                </button>
+              )}
             </div>
           )}
 
@@ -307,7 +312,10 @@ export default function DashboardLayout({
                   {t("dashboardLayout.nav.account", "Account")}
                 </Link>
                 <Link href="/dashboard/billing" className="sidebar-account-action">
-                  {t("dashboardSettings.tools.billing", "Billing")}
+                  {t("dashboardLayout.nav.membership", "Membership")}
+                </Link>
+                <Link href="/support/business" className="sidebar-account-action">
+                  {t("dashboardLayout.nav.help", "Help")}
                 </Link>
                 <button
                   type="button"
