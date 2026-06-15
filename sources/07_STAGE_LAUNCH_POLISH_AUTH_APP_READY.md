@@ -26,6 +26,10 @@ Batch 4B status: Mirëbook Business navigation model and workspace information
 architecture rebuild implemented. Production build, static validation and
 authenticated owner visual QA must pass before Batch 4B is closed.
 
+Batch 4C status: Calendar-first business workspace rebuild implemented.
+Production build, static validation and responsive checks must pass before
+Batch 4C is closed.
+
 Batch 5 status: Email verification and password-reset readiness implemented.
 Production build and static validation pass. Live Supabase confirmation,
 recovery-email delivery and cross-domain callback QA remain required before
@@ -673,6 +677,40 @@ Tracked follow-up:
 - a full time-block calendar is intentionally deferred; the current Calendar
   remains a reliable date-grouped appointment manager for launch
 - authenticated desktop/mobile owner QA is required in English and Albanian
+
+### Batch 4C - Calendar-First Business Workspace Rebuild
+
+Implemented:
+
+- rebuilt `/dashboard/bookings` as a schedule-first Calendar workspace with a
+  Today control, date picker, range chips, status filter, staff filter when
+  staff names are present, search and compact time-based appointment rows
+- made pending requests prominent with a requests strip while preserving the
+  existing accept, decline, cancel and complete action handlers
+- replaced generic booking-list cards in the main calendar view with compact
+  operational appointment rows grouped by day and time
+- kept Home as overview-only: summary counts, true setup blockers and the
+  seven-day schedule remain, while duplicate navigation/action blocks stay
+  removed
+- kept My Business as the grouped hub for profile, services, team,
+  availability, booking rules and public page access
+- kept Team list compact by default with expandable details for service,
+  availability and activation controls
+- polished the business profile/account area so initials, workspace context,
+  Account, Billing and Logout read as one profile control
+
+Protected behavior:
+
+- no booking creation, booking status transition, slot calculation, staff
+  invite/linking, owner-as-staff, auth/RLS/session, billing/payment, middleware
+  or database behavior changed
+
+Remaining follow-ups:
+
+- authenticated owner QA with real bookings across desktop and mobile
+- consider a staff-column time grid only after launch-critical workflows are
+  stable
+- continue removing any long explanatory cards found during authenticated QA
 
 ### Batch 5 - Email Auth, Verification And Password Reset Readiness
 

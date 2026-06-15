@@ -1672,6 +1672,7 @@ export const en: TranslationTree = {
   "dashboardBookings.summary.currentViewBody": "Bookings matching the filters",
   "dashboardBookings.range.tomorrow": "Tomorrow",
   "dashboardBookings.range.upcoming": "All upcoming",
+  "dashboardBookings.calendar.kicker": "Schedule",
   "dashboardBookings.filters.calendarView": "Calendar view",
   "dashboardBookings.filters.body":
     "Start with today, jump to a specific date, or open a filtered Mirëbook view from the dashboard calendar.",
@@ -1679,6 +1680,7 @@ export const en: TranslationTree = {
   "dashboardBookings.filters.status": "Status",
   "dashboardBookings.filters.searchLabel": "Search customer/service/staff",
   "dashboardBookings.filters.searchPlaceholder": "Search bookings",
+  "dashboardBookings.filters.allStaff": "All staff",
   "dashboardBookings.filters.activeView": "Active view",
   "dashboardBookings.filters.reset": "Reset filters",
   "dashboardBookings.filters.searchShort": "Search",
@@ -1722,10 +1724,16 @@ export const en: TranslationTree = {
   "dashboardBookings.empty.noBookingsTitle": "No bookings yet",
   "dashboardBookings.empty.noBookingsBody":
     "Customer bookings for this business will appear here once your public page is published and customers start booking.",
-  "dashboardBookings.empty.noFilteredTitle": "No bookings in this view",
+  "dashboardBookings.empty.noFilteredTitle": "No appointments in this view",
   "dashboardBookings.empty.noFilteredBody":
-    "Try another date, status or search term. If this came from the dashboard schedule preview, the selected date is already applied through the URL.",
+    "Try another date, staff member, status or search term.",
+  "dashboardBookings.emptyCalendar.title": "No appointments yet",
+  "dashboardBookings.emptyCalendar.body":
+    "Once customers book, today’s requests and confirmed appointments will appear here in your calendar.",
   "dashboardBookings.empty.checkSetup": "Check setup",
+  "dashboardBookings.pendingStrip.title": "Requests waiting",
+  "dashboardBookings.pendingStrip.body":
+    "Review pending booking requests before they become part of the confirmed schedule.",
   "dashboardBookings.notification.defaultService": "your appointment",
   "dashboardBookings.notification.acceptedTitle": "Booking accepted",
   "dashboardBookings.notification.acceptedMessage":

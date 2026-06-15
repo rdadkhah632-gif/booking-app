@@ -277,13 +277,17 @@ export default function DashboardLayout({
                 </span>
               </Link>
               <div className="sidebar-account-actions">
-                <Link href="/account">
+                <Link href="/account" className="sidebar-account-action">
                   {t("dashboardLayout.nav.account", "Account")}
                 </Link>
-                <Link href="/dashboard/billing">
+                <Link href="/dashboard/billing" className="sidebar-account-action">
                   {t("dashboardSettings.tools.billing", "Billing")}
                 </Link>
-                <button type="button" onClick={logout}>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="sidebar-account-action logout"
+                >
                   {t("auth.logout", "Log out")}
                 </button>
               </div>
@@ -355,9 +359,9 @@ export default function DashboardLayout({
 
         .sidebar-account {
           display: grid;
-          gap: 0.7rem;
+          gap: 0.75rem;
           margin-top: auto;
-          padding: 1rem 0.75rem 0;
+          padding: 0.9rem 0.75rem 0;
           border-top: 1px solid var(--border);
         }
 
@@ -368,11 +372,15 @@ export default function DashboardLayout({
           color: var(--text);
           text-decoration: none;
           min-width: 0;
+          padding: 0.65rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(255, 255, 255, 0.03);
         }
 
         .sidebar-account-avatar {
-          width: 2.25rem;
-          height: 2.25rem;
+          width: 2.5rem;
+          height: 2.5rem;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -401,20 +409,34 @@ export default function DashboardLayout({
         }
 
         .sidebar-account-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
+          display: grid;
+          gap: 0.35rem;
         }
 
         .sidebar-account-actions a,
         .sidebar-account-actions button {
-          padding: 0;
-          border: 0;
+          min-height: 2.25rem;
+          padding: 0.45rem 0.6rem;
+          border: 1px solid transparent;
+          border-radius: 0.65rem;
           background: transparent;
           color: var(--text-muted);
           font: inherit;
-          font-size: 0.78rem;
+          font-size: 0.82rem;
+          text-align: left;
+          text-decoration: none;
           cursor: pointer;
+        }
+
+        .sidebar-account-actions a:hover,
+        .sidebar-account-actions button:hover {
+          border-color: var(--border);
+          background: var(--surface-2);
+          color: var(--text);
+        }
+
+        .sidebar-account-actions .logout {
+          color: var(--text-muted);
         }
 
         .sidebar-section-label {
@@ -569,6 +591,7 @@ export default function DashboardLayout({
             flex: 0 0 auto;
             white-space: nowrap;
             border-bottom: 3px solid transparent;
+            border-radius: 0;
             color: var(--text-muted);
           }
 

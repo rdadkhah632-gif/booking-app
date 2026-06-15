@@ -1696,6 +1696,7 @@ export const sq: TranslationTree = {
     "Rezervime që përputhen me filtrat",
   "dashboardBookings.range.tomorrow": "Nesër",
   "dashboardBookings.range.upcoming": "Të gjitha në vazhdim",
+  "dashboardBookings.calendar.kicker": "Orari",
   "dashboardBookings.filters.calendarView": "Pamja e kalendarit",
   "dashboardBookings.filters.body":
     "Fillo me sot, shko te një datë specifike, ose hap një pamje Mirëbook të filtruar nga kalendari i dashboard-it.",
@@ -1703,6 +1704,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.filters.status": "Statusi",
   "dashboardBookings.filters.searchLabel": "Kërko klient/shërbim/staf",
   "dashboardBookings.filters.searchPlaceholder": "Kërko rezervime",
+  "dashboardBookings.filters.allStaff": "I gjithë stafi",
   "dashboardBookings.filters.activeView": "Pamja aktive",
   "dashboardBookings.filters.reset": "Rivendos filtrat",
   "dashboardBookings.filters.searchShort": "Kërko",
@@ -1746,10 +1748,16 @@ export const sq: TranslationTree = {
   "dashboardBookings.empty.noBookingsTitle": "Nuk ka ende rezervime",
   "dashboardBookings.empty.noBookingsBody":
     "Rezervimet e klientëve për këtë biznes do të shfaqen këtu pasi faqja publike të publikohet dhe klientët të fillojnë të rezervojnë.",
-  "dashboardBookings.empty.noFilteredTitle": "Nuk ka rezervime në këtë pamje",
+  "dashboardBookings.empty.noFilteredTitle": "Nuk ka takime në këtë pamje",
   "dashboardBookings.empty.noFilteredBody":
-    "Provo një datë, status ose term kërkimi tjetër. Nëse kjo erdhi nga pamja e orarit në dashboard, data e zgjedhur është aplikuar tashmë nga URL-ja.",
+    "Provo një datë, anëtar stafi, status ose term kërkimi tjetër.",
+  "dashboardBookings.emptyCalendar.title": "Nuk ka ende takime",
+  "dashboardBookings.emptyCalendar.body":
+    "Pasi klientët të rezervojnë, kërkesat e sotme dhe takimet e konfirmuara do të shfaqen këtu në kalendar.",
   "dashboardBookings.empty.checkSetup": "Kontrollo konfigurimin",
+  "dashboardBookings.pendingStrip.title": "Kërkesa në pritje",
+  "dashboardBookings.pendingStrip.body":
+    "Shqyrto kërkesat në pritje para se të bëhen pjesë e orarit të konfirmuar.",
   "dashboardBookings.notification.defaultService": "takimi yt",
   "dashboardBookings.notification.acceptedTitle": "Rezervimi u pranua",
   "dashboardBookings.notification.acceptedMessage":
