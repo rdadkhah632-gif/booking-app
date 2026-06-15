@@ -50,7 +50,7 @@ export default function DashboardBillingPage() {
 
   function statusLabel(status: BillingState["billing_status"]) {
     const labels: Record<BillingState["billing_status"], string> = {
-      not_configured: t("billing.status.notConfigured", "Not configured"),
+      not_configured: t("billing.status.notConfigured", "Early partner access"),
       free_trial: t("billing.status.freeTrial", "Free trial"),
       founding_free: t("billing.status.foundingFree", "Founding free period"),
       active: t("billing.status.active", "Active"),
@@ -67,7 +67,7 @@ export default function DashboardBillingPage() {
     if (status === "free_trial")
       return t(
         "billing.status.freeTrialBody",
-        "Your launch trial is active. No payment is being taken yet.",
+        "Your early partner trial is active.",
       );
     if (status === "founding_free")
       return t(
@@ -77,7 +77,7 @@ export default function DashboardBillingPage() {
     if (status === "active")
       return t(
         "billing.status.activeBody",
-        "Your Mirëbook Launch subscription is recorded as active.",
+        "Your Mirëbook Launch membership is active.",
       );
     if (status === "manual_comped")
       return t(
@@ -92,7 +92,7 @@ export default function DashboardBillingPage() {
     if (status === "cancelled")
       return t(
         "billing.status.cancelledBody",
-        "This subscription record is cancelled. Your booking tools are not restricted in this batch.",
+        "This membership is cancelled. Customer bookings are managed separately.",
       );
     if (status === "paused")
       return t(
@@ -102,7 +102,7 @@ export default function DashboardBillingPage() {
 
     return t(
       "billing.status.notConfiguredBody",
-      "Mirëbook has not configured a manual billing record for this business yet.",
+      "Mirëbook Business is currently available for early partners.",
     );
   }
 
@@ -257,16 +257,16 @@ export default function DashboardBillingPage() {
 
   return (
     <DashboardLayout
-      title={t("billing.pageTitle", "Billing")}
+      title={t("billing.pageTitle", "Membership")}
       subtitle={
         selectedBusiness
           ? t(
               "billing.pageSubtitleBusiness",
-              "Subscription details for {{business}}.",
+              "Membership details for {{business}}.",
             ).replace("{{business}}", selectedBusiness.name)
           : t(
               "billing.pageSubtitle",
-              "View your Mirëbook business subscription details.",
+              "View your Mirëbook Business membership details.",
             )
       }
     >
@@ -317,18 +317,18 @@ export default function DashboardBillingPage() {
               <h3>
                 {t(
                   "billing.checkout.successTitle",
-                  "Test Checkout completed",
+                  "Membership checkout complete",
                 )}
               </h3>
               <p className="muted" style={{ marginTop: "0.5rem" }}>
                 {billing.billing_status === "active"
                   ? t(
                       "billing.checkout.successSyncedBody",
-                      "Stripe accepted the test subscription and Mirëbook has synced the billing status.",
+                      "Mirëbook has synced the active membership status.",
                     )
                   : t(
                       "billing.checkout.successPendingBody",
-                      "Stripe accepted the test subscription. Billing status may take a moment to sync.",
+                      "Membership checkout was accepted. Status may take a moment to sync.",
                     )}
               </p>
             </div>
@@ -348,7 +348,7 @@ export default function DashboardBillingPage() {
               <p className="muted" style={{ marginTop: "0.5rem" }}>
                 {t(
                   "billing.checkout.cancelledBody",
-                  "No test subscription was started. Your Mirëbook access has not changed.",
+                  "No membership checkout was started. Your Mirëbook access has not changed.",
                 )}
               </p>
             </div>
@@ -397,13 +397,13 @@ export default function DashboardBillingPage() {
               <h3>
                 {t(
                   "billing.manualSetupPendingTitle",
-                  "Billing setup is being prepared",
+                  "Membership details are being prepared",
                 )}
               </h3>
               <p className="muted" style={{ marginTop: "0.5rem" }}>
                 {t(
                   "billing.manualSetupPendingBody",
-                  "Your business can keep using bookings, staff tools and its public listing while Mirëbook prepares the manual billing record.",
+                  "Your business can keep using bookings, staff tools and its public listing during the early partner period.",
                 )}
               </p>
             </div>
@@ -412,7 +412,7 @@ export default function DashboardBillingPage() {
           <div className="billing-hero card">
             <div>
               <p className="small" style={{ color: "var(--accent)" }}>
-                {t("billing.heroKicker", "Business subscription")}
+                {t("billing.heroKicker", "Membership")}
               </p>
               <h2 style={{ marginTop: "0.25rem" }}>
                 {billing.plan_name ||
@@ -421,7 +421,7 @@ export default function DashboardBillingPage() {
               <p className="muted" style={{ marginTop: "0.5rem" }}>
                 {t(
                   "billing.heroBody",
-                  "One clear subscription for the tools your business uses to manage bookings and customers.",
+                  "Mirëbook Business is currently available for early partners.",
                 )}
               </p>
             </div>
@@ -433,7 +433,7 @@ export default function DashboardBillingPage() {
           <div className="grid-3" style={{ marginBottom: "1.5rem" }}>
             <div className="card">
               <p className="small muted">
-                {t("billing.subscriptionStatus", "Billing status")}
+                {t("billing.subscriptionStatus", "Membership status")}
               </p>
               <h3>{statusLabel(billing.billing_status)}</h3>
               <p className="small muted" style={{ marginTop: "0.5rem" }}>
@@ -446,13 +446,12 @@ export default function DashboardBillingPage() {
                 {t("billing.agreedPrice", "Agreed monthly price")}
               </p>
               <h3>
-                {monthlyPrice ||
-                  t("billing.priceNotSet", "Not agreed yet")}
+                {monthlyPrice || t("billing.priceNotSet", "Not agreed yet")}
               </h3>
               <p className="small muted" style={{ marginTop: "0.5rem" }}>
                 {t(
                   "billing.noChargeYet",
-                  "No real payment is taken while Checkout is in test mode.",
+                  "No customer booking commission is charged during the early partner period.",
                 )}
               </p>
             </div>
@@ -506,7 +505,9 @@ export default function DashboardBillingPage() {
 
           <div className="billing-grid">
             <div className="card">
-              <h2>{t("billing.includedTitle", "Included in Mirëbook Launch")}</h2>
+              <h2>
+                {t("billing.includedTitle", "Included in Mirëbook Launch")}
+              </h2>
               <ul className="billing-feature-list">
                 <li>{t("billing.included.bookings", "Booking management")}</li>
                 <li>
@@ -533,19 +534,17 @@ export default function DashboardBillingPage() {
             </div>
 
             <div className="card">
-              <h2>
-                {t("billing.onlinePaymentsTitle", "Test subscription Checkout")}
-              </h2>
+              <h2>{t("billing.onlinePaymentsTitle", "Membership checkout")}</h2>
               <p className="muted" style={{ marginTop: "0.65rem" }}>
                 {t(
                   "billing.onlinePaymentsBody",
-                  "Use Stripe test mode to check the Mirëbook Membership subscription flow. Test Checkout does not change platform access.",
+                  "Membership plans are being enabled for early partners. Customer bookings stay separate from membership.",
                 )}
               </p>
               <p className="small muted" style={{ marginTop: "1rem" }}>
                 {t(
                   "billing.noAccessRestriction",
-                  "Billing status does not restrict bookings, staff access or your public listing in this stage.",
+                  "Membership status does not restrict bookings, staff access or your public listing.",
                 )}
               </p>
               <button
@@ -556,16 +555,10 @@ export default function DashboardBillingPage() {
                 disabled={startingCheckout}
               >
                 {startingCheckout
-                  ? t(
-                      "billing.checkout.starting",
-                      "Opening test Checkout...",
-                    )
+                  ? t("billing.checkout.starting", "Opening checkout...")
                   : billing.billing_status === "active"
-                    ? t(
-                        "billing.checkout.runAgain",
-                        "Run another test Checkout",
-                      )
-                    : t("billing.checkout.start", "Start test Checkout")}
+                    ? t("billing.checkout.runAgain", "Run membership checkout")
+                    : t("billing.checkout.start", "Start membership checkout")}
               </button>
             </div>
           </div>

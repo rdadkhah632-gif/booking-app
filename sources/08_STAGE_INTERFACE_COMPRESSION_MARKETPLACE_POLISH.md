@@ -87,3 +87,51 @@ customer-list route.
 
 Stage 8.5 did not change booking logic, availability calculation, auth, RLS,
 staff linking, billing writes, notification generation or route protection.
+
+## Stage 8.6 Business Architecture Rebuild Implemented
+
+- rebuilt the authenticated business shell around product-level navigation:
+  Today, Calendar, Bookings, Setup and Inbox
+- demoted Account, Membership, Help and Log out into a profile/account area for
+  both business and staff workspaces
+- clarified Calendar versus Bookings without changing the booking data model:
+  Calendar is the schedule view for what happens when, while Bookings is the
+  management view for requests, upcoming records and history
+- rebuilt `/dashboard/businesses` as Setup with one primary next action, a
+  five-step checklist, compact customer preview, secondary Advanced links and a
+  collapsed profile-details editor
+- kept Services, Team, Working hours, Booking rules and Membership routes live
+  as Setup destinations rather than primary sidebar architecture
+- made Today show operational status, requests, appointments and one next action
+  instead of repeating the full setup workspace
+- cleaned Account so it stays personal: verification, preferences, personal
+  details, security, region and compact role summaries only
+- changed owner-facing Billing copy to Membership / early partner wording and
+  removed test/sandbox-style presentation from the business page
+- shortened Working hours and Booking rules language to avoid exposing internal
+  availability/settings architecture
+- kept staff navigation focused on Today, Calendar, Availability and Inbox, with
+  business dashboard access demoted into the account area for owner-as-staff
+
+Stage 8.6 did not change:
+
+- booking creation logic
+- booking lifecycle/status transitions
+- availability calculations or save behavior
+- Supabase auth, RLS, route protection or middleware/domain split
+- staff invite/linking or owner-as-staff data logic
+- notification generation/read behavior
+- billing write, checkout or webhook logic
+- database schema
+
+Remaining QA notes:
+
+- visually inspect signed-in business routes on desktop and mobile:
+  `/dashboard`, `/dashboard/bookings?view=today`,
+  `/dashboard/bookings?view=upcoming`, `/dashboard/businesses`,
+  `/dashboard/services`, `/dashboard/staff`, `/dashboard/availability`,
+  `/dashboard/settings`, `/dashboard/notifications`, `/dashboard/billing` and
+  `/account`
+- visually inspect staff routes after login, especially owner-as-staff accounts
+- verify real business data still makes the new Setup checklist point to the
+  correct next action

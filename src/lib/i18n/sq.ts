@@ -156,8 +156,7 @@ export const sq: TranslationTree = {
   "home.journey.track.body":
     "Mbaj kërkesat, takimet e konfirmuara dhe historikun së bashku te Rezervimet e mia.",
   "home.customerBand.kicker": "Krijuar për klientët",
-  "home.customerBand.title":
-    "Rezervo takime lokale pa humbur detajet.",
+  "home.customerBand.title": "Rezervo takime lokale pa humbur detajet.",
   "home.customerBand.body":
     "Mirëbook mban së bashku biznesin, shërbimin, stafin, orarin dhe statusin, para dhe pas rezervimit.",
   "home.business.kicker": "Për bizneset",
@@ -287,8 +286,7 @@ export const sq: TranslationTree = {
   "businessHome.features.profile.title": "Profili yt online i biznesit",
   "businessHome.features.profile.body":
     "Publiko shërbimet, stafin dhe disponueshmërinë në një faqe Mirëbook për klientët.",
-  "businessHome.features.notifications.title":
-    "Njoftime të qarta operative",
+  "businessHome.features.notifications.title": "Njoftime të qarta operative",
   "businessHome.features.notifications.body":
     "Shiko kërkesat e rezervimit, aktivitetin e ndryshimit të orarit dhe përditësimet që kërkojnë vëmendje.",
   "businessHome.features.operations.title": "Hapësira për pronarë dhe staf",
@@ -343,8 +341,7 @@ export const sq: TranslationTree = {
   "explore.results.loading": "Duke ngarkuar bizneset...",
   "explore.results.clearCurrent": "Pastro filtrat aktualë",
   "explore.results.listBusiness": "Shto biznesin tënd",
-  "explore.results.loadingBookable":
-    "Duke ngarkuar bizneset e disponueshme...",
+  "explore.results.loadingBookable": "Duke ngarkuar bizneset e disponueshme...",
   "explore.stats.bookableBusiness": "biznes i rezervueshëm",
   "explore.stats.bookableBusinesses": "biznese të rezervueshme",
   "explore.stats.city": "qytet",
@@ -378,11 +375,9 @@ export const sq: TranslationTree = {
   "explore.card.staffPlural": "anëtarë stafi",
   "explore.card.viewTimes": "Shiko oraret dhe rezervo",
   "explore.card.bookNow": "Rezervo tani",
-  "explore.card.locationComingSoon":
-    "Vendndodhja nuk është dhënë",
+  "explore.card.locationComingSoon": "Vendndodhja nuk është dhënë",
   "explore.brand.kicker": "Mirëbook",
-  "explore.brand.title":
-    "Gjej shërbime lokale dhe mbaj të qartë çdo takim",
+  "explore.brand.title": "Gjej shërbime lokale dhe mbaj të qartë çdo takim",
   "explore.brand.description":
     "Shfleto biznese të rezervueshme, zgjidh një shërbim dhe orar të lirë, pastaj ndiq kërkesat dhe takimet e konfirmuara në një vend.",
   "explore.brand.footer":
@@ -402,8 +397,7 @@ export const sq: TranslationTree = {
   "explore.trust.customerBody":
     "Çdo profil tregon nëse rezervimi konfirmohet menjëherë apo dërgohet te biznesi për shqyrtim.",
   "explore.trust.businessKicker": "Për bizneset",
-  "explore.trust.businessTitle":
-    "Profile të bazuara në disponueshmëri reale",
+  "explore.trust.businessTitle": "Profile të bazuara në disponueshmëri reale",
   "explore.trust.businessBody":
     "Bizneset publikojnë shërbimet, caktojnë stafin dhe vendosin oraret para se të shfaqen si të rezervueshme.",
   "explore.trust.billing": "Bazat e faturimit",
@@ -461,8 +455,7 @@ export const sq: TranslationTree = {
   "publicBusiness.summary.customerRequiredBody":
     "Përdor një llogari klienti për të testuar ose bërë një rezervim klienti.",
   "publicBusiness.summary.ownerPreview": "Faqja e biznesit tënd",
-  "publicBusiness.summary.ownerPreviewTitle":
-    "Po shikon faqen e biznesit tënd",
+  "publicBusiness.summary.ownerPreviewTitle": "Po shikon faqen e biznesit tënd",
   "publicBusiness.summary.ownerPreviewBody":
     "Për të testuar rezervimin si klient, përdor një llogari klienti. Menaxhoje këtë biznes nga paneli yt.",
   "publicBusiness.summary.manageBusiness": "Menaxho këtë biznes",
@@ -492,7 +485,7 @@ export const sq: TranslationTree = {
     "Ndihmë për konfigurimin e biznesit dhe rezervimet",
   "support.business.heroBody":
     "Përdor këtë për konfigurim, publikim, shërbime, staf, orare pune, miratim rezervimesh, prova falas, akses abonimi dhe probleme të llogarisë së biznesit.",
-  "support.business.loading": "Duke ngarkuar kontekstin e biznesit...",
+  "support.business.loading": "Duke ngarkuar suportin e biznesit...",
   "support.business.loginRequired":
     "Duhet të jesh i/e kyçur për të dërguar mesazh ndihme.",
   "support.business.validation":
@@ -547,8 +540,7 @@ export const sq: TranslationTree = {
   "myBookings.signedInAs": "Hyrë si",
   "myBookings.subtitle": "Shiko dhe menaxho takimet e tua në Mirëbook.",
   "myBookings.requestSent.kicker": "Kërkesa u dërgua",
-  "myBookings.requestSent.title":
-    "Në pritje që biznesi ta konfirmojë.",
+  "myBookings.requestSent.title": "Në pritje që biznesi ta konfirmojë.",
   "myBookings.requestSent.body":
     "Ky takim nuk është ende i konfirmuar. Mund ta gjurmosh kërkesën këtu ose te Njoftimet.",
   "myBookings.rescheduleSent.kicker": "Kërkesa për ndryshim orari u dërgua",
@@ -751,13 +743,12 @@ export const sq: TranslationTree = {
   "notifications.status.superseded": "U zëvendësua",
   "notifications.status.completed": "Përfunduar",
   "notifications.status.confirmed": "Konfirmuar",
-  "dashboardSettings.pageTitle": "Cilësimet e biznesit",
-  "dashboardSettings.kicker": "Cilësimet e biznesit",
+  "dashboardSettings.pageTitle": "Rregullat e rezervimit",
+  "dashboardSettings.kicker": "Rregullat e rezervimit",
   "dashboardSettings.title": "Menaxho rregullat e biznesit",
   "dashboardSettings.subtitle":
-    "Kontrollo miratimin e rezervimeve, rregullat dhe politikat për klientët.",
-  "dashboardSettings.subtitleSelected":
-    "Kontrollo miratimin e rezervimeve, rregullat dhe politikat për",
+    "Zgjidh si miratohen takimet dhe sa përpara mund të rezervojnë klientët.",
+  "dashboardSettings.subtitleSelected": "Zgjidh rregullat e takimeve për",
   "dashboardSettings.loading": "Duke ngarkuar cilësimet e biznesit Mirëbook...",
   "dashboardSettings.error.load": "Cilësimet e biznesit nuk u ngarkuan.",
   "dashboardSettings.chooseBusiness":
@@ -854,7 +845,8 @@ export const sq: TranslationTree = {
   "dashboardSettings.more.subtitle":
     "Konfigurimi i biznesit, cilësimet e rezervimeve, raportet, faturimi, ndihma dhe mjetet e llogarisë.",
   "dashboardSettings.more.kicker": "Më shumë",
-  "dashboardSettings.more.title": "Konfigurimi i biznesit dhe mjetet e llogarisë",
+  "dashboardSettings.more.title":
+    "Konfigurimi i biznesit dhe mjetet e llogarisë",
   "dashboardSettings.more.body":
     "Puna ditore qëndron te Kryefaqja, Rezervimet, Shërbimet dhe Ekipi. Përdor këto mjete dytësore kur duhet të ndryshosh konfigurimin ose të shikosh llogarinë.",
   "dashboardSettings.more.setupBody":
@@ -1006,9 +998,9 @@ export const sq: TranslationTree = {
   "dashboardHome.shortcuts.availability.title": "Vendos disponueshmërinë",
   "dashboardHome.shortcuts.availability.body":
     "Vendos ditët dhe oraret e biznesit kur klientët mund të rezervojnë.",
-  "dashboardBusinesses.pageTitle": "Biznesi im",
+  "dashboardBusinesses.pageTitle": "Konfigurimi",
   "dashboardBusinesses.pageSubtitle":
-    "Profili, shërbimet, ekipi, disponueshmëria dhe rregullat e rezervimit në një vend.",
+    "Përgatit biznesin që klientët të rezervojnë.",
   "dashboardBusinesses.myBusiness.body":
     "Menaxho informacionin dhe cilësimet ku mbështeten klientët kur rezervojnë.",
   "dashboardBusinesses.myBusiness.complete": "I plotë",
@@ -1067,11 +1059,11 @@ export const sq: TranslationTree = {
     "Shto kategori dhe vendndodhje para publikimit",
   "dashboardBusinesses.liveOnMirebook": "Live në Mirëbook",
   "dashboardBusinesses.hidden": "I fshehur",
-  "dashboardBusinesses.autoAccept": "Pranim automatik",
+  "dashboardBusinesses.autoAccept": "Rezervim i menjëhershëm",
   "dashboardBusinesses.readyToBook": "Gati për rezervime",
-  "dashboardBusinesses.setupIncomplete": "Konfigurim jo i plotë",
+  "dashboardBusinesses.setupIncomplete": "Duhet konfigurim",
   "dashboardBusinesses.imageNeeded": "Duhet imazh",
-  "dashboardBusinesses.profileComplete": "Detajet e profilit janë gati",
+  "dashboardBusinesses.profileComplete": "Profili është gati",
   "dashboardBusinesses.profileNeedsPolish": "Shto detajet e profilit",
   "dashboardBusinesses.hideMarketplace": "Fshihe nga marketplace",
   "dashboardBusinesses.publish": "Publiko në Mirëbook",
@@ -1080,15 +1072,15 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.servicesHelper":
     "Krijo shërbime të rezervueshme me çmime, kohëzgjatje, përshkrime dhe imazhe opsionale.",
   "dashboardBusinesses.staffHelper":
-    "Shto staf, lidh email-et dhe cakto shërbime aktive që klientët të rezervojnë personat e duhur.",
+    "Shto persona të rezervueshëm dhe lidhi me shërbimet.",
   "dashboardBusinesses.settingsHelper":
-    "Kontrollo mënyrën e miratimit, intervalet e rezervimit, njoftimin paraprak, buffer-at dhe politikat për klientët.",
-  "dashboardBusinesses.subscription": "Abonim",
+    "Zgjidh si miratohen takimet dhe sa përpara mund të rezervojnë klientët.",
+  "dashboardBusinesses.subscription": "Partner i hershëm",
   "dashboardBusinesses.billingHelper":
-    "Përgatit detajet e provës, planit dhe abonimit për këtë biznes.",
+    "Detajet e anëtarësimit janë të ndara nga rezervimet e klientëve.",
   "dashboardBusinesses.openDay": "ditë e hapur",
   "dashboardBusinesses.hoursHelper":
-    "Vendos disponueshmërinë e përgjithshme të biznesit. Orari specifik i stafit kontrollon slotet reale të rezervueshme.",
+    "Vendos oraret e përgjithshme kur klientët mund të rezervojnë.",
   "dashboardBusinesses.marketplacePreview": "Pamja në marketplace",
   "dashboardBusinesses.previewLiveHelper":
     "Shiko si e shohin klientët këtë biznes në Mirëbook.",
@@ -1097,9 +1089,9 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.previewIncompleteHelper":
     "Pamja publike është e disponueshme, por klientët mund të mos jenë në gjendje të rezervojnë derisa konfigurimi të përfundojë.",
   "dashboardBusinesses.manageServices": "Menaxho shërbimet",
-  "dashboardBusinesses.manageStaff": "Menaxho stafin",
-  "dashboardBusinesses.openSettings": "Hap cilësimet",
-  "dashboardBusinesses.openBilling": "Hap faturimin",
+  "dashboardBusinesses.manageStaff": "Menaxho ekipin",
+  "dashboardBusinesses.openSettings": "Hap rregullat e rezervimit",
+  "dashboardBusinesses.openBilling": "Hap anëtarësimin",
   "dashboardBusinesses.setHours": "Vendos oraret",
   "dashboardBusinesses.openPublicPage": "Hap faqen publike",
   "dashboardBusinesses.profile.kicker": "Profili që shikon klienti",
@@ -1443,11 +1435,11 @@ export const sq: TranslationTree = {
   "dashboardStaff.card.saveStaff": "Ruaj stafin",
   "dashboardStaff.card.deactivate": "Çaktivizo",
   "dashboardStaff.card.activate": "Aktivizo",
-  "dashboardAvailability.pageTitle": "Orari i punës së biznesit",
+  "dashboardAvailability.pageTitle": "Orari i punës",
   "dashboardAvailability.pageSubtitle":
     "Zgjidh cilin orar pune biznesi do të menaxhosh.",
   "dashboardAvailability.pageSubtitleSelected":
-    "Vendos oraret bazë të Mirëbook për",
+    "Vendos ditët kur klientët mund të rezervojnë për",
   "dashboardAvailability.loading": "Duke ngarkuar oraret e punës Mirëbook...",
   "dashboardAvailability.error.noAccess": "Nuk ke akses te ky biznes.",
   "dashboardAvailability.error.load": "Orari i punës nuk u ngarkua.",
@@ -1574,7 +1566,8 @@ export const sq: TranslationTree = {
   "account.emailPreferences.setupRequired": "Kërkohet konfigurim në Supabase",
   "account.emailPreferences.setupRequiredBody":
     "SQL-ja e preferencave nuk është instaluar ende. Parazgjedhjet e sigurta transaksionale mbeten aktive, por ndryshimet nuk mund të ruhen.",
-  "account.emailPreferences.customerTitle": "Email-et e rezervimeve të klientit",
+  "account.emailPreferences.customerTitle":
+    "Email-et e rezervimeve të klientit",
   "account.emailPreferences.bookingUpdates": "Përditësimet e rezervimeve",
   "account.emailPreferences.bookingUpdatesBody":
     "Kërkesa, konfirmime, refuzime dhe anulime.",
@@ -1646,7 +1639,7 @@ export const sq: TranslationTree = {
   "account.saveChanges": "Ruaj ndryshimet",
   "account.helpKicker": "Ndihmë dhe gjuhë",
   "account.supportBody":
-    "Rrugët e suportit për klient, biznes dhe staf janë të ndara. Preferenca e gjuhës do të përdoret në faqet e përkthyera Mirëbook.",
+    "Kontakto suportin e Mirëbook ose shiko mesazhet e suportit.",
   "account.contactSupport": "Kontakto suportin",
   "account.savedLanguage": "Gjuha e ruajtur e llogarisë",
   "account.loading": "Duke ngarkuar llogarinë tënde Mirëbook...",
@@ -1657,8 +1650,15 @@ export const sq: TranslationTree = {
   "dashboardBookings.pageTitle": "Kalendari",
   "dashboardBookings.pageSubtitle":
     "Zgjidh cilat rezervime biznesi do të shohësh.",
-  "dashboardBookings.pageSubtitleSelected":
-    "Takimet dhe kërkesat për rezervim për",
+  "dashboardBookings.pageSubtitleSelected": "Shiko çfarë ndodh dhe kur për",
+  "dashboardBookings.recordsTitle": "Rezervimet",
+  "dashboardBookings.recordsSubtitleSelected":
+    "Menaxho kërkesat, rezervimet e ardhshme dhe historikun për",
+  "dashboardBookings.recordsKicker": "Regjistrat e rezervimeve",
+  "dashboardBookings.recordsHeading": "Menaxho rezervimet",
+  "dashboardBookings.mode.calendarBody": "Orari sipas ditës dhe kohës",
+  "dashboardBookings.mode.bookingsBody":
+    "Kërkesa, rezervime të ardhshme dhe historik",
   "dashboardBookings.appointments": "takime",
   "dashboardBookings.needsApproval": "kërkojnë miratim",
   "dashboardBookings.loading": "Duke ngarkuar rezervimet...",
@@ -1668,8 +1668,7 @@ export const sq: TranslationTree = {
     "Ky rezervim nuk është më i disponueshëm për këtë veprim. Rifresko rezervimet për statusin më të fundit.",
   "dashboardBookings.error.declinedStatusUnsupported":
     "Baza e të dhënave live aktualisht nuk lejon statusin Refuzuar për rezervimet. Përditëso kufizimin e statusit të rezervimeve dhe provo përsëri.",
-  "dashboardBookings.error.declineFailed":
-    "Ky rezervim nuk mund të refuzohej.",
+  "dashboardBookings.error.declineFailed": "Ky rezervim nuk mund të refuzohej.",
   "dashboardBookings.error.databaseDetails": "Detajet e bazës së të dhënave",
   "dashboardBookings.businessPicker.kicker": "U gjetën disa biznese",
   "dashboardBookings.businessPicker.title": "Zgjidh një biznes për të vazhduar",
@@ -1748,12 +1747,16 @@ export const sq: TranslationTree = {
   "dashboardBookings.empty.noBookingsTitle": "Nuk ka ende rezervime",
   "dashboardBookings.empty.noBookingsBody":
     "Rezervimet e klientëve për këtë biznes do të shfaqen këtu pasi faqja publike të publikohet dhe klientët të fillojnë të rezervojnë.",
-  "dashboardBookings.empty.noFilteredTitle": "Nuk ka takime në këtë pamje",
+  "dashboardBookings.empty.noFilteredTitle": "Nuk ka takime në këtë orar",
   "dashboardBookings.empty.noFilteredBody":
     "Provo një datë, anëtar stafi, status ose term kërkimi tjetër.",
-  "dashboardBookings.emptyCalendar.title": "Nuk ka ende takime",
+  "dashboardBookings.empty.noBookingRecordsTitle":
+    "Nuk ka regjistra rezervimi që përputhen",
+  "dashboardBookings.empty.noBookingRecordsBody":
+    "Provo një status, anëtar ekipi ose term kërkimi tjetër.",
+  "dashboardBookings.emptyCalendar.title": "Nuk ka ende orar",
   "dashboardBookings.emptyCalendar.body":
-    "Pasi klientët të rezervojnë, kërkesat e sotme dhe takimet e konfirmuara do të shfaqen këtu në kalendar.",
+    "Kur klientët të rezervojnë, orari dhe regjistrat e rezervimeve do të shfaqen këtu.",
   "dashboardBookings.empty.checkSetup": "Kontrollo konfigurimin",
   "dashboardBookings.pendingStrip.title": "Kërkesa në pritje",
   "dashboardBookings.pendingStrip.body":
@@ -1952,8 +1955,7 @@ export const sq: TranslationTree = {
   "dashboardAnalytics.recent.openManager": "Hap menaxherin e takimeve",
   "publicBusiness.error.notAvailable":
     "Ky biznes nuk është aktualisht i disponueshëm për rezervime publike.",
-  "publicBusiness.locationComingSoon":
-    "Vendndodhja nuk është dhënë",
+  "publicBusiness.locationComingSoon": "Vendndodhja nuk është dhënë",
   "publicBusiness.bookingMode.request": "Kërkesë rezervimi",
   "publicBusiness.bookingMode.instant": "Konfirmim i menjëhershëm",
   "publicBusiness.bookingMode.requestBody":
@@ -2080,6 +2082,44 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setupHub.secondaryActions": "Pamje dhe ndihmë",
   "dashboardBusinesses.setupHub.extraBusinessHint":
     "Të duhet një biznes ose lokacion tjetër?",
+  "dashboardBusinesses.setup.progressLabel": "Progresi i konfigurimit",
+  "dashboardBusinesses.setup.body":
+    "Ndiq hapin tjetër, pastaj shiko çfarë do të shohin klientët.",
+  "dashboardBusinesses.setup.profile": "Profili i biznesit",
+  "dashboardBusinesses.setup.profileBody":
+    "Shto detajet që klientët kanë nevojë para rezervimit.",
+  "dashboardBusinesses.setup.profileAction": "Ndrysho profilin",
+  "dashboardBusinesses.setup.services": "Shërbimet",
+  "dashboardBusinesses.setup.servicesBody":
+    "Krijo të paktën një shërbim aktiv që klientët mund të zgjedhin.",
+  "dashboardBusinesses.setup.servicesAction": "Shto shërbim",
+  "dashboardBusinesses.setup.team": "Ekipi",
+  "dashboardBusinesses.setup.teamBody":
+    "Shto persona të rezervueshëm dhe lidhi me shërbimet.",
+  "dashboardBusinesses.setup.teamAction": "Menaxho ekipin",
+  "dashboardBusinesses.setup.hours": "Orari i punës",
+  "dashboardBusinesses.setup.hoursBody":
+    "Vendos ditët dhe oraret kur klientët mund të rezervojnë.",
+  "dashboardBusinesses.setup.hoursAction": "Vendos oraret",
+  "dashboardBusinesses.setup.preview": "Shiko dhe publiko",
+  "dashboardBusinesses.setup.previewBody":
+    "Kontrollo faqen e klientit, pastaj publiko kur të jetë gati.",
+  "dashboardBusinesses.setup.previewAction": "Shiko profilin",
+  "dashboardBusinesses.setup.finishFirst": "Përfundo konfigurimin",
+  "dashboardBusinesses.setup.of": "nga",
+  "dashboardBusinesses.setup.nextTitle": "Hapi tjetër",
+  "dashboardBusinesses.setup.completeBody":
+    "Konfigurimi i rezervimeve është gati.",
+  "dashboardBusinesses.setup.done": "Përfunduar",
+  "dashboardBusinesses.setup.previewLabel": "Pamja për klientin",
+  "dashboardBusinesses.setup.advancedTitle": "Të avancuara",
+  "dashboardBusinesses.setup.detailsTitle": "Detajet e profilit të biznesit",
+  "dashboardBusinesses.setup.detailsBody":
+    "Ndrysho fushat e profilit, imazhin, rregullat e rezervimit dhe publikimin.",
+  "dashboardBusinesses.setup.statusReady": "Gati për rezervime",
+  "dashboardBusinesses.setup.statusHidden": "I fshehur nga Explore",
+  "dashboardBusinesses.setup.statusPublish": "Gati për publikim",
+  "dashboardBusinesses.setup.statusNeeded": "Duhet konfigurim",
   "dashboardBusinesses.profileTools.preview": "Paraqit faqen publike",
 
   "dashboardServices.list.kicker": "Lista e shërbimeve",
@@ -2152,8 +2192,7 @@ export const sq: TranslationTree = {
     "Llogaria e stafit u krijua. Po të ridrejtojmë te zona e stafit...",
   "register.success.customer":
     "Llogaria e klientit u krijua. Po të ridrejtojmë te rezervimet...",
-  "register.error.noUser":
-    "Krijimi i llogarisë nuk përfundoi. Provo përsëri.",
+  "register.error.noUser": "Krijimi i llogarisë nuk përfundoi. Provo përsëri.",
   "register.verification.required":
     "Llogaria u krijua. Kontrollo email-in dhe verifiko adresën para se të hysh. Konfigurimi i zgjedhur i llogarisë do të vazhdojë pas verifikimit.",
   "register.verification.resent":
@@ -2363,8 +2402,7 @@ export const sq: TranslationTree = {
   "staffNotifications.empty.body":
     "Përditësimet e rezervimeve, ndryshimet e orarit dhe mesazhet e llogarisë së stafit do të shfaqen këtu.",
   "staffNotifications.fallback.title": "Përditësim për stafin",
-  "staffNotifications.fallback.message":
-    "Ke një përditësim të ri për stafin.",
+  "staffNotifications.fallback.message": "Ke një përditësim të ri për stafin.",
   "dashboardHome.ownerCommand.kicker": "Qendra e komandës së pronarit",
   "dashboardHome.ownerCommand.actionTitle":
     "Veprimet e klientëve kërkojnë rishikim",
@@ -2426,8 +2464,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.status.live": "Live në Mirëbook",
   "dashboardBusinesses.status.ready": "Gati për publikim",
   "dashboardBusinesses.status.draft": "Konfigurim draft",
-  "dashboardBusinesses.status.bookingSetup":
-    "Duhet konfigurim për rezervime",
+  "dashboardBusinesses.status.bookingSetup": "Duhet konfigurim për rezervime",
   "dashboardBusinesses.status.liveBody":
     "Klientët mund ta gjejnë dhe rezervojnë këtë biznes.",
   "dashboardBusinesses.status.readyBody":
@@ -2759,30 +2796,30 @@ export const sq: TranslationTree = {
   "notifications.types.bookingRequested.title": "Kërkesa u dërgua",
   "notifications.types.bookingRequested.message":
     "Në pritje që biznesi ta konfirmojë.",
-  "billing.currentPlan": "Plani aktual",
-  "billing.subscriptionStatus": "Statusi i abonimit",
-  "billing.trialActive": "Periudha provuese aktive",
+  "billing.currentPlan": "Anëtarësimi aktual",
+  "billing.subscriptionStatus": "Statusi i anëtarësimit",
+  "billing.trialActive": "Prova e partnerit të hershëm aktive",
   "billing.trialEndsOn": "Periudha provuese përfundon",
   "billing.noTrialConfigured": "Nuk është caktuar datë për periudhën provuese.",
-  "billing.pageTitle": "Faturimi",
-  "billing.pageSubtitle": "Shiko detajet e abonimit të biznesit në Mirëbook.",
-  "billing.pageSubtitleBusiness": "Detajet e abonimit për {{business}}.",
-  "billing.loading": "Po ngarkohen detajet e faturimit...",
-  "billing.error.load": "Detajet e faturimit nuk u ngarkuan dot.",
+  "billing.pageTitle": "Anëtarësimi",
+  "billing.pageSubtitle": "Shiko detajet e anëtarësimit Mirëbook Business.",
+  "billing.pageSubtitleBusiness": "Detajet e anëtarësimit për {{business}}.",
+  "billing.loading": "Po ngarkohen detajet e anëtarësimit...",
+  "billing.error.load": "Detajet e anëtarësimit nuk u ngarkuan dot.",
   "billing.noBusinessTitle": "Krijo fillimisht një biznes",
   "billing.noBusinessBody":
-    "Detajet e faturimit bëhen të disponueshme pasi të krijosh një profil biznesi në Mirëbook.",
+    "Detajet e anëtarësimit bëhen të disponueshme pasi të krijosh një profil biznesi në Mirëbook.",
   "billing.openSetupHub": "Hap qendrën e konfigurimit",
   "billing.selectedBusiness": "Biznesi i zgjedhur",
-  "billing.manualSetupPendingTitle": "Konfigurimi i faturimit po përgatitet",
+  "billing.manualSetupPendingTitle": "Detajet e anëtarësimit po përgatiten",
   "billing.manualSetupPendingBody":
-    "Biznesi yt mund të vazhdojë të përdorë rezervimet, mjetet e stafit dhe listimin publik ndërsa Mirëbook përgatit regjistrin manual të faturimit.",
-  "billing.heroKicker": "Abonimi i biznesit",
+    "Biznesi yt mund të vazhdojë të përdorë rezervimet, mjetet e stafit dhe listimin publik gjatë periudhës së partnerëve të hershëm.",
+  "billing.heroKicker": "Anëtarësimi",
   "billing.launchPlan": "Mirëbook Launch",
   "billing.heroBody":
-    "Një abonim i qartë për mjetet që biznesi yt përdor për të menaxhuar rezervimet dhe klientët.",
+    "Mirëbook Business është aktualisht i disponueshëm për partnerët e hershëm.",
   "billing.contactSupport": "Kontakto Mirëbook",
-  "billing.status.notConfigured": "I pakonfiguruar",
+  "billing.status.notConfigured": "Akses partneri i hershëm",
   "billing.status.freeTrial": "Provë falas",
   "billing.status.foundingFree": "Periudhë falas për biznes themelues",
   "billing.status.active": "Aktiv",
@@ -2791,31 +2828,29 @@ export const sq: TranslationTree = {
   "billing.status.cancelled": "I anuluar",
   "billing.status.paused": "I pezulluar",
   "billing.status.notConfiguredBody":
-    "Mirëbook ende nuk ka konfiguruar një regjistër manual faturimi për këtë biznes.",
-  "billing.status.freeTrialBody":
-    "Periudha provuese e planit Launch është aktive. Ende nuk po merret pagesë.",
+    "Mirëbook Business është aktualisht i disponueshëm për partnerët e hershëm.",
+  "billing.status.freeTrialBody": "Prova e partnerit të hershëm është aktive.",
   "billing.status.foundingFreeBody":
     "Periudha falas për biznesin themelues është aktive.",
-  "billing.status.activeBody":
-    "Abonimi yt Mirëbook Launch është regjistruar si aktiv.",
+  "billing.status.activeBody": "Anëtarësimi yt Mirëbook Launch është aktiv.",
   "billing.status.manualCompedBody":
     "Mirëbook ka regjistruar akses falas për këtë biznes.",
   "billing.status.pastDueBody":
-    "Regjistri i faturimit kërkon vëmendje. Mjetet e rezervimit mbeten të disponueshme.",
+    "Anëtarësimi kërkon vëmendje. Mjetet e rezervimit mbeten të disponueshme.",
   "billing.status.cancelledBody":
-    "Ky regjistër abonimi është anuluar. Mjetet e rezervimit nuk kufizohen në këtë fazë.",
+    "Ky anëtarësim është anuluar. Rezervimet e klientëve menaxhohen veçmas.",
   "billing.status.pausedBody":
-    "Ky regjistër faturimi është pezulluar. Mjetet e rezervimit mbeten të disponueshme.",
+    "Ky anëtarësim është pezulluar. Mjetet e rezervimit mbeten të disponueshme.",
   "billing.agreedPrice": "Çmimi mujor i rënë dakord",
   "billing.priceNotSet": "Ende i papërcaktuar",
   "billing.noChargeYet":
-    "Nuk merret pagesë reale ndërsa Checkout-i është në modalitet testues.",
+    "Nuk tarifohet komision rezervimi për klientët gjatë periudhës së partnerëve të hershëm.",
   "billing.offerStatus": "Statusi i ofertës",
   "billing.foundingBusiness": "Biznes themelues",
   "billing.standardLaunch": "Plani Launch",
   "billing.secondMonthFree": "Përfiton muajin e dytë falas.",
   "billing.offerRecordedManually":
-    "Detajet e ofertës regjistrohen manualisht nga Mirëbook.",
+    "Detajet e ofertës regjistrohen nga Mirëbook.",
   "billing.importantDates": "Datat e rëndësishme",
   "billing.trialEnd": "Përfundimi i provës",
   "billing.currentPeriodEnd": "Përfundimi i periudhës aktuale",
@@ -2826,25 +2861,24 @@ export const sq: TranslationTree = {
   "billing.included.notifications": "Njoftimet",
   "billing.included.noCommission": "Pa komision normal për rezervimet",
   "billing.included.noCustomerFee": "Pa tarifë rezervimi për klientin",
-  "billing.onlinePaymentsTitle": "Checkout testues për abonimin",
+  "billing.onlinePaymentsTitle": "Checkout i anëtarësimit",
   "billing.onlinePaymentsBody":
-    "Përdor modalitetin testues të Stripe për të kontrolluar rrjedhën e abonimit Mirëbook Membership. Checkout-i testues nuk ndryshon aksesin në platformë.",
+    "Planet e anëtarësimit po aktivizohen për partnerët e hershëm. Rezervimet e klientëve mbeten të ndara nga anëtarësimi.",
   "billing.noAccessRestriction":
-    "Statusi i faturimit nuk kufizon rezervimet, aksesin e stafit ose listimin publik në këtë fazë.",
-  "billing.manualSetupHelp": "Pyet për konfigurimin e faturimit",
-  "billing.checkout.start": "Fillo Checkout-in testues",
-  "billing.checkout.starting": "Po hapet Checkout-i testues...",
-  "billing.checkout.error":
-    "Checkout-i i Stripe nuk u nis dot. Provo përsëri.",
-  "billing.checkout.successTitle": "Checkout-i testues përfundoi",
+    "Statusi i anëtarësimit nuk kufizon rezervimet, aksesin e stafit ose listimin publik.",
+  "billing.manualSetupHelp": "Pyet për anëtarësimin",
+  "billing.checkout.start": "Fillo checkout-in e anëtarësimit",
+  "billing.checkout.starting": "Po hapet checkout-i...",
+  "billing.checkout.error": "Checkout-i i Stripe nuk u nis dot. Provo përsëri.",
+  "billing.checkout.successTitle": "Checkout-i i anëtarësimit përfundoi",
   "billing.checkout.successSyncedBody":
-    "Stripe pranoi abonimin testues dhe Mirëbook ka sinkronizuar statusin e faturimit.",
+    "Mirëbook ka sinkronizuar statusin aktiv të anëtarësimit.",
   "billing.checkout.successPendingBody":
-    "Stripe pranoi abonimin testues. Sinkronizimi i statusit të faturimit mund të zgjasë pak.",
-  "billing.checkout.runAgain": "Kryej përsëri Checkout-in testues",
+    "Checkout-i i anëtarësimit u pranua. Sinkronizimi i statusit mund të zgjasë pak.",
+  "billing.checkout.runAgain": "Kryej checkout-in e anëtarësimit",
   "billing.checkout.cancelledTitle": "Checkout-i u anulua",
   "billing.checkout.cancelledBody":
-    "Nuk u nis asnjë abonim testues. Aksesi yt në Mirëbook nuk ka ndryshuar.",
+    "Nuk u nis asnjë checkout anëtarësimi. Aksesi yt në Mirëbook nuk ka ndryshuar.",
   "nav.operatorNotices": "Njoftime operatori",
   "nav.needsAction": "Kërkon veprim",
   "nav.updates": "Përditësime",
@@ -2941,14 +2975,12 @@ export const sq: TranslationTree = {
   "staff.home.todayAppointments": "sot",
   "staff.home.upcomingConfirmed": "të ardhshme",
   "staff.home.awaitingApproval": "në pritje të miratimit",
-  "staff.home.calendarBody":
-    "Shiko hollësitë e takimeve dhe punën e ardhshme.",
+  "staff.home.calendarBody": "Shiko hollësitë e takimeve dhe punën e ardhshme.",
   "staff.home.availabilityBody":
     "Vendos ditët dhe oraret kur klientët mund të të rezervojnë.",
   "staff.home.notificationsBody":
     "Shiko përditësimet e rezervimeve, orarit dhe profilit.",
-  "staff.home.ownerContext":
-    "Menaxhimi i biznesit mbetet te Menaxho biznesin.",
+  "staff.home.ownerContext": "Menaxhimi i biznesit mbetet te Menaxho biznesin.",
   "staff.assignedServices.emptyCompact":
     "Ende nuk të është caktuar asnjë shërbim. Kërkoji pronarit të biznesit të përditësojë profilin tënd te Ekipi.",
 
@@ -3036,8 +3068,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.missingSetup.profileCta": "Shto detajet e biznesit",
   "dashboardBusinesses.missingSetup.servicesCta": "Shto shërbim",
   "dashboardBusinesses.missingSetup.staffCta": "Shto staf",
-  "dashboardBusinesses.missingSetup.assignmentCta":
-    "Cakto stafin te shërbimi",
+  "dashboardBusinesses.missingSetup.assignmentCta": "Cakto stafin te shërbimi",
   "dashboardBusinesses.missingSetup.hoursCta": "Vendos disponueshmërinë",
   "dashboardBusinesses.onboarding.profile": "Shto detajet e biznesit",
   "dashboardBusinesses.onboarding.profileBody":
@@ -3048,8 +3079,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.onboarding.staff": "Shto staf",
   "dashboardBusinesses.onboarding.staffBody":
     "Shto personat që ofrojnë takime, duke përfshirë veten vetëm kur është e përshtatshme.",
-  "dashboardBusinesses.onboarding.assignments":
-    "Cakto shërbimet te stafi",
+  "dashboardBusinesses.onboarding.assignments": "Cakto shërbimet te stafi",
   "dashboardBusinesses.onboarding.assignmentsBody":
     "Klientët mund të rezervojnë vetëm kur një anëtar aktiv stafi është caktuar te një shërbim aktiv.",
   "dashboardBusinesses.onboarding.hours": "Vendos oraret e punës",
@@ -3110,7 +3140,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.overview.ready": "Gati",
   "dashboardBusinesses.overview.actionNeeded": "Kërkohet veprim",
   "dashboardBusinesses.overview.bookingBody":
-    "Kërkon shërbim aktiv, caktim aktiv të stafit dhe orare pune të disponueshme.",
+    "Kërkon shërbim aktiv, anëtar ekipi dhe orar pune.",
   "dashboardBusinesses.overview.publicTitle": "Listimi publik",
   "dashboardBusinesses.overview.listed": "I listuar dhe i rezervueshëm",
   "dashboardBusinesses.overview.hiddenUntilReady":
@@ -3156,8 +3186,7 @@ export const sq: TranslationTree = {
   "admin.businesses.billing.loadError":
     "Nuk mund të ngarkoheshin kontrollet private të faturimit.",
   "admin.businesses.billing.managementContext": "Konteksti i menaxhimit",
-  "admin.businesses.billing.stripeManaged":
-    "Abonim i menaxhuar nga Stripe",
+  "admin.businesses.billing.stripeManaged": "Abonim i menaxhuar nga Stripe",
   "admin.businesses.billing.manualManaged":
     "Regjistër manual / biznes themelues",
   "admin.businesses.billing.stripeCustomer": "ID-ja e klientit në Stripe",
@@ -3214,10 +3243,8 @@ export const sq: TranslationTree = {
     "Nuk mund të ruhej shqyrtimi i ofertës themeluese.",
   "admin.businesses.founding.saved":
     "Shqyrtimi i ofertës u ruajt. Nuk u krye asnjë veprim faturimi.",
-  "admin.businesses.founding.guidance.potential":
-    "Mund të kualifikohet",
-  "admin.businesses.founding.guidance.review":
-    "Kërkon shqyrtim manual",
+  "admin.businesses.founding.guidance.potential": "Mund të kualifikohet",
+  "admin.businesses.founding.guidance.review": "Kërkon shqyrtim manual",
   "admin.businesses.founding.guidance.moreActivity":
     "Ende nuk ka aktivitet të mjaftueshëm real",
   "admin.businesses.founding.guidance.notFounding":
@@ -3227,11 +3254,11 @@ export const sq: TranslationTree = {
   "admin.businesses.founding.currentDecision": "Shenja aktuale e faturimit",
   "admin.businesses.founding.flagEligible":
     "Muaji i dytë është shënuar i kualifikuar",
-  "admin.businesses.founding.flagNotEligible": "Nuk është shënuar i kualifikuar",
+  "admin.businesses.founding.flagNotEligible":
+    "Nuk është shënuar i kualifikuar",
   "admin.businesses.founding.qualifyingBookings":
     "Të konfirmuara + të përfunduara",
-  "admin.businesses.founding.qualifyingCustomers":
-    "Klientë unikë kualifikues",
+  "admin.businesses.founding.qualifyingCustomers": "Klientë unikë kualifikues",
   "admin.businesses.founding.verifiedCustomers":
     "Llogari klientësh të verifikuara",
   "admin.businesses.founding.unknownCustomers":
@@ -3319,7 +3346,8 @@ export const sq: TranslationTree = {
   "admin.support.notification.resolvedBody":
     "Suporti i Mirëbook e ka shënuar bisedën tënde të suportit si të zgjidhur.",
   "admin.support.notification.replyTitle": "Suporti i Mirëbook u përgjigj",
-  "admin.support.success.resolved": "Ticket-i i suportit u shënua si i zgjidhur.",
+  "admin.support.success.resolved":
+    "Ticket-i i suportit u shënua si i zgjidhur.",
   "admin.support.success.updated": "Ticket-i i suportit u përditësua.",
   "admin.support.success.replySent": "Përgjigjja u dërgua.",
   "admin.users.verification.checking":
@@ -3495,18 +3523,16 @@ export const sq: TranslationTree = {
     "Mirëbook po e hap marketplace-in gradualisht. Kontrollo përsëri së shpejti për biznese të rezervueshme pranë teje.",
   "explore.card.requestAppointment": "Kërko takim",
   "explore.card.bookInstantly": "Rezervo menjëherë",
-  "support.stage8.subtitle":
-    "Zgjidh ndihmën që përputhet me atë që po bën.",
+  "support.stage8.subtitle": "Zgjidh ndihmën që përputhet me atë që po bën.",
   "dashboardHome.today.title": "Çfarë kërkon vëmendje sot",
   "dashboardHome.today.body":
-    "Kërkesat, takimet e sotme dhe progresi i konfigurimit në një vend.",
+    "Kërkesat, takimet dhe veprimi tjetër i konfigurimit në një vend.",
   "dashboardHome.today.requests": "Kërkon vëmendje",
   "dashboardHome.today.confirmedToday": "Sot",
   "dashboardHome.today.upcoming": "Në vijim",
   "dashboardHome.today.nextLabel": "Veprimi tjetër",
   "dashboardHome.today.nextRequests": "Shqyrto kërkesat për takim",
-  "dashboardHome.today.nextRequestsBody":
-    "Klientët presin një vendim.",
+  "dashboardHome.today.nextRequestsBody": "Klientët presin një vendim.",
   "dashboardHome.today.nextRequestsCta": "Hap kërkesat",
   "dashboardHome.today.nextCalendar": "Menaxho ditën nga Kalendari",
   "dashboardHome.today.nextCalendarBody":
@@ -3517,6 +3543,9 @@ export const sq: TranslationTree = {
   "dashboardHome.today.nextReady": "Gati për rezervime",
   "dashboardHome.today.nextReadyBody":
     "Konfigurimi kryesor është gati. Shiko profilin e klientit ose hap Kalendarin.",
+  "dashboardHome.status.ready": "Gati për rezervime",
+  "dashboardHome.status.hidden": "I fshehur nga Explore",
+  "dashboardHome.status.setupNeeded": "Duhet konfigurim",
   "dashboardHome.setup.title": "Bëhu gati për rezervime",
   "dashboardHome.setup.progress":
     "{{done}} nga {{total}} hapa konfigurimi të përfunduar",

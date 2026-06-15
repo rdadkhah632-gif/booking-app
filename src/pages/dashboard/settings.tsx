@@ -172,10 +172,10 @@ export default function DashboardSettingsPage() {
 
   return (
     <DashboardLayout
-      title={t("dashboardSettings.pageTitle", "Booking settings")}
+      title={t("dashboardSettings.pageTitle", "Booking rules")}
       subtitle={t(
         "dashboardSettings.pageSubtitle",
-        "Control confirmation mode, booking limits, regional settings and customer policies.",
+        "Choose how appointments are approved and how far ahead customers can book.",
       )}
     >
       {loading && (

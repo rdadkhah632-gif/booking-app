@@ -838,14 +838,13 @@ export default function Bookings() {
 
   const selectedRange = dateRangeForFilter(rangeFilter);
 
-  const selectedDateLabel = new Date(`${selectedDate}T12:00:00`).toLocaleDateString(
-    undefined,
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    },
-  );
+  const selectedDateLabel = new Date(
+    `${selectedDate}T12:00:00`,
+  ).toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 
   const activeFilterSummary = [
     selectedRange.label,
@@ -861,6 +860,13 @@ export default function Bookings() {
   ]
     .filter(Boolean)
     .join(" · ");
+
+  const isBookingListMode =
+    rangeFilter === "upcoming" ||
+    rangeFilter === "history" ||
+    statusFilter !== "all" ||
+    staffFilter !== "all" ||
+    Boolean(searchTerm.trim());
 
   function customerHistoryLink(booking: Booking) {
     if (booking.customer_user_id) {
@@ -900,10 +906,15 @@ export default function Bookings() {
       booking.status === "completed";
 
     return (
-      <article key={booking.id} className={`calendar-appointment ${booking.status}`}>
+      <article
+        key={booking.id}
+        className={`calendar-appointment ${booking.status}`}
+      >
         <div className="calendar-time">
           <strong>{time.label}</strong>
-          <span>{booking.duration_minutes} {t("common.minutes", "minutes")}</span>
+          <span>
+            {booking.duration_minutes} {t("common.minutes", "minutes")}
+          </span>
         </div>
 
         <div className="calendar-appointment-main">
@@ -993,10 +1004,16 @@ export default function Bookings() {
 
   return (
     <DashboardLayout
-      title={t("dashboardBookings.pageTitle", "Calendar")}
+      title={
+        isBookingListMode
+          ? t("dashboardBookings.recordsTitle", "Bookings")
+          : t("dashboardBookings.pageTitle", "Calendar")
+      }
       subtitle={
         business
-          ? `${t("dashboardBookings.pageSubtitleSelected", "Appointments and booking requests for")} ${business.name}.`
+          ? isBookingListMode
+            ? `${t("dashboardBookings.recordsSubtitleSelected", "Manage appointment requests, upcoming bookings and history for")} ${business.name}.`
+            : `${t("dashboardBookings.pageSubtitleSelected", "See what is happening when for")} ${business.name}.`
           : t(
               "dashboardBookings.pageSubtitle",
               "Create your business first, then customer bookings will appear here.",
@@ -1072,18 +1089,23 @@ export default function Bookings() {
       {!pageLoading && business && bookings.length === 0 && (
         <section className="calendar-empty-state">
           <div>
-            <h2>{t("dashboardBookings.emptyCalendar.title", "No appointments yet")}</h2>
+            <h2>
+              {t("dashboardBookings.emptyCalendar.title", "No schedule yet")}
+            </h2>
             <p className="muted">
               {t(
                 "dashboardBookings.emptyCalendar.body",
-                "When customers book, appointment requests and confirmed bookings will appear here.",
+                "When customers book, your schedule and booking records will appear here.",
               )}
             </p>
           </div>
 
           <div className="calendar-empty-ready-card">
             <strong>
-              {t("dashboardBookings.emptyCalendar.readyTitle", "Ready to take bookings?")}
+              {t(
+                "dashboardBookings.emptyCalendar.readyTitle",
+                "Ready to take bookings?",
+              )}
             </strong>
             <p className="small muted">
               {t(
@@ -1094,25 +1116,53 @@ export default function Bookings() {
           </div>
 
           <div className="calendar-empty-action-grid">
-            <Link href="/dashboard/businesses" className="calendar-empty-action">
+            <Link
+              href="/dashboard/businesses"
+              className="calendar-empty-action"
+            >
               <strong>{t("dashboardLayout.nav.setup", "Setup")}</strong>
-              <span>{t("dashboardBookings.empty.completeSetup", "Complete setup")}</span>
+              <span>
+                {t("dashboardBookings.empty.completeSetup", "Complete setup")}
+              </span>
             </Link>
             <Link href="/dashboard/services" className="calendar-empty-action">
               <strong>{t("dashboardLayout.nav.services", "Services")}</strong>
-              <span>{t("dashboardBookings.empty.addService", "Add first service")}</span>
+              <span>
+                {t("dashboardBookings.empty.addService", "Add first service")}
+              </span>
             </Link>
-            <Link href="/dashboard/availability" className="calendar-empty-action">
+            <Link
+              href="/dashboard/availability"
+              className="calendar-empty-action"
+            >
               <strong>{t("dashboardHome.setup.hours", "Working hours")}</strong>
-              <span>{t("dashboardBookings.empty.setAvailability", "Set availability")}</span>
+              <span>
+                {t(
+                  "dashboardBookings.empty.setAvailability",
+                  "Set availability",
+                )}
+              </span>
             </Link>
-            <Link href={`/explore/${business.id}`} className="calendar-empty-action">
-              <strong>{t("dashboardHome.setup.preview", "See what customers see")}</strong>
-              <span>{t("dashboardBookings.empty.previewProfile", "Preview public profile")}</span>
+            <Link
+              href={`/explore/${business.id}`}
+              className="calendar-empty-action"
+            >
+              <strong>
+                {t("dashboardHome.setup.preview", "See what customers see")}
+              </strong>
+              <span>
+                {t(
+                  "dashboardBookings.empty.previewProfile",
+                  "Preview public profile",
+                )}
+              </span>
             </Link>
           </div>
 
-          <Link href="/dashboard" className="btn btn-ghost calendar-empty-today">
+          <Link
+            href="/dashboard"
+            className="btn btn-ghost calendar-empty-today"
+          >
             {t("dashboardLayout.nav.today", "Today")}
           </Link>
         </section>
@@ -1121,35 +1171,93 @@ export default function Bookings() {
       {!pageLoading && business && bookings.length > 0 && (
         <div className="calendar-workspace">
           <section className="calendar-shell">
+            <div className="booking-mode-switch">
+              <button
+                type="button"
+                className={
+                  !isBookingListMode
+                    ? "booking-mode-tab active"
+                    : "booking-mode-tab"
+                }
+                onClick={() => updateBookingView("today")}
+              >
+                <strong>{t("dashboardLayout.nav.calendar", "Calendar")}</strong>
+                <span>
+                  {t(
+                    "dashboardBookings.mode.calendarBody",
+                    "Schedule by day and time",
+                  )}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={
+                  isBookingListMode
+                    ? "booking-mode-tab active"
+                    : "booking-mode-tab"
+                }
+                onClick={() => updateBookingView("upcoming")}
+              >
+                <strong>{t("dashboardLayout.nav.bookings", "Bookings")}</strong>
+                <span>
+                  {t(
+                    "dashboardBookings.mode.bookingsBody",
+                    "Requests, upcoming records and history",
+                  )}
+                </span>
+              </button>
+            </div>
+
             <div className="calendar-toolbar">
               <div>
                 <p className="small muted">
-                  {t("dashboardBookings.calendar.kicker", "Schedule")}
+                  {isBookingListMode
+                    ? t("dashboardBookings.recordsKicker", "Booking records")
+                    : t("dashboardBookings.calendar.kicker", "Schedule")}
                 </p>
-                <h2>{rangeFilter === "custom" ? selectedDateLabel : selectedRange.label}</h2>
+                <h2>
+                  {isBookingListMode
+                    ? t("dashboardBookings.recordsHeading", "Manage bookings")
+                    : rangeFilter === "custom"
+                      ? selectedDateLabel
+                      : selectedRange.label}
+                </h2>
               </div>
 
               <div className="calendar-date-controls">
-                <button type="button" className="btn btn-ghost" onClick={goToToday}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={goToToday}
+                >
                   {t("dashboardHome.summary.today", "Today")}
                 </button>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(event) => changeSelectedDate(event.target.value)}
-                  aria-label={t("dashboardBookings.filters.jumpDate", "Jump to date")}
+                  aria-label={t(
+                    "dashboardBookings.filters.jumpDate",
+                    "Jump to date",
+                  )}
                 />
               </div>
             </div>
 
             <div className="calendar-range-row">
               {[
-                { key: "today", label: t("dashboardHome.summary.today", "Today") },
+                {
+                  key: "today",
+                  label: t("dashboardHome.summary.today", "Today"),
+                },
                 {
                   key: "tomorrow",
                   label: t("dashboardBookings.range.tomorrow", "Tomorrow"),
                 },
-                { key: "week", label: t("dashboardHome.schedule.title", "Next 7 days") },
+                {
+                  key: "week",
+                  label: t("dashboardHome.schedule.title", "Next 7 days"),
+                },
                 {
                   key: "upcoming",
                   label: t("dashboardBookings.range.upcoming", "Upcoming"),
@@ -1163,7 +1271,9 @@ export default function Bookings() {
                   key={item.key}
                   type="button"
                   className={
-                    rangeFilter === item.key ? "calendar-chip active" : "calendar-chip"
+                    rangeFilter === item.key
+                      ? "calendar-chip active"
+                      : "calendar-chip"
                   }
                   onClick={() => updateBookingView(item.key as RangeFilter)}
                 >
@@ -1213,7 +1323,9 @@ export default function Bookings() {
               )}
 
               <label>
-                <span>{t("dashboardBookings.filters.searchShort", "Search")}</span>
+                <span>
+                  {t("dashboardBookings.filters.searchShort", "Search")}
+                </span>
                 <input
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
@@ -1246,7 +1358,10 @@ export default function Bookings() {
             <section className="pending-strip">
               <div>
                 <strong>
-                  {t("dashboardBookings.pendingStrip.title", "Requests waiting")}
+                  {t(
+                    "dashboardBookings.pendingStrip.title",
+                    "Requests waiting",
+                  )}
                 </strong>
                 <p className="small muted">
                   {t(
@@ -1266,7 +1381,10 @@ export default function Bookings() {
                       updateBookingView("upcoming");
                     }}
                   >
-                    <span>{booking.customer_name || t("common.customer", "Customer")}</span>
+                    <span>
+                      {booking.customer_name ||
+                        t("common.customer", "Customer")}
+                    </span>
                     <small>{bookingTime(booking).label}</small>
                   </button>
                 ))}
@@ -1276,14 +1394,33 @@ export default function Bookings() {
 
           {filteredBookings.length === 0 && (
             <section className="calendar-empty-state">
-              <h2>{t("dashboardBookings.empty.noFilteredTitle", "No appointments in this view")}</h2>
+              <h2>
+                {isBookingListMode
+                  ? t(
+                      "dashboardBookings.empty.noBookingRecordsTitle",
+                      "No booking records match",
+                    )
+                  : t(
+                      "dashboardBookings.empty.noFilteredTitle",
+                      "No appointments in this schedule",
+                    )}
+              </h2>
               <p className="muted">
-                {t(
-                  "dashboardBookings.empty.noFilteredBody",
-                  "Try another date, staff member, status or search term.",
-                )}
+                {isBookingListMode
+                  ? t(
+                      "dashboardBookings.empty.noBookingRecordsBody",
+                      "Try a different status, staff member or search term.",
+                    )
+                  : t(
+                      "dashboardBookings.empty.noFilteredBody",
+                      "Try another date, staff member, status or search term.",
+                    )}
               </p>
-              <button type="button" className="btn btn-ghost" onClick={resetFilters}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={resetFilters}
+              >
                 {t("dashboardBookings.filters.reset", "Reset filters")}
               </button>
             </section>
@@ -1329,11 +1466,42 @@ export default function Bookings() {
         .calendar-toolbar,
         .calendar-date-controls,
         .calendar-filter-row,
-        .calendar-range-row {
+        .calendar-range-row,
+        .booking-mode-switch {
           display: flex;
           gap: 0.75rem;
           align-items: center;
           flex-wrap: wrap;
+        }
+
+        .booking-mode-switch {
+          align-items: stretch;
+        }
+
+        .booking-mode-tab {
+          display: grid;
+          gap: 0.2rem;
+          flex: 1 1 14rem;
+          min-height: 4rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          padding: 0.8rem;
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .booking-mode-tab span {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          line-height: 1.35;
+        }
+
+        .booking-mode-tab.active {
+          border-color: rgba(255, 107, 53, 0.38);
+          background: rgba(255, 107, 53, 0.08);
+          color: var(--accent);
         }
 
         .calendar-toolbar {
@@ -1615,6 +1783,8 @@ export default function Bookings() {
           .calendar-date-controls input,
           .calendar-range-row,
           .calendar-range-row button,
+          .booking-mode-switch,
+          .booking-mode-tab,
           .calendar-filter-row,
           .calendar-filter-row label,
           .pending-strip,

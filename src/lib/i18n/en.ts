@@ -97,8 +97,7 @@ export const en: TranslationTree = {
   "home.proof.tracking": "Clear request and confirmation updates",
   "home.proof.language": "Available in English and Albanian",
   "home.journey.kicker": "Your booking, made clear",
-  "home.journey.title":
-    "From finding a service to knowing what happens next.",
+  "home.journey.title": "From finding a service to knowing what happens next.",
   "home.journey.discover.title": "Browse bookable businesses",
   "home.journey.discover.body":
     "Search by service or city and compare businesses ready to take appointments.",
@@ -329,8 +328,7 @@ export const en: TranslationTree = {
   "explore.card.bookNow": "Book now",
   "explore.card.locationComingSoon": "Location not provided",
   "explore.brand.kicker": "Mirëbook",
-  "explore.brand.title":
-    "Find local services and keep every appointment clear",
+  "explore.brand.title": "Find local services and keep every appointment clear",
   "explore.brand.description":
     "Browse bookable businesses, choose a service and available time, then track requests and confirmed appointments in one place.",
   "explore.brand.footer":
@@ -446,7 +444,7 @@ export const en: TranslationTree = {
   "support.business.heroTitle": "Help with business setup and bookings",
   "support.business.heroBody":
     "Use this for setup, publishing, services, staff, working hours, booking approval, trials, subscription access and business account issues.",
-  "support.business.loading": "Loading your business context...",
+  "support.business.loading": "Loading your business support...",
   "support.business.loginRequired":
     "You need to be logged in to send a support message.",
   "support.business.validation":
@@ -498,8 +496,7 @@ export const en: TranslationTree = {
   "myBookings.signedInAs": "Signed in as",
   "myBookings.subtitle": "View and manage your Mirëbook appointments.",
   "myBookings.requestSent.kicker": "Request sent",
-  "myBookings.requestSent.title":
-    "Waiting for the business to confirm.",
+  "myBookings.requestSent.title": "Waiting for the business to confirm.",
   "myBookings.requestSent.body":
     "This appointment is not confirmed yet. You can track the request here or from Notifications.",
   "myBookings.rescheduleSent.kicker": "Reschedule request sent",
@@ -554,8 +551,7 @@ export const en: TranslationTree = {
   "myBookings.card.inactiveHint": "This appointment is no longer active.",
   "myBookings.card.duration": "Duration",
   "myBookings.card.status": "Status",
-  "myBookings.card.changeAwaiting":
-    "Requested change awaiting business review",
+  "myBookings.card.changeAwaiting": "Requested change awaiting business review",
   "myBookings.card.newRequestedTime": "New requested appointment time",
   "myBookings.card.businessApprovalNeeded": "Business approval needed",
   "myBookings.card.requestedNewTime": "Requested new time",
@@ -702,13 +698,12 @@ export const en: TranslationTree = {
   "notifications.status.superseded": "Superseded / replaced",
   "notifications.status.completed": "Completed",
   "notifications.status.confirmed": "Confirmed",
-  "dashboardSettings.pageTitle": "Business settings",
-  "dashboardSettings.kicker": "Business settings",
+  "dashboardSettings.pageTitle": "Booking rules",
+  "dashboardSettings.kicker": "Booking rules",
   "dashboardSettings.title": "Manage business rules",
   "dashboardSettings.subtitle":
-    "Control booking approval, rules and customer policies.",
-  "dashboardSettings.subtitleSelected":
-    "Control booking approval, rules and customer policies for",
+    "Choose how appointments are approved and how far ahead customers can book.",
+  "dashboardSettings.subtitleSelected": "Choose appointment rules for",
   "dashboardSettings.loading": "Loading Mirëbook business settings...",
   "dashboardSettings.error.load": "Could not load business settings.",
   "dashboardSettings.chooseBusiness":
@@ -964,9 +959,9 @@ export const en: TranslationTree = {
   "dashboardHome.shortcuts.billing.title": "Billing",
   "dashboardHome.shortcuts.billing.body":
     "Review trial, subscription and billing setup for Mirëbook.",
-  "dashboardBusinesses.pageTitle": "My Business",
+  "dashboardBusinesses.pageTitle": "Setup",
   "dashboardBusinesses.pageSubtitle":
-    "Profile, services, team, availability and booking rules in one place.",
+    "Get your business ready for customers to book.",
   "dashboardBusinesses.myBusiness.body":
     "Manage the information and settings customers rely on when they book.",
   "dashboardBusinesses.myBusiness.complete": "Complete",
@@ -1028,6 +1023,43 @@ export const en: TranslationTree = {
   "dashboardBusinesses.setupHub.secondaryActions": "Preview and support",
   "dashboardBusinesses.setupHub.extraBusinessHint":
     "Need another business or location?",
+  "dashboardBusinesses.setup.progressLabel": "Setup progress",
+  "dashboardBusinesses.setup.body":
+    "Follow the next step, then preview what customers will see.",
+  "dashboardBusinesses.setup.profile": "Business profile",
+  "dashboardBusinesses.setup.profileBody":
+    "Add the customer details people need before booking.",
+  "dashboardBusinesses.setup.profileAction": "Edit profile",
+  "dashboardBusinesses.setup.services": "Services",
+  "dashboardBusinesses.setup.servicesBody":
+    "Create at least one active service customers can choose.",
+  "dashboardBusinesses.setup.servicesAction": "Add service",
+  "dashboardBusinesses.setup.team": "Team",
+  "dashboardBusinesses.setup.teamBody":
+    "Add bookable people and connect them to services.",
+  "dashboardBusinesses.setup.teamAction": "Manage team",
+  "dashboardBusinesses.setup.hours": "Working hours",
+  "dashboardBusinesses.setup.hoursBody":
+    "Set the days and times customers can book.",
+  "dashboardBusinesses.setup.hoursAction": "Set hours",
+  "dashboardBusinesses.setup.preview": "Preview and publish",
+  "dashboardBusinesses.setup.previewBody":
+    "Check the customer page, then publish when ready.",
+  "dashboardBusinesses.setup.previewAction": "Preview profile",
+  "dashboardBusinesses.setup.finishFirst": "Finish setup",
+  "dashboardBusinesses.setup.of": "of",
+  "dashboardBusinesses.setup.nextTitle": "Next step",
+  "dashboardBusinesses.setup.completeBody": "Your booking setup is ready.",
+  "dashboardBusinesses.setup.done": "Done",
+  "dashboardBusinesses.setup.previewLabel": "Customer preview",
+  "dashboardBusinesses.setup.advancedTitle": "Advanced",
+  "dashboardBusinesses.setup.detailsTitle": "Business profile details",
+  "dashboardBusinesses.setup.detailsBody":
+    "Edit profile fields, image, booking rules and publish controls.",
+  "dashboardBusinesses.setup.statusReady": "Ready to take bookings",
+  "dashboardBusinesses.setup.statusHidden": "Hidden from Explore",
+  "dashboardBusinesses.setup.statusPublish": "Ready to publish",
+  "dashboardBusinesses.setup.statusNeeded": "Setup needed",
   "dashboardBusinesses.profileTools.preview": "Preview public page",
   "dashboardBusinesses.create.placeholder": "Business name",
   "dashboardBusinesses.create.adding": "Adding...",
@@ -1046,11 +1078,11 @@ export const en: TranslationTree = {
     "Add category and location before publishing",
   "dashboardBusinesses.liveOnMirebook": "Live on Mirëbook",
   "dashboardBusinesses.hidden": "Hidden",
-  "dashboardBusinesses.autoAccept": "Auto-accept",
-  "dashboardBusinesses.readyToBook": "Ready to book",
-  "dashboardBusinesses.setupIncomplete": "Setup incomplete",
+  "dashboardBusinesses.autoAccept": "Book instantly",
+  "dashboardBusinesses.readyToBook": "Ready to take bookings",
+  "dashboardBusinesses.setupIncomplete": "Needs setup",
   "dashboardBusinesses.imageNeeded": "Image needed",
-  "dashboardBusinesses.profileComplete": "Profile details ready",
+  "dashboardBusinesses.profileComplete": "Profile ready",
   "dashboardBusinesses.profileNeedsPolish": "Add profile details",
   "dashboardBusinesses.hideMarketplace": "Hide from marketplace",
   "dashboardBusinesses.publish": "Publish to Mirëbook",
@@ -1059,15 +1091,15 @@ export const en: TranslationTree = {
   "dashboardBusinesses.servicesHelper":
     "Create bookable services with prices, durations, descriptions and optional images.",
   "dashboardBusinesses.staffHelper":
-    "Add staff, link emails and assign active services so customers can book the right people.",
+    "Add bookable people and connect them to services.",
   "dashboardBusinesses.settingsHelper":
-    "Control approval mode, booking intervals, notice periods, buffers and customer policies.",
-  "dashboardBusinesses.subscription": "Subscription",
+    "Choose how appointments are approved and how far ahead customers can book.",
+  "dashboardBusinesses.subscription": "Early partner",
   "dashboardBusinesses.billingHelper":
-    "Prepare trial, plan and subscription details for this business account.",
+    "Membership details are separate from customer bookings.",
   "dashboardBusinesses.openDay": "open day",
   "dashboardBusinesses.hoursHelper":
-    "Set general shop availability. Staff-specific hours control exact bookable slots.",
+    "Set the general hours customers can book.",
   "dashboardBusinesses.marketplacePreview": "Marketplace preview",
   "dashboardBusinesses.previewLiveHelper":
     "Preview how customers see this business on Mirëbook.",
@@ -1076,9 +1108,9 @@ export const en: TranslationTree = {
   "dashboardBusinesses.previewIncompleteHelper":
     "Preview is available, but customers may not be able to book until setup is complete.",
   "dashboardBusinesses.manageServices": "Manage services",
-  "dashboardBusinesses.manageStaff": "Manage staff",
-  "dashboardBusinesses.openSettings": "Open settings",
-  "dashboardBusinesses.openBilling": "Open billing",
+  "dashboardBusinesses.manageStaff": "Manage team",
+  "dashboardBusinesses.openSettings": "Open booking rules",
+  "dashboardBusinesses.openBilling": "Open membership",
   "dashboardBusinesses.setHours": "Set hours",
   "dashboardBusinesses.openPublicPage": "Open public page",
   "dashboardBusinesses.profile.kicker": "Customer-facing profile",
@@ -1297,8 +1329,7 @@ export const en: TranslationTree = {
   "dashboardStaff.teamSubtitleSelected":
     "Manage the staff and bookable people customers can choose at",
   "dashboardStaff.teamTools.kicker": "Team setup",
-  "dashboardStaff.teamTools.title":
-    "Keep people, services and hours connected",
+  "dashboardStaff.teamTools.title": "Keep people, services and hours connected",
   "dashboardStaff.teamTools.body":
     "Team members become bookable when they are active, assigned to services and have working hours.",
   "dashboardStaff.teamTools.businessHours": "Business availability",
@@ -1432,11 +1463,11 @@ export const en: TranslationTree = {
   "dashboardStaff.card.saveStaff": "Save staff",
   "dashboardStaff.card.deactivate": "Deactivate",
   "dashboardStaff.card.activate": "Activate",
-  "dashboardAvailability.pageTitle": "Business working hours",
+  "dashboardAvailability.pageTitle": "Working hours",
   "dashboardAvailability.pageSubtitle":
     "Choose which business working hours to manage.",
   "dashboardAvailability.pageSubtitleSelected":
-    "Set Mirëbook business-wide fallback hours for",
+    "Set the days customers can book for",
   "dashboardAvailability.loading": "Loading Mirëbook working hours...",
   "dashboardAvailability.error.noAccess":
     "You do not have access to this business.",
@@ -1553,8 +1584,7 @@ export const en: TranslationTree = {
   "account.verification.resent":
     "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
   "account.emailPreferences.kicker": "Email preferences",
-  "account.emailPreferences.title":
-    "Choose your transactional email updates",
+  "account.emailPreferences.title": "Choose your transactional email updates",
   "account.emailPreferences.body":
     "These controls affect email delivery only. In-app notifications always stay on, and email delivery depends on provider setup.",
   "account.emailPreferences.setupRequired": "Supabase setup required",
@@ -1591,8 +1621,7 @@ export const en: TranslationTree = {
     "Email preferences saved. In-app notifications remain enabled.",
   "account.emailPreferences.loadError":
     "Could not load saved email preferences. Safe defaults are shown.",
-  "account.emailPreferences.saveError":
-    "Could not save email preferences.",
+  "account.emailPreferences.saveError": "Could not save email preferences.",
   "account.emailPreferences.schemaMissingError":
     "Email preferences cannot be saved until the Stage 6 preferences SQL is installed in Supabase.",
   "account.emailBody":
@@ -1630,13 +1659,20 @@ export const en: TranslationTree = {
   "account.saveChanges": "Save changes",
   "account.helpKicker": "Help and language",
   "account.supportBody":
-    "Customer, business and staff support routes are separated. Your saved language preference will be used across translated Mirëbook pages.",
+    "Contact Mirëbook support or review your support messages.",
   "account.contactSupport": "Contact support",
   "account.savedLanguage": "Saved account language",
   "dashboardBookings.pageTitle": "Calendar",
   "dashboardBookings.pageSubtitle": "Choose which business bookings to view.",
-  "dashboardBookings.pageSubtitleSelected":
-    "Appointments and booking requests for",
+  "dashboardBookings.pageSubtitleSelected": "See what is happening when for",
+  "dashboardBookings.recordsTitle": "Bookings",
+  "dashboardBookings.recordsSubtitleSelected":
+    "Manage appointment requests, upcoming bookings and history for",
+  "dashboardBookings.recordsKicker": "Booking records",
+  "dashboardBookings.recordsHeading": "Manage bookings",
+  "dashboardBookings.mode.calendarBody": "Schedule by day and time",
+  "dashboardBookings.mode.bookingsBody":
+    "Requests, upcoming records and history",
   "dashboardBookings.appointments": "appointments",
   "dashboardBookings.needsApproval": "need approval",
   "dashboardBookings.loading": "Loading bookings...",
@@ -1725,12 +1761,15 @@ export const en: TranslationTree = {
   "dashboardBookings.empty.noBookingsTitle": "No bookings yet",
   "dashboardBookings.empty.noBookingsBody":
     "Customer bookings for this business will appear here once your public page is published and customers start booking.",
-  "dashboardBookings.empty.noFilteredTitle": "No appointments in this view",
+  "dashboardBookings.empty.noFilteredTitle": "No appointments in this schedule",
   "dashboardBookings.empty.noFilteredBody":
     "Try another date, staff member, status or search term.",
-  "dashboardBookings.emptyCalendar.title": "No appointments yet",
+  "dashboardBookings.empty.noBookingRecordsTitle": "No booking records match",
+  "dashboardBookings.empty.noBookingRecordsBody":
+    "Try a different status, staff member or search term.",
+  "dashboardBookings.emptyCalendar.title": "No schedule yet",
   "dashboardBookings.emptyCalendar.body":
-    "Once customers book, today’s requests and confirmed appointments will appear here in your calendar.",
+    "When customers book, your schedule and booking records will appear here.",
   "dashboardBookings.empty.checkSetup": "Check setup",
   "dashboardBookings.pendingStrip.title": "Requests waiting",
   "dashboardBookings.pendingStrip.body":
@@ -1806,8 +1845,7 @@ export const en: TranslationTree = {
   "dashboardNotifications.toolbar.mark": "Mark",
   "dashboardNotifications.toolbar.read": "read",
   "dashboardNotifications.toolbar.allRead": "All read",
-  "dashboardNotifications.toolbar.pendingBookings":
-    "Bookings needing approval",
+  "dashboardNotifications.toolbar.pendingBookings": "Bookings needing approval",
   "dashboardNotifications.summary.bookingApprovals":
     "Bookings needing approval",
   "dashboardNotifications.summary.bookingApprovalsBody":
@@ -2083,8 +2121,7 @@ export const en: TranslationTree = {
   "register.business.cityPlaceholder": "Example: Tirana",
   "register.business.countryLabel": "Country",
   "register.business.countryPlaceholder": "Example: Albania",
-  "register.legal.prefix":
-    "By creating an account, you agree to Mirëbook’s",
+  "register.legal.prefix": "By creating an account, you agree to Mirëbook’s",
   "register.legal.terms": "Terms",
   "register.legal.and": "and",
   "register.legal.privacy": "Privacy Policy",
@@ -2251,8 +2288,7 @@ export const en: TranslationTree = {
   "staffAvailability.summary.closedDaysBody":
     "Hidden from new customer bookings.",
   "staffAvailability.summary.weeklyHours": "Weekly availability",
-  "staffAvailability.summary.weeklyHoursBody":
-    "Estimated bookable staff time.",
+  "staffAvailability.summary.weeklyHoursBody": "Estimated bookable staff time.",
   "staffAvailability.templates.body":
     "Templates only update the form. Save your weekly availability when the hours look right.",
   "staffAvailability.templates.weekday": "Mon-Fri 9-5",
@@ -2676,9 +2712,9 @@ export const en: TranslationTree = {
   "notifications.types.bookingRequested.title": "Request sent",
   "notifications.types.bookingRequested.message":
     "Waiting for the business to confirm.",
-  "billing.currentPlan": "Current plan",
-  "billing.subscriptionStatus": "Subscription status",
-  "billing.trialActive": "Trial active",
+  "billing.currentPlan": "Current membership",
+  "billing.subscriptionStatus": "Membership status",
+  "billing.trialActive": "Early partner trial active",
   "billing.trialEndsOn": "Trial ends",
   "billing.noTrialConfigured": "No trial date configured.",
   "billing.howItWorks": "How Mirëbook subscriptions work",
@@ -2700,25 +2736,25 @@ export const en: TranslationTree = {
   "billing.planCustom": "Custom",
   "billing.planCustomTitle": "Enterprise",
   "billing.planCustomBody": "Multi-location and tailored solutions.",
-  "billing.pageTitle": "Billing",
-  "billing.pageSubtitle": "View your Mirëbook business subscription details.",
-  "billing.pageSubtitleBusiness": "Subscription details for {{business}}.",
-  "billing.loading": "Loading billing details...",
-  "billing.error.load": "Could not load billing details.",
+  "billing.pageTitle": "Membership",
+  "billing.pageSubtitle": "View your Mirëbook Business membership details.",
+  "billing.pageSubtitleBusiness": "Membership details for {{business}}.",
+  "billing.loading": "Loading membership details...",
+  "billing.error.load": "Could not load membership details.",
   "billing.noBusinessTitle": "Create a business first",
   "billing.noBusinessBody":
-    "Billing details become available after you create a Mirëbook business profile.",
+    "Membership details become available after you create a Mirëbook business profile.",
   "billing.openSetupHub": "Open setup hub",
   "billing.selectedBusiness": "Selected business",
-  "billing.manualSetupPendingTitle": "Billing setup is being prepared",
+  "billing.manualSetupPendingTitle": "Membership details are being prepared",
   "billing.manualSetupPendingBody":
-    "Your business can keep using bookings, staff tools and its public listing while Mirëbook prepares the manual billing record.",
-  "billing.heroKicker": "Business subscription",
+    "Your business can keep using bookings, staff tools and its public listing during the early partner period.",
+  "billing.heroKicker": "Membership",
   "billing.launchPlan": "Mirëbook Launch",
   "billing.heroBody":
-    "One clear subscription for the tools your business uses to manage bookings and customers.",
+    "Mirëbook Business is currently available for early partners.",
   "billing.contactSupport": "Contact Mirëbook",
-  "billing.status.notConfigured": "Not configured",
+  "billing.status.notConfigured": "Early partner access",
   "billing.status.freeTrial": "Free trial",
   "billing.status.foundingFree": "Founding free period",
   "billing.status.active": "Active",
@@ -2727,31 +2763,28 @@ export const en: TranslationTree = {
   "billing.status.cancelled": "Cancelled",
   "billing.status.paused": "Paused",
   "billing.status.notConfiguredBody":
-    "Mirëbook has not configured a manual billing record for this business yet.",
-  "billing.status.freeTrialBody":
-    "Your launch trial is active. No payment is being taken yet.",
+    "Mirëbook Business is currently available for early partners.",
+  "billing.status.freeTrialBody": "Your early partner trial is active.",
   "billing.status.foundingFreeBody":
     "Your founding-business free period is active.",
-  "billing.status.activeBody":
-    "Your Mirëbook Launch subscription is recorded as active.",
+  "billing.status.activeBody": "Your Mirëbook Launch membership is active.",
   "billing.status.manualCompedBody":
     "Mirëbook has recorded complimentary access for this business.",
   "billing.status.pastDueBody":
-    "Your billing record needs attention. Your booking tools remain available.",
+    "Your membership needs attention. Your booking tools remain available.",
   "billing.status.cancelledBody":
-    "This subscription record is cancelled. Your booking tools are not restricted in this batch.",
+    "This membership is cancelled. Customer bookings are managed separately.",
   "billing.status.pausedBody":
-    "This billing record is paused. Your booking tools remain available.",
+    "This membership is paused. Your booking tools remain available.",
   "billing.agreedPrice": "Agreed monthly price",
   "billing.priceNotSet": "Not agreed yet",
   "billing.noChargeYet":
-    "No real payment is taken while Checkout is in test mode.",
+    "No customer booking commission is charged during the early partner period.",
   "billing.offerStatus": "Offer status",
   "billing.foundingBusiness": "Founding business",
   "billing.standardLaunch": "Launch plan",
   "billing.secondMonthFree": "Eligible for the second month free.",
-  "billing.offerRecordedManually":
-    "Offer details are recorded manually by Mirëbook.",
+  "billing.offerRecordedManually": "Offer details are recorded by Mirëbook.",
   "billing.importantDates": "Important dates",
   "billing.trialEnd": "Trial end",
   "billing.currentPeriodEnd": "Current period end",
@@ -2762,25 +2795,25 @@ export const en: TranslationTree = {
   "billing.included.notifications": "Notifications",
   "billing.included.noCommission": "No normal booking commission",
   "billing.included.noCustomerFee": "No customer booking fee",
-  "billing.onlinePaymentsTitle": "Test subscription Checkout",
+  "billing.onlinePaymentsTitle": "Membership checkout",
   "billing.onlinePaymentsBody":
-    "Use Stripe test mode to check the Mirëbook Membership subscription flow. Test Checkout does not change platform access.",
+    "Membership plans are being enabled for early partners. Customer bookings stay separate from membership.",
   "billing.noAccessRestriction":
-    "Billing status does not restrict bookings, staff access or your public listing in this stage.",
-  "billing.manualSetupHelp": "Ask about billing setup",
-  "billing.checkout.start": "Start test Checkout",
-  "billing.checkout.starting": "Opening test Checkout...",
+    "Membership status does not restrict bookings, staff access or your public listing.",
+  "billing.manualSetupHelp": "Ask about membership",
+  "billing.checkout.start": "Start membership checkout",
+  "billing.checkout.starting": "Opening checkout...",
   "billing.checkout.error":
     "Could not start Stripe Checkout. Please try again.",
-  "billing.checkout.successTitle": "Test Checkout completed",
+  "billing.checkout.successTitle": "Membership checkout complete",
   "billing.checkout.successSyncedBody":
-    "Stripe accepted the test subscription and Mirëbook has synced the billing status.",
+    "Mirëbook has synced the active membership status.",
   "billing.checkout.successPendingBody":
-    "Stripe accepted the test subscription. Billing status may take a moment to sync.",
-  "billing.checkout.runAgain": "Run another test Checkout",
+    "Membership checkout was accepted. Status may take a moment to sync.",
+  "billing.checkout.runAgain": "Run membership checkout",
   "billing.checkout.cancelledTitle": "Checkout cancelled",
   "billing.checkout.cancelledBody":
-    "No test subscription was started. Your Mirëbook access has not changed.",
+    "No membership checkout was started. Your Mirëbook access has not changed.",
   "nav.operatorNotices": "Operator notices",
   "nav.needsAction": "Needs action",
   "nav.updates": "Updates",
@@ -2805,8 +2838,7 @@ export const en: TranslationTree = {
   "explore.filters.clearButton": "Clear filters",
   "explore.filters.refreshButton": "Refresh results",
   "staffAvailability.templates.compactTitle": "Quick templates",
-  "staff.workspace.ownerStaffWorkspace":
-    "My work inside your business account",
+  "staff.workspace.ownerStaffWorkspace": "My work inside your business account",
   "staff.actions.businessDashboard": "Business dashboard",
 
   "staffAvailability.ownerStaffAvailability":
@@ -2895,8 +2927,7 @@ export const en: TranslationTree = {
   "staff.home.calendarBody": "Review appointment details and upcoming work.",
   "staff.home.availabilityBody":
     "Set the days and hours customers can book you.",
-  "staff.home.notificationsBody":
-    "See booking, schedule and profile updates.",
+  "staff.home.notificationsBody": "See booking, schedule and profile updates.",
   "staff.home.ownerContext": "Business management stays in Manage business.",
   "staff.assignedServices.emptyCompact":
     "No services are assigned yet. Ask the business owner to update your Team profile.",
@@ -2984,8 +3015,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.missingSetup.profileCta": "Add business details",
   "dashboardBusinesses.missingSetup.servicesCta": "Add service",
   "dashboardBusinesses.missingSetup.staffCta": "Add staff",
-  "dashboardBusinesses.missingSetup.assignmentCta":
-    "Assign staff to service",
+  "dashboardBusinesses.missingSetup.assignmentCta": "Assign staff to service",
   "dashboardBusinesses.missingSetup.hoursCta": "Set availability",
   "dashboardBusinesses.onboarding.profile": "Add business details",
   "dashboardBusinesses.onboarding.profileBody":
@@ -3056,7 +3086,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.overview.ready": "Ready",
   "dashboardBusinesses.overview.actionNeeded": "Action needed",
   "dashboardBusinesses.overview.bookingBody":
-    "Requires an active service, active staff assignment and available working hours.",
+    "Requires an active service, team member and working hours.",
   "dashboardBusinesses.overview.publicTitle": "Public listing",
   "dashboardBusinesses.overview.listed": "Listed and bookable",
   "dashboardBusinesses.overview.hiddenUntilReady":
@@ -3093,8 +3123,7 @@ export const en: TranslationTree = {
   "admin.businesses.billing.kicker": "Authoritative billing state",
   "admin.businesses.billing.readOnly":
     "Read-only here. Stripe webhooks and controlled manual operations own this record.",
-  "admin.businesses.billing.adminOnly":
-    "Admin only · Manual billing control",
+  "admin.businesses.billing.adminOnly": "Admin only · Manual billing control",
   "admin.businesses.billing.softAccess":
     "Billing remains informational. These changes do not restrict bookings, staff access or public listing.",
   "admin.businesses.billing.loadingControls":
@@ -3136,19 +3165,16 @@ export const en: TranslationTree = {
     "Enter a valid non-negative monthly price.",
   "admin.businesses.billing.save": "Save billing state",
   "admin.businesses.billing.saving": "Saving billing...",
-  "admin.businesses.billing.saved":
-    "Manual billing state saved and audited.",
+  "admin.businesses.billing.saved": "Manual billing state saved and audited.",
   "admin.businesses.billing.savedWithoutAudit":
     "Manual billing state saved. Install the Stage 5 audit SQL to retain a durable change record.",
   "admin.businesses.billing.saveError": "Could not save billing changes.",
   "admin.businesses.billing.standard": "Standard launch",
-  "admin.businesses.founding.kicker":
-    "Admin only · Launch offer tracking",
+  "admin.businesses.founding.kicker": "Admin only · Launch offer tracking",
   "admin.businesses.founding.title": "Founding offer review",
   "admin.businesses.founding.body":
     "Raw signups are not enough. Review confirmed and completed bookings, unique customers and verification status before granting a second free month.",
-  "admin.businesses.founding.loading":
-    "Calculating first-month activity...",
+  "admin.businesses.founding.loading": "Calculating first-month activity...",
   "admin.businesses.founding.loadError":
     "Could not load founding offer tracking.",
   "admin.businesses.founding.saveError":
@@ -3164,17 +3190,13 @@ export const en: TranslationTree = {
   "admin.businesses.founding.offerWindow": "First offer window",
   "admin.businesses.founding.billingContext": "Billing context",
   "admin.businesses.founding.currentDecision": "Current billing flag",
-  "admin.businesses.founding.flagEligible":
-    "Second month marked eligible",
+  "admin.businesses.founding.flagEligible": "Second month marked eligible",
   "admin.businesses.founding.flagNotEligible": "Not marked eligible",
-  "admin.businesses.founding.qualifyingBookings":
-    "Confirmed + completed",
+  "admin.businesses.founding.qualifyingBookings": "Confirmed + completed",
   "admin.businesses.founding.qualifyingCustomers":
     "Unique qualifying customers",
-  "admin.businesses.founding.verifiedCustomers":
-    "Verified customer accounts",
-  "admin.businesses.founding.unknownCustomers":
-    "Unknown / guest verification",
+  "admin.businesses.founding.verifiedCustomers": "Verified customer accounts",
+  "admin.businesses.founding.unknownCustomers": "Unknown / guest verification",
   "admin.businesses.founding.total": "Total",
   "admin.businesses.founding.pending": "Pending",
   "admin.businesses.founding.confirmed": "Confirmed",
@@ -3433,7 +3455,7 @@ export const en: TranslationTree = {
     "Choose the help route that matches what you are doing.",
   "dashboardHome.today.title": "What needs attention today",
   "dashboardHome.today.body":
-    "Requests, today’s appointments and setup progress in one place.",
+    "Requests, appointments and the next setup action in one place.",
   "dashboardHome.today.requests": "Needs attention",
   "dashboardHome.today.confirmedToday": "Today",
   "dashboardHome.today.upcoming": "Upcoming",
@@ -3451,6 +3473,9 @@ export const en: TranslationTree = {
   "dashboardHome.today.nextReady": "Ready to take bookings",
   "dashboardHome.today.nextReadyBody":
     "Your core setup is complete. Preview the customer profile or open Calendar.",
+  "dashboardHome.status.ready": "Ready to take bookings",
+  "dashboardHome.status.hidden": "Hidden from Explore",
+  "dashboardHome.status.setupNeeded": "Setup needed",
   "dashboardHome.setup.title": "Get ready to take bookings",
   "dashboardHome.setup.progress": "{{done}} of {{total}} setup steps complete",
   "dashboardHome.setup.profile": "Business profile",

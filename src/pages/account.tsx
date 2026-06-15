@@ -15,10 +15,7 @@ import {
   EmailVerificationState,
   getEmailVerificationState,
 } from "@/lib/email/verification";
-import {
-  getAuthAppUrl,
-  isBusinessAppHostname,
-} from "@/lib/appUrls";
+import { getAuthAppUrl, isBusinessAppHostname } from "@/lib/appUrls";
 
 type Role = "customer" | "business" | "staff";
 
@@ -128,9 +125,6 @@ export default function AccountPage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [ownedBusinesses, setOwnedBusinesses] = useState<BusinessRow[]>([]);
-  const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(
-    null,
-  );
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
   const [isStaffIntentAccount, setIsStaffIntentAccount] = useState(false);
   const [hasLinkedStaffProfile, setHasLinkedStaffProfile] = useState(false);
@@ -232,7 +226,6 @@ export default function AccountPage() {
 
     const loadedBusinesses = capabilities.ownedBusinesses as BusinessRow[];
     setOwnedBusinesses(loadedBusinesses);
-    setPrimaryBusinessId(capabilities.primaryBusinessId);
     setIsStaffIntentAccount(capabilities.isStaffIntent);
     setHasLinkedStaffProfile(capabilities.hasLinkedStaffProfile);
 
@@ -428,11 +421,7 @@ export default function AccountPage() {
   }
 
   async function resendVerification() {
-    if (
-      !profile?.email ||
-      emailVerificationState !== "unverified"
-    )
-      return;
+    if (!profile?.email || emailVerificationState !== "unverified") return;
 
     setResendingVerification(true);
     setError(null);
@@ -535,12 +524,6 @@ export default function AccountPage() {
     );
   }
 
-  function publicBusinessHref() {
-    return primaryBusinessId
-      ? `/explore/${primaryBusinessId}`
-      : "/dashboard/businesses";
-  }
-
   function staffBusinessName() {
     return (
       staffProfile?.business_name ||
@@ -590,7 +573,6 @@ export default function AccountPage() {
                   )}
                 </p>
               </div>
-
             </div>
 
             {message && (
@@ -623,9 +605,9 @@ export default function AccountPage() {
                     ? t("account.verification.verified", "Email verified")
                     : emailIsUnverified
                       ? t(
-                        "account.verification.unverified",
-                        "Verification pending",
-                      )
+                          "account.verification.unverified",
+                          "Verification pending",
+                        )
                       : t(
                           "account.verification.unknown",
                           "Verification status unavailable",
@@ -656,7 +638,10 @@ export default function AccountPage() {
                   disabled={resendingVerification}
                 >
                   {resendingVerification
-                    ? t("verification.resending", "Sending verification email...")
+                    ? t(
+                        "verification.resending",
+                        "Sending verification email...",
+                      )
                     : t("verification.resend", "Resend verification email")}
                 </button>
               )}
@@ -859,10 +844,7 @@ export default function AccountPage() {
                 {hasStaffAccess && (
                   <div className="account-preference-group">
                     <h3>
-                      {t(
-                        "account.emailPreferences.staffTitle",
-                        "Staff emails",
-                      )}
+                      {t("account.emailPreferences.staffTitle", "Staff emails")}
                     </h3>
                     <label className="account-preference-toggle">
                       <input
@@ -995,7 +977,7 @@ export default function AccountPage() {
                   {ownsBusiness
                     ? t(
                         "account.accountOnlyBusinessBody",
-                        "These settings belong to your owner login. Business profile details, services, staff and booking rules stay in Business settings.",
+                        "These settings belong to your owner login. Business profile, team and booking rules stay in your business workspace.",
                       )
                     : hasStaffAccess
                       ? t(
@@ -1135,88 +1117,6 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {ownsBusiness && (
-              <div className="card account-business-settings-card">
-                <h3>
-                  {t(
-                    "account.businessSettingsTitle",
-                    "Need to change your business setup?",
-                  )}
-                </h3>
-                <p className="small muted">
-                  {t(
-                    "account.businessSettingsBody",
-                    "Use Business settings for booking rules, approval mode, policies, billing, services, staff and public business details.",
-                  )}
-                </p>
-                <Link
-                  href="/dashboard/settings"
-                  className="btn btn-ghost"
-                  style={{ marginTop: 0 }}
-                >
-                  {t("dashboardSettings.pageTitle", "Business settings")}
-                </Link>
-              </div>
-            )}
-
-            {ownsBusiness && (
-              <div className="card account-owner-booking-card">
-                <div className="account-card-heading">
-                  <p className="small muted">
-                    {t("account.ownerBooking.kicker", "Owner booking status")}
-                  </p>
-                  <h3>
-                    {hasLinkedStaffProfile
-                      ? t(
-                          "account.ownerBooking.linkedTitle",
-                          "You are set up as bookable staff",
-                        )
-                      : t(
-                          "account.ownerBooking.notLinkedTitle",
-                          "You are not set up as bookable staff",
-                        )}
-                  </h3>
-                  <p className="small muted">
-                    {hasLinkedStaffProfile
-                      ? t(
-                          "account.ownerBooking.linkedBody",
-                          "Manage the business in Mirëbook Business. Use Staff Home for your own calendar and availability when customers can book you.",
-                        )
-                      : t(
-                          "account.ownerBooking.notLinkedBody",
-                          "If you personally take appointments, set yourself up as bookable staff. If you only manage the business, you can leave this off.",
-                        )}
-                  </p>
-                </div>
-                <div className="account-card-actions">
-                  <Link href="/staff" className="btn btn-accent">
-                    {hasLinkedStaffProfile
-                      ? t("staff.schedule.title", "My schedule")
-                      : t(
-                          "staff.ownerSetup.addSelf",
-                          "Add myself as bookable staff",
-                        )}
-                  </Link>
-                  {hasLinkedStaffProfile && (
-                    <Link href="/staff/availability" className="btn btn-ghost">
-                      {t(
-                        "staff.actions.updateAvailability",
-                        "Update availability",
-                      )}
-                    </Link>
-                  )}
-                </div>
-                {hasLinkedStaffProfile && (
-                  <p className="small account-owner-booking-rule">
-                    {t(
-                      "account.ownerBooking.bookableRule",
-                      "Customers can book you only while your staff profile is active and assigned to services.",
-                    )}
-                  </p>
-                )}
-              </div>
-            )}
-
             {isAdmin && (
               <div className="card operator-account-card">
                 <div className="operator-account-row">
@@ -1253,7 +1153,9 @@ export default function AccountPage() {
             {isCustomerOnly && (
               <div className="card account-customer-guide">
                 <div>
-                  <h2>{t("account.customerGuide.title", "Your booking journey")}</h2>
+                  <h2>
+                    {t("account.customerGuide.title", "Your booking journey")}
+                  </h2>
                   <p className="small muted">
                     {t(
                       "account.customerGuide.body",
@@ -1263,7 +1165,9 @@ export default function AccountPage() {
                 </div>
                 <div className="account-customer-guide-steps">
                   <Link href="/explore">
-                    <strong>{t("account.customerGuide.explore", "Explore businesses")}</strong>
+                    <strong>
+                      {t("account.customerGuide.explore", "Explore businesses")}
+                    </strong>
                     <span>
                       {t(
                         "account.customerGuide.exploreBody",
@@ -1272,7 +1176,9 @@ export default function AccountPage() {
                     </span>
                   </Link>
                   <Link href="/my-bookings">
-                    <strong>{t("account.customerGuide.bookings", "Track bookings")}</strong>
+                    <strong>
+                      {t("account.customerGuide.bookings", "Track bookings")}
+                    </strong>
                     <span>
                       {t(
                         "account.customerGuide.bookingsBody",
@@ -1281,7 +1187,12 @@ export default function AccountPage() {
                     </span>
                   </Link>
                   <Link href="/notifications">
-                    <strong>{t("account.customerGuide.notifications", "Check updates")}</strong>
+                    <strong>
+                      {t(
+                        "account.customerGuide.notifications",
+                        "Check updates",
+                      )}
+                    </strong>
                     <span>
                       {t(
                         "account.customerGuide.notificationsBody",
@@ -1305,12 +1216,12 @@ export default function AccountPage() {
                     : ownsBusiness
                       ? t(
                           "account.businessSummaryBody",
-                          "Owner access lets you manage business setup, bookings, services, staff, publishing and support conversations.",
+                          "Owner access is linked to your Mirëbook Business workspace.",
                         )
                       : hasStaffAccess
                         ? t(
                             "account.staffSummaryBody",
-                            "Staff access lets you view your staff workspace. Linked staff can see assigned bookings, calendar, availability, notifications and support conversations.",
+                            "Staff access is linked to your assigned appointments and availability.",
                           )
                         : t(
                             "account.customerSummaryBody",
@@ -1366,13 +1277,7 @@ export default function AccountPage() {
                   </p>
                   <div className="account-card-actions">
                     <Link href="/dashboard" className="btn btn-accent">
-                      {t("dashboardHome.title", "Business overview")}
-                    </Link>
-                    <Link
-                      href="/dashboard/businesses"
-                      className="btn btn-ghost"
-                    >
-                      {t("account.manageBusinessProfiles", "Manage businesses")}
+                      {t("dashboardLayout.nav.today", "Today")}
                     </Link>
                   </div>
                 </div>
@@ -1399,20 +1304,9 @@ export default function AccountPage() {
                   <div className="account-card-actions">
                     <Link href="/staff" className="btn btn-accent">
                       {hasLinkedStaffProfile
-                        ? t("staff.schedule.title", "My schedule")
+                        ? t("dashboardLayout.staffNav.today", "Today")
                         : t("staff.unlinked.title", "No business linked yet")}
                     </Link>
-                    {hasLinkedStaffProfile && (
-                      <Link
-                        href="/staff/availability"
-                        className="btn btn-ghost"
-                      >
-                        {t(
-                          "staff.actions.updateAvailability",
-                          "Update availability",
-                        )}
-                      </Link>
-                    )}
                   </div>
                 </div>
               )}
@@ -1469,7 +1363,7 @@ export default function AccountPage() {
                 <p className="small muted">
                   {t(
                     "account.supportBody",
-                    "Customer, business and staff support routes are separated. Your saved language preference will be used across translated Mirëbook pages.",
+                    "Contact Mirëbook support or review your support messages.",
                   )}
                 </p>
               </div>
@@ -1487,10 +1381,7 @@ export default function AccountPage() {
                 >
                   {t("account.contactSupport", "Contact support")}
                 </Link>
-                <Link
-                  href="/support/messages"
-                  className="btn btn-ghost"
-                >
+                <Link href="/support/messages" className="btn btn-ghost">
                   {t(
                     "support.customer.allConversations",
                     "All support messages",
@@ -1705,28 +1596,6 @@ export default function AccountPage() {
           justify-self: flex-start;
         }
 
-        .account-business-settings-card {
-          display: grid;
-          gap: 0.55rem;
-          border-color: rgba(255, 107, 53, 0.25);
-        }
-
-        .account-owner-booking-card {
-          display: grid;
-          gap: 0.75rem;
-          border-color: rgba(45, 212, 191, 0.25);
-          background: linear-gradient(
-            135deg,
-            rgba(45, 212, 191, 0.08),
-            rgba(255, 107, 53, 0.04)
-          );
-        }
-
-        .account-owner-booking-rule {
-          margin-top: 0 !important;
-          color: var(--accent);
-        }
-
         .account-customer-guide {
           display: grid;
           gap: 1rem;
@@ -1759,13 +1628,6 @@ export default function AccountPage() {
           color: var(--text-muted);
           font-size: 0.84rem;
           line-height: 1.4;
-        }
-
-        .account-business-settings-card h3,
-        .account-business-settings-card p,
-        .account-owner-booking-card h3,
-        .account-owner-booking-card p {
-          margin-top: 0;
         }
 
         .support-card {
@@ -1824,7 +1686,6 @@ export default function AccountPage() {
             width: 100%;
             justify-content: center;
           }
-
         }
       `}</style>
     </main>

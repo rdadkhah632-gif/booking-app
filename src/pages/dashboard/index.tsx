@@ -283,11 +283,22 @@ export default function DashboardHome() {
   ).length;
   const hasProfileBasics = Boolean(
     primaryBusiness?.name?.trim() &&
-      (primaryBusiness.category?.trim() || primaryBusiness.city?.trim()),
+    (primaryBusiness.category?.trim() || primaryBusiness.city?.trim()),
   );
   const publicPreviewHref = primaryBusinessId
     ? `/explore/${primaryBusinessId}`
     : undefined;
+  const readyToTakeBookings =
+    hasProfileBasics &&
+    activeServices > 0 &&
+    activeStaff > 0 &&
+    openWorkingDays > 0 &&
+    publishedCount > 0;
+  const todayStatusLabel = readyToTakeBookings
+    ? t("dashboardHome.status.ready", "Ready to take bookings")
+    : publishedCount > 0
+      ? t("dashboardHome.status.hidden", "Hidden from Explore")
+      : t("dashboardHome.status.setupNeeded", "Setup needed");
 
   const setupSteps = useMemo<SetupStep[]>(() => {
     return [
@@ -341,7 +352,10 @@ export default function DashboardHome() {
   const nextSetupStep = setupSteps.find((step) => !step.complete) || null;
   const primaryNextAction = pendingActionCount
     ? {
-        title: t("dashboardHome.today.nextRequests", "Review appointment requests"),
+        title: t(
+          "dashboardHome.today.nextRequests",
+          "Review appointment requests",
+        ),
         body: t(
           "dashboardHome.today.nextRequestsBody",
           "Customers are waiting for a decision.",
@@ -351,7 +365,10 @@ export default function DashboardHome() {
       }
     : todayBookings.length
       ? {
-          title: t("dashboardHome.today.nextCalendar", "Run today from Calendar"),
+          title: t(
+            "dashboardHome.today.nextCalendar",
+            "Run today from Calendar",
+          ),
           body: t(
             "dashboardHome.today.nextCalendarBody",
             "Confirmed appointments for today are ready.",
@@ -480,12 +497,26 @@ export default function DashboardHome() {
       {businesses.length > 0 && (
         <section className="dashboard-today-panel">
           <div className="dashboard-today-main">
-            <div>
-              <h2>{t("dashboardHome.today.title", "What needs attention today")}</h2>
+            <div className="dashboard-today-heading">
+              <div>
+                <p className="small muted">
+                  {primaryBusiness?.name || t("common.business", "Business")}
+                </p>
+                <h2>
+                  {t("dashboardHome.today.title", "What needs attention today")}
+                </h2>
+              </div>
+              <span
+                className={
+                  readyToTakeBookings ? "today-status ready" : "today-status"
+                }
+              >
+                {todayStatusLabel}
+              </span>
               <p className="small muted">
                 {t(
                   "dashboardHome.today.body",
-                  "Requests, today’s appointments and setup progress in one place.",
+                  "Requests, appointments and the next setup action in one place.",
                 )}
               </p>
             </div>
@@ -493,16 +524,26 @@ export default function DashboardHome() {
             <div className="dashboard-today-stats">
               <Link
                 href="/dashboard/bookings?view=upcoming&status=pending"
-                className={pendingActionCount > 0 ? "today-stat urgent" : "today-stat"}
+                className={
+                  pendingActionCount > 0 ? "today-stat urgent" : "today-stat"
+                }
               >
                 <strong>{pendingActionCount}</strong>
-                <span>{t("dashboardHome.today.requests", "Needs attention")}</span>
+                <span>
+                  {t("dashboardHome.today.requests", "Needs attention")}
+                </span>
               </Link>
-              <Link href="/dashboard/bookings?view=today" className="today-stat">
+              <Link
+                href="/dashboard/bookings?view=today"
+                className="today-stat"
+              >
                 <strong>{todayBookings.length}</strong>
                 <span>{t("dashboardHome.today.confirmedToday", "Today")}</span>
               </Link>
-              <Link href="/dashboard/bookings?view=upcoming" className="today-stat">
+              <Link
+                href="/dashboard/bookings?view=upcoming"
+                className="today-stat"
+              >
                 <strong>{upcomingBookings.length}</strong>
                 <span>{t("dashboardHome.today.upcoming", "Upcoming")}</span>
               </Link>
@@ -557,6 +598,26 @@ export default function DashboardHome() {
         .dashboard-today-panel h2,
         .dashboard-today-panel p {
           margin-top: 0;
+        }
+
+        .dashboard-today-heading {
+          display: grid;
+          gap: 0.5rem;
+        }
+
+        .today-status {
+          width: fit-content;
+          padding: 0.3rem 0.65rem;
+          border-radius: 999px;
+          background: rgba(255, 190, 11, 0.1);
+          color: var(--warning);
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .today-status.ready {
+          background: rgba(45, 212, 191, 0.1);
+          color: var(--success);
         }
 
         .dashboard-today-stats {
@@ -631,7 +692,6 @@ export default function DashboardHome() {
           }
         }
       `}</style>
-
     </DashboardLayout>
   );
 }

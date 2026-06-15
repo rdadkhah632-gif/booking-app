@@ -149,31 +149,41 @@ export default function DashboardLayout({
     },
   ];
 
-  const staffSecondaryLinks = [
-    ...(hasBusinessWorkspace
+  const mainLinks = workspace === "staff" ? staffMainLinks : businessMainLinks;
+  const accountActions = [
+    ...(workspace === "staff" && hasBusinessWorkspace
       ? [
           {
             href: "/dashboard",
             label: t(
               "dashboardLayout.staffNav.manageBusiness",
-              "Manage business",
+              "Business dashboard",
             ),
           },
         ]
       : []),
     {
-      href: "/support/staff",
-      label: t("nav.staffSupport", "Staff support"),
-    },
-    {
       href: "/account",
-      label: t("dashboardLayout.nav.accountSettings", "My account"),
+      label: t("dashboardLayout.nav.account", "Account"),
     },
+    ...(workspace === "business"
+      ? [
+          {
+            href: "/dashboard/billing",
+            label: t("dashboardLayout.nav.membership", "Membership"),
+          },
+          {
+            href: "/support/business",
+            label: t("dashboardLayout.nav.help", "Help"),
+          },
+        ]
+      : [
+          {
+            href: "/support/staff",
+            label: t("dashboardLayout.nav.help", "Help"),
+          },
+        ]),
   ];
-
-  const mainLinks = workspace === "staff" ? staffMainLinks : businessMainLinks;
-  const secondaryLinks =
-    workspace === "staff" ? staffSecondaryLinks : [];
 
   const myBusinessRoutes = [
     "/dashboard/businesses",
@@ -205,7 +215,9 @@ export default function DashboardLayout({
         typeof router.query.view === "string" ? router.query.view : "";
 
       if (hrefView === "today") {
-        return !currentView || currentView === "today" || Boolean(router.query.date);
+        return (
+          !currentView || currentView === "today" || Boolean(router.query.date)
+        );
       }
 
       if (hrefView === "upcoming") {
@@ -250,7 +262,11 @@ export default function DashboardLayout({
             className="logo"
           >
             Mirë<span>book</span>
-            <em>{t("product.business.suffix", "Business")}</em>
+            <em>
+              {workspace === "staff"
+                ? t("staff.workspace.kicker", "Staff")
+                : t("product.business.suffix", "Business")}
+            </em>
           </Link>
         </div>
 
@@ -272,31 +288,7 @@ export default function DashboardLayout({
             ))}
           </div>
 
-          {secondaryLinks.length > 0 && (
-            <div className="sidebar-lower-links">
-              {secondaryLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`sidebar-link ${isActiveLink(link.href) ? "active" : ""}`.trim()}
-                >
-                  <span>{link.label}</span>
-                </Link>
-              ))}
-
-              {workspace === "staff" && (
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="sidebar-link sidebar-logout"
-                >
-                  {t("auth.logout", "Log out")}
-                </button>
-              )}
-            </div>
-          )}
-
-          {workspace === "business" && (
+          {(workspace === "business" || workspace === "staff") && (
             <div className="sidebar-account">
               <Link href="/account" className="sidebar-account-main">
                 <span className="sidebar-account-avatar" aria-hidden="true">
@@ -308,15 +300,15 @@ export default function DashboardLayout({
                 </span>
               </Link>
               <div className="sidebar-account-actions">
-                <Link href="/account" className="sidebar-account-action">
-                  {t("dashboardLayout.nav.account", "Account")}
-                </Link>
-                <Link href="/dashboard/billing" className="sidebar-account-action">
-                  {t("dashboardLayout.nav.membership", "Membership")}
-                </Link>
-                <Link href="/support/business" className="sidebar-account-action">
-                  {t("dashboardLayout.nav.help", "Help")}
-                </Link>
+                {accountActions.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="sidebar-account-action"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
                 <button
                   type="button"
                   onClick={logout}
@@ -327,7 +319,6 @@ export default function DashboardLayout({
               </div>
             </div>
           )}
-
         </nav>
       </aside>
 
