@@ -140,7 +140,10 @@ export default function SupportPage() {
                 </p>
                 <h1 className="page-title">{t("support.title")}</h1>
                 <p className="page-sub" style={{ marginTop: "0.6rem" }}>
-                  {t("support.subtitle")}
+                  {t(
+                    "support.stage8.subtitle",
+                    "Choose the help route that matches what you are doing.",
+                  )}
                 </p>
               </div>
 
@@ -422,12 +425,12 @@ export default function SupportPage() {
         }
 
         .support-hero {
-          background: linear-gradient(
-            135deg,
-            rgba(255, 107, 53, 0.12),
-            rgba(45, 212, 191, 0.08)
-          );
-          border-color: rgba(255, 107, 53, 0.25);
+          padding: 1.25rem;
+        }
+
+        .support-shell > .grid-2,
+        .support-faq-card {
+          display: none;
         }
 
         .support-operator-hero {

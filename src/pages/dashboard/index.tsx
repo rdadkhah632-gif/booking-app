@@ -3,9 +3,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
-import DashboardSummaryCards from "@/components/dashboard-home/DashboardSummaryCards";
 import SchedulePreviewCard from "@/components/dashboard-home/SchedulePreviewCard";
-import SetupGuidanceList from "@/components/dashboard-home/SetupGuidanceList";
+import SetupProgressChecklist from "@/components/dashboard-home/SetupProgressChecklist";
 import {
   AvailabilityRow,
   Booking,
@@ -13,7 +12,7 @@ import {
   Business,
   ScheduleDay,
   Service,
-  SetupWarning,
+  SetupStep,
   StaffMember,
 } from "@/components/dashboard-home/dashboardHomeTypes";
 import { useI18n } from "@/lib/useI18n";
@@ -261,77 +260,6 @@ export default function DashboardHome() {
       );
   }, [bookings, now]);
 
-  const dashboardAnalytics = useMemo(() => {
-    const last30Days = new Date();
-    last30Days.setDate(last30Days.getDate() - 30);
-
-    const recentBookings = bookings.filter(
-      (booking) => new Date(booking.start_at) >= last30Days,
-    );
-    const recentCompleted = recentBookings.filter(
-      (booking) => booking.status === "completed",
-    );
-    const recentConfirmed = recentBookings.filter(
-      (booking) => booking.status === "confirmed",
-    );
-    const recentCancelled = recentBookings.filter(
-      (booking) => booking.status === "cancelled",
-    );
-
-    const estimatedRevenue = recentCompleted.reduce((total, booking) => {
-      return total + Number(booking.services?.price || 0);
-    }, 0);
-
-    const estimatedUpcomingValue = recentConfirmed.reduce((total, booking) => {
-      return total + Number(booking.services?.price || 0);
-    }, 0);
-
-    const serviceCounts = recentBookings.reduce<
-      Record<string, { name: string; count: number; value: number }>
-    >((acc, booking) => {
-      const serviceName =
-        booking.services?.name ||
-        t("dashboardHome.unknownService", "Unknown service");
-      const serviceKey =
-        booking.services?.id || booking.service_id || serviceName;
-
-      if (!acc[serviceKey]) {
-        acc[serviceKey] = {
-          name: serviceName,
-          count: 0,
-          value: 0,
-        };
-      }
-
-      acc[serviceKey].count += 1;
-      acc[serviceKey].value += Number(booking.services?.price || 0);
-      return acc;
-    }, {});
-
-    const topServices = Object.values(serviceCounts)
-      .sort((a, b) => b.count - a.count || b.value - a.value)
-      .slice(0, 3);
-
-    const averageBookingValue =
-      recentBookings.length > 0
-        ? recentBookings.reduce(
-            (total, booking) => total + Number(booking.services?.price || 0),
-            0,
-          ) / recentBookings.length
-        : 0;
-
-    return {
-      recentBookings,
-      recentCompleted,
-      recentConfirmed,
-      recentCancelled,
-      estimatedRevenue,
-      estimatedUpcomingValue,
-      topServices,
-      averageBookingValue,
-    };
-  }, [bookings]);
-
   const pendingRescheduleCount = useMemo(() => {
     const uniqueBookings = new Set(
       requests
@@ -344,6 +272,7 @@ export default function DashboardHome() {
 
   const pendingActionCount = pendingBookings.length + pendingRescheduleCount;
   const primaryBusinessId = businesses[0]?.id;
+  const primaryBusiness = businesses[0];
   const publishedCount = businesses.filter(
     (business) => business.published,
   ).length;
@@ -352,86 +281,105 @@ export default function DashboardHome() {
   const openWorkingDays = availabilityRows.filter(
     (row) => row.is_closed !== true,
   ).length;
+  const hasProfileBasics = Boolean(
+    primaryBusiness?.name?.trim() &&
+      (primaryBusiness.category?.trim() || primaryBusiness.city?.trim()),
+  );
+  const publicPreviewHref = primaryBusinessId
+    ? `/explore/${primaryBusinessId}`
+    : undefined;
 
-  const setupWarnings = useMemo(() => {
-    const warnings: SetupWarning[] = [];
-
-    if (businesses.length === 0) {
-      warnings.push({
-        title: t(
-          "dashboardHome.warnings.createProfile.title",
-          "Create your business profile",
-        ),
-        body: t(
-          "dashboardHome.warnings.createProfile.body",
-          "You need a business profile before customers can book through Mirëbook.",
-        ),
+  const setupSteps = useMemo<SetupStep[]>(() => {
+    return [
+      {
+        key: "profile",
+        complete: businesses.length > 0 && hasProfileBasics,
+        label: t("dashboardHome.setup.profile", "Business profile"),
         href: "/dashboard/businesses",
-        cta: t("dashboardHome.warnings.createProfile.cta", "Create profile"),
-      });
-      return warnings;
-    }
-
-    if (activeServices === 0) {
-      warnings.push({
-        title: t(
-          "dashboardHome.warnings.services.title",
-          "Add customer-facing services",
-        ),
-        body: t(
-          "dashboardHome.warnings.services.body",
-          "Customers need at least one active service before they can book.",
-        ),
+        cta: t("dashboardHome.setup.profileCta", "Add details"),
+      },
+      {
+        key: "services",
+        complete: activeServices > 0,
+        label: t("dashboardHome.setup.services", "First service"),
         href: "/dashboard/services",
-        cta: t("dashboardHome.warnings.services.cta", "Add services"),
-      });
-    }
-
-    if (activeStaff === 0) {
-      warnings.push({
-        title: t("dashboardHome.warnings.staff.title", "Add active staff"),
-        body: t(
-          "dashboardHome.warnings.staff.body",
-          "Bookings need staff members assigned to services and working hours.",
-        ),
+        cta: t("dashboardHome.setup.servicesCta", "Add service"),
+      },
+      {
+        key: "team",
+        complete: activeStaff > 0,
+        label: t("dashboardHome.setup.team", "Team"),
         href: "/dashboard/staff",
-        cta: t("dashboardHome.warnings.staff.cta", "Add staff"),
-      });
-    }
-
-    if (openWorkingDays === 0) {
-      warnings.push({
-        title: t("dashboardHome.warnings.hours.title", "Set working hours"),
-        body: t(
-          "dashboardHome.warnings.hours.body",
-          "At least one open business day is recommended before publishing.",
-        ),
+        cta: t("dashboardHome.setup.teamCta", "Add staff"),
+      },
+      {
+        key: "hours",
+        complete: openWorkingDays > 0,
+        label: t("dashboardHome.setup.hours", "Working hours"),
         href: "/dashboard/availability",
-        cta: t("dashboardHome.warnings.hours.cta", "Set hours"),
-      });
-    }
-
-    if (publishedCount === 0 && businesses.length > 0) {
-      warnings.push({
-        title: t("dashboardHome.warnings.publish.title", "Publish when ready"),
-        body: t(
-          "dashboardHome.warnings.publish.body",
-          "Hidden businesses do not appear in the marketplace.",
-        ),
+        cta: t("dashboardHome.setup.hoursCta", "Set hours"),
+      },
+      {
+        key: "publish",
+        complete: publishedCount > 0,
+        label: t("dashboardHome.setup.publish", "Customer profile"),
         href: "/dashboard/businesses",
-        cta: t("dashboardHome.warnings.publish.cta", "Review profile"),
-      });
-    }
-
-    return warnings;
+        cta: t("dashboardHome.setup.publishCta", "Review profile"),
+      },
+    ];
   }, [
     businesses.length,
+    hasProfileBasics,
     activeServices,
     activeStaff,
     openWorkingDays,
     publishedCount,
     t,
   ]);
+
+  const completedSetupCount = setupSteps.filter((step) => step.complete).length;
+  const nextSetupStep = setupSteps.find((step) => !step.complete) || null;
+  const primaryNextAction = pendingActionCount
+    ? {
+        title: t("dashboardHome.today.nextRequests", "Review appointment requests"),
+        body: t(
+          "dashboardHome.today.nextRequestsBody",
+          "Customers are waiting for a decision.",
+        ),
+        href: "/dashboard/bookings?view=upcoming&status=pending",
+        cta: t("dashboardHome.today.nextRequestsCta", "Open requests"),
+      }
+    : todayBookings.length
+      ? {
+          title: t("dashboardHome.today.nextCalendar", "Run today from Calendar"),
+          body: t(
+            "dashboardHome.today.nextCalendarBody",
+            "Confirmed appointments for today are ready.",
+          ),
+          href: "/dashboard/bookings?view=today",
+          cta: t("dashboardHome.today.nextCalendarCta", "Open today"),
+        }
+      : nextSetupStep
+        ? {
+            title: nextSetupStep.label,
+            body: t(
+              "dashboardHome.today.nextSetupBody",
+              "Finish this setup step so customers can book with confidence.",
+            ),
+            href: nextSetupStep.href,
+            cta: nextSetupStep.cta,
+          }
+        : {
+            title: t("dashboardHome.today.nextReady", "Ready to take bookings"),
+            body: t(
+              "dashboardHome.today.nextReadyBody",
+              "Your core setup is complete. Preview the customer profile or open Calendar.",
+            ),
+            href: publicPreviewHref || "/dashboard/bookings",
+            cta: publicPreviewHref
+              ? t("dashboardHome.setup.preview", "See what customers see")
+              : t("dashboardLayout.nav.calendar", "Calendar"),
+          };
 
   const scheduleDays = useMemo<ScheduleDay[]>(() => {
     const today = startOfDay(new Date());
@@ -529,20 +477,160 @@ export default function DashboardHome() {
         </div>
       )}
 
-      <SetupGuidanceList warnings={setupWarnings} />
+      {businesses.length > 0 && (
+        <section className="dashboard-today-panel">
+          <div className="dashboard-today-main">
+            <div>
+              <h2>{t("dashboardHome.today.title", "What needs attention today")}</h2>
+              <p className="small muted">
+                {t(
+                  "dashboardHome.today.body",
+                  "Requests, today’s appointments and setup progress in one place.",
+                )}
+              </p>
+            </div>
 
-      <DashboardSummaryCards
-        todayCount={todayBookings.length}
-        pendingActionCount={pendingActionCount}
-        pendingBookingsCount={pendingBookings.length}
-        pendingRescheduleCount={pendingRescheduleCount}
-        analytics={dashboardAnalytics}
-      />
+            <div className="dashboard-today-stats">
+              <Link
+                href="/dashboard/bookings?view=upcoming&status=pending"
+                className={pendingActionCount > 0 ? "today-stat urgent" : "today-stat"}
+              >
+                <strong>{pendingActionCount}</strong>
+                <span>{t("dashboardHome.today.requests", "Needs attention")}</span>
+              </Link>
+              <Link href="/dashboard/bookings?view=today" className="today-stat">
+                <strong>{todayBookings.length}</strong>
+                <span>{t("dashboardHome.today.confirmedToday", "Today")}</span>
+              </Link>
+              <Link href="/dashboard/bookings?view=upcoming" className="today-stat">
+                <strong>{upcomingBookings.length}</strong>
+                <span>{t("dashboardHome.today.upcoming", "Upcoming")}</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="dashboard-next-action">
+            <span className="small muted">
+              {t("dashboardHome.today.nextLabel", "Next action")}
+            </span>
+            <strong>{primaryNextAction.title}</strong>
+            <p className="small muted">{primaryNextAction.body}</p>
+            <Link href={primaryNextAction.href} className="btn btn-accent">
+              {primaryNextAction.cta}
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {businesses.length > 0 && (
+        <SetupProgressChecklist
+          steps={setupSteps}
+          completedCount={completedSetupCount}
+          previewHref={publicPreviewHref}
+        />
+      )}
 
       <SchedulePreviewCard
         scheduleDays={scheduleDays}
         bookingsLinkForDate={bookingsLinkForDate}
       />
+
+      <style jsx>{`
+        .dashboard-today-panel {
+          display: grid;
+          grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.72fr);
+          gap: 1rem;
+          margin-bottom: 1.25rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+        }
+
+        .dashboard-today-main,
+        .dashboard-next-action {
+          display: grid;
+          gap: 0.85rem;
+          align-content: start;
+        }
+
+        .dashboard-today-panel h2,
+        .dashboard-today-panel p {
+          margin-top: 0;
+        }
+
+        .dashboard-today-stats {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.6rem;
+        }
+
+        .today-stat {
+          display: grid;
+          gap: 0.2rem;
+          min-width: 0;
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        .today-stat.urgent {
+          border-color: rgba(255, 107, 53, 0.35);
+          background: rgba(255, 107, 53, 0.08);
+        }
+
+        .today-stat strong {
+          color: inherit;
+          font-family: var(--font-display);
+          font-size: 2rem;
+          line-height: 1;
+        }
+
+        .today-stat span {
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.84rem;
+          font-weight: 800;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .dashboard-next-action {
+          padding-left: 1rem;
+          border-left: 1px solid var(--border);
+        }
+
+        .dashboard-next-action :global(.btn) {
+          width: fit-content;
+        }
+
+        @media (max-width: 820px) {
+          .dashboard-today-panel {
+            grid-template-columns: 1fr;
+          }
+
+          .dashboard-next-action {
+            padding-left: 0;
+            padding-top: 1rem;
+            border-left: 0;
+            border-top: 1px solid var(--border);
+          }
+        }
+
+        @media (max-width: 560px) {
+          .dashboard-today-stats {
+            grid-template-columns: 1fr;
+          }
+
+          .dashboard-next-action :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
 
     </DashboardLayout>
   );

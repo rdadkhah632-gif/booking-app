@@ -167,8 +167,28 @@ export default function DashboardLayout({
     },
   ];
 
+  const businessSecondaryLinks = [
+    {
+      href: "/dashboard/services",
+      label: t("dashboardLayout.nav.services", "Services"),
+    },
+    {
+      href: "/dashboard/staff",
+      label: t("dashboardLayout.nav.team", "Team"),
+    },
+    {
+      href: "/dashboard/availability",
+      label: t("dashboardLayout.nav.availability", "Availability"),
+    },
+    {
+      href: "/dashboard/settings",
+      label: t("dashboardLayout.nav.settings", "Settings"),
+    },
+  ];
+
   const mainLinks = workspace === "staff" ? staffMainLinks : businessMainLinks;
-  const secondaryLinks = workspace === "staff" ? staffSecondaryLinks : [];
+  const secondaryLinks =
+    workspace === "staff" ? staffSecondaryLinks : businessSecondaryLinks;
 
   const myBusinessRoutes = [
     "/dashboard/businesses",
@@ -245,6 +265,12 @@ export default function DashboardLayout({
 
           {secondaryLinks.length > 0 && (
             <div className="sidebar-lower-links">
+              {workspace === "business" && (
+                <p className="sidebar-section-label">
+                  {t("dashboardLayout.nav.setup", "Setup")}
+                </p>
+              )}
+
               {secondaryLinks.map((link) => (
                 <Link
                   key={link.href}

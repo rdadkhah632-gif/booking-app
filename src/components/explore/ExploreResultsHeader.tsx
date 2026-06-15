@@ -12,7 +12,6 @@ export default function ExploreResultsHeader({ loading, filteredCount, hasFilter
   return (
     <div className="explore-results-header">
       <div>
-        <p className="small muted">{t('explore.hero.kicker')}</p>
         <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
           {loading
             ? t('explore.results.loading')

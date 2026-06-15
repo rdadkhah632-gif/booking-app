@@ -8,7 +8,7 @@ Before making code changes, always read:
 2. `/sources/01_STAGE_ACCOUNT_ROLE_STAFF_BUSINESS_FOUNDATION.md`
 3. `/sources/01_STAGE_1_CLOSURE_QA.md`
 4. The current active stage document, currently:
-   `/sources/07_STAGE_LAUNCH_POLISH_AUTH_APP_READY.md`
+   `/sources/08_STAGE_INTERFACE_COMPRESSION_MARKETPLACE_POLISH.md`
 
 ## Current Status
 
@@ -35,15 +35,17 @@ Stage 5 is complete with tracked follow-ups.
 
 Stage 6 is complete.
 
-Stage 7 is active.
+Stage 7 is complete with tracked follow-ups.
 
-Stage 7 focuses on:
+Stage 8 is active.
 
-- simplifying Mirëbook Business before mobile app preparation
-- clarifying staff and owner-as-staff workspace behavior
-- polishing the customer booking journey without changing booking logic
-- completing email verification and password-reset readiness in a controlled batch
-- final launch QA across customer, business, staff and admin surfaces
+Stage 8 focuses on:
+
+- reducing interface weight
+- compressing marketplace and customer pages
+- removing duplicate explanations and technical wording
+- improving setup guidance without changing protected systems
+- increasing functionality-to-space ratio
 
 ## Working Rules
 
@@ -51,7 +53,7 @@ Start each task by checking repository status.
 
 Protect Stage 1 foundations. Do not alter account identity, role/capability logic, staff-business linking, route protection or language preference persistence unless the current task clearly requires it.
 
-Customer booking must not become a payment or checkout flow during Stage 7. Business subscription billing remains separate from customer appointment payments.
+Customer booking must not become a payment or checkout flow during Stage 8. Business subscription billing remains separate from customer appointment payments.
 
 Use small grouped changes. After grouped edits, run formatting on changed files when a formatter is available, then run the build.
 

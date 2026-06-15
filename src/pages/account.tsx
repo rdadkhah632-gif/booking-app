@@ -470,7 +470,7 @@ export default function AccountPage() {
     setMessage(
       t(
         "account.verification.resent",
-        "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+        "Verification email sent. Check your inbox and spam folder.",
       ),
     );
   }
@@ -510,7 +510,7 @@ export default function AccountPage() {
         setError(
           t(
             "account.emailPreferences.schemaMissingError",
-            "Email preferences cannot be saved until the Stage 6 preferences SQL is installed in Supabase.",
+            "Email preferences are not available yet.",
           ),
         );
         return;
@@ -635,16 +635,16 @@ export default function AccountPage() {
                   {emailIsVerified
                     ? t(
                         "account.verification.verifiedBody",
-                        "Supabase Auth has confirmed ownership of this login email.",
+                        "This email is linked to your Mirëbook account.",
                       )
                     : emailIsUnverified
                       ? t(
                           "account.verification.unverifiedBody",
-                          "This login email has not been confirmed yet. Check your inbox or send another verification email. Current access still follows your Supabase Auth settings.",
+                          "This email has not been confirmed yet. Check your inbox or send another verification email.",
                         )
                       : t(
                           "account.verification.unknownBody",
-                          "Mirëbook could not determine verification state from the current Supabase session. This does not block account or booking access.",
+                          "Mirëbook could not confirm the current email status.",
                         )}
                 </p>
               </div>
@@ -686,13 +686,13 @@ export default function AccountPage() {
                   <strong>
                     {t(
                       "account.emailPreferences.setupRequired",
-                      "Supabase setup required",
+                      "Email preferences unavailable",
                     )}
                   </strong>
                   <p className="small muted">
                     {t(
                       "account.emailPreferences.setupRequiredBody",
-                      "The preferences SQL has not been installed yet. Safe transactional defaults remain enabled, but changes cannot be saved.",
+                      "These settings are not available yet. Important booking emails remain on.",
                     )}
                   </p>
                 </div>

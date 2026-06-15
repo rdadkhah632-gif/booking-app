@@ -250,15 +250,15 @@ export const en: TranslationTree = {
     "Business owners manage setup, bookings and the team. Linked staff gets a focused workspace for assigned appointments, personal availability and work notifications.",
   "businessHome.team.ownerBody":
     "Owners who also take appointments can keep business management and their personal schedule connected without switching products.",
-  "businessHome.membership.kicker": "Launch membership",
+  "businessHome.membership.kicker": "Early partners",
   "businessHome.membership.title":
-    "One simple Mirëbook Business membership.",
+    "Mirëbook Business is open for early partners.",
   "businessHome.membership.body":
-    "The launch membership brings bookings, services, staff tools, public listing and notifications together. Mirëbook does not add a normal customer booking fee or booking commission.",
+    "Manage bookings, services, staff and your public profile. No customer booking commission is charged during the early partner period.",
   "businessHome.membership.offer":
-    "Founding-business offers are set up directly with Mirëbook.",
+    "Early partner access is set up directly with Mirëbook.",
   "businessHome.membership.payment":
-    "Online subscription payment is being prepared. Current access and launch offers are managed through the existing billing foundation.",
+    "Start with the core booking workspace now. Customer bookings stay separate from business membership.",
   "businessHome.membership.support": "Contact business support",
   "businessHome.final.kicker": "Ready to get organised?",
   "businessHome.final.title":
@@ -3416,4 +3416,55 @@ export const en: TranslationTree = {
   "reschedule.staff.availableCount": "staff available",
   "reschedule.staff.autoAssign":
     "Mirëbook will assign one of the available staff members for this exact time.",
+  "home.stage8.subtitle": "Find services near you and book in a few clicks.",
+  "home.categories.barber": "Barbers",
+  "home.categories.beauty": "Beauty",
+  "home.categories.nails": "Nails",
+  "home.categories.fitness": "Fitness",
+  "home.categories.dental": "Dental",
+  "explore.stage8.subtitle":
+    "Search local businesses and choose a time that works.",
+  "explore.stage8.emptyBody":
+    "Mirëbook is opening this marketplace gradually. Check back soon for bookable businesses near you.",
+  "explore.card.requestAppointment": "Request appointment",
+  "explore.card.bookInstantly": "Book instantly",
+  "support.stage8.subtitle":
+    "Choose the help route that matches what you are doing.",
+  "dashboardHome.today.title": "What needs attention today",
+  "dashboardHome.today.body":
+    "Requests, today’s appointments and setup progress in one place.",
+  "dashboardHome.today.requests": "Needs attention",
+  "dashboardHome.today.confirmedToday": "Today",
+  "dashboardHome.today.upcoming": "Upcoming",
+  "dashboardHome.today.nextLabel": "Next action",
+  "dashboardHome.today.nextRequests": "Review appointment requests",
+  "dashboardHome.today.nextRequestsBody":
+    "Customers are waiting for a decision.",
+  "dashboardHome.today.nextRequestsCta": "Open requests",
+  "dashboardHome.today.nextCalendar": "Run today from Calendar",
+  "dashboardHome.today.nextCalendarBody":
+    "Confirmed appointments for today are ready.",
+  "dashboardHome.today.nextCalendarCta": "Open today",
+  "dashboardHome.today.nextSetupBody":
+    "Finish this setup step so customers can book with confidence.",
+  "dashboardHome.today.nextReady": "Ready to take bookings",
+  "dashboardHome.today.nextReadyBody":
+    "Your core setup is complete. Preview the customer profile or open Calendar.",
+  "dashboardHome.setup.title": "Get ready to take bookings",
+  "dashboardHome.setup.progress": "{{done}} of {{total}} setup steps complete",
+  "dashboardHome.setup.profile": "Business profile",
+  "dashboardHome.setup.profileCta": "Add details",
+  "dashboardHome.setup.services": "First service",
+  "dashboardHome.setup.servicesCta": "Add service",
+  "dashboardHome.setup.team": "Team",
+  "dashboardHome.setup.teamCta": "Add staff",
+  "dashboardHome.setup.hours": "Working hours",
+  "dashboardHome.setup.hoursCta": "Set hours",
+  "dashboardHome.setup.publish": "Customer profile",
+  "dashboardHome.setup.publishCta": "Review profile",
+  "dashboardHome.setup.preview": "See what customers see",
+  "dashboardLayout.nav.services": "Services",
+  "dashboardLayout.nav.availability": "Availability",
+  "dashboardLayout.nav.settings": "Settings",
+  "dashboardLayout.nav.setup": "Setup",
 };

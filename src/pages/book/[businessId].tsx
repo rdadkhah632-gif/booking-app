@@ -32,7 +32,7 @@ export default function LegacyBookBusinessRedirect() {
             </h1>
 
             <p className="page-sub" style={{ marginTop: '0.75rem' }}>
-              Mirëbook now handles booking from the public business page, where customers can view services, staff, availability and the business booking mode before confirming or sending a request.
+              Mirëbook now handles booking from the public business page, where customers can view services, staff and available times before confirming or sending a request.
             </p>
 
             <div className="legacy-book-note">

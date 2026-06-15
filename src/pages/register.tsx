@@ -379,7 +379,7 @@ export default function RegisterPage() {
     setMessage(
       t(
         "register.verification.resent",
-        "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+        "Verification email sent. Check your inbox and spam folder.",
       ),
     );
   }

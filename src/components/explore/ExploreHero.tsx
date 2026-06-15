@@ -8,79 +8,38 @@ type Props = {
 export default function ExploreHero({ marketplaceStats }: Props) {
   const { t } = useI18n()
   return (
-    <div
-      className="card"
-      style={{
-        marginBottom: '1.5rem',
-        overflow: 'hidden',
-        padding: 0
-      }}
-    >
-      <div
-        style={{
-          padding: '2rem',
-          background: 'linear-gradient(135deg, rgba(255,107,53,0.16), rgba(45,212,191,0.10))'
-        }}
-      >
-        <p className="small" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
-          {t('explore.hero.kicker')}
+    <header className="explore-hero-compact">
+      <div>
+        <h1 className="page-title">{t('explore.hero.title', 'Find a service')}</h1>
+        <p className="page-sub">
+          {t('explore.stage8.subtitle', 'Search local businesses and choose a time that works.')}
         </p>
-
-        <h1 className="page-title">
-          {t('explore.hero.title')}
-        </h1>
-
-        <p className="page-sub" style={{ marginTop: '0.75rem', maxWidth: 760 }}>
-          {t('explore.hero.subtitle')}
-        </p>
-
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-          <span
-            className="small"
-            style={{
-              background: 'rgba(45,212,191,0.12)',
-              color: 'var(--success)',
-              padding: '0.25rem 0.65rem',
-              borderRadius: 999
-            }}
-          >
-            {marketplaceStats.businesses}{' '}
-            {marketplaceStats.businesses === 1
-              ? t('explore.stats.bookableBusiness')
-              : t('explore.stats.bookableBusinesses')}
-          </span>
-
-          <span
-            className="small"
-            style={{
-              background: 'var(--surface-2)',
-              color: 'var(--text-muted)',
-              padding: '0.25rem 0.65rem',
-              borderRadius: 999,
-              border: '1px solid var(--border)'
-            }}
-          >
-            {marketplaceStats.cities}{' '}
-            {marketplaceStats.cities === 1
-              ? t('explore.stats.city')
-              : t('explore.stats.cities')}
-          </span>
-
-          <span
-            className="small"
-            style={{
-              background: 'var(--surface-2)',
-              color: 'var(--text-muted)',
-              padding: '0.25rem 0.65rem',
-              borderRadius: 999,
-              border: '1px solid var(--border)'
-            }}
-          >
-            {t('explore.badge.availability')}
-          </span>
-
-        </div>
       </div>
-    </div>
+      {marketplaceStats.businesses > 0 && (
+        <p className="small muted">
+          {marketplaceStats.visible} {t('explore.results.title', 'results')}
+        </p>
+      )}
+      <style jsx>{`
+        .explore-hero-compact {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: end;
+          margin-bottom: 1rem;
+        }
+
+        .explore-hero-compact h1,
+        .explore-hero-compact p {
+          margin-top: 0;
+        }
+
+        @media (max-width: 700px) {
+          .explore-hero-compact {
+            display: grid;
+          }
+        }
+      `}</style>
+    </header>
   )
 }

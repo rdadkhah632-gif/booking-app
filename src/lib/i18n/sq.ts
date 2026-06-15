@@ -300,15 +300,15 @@ export const sq: TranslationTree = {
     "Pronarët menaxhojnë konfigurimin, rezervimet dhe ekipin. Stafi i lidhur merr një hapësirë të fokusuar për takimet e caktuara, disponueshmërinë personale dhe njoftimet e punës.",
   "businessHome.team.ownerBody":
     "Pronarët që marrin edhe takime mund të mbajnë të lidhur menaxhimin e biznesit dhe orarin personal pa ndërruar produkt.",
-  "businessHome.membership.kicker": "Anëtarësimi i lançimit",
+  "businessHome.membership.kicker": "Partnerë të hershëm",
   "businessHome.membership.title":
-    "Një anëtarësim i thjeshtë Mirëbook Biznes.",
+    "Mirëbook Biznes është i hapur për partnerë të hershëm.",
   "businessHome.membership.body":
-    "Anëtarësimi i lançimit bashkon rezervimet, shërbimet, mjetet e stafit, listimin publik dhe njoftimet. Mirëbook nuk shton tarifë normale rezervimi për klientin ose komision rezervimi.",
+    "Menaxho rezervimet, shërbimet, stafin dhe profilin publik. Gjatë periudhës së partnerëve të hershëm nuk aplikohet komision për rezervimet e klientëve.",
   "businessHome.membership.offer":
-    "Ofertat për bizneset themeluese konfigurohen drejtpërdrejt me Mirëbook.",
+    "Aksesi për partnerët e hershëm konfigurohet drejtpërdrejt me Mirëbook.",
   "businessHome.membership.payment":
-    "Pagesa online e abonimit po përgatitet. Aksesi aktual dhe ofertat e lançimit menaxhohen përmes bazës ekzistuese të faturimit.",
+    "Fillo tani me hapësirën kryesore të biznesit. Rezervimet e klientëve qëndrojnë të ndara nga anëtarësimi i biznesit.",
   "businessHome.membership.support": "Kontakto ndihmën për biznes",
   "businessHome.final.kicker": "Gati për t'u organizuar?",
   "businessHome.final.title":
@@ -3482,4 +3482,57 @@ export const sq: TranslationTree = {
   "reschedule.staff.availableCount": "anëtarë stafi të disponueshëm",
   "reschedule.staff.autoAssign":
     "Mirëbook do të caktojë një nga anëtarët e disponueshëm të stafit për këtë orar.",
+  "home.stage8.subtitle":
+    "Gjej shërbime pranë teje dhe rezervo me pak klikime.",
+  "home.categories.barber": "Berberë",
+  "home.categories.beauty": "Bukuri",
+  "home.categories.nails": "Thonj",
+  "home.categories.fitness": "Fitnes",
+  "home.categories.dental": "Dentistë",
+  "explore.stage8.subtitle":
+    "Kërko biznese lokale dhe zgjidh një orar që të përshtatet.",
+  "explore.stage8.emptyBody":
+    "Mirëbook po e hap marketplace-in gradualisht. Kontrollo përsëri së shpejti për biznese të rezervueshme pranë teje.",
+  "explore.card.requestAppointment": "Kërko takim",
+  "explore.card.bookInstantly": "Rezervo menjëherë",
+  "support.stage8.subtitle":
+    "Zgjidh ndihmën që përputhet me atë që po bën.",
+  "dashboardHome.today.title": "Çfarë kërkon vëmendje sot",
+  "dashboardHome.today.body":
+    "Kërkesat, takimet e sotme dhe progresi i konfigurimit në një vend.",
+  "dashboardHome.today.requests": "Kërkon vëmendje",
+  "dashboardHome.today.confirmedToday": "Sot",
+  "dashboardHome.today.upcoming": "Në vijim",
+  "dashboardHome.today.nextLabel": "Veprimi tjetër",
+  "dashboardHome.today.nextRequests": "Shqyrto kërkesat për takim",
+  "dashboardHome.today.nextRequestsBody":
+    "Klientët presin një vendim.",
+  "dashboardHome.today.nextRequestsCta": "Hap kërkesat",
+  "dashboardHome.today.nextCalendar": "Menaxho ditën nga Kalendari",
+  "dashboardHome.today.nextCalendarBody":
+    "Takimet e konfirmuara për sot janë gati.",
+  "dashboardHome.today.nextCalendarCta": "Hap ditën e sotme",
+  "dashboardHome.today.nextSetupBody":
+    "Përfundo këtë hap që klientët të rezervojnë me besim.",
+  "dashboardHome.today.nextReady": "Gati për rezervime",
+  "dashboardHome.today.nextReadyBody":
+    "Konfigurimi kryesor është gati. Shiko profilin e klientit ose hap Kalendarin.",
+  "dashboardHome.setup.title": "Bëhu gati për rezervime",
+  "dashboardHome.setup.progress":
+    "{{done}} nga {{total}} hapa konfigurimi të përfunduar",
+  "dashboardHome.setup.profile": "Profili i biznesit",
+  "dashboardHome.setup.profileCta": "Shto detaje",
+  "dashboardHome.setup.services": "Shërbimi i parë",
+  "dashboardHome.setup.servicesCta": "Shto shërbim",
+  "dashboardHome.setup.team": "Ekipi",
+  "dashboardHome.setup.teamCta": "Shto staf",
+  "dashboardHome.setup.hours": "Orari i punës",
+  "dashboardHome.setup.hoursCta": "Vendos orarin",
+  "dashboardHome.setup.publish": "Profili për klientët",
+  "dashboardHome.setup.publishCta": "Shqyrto profilin",
+  "dashboardHome.setup.preview": "Shiko çfarë shohin klientët",
+  "dashboardLayout.nav.services": "Shërbime",
+  "dashboardLayout.nav.availability": "Disponueshmëria",
+  "dashboardLayout.nav.settings": "Cilësimet",
+  "dashboardLayout.nav.setup": "Konfigurimi",
 };

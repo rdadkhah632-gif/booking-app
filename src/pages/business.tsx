@@ -4,15 +4,6 @@ import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 
-const featureKeys = [
-  "calendar",
-  "staff",
-  "bookingModes",
-  "profile",
-  "notifications",
-  "operations",
-] as const;
-
 export default function BusinessHomePage() {
   const { t } = useI18n();
   const customerHomeUrl = getCustomerAppUrl();
@@ -20,7 +11,6 @@ export default function BusinessHomePage() {
     "/register?accountType=business",
   );
   const businessLoginUrl = getBusinessAppUrl("/login?product=business");
-  const businessDashboardUrl = getBusinessAppUrl("/dashboard");
 
   return (
     <main className="business-site">
@@ -58,7 +48,7 @@ export default function BusinessHomePage() {
             <p className="business-hero-body">
               {t(
                 "businessHome.hero.body",
-                "Mirëbook Business helps service businesses manage booking requests, confirmed appointments, services, staff availability and the public profile customers book from.",
+                "A simple workspace for appointments, services, staff and the profile customers book from.",
               )}
             </p>
             <div className="business-hero-actions">
@@ -116,141 +106,22 @@ export default function BusinessHomePage() {
         </div>
       </section>
 
-      <section className="business-audience-band">
-        <div className="container business-audience-grid">
-          <div>
-            <p className="business-section-kicker">
-              {t("businessHome.audience.kicker", "Built for the working day")}
-            </p>
-            <h2>
-              {t(
-                "businessHome.audience.title",
-                "For owners, staff and owners who also take appointments.",
-              )}
-            </h2>
-          </div>
-          <div>
-            <p>
-              {t(
-                "businessHome.audience.body",
-                "Owners manage services, staff, availability and booking decisions. Staff sees assigned work and personal availability. Owner-as-staff businesses can keep management and their own schedule connected.",
-              )}
-            </p>
-            <Link href={businessDashboardUrl} className="btn btn-ghost">
-              {t("businessHome.cta.dashboard", "Open business workspace")}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="business-section">
-        <div className="container">
-          <div className="business-section-heading">
-            <p>{t("businessHome.features.kicker", "Daily operations")}</p>
-            <h2>
-              {t(
-                "businessHome.features.title",
-                "The tools a service business needs to stay organised.",
-              )}
-            </h2>
-            <span>
-              {t(
-                "businessHome.features.body",
-                "Start with one location and keep customer bookings, team availability and next actions connected.",
-              )}
-            </span>
-          </div>
-
-          <div className="business-feature-grid">
-            {featureKeys.map((feature, index) => (
-              <article key={feature} className="business-feature">
-                <span className="business-feature-number">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <h3>
-                  {t(
-                    `businessHome.features.${feature}.title`,
-                    {
-                      calendar: "Calendar and booking management",
-                      staff: "Staff and availability",
-                      bookingModes: "Requests or instant confirmation",
-                      profile: "Your online business profile",
-                      notifications: "Clear operational notifications",
-                      operations: "Owner and staff workspaces",
-                    }[feature],
-                  )}
-                </h3>
-                <p>
-                  {t(
-                    `businessHome.features.${feature}.body`,
-                    {
-                      calendar:
-                        "Review the working day and keep pending, confirmed, cancelled and completed appointments easy to scan.",
-                      staff:
-                        "Assign services and set business-wide or personal staff working hours.",
-                      bookingModes:
-                        "Choose whether new bookings confirm immediately or wait for business approval.",
-                      profile:
-                        "Publish services, staff and availability on a customer-facing Mirëbook page.",
-                      notifications:
-                        "See booking requests, reschedule activity and updates that need attention.",
-                      operations:
-                        "Owners manage the business while staff sees only assigned work, availability and updates.",
-                    }[feature],
-                  )}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="business-section business-team-band">
-        <div className="container business-team-layout">
-          <div>
-            <p className="business-section-kicker">
-              {t("businessHome.team.kicker", "One business product")}
-            </p>
-            <h2>
-              {t(
-                "businessHome.team.title",
-                "Staff is part of Mirëbook Business.",
-              )}
-            </h2>
-          </div>
-          <div className="business-team-copy">
-            <p>
-              {t(
-                "businessHome.team.body",
-                "Business owners manage setup, bookings and the team. Linked staff gets a focused workspace for assigned appointments, personal availability and work notifications.",
-              )}
-            </p>
-            <p>
-              {t(
-                "businessHome.team.ownerBody",
-                "Owners who also take appointments can keep business management and their personal schedule connected without switching products.",
-              )}
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section className="business-section">
         <div className="container business-membership">
           <div>
             <p className="business-section-kicker">
-              {t("businessHome.membership.kicker", "Launch membership")}
+              {t("businessHome.membership.kicker", "Early partners")}
             </p>
             <h2>
               {t(
                 "businessHome.membership.title",
-                "One simple Mirëbook Business membership.",
+                "Mirëbook Business is open for early partners.",
               )}
             </h2>
             <p>
               {t(
                 "businessHome.membership.body",
-                "The launch membership brings bookings, services, staff tools, public listing and notifications together. Mirëbook does not add a normal customer booking fee or booking commission.",
+                "Manage bookings, services, staff and your public profile. No customer booking commission is charged during the early partner period.",
               )}
             </p>
           </div>
@@ -258,13 +129,13 @@ export default function BusinessHomePage() {
             <strong>
               {t(
                 "businessHome.membership.offer",
-                "Founding-business offers are set up directly with Mirëbook.",
+                "Early partner access is set up directly with Mirëbook.",
               )}
             </strong>
             <span>
               {t(
                 "businessHome.membership.payment",
-                "Online subscription payment is being prepared. Current access and launch offers are managed through the existing billing foundation.",
+                "Start with the core booking workspace now. Customer bookings stay separate from business membership.",
               )}
             </span>
             <Link href="/support/business" className="btn btn-ghost">

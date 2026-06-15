@@ -22,9 +22,6 @@ export default function PublicNav() {
           <Link href={customerHomeUrl} className="muted public-customer-link">
             {t('nav.customerProduct', 'Customer Mirëbook')}
           </Link>
-          <Link href="/support/business" className="muted nav-wide-only">
-            {t('nav.businessSupport', 'Business support')}
-          </Link>
         </>
       ) : (
         <>
@@ -36,9 +33,6 @@ export default function PublicNav() {
           </Link>
           <Link href={businessHomeUrl} className="muted public-business-link">
             {t('nav.forBusinesses', 'For businesses')}
-          </Link>
-          <Link href="/support/customer" className="muted nav-wide-only">
-            {t('nav.customerSupport', 'Customer support')}
           </Link>
         </>
       )}

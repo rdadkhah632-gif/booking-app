@@ -8,14 +8,13 @@ type Props = {
   sortBy: SortOption;
   cities: string[];
   categories: string[];
-  loading: boolean;
+  resultCount: number;
   onSearchChange: (value: string) => void;
   onCityChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onSortChange: (value: SortOption) => void;
   onApplyFilters: () => void;
   onClearFilters: () => void;
-  onRefresh: () => void;
 };
 
 export default function ExploreFilters({
@@ -25,26 +24,22 @@ export default function ExploreFilters({
   sortBy,
   cities,
   categories,
-  loading,
+  resultCount,
   onSearchChange,
   onCityChange,
   onCategoryChange,
   onSortChange,
   onApplyFilters,
   onClearFilters,
-  onRefresh,
 }: Props) {
   const { t } = useI18n();
   return (
-    <aside className="card explore-filter-panel">
+    <aside className="explore-filter-panel">
       <h3 style={{ marginBottom: "0.35rem", marginTop: 0 }}>
         {t("explore.filters.title")}
       </h3>
-      <p className="small muted" style={{ marginBottom: "1rem" }}>
-        {t("explore.filters.subtitle")}
-      </p>
 
-      <div style={{ display: "grid", gap: "1rem" }}>
+      <div className="explore-filter-grid">
         <div>
           <label className="small muted">
             {t("explore.filters.searchLabel", "Search")}
@@ -95,6 +90,7 @@ export default function ExploreFilters({
           </datalist>
         </div>
 
+        {resultCount > 1 && (
         <div>
           <label className="small muted">
             {t("explore.filters.sortLabel", "Sort")}
@@ -116,25 +112,49 @@ export default function ExploreFilters({
             </option>
           </select>
         </div>
+        )}
 
         <button className="btn btn-accent" onClick={onApplyFilters}>
-          {t("explore.filters.searchButton", "Search Mirëbook")}
+          {t("explore.filters.searchButton", "Search")}
         </button>
 
         <button className="btn btn-ghost" onClick={onClearFilters}>
           {t("explore.filters.clearButton", "Clear filters")}
         </button>
 
-        <button
-          className="btn btn-ghost"
-          onClick={onRefresh}
-          disabled={loading}
-        >
-          {loading
-            ? t("explore.filters.refreshing", "Refreshing...")
-            : t("explore.filters.refreshButton", "Refresh results")}
-        </button>
       </div>
+      <style jsx>{`
+        .explore-filter-panel {
+          margin-bottom: 1rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+        }
+
+        .explore-filter-grid {
+          display: grid;
+          grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(150px, 0.8fr)) auto auto;
+          gap: 0.75rem;
+          align-items: end;
+        }
+
+        @media (max-width: 980px) {
+          .explore-filter-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .explore-filter-grid,
+          .explore-filter-grid :global(.btn),
+          .explore-filter-grid button {
+            grid-template-columns: 1fr;
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </aside>
   );
 }

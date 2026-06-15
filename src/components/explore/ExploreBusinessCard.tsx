@@ -6,7 +6,6 @@ type Props = {
   business: Business
   stats: BusinessCardStats
   businessIcon: (business: Business) => string
-  bookingModeLabel: (business: Business) => string
   locationLabel: (business: Business) => string
   imageBackground: (business: Business) => string
 }
@@ -15,7 +14,6 @@ export default function ExploreBusinessCard({
   business,
   stats,
   businessIcon,
-  bookingModeLabel,
   locationLabel,
   imageBackground
 }: Props) {
@@ -79,11 +77,13 @@ export default function ExploreBusinessCard({
               borderRadius: 999
             }}
           >
-            {bookingModeLabel(business)}
+            {business.auto_accept_bookings === false
+              ? t('explore.card.requestAppointment', 'Request appointment')
+              : t('explore.card.bookInstantly', 'Book instantly')}
           </span>
         </div>
 
-        <p className="muted small" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
+        <p className="muted small explore-card-description" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
           {business.description || t('explore.card.fallbackDescription')}
         </p>
 
@@ -102,6 +102,14 @@ export default function ExploreBusinessCard({
           {t('explore.card.viewTimes')}
         </Link>
       </div>
+      <style jsx>{`
+        .explore-card-description {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   )
 }

@@ -15,7 +15,6 @@ export default function MyBookingsSection({
   id,
   kicker,
   title,
-  body,
   children,
   action
 }: Props) {
@@ -24,9 +23,6 @@ export default function MyBookingsSection({
       <div>
         <p className="small muted">{kicker}</p>
         <h2 style={{ fontFamily: 'var(--font-display)' }}>{title}</h2>
-        <p className="muted small" style={{ marginTop: '0.35rem' }}>
-          {body}
-        </p>
         {action}
       </div>
 

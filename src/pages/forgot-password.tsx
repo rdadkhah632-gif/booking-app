@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
                 )
               : t(
                   "forgotPassword.body",
-                  "Enter your Mirëbook login email. We will ask Supabase to send a secure password reset link.",
+                  "Enter your Mirëbook email and we will send a secure password reset link.",
                 )}
           </p>
 

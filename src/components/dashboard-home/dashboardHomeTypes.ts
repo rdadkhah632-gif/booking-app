@@ -70,6 +70,14 @@ export type SetupWarning = {
   cta: string
 }
 
+export type SetupStep = {
+  key: string
+  complete: boolean
+  label: string
+  href: string
+  cta: string
+}
+
 export type DashboardAnalytics = {
   recentBookings: Booking[]
   recentCompleted: Booking[]

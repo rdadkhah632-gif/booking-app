@@ -47,13 +47,8 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
       <div className="card">
         <h3>{t('explore.empty.title')}</h3>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
-          {t('explore.empty.body')}
+          {t('explore.stage8.emptyBody', 'Mirëbook is opening this marketplace gradually. Check back soon for bookable businesses near you.')}
         </p>
-        <div className="explore-empty-actions">
-          <Link href="/support/customer" className="btn btn-accent">
-            {t('nav.customerSupport')}
-          </Link>
-        </div>
       </div>
     )
   }

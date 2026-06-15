@@ -209,7 +209,7 @@ export default function LoginPage() {
     setVerificationMessage(
       t(
         "login.verification.resent",
-        "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+        "Verification email sent. Check your inbox and spam folder.",
       ),
     );
   }
@@ -414,7 +414,7 @@ export default function LoginPage() {
                 <p className="small muted">
                   {t(
                     "login.verification.body",
-                    "Supabase has not confirmed this email yet. Verification protects account ownership and future launch activity.",
+                    "This email has not been verified yet.",
                   )}
                 </p>
                 <button

@@ -5,7 +5,13 @@ import { useRouter } from "next/router";
 import { useI18n } from "@/lib/useI18n";
 import { getBusinessAppUrl } from "@/lib/appUrls";
 
-const journeySteps = ["discover", "choose", "track"] as const;
+const categoryShortcuts = [
+  { label: "Barbers", query: "barber" },
+  { label: "Beauty", query: "beauty" },
+  { label: "Nails", query: "nails" },
+  { label: "Fitness", query: "fitness" },
+  { label: "Dental", query: "dental" },
+] as const;
 
 export default function Home() {
   const router = useRouter();
@@ -36,9 +42,14 @@ export default function Home() {
 
         <div className="container home-hero-grid">
           <div className="home-copy">
-            <div className="home-eyebrow">{t("home.eyebrow")}</div>
+            <div className="home-eyebrow">{t("home.eyebrow", "Book local services")}</div>
             <h1 className="home-title">{t("home.title")}</h1>
-            <p className="home-subtitle">{t("home.subtitle")}</p>
+            <p className="home-subtitle">
+              {t(
+                "home.stage8.subtitle",
+                "Find services near you and book in a few clicks.",
+              )}
+            </p>
 
             <form onSubmit={searchBusinesses} className="home-search">
               <input
@@ -58,9 +69,21 @@ export default function Home() {
               </button>
             </form>
 
+            <div className="home-category-row">
+              {categoryShortcuts.map((item) => (
+                <Link
+                  key={item.query}
+                  href={`/explore?query=${encodeURIComponent(item.query)}`}
+                  className="home-category-pill"
+                >
+                  {t(`home.categories.${item.query}`, item.label)}
+                </Link>
+              ))}
+            </div>
+
             <div className="home-cta-row">
               <Link href="/explore" className="btn btn-ghost">
-                {t("home.cta.explore", "Explore Mirëbook")}
+                {t("home.cta.explore", "Explore")}
               </Link>
               <Link href="/my-bookings" className="btn btn-ghost">
                 {t("home.cta.myBookings", "My bookings")}
@@ -68,99 +91,6 @@ export default function Home() {
             </div>
 
           </div>
-
-          <aside className="customer-journey-panel">
-            <p className="customer-panel-kicker">
-              {t("home.journey.kicker", "Your booking, made clear")}
-            </p>
-            <h2>
-              {t(
-                "home.journey.title",
-                "From finding a service to knowing what happens next.",
-              )}
-            </h2>
-            <div className="customer-journey-list">
-              {journeySteps.map((step, index) => (
-                <div key={step} className="customer-journey-step">
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <strong>
-                      {t(
-                        `home.journey.${step}.title`,
-                        {
-                          discover: "Browse bookable businesses",
-                          choose: "Choose service, staff and time",
-                          track: "Track every booking update",
-                        }[step],
-                      )}
-                    </strong>
-                    <p>
-                      {t(
-                        `home.journey.${step}.body`,
-                        {
-                          discover:
-                            "Search by service or city and compare businesses ready to take appointments.",
-                          choose:
-                            "See real availability and whether your booking confirms instantly or needs approval.",
-                          track:
-                            "Keep requests, confirmed appointments and history together in My bookings.",
-                        }[step],
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section className="container home-confidence-section">
-        <div className="home-section-heading">
-          <p className="small" style={{ color: "var(--accent)" }}>
-            {t("home.trust.kicker")}
-          </p>
-          <h2>{t("home.trust.title")}</h2>
-          <p className="muted">{t("home.trust.body")}</p>
-        </div>
-
-        <div className="grid-3">
-          <article className="card">
-            <p className="small muted">
-              {t("home.trust.modelKicker")}
-            </p>
-            <h3>{t("home.trust.modelTitle")}</h3>
-            <p className="muted">{t("home.trust.modelBody")}</p>
-          </article>
-          <article className="card">
-            <p className="small muted">
-              {t("home.trust.statusKicker", "Status updates")}
-            </p>
-            <h3>
-              {t("home.trust.statusTitle", "Know whether you are confirmed")}
-            </h3>
-            <p className="muted">
-              {t(
-                "home.trust.statusBody",
-                "Request sent, confirmed, declined, cancelled and completed appointments stay clearly separated.",
-              )}
-            </p>
-          </article>
-          <article className="card">
-            <p className="small muted">{t("home.trust.supportKicker")}</p>
-            <h3>
-              {t("home.trust.supportCustomerTitle", "Customer help when needed")}
-            </h3>
-            <p className="muted">
-              {t(
-                "home.trust.supportCustomerBody",
-                "Customer support, privacy information and booking guidance remain easy to reach.",
-              )}
-            </p>
-            <Link href="/support/customer" className="home-text-link">
-              {t("nav.customerSupport", "Customer support")}
-            </Link>
-          </article>
         </div>
       </section>
 
@@ -183,28 +113,22 @@ export default function Home() {
 
       <style jsx>{`
         .customer-home-hero {
-          min-height: calc(100vh - 118px);
-          min-height: calc(100dvh - 118px);
-          padding: 44px 0;
+          min-height: 620px;
+          padding: 60px 0;
         }
 
         .customer-home-hero :global(.home-title) {
-          font-size: clamp(2.6rem, 5vw, 4rem);
+          font-size: clamp(2.8rem, 6vw, 5rem);
         }
 
         .customer-home-hero :global(.home-subtitle) {
           margin-bottom: 24px;
         }
 
-        .customer-journey-panel {
-          align-self: center;
-          padding: 1.35rem;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          background: rgba(17, 24, 34, 0.92);
+        .home-copy {
+          max-width: 860px;
         }
 
-        .customer-panel-kicker,
         .home-business-entry p {
           margin: 0 0 0.65rem;
           color: var(--accent);
@@ -213,50 +137,28 @@ export default function Home() {
           text-transform: uppercase;
         }
 
-        .customer-journey-panel h2,
         .home-business-entry h2 {
           margin: 0;
           font-family: var(--font-display);
           letter-spacing: 0;
         }
 
-        .customer-journey-panel h2 {
-          font-size: 1.8rem;
-          line-height: 1.14;
+        .home-category-row {
+          display: flex;
+          gap: 0.6rem;
+          flex-wrap: wrap;
+          margin-top: 1rem;
         }
 
-        .customer-journey-list {
-          display: grid;
-          margin-top: 1.5rem;
-        }
-
-        .customer-journey-step {
-          display: grid;
-          grid-template-columns: 2rem minmax(0, 1fr);
-          gap: 0.8rem;
-          padding: 1rem 0;
-          border-top: 1px solid var(--border);
-        }
-
-        .customer-journey-step > span {
-          color: var(--accent);
-          font-size: 0.75rem;
-          font-weight: 800;
-        }
-
-        .customer-journey-step p {
-          margin: 0.35rem 0 0;
-          color: var(--text-muted);
-          font-size: 0.88rem;
-          line-height: 1.55;
-        }
-
-        .home-confidence-section h3 {
-          margin: 0.35rem 0 0.55rem;
-        }
-
-        .home-confidence-section .card > p:last-of-type {
-          line-height: 1.65;
+        .home-category-pill {
+          padding: 0.45rem 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: rgba(255,255,255,0.04);
+          color: var(--text);
+          text-decoration: none;
+          font-size: 0.9rem;
+          font-weight: 700;
         }
 
         .home-text-link {
@@ -297,10 +199,6 @@ export default function Home() {
         }
 
         @media (max-width: 620px) {
-          .customer-journey-panel {
-            padding: 1rem;
-          }
-
           .home-business-entry-inner {
             display: grid;
           }

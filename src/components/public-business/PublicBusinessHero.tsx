@@ -36,10 +36,6 @@ export default function PublicBusinessHero({
             </span>
           )}
 
-          <span className="small public-business-pill-muted">
-            {t('publicBusiness.hero.availabilitySlots')}
-          </span>
-
         </div>
 
         <h1 className="page-title">{business.name}</h1>
@@ -60,7 +56,7 @@ export default function PublicBusinessHero({
           )}
 
           <p className="small muted">
-            {t('publicBusiness.hero.bookingMode')}: {bookingModeText()} · {bookingModeDescription()}
+            {bookingModeText()} · {bookingModeDescription()}
           </p>
         </div>
 

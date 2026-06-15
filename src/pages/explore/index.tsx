@@ -7,7 +7,6 @@ import ExploreFilters from '@/components/explore/ExploreFilters'
 import ExploreResultsHeader from '@/components/explore/ExploreResultsHeader'
 import ExploreBusinessCard from '@/components/explore/ExploreBusinessCard'
 import ExploreEmptyState from '@/components/explore/ExploreEmptyState'
-import ExploreTrustSection from '@/components/explore/ExploreTrustSection'
 import { Business, BusinessCardStats, SortOption } from '@/components/explore/exploreTypes'
 import { useI18n } from '@/lib/useI18n'
 
@@ -156,12 +155,6 @@ export default function Explore() {
     return '✨'
   }
 
-  function bookingModeLabel(business: Business) {
-    return business.auto_accept_bookings === false
-      ? t('explore.card.approvalRequired')
-      : t('explore.card.instantConfirmation')
-  }
-
   function locationLabel(business: Business) {
     return [business.address, business.city, business.country]
       .filter(Boolean)
@@ -269,14 +262,13 @@ export default function Explore() {
             sortBy={sortBy}
             cities={cities}
             categories={categories}
-            loading={loading}
+            resultCount={filteredBusinesses.length}
             onSearchChange={setSearch}
             onCityChange={setCity}
             onCategoryChange={setCategory}
             onSortChange={setSortBy}
             onApplyFilters={applyFiltersToUrl}
             onClearFilters={clearFilters}
-            onRefresh={loadBusinesses}
           />
 
           <section>
@@ -308,7 +300,6 @@ export default function Explore() {
                   business={business}
                   stats={getBusinessStats(business)}
                   businessIcon={businessIcon}
-                  bookingModeLabel={bookingModeLabel}
                   locationLabel={locationLabel}
                   imageBackground={imageBackground}
                 />
@@ -317,20 +308,9 @@ export default function Explore() {
           </section>
         </div>
       </section>
-
-      <ExploreTrustSection />
-
       <style jsx>{`
         .explore-layout-grid {
-          display: grid;
-          grid-template-columns: 280px 1fr;
-          gap: 28px;
-          align-items: start;
-        }
-
-        :global(.explore-filter-panel) {
-          position: sticky;
-          top: 96px;
+          display: block;
         }
 
         :global(.explore-results-header) {
@@ -344,17 +324,17 @@ export default function Explore() {
 
         .explore-results-grid {
           display: grid;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         :global(.explore-business-card) {
           display: grid;
-          grid-template-columns: 160px 1fr auto;
-          gap: 1rem;
+          grid-template-columns: 132px 1fr auto;
+          gap: 0.9rem;
           align-items: stretch;
           overflow: hidden;
           padding: 0;
-          min-height: 170px;
+          min-height: 142px;
         }
 
         :global(.explore-business-image) {
@@ -366,7 +346,7 @@ export default function Explore() {
         }
 
         :global(.explore-business-content) {
-          padding: 1rem 0;
+          padding: 0.85rem 0;
           min-width: 0;
         }
 
@@ -376,8 +356,8 @@ export default function Explore() {
           gap: 0.5rem;
           align-items: flex-end;
           justify-content: center;
-          padding: 1rem;
-          min-width: 180px;
+          padding: 0.85rem;
+          min-width: 150px;
         }
 
         :global(.explore-muted-pill) {
@@ -396,18 +376,7 @@ export default function Explore() {
           margin-top: 1rem;
         }
 
-        :global(.explore-trust-section) {
-          padding-bottom: 70px;
-        }
-
         @media (max-width: 980px) {
-          .explore-layout-grid {
-            grid-template-columns: 1fr;
-          }
-
-          :global(.explore-filter-panel) {
-            position: static;
-          }
         }
 
         @media (max-width: 760px) {

@@ -422,8 +422,8 @@ export default function BusinessBookingPage() {
 
   function bookingModeText() {
     return business?.auto_accept_bookings === false
-      ? t("publicBusiness.bookingMode.request", "Booking request")
-      : t("publicBusiness.bookingMode.instant", "Instant confirmation");
+      ? t("publicBusiness.bookingMode.request", "Request appointment")
+      : t("publicBusiness.bookingMode.instant", "Book instantly");
   }
 
   function bookingModeDescription() {
@@ -1352,10 +1352,9 @@ export default function BusinessBookingPage() {
             bookingModeDescription={bookingModeDescription}
           />
 
-          <p className="small muted" style={{ marginTop: "0.75rem" }}>
+        <p className="small muted" style={{ marginTop: "0.75rem" }}>
             {t("publicBusiness.timesShownIn", "Times shown in")}{" "}
-            {businessTimezoneLabel()} · {bookingIntervalMinutes()}{" "}
-            {t("publicBusiness.minuteSlotGrid", "minute appointment intervals")}
+            {businessTimezoneLabel()}
           </p>
         </div>
 

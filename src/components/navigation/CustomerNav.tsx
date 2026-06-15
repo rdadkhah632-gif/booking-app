@@ -15,22 +15,17 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
         {t("nav.myBookings")}
       </Link>
 
-      <Link
-        href="/notifications"
-        className={notificationCount > 0 ? "btn btn-accent" : "muted"}
-      >
-        {notificationLabel("customer", notificationCount, t)}
-      </Link>
-
-      <Link href="/support/customer" className="muted nav-wide-only">
-        {t("nav.customerSupport")}
-      </Link>
-
       <LanguageToggle />
 
       <Link href="/account" className="muted">
         {t("nav.account")}
       </Link>
+
+      {notificationCount > 0 && (
+        <Link href="/notifications" className="btn btn-accent">
+          {notificationLabel("customer", notificationCount, t)}
+        </Link>
+      )}
 
       <button onClick={onLogout} className="btn btn-ghost">
         {t("nav.logout")}
