@@ -43,6 +43,21 @@ export function getBusinessAppUrl(path = "/"): string {
   return path === "/" ? "/business" : path;
 }
 
+export type AuthProduct = "customer" | "business";
+
+export function getAuthAppUrl(
+  product: AuthProduct,
+  path: string,
+  fallbackOrigin: string,
+): string {
+  const configuredUrl =
+    product === "business"
+      ? getBusinessAppUrl(path)
+      : getCustomerAppUrl(path);
+
+  return new URL(configuredUrl, fallbackOrigin).toString();
+}
+
 export function isBusinessAppHostname(hostname: string): boolean {
   const normalisedHostname = normaliseHostname(hostname);
   if (!normalisedHostname) return false;

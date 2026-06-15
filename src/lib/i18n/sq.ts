@@ -891,9 +891,9 @@ export const sq: TranslationTree = {
   "dashboardSettings.tools.support": "Ndihmë për biznes",
   "dashboardSettings.tools.supportBody":
     "Merr ndihmë për konfigurim, rezervime ose ndryshime llogarie.",
-  "dashboardHome.title": "Përmbledhja e biznesit",
+  "dashboardHome.title": "Kryefaqja",
   "dashboardHome.subtitle":
-    "Shiko aktivitetin e sotëm në Mirëbook, veprimet e klientëve, parashikimin e orarit dhe performancën e biznesit në një vend.",
+    "Takimet e sotme, veprimet dhe java në vazhdim.",
   "dashboardHome.checkingAccount": "Duke kontrolluar llogarinë...",
   "dashboardHome.refreshHint":
     "Mirëbook e rifreskon këtë panel kur kthehesh në këtë tab. Përdor rifreskimin nëse një veprim i klientit nuk shfaqet menjëherë.",
@@ -1006,9 +1006,18 @@ export const sq: TranslationTree = {
   "dashboardHome.shortcuts.availability.title": "Vendos disponueshmërinë",
   "dashboardHome.shortcuts.availability.body":
     "Vendos ditët dhe oraret e biznesit kur klientët mund të rezervojnë.",
-  "dashboardBusinesses.pageTitle": "Qendra e konfigurimit të biznesit",
+  "dashboardBusinesses.pageTitle": "Biznesi im",
   "dashboardBusinesses.pageSubtitle":
-    "Kontrollo profilin që shikon klienti, cilësimet e rezervimit, shërbimet, stafin dhe oraret nga një vend.",
+    "Profili, shërbimet, ekipi, disponueshmëria dhe rregullat e rezervimit në një vend.",
+  "dashboardBusinesses.myBusiness.body":
+    "Menaxho informacionin dhe cilësimet ku mbështeten klientët kur rezervojnë.",
+  "dashboardBusinesses.myBusiness.complete": "I plotë",
+  "dashboardBusinesses.myBusiness.needsDetails": "Kërkon detaje",
+  "dashboardBusinesses.myBusiness.active": "aktive",
+  "dashboardBusinesses.myBusiness.availability": "Disponueshmëria",
+  "dashboardBusinesses.myBusiness.bookingRules": "Rregullat e rezervimit",
+  "dashboardBusinesses.myBusiness.viewLive": "Shiko live",
+  "dashboardBusinesses.myBusiness.preview": "Parashiko",
   "dashboardBusinesses.hero.kicker": "Konfigurimi Mirëbook",
   "dashboardBusinesses.hero.title":
     "Konfiguro biznesin para se klientët të rezervojnë.",
@@ -1418,6 +1427,9 @@ export const sq: TranslationTree = {
   "dashboardStaff.card.accountLinked": "Llogari e lidhur",
   "dashboardStaff.card.notLinked": "Jo e lidhur",
   "dashboardStaff.card.servicesAssigned": "shërbime të caktuara",
+  "dashboardStaff.card.openDays": "ditë të hapura",
+  "dashboardStaff.card.viewDetails": "Shiko detajet",
+  "dashboardStaff.card.hideDetails": "Fshih detajet",
   "dashboardStaff.card.noServicesAssigned": "Nuk ka shërbime të caktuara",
   "dashboardStaff.card.noRole": "Nuk është shtuar rol",
   "dashboardStaff.card.noEmail": "Pa email",
@@ -1500,10 +1512,15 @@ export const sq: TranslationTree = {
   "common.days.saturday": "E shtunë",
   "dashboardLayout.nav.overview": "Përmbledhje",
   "dashboardLayout.nav.home": "Kryefaqja",
+  "dashboardLayout.nav.calendar": "Kalendari",
+  "dashboardLayout.nav.myBusiness": "Biznesi im",
+  "dashboardLayout.nav.inbox": "Mesazhet",
+  "dashboardLayout.nav.account": "Llogaria",
   "dashboardLayout.nav.team": "Ekipi",
   "dashboardLayout.nav.more": "Më shumë",
   "dashboardLayout.nav.setupHub": "Qendra e konfigurimit të biznesit",
   "dashboardLayout.nav.accountSettings": "Cilësimet e llogarisë",
+  "dashboardLayout.account.fallback": "Llogaria",
   "dashboardLayout.moreHint":
     "Konfigurimi, disponueshmëria, njoftimet, analizat, faturimi dhe mjetet e llogarisë janë te Më shumë.",
   "dashboardLayout.controlCentre": "Qendra e kontrollit të biznesit",
@@ -1544,7 +1561,7 @@ export const sq: TranslationTree = {
   "account.verification.verifiedBody":
     "Supabase Auth ka konfirmuar pronësinë e këtij email-i hyrjeje.",
   "account.verification.unverifiedBody":
-    "Supabase Auth e raporton këtë adresë si të pakonfirmuar. Verifikimi mbetet këshillues dhe nuk bllokon llogarinë ose rezervimet.",
+    "Ky email hyrjeje nuk është konfirmuar ende. Kontrollo inbox-in ose dërgo një email tjetër verifikimi. Aksesi aktual vazhdon të ndjekë cilësimet e Supabase Auth.",
   "account.verification.unknownBody":
     "Mirëbook nuk mundi ta përcaktojë statusin e verifikimit nga sesioni aktual i Supabase. Kjo nuk bllokon llogarinë ose rezervimet.",
   "account.verification.resent":
@@ -1637,10 +1654,13 @@ export const sq: TranslationTree = {
   "account.saveSuccess": "Detajet e llogarisë Mirëbook u përditësuan.",
   "account.linkedBusiness": "Biznes i lidhur",
   "account.saving": "Duke ruajtur...",
-  "dashboardBookings.pageTitle": "Rezervimet",
+  "dashboardBookings.pageTitle": "Kalendari",
   "dashboardBookings.pageSubtitle":
     "Zgjidh cilat rezervime biznesi do të shohësh.",
-  "dashboardBookings.pageSubtitleSelected": "Menaxho rezervimet Mirëbook për",
+  "dashboardBookings.pageSubtitleSelected":
+    "Takimet dhe kërkesat për rezervim për",
+  "dashboardBookings.appointments": "takime",
+  "dashboardBookings.needsApproval": "kërkojnë miratim",
   "dashboardBookings.loading": "Duke ngarkuar rezervimet...",
   "dashboardBookings.error.noAccess": "Nuk ke akses te ky biznes.",
   "dashboardBookings.error.load": "Rezervimet nuk u ngarkuan.",
@@ -2131,7 +2151,9 @@ export const sq: TranslationTree = {
   "register.verification.resent":
     "Kërkesa e verifikimit u pranua. Nëse konfirmimi me email është aktiv në Supabase, kontrollo inbox-in dhe dosjen spam.",
   "register.verification.softPolicy":
-    "Verifikimi është vetëm udhëzim në këtë fazë; Mirëbook nuk do të bllokojë llogaritë ekzistuese të testimit ose aksesin te rezervimet.",
+    "Hap email-in e verifikimit në këtë pajisje, pastaj kthehu për të hyrë. Kontrollo dosjen spam nëse nuk mbërrin.",
+  "register.verification.guidance":
+    "Nëse konfirmimi me email është aktiv, kontrollo inbox-in pasi të krijosh llogarinë. Konfigurimi i zgjedhur vazhdon pasi ta verifikosh email-in dhe të hysh.",
   "register.business.nameRequired": "Emri i biznesit është i detyrueshëm.",
   "register.business.phoneRequired": "Telefoni i biznesit është i detyrueshëm.",
   "register.business.categoryRequired":
@@ -3339,6 +3361,44 @@ export const sq: TranslationTree = {
     "Hollësitë dhe veprimet e rezervimit qëndrojnë te Rezervimet e mia",
   "notifications.bookingHandoff.body":
     "Hap Rezervimet e mia për të parë kërkesat, takimet e konfirmuara, ndryshimet dhe historikun.",
+  "login.forgotPassword": "Harrove fjalëkalimin?",
+  "forgotPassword.kicker": "Siguria e llogarisë",
+  "forgotPassword.businessKicker": "Siguria e Mirëbook Biznes",
+  "forgotPassword.title": "Rivendos fjalëkalimin",
+  "forgotPassword.body":
+    "Shkruaj email-in e hyrjes në Mirëbook. Do t'i kërkojmë Supabase të dërgojë një link të sigurt për rivendosjen e fjalëkalimit.",
+  "forgotPassword.businessBody":
+    "Shkruaj email-in e përdorur për hyrjen si pronar biznesi ose staf. Linku i rivendosjes do të të kthejë te Mirëbook Biznes.",
+  "forgotPassword.emailLabel": "Adresa e email-it",
+  "forgotPassword.emailPlaceholder": "ti@shembull.com",
+  "forgotPassword.sending": "Duke dërguar linkun...",
+  "forgotPassword.submit": "Dërgo linkun e rivendosjes",
+  "forgotPassword.success":
+    "Kërkesa për rivendosjen e fjalëkalimit u pranua. Kontrollo inbox-in dhe dosjen spam për linkun e sigurt.",
+  "forgotPassword.backToLogin": "Kthehu te hyrja",
+  "resetPassword.kicker": "Siguria e llogarisë",
+  "resetPassword.businessKicker": "Siguria e Mirëbook Biznes",
+  "resetPassword.checkingTitle": "Duke kontrolluar linkun",
+  "resetPassword.checkingBody":
+    "Mirëbook po verifikon sesionin e sigurt të rikuperimit.",
+  "resetPassword.title": "Zgjidh një fjalëkalim të ri",
+  "resetPassword.body":
+    "Shkruaj dhe konfirmo një fjalëkalim të ri për hyrjen tënde në Mirëbook.",
+  "resetPassword.passwordLabel": "Fjalëkalimi i ri",
+  "resetPassword.confirmPasswordLabel": "Konfirmo fjalëkalimin e ri",
+  "resetPassword.saving": "Duke përditësuar fjalëkalimin...",
+  "resetPassword.submit": "Përditëso fjalëkalimin",
+  "resetPassword.error.length":
+    "Përdor të paktën 8 karaktere për fjalëkalimin e ri.",
+  "resetPassword.error.match": "Konfirmimi i fjalëkalimit nuk përputhet.",
+  "resetPassword.invalidTitle": "Ky link rivendosjeje nuk është aktiv",
+  "resetPassword.invalidBody":
+    "Linku mund të ketë skaduar ose të jetë përdorur. Kërko një email të ri për rivendosjen e fjalëkalimit.",
+  "resetPassword.requestAgain": "Kërko një link tjetër",
+  "resetPassword.completeTitle": "Fjalëkalimi u përditësua",
+  "resetPassword.completeBody":
+    "Fjalëkalimi u ndryshua. Hyr përsëri me fjalëkalimin e ri.",
+  "resetPassword.login": "Vazhdo te hyrja",
   "reschedule.loading": "Duke ngarkuar rezervimin në Mirëbook...",
   "reschedule.error.title": "Orari nuk mund të ndryshohet",
   "reschedule.kicker.business": "Ndryshim orari nga biznesi",

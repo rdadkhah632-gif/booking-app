@@ -15,6 +15,10 @@ import {
   EmailVerificationState,
   getEmailVerificationState,
 } from "@/lib/email/verification";
+import {
+  getAuthAppUrl,
+  isBusinessAppHostname,
+} from "@/lib/appUrls";
 
 type Role = "customer" | "business" | "staff";
 
@@ -389,10 +393,22 @@ export default function AccountPage() {
     setError(null);
     setMessage(null);
 
+    const authProduct =
+      ownsBusiness ||
+      hasStaffAccess ||
+      isBusinessAppHostname(window.location.hostname)
+        ? "business"
+        : "customer";
+    const resetRedirect = getAuthAppUrl(
+      authProduct,
+      `/reset-password?product=${authProduct}`,
+      window.location.origin,
+    );
+
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
       profile.email,
       {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: resetRedirect,
       },
     );
 
@@ -406,7 +422,7 @@ export default function AccountPage() {
     setMessage(
       t(
         "account.passwordResetSent",
-        "Password reset email sent. Check your inbox to continue.",
+        "Password reset request accepted. Check your inbox and spam folder to continue.",
       ),
     );
   }
@@ -422,11 +438,25 @@ export default function AccountPage() {
     setError(null);
     setMessage(null);
 
+    const authProduct =
+      ownsBusiness ||
+      hasStaffAccess ||
+      isBusinessAppHostname(window.location.hostname)
+        ? "business"
+        : "customer";
+    const verificationRedirect = getAuthAppUrl(
+      authProduct,
+      `/login?verified=1${
+        authProduct === "business" ? "&product=business" : ""
+      }`,
+      window.location.origin,
+    );
+
     const { error: resendError } = await supabase.auth.resend({
       type: "signup",
       email: profile.email,
       options: {
-        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+        emailRedirectTo: verificationRedirect,
       },
     });
 
@@ -610,7 +640,7 @@ export default function AccountPage() {
                     : emailIsUnverified
                       ? t(
                           "account.verification.unverifiedBody",
-                          "Supabase Auth reports this address as unconfirmed. Verification remains advisory and does not block current account or booking access.",
+                          "This login email has not been confirmed yet. Check your inbox or send another verification email. Current access still follows your Supabase Auth settings.",
                         )
                       : t(
                           "account.verification.unknownBody",

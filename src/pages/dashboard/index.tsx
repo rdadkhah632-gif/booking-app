@@ -249,20 +249,6 @@ export default function DashboardHome() {
     });
   }, [bookings]);
 
-  const nextBooking = useMemo(() => {
-    return (
-      bookings
-        .filter(
-          (booking) =>
-            booking.status === "confirmed" && new Date(booking.start_at) >= now,
-        )
-        .sort(
-          (a, b) =>
-            new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
-        )[0] || null
-    );
-  }, [bookings, now]);
-
   const upcomingBookings = useMemo(() => {
     return bookings
       .filter(
@@ -495,30 +481,6 @@ export default function DashboardHome() {
     }).toString()}`;
   }
 
-  function bookingsLinkForView(
-    view: string,
-    status?: string,
-    businessId?: string,
-  ) {
-    return `/dashboard/bookings?${new URLSearchParams({
-      ...(businessId || primaryBusinessId
-        ? { businessId: businessId || primaryBusinessId }
-        : {}),
-      view,
-      ...(status ? { status } : {}),
-    }).toString()}`;
-  }
-
-  function formatBookingTime(booking: Booking) {
-    return new Date(booking.start_at).toLocaleString(undefined, {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
   if (loading) {
     return (
       <DashboardLayout title={t("common.loading", "Loading...")}>
@@ -531,10 +493,10 @@ export default function DashboardHome() {
 
   return (
     <DashboardLayout
-      title={t("dashboardHome.title", "Business overview")}
+      title={t("dashboardHome.title", "Home")}
       subtitle={t(
         "dashboardHome.subtitle",
-        "A quick view of today’s appointments, customer actions and setup reminders.",
+        "Today’s appointments, actions and the week ahead.",
       )}
     >
       {error && (
@@ -543,61 +505,6 @@ export default function DashboardHome() {
           style={{ borderColor: "rgba(255,77,109,0.35)", marginBottom: "1rem" }}
         >
           <p style={{ color: "var(--danger)" }}>{error}</p>
-        </div>
-      )}
-
-      {businesses.length > 0 && (
-        <div className="card dashboard-owner-command-card">
-          <div>
-            {/* kicker removed */}
-            <h2 style={{ fontFamily: "var(--font-display)", marginTop: 0 }}>
-              {pendingActionCount > 0
-                ? t(
-                    "dashboardHome.ownerCommand.actionTitle",
-                    "Customer actions need review",
-                  )
-                : todayBookings.length > 0
-                  ? t(
-                      "dashboardHome.ownerCommand.todayTitle",
-                      "Today’s business schedule is active",
-                    )
-                  : t(
-                      "dashboardHome.ownerCommand.readyTitle",
-                      "Your business dashboard is ready",
-                    )}
-            </h2>
-            <p className="small muted">
-              {pendingActionCount > 0
-                ? t(
-                    "dashboardHome.ownerCommand.actionBody",
-                    "Review pending bookings and customer requests before they affect the schedule.",
-                  )
-                : nextBooking
-                  ? `${t("dashboardHome.ownerCommand.nextBooking", "Next confirmed booking")}: ${nextBooking.customer_name || t("common.customer", "Customer")} · ${formatBookingTime(nextBooking)}`
-                  : t(
-                      "dashboardHome.ownerCommand.noNextBooking",
-                      "No confirmed upcoming bookings are waiting. Keep setup and availability up to date for new customers.",
-                    )}
-            </p>
-          </div>
-
-          <div className="dashboard-owner-command-actions">
-            <Link
-              href={
-                pendingActionCount > 0
-                  ? bookingsLinkForView("upcoming", "pending")
-                  : bookingsLinkForView("upcoming")
-              }
-              className="btn btn-accent"
-            >
-              {pendingActionCount > 0
-                ? t(
-                    "dashboardHome.ownerCommand.reviewActions",
-                    "Review actions",
-                  )
-                : t("dashboardHome.ownerCommand.viewBookings", "View bookings")}
-            </Link>
-          </div>
         </div>
       )}
 
@@ -630,7 +537,6 @@ export default function DashboardHome() {
         pendingBookingsCount={pendingBookings.length}
         pendingRescheduleCount={pendingRescheduleCount}
         analytics={dashboardAnalytics}
-        bookingsLinkForView={bookingsLinkForView}
       />
 
       <SchedulePreviewCard
@@ -638,45 +544,6 @@ export default function DashboardHome() {
         bookingsLinkForDate={bookingsLinkForDate}
       />
 
-      <style jsx>{`
-        .dashboard-owner-command-card {
-          display: flex;
-          justify-content: space-between;
-          gap: 0.9rem;
-          align-items: flex-start;
-          margin-bottom: 1.25rem;
-          border-color: rgba(255, 107, 53, 0.24);
-          background: linear-gradient(
-            135deg,
-            rgba(255, 107, 53, 0.08),
-            rgba(11, 18, 32, 0)
-          );
-        }
-
-        .dashboard-owner-command-card p {
-          margin-top: 0;
-        }
-
-        .dashboard-owner-command-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-          align-items: center;
-        }
-
-        @media (max-width: 760px) {
-          .dashboard-owner-command-card {
-            display: grid;
-          }
-
-          .dashboard-owner-command-actions,
-          .dashboard-owner-command-actions :global(.btn) {
-            width: 100%;
-            justify-content: center;
-          }
-        }
-      `}</style>
     </DashboardLayout>
   );
 }

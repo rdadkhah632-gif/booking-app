@@ -23,6 +23,8 @@ export default function DashboardLayout({
   const [pendingCount, setPendingCount] = useState(0);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
+  const [accountLabel, setAccountLabel] = useState("");
+  const [workspaceLabel, setWorkspaceLabel] = useState("");
 
   useEffect(() => {
     async function loadPendingNotifications() {
@@ -47,6 +49,17 @@ export default function DashboardLayout({
       );
 
       setHasBusinessWorkspace(capabilities.canUseBusiness);
+      setAccountLabel(
+        session.user.user_metadata?.full_name ||
+          session.user.email?.split("@")[0] ||
+          t("dashboardLayout.account.fallback", "Account"),
+      );
+      setWorkspaceLabel(
+        capabilities.ownedBusinesses[0]?.name ||
+          (workspace === "staff"
+            ? t("staff.workspace.kicker", "Staff workspace")
+            : t("product.business.suffix", "Business")),
+      );
 
       if (workspace === "staff") {
         if (!capabilities.canUseStaff && !capabilities.canUseBusiness) {
@@ -99,21 +112,17 @@ export default function DashboardLayout({
       href: "/dashboard/bookings",
       label:
         pendingCount > 0
-          ? `${t("support.business.bookings", "Bookings")} (${pendingCount > 9 ? "9+" : pendingCount})`
-          : t("support.business.bookings", "Bookings"),
+          ? `${t("dashboardLayout.nav.calendar", "Calendar")} (${pendingCount > 9 ? "9+" : pendingCount})`
+          : t("dashboardLayout.nav.calendar", "Calendar"),
       urgent: pendingCount > 0,
     },
     {
-      href: "/dashboard/services",
-      label: t("dashboardServices.pageTitle", "Services"),
+      href: "/dashboard/businesses",
+      label: t("dashboardLayout.nav.myBusiness", "My Business"),
     },
     {
-      href: "/dashboard/staff",
-      label: t("dashboardLayout.nav.team", "Team"),
-    },
-    {
-      href: "/dashboard/settings",
-      label: t("dashboardLayout.nav.more", "More"),
+      href: "/dashboard/notifications",
+      label: t("dashboardLayout.nav.inbox", "Inbox"),
     },
   ];
 
@@ -161,21 +170,20 @@ export default function DashboardLayout({
   const mainLinks = workspace === "staff" ? staffMainLinks : businessMainLinks;
   const secondaryLinks = workspace === "staff" ? staffSecondaryLinks : [];
 
-  const moreRoutes = [
-    "/dashboard/settings",
+  const myBusinessRoutes = [
     "/dashboard/businesses",
+    "/dashboard/services",
+    "/dashboard/staff",
     "/dashboard/availability",
-    "/dashboard/notifications",
+    "/dashboard/settings",
     "/dashboard/analytics",
-    "/dashboard/billing",
     "/support/business",
-    "/account",
     "/staff",
   ];
 
   function isActiveLink(href: string) {
-    if (workspace !== "staff" && href === "/dashboard/settings") {
-      return moreRoutes.some(
+    if (workspace !== "staff" && href === "/dashboard/businesses") {
+      return myBusinessRoutes.some(
         (route) =>
           router.pathname === route || router.pathname.startsWith(`${route}/`),
       );
@@ -257,6 +265,31 @@ export default function DashboardLayout({
             </div>
           )}
 
+          {workspace === "business" && (
+            <div className="sidebar-account">
+              <Link href="/account" className="sidebar-account-main">
+                <span className="sidebar-account-avatar" aria-hidden="true">
+                  {accountLabel.slice(0, 1).toUpperCase() || "M"}
+                </span>
+                <span className="sidebar-account-copy">
+                  <strong>{accountLabel}</strong>
+                  <small>{workspaceLabel}</small>
+                </span>
+              </Link>
+              <div className="sidebar-account-actions">
+                <Link href="/account">
+                  {t("dashboardLayout.nav.account", "Account")}
+                </Link>
+                <Link href="/dashboard/billing">
+                  {t("dashboardSettings.tools.billing", "Billing")}
+                </Link>
+                <button type="button" onClick={logout}>
+                  {t("auth.logout", "Log out")}
+                </button>
+              </div>
+            </div>
+          )}
+
         </nav>
       </aside>
 
@@ -288,6 +321,7 @@ export default function DashboardLayout({
           display: flex;
           flex-direction: column;
           gap: 1.4rem;
+          min-height: calc(100vh - 7rem);
         }
 
         .sidebar-logo :global(.logo) {
@@ -317,6 +351,70 @@ export default function DashboardLayout({
           margin-top: 0.25rem;
           padding-top: 1rem;
           border-top: 1px solid var(--border);
+        }
+
+        .sidebar-account {
+          display: grid;
+          gap: 0.7rem;
+          margin-top: auto;
+          padding: 1rem 0.75rem 0;
+          border-top: 1px solid var(--border);
+        }
+
+        .sidebar-account-main {
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+          color: var(--text);
+          text-decoration: none;
+          min-width: 0;
+        }
+
+        .sidebar-account-avatar {
+          width: 2.25rem;
+          height: 2.25rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          border-radius: 50%;
+          background: var(--accent-dim);
+          color: var(--accent);
+          font-weight: 900;
+        }
+
+        .sidebar-account-copy {
+          min-width: 0;
+          display: grid;
+          gap: 0.1rem;
+        }
+
+        .sidebar-account-copy strong,
+        .sidebar-account-copy small {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .sidebar-account-copy small {
+          color: var(--text-muted);
+        }
+
+        .sidebar-account-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .sidebar-account-actions a,
+        .sidebar-account-actions button {
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: var(--text-muted);
+          font: inherit;
+          font-size: 0.78rem;
+          cursor: pointer;
         }
 
         .sidebar-section-label {
@@ -409,7 +507,8 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links,
-          .sidebar-lower-links {
+          .sidebar-lower-links,
+          .sidebar-account {
             display: contents;
           }
 
@@ -450,8 +549,27 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links,
-          .sidebar-lower-links {
+          .sidebar-lower-links,
+          .sidebar-account {
             display: contents;
+          }
+
+          .sidebar-account-main {
+            display: none;
+          }
+
+          .sidebar-account-actions {
+            display: contents;
+          }
+
+          .sidebar-account-actions a,
+          .sidebar-account-actions button {
+            min-height: 2.6rem;
+            padding: 0.65rem 0.85rem;
+            flex: 0 0 auto;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            color: var(--text-muted);
           }
 
           .sidebar-section-label {

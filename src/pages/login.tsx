@@ -7,15 +7,25 @@ import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { completePendingRegistration } from "@/lib/completePendingRegistration";
 import { safeInternalRedirect } from "@/lib/safeInternalRedirect";
-import { getBusinessAppUrl } from "@/lib/appUrls";
+import {
+  getAuthAppUrl,
+  getBusinessAppUrl,
+  getCustomerAppUrl,
+  isBusinessAppHostname,
+} from "@/lib/appUrls";
 
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const isBusinessEntry = router.query.product === "business";
+  const [isBusinessHostname, setIsBusinessHostname] = useState(false);
+  const isBusinessEntry =
+    router.query.product === "business" || isBusinessHostname;
   const registrationUrl = isBusinessEntry
     ? getBusinessAppUrl("/register?accountType=business")
-    : "/register";
+    : getCustomerAppUrl("/register");
+  const forgotPasswordUrl = isBusinessEntry
+    ? getBusinessAppUrl("/forgot-password?product=business")
+    : getCustomerAppUrl("/forgot-password");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,6 +92,10 @@ export default function LoginPage() {
 
     router.replace(capabilities.defaultRoute);
   }
+
+  useEffect(() => {
+    setIsBusinessHostname(isBusinessAppHostname(window.location.hostname));
+  }, []);
 
   useEffect(() => {
     async function checkExistingSession() {
@@ -167,8 +181,11 @@ export default function LoginPage() {
 
     const redirectTo = safeInternalRedirect(router.query.redirectTo);
     const verificationRedirect = new URL(
-      "/login?verified=1",
-      window.location.origin,
+      getAuthAppUrl(
+        isBusinessEntry ? "business" : "customer",
+        `/login?verified=1${isBusinessEntry ? "&product=business" : ""}`,
+        window.location.origin,
+      ),
     );
     if (redirectTo?.startsWith("/staff/invite?token=")) {
       verificationRedirect.searchParams.set("redirectTo", redirectTo);
@@ -431,6 +448,14 @@ export default function LoginPage() {
                   "login.staffHint",
                   "Staff invited by a business should sign in or register using the invited email address.",
                 )}
+              </p>
+              <p className="small muted">
+                <Link
+                  href={forgotPasswordUrl}
+                  style={{ color: "var(--accent)" }}
+                >
+                  {t("login.forgotPassword", "Forgot your password?")}
+                </Link>
               </p>
             </div>
           </div>

@@ -446,8 +446,8 @@ export default function Businesses() {
   // readinessRow and setupCard functions deleted
   return (
     <DashboardLayout
-      title={t('dashboardBusinesses.pageTitle', businesses.length > 0 ? 'Setup' : 'Create your business')}
-      subtitle={t('dashboardBusinesses.pageSubtitle', businesses.length > 0 ? 'Manage the parts of your business customers rely on before they book.' : 'Create your first business profile, then add services, staff, availability and publish it to Mirëbook.')}
+      title={t('dashboardBusinesses.pageTitle', businesses.length > 0 ? 'My Business' : 'Create your business')}
+      subtitle={t('dashboardBusinesses.pageSubtitle', businesses.length > 0 ? 'Profile, services, team, availability and booking rules in one place.' : 'Create your first business profile, then add services, staff, availability and publish it to Mirëbook.')}
     >
       {businesses.length === 0 && <BusinessSetupHero />}
 
@@ -463,7 +463,104 @@ export default function Businesses() {
         />
       )}
 
-      {businesses.length > 0 && (
+      {businesses.length > 0 && primaryBusiness && primaryReadiness && (
+        <section className="my-business-hub">
+          <div className="my-business-heading">
+            <div>
+              <h2>{primaryBusiness.name}</h2>
+              <p className="small muted">
+                {t('dashboardBusinesses.myBusiness.body', 'Manage the information and settings customers rely on when they book.')}
+              </p>
+            </div>
+            <span className={primaryReadiness.publicListingReady ? 'my-business-status live' : 'my-business-status'}>
+              {primaryReadiness.publicListingReady
+                ? t('dashboardBusinesses.status.live', 'Live on Mirëbook')
+                : primaryReadiness.bookingReady
+                  ? t('dashboardBusinesses.status.ready', 'Ready to publish')
+                  : t('dashboardBusinesses.status.bookingSetup', 'Setup needed')}
+            </span>
+          </div>
+
+          <div className="my-business-links">
+            {[
+              {
+                href: '#business-profile',
+                label: t('dashboardBusinesses.readiness.profile', 'Public profile'),
+                value: primaryReadiness.profileComplete
+                  ? t('dashboardBusinesses.myBusiness.complete', 'Complete')
+                  : t('dashboardBusinesses.myBusiness.needsDetails', 'Needs details')
+              },
+              {
+                href: '/dashboard/services',
+                label: t('dashboardBusinesses.readiness.services', 'Services'),
+                value: `${primaryReadiness.activeServices} ${t('dashboardBusinesses.myBusiness.active', 'active')}`
+              },
+              {
+                href: '/dashboard/staff',
+                label: t('dashboardBusinesses.readiness.staff', 'Team'),
+                value: `${primaryReadiness.activeStaff} ${t('dashboardBusinesses.myBusiness.active', 'active')}`
+              },
+              {
+                href: '/dashboard/availability',
+                label: t('dashboardBusinesses.myBusiness.availability', 'Availability'),
+                value: `${primaryReadiness.workingDays} ${t('dashboardBusinesses.readiness.hours', 'working days')}`
+              },
+              {
+                href: '/dashboard/settings',
+                label: t('dashboardBusinesses.myBusiness.bookingRules', 'Booking rules'),
+                value: primaryBusiness.auto_accept_bookings
+                  ? t('dashboardSettings.approval.instantTitle', 'Instant confirmation')
+                  : t('dashboardSettings.approval.manualTitle', 'Manual approval')
+              },
+              {
+                href: `/explore/${primaryBusiness.id}`,
+                label: t('dashboardBusinesses.onboarding.preview', 'Public page'),
+                value: primaryBusiness.published
+                  ? t('dashboardBusinesses.myBusiness.viewLive', 'View live')
+                  : t('dashboardBusinesses.myBusiness.preview', 'Preview')
+              }
+            ].map((item) => (
+              <a key={item.href} href={item.href} className="my-business-link">
+                <strong>{item.label}</strong>
+                <span>{item.value}</span>
+              </a>
+            ))}
+          </div>
+
+          <div className="business-owner-staff-row">
+            <div>
+              <strong>
+                {ownerStaffProfile
+                  ? t('dashboardBusinesses.ownerStaff.linkedTitle', 'You are bookable staff')
+                  : t('dashboardBusinesses.ownerStaff.title', 'Do you take appointments?')}
+              </strong>
+              <p className="small muted">
+                {ownerStaffProfile
+                  ? t('dashboardBusinesses.onboarding.ownerStaffLinked', 'Use My Work for your personal schedule and availability.')
+                  : t('dashboardBusinesses.ownerStaff.body', 'Add yourself only if customers can book appointments with you.')}
+              </p>
+            </div>
+            {ownerStaffProfile ? (
+              <a href="/staff" className="btn btn-ghost">
+                {t('dashboardBusinesses.onboarding.openMyWork', 'Open My Work')}
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => addOwnerAsStaff(primaryBusiness)}
+                disabled={creatingOwnerStaffId === primaryBusiness.id}
+              >
+                {creatingOwnerStaffId === primaryBusiness.id
+                  ? t('dashboardBusinesses.ownerStaff.creating', 'Adding you as staff...')
+                  : t('staff.ownerSetup.addSelf', 'Add myself as bookable staff')}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {false && (
         <div className="card business-setup-hub">
           <div className="business-setup-hub-header">
             <div>
@@ -705,6 +802,73 @@ export default function Businesses() {
         ))}
       </div>
       <style jsx>{`
+        .my-business-hub {
+          display: grid;
+          gap: 1rem;
+          margin-bottom: 1.25rem;
+          padding-bottom: 1.25rem;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .my-business-heading {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+
+        .my-business-heading h2,
+        .my-business-heading p {
+          margin-top: 0;
+        }
+
+        .my-business-status {
+          flex: 0 0 auto;
+          padding: 0.3rem 0.65rem;
+          border-radius: 999px;
+          background: rgba(255,190,11,0.1);
+          color: var(--warning);
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .my-business-status.live {
+          background: rgba(45,212,191,0.1);
+          color: var(--success);
+        }
+
+        .my-business-links {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          border-top: 1px solid var(--border);
+        }
+
+        .my-business-link {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          padding: 0.85rem 0;
+          color: var(--text);
+          text-decoration: none;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .my-business-link:nth-child(odd) {
+          padding-right: 1rem;
+        }
+
+        .my-business-link:nth-child(even) {
+          padding-left: 1rem;
+          border-left: 1px solid var(--border);
+        }
+
+        .my-business-link span {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          text-align: right;
+        }
+
         .business-profile-list {
           display: grid;
           gap: 1.25rem;
@@ -848,6 +1012,24 @@ export default function Businesses() {
         }
 
         @media (max-width: 700px) {
+          .my-business-heading {
+            display: grid;
+          }
+
+          .my-business-status {
+            justify-self: start;
+          }
+
+          .my-business-links {
+            grid-template-columns: 1fr;
+          }
+
+          .my-business-link:nth-child(odd),
+          .my-business-link:nth-child(even) {
+            padding: 0.8rem 0;
+            border-left: 0;
+          }
+
           .business-setup-hub-header,
           .business-owner-staff-row {
             display: grid;

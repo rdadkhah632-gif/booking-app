@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import {
@@ -45,8 +46,12 @@ export default function StaffProfileCard({
   toggleStaffService,
 }: Props) {
   const { t } = useI18n();
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const activeAssignedCount = services.filter(
     (service) => service.active && assignedServiceIds.includes(service.id),
+  ).length;
+  const openDayCount = availabilityRows.filter(
+    (row) => row.staff_member_id === staff.id && row.is_closed !== true,
   ).length;
 
   const normalisedInviteStatus = (staff.invite_status || "").toLowerCase();
@@ -133,36 +138,22 @@ export default function StaffProfileCard({
               <p className="small muted staff-line">
                 {staff.role_title ||
                   t("dashboardStaff.card.noRole", "No role title added")}{" "}
-                · {staff.email || t("dashboardStaff.card.noEmail", "No email")}
+                · {activeAssignedCount}{" "}
+                {t("dashboardStaff.card.servicesAssigned", "services")} ·{" "}
+                {openDayCount} {t("dashboardStaff.card.openDays", "open days")}
               </p>
 
-              <p className="small muted staff-line">
-                {staff.phone || t("dashboardStaff.card.noPhone", "No phone")}
-              </p>
-
-              <div className="staff-state-grid">
-                <div
-                  className={`card staff-state-card staff-linking-${inviteStatusTone}`}
-                  style={{ background: "var(--surface-2)" }}
-                >
-                  <span className="small muted">
-                    {t("dashboardStaff.card.accountLink", "Account link")}
-                  </span>
-                  <strong>{inviteStatusLabel}</strong>
+              {detailsOpen && (
+                <div className="staff-detail-summary">
+                  <p className="small muted staff-line">
+                    {staff.email ||
+                      t("dashboardStaff.card.noEmail", "No email")}{" "}
+                    · {staff.phone || t("dashboardStaff.card.noPhone", "No phone")}
+                  </p>
                   <p className="small muted staff-line">{inviteStatusBody}</p>
-                </div>
-
-                <div
-                  className={`card staff-state-card ${staff.active ? "staff-linking-success" : "staff-linking-warning"}`}
-                  style={{ background: "var(--surface-2)" }}
-                >
-                  <span className="small muted">
-                    {t("dashboardStaff.card.bookableStatus", "Bookable status")}
-                  </span>
-                  <strong>{bookableStatusLabel}</strong>
                   <p className="small muted staff-line">{bookableStatusBody}</p>
                 </div>
-              </div>
+              )}
             </>
           )}
 
@@ -281,46 +272,70 @@ export default function StaffProfileCard({
           ) : (
             <>
               <button
-                onClick={() => setEditingStaffId(staff.id)}
+                type="button"
+                onClick={() => setDetailsOpen((open) => !open)}
+                className="btn btn-ghost"
+              >
+                {detailsOpen
+                  ? t("dashboardStaff.card.hideDetails", "Hide details")
+                  : t("dashboardStaff.card.viewDetails", "View details")}
+              </button>
+
+              <button
+                onClick={() => {
+                  setDetailsOpen(true);
+                  setEditingStaffId(staff.id);
+                }}
                 className="btn btn-ghost"
               >
                 {t("common.edit", "Edit")}
               </button>
 
-              <button
-                onClick={() => toggleStaffActive(staff)}
-                className={staff.active ? "btn btn-ghost" : "btn btn-accent"}
-              >
-                {staff.active
-                  ? t("dashboardStaff.card.deactivate", "Deactivate")
-                  : t("dashboardStaff.card.activate", "Activate")}
-              </button>
+              {detailsOpen && (
+                <>
+                  <button
+                    onClick={() => toggleStaffActive(staff)}
+                    className={
+                      staff.active ? "btn btn-ghost" : "btn btn-accent"
+                    }
+                  >
+                    {staff.active
+                      ? t("dashboardStaff.card.deactivate", "Deactivate")
+                      : t("dashboardStaff.card.activate", "Activate")}
+                  </button>
 
-              <Link
-                href={`/dashboard/availability?businessId=${staff.business_id}&staffId=${staff.id}`}
-                className="btn btn-ghost"
-              >
-                {t("dashboardStaff.availability.openCta", "Open availability")}
-              </Link>
+                  <Link
+                    href={`/dashboard/availability?businessId=${staff.business_id}&staffId=${staff.id}`}
+                    className="btn btn-ghost"
+                  >
+                    {t(
+                      "dashboardStaff.availability.openCta",
+                      "Open availability",
+                    )}
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>
       </div>
 
-      <div className="grid-2 staff-card-grid">
-        <StaffServiceAssignmentCard
-          staff={staff}
-          services={services}
-          assignedServiceIds={assignedServiceIds}
-          savingAssignmentKey={savingAssignmentKey}
-          onToggleAssignment={toggleStaffService}
-        />
+      {(detailsOpen || isEditing) && (
+        <div className="grid-2 staff-card-grid">
+          <StaffServiceAssignmentCard
+            staff={staff}
+            services={services}
+            assignedServiceIds={assignedServiceIds}
+            savingAssignmentKey={savingAssignmentKey}
+            onToggleAssignment={toggleStaffService}
+          />
 
-        <StaffAvailabilitySummary
-          staff={staff}
-          availabilityRows={availabilityRows}
-        />
-      </div>
+          <StaffAvailabilitySummary
+            staff={staff}
+            availabilityRows={availabilityRows}
+          />
+        </div>
+      )}
 
       <style jsx>{`
         .staff-profile-card {
@@ -347,21 +362,11 @@ export default function StaffProfileCard({
           margin-top: 0;
         }
 
-        .staff-state-grid {
+        .staff-detail-summary {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.75rem;
-          margin-top: 0.25rem;
-        }
-
-        .staff-state-card {
-          display: grid;
-          gap: 0.45rem;
-          padding: 0.85rem;
-        }
-
-        .staff-state-card p {
-          margin-top: 0;
+          gap: 0.35rem;
+          padding-top: 0.35rem;
+          border-top: 1px solid var(--border);
         }
 
         .staff-title-row,
@@ -437,10 +442,6 @@ export default function StaffProfileCard({
         }
 
         @media (max-width: 640px) {
-          .staff-state-grid {
-            grid-template-columns: 1fr;
-          }
-
           .staff-card-actions,
           .staff-card-actions :global(.btn),
           .staff-card-actions a,

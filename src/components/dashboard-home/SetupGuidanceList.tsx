@@ -10,34 +10,14 @@ export default function SetupGuidanceList({ warnings }: Props) {
   const { t } = useI18n()
 
   if (warnings.length === 0) {
-    return (
-      <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(45,212,191,0.28)' }}>
-        <p className="small" style={{ color: 'var(--success)' }}>
-          {t('dashboardHome.guidance.readyKicker', 'Setup complete')}
-        </p>
-        <h3 style={{ marginTop: '0.25rem' }}>
-          {t('dashboardHome.guidance.readyTitle', 'Your business setup is ready')}
-        </h3>
-        <p className="small muted" style={{ marginTop: '0.45rem' }}>
-          {t('dashboardHome.guidance.readyBody', 'Customers can use the public booking flow based on your services, staff and availability.')}
-        </p>
-      </div>
-    )
+    return null
   }
 
   return (
-    <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255,107,53,0.35)' }}>
-      <p className="small" style={{ color: 'var(--accent)' }}>
-        {t('dashboardHome.guidance.kicker', 'Setup guidance')}
-      </p>
-
-      <h3 style={{ marginTop: '0.25rem' }}>
+    <section className="dashboard-guidance">
+      <h3>
         {t('dashboardHome.guidance.title', 'Finish these before going live')}
       </h3>
-
-      <p className="small muted" style={{ marginTop: '0.45rem' }}>
-        {t('dashboardHome.guidance.body', 'These checks help avoid customers seeing incomplete business information or unavailable booking slots.')}
-      </p>
 
       <div className="dashboard-guidance-list">
         {warnings.map((warning) => (
@@ -55,10 +35,21 @@ export default function SetupGuidanceList({ warnings }: Props) {
       </div>
 
       <style jsx>{`
+        .dashboard-guidance {
+          display: grid;
+          gap: 0.75rem;
+          margin-bottom: 1.25rem;
+          padding-bottom: 1.25rem;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .dashboard-guidance h3 {
+          margin: 0;
+        }
+
         .dashboard-guidance-list {
           display: grid;
-          gap: 0.8rem;
-          margin-top: 1rem;
+          gap: 0;
         }
 
         .dashboard-guidance-row {
@@ -66,10 +57,8 @@ export default function SetupGuidanceList({ warnings }: Props) {
           justify-content: space-between;
           gap: 1rem;
           align-items: center;
-          padding: 0.9rem;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-          background: var(--surface-2);
+          padding: 0.75rem 0;
+          border-top: 1px solid var(--border);
         }
 
         @media (max-width: 640px) {
@@ -79,6 +68,6 @@ export default function SetupGuidanceList({ warnings }: Props) {
           }
         }
       `}</style>
-    </div>
+    </section>
   )
 }

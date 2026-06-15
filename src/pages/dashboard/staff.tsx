@@ -807,7 +807,7 @@ export default function StaffPage() {
             </div>
           )}
 
-          <div className="card staff-owner-note">
+          <div className="staff-owner-note">
             <div className="staff-owner-note-copy">
               <strong>
                 {ownerStaffProfile
@@ -887,7 +887,7 @@ export default function StaffPage() {
             <p className="small muted">
               {t(
                 "dashboardStaff.list.body",
-                "Team includes staff and any owner customers can book. A person becomes bookable when active, assigned to services and given working hours.",
+                "Staff and owners customers can book. Open a person’s details to manage services, access and working hours.",
               )}
               {staff.length > 0 && (
                 <span className="staff-login-summary">
@@ -954,7 +954,9 @@ export default function StaffPage() {
           flex-wrap: wrap;
           gap: 0.85rem;
           margin-bottom: 1rem;
-          border-color: rgba(45, 212, 191, 0.24);
+          padding: 0.75rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
         }
 
         .staff-owner-note-copy {

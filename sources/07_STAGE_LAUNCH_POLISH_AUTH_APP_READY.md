@@ -22,6 +22,15 @@ Batch 4 status: Customer journey polish implemented. Production build and
 static validation pass. Authenticated booking, notification and reschedule QA
 remains required before Batch 4 is closed.
 
+Batch 4B status: Mirëbook Business navigation model and workspace information
+architecture rebuild implemented. Production build, static validation and
+authenticated owner visual QA must pass before Batch 4B is closed.
+
+Batch 5 status: Email verification and password-reset readiness implemented.
+Production build and static validation pass. Live Supabase confirmation,
+recovery-email delivery and cross-domain callback QA remain required before
+Batch 5 is closed.
+
 Stages 1 through 6 are complete and protected.
 
 ## Goal
@@ -619,14 +628,179 @@ Recommended next batch:
 
 - Stage 7 Batch 5 - Email Auth, Verification and Password Reset Readiness
 
+### Batch 4B - Mirëbook Business Navigation And Workspace IA
+
+Implemented:
+
+- replaced the owner workspace primary navigation with five clear concepts:
+  Home, Calendar, My Business, Inbox and the compact account/profile area
+- removed More as a primary dumping-ground; Booking Settings now contains only
+  booking rules and policies
+- grouped profile, services, team, availability, booking rules and public-page
+  access under My Business without removing any existing route
+- changed the bookings surface presentation to Calendar while preserving all
+  date/status/search filters and booking actions
+- simplified Home to operational counts, genuine setup blockers and the
+  seven-day schedule instead of repeating navigation and CTA cards
+- replaced the large business setup checklist with a compact management index
+  and retained the existing readiness, publishing and owner-as-staff behavior
+- made Team profiles compact by default, with contact, assignment,
+  availability and activation controls available through View details
+- moved Account, Billing and Log out into a compact sidebar profile area;
+  mobile keeps these destinations in the existing horizontally scrollable nav
+
+Protected behavior:
+
+- no booking query, status action, slot generation, readiness, publishing,
+  service, staff linking, availability, billing, auth, route or database logic
+  changed
+- no route was removed and existing deep links remain valid
+
+Validation:
+
+- production build: pass
+- `git diff --check`: pass
+- EN/SQ duplicate translation key check: pass
+- Prettier: unavailable because it is not installed in this repository
+- unauthenticated business route protection: pass; `/dashboard` redirects to
+  Login without browser console errors
+- approximately 390px public/auth shell check: pass with no horizontal overflow
+- authenticated owner desktop/mobile EN/SQ visual QA: pending because the local
+  browser session has no owner login
+
+Tracked follow-up:
+
+- a full time-block calendar is intentionally deferred; the current Calendar
+  remains a reliable date-grouped appointment manager for launch
+- authenticated desktop/mobile owner QA is required in English and Albanian
+
 ### Batch 5 - Email Auth, Verification And Password Reset Readiness
 
-- add and verify complete forgot/reset password UX
-- validate confirmation and recovery callbacks on both domains
-- test customer, business, staff invite and owner-as-staff registration
-- verify Resend and disabled-provider behavior
-- activate Supabase email confirmation only after non-production QA
-- document production rollout and rollback steps
+Implemented:
+
+- audited normal login, customer/business/staff registration, secure staff
+  invite returns, Account verification state, resend verification and current
+  password-reset behavior
+- retained the existing Supabase-backed three-state email verification model:
+  verified, unverified and unknown
+- Login continues to detect Supabase's `email_not_confirmed` response and now
+  also provides a clear password-recovery entry point
+- Registration explains that email confirmation may be required without
+  pretending the Supabase dashboard setting is already enabled; pending
+  customer, business, staff and owner-as-staff setup remains stored in auth
+  metadata and completes through the existing idempotent flow after sign-in
+- resend verification remains available after an enforced unverified-login
+  response, after registration returns no session and from Account when the
+  auth user is explicitly unverified
+- added `/forgot-password` for a translated, generic Supabase recovery request
+  that does not reveal whether an email address exists
+- added `/reset-password` for implicit recovery sessions and PKCE `code`
+  callbacks; users enter and confirm a new password, Supabase updates it, then
+  Mirëbook signs out the recovery session and returns them to the correct login
+- Account password reset now returns to the completion route rather than Login,
+  and Account verification/reset emails preserve customer versus Mirëbook
+  Business domain context
+- `src/lib/appUrls.ts` now supplies one small auth callback URL helper using the
+  configured customer/business origins with the current origin as a local
+  fallback
+- direct Login and recovery visits on the configured business hostname use
+  Mirëbook Business context even when the `product=business` query is absent
+- all new and changed visible auth copy is present in English and Albanian
+
+Current auth flow audit:
+
+- normal login: Supabase password login, pending-registration completion, then
+  existing capability routing
+- customer registration: customer metadata and profile flow, then My Bookings
+- business registration: pending business metadata or immediate business
+  creation, then the existing business capability route
+- staff registration/invite: staff intent remains represented by
+  `account_mode=staff`; secure invite `redirectTo` is preserved and exact-email
+  linking behavior is unchanged
+- email confirmation: Supabase confirmation redirect returns to
+  `/login?verified=1`; no custom verification tokens or app-side hard lockouts
+- password reset request: `/forgot-password` and Account call
+  `resetPasswordForEmail`
+- password reset completion: `/reset-password` consumes the Supabase recovery
+  session and calls `updateUser({ password })`
+- Account security: verification state, resend action and reset request remain
+  visible without exposing service-role data
+
+Required Supabase Auth dashboard settings:
+
+1. Keep confirmation disabled until the following non-production QA passes.
+2. Set Site URL to `https://mirebook.com`.
+3. Add allowed Redirect URLs:
+   - `https://mirebook.com/**`
+   - `https://www.mirebook.com/**`
+   - `https://business.mirebook.com/**`
+   - the current Vercel production and preview origins while they remain in use
+   - `http://localhost:3000/**`
+4. Confirm these callback paths are allowed:
+   - `https://mirebook.com/login?verified=1`
+   - `https://business.mirebook.com/login?verified=1&product=business`
+   - `https://mirebook.com/reset-password?product=customer`
+   - `https://business.mirebook.com/reset-password?product=business`
+5. Review the Supabase Email provider before enabling Confirm email.
+6. Do not enable confirmation in production until customer, business and staff
+   invite registration have all passed with real confirmation links.
+
+Recommended Supabase email templates:
+
+- confirmation subject: `Confirm your Mirëbook account`
+- confirmation body: explain that the link confirms the shared Mirëbook login;
+  customers return to Mirëbook while business owners and invited staff may
+  continue in Mirëbook Business
+- recovery subject: `Reset your Mirëbook password`
+- recovery body: explain that the secure link expires, changes the shared
+  Mirëbook login password and may return business/staff users to Mirëbook
+  Business
+- keep Supabase's confirmation and recovery token/link variables unchanged
+- do not describe application transactional email, Stripe email or Supabase
+  Auth email as the same delivery system
+
+Validation:
+
+- production build: pass
+- `git diff --check`: pass
+- EN/SQ duplicate translation key check: pass
+- Prettier: unavailable because it is not installed in this repository
+- static route generation includes `/forgot-password` and `/reset-password`
+- public responsive EN/SQ browser QA: pass at approximately 390px for customer
+  and Mirëbook Business Login, Registration guidance, password-reset request
+  and invalid/expired recovery-link states; no horizontal overflow, raw keys
+  or browser console errors found
+- live confirmation, resend and password recovery delivery: pending manual
+  Supabase configuration and access to test inboxes
+
+Manual QA checklist:
+
+- customer Login and Registration on `mirebook.com`
+- business Login and Registration on `business.mirebook.com`
+- staff registration from a secure invite, including return to the same invite
+  after verification
+- unverified login error and resend action
+- Account verified, unverified and unknown presentation
+- customer and business password reset request
+- valid recovery link, mismatched password, short password and successful
+  password update
+- expired or reused recovery link
+- successful post-reset login and capability routing
+- logout from customer, owner, staff and owner-as-staff sessions
+- English and Albanian with no raw keys
+
+Remaining follow-ups:
+
+- apply and test the Supabase dashboard settings manually in a non-production
+  environment
+- verify actual SMTP/rate-limit behavior for confirmation and recovery emails
+- confirm Vercel preview origins that should remain allowlisted
+- do not remove current soft access behavior until confirmation is deliberately
+  enabled and existing accounts have an agreed migration plan
+
+Recommended next batch:
+
+- Stage 7 Batch 6 - Final Launch QA and Stage 7 Closure
 
 ### Batch 6 - Final Launch QA And Stage 7 Closure
 

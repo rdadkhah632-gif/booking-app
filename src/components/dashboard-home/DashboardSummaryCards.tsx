@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { DashboardAnalytics } from "./dashboardHomeTypes";
 
@@ -8,11 +7,6 @@ type Props = {
   pendingBookingsCount: number;
   pendingRescheduleCount: number;
   analytics: DashboardAnalytics;
-  bookingsLinkForView: (
-    view: string,
-    status?: string,
-    businessId?: string,
-  ) => string;
 };
 
 export default function DashboardSummaryCards(props: Props) {
@@ -22,31 +16,23 @@ export default function DashboardSummaryCards(props: Props) {
     pendingBookingsCount,
     pendingRescheduleCount,
     analytics,
-    bookingsLinkForView,
   } = props;
   const { t } = useI18n();
 
   return (
     <div className="dashboard-summary-grid">
-      <Link
-        href={bookingsLinkForView("today")}
-        className="card dashboard-summary-card"
-      >
+      <div className="dashboard-summary-card">
         <h3>{todayCount}</h3>
         <strong>{t("dashboardHome.summary.today", "Today")}</strong>
         <p className="muted small">
           {t("dashboardHome.summary.todayBody", "Confirmed bookings today")}
         </p>
-      </Link>
+      </div>
 
-      <Link
-        href={bookingsLinkForView("upcoming", "pending")}
-        className="card dashboard-summary-card"
+      <div
+        className="dashboard-summary-card"
         style={{
-          borderColor:
-            pendingActionCount > 0
-              ? "rgba(255,107,53,0.35)"
-              : "var(--border)",
+          color: pendingActionCount > 0 ? "var(--accent)" : "var(--text)",
         }}
       >
         <h3>{pendingActionCount}</h3>
@@ -61,36 +47,33 @@ export default function DashboardSummaryCards(props: Props) {
                 "No pending customer actions",
               )}
         </p>
-      </Link>
+      </div>
 
-      <Link href="/dashboard/analytics" className="card dashboard-summary-card">
+      <div className="dashboard-summary-card">
         <h3>{analytics.recentBookings.length}</h3>
         <strong>{t("dashboardHome.summary.last30Days", "Last 30 days")}</strong>
         <p className="muted small">
           {t("dashboardHome.summary.totalActivity", "Total booking activity")}
         </p>
-      </Link>
+      </div>
 
       <style jsx>{`
         .dashboard-summary-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 1rem;
+          gap: 0;
           margin-bottom: 1.25rem;
+          padding: 0.85rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
         }
 
         .dashboard-summary-card {
           display: grid;
-          gap: 0.55rem;
+          gap: 0.25rem;
           align-content: start;
-          color: var(--text);
-          text-decoration: none;
-          cursor: pointer;
-        }
-
-        .dashboard-summary-card:hover {
-          border-color: rgba(255, 107, 53, 0.35);
-          transform: translateY(-1px);
+          padding: 0.25rem 1rem;
+          border-right: 1px solid var(--border);
         }
 
         .dashboard-summary-card h3,
@@ -98,9 +81,19 @@ export default function DashboardSummaryCards(props: Props) {
           margin-top: 0;
         }
 
+        .dashboard-summary-card:last-child {
+          border-right: 0;
+        }
+
         @media (max-width: 760px) {
           .dashboard-summary-grid {
             grid-template-columns: 1fr;
+            gap: 0.75rem;
+          }
+
+          .dashboard-summary-card {
+            padding: 0.25rem 0;
+            border-right: 0;
           }
         }
       `}</style>

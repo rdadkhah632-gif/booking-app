@@ -839,9 +839,8 @@ export const en: TranslationTree = {
   "dashboardSettings.tools.support": "Business support",
   "dashboardSettings.tools.supportBody":
     "Get help with setup, bookings or account changes.",
-  "dashboardHome.title": "Business overview",
-  "dashboardHome.subtitle":
-    "See today’s Mirëbook activity, customer actions, schedule previews and business performance in one place.",
+  "dashboardHome.title": "Home",
+  "dashboardHome.subtitle": "Today’s appointments, actions and the week ahead.",
   "dashboardHome.checkingAccount": "Checking your account...",
   "dashboardHome.refreshHint":
     "Mirëbook refreshes this dashboard when you return to the tab. Use refresh if a customer action does not appear straight away.",
@@ -964,9 +963,18 @@ export const en: TranslationTree = {
   "dashboardHome.shortcuts.billing.title": "Billing",
   "dashboardHome.shortcuts.billing.body":
     "Review trial, subscription and billing setup for Mirëbook.",
-  "dashboardBusinesses.pageTitle": "Business setup hub",
+  "dashboardBusinesses.pageTitle": "My Business",
   "dashboardBusinesses.pageSubtitle":
-    "Control your customer-facing profile, booking settings, services, staff and working hours from one place.",
+    "Profile, services, team, availability and booking rules in one place.",
+  "dashboardBusinesses.myBusiness.body":
+    "Manage the information and settings customers rely on when they book.",
+  "dashboardBusinesses.myBusiness.complete": "Complete",
+  "dashboardBusinesses.myBusiness.needsDetails": "Needs details",
+  "dashboardBusinesses.myBusiness.active": "active",
+  "dashboardBusinesses.myBusiness.availability": "Availability",
+  "dashboardBusinesses.myBusiness.bookingRules": "Booking rules",
+  "dashboardBusinesses.myBusiness.viewLive": "View live",
+  "dashboardBusinesses.myBusiness.preview": "Preview",
   "dashboardBusinesses.hero.kicker": "Mirëbook setup",
   "dashboardBusinesses.hero.title":
     "Set up your business before customers book.",
@@ -1407,6 +1415,9 @@ export const en: TranslationTree = {
   "dashboardStaff.card.accountLinked": "Account linked",
   "dashboardStaff.card.notLinked": "Not linked",
   "dashboardStaff.card.servicesAssigned": "services assigned",
+  "dashboardStaff.card.openDays": "open days",
+  "dashboardStaff.card.viewDetails": "View details",
+  "dashboardStaff.card.hideDetails": "Hide details",
   "dashboardStaff.card.noServicesAssigned": "No services assigned",
   "dashboardStaff.card.noRole": "No role title added",
   "dashboardStaff.card.noEmail": "No email",
@@ -1488,10 +1499,15 @@ export const en: TranslationTree = {
   "common.days.saturday": "Saturday",
   "dashboardLayout.nav.overview": "Overview",
   "dashboardLayout.nav.home": "Home",
+  "dashboardLayout.nav.calendar": "Calendar",
+  "dashboardLayout.nav.myBusiness": "My Business",
+  "dashboardLayout.nav.inbox": "Inbox",
+  "dashboardLayout.nav.account": "Account",
   "dashboardLayout.nav.team": "Team",
   "dashboardLayout.nav.more": "More",
   "dashboardLayout.nav.setupHub": "Business setup hub",
   "dashboardLayout.nav.accountSettings": "Account settings",
+  "dashboardLayout.account.fallback": "Account",
   "dashboardLayout.moreHint":
     "Setup, availability, notifications, analytics, billing and account tools are under More.",
   "dashboardLayout.controlCentre": "Business control centre",
@@ -1530,7 +1546,7 @@ export const en: TranslationTree = {
   "account.verification.verifiedBody":
     "Supabase Auth has confirmed ownership of this login email.",
   "account.verification.unverifiedBody":
-    "Supabase Auth reports this address as unconfirmed. Verification remains advisory and does not block current account or booking access.",
+    "This login email has not been confirmed yet. Check your inbox or send another verification email. Current access still follows your Supabase Auth settings.",
   "account.verification.unknownBody":
     "Mirëbook could not determine verification state from the current Supabase session. This does not block account or booking access.",
   "account.verification.resent":
@@ -1616,9 +1632,12 @@ export const en: TranslationTree = {
     "Customer, business and staff support routes are separated. Your saved language preference will be used across translated Mirëbook pages.",
   "account.contactSupport": "Contact support",
   "account.savedLanguage": "Saved account language",
-  "dashboardBookings.pageTitle": "Bookings",
+  "dashboardBookings.pageTitle": "Calendar",
   "dashboardBookings.pageSubtitle": "Choose which business bookings to view.",
-  "dashboardBookings.pageSubtitleSelected": "Manage Mirëbook bookings for",
+  "dashboardBookings.pageSubtitleSelected":
+    "Appointments and booking requests for",
+  "dashboardBookings.appointments": "appointments",
+  "dashboardBookings.needsApproval": "need approval",
   "dashboardBookings.loading": "Loading bookings...",
   "dashboardBookings.error.noAccess":
     "You do not have access to this business.",
@@ -2033,7 +2052,9 @@ export const en: TranslationTree = {
   "register.verification.resent":
     "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
   "register.verification.softPolicy":
-    "Verification is currently guidance only; Mirëbook will not block existing test accounts or booking access in this batch.",
+    "Open the verification email on this device, then return to sign in. Check your spam folder if it does not arrive.",
+  "register.verification.guidance":
+    "If email confirmation is enabled, check your inbox after creating the account. Your selected setup will continue after you verify and sign in.",
   "register.business.nameRequired": "Business name is required.",
   "register.business.phoneRequired": "Business phone is required.",
   "register.business.categoryRequired": "Business category is required.",
@@ -3276,6 +3297,44 @@ export const en: TranslationTree = {
     "Booking details and actions stay in My bookings",
   "notifications.bookingHandoff.body":
     "Open My bookings to review requests, confirmed appointments, changes and history.",
+  "login.forgotPassword": "Forgot your password?",
+  "forgotPassword.kicker": "Account security",
+  "forgotPassword.businessKicker": "Mirëbook Business security",
+  "forgotPassword.title": "Reset your password",
+  "forgotPassword.body":
+    "Enter your Mirëbook login email. We will ask Supabase to send a secure password reset link.",
+  "forgotPassword.businessBody":
+    "Enter the email used for your business owner or staff login. The reset link will return you to Mirëbook Business.",
+  "forgotPassword.emailLabel": "Email address",
+  "forgotPassword.emailPlaceholder": "you@example.com",
+  "forgotPassword.sending": "Sending reset link...",
+  "forgotPassword.submit": "Send password reset link",
+  "forgotPassword.success":
+    "Password reset request accepted. Check your inbox and spam folder for the secure link.",
+  "forgotPassword.backToLogin": "Back to login",
+  "resetPassword.kicker": "Account security",
+  "resetPassword.businessKicker": "Mirëbook Business security",
+  "resetPassword.checkingTitle": "Checking reset link",
+  "resetPassword.checkingBody":
+    "Mirëbook is verifying the secure recovery session.",
+  "resetPassword.title": "Choose a new password",
+  "resetPassword.body":
+    "Enter and confirm a new password for your Mirëbook login.",
+  "resetPassword.passwordLabel": "New password",
+  "resetPassword.confirmPasswordLabel": "Confirm new password",
+  "resetPassword.saving": "Updating password...",
+  "resetPassword.submit": "Update password",
+  "resetPassword.error.length":
+    "Use at least 8 characters for your new password.",
+  "resetPassword.error.match": "The password confirmation does not match.",
+  "resetPassword.invalidTitle": "This reset link is not active",
+  "resetPassword.invalidBody":
+    "The link may have expired or already been used. Request a new password reset email.",
+  "resetPassword.requestAgain": "Request another reset link",
+  "resetPassword.completeTitle": "Password updated",
+  "resetPassword.completeBody":
+    "Your password has been changed. Sign in again with the new password.",
+  "resetPassword.login": "Continue to login",
   "reschedule.loading": "Loading Mirëbook booking...",
   "reschedule.error.title": "Cannot reschedule",
   "reschedule.kicker.business": "Business reschedule",

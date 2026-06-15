@@ -7,7 +7,11 @@ import { useI18n } from "@/lib/useI18n";
 import { Locale } from "@/lib/i18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { safeInternalRedirect } from "@/lib/safeInternalRedirect";
-import { getBusinessAppUrl } from "@/lib/appUrls";
+import {
+  getAuthAppUrl,
+  getBusinessAppUrl,
+  getCustomerAppUrl,
+} from "@/lib/appUrls";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -41,7 +45,9 @@ export default function RegisterPage() {
   const loginUrl =
     role === "business"
       ? getBusinessAppUrl("/login?product=business")
-      : "/login";
+      : role === "staff"
+        ? getBusinessAppUrl("/login?product=business")
+        : getCustomerAppUrl("/login");
 
   async function redirectByRole(userId: string, fallbackEmail?: string) {
     const capabilities = await getAccountCapabilities(userId, fallbackEmail);
@@ -161,9 +167,20 @@ export default function RegisterPage() {
     const redirectTo = safeRedirectTo?.startsWith("/staff/invite?token=")
       ? safeRedirectTo
       : null;
-    const verificationRedirect = redirectTo
-      ? `${window.location.origin}/login?verified=1&redirectTo=${encodeURIComponent(redirectTo)}`
-      : `${window.location.origin}/login?verified=1`;
+    const authProduct =
+      role === "business" || role === "staff" ? "business" : "customer";
+    const verificationPath = redirectTo
+      ? `/login?verified=1&redirectTo=${encodeURIComponent(redirectTo)}${
+          authProduct === "business" ? "&product=business" : ""
+        }`
+      : `/login?verified=1${
+          authProduct === "business" ? "&product=business" : ""
+        }`;
+    const verificationRedirect = getAuthAppUrl(
+      authProduct,
+      verificationPath,
+      window.location.origin,
+    );
 
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
@@ -329,9 +346,16 @@ export default function RegisterPage() {
     setError(null);
 
     const safeRedirectTo = safeInternalRedirect(router.query.redirectTo);
+    const authProduct =
+      role === "business" || role === "staff" ? "business" : "customer";
     const verificationRedirect = new URL(
-      "/login?verified=1",
-      window.location.origin,
+      getAuthAppUrl(
+        authProduct,
+        `/login?verified=1${
+          authProduct === "business" ? "&product=business" : ""
+        }`,
+        window.location.origin,
+      ),
     );
     if (safeRedirectTo?.startsWith("/staff/invite?token=")) {
       verificationRedirect.searchParams.set("redirectTo", safeRedirectTo);
@@ -769,6 +793,12 @@ export default function RegisterPage() {
                         "You will go to your bookings page and can start exploring services.",
                       )}
               </p>
+              <p className="small muted register-verification-guidance">
+                {t(
+                  "register.verification.guidance",
+                  "If email confirmation is enabled, check your inbox after creating the account. Your selected setup will continue after you verify and sign in.",
+                )}
+              </p>
             </div>
 
             <p className="small muted register-legal-copy">
@@ -813,7 +843,7 @@ export default function RegisterPage() {
                   <p className="small muted">
                     {t(
                       "register.verification.softPolicy",
-                      "Verification is currently guidance only; Mirëbook will not block existing test accounts or booking access in this batch.",
+                      "Open the verification email on this device, then return to sign in. Check your spam folder if it does not arrive.",
                     )}
                   </p>
                   <button

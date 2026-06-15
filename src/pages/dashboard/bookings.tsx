@@ -3,7 +3,6 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
-import BookingsSummaryCards from "@/components/dashboard-bookings/BookingsSummaryCards";
 import BookingsFilterPanel from "@/components/dashboard-bookings/BookingsFilterPanel";
 import BookingCard from "@/components/dashboard-bookings/BookingCard";
 import EmptyBookingsCard from "@/components/dashboard-bookings/EmptyBookingsCard";
@@ -724,33 +723,6 @@ export default function Bookings() {
     return bookings.filter((booking) => booking.status === "pending");
   }, [bookings]);
 
-  const todayBookings = useMemo(() => {
-    const range = dateRangeForFilter("today");
-    if (!range.start || !range.end) return [];
-
-    return bookings.filter((booking) => {
-      const bookingDate = new Date(booking.start_at);
-      return bookingDate >= range.start! && bookingDate <= range.end!;
-    });
-  }, [bookings]);
-
-  const confirmedUpcomingBookings = useMemo(() => {
-    return bookings.filter(
-      (booking) =>
-        booking.status === "confirmed" && new Date(booking.start_at) >= now,
-    );
-  }, [bookings, now]);
-
-  const historicalBookings = useMemo(() => {
-    return bookings.filter(
-      (booking) =>
-        booking.status === "cancelled" ||
-        booking.status === "declined" ||
-        booking.status === "completed" ||
-        (booking.status === "confirmed" && new Date(booking.start_at) < now),
-    );
-  }, [bookings, now]);
-
   const filteredBookings = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
     const range = dateRangeForFilter(rangeFilter);
@@ -846,15 +818,6 @@ export default function Bookings() {
     return `/dashboard/customers/by-email?email=${encodeURIComponent(booking.customer_email || "")}&businessId=${business?.id || booking.business_id}`;
   }
 
-  function setSummaryView(filter: RangeFilter, nextStatus?: string) {
-    if (nextStatus) setStatusFilter(nextStatus);
-    updateBookingView(filter);
-    replaceBookingsQuery({
-      nextFilter: filter,
-      nextStatus: nextStatus || statusFilter,
-    });
-  }
-
   function resetFilters() {
     setSearchTerm("");
     setStatusFilter("all");
@@ -864,10 +827,10 @@ export default function Bookings() {
 
   return (
     <DashboardLayout
-      title={t("dashboardBookings.pageTitle", "Bookings")}
+      title={t("dashboardBookings.pageTitle", "Calendar")}
       subtitle={
         business
-          ? `${t("dashboardBookings.pageSubtitleSelected", "Manage appointments and booking requests for")} ${business.name}.`
+          ? `${t("dashboardBookings.pageSubtitleSelected", "Appointments and booking requests for")} ${business.name}.`
           : t(
               "dashboardBookings.pageSubtitle",
               "Create your business first, then customer bookings will appear here.",
@@ -945,17 +908,22 @@ export default function Bookings() {
       )}
 
       {!pageLoading && business && bookings.length > 0 && (
-        <div style={{ display: "grid", gap: "1.5rem" }}>
-          <BookingsSummaryCards
-            summary={{
-              pendingCount: pendingBookings.length,
-              todayCount: todayBookings.length,
-              upcomingConfirmedCount: confirmedUpcomingBookings.length,
-              historyCount: historicalBookings.length,
-              filteredCount: filteredBookings.length,
-            }}
-            onSetView={setSummaryView}
-          />
+        <div className="calendar-workspace">
+          <div className="calendar-overview">
+            <div>
+              <strong>{selectedRange.label}</strong>
+              <span className="small muted">
+                {filteredBookings.length}{" "}
+                {t("dashboardBookings.appointments", "appointments")}
+              </span>
+            </div>
+            {pendingBookings.length > 0 && (
+              <span className="calendar-pending">
+                {pendingBookings.length}{" "}
+                {t("dashboardBookings.needsApproval", "need approval")}
+              </span>
+            )}
+          </div>
 
           <BookingsFilterPanel
             selectedRangeLabel={selectedRange.label}
@@ -978,11 +946,8 @@ export default function Bookings() {
           )}
 
           {groupedFilteredBookings.map((group) => (
-            <section
-              key={group.dateKey}
-              style={{ display: "grid", gap: "1rem" }}
-            >
-              <div>
+            <section key={group.dateKey} className="calendar-day">
+              <div className="calendar-day-heading">
                 <p className="small muted">
                   {group.bookings.length}{" "}
                   {t("dashboardBookings.appointmentCount", "appointment")}
@@ -1017,6 +982,47 @@ export default function Bookings() {
       )}
 
       <style jsx>{`
+        .calendar-workspace {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .calendar-overview {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          padding: 0.75rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .calendar-overview > div {
+          display: grid;
+          gap: 0.2rem;
+        }
+
+        .calendar-pending {
+          color: var(--accent);
+          font-size: 0.85rem;
+          font-weight: 800;
+        }
+
+        .calendar-day {
+          display: grid;
+          gap: 0.8rem;
+        }
+
+        .calendar-day-heading {
+          padding-top: 0.35rem;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .calendar-day-heading h2,
+        .calendar-day-heading p {
+          margin-top: 0;
+        }
+
         .booking-success-row {
           display: flex;
           justify-content: space-between;
@@ -1026,6 +1032,10 @@ export default function Bookings() {
         }
 
         @media (max-width: 700px) {
+          .calendar-overview {
+            align-items: flex-start;
+          }
+
           .booking-success-row {
             display: grid;
           }
