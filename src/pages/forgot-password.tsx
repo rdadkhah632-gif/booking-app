@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
             {product === "business"
               ? t(
                   "forgotPassword.businessBody",
-                  "Enter the email used for your business owner or staff login. The reset link will return you to Mirëbook Business.",
+                  "Enter the email used for your business or staff login. The reset link will return you to Mirëbook Business.",
                 )
               : t(
                   "forgotPassword.body",
@@ -102,11 +102,7 @@ export default function ForgotPasswordPage() {
                 required
               />
             </label>
-            <button
-              type="submit"
-              className="btn btn-accent"
-              disabled={loading}
-            >
+            <button type="submit" className="btn btn-accent" disabled={loading}>
               {loading
                 ? t("forgotPassword.sending", "Sending reset link...")
                 : t("forgotPassword.submit", "Send password reset link")}

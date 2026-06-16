@@ -193,7 +193,7 @@ export default function DashboardSettingsPage() {
         <p className="more-inline-notice">
           {t(
             "dashboardSettings.empty.body",
-            "Business settings become available after you create a Mirëbook business profile.",
+            "Booking rules become available after you create a Mirëbook business profile.",
           )}
         </p>
       )}

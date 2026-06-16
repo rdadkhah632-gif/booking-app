@@ -80,7 +80,10 @@ function staffNotificationText(
 
   if (type.includes("booking")) {
     return {
-      title: t("notifications.types.staffBooking.title", "Staff booking update"),
+      title: t(
+        "notifications.types.staffBooking.title",
+        "Staff booking update",
+      ),
       message:
         notification.message ||
         t(
@@ -281,7 +284,7 @@ export default function StaffNotificationsPage() {
               {hasBusinessWorkspace
                 ? t(
                     "staffNotifications.ownerStaffBody",
-                    "Staff updates linked to your owner account, schedule, profile and assigned bookings.",
+                    "Updates about your schedule, profile and assigned bookings.",
                   )
                 : t(
                     "staffNotifications.body",

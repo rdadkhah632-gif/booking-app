@@ -1,30 +1,31 @@
-import { useI18n } from '@/lib/useI18n'
-import { Business } from './dashboardSettingsTypes'
+import { useI18n } from "@/lib/useI18n";
+import { Business } from "./dashboardSettingsTypes";
 
 type Props = {
-  selectedBusiness: Business | null
-}
+  selectedBusiness: Business | null;
+};
 
-export default function BusinessSettingsHeader({
-  selectedBusiness
-}: Props) {
-  const { t } = useI18n()
+export default function BusinessSettingsHeader({ selectedBusiness }: Props) {
+  const { t } = useI18n();
 
   return (
     <div className="settings-editor-header">
       <div>
-        <p className="small" style={{ color: 'var(--accent)' }}>
-          {t('dashboardSettings.kicker', 'Business settings')}
+        <p className="small" style={{ color: "var(--accent)" }}>
+          {t("dashboardSettings.kicker", "Business settings")}
         </p>
 
-        <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-          {t('dashboardSettings.title', 'Manage business rules')}
+        <h2 style={{ fontFamily: "var(--font-display)", marginTop: "0.25rem" }}>
+          {t("dashboardSettings.title", "Booking rules")}
         </h2>
 
-        <p className="muted" style={{ marginTop: '0.5rem' }}>
+        <p className="muted" style={{ marginTop: "0.5rem" }}>
           {selectedBusiness
-            ? `${t('dashboardSettings.subtitleSelected', 'Control booking approval, rules and customer policies for')} ${selectedBusiness.name}.`
-            : t('dashboardSettings.subtitle', 'Control booking approval, rules and customer policies.')}
+            ? `${t("dashboardSettings.subtitleSelected", "Choose appointment approval and customer policy wording for")} ${selectedBusiness.name}.`
+            : t(
+                "dashboardSettings.subtitle",
+                "Choose appointment approval and customer policy wording.",
+              )}
         </p>
       </div>
 
@@ -41,5 +42,5 @@ export default function BusinessSettingsHeader({
         }
       `}</style>
     </div>
-  )
+  );
 }

@@ -27,7 +27,7 @@ export const sq: TranslationTree = {
   "staff.actions.updateAvailability": "Disponueshmëria ime",
   "staffNotifications.title": "Njoftime",
   "staffAvailability.title": "Orari yt i punës",
-  "staffAvailability.staffOnly": "Disponueshmëri vetëm për staf",
+  "staffAvailability.staffOnly": "Orari yt i punës",
   "staffAvailability.actions.saveAvailability": "Ruaj disponueshmërinë",
   "staffAvailability.actions.saveWeekly": "Ruaj disponueshmërinë javore",
   "staffAvailability.note.title":
@@ -84,10 +84,10 @@ export const sq: TranslationTree = {
     "Përdor një hyrje. Mirëbook hap automatikisht rezervimet e klientit ose Mirëbook Biznes sipas aksesit të llogarisë.",
   "login.business.promoTitle": "Mirë se u ktheve në Mirëbook Biznes.",
   "login.business.promoBody":
-    "Pronarët e bizneseve dhe stafi i ftuar përdorin të njëjtën hyrje të sigurt dhe vazhdojnë te hapësira ku ka akses llogaria e tyre.",
+    "Llogaritë e biznesit dhe stafi i ftuar përdorin të njëjtën hyrje të sigurt dhe vazhdojnë te hapësira e duhur.",
   "login.business.title": "Hyr në Mirëbook Biznes",
   "login.business.subtitle":
-    "Përdor llogarinë e pronarit ose stafit të ftuar. Aksesi dhe rrugëzimi ekzistues mbeten të lidhur me të njëjtën hyrje Mirëbook.",
+    "Përdor llogarinë e biznesit ose stafit të ftuar. Mirëbook hap hapësirën e duhur për aksesin tënd.",
   "login.emailLabel": "Adresa e email-it",
   "login.emailPlaceholder": "ti@shembull.com",
   "login.passwordLabel": "Fjalëkalimi",
@@ -745,18 +745,19 @@ export const sq: TranslationTree = {
   "notifications.status.confirmed": "Konfirmuar",
   "dashboardSettings.pageTitle": "Rregullat e rezervimit",
   "dashboardSettings.kicker": "Rregullat e rezervimit",
-  "dashboardSettings.title": "Menaxho rregullat e biznesit",
+  "dashboardSettings.title": "Rregullat e rezervimit",
   "dashboardSettings.subtitle":
-    "Zgjidh si miratohen takimet dhe sa përpara mund të rezervojnë klientët.",
-  "dashboardSettings.subtitleSelected": "Zgjidh rregullat e takimeve për",
+    "Zgjidh miratimin e takimeve dhe tekstin e politikave për klientët.",
+  "dashboardSettings.subtitleSelected":
+    "Zgjidh miratimin e takimeve dhe tekstin e politikave për",
   "dashboardSettings.loading": "Duke ngarkuar cilësimet e biznesit Mirëbook...",
   "dashboardSettings.error.load": "Cilësimet e biznesit nuk u ngarkuan.",
   "dashboardSettings.chooseBusiness":
-    "Zgjidh një biznes për të menaxhuar cilësimet e rezervimit.",
+    "Zgjidh një biznes për të menaxhuar rregullat e rezervimit.",
   "dashboardSettings.saveSettings": "Ruaj cilësimet",
   "dashboardSettings.saveMirebookSettings": "Ruaj cilësimet Mirëbook",
   "dashboardSettings.setupHub": "Qendra e konfigurimit",
-  "dashboardSettings.manageBusinesses": "Menaxho bizneset",
+  "dashboardSettings.manageBusinesses": "Hap konfigurimin",
   "dashboardSettings.backToSetup": "Kthehu te qendra e konfigurimit",
   "dashboardSettings.success.saved": "cilësimet u ruajtën.",
   "dashboardSettings.success.instant":
@@ -766,11 +767,11 @@ export const sq: TranslationTree = {
   "dashboardSettings.empty.kicker": "Nuk u gjet profil biznesi",
   "dashboardSettings.empty.title": "Krijo një biznes fillimisht",
   "dashboardSettings.empty.body":
-    "Cilësimet e biznesit bëhen të disponueshme pasi krijon një profil biznesi në Mirëbook.",
+    "Rregullat e rezervimit bëhen të disponueshme pasi krijon një profil biznesi në Mirëbook.",
   "dashboardSettings.summary.selectedBusiness": "Biznesi i zgjedhur",
   "dashboardSettings.summary.published": "Publikuar në Mirëbook",
   "dashboardSettings.summary.draft": "I fshehur / draft",
-  "dashboardSettings.summary.readiness": "Gatishmëria e cilësimeve",
+  "dashboardSettings.summary.readiness": "Statusi i rregullave",
   "dashboardSettings.summary.readinessBody":
     "Rregullat e rezervimit dhe politikat janë plotësuar",
   "dashboardSettings.summary.currentRules": "Rregullat aktuale",
@@ -780,7 +781,7 @@ export const sq: TranslationTree = {
   "dashboardSettings.summary.minuteNotice": "minuta njoftim",
   "dashboardSettings.summary.daysAhead": "ditë përpara",
   "dashboardSettings.businessPicker.kicker": "Menaxho një biznes tjetër",
-  "dashboardSettings.businessPicker.title": "Zgjidh cilësimet e biznesit",
+  "dashboardSettings.businessPicker.title": "Zgjidh një biznes",
   "dashboardSettings.businessPicker.body":
     "Çdo biznes ka rregullat e veta të rezervimit, cilësimet rajonale dhe tekstet e politikave për klientët.",
   "dashboardSettings.approval.kicker": "Miratimi i rezervimit",
@@ -1376,7 +1377,7 @@ export const sq: TranslationTree = {
   "dashboardStaff.noServices.cta": "Shto shërbime",
   "dashboardStaff.empty.title": "Nuk ka ende staf",
   "dashboardStaff.empty.body":
-    "Shto anëtarin e parë të stafit më sipër. Pastaj cakto shërbime dhe vendos oraret e punës.",
+    "Shto personin e parë që klientët mund të rezervojnë, pastaj cakto shërbimet dhe oraret.",
   "dashboardStaff.image.chooseFirst": "Zgjidh një skedar imazhi fillimisht.",
   "dashboardStaff.image.uploaded": "Imazhi i stafit u ngarkua.",
   "dashboardStaff.image.uploadedLower": "imazhi u ngarkua.",
@@ -1450,7 +1451,7 @@ export const sq: TranslationTree = {
   "dashboardAvailability.confirm.noOpenDays":
     "Ky biznes nuk ka ditë të hapura. Klientët mund të mos mund të rezervojnë nëse nuk është konfiguruar disponueshmëria e stafit. Ta ruash gjithsesi?",
   "dashboardAvailability.success.saved":
-    "Orari i përgjithshëm i biznesit u ruajt. Mirëbook do ta përdorë si bazë kur oraret specifike të stafit nuk janë vendosur.",
+    "Orari i punës u ruajt. Këto orare udhëzojnë rezervimet kur oraret e stafit nuk janë vendosur.",
   "dashboardAvailability.noBusiness.title": "Nuk u gjet biznes",
   "dashboardAvailability.noBusiness.body":
     "Krijo fillimisht një profil biznesi, pastaj vendos oraret e punës në Mirëbook.",
@@ -1459,14 +1460,13 @@ export const sq: TranslationTree = {
   "dashboardAvailability.businessPicker.title":
     "Zgjidh një biznes për të menaxhuar oraret",
   "dashboardAvailability.businessPicker.body":
-    "Zgjidh një biznes për të konfiguruar oraret bazë. Disponueshmëria specifike e stafit mund t’i mbishkruajë këto orare.",
+    "Zgjidh biznesin për të cilin do të ndryshosh oraret e punës. Orari i ekipit mund ta kufizojë më tej kur mund të rezervohet secili person.",
   "dashboardAvailability.businessPicker.manageBody":
     "Menaxho oraret e punës për këtë biznes.",
   "dashboardAvailability.businessPicker.manageCta": "Menaxho oraret",
-  "dashboardAvailability.hero.kicker":
-    "Disponueshmëria e përgjithshme e biznesit në Mirëbook",
+  "dashboardAvailability.hero.kicker": "Orari i punës së biznesit",
   "dashboardAvailability.hero.body":
-    "Këto janë oraret e përgjithshme të hapjes së biznesit. Orari specifik i stafit i mbishkruan këto kur është vendosur, dhe Mirëbook përdor të dyja për të vendosur datat dhe oraret reale që klientët mund të rezervojnë.",
+    "Këto janë oraret e përgjithshme të hapjes. Orari i ekipit mund ta kufizojë më tej kur mund të rezervohet secili person.",
   "dashboardAvailability.stats.openDays": "Ditë të hapura",
   "dashboardAvailability.stats.openDaysBody":
     "Ditë biznesi të shënuara si të hapura",
@@ -1505,7 +1505,7 @@ export const sq: TranslationTree = {
   "dashboardLayout.nav.overview": "Përmbledhje",
   "dashboardLayout.nav.home": "Kryefaqja",
   "dashboardLayout.nav.calendar": "Kalendari",
-  "dashboardLayout.nav.myBusiness": "Biznesi im",
+  "dashboardLayout.nav.myBusiness": "Konfigurimi",
   "dashboardLayout.nav.inbox": "Mesazhet",
   "dashboardLayout.nav.account": "Llogaria",
   "dashboardLayout.nav.team": "Ekipi",
@@ -1551,9 +1551,9 @@ export const sq: TranslationTree = {
   "account.verification.unknown":
     "Statusi i verifikimit nuk është i disponueshëm",
   "account.verification.verifiedBody":
-    "Supabase Auth ka konfirmuar pronësinë e këtij email-i hyrjeje.",
+    "Ky email është i lidhur me llogarinë tënde Mirëbook.",
   "account.verification.unverifiedBody":
-    "Ky email hyrjeje nuk është konfirmuar ende. Kontrollo inbox-in ose dërgo një email tjetër verifikimi. Aksesi aktual vazhdon të ndjekë cilësimet e Supabase Auth.",
+    "Ky email nuk është konfirmuar ende. Kontrollo inbox-in ose dërgo një email tjetër verifikimi.",
   "account.verification.unknownBody":
     "Mirëbook nuk mundi ta përcaktojë statusin e verifikimit nga sesioni aktual i Supabase. Kjo nuk bllokon llogarinë ose rezervimet.",
   "account.verification.resent":
@@ -2134,7 +2134,7 @@ export const sq: TranslationTree = {
   "dashboardStaff.list.kicker": "Lista e stafit",
   "dashboardStaff.list.title": "Ekipi yt",
   "dashboardStaff.list.body":
-    "Ekipi përfshin stafin dhe çdo pronar që klientët mund të rezervojnë. Një person bëhet i rezervueshëm kur është aktiv, i caktuar te shërbimet dhe ka orar pune.",
+    "Ekipi përfshin personat që klientët mund të rezervojnë. Një person bëhet i rezervueshëm kur është aktiv, i caktuar te shërbimet dhe ka orar pune.",
   "dashboardStaff.readiness.bookable": "I rezervueshëm në Mirëbook",
   "dashboardStaff.readiness.setupNeeded": "Duhet konfigurim",
   "dashboardStaff.image.uploadStaffError": "Imazhi i stafit nuk u ngarkua.",
@@ -2265,20 +2265,20 @@ export const sq: TranslationTree = {
   "staff.fallback.member": "Anëtar stafi",
   "staff.loadingSchedule": "Duke ngarkuar orarin e stafit në Mirëbook...",
   "staff.noProfile.kicker": "Nuk ka profil stafi të lidhur",
-  "staff.noProfile.title": "Kërkoji pronarit të biznesit të të ftojë",
+  "staff.noProfile.title": "Kërkoji biznesit të të ftojë",
   "staff.noProfile.body":
-    "Kjo llogari nuk është lidhur ende me një profil stafi. Kërkoji pronarit të biznesit të shtojë email-in tënd në faqen e stafit, pastaj hyr përsëri.",
+    "Kjo llogari nuk është lidhur ende me një profil stafi. Kërkoji biznesit të shtojë email-in tënd te Ekipi, pastaj hyr përsëri.",
   "staff.workspace.kicker": "Hapësira e stafit",
   "staff.workspace.greeting": "Përshëndetje",
-  "staff.workspace.staffOnly": "Hapësirë vetëm për staf",
+  "staff.workspace.staffOnly": "Hapësira e stafit",
   "staff.actions.backToDashboard": "Kthehu te paneli i stafit",
   "staff.actions.dashboard": "Paneli i stafit",
   "staff.assignedServices.kicker": "Shërbimet e caktuara",
   "staff.assignedServices.title": "Për çfarë mund të rezervohesh",
   "staff.assignedServices.body":
-    "Këto shërbime kontrollohen nga pronari i biznesit. Disponueshmëria jote ndikon kur klientët mund të të rezervojnë.",
+    "Këto shërbime caktohen nga biznesi. Orari yt ndikon kur klientët mund të të rezervojnë.",
   "staff.assignedServices.empty":
-    "Nuk ka shërbime të caktuara për profilin tënd të stafit. Kërkoji pronarit të biznesit të caktojë shërbime para se klientët të të rezervojnë.",
+    "Ende nuk ka shërbime të caktuara. Kërkoji biznesit të shtojë shërbime te profili yt i ekipit para se klientët të të rezervojnë.",
   "staff.assignedServices.durationNotSet": "Kohëzgjatja nuk është vendosur",
   "staff.summary.today": "Sot",
   "staff.summary.todayBody": "Takime të caktuara për sot",
@@ -2300,7 +2300,7 @@ export const sq: TranslationTree = {
   "staff.requests.bookingChange": "Ndryshim rezervimi",
   "staff.empty.title": "Nuk ka takime për këtë datë",
   "staff.empty.body":
-    "Provo një datë tjetër me zgjedhësin e datës, ose ndrysho filtrin e statusit. Nëse prisje takime këtu, kërkoji pronarit të kontrollojë caktimin e stafit për shërbimin.",
+    "Provo një datë tjetër me zgjedhësin e datës, ose ndrysho filtrin e statusit. Nëse prisje takime këtu, kërkoji biznesit të kontrollojë caktimin e shërbimeve.",
   "dashboardBusinesses.ownerStaff.title": "A merrni rezervime?",
   "dashboardBusinesses.ownerStaff.body":
     "Shto veten si staf i rezervueshëm vetëm nëse klientët mund të rezervojnë takime me ty. Mund t’i mbyllësh ditët kur nuk punon më vonë.",
@@ -2311,16 +2311,16 @@ export const sq: TranslationTree = {
     "Ti tashmë ke një profil stafi për këtë biznes. Përdor faqen e stafit për të menaxhuar shërbimet dhe orarin.",
   "dashboardBusinesses.ownerStaff.linkedTitle": "Je staf i rezervueshëm",
   "dashboardBusinesses.ownerStaff.linkedBody":
-    "Llogaria jote e pronarit është lidhur me një profil stafi. Menaxho shërbimet dhe orarin nga faqja e stafit.",
+    "Ti merr edhe takime. Menaxho shërbimet dhe orarin nga faqja e stafit.",
   "dashboardBusinesses.ownerStaff.defaultName": "Pronari i biznesit",
   "dashboardBusinesses.ownerStaff.roleTitle": "Pronari",
   "dashboardStaff.ownerAsStaff.kicker": "Rolet e pronarit dhe stafit",
   "dashboardStaff.ownerAsStaff.title":
     "Shto vetëm personat që mund të rezervohen nga klientët",
   "dashboardStaff.ownerAsStaff.body":
-    "Pronarët e biznesit mund ta menaxhojnë biznesin pa qenë staf i rezervueshëm. Nëse pronari merr edhe takime, shtoje ose lidhe si anëtar stafi, cakto shërbimet dhe më pas vendos orarin. Nëse vetëm menaxhon biznesin, lëre vetëm si pronar.",
+    "Mund ta menaxhosh biznesin pa qenë i/e rezervueshëm. Nëse klientët duhet të të rezervojnë drejtpërdrejt, shto ose lidh veten si staf, pastaj cakto shërbimet dhe orarin.",
   "dashboardStaff.ownerAsStaff.bodyCompact":
-    "Pronarët kanë nevojë për profil stafi vetëm kur klientët duhet t'i rezervojnë drejtpërdrejt.",
+    "Shto veten vetëm nëse klientët duhet të të rezervojnë drejtpërdrejt.",
   "nav.role.operator": "Operator",
   "nav.role.business": "Biznes",
   "nav.role.staff": "Staf",
@@ -2378,9 +2378,9 @@ export const sq: TranslationTree = {
   "staffAvailability.loading":
     "Duke ngarkuar disponueshmërinë tënde në Mirëbook...",
   "staffAvailability.noProfile.title":
-    "Disponueshmëria e stafit nuk është ende e disponueshme",
+    "Orari i punës nuk është ende i disponueshëm",
   "staffAvailability.noProfile.body":
-    "Kërkoji pronarit të biznesit të shtojë email-in tënd në faqen e stafit, pastaj hyr përsëri. Llogaritë e stafit menaxhojnë orarin dhe disponueshmërinë e tyre, ndërsa profili, shërbimet dhe çmimet mbeten te pronari.",
+    "Kërkoji biznesit të shtojë email-in tënd te Ekipi, pastaj hyr përsëri. Pasi të lidhet, mund të menaxhosh orarin tënd të punës.",
   "staffAvailability.success.saved":
     "Disponueshmëria u ruajt. Mirëbook do t'i përdorë këto orare kur klientët të rezervojnë me ty.",
   "staffAvailability.upcoming.title":
@@ -2500,11 +2500,11 @@ export const sq: TranslationTree = {
   "register.roleExplainer.businessBody":
     "Përdore nëse zotëron ose menaxhon një biznes dhe duhet të konfigurosh shërbimet, stafin, disponueshmërinë dhe rezervimet e klientëve.",
   "register.roleExplainer.staffBody":
-    "Përdore vetëm nëse një biznes e ka shtuar tashmë këtë email në listën e stafit. Përndryshe zgjidh Klient ose kërkoji pronarit të biznesit të të ftojë më parë.",
+    "Përdore vetëm nëse një biznes e ka shtuar tashmë këtë email te Ekipi. Përndryshe zgjidh Klient ose kërkoji biznesit të të ftojë më parë.",
   "register.roleExplainer.customerBody":
     "Përdore nëse dëshiron të gjesh biznese, të rezervosh shërbime dhe të menaxhosh takimet.",
   "register.staffNotice.noInvite":
-    "Nëse nuk gjendet profil stafi, kërkoji pronarit të biznesit të shtojë email-in tënd më parë, pastaj regjistrohu përsëri.",
+    "Nëse nuk gjendet profil stafi, kërkoji biznesit të shtojë email-in tënd më parë, pastaj regjistrohu përsëri.",
   "register.nextStep.kicker": "Pas regjistrimit",
   "register.nextStep.business":
     "Do të shkosh te paneli i biznesit për të përfunduar shërbimet, stafin, disponueshmërinë dhe publikimin.",
@@ -2515,18 +2515,18 @@ export const sq: TranslationTree = {
   "register.helperText":
     "Nuk je i sigurt cilin lloj llogarie të zgjedhësh? Klientët rezervojnë shërbime, bizneset menaxhojnë konfigurimin, dhe stafi ka nevojë për ftesë nga biznesi.",
   "support.staff.profileHelpText":
-    "Nëse shërbimet, rezervimet ose disponueshmëria duken gabim, kërkoji pronarit të biznesit të kontrollojë konfigurimin tënd të stafit dhe shërbimet e caktuara.",
+    "Nëse shërbimet, rezervimet ose disponueshmëria duken gabim, kërkoji biznesit të kontrollojë profilin tënd te Ekipi dhe shërbimet e caktuara.",
   "support.staff.noProfileStep1":
     "Kontrollo që je regjistruar me të njëjtin email që ka shtuar biznesi.",
   "support.staff.noProfileStep2":
-    "Kërkoji pronarit të biznesit të hapë konfigurimin e stafit dhe të konfirmojë që email-i yt është në listë.",
+    "Kërkoji biznesit të hapë Ekipin dhe të konfirmojë që email-i yt është në listë.",
   "support.staff.noProfileStep3":
-    "Dil dhe hyr përsëri pasi pronari të përditësojë profilin tënd të stafit.",
+    "Dil dhe hyr përsëri pasi biznesi të përditësojë profilin tënd të stafit.",
   "support.staff.beforeSending.kicker": "Para se ta dërgosh",
   "support.staff.beforeSending.linked":
     "Përfshi rezervimin, datën, shërbimin ose ditën e disponueshmërisë që ka problem, që suporti ta gjejë më shpejt.",
   "support.staff.beforeSending.unlinked":
-    "Përfshi emrin e biznesit dhe email-in që pronari ka shtuar në listën e stafit.",
+    "Përfshi emrin e biznesit dhe email-in që biznesi ka shtuar te Ekipi.",
   "support.staff.calendarBody":
     "Shiko përpara rezervimet e caktuara sipas muajit.",
   "support.staff.notificationsBody":
@@ -2537,10 +2537,10 @@ export const sq: TranslationTree = {
   "support.staff.troubleshooting.accessTitle":
     "Nuk hyn dot te hapësira e stafit",
   "support.staff.troubleshooting.accessBody":
-    "Pronari i biznesit duhet të shtojë të njëjtin email që përdor për hyrje.",
+    "Biznesi duhet të shtojë të njëjtin email që përdor për hyrje.",
   "support.staff.troubleshooting.servicesTitle": "Nuk shfaqen shërbime",
   "support.staff.troubleshooting.servicesBody":
-    "Pronari duhet të caktojë shërbime te profili yt i stafit para se klientët të të rezervojnë.",
+    "Biznesi duhet të caktojë shërbime te profili yt i stafit para se klientët të të rezervojnë.",
   "support.staff.troubleshooting.availabilityTitle":
     "Nuk ka orare të rezervueshme",
   "support.staff.troubleshooting.availabilityBody":
@@ -2726,10 +2726,10 @@ export const sq: TranslationTree = {
     "Jo aktualisht. Klientët përdorin Mirëbook për të rezervuar dhe menaxhuar takime. Modeli i parë komercial është abonimi i bizneseve, ku bizneset paguajnë një tarifë mujore për platformën.",
   "support.faq.businessReadyTitle": "Si bëhet gati një biznes për klientët?",
   "support.faq.businessReadyBody":
-    "Një biznes duhet të plotësojë profilin, të shtojë shërbimet, të caktojë stafin, të vendosë oraret dhe të zgjedhë cilësimet e rezervimit para publikimit. Qendra e konfigurimit tregon çfarë mungon ende.",
+    "Një biznes duhet të plotësojë profilin, të shtojë shërbimet, ekipin, oraret dhe rregullat e rezervimit para publikimit. Konfigurimi tregon çfarë mungon ende.",
   "support.faq.staffAccessTitle": "Si funksionon aksesi i stafit?",
   "support.faq.staffAccessBody":
-    "Pronari i biznesit shton një anëtar stafi dhe emailin e tij. Kur ai person regjistrohet ose hyn me të njëjtin email, Mirëbook mund ta lidhë llogarinë me profilin e stafit.",
+    "Biznesi shton një anëtar ekipi dhe emailin e tij. Kur ai person regjistrohet ose hyn me të njëjtin email, Mirëbook mund ta lidhë me profilin e stafit.",
   "support.faq.countriesTitle":
     "A do të mbështesë Mirëbook Shqipërinë dhe vende të tjera?",
   "support.faq.countriesBody":
@@ -2888,15 +2888,14 @@ export const sq: TranslationTree = {
   "explore.filters.sortLabel": "Rendit",
   "explore.filters.clearButton": "Pastro filtrat",
   "explore.filters.refreshButton": "Rifresko rezultatet",
-  "staff.workspace.ownerStaffWorkspace":
-    "Puna ime brenda llogarisë së biznesit",
+  "staff.workspace.ownerStaffWorkspace": "Puna ime brenda këtij biznesi",
   "staff.actions.businessDashboard": "Paneli i biznesit",
 
   "staffAvailability.ownerStaffAvailability":
-    "Disponueshmëri stafi e lidhur me llogarinë tënde të pronarit",
+    "Orari personal i punës për këtë biznes",
 
   "staffNotifications.ownerStaffBody":
-    "Përditësime stafi të lidhura me llogarinë tënde të pronarit, orarin, profilin dhe rezervimet e caktuara.",
+    "Përditësime për orarin, profilin dhe rezervimet e caktuara.",
 
   "dashboardStaff.card.accountLinkedBody":
     "Ky profil stafi është i lidhur me një hyrje përdoruesi. Ata mund të përdorin hapësirën e tyre të stafit.",
@@ -2915,11 +2914,11 @@ export const sq: TranslationTree = {
   "dashboardStaff.ownerAsStaff.linkedTitle":
     "Pronari është konfiguruar edhe si staf i rezervueshëm",
   "dashboardStaff.ownerAsStaff.linkedBody":
-    "Kjo llogari pronari është e lidhur me një profil stafi, kështu pronari mund të menaxhojë biznesin dhe të përdorë edhe hapësirën e stafit për takimet e veta.",
+    "Ti merr edhe takime, kështu mund të menaxhosh biznesin dhe të përdorësh Stafin për orarin tënd.",
   "dashboardStaff.ownerAsStaff.linkedBodyCompact":
-    "Llogaria jote e pronarit është gjithashtu e rezervueshme dhe ka një hapësirë personale stafi.",
+    "Ti merr edhe takime dhe ke një hapësirë personale stafi.",
   "dashboardStaff.ownerAsStaff.confirmDeactivateSelf":
-    "Ky profil stafi është i lidhur me llogarinë tënde. Çaktivizimi nuk do të heqë aksesin tënd si pronar biznesi, por do ta ndalojë këtë profil stafi të shfaqet si i rezervueshëm për takime të reja. Të vazhdohet?",
+    "Ky është profili yt i rezervueshëm i stafit. Çaktivizimi ruan aksesin te biznesi, por klientët nuk do të mund të të rezervojnë për takime të reja. Të vazhdohet?",
 
   "dashboardStaff.list.linkedLogins": "hyrje të lidhura",
   "dashboardStaff.list.readyToLink": "gati për lidhje",
@@ -2942,9 +2941,9 @@ export const sq: TranslationTree = {
     "Ftesa e biznesit duhet të përdorë të njëjtën adresë emaili si kjo llogari stafi.",
   "staff.unlinked.emailFallback":
     "Përdor adresën e emailit që shfaqet në llogarinë tënde.",
-  "staff.unlinked.stepInviteTitle": "Kërkoji pronarit të të ftojë",
+  "staff.unlinked.stepInviteTitle": "Kërkoji biznesit të të ftojë",
   "staff.unlinked.stepInviteBody":
-    "Pronari i biznesit duhet ta shtojë pikërisht këtë email nga faqja e konfigurimit të stafit.",
+    "Biznesi duhet ta shtojë pikërisht këtë email te Ekipi.",
   "staff.unlinked.stepLinkTitle": "Rifresko pas lidhjes",
   "staff.unlinked.stepLinkBody":
     "Pasi të lidhet, orari, disponueshmëria dhe njoftimet e stafit do të shfaqen këtu.",
@@ -2969,7 +2968,7 @@ export const sq: TranslationTree = {
   "dashboardLayout.staffNav.calendar": "Kalendari",
   "dashboardLayout.staffNav.availability": "Disponueshmëria",
   "dashboardLayout.staffNav.notifications": "Njoftimet",
-  "dashboardLayout.staffNav.manageBusiness": "Menaxho biznesin",
+  "dashboardLayout.staffNav.manageBusiness": "Paneli i biznesit",
 
   "staff.home.todayKicker": "Sot",
   "staff.home.todayAppointments": "sot",
@@ -2980,12 +2979,12 @@ export const sq: TranslationTree = {
     "Vendos ditët dhe oraret kur klientët mund të të rezervojnë.",
   "staff.home.notificationsBody":
     "Shiko përditësimet e rezervimeve, orarit dhe profilit.",
-  "staff.home.ownerContext": "Menaxhimi i biznesit mbetet te Menaxho biznesin.",
+  "staff.home.ownerContext":
+    "Administrimi i biznesit mbetet te paneli i biznesit.",
   "staff.assignedServices.emptyCompact":
-    "Ende nuk të është caktuar asnjë shërbim. Kërkoji pronarit të biznesit të përditësojë profilin tënd te Ekipi.",
+    "Ende nuk të është caktuar asnjë shërbim. Kërkoji biznesit të përditësojë profilin tënd te Ekipi.",
 
-  "staff.ownerSetup.noBusiness":
-    "Nuk u gjet profil biznesi për këtë llogari pronari.",
+  "staff.ownerSetup.noBusiness": "Nuk u gjet profil biznesi për këtë llogari.",
   "staff.ownerSetup.confirm":
     "Ta shtosh veten si staf të rezervueshëm për këtë biznes? Do ta menaxhosh ende biznesin nga paneli i biznesit, por kjo krijon një profil personal stafi për takimet e tua.",
   "staff.ownerSetup.alreadyLinked":
@@ -2995,18 +2994,18 @@ export const sq: TranslationTree = {
   "staff.ownerSetup.success":
     "U shtove si staf i rezervueshëm. Cakto shërbimet dhe më pas vendos disponueshmërinë tënde.",
   "staff.ownerSetup.error": "Nuk u shtove dot si staf i rezervueshëm.",
-  "staff.ownerSetup.kicker": "Llogari pronari",
+  "staff.ownerSetup.kicker": "Llogari biznesi",
   "staff.ownerSetup.title": "Ende nuk je konfiguruar si staf i rezervueshëm",
   "staff.ownerSetup.body":
-    "Pronarët e biznesit mund ta menaxhojnë biznesin pa qenë staf i rezervueshëm. Nëse merr personalisht takime, shtoje veten si staf të rezervueshëm, pastaj cakto shërbimet dhe disponueshmërinë tënde.",
-  "staff.ownerSetup.stepManageTitle": "Aksesi i pronarit mbetet i ndarë",
+    "Mund ta drejtosh biznesin pa marrë takime. Nëse klientët duhet të të rezervojnë drejtpërdrejt, shto veten si staf, pastaj cakto shërbimet dhe orarin.",
+  "staff.ownerSetup.stepManageTitle": "Aksesi i biznesit mbetet i ndarë",
   "staff.ownerSetup.stepManageBody":
     "Paneli i biznesit mbetet hapësira jote kryesore për menaxhimin e rezervimeve, stafit, shërbimeve dhe cilësimeve të biznesit.",
   "staff.ownerSetup.stepBookableTitle": "Profil personal stafi",
   "staff.ownerSetup.stepBookableBody":
     "Shtoje veten këtu vetëm nëse klientët duhet të mund të rezervojnë takime drejtpërdrejt me ty.",
   "staff.ownerSetup.compactRule":
-    "Aksesi yt si pronar mbetet i pandryshuar. Shto një profil stafi vetëm kur klientët duhet të rezervojnë takime drejtpërdrejt me ty.",
+    "Aksesi i biznesit mbetet i pandryshuar. Shto një profil stafi vetëm kur klientët duhet të rezervojnë takime drejtpërdrejt me ty.",
   "staff.ownerSetup.addSelf": "Më shto si staf të rezervueshëm",
   "staffAvailability.note.compactBody":
     "Këto orare kontrollojnë kur klientët mund të të rezervojnë. Takimet ekzistuese nuk zhvendosen kur ndryshon orarin.",
@@ -3364,13 +3363,13 @@ export const sq: TranslationTree = {
   "support.operator.flowBody":
     "Formularët e suportit për klientë, staf dhe biznese krijojnë biseda të ruajtura dhe njoftojnë operatorët me një link direkt te ticket-i.",
   "dashboardStaff.invite.savedNoEmail":
-    "Ftesa u ruajt. Dërgimi me email nuk është konfiguruar, prandaj ndaj manualisht linkun e sigurt ose kërkoji të hyjë me email-in e ftuar.",
+    "Ftesa u ruajt. Ndaj linkun e sigurt ose kërkoji të hyjë me email-in e ftuar.",
   "dashboardStaff.invite.emailSent":
     "Ftesa u ruajt dhe email-i i ftesës u dërgua.",
   "dashboardStaff.invite.savedManualLink":
     "Ftesa u ruajt. Email-i u anashkalua në mënyrë të sigurt. Linku manual i ftesës:",
   "dashboardStaff.invite.appUrlMissing":
-    "Ftesa u ruajt, por email-i nuk mund të dërgohej sepse URL-ja e aplikacionit në prodhim nuk është konfiguruar.",
+    "Ftesa u ruajt, por email-i i ftesës nuk mund të dërgohej. Ndaj linkun e sigurt në vend të tij.",
   "myBookings.error.cancellationStatusChanged":
     "Ky rezervim nuk mund të anulohet më sepse statusi i tij ka ndryshuar.",
   "staffInvite.kicker": "Ftesë për staf",
@@ -3402,9 +3401,9 @@ export const sq: TranslationTree = {
   "forgotPassword.businessKicker": "Siguria e Mirëbook Biznes",
   "forgotPassword.title": "Rivendos fjalëkalimin",
   "forgotPassword.body":
-    "Shkruaj email-in e hyrjes në Mirëbook. Do t'i kërkojmë Supabase të dërgojë një link të sigurt për rivendosjen e fjalëkalimit.",
+    "Shkruaj email-in e hyrjes në Mirëbook. Do të dërgojmë një link të sigurt për rivendosjen e fjalëkalimit.",
   "forgotPassword.businessBody":
-    "Shkruaj email-in e përdorur për hyrjen si pronar biznesi ose staf. Linku i rivendosjes do të të kthejë te Mirëbook Biznes.",
+    "Shkruaj email-in e përdorur për hyrjen e biznesit ose stafit. Linku i rivendosjes do të të kthejë te Mirëbook Biznes.",
   "forgotPassword.emailLabel": "Adresa e email-it",
   "forgotPassword.emailPlaceholder": "ti@shembull.com",
   "forgotPassword.sending": "Duke dërguar linkun...",

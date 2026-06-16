@@ -87,7 +87,7 @@ export default function DashboardBillingPage() {
     if (status === "past_due")
       return t(
         "billing.status.pastDueBody",
-        "Your billing record needs attention. Your booking tools remain available.",
+        "Your membership needs attention. Your booking tools remain available.",
       );
     if (status === "cancelled")
       return t(
@@ -97,7 +97,7 @@ export default function DashboardBillingPage() {
     if (status === "paused")
       return t(
         "billing.status.pausedBody",
-        "This billing record is paused. Your booking tools remain available.",
+        "This membership is paused. Your booking tools remain available.",
       );
 
     return t(
@@ -172,7 +172,7 @@ export default function DashboardBillingPage() {
     } catch (err: any) {
       setError(
         err.message ||
-          t("billing.error.load", "Could not load billing details."),
+          t("billing.error.load", "Could not load membership details."),
       );
     } finally {
       setLoading(false);
@@ -273,7 +273,7 @@ export default function DashboardBillingPage() {
       {loading && (
         <div className="card">
           <p className="muted">
-            {t("billing.loading", "Loading billing details...")}
+            {t("billing.loading", "Loading membership details...")}
           </p>
         </div>
       )}

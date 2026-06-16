@@ -365,13 +365,13 @@ export default function StaffAvailabilityPage() {
             <h1 style={{ fontFamily: "var(--font-display)", marginTop: 0 }}>
               {t(
                 "staffAvailability.noProfile.title",
-                "Staff availability is not available yet",
+                "Working hours are not available yet",
               )}
             </h1>
             <p className="muted" style={{ marginTop: "0.75rem" }}>
               {t(
                 "staffAvailability.noProfile.body",
-                "Ask the business owner to add your email in their Staff setup page, then log in again. Staff accounts can manage their own schedule and availability, but business profile, services and pricing stay with the business owner.",
+                "Ask the business to add your email to Team, then log in again. Once linked, you can manage your own working hours.",
               )}
             </p>
             <div
@@ -409,15 +409,11 @@ export default function StaffAvailabilityPage() {
                   {hasBusinessWorkspace
                     ? t(
                         "staffAvailability.ownerStaffAvailability",
-                        "Staff availability linked to your owner account",
+                        "Personal working hours for this business",
                       )
-                    : t(
-                        "staffAvailability.staffOnly",
-                        "Staff-only availability",
-                      )}
+                    : t("staffAvailability.staffOnly", "Your working hours")}
                 </p>
               </div>
-
             </div>
             <p className="staff-availability-note">
               {t(

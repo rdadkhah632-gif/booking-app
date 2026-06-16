@@ -37,10 +37,10 @@ export const en: TranslationTree = {
     "Use one login. Mirëbook opens customer bookings or Mirëbook Business automatically from your account capabilities.",
   "login.business.promoTitle": "Welcome back to Mirëbook Business.",
   "login.business.promoBody":
-    "Business owners and invited staff use the same secure login, then continue to the workspace their account can access.",
+    "Business accounts and invited staff use the same secure login, then continue to the right workspace.",
   "login.business.title": "Login to Mirëbook Business",
   "login.business.subtitle":
-    "Use your business owner or invited staff account. Existing access and routing stay connected to the same Mirëbook login.",
+    "Use your business or invited staff account. Mirëbook opens the right workspace for your access.",
   "login.emailLabel": "Email address",
   "login.emailPlaceholder": "you@example.com",
   "login.passwordLabel": "Password",
@@ -700,18 +700,19 @@ export const en: TranslationTree = {
   "notifications.status.confirmed": "Confirmed",
   "dashboardSettings.pageTitle": "Booking rules",
   "dashboardSettings.kicker": "Booking rules",
-  "dashboardSettings.title": "Manage business rules",
+  "dashboardSettings.title": "Booking rules",
   "dashboardSettings.subtitle":
-    "Choose how appointments are approved and how far ahead customers can book.",
-  "dashboardSettings.subtitleSelected": "Choose appointment rules for",
+    "Choose appointment approval and customer policy wording.",
+  "dashboardSettings.subtitleSelected":
+    "Choose appointment approval and customer policy wording for",
   "dashboardSettings.loading": "Loading Mirëbook business settings...",
   "dashboardSettings.error.load": "Could not load business settings.",
   "dashboardSettings.chooseBusiness":
-    "Choose a business to manage its booking settings.",
+    "Choose a business to manage its booking rules.",
   "dashboardSettings.saveSettings": "Save settings",
   "dashboardSettings.saveMirebookSettings": "Save Mirëbook settings",
   "dashboardSettings.setupHub": "Setup hub",
-  "dashboardSettings.manageBusinesses": "Manage businesses",
+  "dashboardSettings.manageBusinesses": "Open setup",
   "dashboardSettings.backToSetup": "Back to setup hub",
   "dashboardSettings.success.saved": "settings saved.",
   "dashboardSettings.success.instant": "New bookings will confirm instantly.",
@@ -720,11 +721,11 @@ export const en: TranslationTree = {
   "dashboardSettings.empty.kicker": "No business profile found",
   "dashboardSettings.empty.title": "Create a business first",
   "dashboardSettings.empty.body":
-    "Business settings become available after you create a Mirëbook business profile.",
+    "Booking rules become available after you create a Mirëbook business profile.",
   "dashboardSettings.summary.selectedBusiness": "Selected business",
   "dashboardSettings.summary.published": "Published on Mirëbook",
   "dashboardSettings.summary.draft": "Hidden / draft",
-  "dashboardSettings.summary.readiness": "Settings readiness",
+  "dashboardSettings.summary.readiness": "Rules status",
   "dashboardSettings.summary.readinessBody":
     "Booking rules and policies filled in",
   "dashboardSettings.summary.currentRules": "Current rules",
@@ -734,7 +735,7 @@ export const en: TranslationTree = {
   "dashboardSettings.summary.minuteNotice": "minute notice",
   "dashboardSettings.summary.daysAhead": "days ahead",
   "dashboardSettings.businessPicker.kicker": "Manage another business",
-  "dashboardSettings.businessPicker.title": "Choose business settings",
+  "dashboardSettings.businessPicker.title": "Choose a business",
   "dashboardSettings.businessPicker.body":
     "Each business has its own booking rules, region settings and customer policy wording.",
   "dashboardSettings.approval.kicker": "Booking approval",
@@ -1389,7 +1390,7 @@ export const en: TranslationTree = {
   "dashboardStaff.list.kicker": "Staff list",
   "dashboardStaff.list.title": "Your team",
   "dashboardStaff.list.body":
-    "Team includes staff and any owner customers can book. A person becomes bookable when active, assigned to services and given working hours.",
+    "Team includes the people customers can book. A person becomes bookable when active, assigned to services and given working hours.",
   "dashboardStaff.readiness.bookable": "Bookable on Mirëbook",
   "dashboardStaff.readiness.setupNeeded": "Setup needed",
   "dashboardStaff.image.uploadStaffError": "Could not upload staff image.",
@@ -1405,7 +1406,7 @@ export const en: TranslationTree = {
   "dashboardStaff.active.nowHidden": "is hidden from booking.",
   "dashboardStaff.empty.title": "No staff yet",
   "dashboardStaff.empty.body":
-    "Add your first staff member above. Then assign services and set their working hours.",
+    "Add the first person customers can book, then assign services and working hours.",
   "dashboardStaff.image.chooseFirst": "Choose an image file first.",
   "dashboardStaff.image.uploaded": "Staff image uploaded.",
   "dashboardStaff.image.uploadedLower": "image uploaded.",
@@ -1479,7 +1480,7 @@ export const en: TranslationTree = {
   "dashboardAvailability.confirm.noOpenDays":
     "This business has no open days. Customers may not be able to book unless staff-specific availability is configured. Save anyway?",
   "dashboardAvailability.success.saved":
-    "Business-wide working hours saved. Mirëbook will use these as a fallback when staff-specific hours are not set.",
+    "Working hours saved. These hours guide customer booking when staff hours are not set.",
   "dashboardAvailability.noBusiness.title": "No business found",
   "dashboardAvailability.noBusiness.body":
     "Create a business profile first, then set Mirëbook working hours.",
@@ -1488,13 +1489,13 @@ export const en: TranslationTree = {
   "dashboardAvailability.businessPicker.title":
     "Choose a business to manage hours",
   "dashboardAvailability.businessPicker.body":
-    "Select one business to configure its business-wide fallback hours. Staff-specific availability can still override these hours.",
+    "Choose the business whose working hours you want to edit. Team member hours can still narrow when each person can be booked.",
   "dashboardAvailability.businessPicker.manageBody":
     "Manage working hours for this business.",
   "dashboardAvailability.businessPicker.manageCta": "Manage hours",
-  "dashboardAvailability.hero.kicker": "Mirëbook business-wide availability",
+  "dashboardAvailability.hero.kicker": "Business working hours",
   "dashboardAvailability.hero.body":
-    "These are your general business opening hours. Staff-specific hours override these where set, and Mirëbook uses both to decide which dates and times customers can actually book.",
+    "These are your general opening hours. Team member hours can narrow when each person can be booked.",
   "dashboardAvailability.stats.openDays": "Open days",
   "dashboardAvailability.stats.openDaysBody": "Business days marked as open",
   "dashboardAvailability.stats.closedDays": "Closed days",
@@ -1532,7 +1533,7 @@ export const en: TranslationTree = {
   "dashboardLayout.nav.overview": "Overview",
   "dashboardLayout.nav.home": "Home",
   "dashboardLayout.nav.calendar": "Calendar",
-  "dashboardLayout.nav.myBusiness": "My Business",
+  "dashboardLayout.nav.myBusiness": "Setup",
   "dashboardLayout.nav.inbox": "Inbox",
   "dashboardLayout.nav.account": "Account",
   "dashboardLayout.nav.team": "Team",
@@ -1576,9 +1577,9 @@ export const en: TranslationTree = {
   "account.verification.unverified": "Verification pending",
   "account.verification.unknown": "Verification status unavailable",
   "account.verification.verifiedBody":
-    "Supabase Auth has confirmed ownership of this login email.",
+    "This email is linked to your Mirëbook account.",
   "account.verification.unverifiedBody":
-    "This login email has not been confirmed yet. Check your inbox or send another verification email. Current access still follows your Supabase Auth settings.",
+    "This email has not been confirmed yet. Check your inbox or send another verification email.",
   "account.verification.unknownBody":
     "Mirëbook could not determine verification state from the current Supabase session. This does not block account or booking access.",
   "account.verification.resent":
@@ -2167,21 +2168,21 @@ export const en: TranslationTree = {
   "staff.fallback.member": "Staff member",
   "staff.loadingSchedule": "Loading your Mirëbook staff schedule...",
   "staff.noProfile.kicker": "No staff profile linked",
-  "staff.noProfile.title": "Ask the business owner to invite you",
+  "staff.noProfile.title": "Ask the business to invite you",
   "staff.noProfile.body":
-    "This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.",
+    "This account is not linked to a staff profile yet. Ask the business to add your email to Team, then log in again.",
   "staff.workspace.kicker": "Staff workspace",
   "staff.workspace.greeting": "Hi",
-  "staff.workspace.staffOnly": "Staff-only workspace",
+  "staff.workspace.staffOnly": "Staff workspace",
   "staff.actions.updateAvailability": "Update availability",
   "staff.actions.backToDashboard": "Back to staff dashboard",
   "staff.actions.dashboard": "Staff dashboard",
   "staff.assignedServices.kicker": "Assigned services",
   "staff.assignedServices.title": "What you can be booked for",
   "staff.assignedServices.body":
-    "These services are controlled by the business owner. Your availability affects when customers can book you for them.",
+    "These services are assigned by the business. Your working hours affect when customers can book you.",
   "staff.assignedServices.empty":
-    "No services are assigned to your staff profile yet. Ask the business owner to assign services before customers can book you.",
+    "No services are assigned yet. Ask the business to add services to your Team profile before customers can book you.",
   "staff.assignedServices.durationNotSet": "Duration not set",
   "staff.summary.today": "Today",
   "staff.summary.todayBody": "Assigned appointments today",
@@ -2202,7 +2203,7 @@ export const en: TranslationTree = {
   "staff.requests.bookingChange": "Booking change",
   "staff.empty.title": "No appointments for this date",
   "staff.empty.body":
-    "Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business owner to check staff assignment for the service.",
+    "Try another date using the calendar picker, or change the status filter. If you expected appointments here, ask the business to check service assignment.",
   "dashboardBusinesses.ownerStaff.title": "Do you take appointments?",
   "dashboardBusinesses.ownerStaff.body":
     "Add yourself as bookable staff only if customers can book appointments with you. You can close days you do not work later.",
@@ -2213,16 +2214,16 @@ export const en: TranslationTree = {
     "You already have a staff profile for this business. Use the Staff page to manage your services and hours.",
   "dashboardBusinesses.ownerStaff.linkedTitle": "You are bookable staff",
   "dashboardBusinesses.ownerStaff.linkedBody":
-    "Your owner account is linked to a staff profile. Manage your services and working hours from Staff.",
+    "You also take appointments. Manage your services and working hours from Staff.",
   "dashboardBusinesses.ownerStaff.defaultName": "Business owner",
   "dashboardBusinesses.ownerStaff.roleTitle": "Owner",
   "dashboardStaff.ownerAsStaff.kicker": "Owner and staff roles",
   "dashboardStaff.ownerAsStaff.title":
     "Only add people who can be booked by customers",
   "dashboardStaff.ownerAsStaff.body":
-    "Business owners can manage the business without being bookable staff. If the owner also takes appointments, add or link them as a staff member, assign services, then set working hours. If they only manage the shop, leave them owner-only.",
+    "You can run the business without being bookable. If customers should book you directly, add or link yourself as staff, then assign services and working hours.",
   "dashboardStaff.ownerAsStaff.bodyCompact":
-    "Owners only need a staff profile when customers should book them directly.",
+    "Add yourself only if customers should book you directly.",
   "nav.role.operator": "Operator",
   "nav.role.business": "Business",
   "nav.role.staff": "Staff",
@@ -2274,7 +2275,7 @@ export const en: TranslationTree = {
     "These bookings are assigned to you but still need business approval before they become confirmed appointments.",
   "staff.schedule.chooseDate": "Choose schedule date",
   "staffAvailability.title": "Your working hours",
-  "staffAvailability.staffOnly": "Staff-only availability",
+  "staffAvailability.staffOnly": "Your working hours",
   "staffAvailability.actions.saveAvailability": "Save availability",
   "staffAvailability.actions.saveWeekly": "Save weekly availability",
   "staffAvailability.note.title":
@@ -2303,10 +2304,9 @@ export const en: TranslationTree = {
     "Each open day needs a valid start and end time. End time must be after start time.",
   "staffAvailability.error.load": "Could not load staff availability.",
   "staffAvailability.loading": "Loading your Mirëbook availability...",
-  "staffAvailability.noProfile.title":
-    "Staff availability is not available yet",
+  "staffAvailability.noProfile.title": "Working hours are not available yet",
   "staffAvailability.noProfile.body":
-    "Ask the business owner to add your email in their Staff setup page, then log in again. Staff accounts can manage their own schedule and availability, but business profile, services and pricing stay with the business owner.",
+    "Ask the business to add your email to Team, then log in again. Once linked, you can manage your own working hours.",
   "staffAvailability.success.saved":
     "Availability saved. Mirëbook will use these staff hours when customers book with you.",
   "staffAvailability.upcoming.title":
@@ -2420,17 +2420,17 @@ export const en: TranslationTree = {
   "login.staffHint":
     "Staff invited by a business should sign in or register using the invited email address.",
   "register.roleExplainer.kicker": "Account type guide",
-  "register.roleExplainer.businessTitle": "Business owner account",
+  "register.roleExplainer.businessTitle": "Business account",
   "register.roleExplainer.staffTitle": "Staff account",
   "register.roleExplainer.customerTitle": "Customer account",
   "register.roleExplainer.businessBody":
     "Use this if you own or manage a business and need to set up services, staff, availability and customer bookings.",
   "register.roleExplainer.staffBody":
-    "Use this only if a business has already added this exact email to their staff list. Otherwise choose Customer or ask the business owner to invite you first.",
+    "Use this only if a business has already added this exact email to Team. Otherwise choose Customer or ask the business to invite you first.",
   "register.roleExplainer.customerBody":
     "Use this if you want to find businesses, book services and manage your appointments.",
   "register.staffNotice.noInvite":
-    "If no staff profile is found, ask the business owner to add your email first, then register again.",
+    "If no staff profile is found, ask the business to add your email first, then register again.",
   "register.nextStep.kicker": "After registration",
   "register.nextStep.business":
     "You will go to your business dashboard to finish services, staff, availability and publishing.",
@@ -2441,18 +2441,18 @@ export const en: TranslationTree = {
   "register.helperText":
     "Not sure which account type to choose? Customers book services, businesses manage the platform setup, and staff need an invite from a business.",
   "support.staff.profileHelpText":
-    "If services, bookings or availability look wrong, ask the business owner to check your staff setup and assigned services.",
+    "If services, bookings or availability look wrong, ask the business to check your Team profile and assigned services.",
   "support.staff.noProfileStep1":
     "Check you registered with the same email the business added.",
   "support.staff.noProfileStep2":
-    "Ask the business owner to open Staff setup and confirm your email is listed.",
+    "Ask the business to open Team and confirm your email is listed.",
   "support.staff.noProfileStep3":
-    "Log out and log back in after the owner updates your staff profile.",
+    "Log out and log back in after the business updates your staff profile.",
   "support.staff.beforeSending.kicker": "Before sending",
   "support.staff.beforeSending.linked":
     "Include the affected booking, date, service or availability day so support can trace the issue faster.",
   "support.staff.beforeSending.unlinked":
-    "Include the business name and the email address the owner added to their staff list.",
+    "Include the business name and the email address the business added to Team.",
   "support.staff.calendarBody":
     "Look ahead across your assigned bookings by month.",
   "support.staff.notificationsBody":
@@ -2461,10 +2461,10 @@ export const en: TranslationTree = {
   "support.staff.troubleshooting.title": "Common staff setup checks",
   "support.staff.troubleshooting.accessTitle": "Cannot access staff workspace",
   "support.staff.troubleshooting.accessBody":
-    "The business owner must add the same email address you use to log in.",
+    "The business must add the same email address you use to log in.",
   "support.staff.troubleshooting.servicesTitle": "No services shown",
   "support.staff.troubleshooting.servicesBody":
-    "The owner must assign services to your staff profile before customers can book you.",
+    "The business must assign services to your staff profile before customers can book you.",
   "support.staff.troubleshooting.availabilityTitle": "No bookable times",
   "support.staff.troubleshooting.availabilityBody":
     "Check that your availability is open and that the business itself also has working hours.",
@@ -2625,7 +2625,7 @@ export const en: TranslationTree = {
     "Track customer appointments, pending requests and reschedules.",
   "support.quickLinks.businessSetup": "Business setup",
   "support.quickLinks.businessSetupBody":
-    "Manage business profile, services, staff, hours and publishing.",
+    "Open profile, services, team, working hours and publishing.",
   "support.quickLinks.staffWorkspace": "Staff workspace",
   "support.quickLinks.staffWorkspaceBody":
     "View staff schedule and access staff availability tools.",
@@ -2646,10 +2646,10 @@ export const en: TranslationTree = {
   "support.faq.businessReadyTitle":
     "How does a business get ready for customers?",
   "support.faq.businessReadyBody":
-    "A business should complete its profile, add services, assign staff, set working hours and choose booking settings before publishing. The setup hub shows what still needs attention.",
+    "A business should complete its profile, add services, assign team members, set working hours and choose booking rules before publishing. Setup shows what still needs attention.",
   "support.faq.staffAccessTitle": "How does staff access work?",
   "support.faq.staffAccessBody":
-    "A business owner adds a staff member and their email. When that person registers or logs in with the same email, Mirëbook can link their account to the staff profile.",
+    "A business adds a team member and their email. When that person registers or logs in with the same email, Mirëbook can link them to the staff profile.",
   "support.faq.countriesTitle":
     "Will Mirëbook support Albania and other countries?",
   "support.faq.countriesBody":
@@ -2838,14 +2838,14 @@ export const en: TranslationTree = {
   "explore.filters.clearButton": "Clear filters",
   "explore.filters.refreshButton": "Refresh results",
   "staffAvailability.templates.compactTitle": "Quick templates",
-  "staff.workspace.ownerStaffWorkspace": "My work inside your business account",
+  "staff.workspace.ownerStaffWorkspace": "My work inside this business",
   "staff.actions.businessDashboard": "Business dashboard",
 
   "staffAvailability.ownerStaffAvailability":
-    "Staff availability linked to your owner account",
+    "Personal working hours for this business",
 
   "staffNotifications.ownerStaffBody":
-    "Staff updates linked to your owner account, schedule, profile and assigned bookings.",
+    "Updates about your schedule, profile and assigned bookings.",
 
   "dashboardStaff.card.accountLinkedBody":
     "This staff profile is connected to a user login. They can access their own staff workspace.",
@@ -2864,11 +2864,11 @@ export const en: TranslationTree = {
   "dashboardStaff.ownerAsStaff.linkedTitle":
     "Owner is also set up as bookable staff",
   "dashboardStaff.ownerAsStaff.linkedBody":
-    "This owner account is linked to a staff profile, so the owner can manage the business and also use the staff workspace for their own appointments.",
+    "You also take appointments, so you can manage the business and use Staff for your own schedule.",
   "dashboardStaff.ownerAsStaff.linkedBodyCompact":
-    "Your owner account is also bookable and has a personal staff workspace.",
+    "You also take appointments and have a personal staff workspace.",
   "dashboardStaff.ownerAsStaff.confirmDeactivateSelf":
-    "This staff profile is linked to your own account. Deactivating it will not remove your business owner access, but it will stop this staff profile from appearing as bookable for new appointments. Continue?",
+    "This is your own bookable staff profile. Deactivating it keeps your business access, but customers will no longer be able to book you for new appointments. Continue?",
 
   "dashboardStaff.list.linkedLogins": "linked logins",
   "dashboardStaff.list.readyToLink": "ready to link",
@@ -2891,9 +2891,9 @@ export const en: TranslationTree = {
     "The business invite must use the same email address as this staff account.",
   "staff.unlinked.emailFallback":
     "Use the email address shown in your account.",
-  "staff.unlinked.stepInviteTitle": "Ask the owner to invite you",
+  "staff.unlinked.stepInviteTitle": "Ask the business to invite you",
   "staff.unlinked.stepInviteBody":
-    "The business owner should add this exact email from their Staff setup page.",
+    "The business should add this exact email from Team.",
   "staff.unlinked.stepLinkTitle": "Refresh after linking",
   "staff.unlinked.stepLinkBody":
     "Once linked, your schedule, availability and staff notifications will appear here.",
@@ -2918,7 +2918,7 @@ export const en: TranslationTree = {
   "dashboardLayout.staffNav.calendar": "Calendar",
   "dashboardLayout.staffNav.availability": "Availability",
   "dashboardLayout.staffNav.notifications": "Notifications",
-  "dashboardLayout.staffNav.manageBusiness": "Manage business",
+  "dashboardLayout.staffNav.manageBusiness": "Business dashboard",
 
   "staff.home.todayKicker": "Today",
   "staff.home.todayAppointments": "today",
@@ -2928,12 +2928,12 @@ export const en: TranslationTree = {
   "staff.home.availabilityBody":
     "Set the days and hours customers can book you.",
   "staff.home.notificationsBody": "See booking, schedule and profile updates.",
-  "staff.home.ownerContext": "Business management stays in Manage business.",
+  "staff.home.ownerContext": "Business admin stays in the business dashboard.",
   "staff.assignedServices.emptyCompact":
-    "No services are assigned yet. Ask the business owner to update your Team profile.",
+    "No services are assigned yet. Ask the business to update your Team profile.",
 
   "staff.ownerSetup.noBusiness":
-    "No business profile was found for this owner account.",
+    "No business profile was found for this account.",
   "staff.ownerSetup.confirm":
     "Add yourself as bookable staff for this business? You will still manage the business from the business dashboard, but this creates a personal staff profile for your own appointments.",
   "staff.ownerSetup.alreadyLinked":
@@ -2943,18 +2943,18 @@ export const en: TranslationTree = {
   "staff.ownerSetup.success":
     "You have been added as bookable staff. Assign services and set your availability next.",
   "staff.ownerSetup.error": "Could not add you as bookable staff.",
-  "staff.ownerSetup.kicker": "Owner account",
+  "staff.ownerSetup.kicker": "Business account",
   "staff.ownerSetup.title": "You are not set up as bookable staff yet",
   "staff.ownerSetup.body":
-    "Business owners can manage the business without being bookable staff. If you personally take appointments, add yourself as bookable staff, then assign services and set your own availability.",
-  "staff.ownerSetup.stepManageTitle": "Owner access stays separate",
+    "You can run the business without taking appointments. If customers should book you directly, add yourself as staff, then assign services and working hours.",
+  "staff.ownerSetup.stepManageTitle": "Business access stays separate",
   "staff.ownerSetup.stepManageBody":
     "Your business dashboard remains your default workspace for managing bookings, staff, services and business settings.",
   "staff.ownerSetup.stepBookableTitle": "Personal staff profile",
   "staff.ownerSetup.stepBookableBody":
     "Only add yourself here if customers should be able to book appointments directly with you.",
   "staff.ownerSetup.compactRule":
-    "Your owner access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
+    "Business access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
   "staff.ownerSetup.addSelf": "Add myself as bookable staff",
   "staffAvailability.note.compactBody":
     "These hours control when customers can book you. Existing appointments are not moved when your hours change.",
@@ -3295,13 +3295,13 @@ export const en: TranslationTree = {
   "support.operator.flowBody":
     "Customer, staff and business support forms create saved conversations and notify operators with a direct link to the ticket.",
   "dashboardStaff.invite.savedNoEmail":
-    "Invite saved. Email delivery is not configured, so share the secure invite link manually or ask them to sign in with the invited email.",
+    "Invite saved. Share the secure invite link or ask them to sign in with the invited email.",
   "dashboardStaff.invite.emailSent":
     "Invite saved and the invitation email was sent.",
   "dashboardStaff.invite.savedManualLink":
     "Invite saved. Email was skipped safely. Manual invite link:",
   "dashboardStaff.invite.appUrlMissing":
-    "Invite saved, but email could not be sent because the production application URL is not configured.",
+    "Invite saved, but the invite email could not be sent. Share the secure invite link instead.",
   "myBookings.error.cancellationStatusChanged":
     "This booking can no longer be cancelled because its status has changed.",
   "staffInvite.kicker": "Staff invitation",
@@ -3333,9 +3333,9 @@ export const en: TranslationTree = {
   "forgotPassword.businessKicker": "Mirëbook Business security",
   "forgotPassword.title": "Reset your password",
   "forgotPassword.body":
-    "Enter your Mirëbook login email. We will ask Supabase to send a secure password reset link.",
+    "Enter your Mirëbook login email. We will send a secure password reset link.",
   "forgotPassword.businessBody":
-    "Enter the email used for your business owner or staff login. The reset link will return you to Mirëbook Business.",
+    "Enter the email used for your business or staff login. The reset link will return you to Mirëbook Business.",
   "forgotPassword.emailLabel": "Email address",
   "forgotPassword.emailPlaceholder": "you@example.com",
   "forgotPassword.sending": "Sending reset link...",

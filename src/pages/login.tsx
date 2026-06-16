@@ -84,9 +84,7 @@ export default function LoginPage() {
     }
 
     if (capabilities.defaultRoute === "/my-bookings") {
-      router.replace(
-        redirectTo || "/my-bookings",
-      );
+      router.replace(redirectTo || "/my-bookings");
       return;
     }
 
@@ -338,7 +336,7 @@ export default function LoginPage() {
               {isBusinessEntry
                 ? t(
                     "login.business.subtitle",
-                    "Use your business owner or invited staff account. Existing access and routing stay connected to the same Mirëbook login.",
+                    "Use your business or invited staff account. Mirëbook opens the right workspace for your access.",
                   )
                 : t(
                     "login.subtitle",
@@ -424,7 +422,10 @@ export default function LoginPage() {
                   disabled={resendingVerification}
                 >
                   {resendingVerification
-                    ? t("verification.resending", "Sending verification email...")
+                    ? t(
+                        "verification.resending",
+                        "Sending verification email...",
+                      )
                     : t("verification.resend", "Resend verification email")}
                 </button>
               </div>

@@ -288,9 +288,9 @@ export default function StaffCalendarPage() {
                     hasBusinessWorkspace
                       ? t(
                           "staff.workspace.ownerStaffWorkspace",
-                          "Staff workspace linked to your owner account",
+                          "My work inside this business",
                         )
-                      : t("staff.workspace.staffOnly", "Staff-only workspace")
+                      : t("staff.workspace.staffOnly", "Staff workspace")
                   }`
                 : t(
                     "staffCalendar.body",
@@ -298,7 +298,6 @@ export default function StaffCalendarPage() {
                   )}
             </p>
           </div>
-
         </div>
 
         {loading && (

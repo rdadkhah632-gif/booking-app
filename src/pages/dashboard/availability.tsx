@@ -299,7 +299,7 @@ export default function Availability() {
     setSuccess(
       t(
         "dashboardAvailability.success.saved",
-        "Business-wide working hours saved. Mirëbook will use these as a fallback when staff-specific hours are not set.",
+        "Working hours saved. These hours guide customer booking when staff hours are not set.",
       ),
     );
     await init();

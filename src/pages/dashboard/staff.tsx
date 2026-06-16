@@ -499,7 +499,7 @@ export default function StaffPage() {
 
     let deliveryMessage = t(
       "dashboardStaff.invite.savedNoEmail",
-      "Invite saved. Email delivery is not configured, so share the secure invite link manually or ask them to sign in with the invited email.",
+      "Invite saved. Share the secure invite link or ask them to sign in with the invited email.",
     );
 
     try {
@@ -526,13 +526,10 @@ export default function StaffPage() {
           "dashboardStaff.invite.savedManualLink",
           "Invite saved. Email was skipped safely. Manual invite link:",
         )} ${payload.manualInviteUrl}`;
-      } else if (
-        response.ok &&
-        payload.delivery?.reason === "config_missing"
-      ) {
+      } else if (response.ok && payload.delivery?.reason === "config_missing") {
         deliveryMessage = t(
           "dashboardStaff.invite.appUrlMissing",
-          "Invite saved, but email could not be sent because the production application URL is not configured.",
+          "Invite saved, but the invite email could not be sent. Share the secure invite link instead.",
         );
       }
     } catch {
@@ -586,7 +583,7 @@ export default function StaffPage() {
       const confirmed = confirm(
         t(
           "dashboardStaff.ownerAsStaff.confirmDeactivateSelf",
-          "This staff profile is linked to your own account. Deactivating it will not remove your business owner access, but it will stop this staff profile from appearing as bookable for new appointments. Continue?",
+          "This is your own bookable staff profile. Deactivating it keeps your business access, but customers will no longer be able to book you for new appointments. Continue?",
         ),
       );
 
@@ -824,11 +821,11 @@ export default function StaffPage() {
                 {ownerStaffProfile
                   ? t(
                       "dashboardStaff.ownerAsStaff.linkedBodyCompact",
-                      "Your owner account is also bookable and has a personal staff workspace.",
+                      "You also take appointments and have a personal staff workspace.",
                     )
                   : t(
                       "dashboardStaff.ownerAsStaff.bodyCompact",
-                      "Owners only need a staff profile when customers should book them directly.",
+                      "Add yourself only if customers should book you directly.",
                     )}
               </p>
             </div>
@@ -887,7 +884,7 @@ export default function StaffPage() {
             <p className="small muted">
               {t(
                 "dashboardStaff.list.body",
-                "Staff and owners customers can book. Open a person’s details to manage services, access and working hours.",
+                "People customers can book. Open a person’s details to manage services, access and working hours.",
               )}
               {staff.length > 0 && (
                 <span className="staff-login-summary">
@@ -910,7 +907,7 @@ export default function StaffPage() {
                 <p className="muted">
                   {t(
                     "dashboardStaff.empty.body",
-                    "Add your first bookable staff member above, or add the owner only if they personally take appointments. Then assign services and set working hours.",
+                    "Add the first person customers can book. Then assign services and set working hours.",
                   )}
                 </p>
               </div>

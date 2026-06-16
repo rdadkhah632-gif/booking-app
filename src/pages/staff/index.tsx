@@ -222,7 +222,7 @@ export default function StaffDashboardPage() {
       setError(
         t(
           "staff.ownerSetup.noBusiness",
-          "No business profile was found for this owner account.",
+          "No business profile was found for this account.",
         ),
       );
       return;
@@ -376,7 +376,7 @@ export default function StaffDashboardPage() {
           <div className="card staff-unlinked-card">
             <p className="small" style={{ color: "var(--warning)" }}>
               {hasBusinessWorkspace
-                ? t("staff.ownerSetup.kicker", "Owner account")
+                ? t("staff.ownerSetup.kicker", "Business account")
                 : isStaffIntentAccount
                   ? t("staff.unlinked.kicker", "Staff account created")
                   : t("staff.noProfile.kicker", "No staff profile linked")}
@@ -391,14 +391,14 @@ export default function StaffDashboardPage() {
                   ? t("staff.unlinked.title", "No business linked yet")
                   : t(
                       "staff.noProfile.title",
-                      "Ask the business owner to invite you",
+                      "Ask the business to invite you",
                     )}
             </h1>
             <p className="muted staff-unlinked-body">
               {hasBusinessWorkspace
                 ? t(
                     "staff.ownerSetup.body",
-                    "Business owners can manage the business without being bookable staff. If you personally take appointments, add yourself as bookable staff, then assign services and set your own availability.",
+                    "You can run the business without taking appointments. If customers should book you directly, add yourself as staff, then assign services and working hours.",
                   )
                 : isStaffIntentAccount
                   ? t(
@@ -407,14 +407,14 @@ export default function StaffDashboardPage() {
                     )
                   : t(
                       "staff.noProfile.body",
-                      "This account is not linked to a staff profile yet. Ask the business owner to add your email in their Staff setup page, then log in again.",
+                      "This account is not linked to a staff profile yet. Ask the business to add your email to Team, then log in again.",
                     )}
             </p>
             {hasBusinessWorkspace ? (
               <p className="small staff-owner-setup-note">
                 {t(
                   "staff.ownerSetup.compactRule",
-                  "Your owner access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
+                  "Business access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
                 )}
               </p>
             ) : (
@@ -433,12 +433,15 @@ export default function StaffDashboardPage() {
                 </div>
                 <div className="staff-unlinked-step">
                   <strong>
-                    {t("staff.unlinked.stepInviteTitle", "Ask the owner to invite you")}
+                    {t(
+                      "staff.unlinked.stepInviteTitle",
+                      "Ask the business to invite you",
+                    )}
                   </strong>
                   <p className="small muted">
                     {t(
                       "staff.unlinked.stepInviteBody",
-                      "The business owner should add this exact email from their Staff setup page.",
+                      "The business should add this exact email from Team.",
                     )}
                   </p>
                 </div>
@@ -527,9 +530,9 @@ export default function StaffDashboardPage() {
                     {hasBusinessWorkspace
                       ? t(
                           "staff.workspace.ownerStaffWorkspace",
-                          "Staff workspace linked to your owner account",
+                          "My work inside this business",
                         )
-                      : t("staff.workspace.staffOnly", "Staff-only workspace")}
+                      : t("staff.workspace.staffOnly", "Staff workspace")}
                   </p>
                 </div>
               </div>
@@ -626,10 +629,7 @@ export default function StaffDashboardPage() {
               </Link>
               <Link href="/staff/notifications" className="staff-quick-link">
                 <strong>
-                  {t(
-                    "dashboardLayout.staffNav.notifications",
-                    "Notifications",
-                  )}
+                  {t("dashboardLayout.staffNav.notifications", "Notifications")}
                 </strong>
                 <span>
                   {t(
@@ -650,10 +650,12 @@ export default function StaffDashboardPage() {
                 </strong>
                 <p className="small muted">
                   {assignedServices.length > 0
-                    ? assignedServices.map((service) => service.name).join(" · ")
+                    ? assignedServices
+                        .map((service) => service.name)
+                        .join(" · ")
                     : t(
                         "staff.assignedServices.emptyCompact",
-                        "No services are assigned yet. Ask the business owner to update your Team profile.",
+                        "No services are assigned yet. Ask the business to update your Team profile.",
                       )}
                 </p>
               </div>
@@ -661,7 +663,7 @@ export default function StaffDashboardPage() {
                 <span className="staff-owner-context">
                   {t(
                     "staff.home.ownerContext",
-                    "Business management stays in Manage business.",
+                    "Business admin stays in the business dashboard.",
                   )}
                 </span>
               )}
@@ -885,7 +887,6 @@ export default function StaffDashboardPage() {
             width: 100%;
             justify-content: center;
           }
-
         }
       `}</style>
     </DashboardLayout>
