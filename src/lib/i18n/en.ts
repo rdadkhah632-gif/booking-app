@@ -836,8 +836,7 @@ export const en: TranslationTree = {
   "dashboardSettings.tools.supportBody":
     "Get help with setup, bookings or account changes.",
   "dashboardHome.title": "Today",
-  "dashboardHome.subtitle":
-    "Appointments, requests and setup progress for today.",
+  "dashboardHome.subtitle": "Appointments and requests for today.",
   "dashboardHome.checkingAccount": "Checking your account...",
   "dashboardHome.refreshHint":
     "Mirëbook refreshes this dashboard when you return to the tab. Use refresh if a customer action does not appear straight away.",
@@ -890,8 +889,7 @@ export const en: TranslationTree = {
     "Add bookings to see your most popular service",
   "dashboardHome.schedule.kicker": "Schedule preview",
   "dashboardHome.schedule.title": "Next 7 days",
-  "dashboardHome.schedule.body":
-    "A quick view of upcoming confirmed bookings. Open the booking manager for full filtering and actions.",
+  "dashboardHome.schedule.body": "Upcoming confirmed bookings.",
   "dashboardHome.schedule.openBookings": "Open booking manager",
   "dashboardHome.schedule.today": "Today",
   "dashboardHome.schedule.tomorrow": "Tomorrow",
@@ -1778,6 +1776,9 @@ export const en: TranslationTree = {
   "dashboardBookings.emptyCalendar.title": "No appointments scheduled yet",
   "dashboardBookings.emptyCalendar.body":
     "Confirmed appointments will appear here by time once customers book.",
+  "dashboardBookings.calendar.emptySlotTitle": "No appointments on this day",
+  "dashboardBookings.calendar.emptySlotBody":
+    "Bookings will appear here at their scheduled time.",
   "dashboardBookings.emptyRecords.title": "No booking records yet",
   "dashboardBookings.emptyRecords.body":
     "Requests, upcoming appointments and booking history will appear here after customers start booking.",
@@ -1816,7 +1817,7 @@ export const en: TranslationTree = {
   "dashboardBookings.success.actionCompleted": "Action completed",
   "common.dismiss": "Dismiss",
   "dashboardNotifications.pageSubtitle":
-    "Review business updates here. Use Bookings as the main workspace for booking decisions and schedule actions.",
+    "Requests and updates for this business.",
   "dashboardNotifications.error.load": "Could not load notifications.",
   "dashboardNotifications.success.markedRead":
     "Business notifications marked as read.",
@@ -1873,7 +1874,7 @@ export const en: TranslationTree = {
   "dashboardNotifications.loading": "Loading Mirëbook notifications...",
   "dashboardNotifications.empty.title": "No pending actions",
   "dashboardNotifications.empty.body":
-    "Booking approvals, customer reschedule requests and business notifications will appear here when they need your attention.",
+    "Booking requests and important updates will appear here.",
   "dashboardNotifications.empty.openToday": "Open today’s bookings",
   "dashboardNotifications.empty.bookingSettings": "Booking settings",
   "dashboardNotifications.inbox.kicker": "Notification inbox",
@@ -2805,11 +2806,11 @@ export const en: TranslationTree = {
   "billing.included.notifications": "Notifications",
   "billing.included.noCommission": "No normal booking commission",
   "billing.included.noCustomerFee": "No customer booking fee",
-  "billing.onlinePaymentsTitle": "Membership checkout",
+  "billing.onlinePaymentsTitle": "Plans",
   "billing.onlinePaymentsBody":
-    "Membership plans are being enabled for early partners. Customer bookings stay separate from membership.",
+    "Mirëbook Business is available for early partners. Customer bookings stay separate from membership.",
   "billing.noAccessRestriction":
-    "Membership status does not restrict bookings, staff access or your public listing.",
+    "Bookings, staff access and your public listing remain available.",
   "billing.manualSetupHelp": "Ask about membership",
   "billing.checkout.start": "Start membership checkout",
   "billing.checkout.starting": "Opening checkout...",

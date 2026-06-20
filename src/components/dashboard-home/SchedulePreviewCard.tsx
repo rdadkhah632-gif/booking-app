@@ -21,13 +21,6 @@ export default function SchedulePreviewCard({
       <div className="schedule-preview-header">
         <div>
           <h3>{t("dashboardHome.schedule.title", "Next 7 days")}</h3>
-
-          <p className="small muted">
-            {t(
-              "dashboardHome.schedule.body",
-              "A quick view of upcoming confirmed bookings. Open the booking manager for full filtering and actions.",
-            )}
-          </p>
         </div>
       </div>
 

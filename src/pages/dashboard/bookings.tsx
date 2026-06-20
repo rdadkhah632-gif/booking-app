@@ -42,6 +42,27 @@ function addDays(date: Date, days: number) {
   return result;
 }
 
+const CALENDAR_HOUR_HEIGHT = 72;
+const CALENDAR_MIN_BLOCK_HEIGHT = 52;
+const DEFAULT_CALENDAR_START_HOUR = 8;
+const DEFAULT_CALENDAR_END_HOUR = 18;
+
+function minutesSinceMidnight(date: Date) {
+  return date.getHours() * 60 + date.getMinutes();
+}
+
+function dateKeyForDate(date: Date) {
+  return toDateInputValue(date);
+}
+
+function labelForDateKey(dateKey: string) {
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
 export default function Bookings() {
   const router = useRouter();
   const { t } = useI18n();
@@ -824,11 +845,7 @@ export default function Bookings() {
       })
       .map(([dateKey, rows]) => ({
         dateKey,
-        label: new Date(`${dateKey}T12:00:00`).toLocaleDateString(undefined, {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-        }),
+        label: labelForDateKey(dateKey),
         bookings: rows.sort(
           (a, b) =>
             new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
@@ -867,21 +884,42 @@ export default function Bookings() {
     statusFilter !== "all" ||
     staffFilter !== "all" ||
     Boolean(searchTerm.trim());
-  const emptyWorkspaceTitle = isBookingListMode
-    ? t("dashboardBookings.emptyRecords.title", "No booking records yet")
-    : t(
-        "dashboardBookings.emptyCalendar.title",
-        "No appointments scheduled yet",
-      );
-  const emptyWorkspaceBody = isBookingListMode
-    ? t(
-        "dashboardBookings.emptyRecords.body",
-        "Requests, upcoming appointments and booking history will appear here after customers start booking.",
-      )
-    : t(
-        "dashboardBookings.emptyCalendar.body",
-        "Confirmed appointments will appear here by time once customers book.",
-      );
+
+  const calendarGroups = useMemo(() => {
+    if (isBookingListMode) return [];
+    if (groupedFilteredBookings.length > 0) return groupedFilteredBookings;
+
+    const today = startOfDay(new Date());
+    const dateForFilter =
+      rangeFilter === "tomorrow"
+        ? addDays(today, 1)
+        : rangeFilter === "custom"
+          ? new Date(`${selectedDate}T12:00:00`)
+          : today;
+
+    if (rangeFilter === "week") {
+      return Array.from({ length: 7 }, (_, index) => {
+        const date = addDays(today, index);
+        const dateKey = dateKeyForDate(date);
+
+        return {
+          dateKey,
+          label: labelForDateKey(dateKey),
+          bookings: [] as Booking[],
+        };
+      });
+    }
+
+    const dateKey = dateKeyForDate(dateForFilter);
+
+    return [
+      {
+        dateKey,
+        label: labelForDateKey(dateKey),
+        bookings: [] as Booking[],
+      },
+    ];
+  }, [groupedFilteredBookings, isBookingListMode, rangeFilter, selectedDate]);
 
   function customerHistoryLink(booking: Booking) {
     if (booking.customer_user_id) {
@@ -910,6 +948,38 @@ export default function Bookings() {
     setSelectedDate(value);
     setRangeFilter("custom");
     replaceBookingsQuery({ nextFilter: "custom", nextDate: value });
+  }
+
+  function scheduleWindowFor(dayBookings: Booking[]) {
+    if (dayBookings.length === 0) {
+      return {
+        startHour: DEFAULT_CALENDAR_START_HOUR,
+        endHour: DEFAULT_CALENDAR_END_HOUR,
+      };
+    }
+
+    const startMinutes = dayBookings.map((booking) =>
+      minutesSinceMidnight(bookingTime(booking).start),
+    );
+    const endMinutes = dayBookings.map((booking) =>
+      minutesSinceMidnight(bookingTime(booking).end),
+    );
+
+    const earliest = Math.min(...startMinutes);
+    const latest = Math.max(...endMinutes);
+    const startHour = Math.max(
+      0,
+      Math.min(DEFAULT_CALENDAR_START_HOUR, Math.floor(earliest / 60)),
+    );
+    const endHour = Math.min(
+      24,
+      Math.max(DEFAULT_CALENDAR_END_HOUR, Math.ceil(latest / 60)),
+    );
+
+    return {
+      startHour,
+      endHour: Math.max(endHour, startHour + 1),
+    };
   }
 
   function renderAppointment(booking: Booking) {
@@ -1017,6 +1087,132 @@ export default function Bookings() {
     );
   }
 
+  function renderCalendarBlock(booking: Booking, startHour: number) {
+    const time = bookingTime(booking);
+    const startMinutes = minutesSinceMidnight(time.start);
+    const endMinutes = minutesSinceMidnight(time.end);
+    const durationMinutes = Math.max(
+      15,
+      endMinutes - startMinutes || booking.duration_minutes,
+    );
+    const blockTop =
+      ((startMinutes - startHour * 60) / 60) * CALENDAR_HOUR_HEIGHT;
+    const blockHeight = Math.max(
+      CALENDAR_MIN_BLOCK_HEIGHT,
+      (durationMinutes / 60) * CALENDAR_HOUR_HEIGHT,
+    );
+
+    return (
+      <Link
+        key={booking.id}
+        href={customerHistoryLink(booking)}
+        className={`calendar-schedule-block ${booking.status}`}
+        style={{
+          top: `${Math.max(0, blockTop)}px`,
+          height: `${blockHeight}px`,
+        }}
+      >
+        <span className="schedule-block-time">{time.label}</span>
+        <strong>
+          {booking.customer_name ||
+            t("dashboardBookings.card.customerFallback", "Customer")}
+        </strong>
+        <span className="schedule-block-meta">
+          {booking.services?.name ||
+            t("dashboardBookings.card.noService", "No service recorded")}
+          {booking.staff_members?.name
+            ? ` · ${booking.staff_members.name}`
+            : ""}
+        </span>
+        <span className={`calendar-status status-${booking.status}`}>
+          {statusLabel(booking.status)}
+        </span>
+      </Link>
+    );
+  }
+
+  function renderScheduleDay(group: {
+    dateKey: string;
+    label: string;
+    bookings: Booking[];
+  }) {
+    const { startHour, endHour } = scheduleWindowFor(group.bookings);
+    const hours = Array.from(
+      { length: endHour - startHour + 1 },
+      (_, index) => startHour + index,
+    );
+    const scheduleHeight = (endHour - startHour) * CALENDAR_HOUR_HEIGHT;
+
+    return (
+      <section key={group.dateKey} className="calendar-day calendar-day-visual">
+        <div className="calendar-day-heading">
+          {group.bookings.length > 0 && (
+            <p className="small muted">
+              {group.bookings.length}{" "}
+              {t("dashboardBookings.appointmentCount", "appointment")}
+              {group.bookings.length === 1 ? "" : "s"}
+            </p>
+          )}
+          <h2 style={{ fontFamily: "var(--font-display)" }}>{group.label}</h2>
+        </div>
+
+        <div
+          className="calendar-schedule-grid"
+          style={{ minHeight: `${scheduleHeight}px` }}
+        >
+          <div className="calendar-time-rail" aria-hidden="true">
+            {hours.map((hour) => (
+              <span
+                key={hour}
+                style={{
+                  top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
+                }}
+              >
+                {String(hour).padStart(2, "0")}:00
+              </span>
+            ))}
+          </div>
+
+          <div
+            className="calendar-schedule-lane"
+            style={{ height: `${scheduleHeight}px` }}
+          >
+            {hours.slice(0, -1).map((hour) => (
+              <span
+                key={hour}
+                className="calendar-hour-line"
+                style={{
+                  top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
+                }}
+              />
+            ))}
+
+            {group.bookings.length === 0 ? (
+              <div className="calendar-schedule-empty">
+                <strong>
+                  {t(
+                    "dashboardBookings.calendar.emptySlotTitle",
+                    "No appointments on this day",
+                  )}
+                </strong>
+                <span>
+                  {t(
+                    "dashboardBookings.calendar.emptySlotBody",
+                    "Bookings will appear here at their scheduled time.",
+                  )}
+                </span>
+              </div>
+            ) : (
+              group.bookings.map((booking) =>
+                renderCalendarBlock(booking, startHour),
+              )
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <DashboardLayout
       title={
@@ -1096,82 +1292,7 @@ export default function Bookings() {
         </div>
       )}
 
-      {!pageLoading && business && bookings.length === 0 && (
-        <section className="calendar-empty-state">
-          <div>
-            <h2>{emptyWorkspaceTitle}</h2>
-            <p className="muted">{emptyWorkspaceBody}</p>
-          </div>
-
-          <div className="calendar-empty-ready-card">
-            <strong>
-              {t(
-                "dashboardBookings.emptyCalendar.readyTitle",
-                "Ready to take bookings?",
-              )}
-            </strong>
-            <p className="small muted">
-              {t(
-                "dashboardBookings.emptyCalendar.readyBody",
-                "Complete setup, preview the customer profile, then share the booking page when you are ready.",
-              )}
-            </p>
-          </div>
-
-          <div className="calendar-empty-action-grid">
-            <Link
-              href="/dashboard/businesses"
-              className="calendar-empty-action"
-            >
-              <strong>{t("dashboardLayout.nav.setup", "Setup")}</strong>
-              <span>
-                {t("dashboardBookings.empty.completeSetup", "Complete setup")}
-              </span>
-            </Link>
-            <Link href="/dashboard/services" className="calendar-empty-action">
-              <strong>{t("dashboardLayout.nav.services", "Services")}</strong>
-              <span>
-                {t("dashboardBookings.empty.addService", "Add first service")}
-              </span>
-            </Link>
-            <Link
-              href="/dashboard/availability"
-              className="calendar-empty-action"
-            >
-              <strong>{t("dashboardHome.setup.hours", "Working hours")}</strong>
-              <span>
-                {t(
-                  "dashboardBookings.empty.setAvailability",
-                  "Set availability",
-                )}
-              </span>
-            </Link>
-            <Link
-              href={`/explore/${business.id}`}
-              className="calendar-empty-action"
-            >
-              <strong>
-                {t("dashboardHome.setup.preview", "See what customers see")}
-              </strong>
-              <span>
-                {t(
-                  "dashboardBookings.empty.previewProfile",
-                  "Preview public profile",
-                )}
-              </span>
-            </Link>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="btn btn-ghost calendar-empty-today"
-          >
-            {t("dashboardLayout.nav.today", "Today")}
-          </Link>
-        </section>
-      )}
-
-      {!pageLoading && business && bookings.length > 0 && (
+      {!pageLoading && business && (
         <div className="calendar-workspace">
           <section className="calendar-shell">
             <div className="booking-mode-switch">
@@ -1378,29 +1499,19 @@ export default function Bookings() {
             </section>
           )}
 
-          {filteredBookings.length === 0 && (
+          {filteredBookings.length === 0 && isBookingListMode && (
             <section className="calendar-empty-state">
               <h2>
-                {isBookingListMode
-                  ? t(
-                      "dashboardBookings.empty.noBookingRecordsTitle",
-                      "No booking records match",
-                    )
-                  : t(
-                      "dashboardBookings.empty.noFilteredTitle",
-                      "No appointments in this schedule",
-                    )}
+                {t(
+                  "dashboardBookings.empty.noBookingRecordsTitle",
+                  "No booking records match",
+                )}
               </h2>
               <p className="muted">
-                {isBookingListMode
-                  ? t(
-                      "dashboardBookings.empty.noBookingRecordsBody",
-                      "Try a different status, staff member or search term.",
-                    )
-                  : t(
-                      "dashboardBookings.empty.noFilteredBody",
-                      "Try another date, staff member, status or search term.",
-                    )}
+                {t(
+                  "dashboardBookings.empty.noBookingRecordsBody",
+                  "Try a different status, staff member or search term.",
+                )}
               </p>
               <button
                 type="button"
@@ -1412,24 +1523,28 @@ export default function Bookings() {
             </section>
           )}
 
-          {groupedFilteredBookings.map((group) => (
-            <section key={group.dateKey} className="calendar-day">
-              <div className="calendar-day-heading">
-                <p className="small muted">
-                  {group.bookings.length}{" "}
-                  {t("dashboardBookings.appointmentCount", "appointment")}
-                  {group.bookings.length === 1 ? "" : "s"}
-                </p>
-                <h2 style={{ fontFamily: "var(--font-display)" }}>
-                  {group.label}
-                </h2>
-              </div>
+          {isBookingListMode
+            ? groupedFilteredBookings.map((group) => (
+                <section key={group.dateKey} className="calendar-day">
+                  <div className="calendar-day-heading">
+                    <p className="small muted">
+                      {group.bookings.length}{" "}
+                      {t("dashboardBookings.appointmentCount", "appointment")}
+                      {group.bookings.length === 1 ? "" : "s"}
+                    </p>
+                    <h2 style={{ fontFamily: "var(--font-display)" }}>
+                      {group.label}
+                    </h2>
+                  </div>
 
-              <div className="calendar-day-schedule">
-                {group.bookings.map((booking) => renderAppointment(booking))}
-              </div>
-            </section>
-          ))}
+                  <div className="calendar-day-schedule">
+                    {group.bookings.map((booking) =>
+                      renderAppointment(booking),
+                    )}
+                  </div>
+                </section>
+              ))
+            : calendarGroups.map((group) => renderScheduleDay(group))}
         </div>
       )}
 
@@ -1599,27 +1714,152 @@ export default function Bookings() {
           color: var(--text-muted);
         }
 
-        .calendar-day {
+        :global(.calendar-day) {
           display: grid;
           gap: 0.8rem;
         }
 
-        .calendar-day-heading {
+        :global(.calendar-day-heading) {
           padding-top: 0.35rem;
           border-bottom: 1px solid var(--border);
         }
 
-        .calendar-day-heading h2,
-        .calendar-day-heading p {
+        :global(.calendar-day-heading h2),
+        :global(.calendar-day-heading p) {
           margin-top: 0;
         }
 
-        .calendar-day-schedule {
+        :global(.calendar-day-schedule) {
           display: grid;
           gap: 0.55rem;
         }
 
-        .calendar-appointment {
+        :global(.calendar-day-visual) {
+          padding-bottom: 0.35rem;
+        }
+
+        :global(.calendar-schedule-grid) {
+          display: grid;
+          grid-template-columns: 4.5rem minmax(0, 1fr);
+          gap: 0.75rem;
+          min-width: 0;
+        }
+
+        :global(.calendar-time-rail),
+        :global(.calendar-schedule-lane) {
+          position: relative;
+          min-width: 0;
+        }
+
+        :global(.calendar-time-rail span) {
+          position: absolute;
+          right: 0;
+          transform: translateY(-0.55rem);
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        :global(.calendar-schedule-lane) {
+          overflow: hidden;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(11, 18, 32, 0.34);
+        }
+
+        :global(.calendar-hour-line) {
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: var(--border);
+        }
+
+        :global(.calendar-schedule-empty) {
+          position: absolute;
+          inset: 0.75rem;
+          display: grid;
+          place-content: center;
+          gap: 0.3rem;
+          border: 1px dashed rgba(148, 163, 184, 0.28);
+          border-radius: calc(var(--radius) - 2px);
+          color: var(--text);
+          text-align: center;
+        }
+
+        :global(.calendar-schedule-empty span) {
+          color: var(--text-muted);
+          font-size: 0.86rem;
+        }
+
+        :global(.calendar-schedule-block) {
+          position: absolute;
+          left: 0.75rem;
+          right: 0.75rem;
+          display: grid;
+          align-content: start;
+          gap: 0.14rem;
+          overflow: hidden;
+          padding: 0.62rem 0.72rem;
+          border: 1px solid rgba(45, 212, 191, 0.28);
+          border-left: 4px solid var(--success);
+          border-radius: calc(var(--radius) - 2px);
+          background:
+            linear-gradient(
+              135deg,
+              rgba(45, 212, 191, 0.14),
+              rgba(45, 212, 191, 0.06)
+            ),
+            rgba(15, 23, 42, 0.92);
+          color: var(--text);
+          text-decoration: none;
+          box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+        }
+
+        :global(.calendar-schedule-block.pending) {
+          border-color: rgba(255, 107, 53, 0.34);
+          border-left-color: var(--accent);
+          background:
+            linear-gradient(
+              135deg,
+              rgba(255, 107, 53, 0.16),
+              rgba(255, 107, 53, 0.06)
+            ),
+            rgba(15, 23, 42, 0.94);
+        }
+
+        :global(.calendar-schedule-block.cancelled),
+        :global(.calendar-schedule-block.declined) {
+          border-left-color: var(--warning);
+          opacity: 0.76;
+        }
+
+        :global(.calendar-schedule-block.completed) {
+          opacity: 0.82;
+        }
+
+        :global(.schedule-block-time),
+        :global(.schedule-block-meta) {
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        :global(.calendar-schedule-block strong) {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        :global(.calendar-schedule-block .calendar-status) {
+          width: fit-content;
+          margin-top: 0.18rem;
+        }
+
+        :global(.calendar-appointment) {
           display: grid;
           grid-template-columns: 9rem minmax(0, 1fr) auto;
           gap: 0.9rem;
@@ -1628,38 +1868,38 @@ export default function Bookings() {
           border-bottom: 1px solid var(--border);
         }
 
-        .calendar-appointment.pending {
+        :global(.calendar-appointment.pending) {
           border-left: 3px solid var(--accent);
           padding-left: 0.75rem;
         }
 
-        .calendar-time,
-        .calendar-appointment-main {
+        :global(.calendar-time),
+        :global(.calendar-appointment-main) {
           display: grid;
           gap: 0.25rem;
           min-width: 0;
         }
 
-        .calendar-time span {
+        :global(.calendar-time span) {
           color: var(--text-muted);
           font-size: 0.78rem;
         }
 
-        .calendar-appointment-heading,
-        .calendar-actions {
+        :global(.calendar-appointment-heading),
+        :global(.calendar-actions) {
           display: flex;
           gap: 0.55rem;
           align-items: center;
           flex-wrap: wrap;
         }
 
-        .calendar-appointment-heading a {
+        :global(.calendar-appointment-heading a) {
           color: var(--text);
           font-weight: 900;
           text-decoration: none;
         }
 
-        .calendar-status {
+        :global(.calendar-status) {
           border-radius: 999px;
           padding: 0.18rem 0.5rem;
           background: var(--surface-2);
@@ -1668,29 +1908,29 @@ export default function Bookings() {
           font-weight: 800;
         }
 
-        .status-pending {
+        :global(.status-pending) {
           background: rgba(255, 107, 53, 0.12);
           color: var(--accent);
         }
 
-        .status-confirmed,
-        .status-completed {
+        :global(.status-confirmed),
+        :global(.status-completed) {
           background: rgba(45, 212, 191, 0.12);
           color: var(--success);
         }
 
-        .calendar-note {
+        :global(.calendar-note) {
           margin-top: 0;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
-        .calendar-actions {
+        :global(.calendar-actions) {
           justify-content: flex-end;
         }
 
-        .calendar-action-error {
+        :global(.calendar-action-error) {
           grid-column: 2 / -1;
           margin: 0;
           color: var(--danger);
@@ -1821,16 +2061,33 @@ export default function Bookings() {
             align-items: flex-start;
           }
 
-          .calendar-appointment {
+          :global(.calendar-schedule-grid) {
+            grid-template-columns: 3.7rem minmax(0, 1fr);
+            gap: 0.55rem;
+          }
+
+          :global(.calendar-schedule-block) {
+            left: 0.45rem;
+            right: 0.45rem;
+            padding: 0.55rem 0.6rem;
+          }
+
+          :global(.calendar-time-rail span),
+          :global(.schedule-block-time),
+          :global(.schedule-block-meta) {
+            font-size: 0.72rem;
+          }
+
+          :global(.calendar-appointment) {
             grid-template-columns: 1fr;
             align-items: stretch;
             padding: 0.85rem 0;
           }
 
-          .calendar-actions,
-          .calendar-actions :global(.btn),
-          .calendar-actions button,
-          .calendar-actions a {
+          :global(.calendar-actions),
+          :global(.calendar-actions .btn),
+          :global(.calendar-actions button),
+          :global(.calendar-actions a) {
             width: 100%;
             justify-content: center;
           }

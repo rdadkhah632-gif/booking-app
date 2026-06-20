@@ -289,3 +289,24 @@ schema.
 Stage 8.8D did not change booking logic, booking status transitions, service or
 staff creation behavior, availability save behavior, auth, route protection,
 staff linking, billing writes, notifications or database schema.
+
+## Stage 8.9 Business Calendar And Shell Tightening Implemented
+
+- rebuilt the business Calendar surface into a schedule-first time lane so empty
+  and booked days look like a working calendar rather than another booking list
+- kept Bookings as the record/action manager with existing accept, decline,
+  cancel and complete actions unchanged
+- tightened Today by removing duplicate explanatory copy and fixing mobile stat
+  spacing so counts and labels no longer run together
+- removed repeated helper text from the seven-day preview and business Inbox
+  toolbar so operational screens start closer to usable content
+- simplified Membership into one status summary plus plan details instead of
+  several competing status cards
+- corrected business sidebar active states so Today no longer appears active on
+  every dashboard route
+- updated English and Albanian translation values for the touched UI copy
+
+Stage 8.9 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+linking, billing checkout/webhook writes, notifications behavior or database
+schema.

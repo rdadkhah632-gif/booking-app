@@ -1126,10 +1126,10 @@ export default function BusinessNotifications() {
 
   return (
     <DashboardLayout
-      title={t("account.needsAction", "Needs action")}
+      title={t("dashboardLayout.nav.inbox", "Inbox")}
       subtitle={t(
         "dashboardNotifications.pageSubtitle",
-        "Review business updates here. Use Bookings as the main workspace for booking decisions and schedule actions.",
+        "Requests and updates for this business.",
       )}
     >
       {success && (
@@ -1164,13 +1164,6 @@ export default function BusinessNotifications() {
       )}
 
       <div className="business-notification-toolbar">
-        <p className="small muted">
-          {t(
-            "dashboardNotifications.toolbar.body",
-            "Notifications highlight what changed. Open Bookings for the full appointment record, filters and booking actions.",
-          )}
-        </p>
-
         <div className="business-notification-toolbar-actions">
           <button
             type="button"
@@ -1296,7 +1289,7 @@ export default function BusinessNotifications() {
             <p className="muted" style={{ marginTop: "0.5rem" }}>
               {t(
                 "dashboardNotifications.empty.body",
-                "Booking approvals, customer reschedule requests and business notifications will appear here when they need your attention.",
+                "Booking requests and important updates will appear here.",
               )}
             </p>
 
@@ -1308,13 +1301,6 @@ export default function BusinessNotifications() {
                 {t(
                   "dashboardNotifications.empty.openToday",
                   "Open today’s bookings",
-                )}
-              </Link>
-
-              <Link href="/dashboard/settings" className="btn btn-ghost">
-                {t(
-                  "dashboardNotifications.empty.bookingSettings",
-                  "Booking settings",
                 )}
               </Link>
             </div>
@@ -1343,7 +1329,9 @@ export default function BusinessNotifications() {
 
           {recentBusinessNotifications.map((notification) => {
             const linkedBooking = notification.booking_id
-              ? bookings.find((booking) => booking.id === notification.booking_id)
+              ? bookings.find(
+                  (booking) => booking.id === notification.booking_id,
+                )
               : null;
             const displayNotification = businessNotificationText(
               notification,
@@ -1989,6 +1977,7 @@ export default function BusinessNotifications() {
           gap: 0.75rem;
           flex-wrap: wrap;
           justify-content: flex-end;
+          margin-left: auto;
         }
 
         .business-notification-section {

@@ -403,52 +403,36 @@ export default function DashboardBillingPage() {
             </div>
           )}
 
-          <div className="grid-3" style={{ marginBottom: "1.5rem" }}>
-            <div className="card">
+          <div className="card membership-summary-card">
+            <div>
               <p className="small muted">
                 {t("billing.subscriptionStatus", "Membership status")}
               </p>
-              <h3>{statusLabel(billing.billing_status)}</h3>
-              <p className="small muted" style={{ marginTop: "0.5rem" }}>
+              <h2>{statusLabel(billing.billing_status)}</h2>
+              <p className="small muted">
                 {statusBody(billing.billing_status)}
               </p>
             </div>
 
-            <div className="card">
-              <p className="small muted">
-                {t("billing.agreedPrice", "Agreed monthly price")}
-              </p>
-              <h3>
-                {monthlyPrice || t("billing.priceNotSet", "Not agreed yet")}
-              </h3>
-              <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                {t(
-                  "billing.noChargeYet",
-                  "No customer booking commission is charged during the early partner period.",
-                )}
-              </p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">
-                {t("billing.offerStatus", "Offer status")}
-              </p>
-              <h3>
-                {billing.founding_business
-                  ? t("billing.foundingBusiness", "Founding business")
-                  : t("billing.standardLaunch", "Launch plan")}
-              </h3>
-              <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                {billing.second_month_free_eligible
-                  ? t(
-                      "billing.secondMonthFree",
-                      "Eligible for the second month free.",
-                    )
-                  : t(
-                      "billing.offerRecordedManually",
-                      "Offer details are recorded manually by Mirëbook.",
-                    )}
-              </p>
+            <div className="membership-summary-details">
+              <div>
+                <span className="small muted">
+                  {t("billing.agreedPrice", "Agreed monthly price")}
+                </span>
+                <strong>
+                  {monthlyPrice || t("billing.priceNotSet", "Not agreed yet")}
+                </strong>
+              </div>
+              <div>
+                <span className="small muted">
+                  {t("billing.offerStatus", "Offer")}
+                </span>
+                <strong>
+                  {billing.founding_business
+                    ? t("billing.foundingBusiness", "Founding business")
+                    : t("billing.standardLaunch", "Launch plan")}
+                </strong>
+              </div>
             </div>
           </div>
 
@@ -507,17 +491,17 @@ export default function DashboardBillingPage() {
             </div>
 
             <div className="card">
-              <h2>{t("billing.onlinePaymentsTitle", "Membership checkout")}</h2>
+              <h2>{t("billing.onlinePaymentsTitle", "Plans")}</h2>
               <p className="muted" style={{ marginTop: "0.65rem" }}>
                 {t(
                   "billing.onlinePaymentsBody",
-                  "Membership plans are being enabled for early partners. Customer bookings stay separate from membership.",
+                  "Mirëbook Business is available for early partners. Customer bookings stay separate from membership.",
                 )}
               </p>
               <p className="small muted" style={{ marginTop: "1rem" }}>
                 {t(
                   "billing.noAccessRestriction",
-                  "Membership status does not restrict bookings, staff access or your public listing.",
+                  "Bookings, staff access and your public listing remain available.",
                 )}
               </p>
               <button
@@ -545,6 +529,34 @@ export default function DashboardBillingPage() {
           gap: 1rem;
         }
 
+        .membership-summary-card {
+          display: grid;
+          grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+          gap: 1rem;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .membership-summary-card h2,
+        .membership-summary-card p {
+          margin-top: 0;
+        }
+
+        .membership-summary-details {
+          display: grid;
+          gap: 0.7rem;
+        }
+
+        .membership-summary-details div {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+        }
+
         .billing-date-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -562,13 +574,19 @@ export default function DashboardBillingPage() {
 
         @media (max-width: 760px) {
           .billing-grid,
+          .membership-summary-card,
           .billing-date-grid {
             width: 100%;
           }
 
           .billing-grid,
+          .membership-summary-card,
           .billing-date-grid {
             grid-template-columns: 1fr;
+          }
+
+          .membership-summary-details div {
+            display: grid;
           }
         }
       `}</style>

@@ -230,9 +230,12 @@ export default function DashboardLayout({
       }
     }
 
+    if (hrefPath === "/dashboard" || hrefPath === "/staff") {
+      return router.pathname === hrefPath;
+    }
+
     return (
-      router.pathname === hrefPath ||
-      (hrefPath !== "/staff" && router.pathname.startsWith(`${hrefPath}/`))
+      router.pathname === hrefPath || router.pathname.startsWith(`${hrefPath}/`)
     );
   }
 

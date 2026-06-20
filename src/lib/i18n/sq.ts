@@ -885,8 +885,7 @@ export const sq: TranslationTree = {
   "dashboardSettings.tools.supportBody":
     "Merr ndihmë për konfigurim, rezervime ose ndryshime llogarie.",
   "dashboardHome.title": "Sot",
-  "dashboardHome.subtitle":
-    "Takimet, kërkesat dhe progresi i konfigurimit për sot.",
+  "dashboardHome.subtitle": "Takimet dhe kërkesat për sot.",
   "dashboardHome.checkingAccount": "Duke kontrolluar llogarinë...",
   "dashboardHome.refreshHint":
     "Mirëbook e rifreskon këtë panel kur kthehesh në këtë tab. Përdor rifreskimin nëse një veprim i klientit nuk shfaqet menjëherë.",
@@ -939,8 +938,7 @@ export const sq: TranslationTree = {
     "Shto rezervime për të parë shërbimin më të kërkuar",
   "dashboardHome.schedule.kicker": "Parashikim orari",
   "dashboardHome.schedule.title": "7 ditët e ardhshme",
-  "dashboardHome.schedule.body":
-    "Një pamje e shpejtë e rezervimeve të ardhshme të konfirmuara. Hap menaxherin e rezervimeve për filtrim dhe veprime të plota.",
+  "dashboardHome.schedule.body": "Rezervimet e ardhshme të konfirmuara.",
   "dashboardHome.schedule.openBookings": "Hap menaxherin e rezervimeve",
   "dashboardHome.schedule.today": "Sot",
   "dashboardHome.schedule.tomorrow": "Nesër",
@@ -1762,6 +1760,9 @@ export const sq: TranslationTree = {
   "dashboardBookings.emptyCalendar.title": "Nuk ka ende takime të planifikuara",
   "dashboardBookings.emptyCalendar.body":
     "Takimet e konfirmuara do të shfaqen këtu sipas orarit pasi klientët të rezervojnë.",
+  "dashboardBookings.calendar.emptySlotTitle": "Nuk ka takime këtë ditë",
+  "dashboardBookings.calendar.emptySlotBody":
+    "Rezervimet do të shfaqen këtu në orarin e tyre.",
   "dashboardBookings.emptyRecords.title": "Nuk ka ende regjistra rezervimi",
   "dashboardBookings.emptyRecords.body":
     "Kërkesat, takimet e ardhshme dhe historiku do të shfaqen këtu pasi klientët të fillojnë të rezervojnë.",
@@ -1801,7 +1802,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.success.actionCompleted": "Veprimi u përfundua",
   "common.dismiss": "Mbyll",
   "dashboardNotifications.pageSubtitle":
-    "Shiko përditësimet e biznesit këtu. Përdor Rezervimet si hapësirën kryesore për vendimet dhe veprimet e orarit.",
+    "Kërkesa dhe përditësime për këtë biznes.",
   "dashboardNotifications.error.load": "Njoftimet nuk u ngarkuan.",
   "dashboardNotifications.success.markedRead":
     "Njoftimet e biznesit u shënuan si të lexuara.",
@@ -1860,7 +1861,7 @@ export const sq: TranslationTree = {
   "dashboardNotifications.loading": "Duke ngarkuar njoftimet Mirëbook...",
   "dashboardNotifications.empty.title": "Nuk ka veprime në pritje",
   "dashboardNotifications.empty.body":
-    "Miratimet e rezervimeve, kërkesat e klientëve për ndryshim orari dhe njoftimet e biznesit do të shfaqen këtu kur kërkojnë vëmendjen tënde.",
+    "Kërkesat e rezervimeve dhe përditësimet e rëndësishme do të shfaqen këtu.",
   "dashboardNotifications.empty.openToday": "Hap rezervimet e sotme",
   "dashboardNotifications.empty.bookingSettings": "Cilësimet e rezervimeve",
   "dashboardNotifications.inbox.kicker": "Kutia e njoftimeve",
@@ -2870,11 +2871,11 @@ export const sq: TranslationTree = {
   "billing.included.notifications": "Njoftimet",
   "billing.included.noCommission": "Pa komision normal për rezervimet",
   "billing.included.noCustomerFee": "Pa tarifë rezervimi për klientin",
-  "billing.onlinePaymentsTitle": "Checkout i anëtarësimit",
+  "billing.onlinePaymentsTitle": "Planet",
   "billing.onlinePaymentsBody":
-    "Planet e anëtarësimit po aktivizohen për partnerët e hershëm. Rezervimet e klientëve mbeten të ndara nga anëtarësimi.",
+    "Mirëbook Business është i disponueshëm për partnerët e hershëm. Rezervimet e klientëve mbeten të ndara nga anëtarësimi.",
   "billing.noAccessRestriction":
-    "Statusi i anëtarësimit nuk kufizon rezervimet, aksesin e stafit ose listimin publik.",
+    "Rezervimet, aksesi i stafit dhe listimi publik mbeten të disponueshme.",
   "billing.manualSetupHelp": "Pyet për anëtarësimin",
   "billing.checkout.start": "Fillo checkout-in e anëtarësimit",
   "billing.checkout.starting": "Po hapet checkout-i...",

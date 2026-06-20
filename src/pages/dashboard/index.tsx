@@ -459,10 +459,10 @@ export default function DashboardHome() {
   return (
     <DashboardLayout
       title={t("dashboardHome.title", "Today")}
-      subtitle={t(
-        "dashboardHome.subtitle",
-        "Appointments, requests and setup progress for today.",
-      )}
+      subtitle={
+        primaryBusiness?.name ||
+        t("dashboardHome.subtitle", "Appointments and requests for today.")
+      }
     >
       {error && (
         <div
@@ -499,9 +499,6 @@ export default function DashboardHome() {
           <div className="dashboard-today-main">
             <div className="dashboard-today-heading">
               <div>
-                <p className="small muted">
-                  {primaryBusiness?.name || t("common.business", "Business")}
-                </p>
                 <h2>
                   {t("dashboardHome.today.title", "What needs attention today")}
                 </h2>
@@ -513,12 +510,6 @@ export default function DashboardHome() {
               >
                 {todayStatusLabel}
               </span>
-              <p className="small muted">
-                {t(
-                  "dashboardHome.today.body",
-                  "Requests, appointments and the next setup action in one place.",
-                )}
-              </p>
             </div>
 
             <div className="dashboard-today-stats">
@@ -528,8 +519,8 @@ export default function DashboardHome() {
                   pendingActionCount > 0 ? "today-stat urgent" : "today-stat"
                 }
               >
-                <strong>{pendingActionCount}</strong>
-                <span>
+                <span className="today-stat-number">{pendingActionCount}</span>
+                <span className="today-stat-label">
                   {t("dashboardHome.today.requests", "Needs attention")}
                 </span>
               </Link>
@@ -537,15 +528,23 @@ export default function DashboardHome() {
                 href="/dashboard/bookings?view=today"
                 className="today-stat"
               >
-                <strong>{todayBookings.length}</strong>
-                <span>{t("dashboardHome.today.confirmedToday", "Today")}</span>
+                <span className="today-stat-number">
+                  {todayBookings.length}
+                </span>
+                <span className="today-stat-label">
+                  {t("dashboardHome.today.confirmedToday", "Today")}
+                </span>
               </Link>
               <Link
                 href="/dashboard/bookings?view=upcoming"
                 className="today-stat"
               >
-                <strong>{upcomingBookings.length}</strong>
-                <span>{t("dashboardHome.today.upcoming", "Upcoming")}</span>
+                <span className="today-stat-number">
+                  {upcomingBookings.length}
+                </span>
+                <span className="today-stat-label">
+                  {t("dashboardHome.today.upcoming", "Upcoming")}
+                </span>
               </Link>
             </div>
           </div>
@@ -626,9 +625,11 @@ export default function DashboardHome() {
           gap: 0.6rem;
         }
 
-        .today-stat {
+        :global(.today-stat) {
           display: grid;
-          gap: 0.2rem;
+          grid-template-columns: 3rem minmax(0, 1fr);
+          gap: 0.8rem;
+          align-items: center;
           min-width: 0;
           padding: 0.75rem;
           border: 1px solid var(--border);
@@ -638,25 +639,28 @@ export default function DashboardHome() {
           text-decoration: none;
         }
 
-        .today-stat.urgent {
+        :global(.today-stat.urgent) {
           border-color: rgba(255, 107, 53, 0.35);
           background: rgba(255, 107, 53, 0.08);
         }
 
-        .today-stat strong {
+        :global(.today-stat-number) {
+          display: block;
+          min-width: 3rem;
           color: inherit;
           font-family: var(--font-display);
-          font-size: 2rem;
+          font-size: 1.8rem;
           line-height: 1;
         }
 
-        .today-stat span {
+        :global(.today-stat-label) {
+          display: block;
           overflow: hidden;
           color: var(--text-muted);
           font-size: 0.84rem;
           font-weight: 800;
           text-overflow: ellipsis;
-          white-space: nowrap;
+          white-space: normal;
         }
 
         .dashboard-next-action {
