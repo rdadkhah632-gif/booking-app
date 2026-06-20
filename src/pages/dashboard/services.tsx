@@ -3,6 +3,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
+import IllustratedEmptyState from "@/components/dashboard/IllustratedEmptyState";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 import CreateServiceCard from "@/components/dashboard-services/CreateServiceCard";
 import ServiceCard from "@/components/dashboard-services/ServiceCard";
@@ -33,7 +34,7 @@ export default function Services() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [duration, setDuration] = useState(30);
   const [price, setPrice] = useState(0);
-  const [formExpanded, setFormExpanded] = useState(true);
+  const [formExpanded, setFormExpanded] = useState(false);
 
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [savingServiceId, setSavingServiceId] = useState<string | null>(null);
@@ -171,6 +172,13 @@ export default function Services() {
     setImagePreviewUrl("");
     setDuration(30);
     setPrice(0);
+  }
+
+  function openCreateServiceForm() {
+    setFormExpanded(true);
+    document
+      .getElementById("create-service-panel")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function handleCreateImageChange(file: File | null) {
@@ -573,33 +581,35 @@ export default function Services() {
               </p>
             </div>
           )}
-          <CreateServiceCard
-            formExpanded={formExpanded}
-            loading={loading}
-            uploadingImage={uploadingImage}
-            name={name}
-            description={description}
-            imageUrl={imageUrl}
-            imagePreviewUrl={imagePreviewUrl}
-            imageFile={imageFile}
-            duration={duration}
-            price={price}
-            durationOptions={durationOptions}
-            setFormExpanded={setFormExpanded}
-            setName={setName}
-            setDescription={setDescription}
-            setDuration={setDuration}
-            setPrice={setPrice}
-            handleCreateImageChange={handleCreateImageChange}
-            uploadCreateImage={uploadCreateImage}
-            clearCreateImage={() => {
-              setImageUrl("");
-              setImageFile(null);
-              setImagePreviewUrl("");
-            }}
-            resetForm={resetForm}
-            addService={addService}
-          />
+          <div id="create-service-panel">
+            <CreateServiceCard
+              formExpanded={formExpanded}
+              loading={loading}
+              uploadingImage={uploadingImage}
+              name={name}
+              description={description}
+              imageUrl={imageUrl}
+              imagePreviewUrl={imagePreviewUrl}
+              imageFile={imageFile}
+              duration={duration}
+              price={price}
+              durationOptions={durationOptions}
+              setFormExpanded={setFormExpanded}
+              setName={setName}
+              setDescription={setDescription}
+              setDuration={setDuration}
+              setPrice={setPrice}
+              handleCreateImageChange={handleCreateImageChange}
+              uploadCreateImage={uploadCreateImage}
+              clearCreateImage={() => {
+                setImageUrl("");
+                setImageFile(null);
+                setImagePreviewUrl("");
+              }}
+              resetForm={resetForm}
+              addService={addService}
+            />
+          </div>
 
           <div className="services-section-heading">
             <h2>
@@ -615,15 +625,26 @@ export default function Services() {
 
           <div className="services-list-grid">
             {services.length === 0 && (
-              <div className="card">
-                <h3>{t("dashboardServices.empty.title", "No services yet")}</h3>
-                <p className="muted">
-                  {t(
-                    "dashboardServices.empty.body",
-                    "Add your first service above. Then assign staff to it from the Staff page so customers can book it.",
-                  )}
-                </p>
-              </div>
+              <IllustratedEmptyState
+                variant="services"
+                title={t("dashboardServices.empty.title", "No services yet")}
+                body={t(
+                  "dashboardServices.empty.body",
+                  "Add your first service so customers can see what you offer.",
+                )}
+                action={
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={openCreateServiceForm}
+                  >
+                    <span className="empty-action-icon" aria-hidden="true">
+                      +
+                    </span>
+                    {t("dashboardServices.empty.cta", "Add your first service")}
+                  </button>
+                }
+              />
             )}
 
             {services.map((service) => (

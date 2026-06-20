@@ -3,6 +3,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
+import IllustratedEmptyState from "@/components/dashboard/IllustratedEmptyState";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 
 import CreateStaffCard from "@/components/dashboard-staff/CreateStaffCard";
@@ -295,6 +296,13 @@ export default function StaffPage() {
     setImageFile(null);
     setImagePreviewUrl("");
     setPermissionRole("staff");
+  }
+
+  function openCreateStaffForm() {
+    setFormExpanded(true);
+    document
+      .getElementById("create-staff-panel")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function handleCreateImageChange(file: File | null) {
@@ -838,21 +846,23 @@ export default function StaffPage() {
             )}
           </div>
 
-          <CreateStaffCard
-            loading={saving}
-            formExpanded={formExpanded}
-            name={name}
-            roleTitle={roleTitle}
-            email={email}
-            phone={phone}
-            setFormExpanded={setFormExpanded}
-            setName={setName}
-            setRoleTitle={setRoleTitle}
-            setEmail={setEmail}
-            setPhone={setPhone}
-            resetForm={resetForm}
-            addStaff={addStaff}
-          />
+          <div id="create-staff-panel">
+            <CreateStaffCard
+              loading={saving}
+              formExpanded={formExpanded}
+              name={name}
+              roleTitle={roleTitle}
+              email={email}
+              phone={phone}
+              setFormExpanded={setFormExpanded}
+              setName={setName}
+              setRoleTitle={setRoleTitle}
+              setEmail={setEmail}
+              setPhone={setPhone}
+              resetForm={resetForm}
+              addStaff={addStaff}
+            />
+          </div>
 
           {services.length === 0 && (
             <div
@@ -902,15 +912,29 @@ export default function StaffPage() {
 
           <div className="staff-card-list">
             {staff.length === 0 && (
-              <div className="card">
-                <h3>{t("dashboardStaff.empty.title", "No staff yet")}</h3>
-                <p className="muted">
-                  {t(
-                    "dashboardStaff.empty.body",
-                    "Add the first person customers can book. Then assign services and set working hours.",
-                  )}
-                </p>
-              </div>
+              <IllustratedEmptyState
+                variant="staff"
+                title={t("dashboardStaff.empty.title", "No staff yet")}
+                body={t(
+                  "dashboardStaff.empty.body",
+                  "Add your team members to manage appointments and keep services covered.",
+                )}
+                action={
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={openCreateStaffForm}
+                  >
+                    <span className="empty-action-icon" aria-hidden="true">
+                      +
+                    </span>
+                    {t(
+                      "dashboardStaff.empty.cta",
+                      "Add your first staff member",
+                    )}
+                  </button>
+                }
+              />
             )}
 
             {staff.map((member) => (

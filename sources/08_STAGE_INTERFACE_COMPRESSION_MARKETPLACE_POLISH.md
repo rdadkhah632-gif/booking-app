@@ -207,3 +207,19 @@ Remaining QA notes after Stage 8.7A:
   the mobile nav and Setup fixes land
 - continue the next pass from the heaviest remaining owner pages rather than
   adding new features
+
+## Stage 8.7B Illustrated Empty-State Polish Implemented
+
+- added a reusable illustrated dashboard empty state inspired by the supplied
+  Services and Team references, implemented as responsive code-native SVG/CSS
+  rather than baked image assets
+- replaced the plain empty Services card with a polished "No services yet"
+  state and a translated CTA that reopens the existing add-service form
+- replaced the plain empty Team card with a polished "No staff yet" state and a
+  translated CTA that reopens the existing add-staff form
+- kept the supplied artwork as visual direction only so copy remains
+  translatable, responsive and consistent with Mirëbook's dark interface
+
+Stage 8.7B did not change service creation, staff creation, booking logic,
+availability logic, auth, RLS, billing writes, notification behavior or
+database schema.

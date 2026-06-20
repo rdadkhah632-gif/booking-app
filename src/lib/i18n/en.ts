@@ -1282,7 +1282,8 @@ export const en: TranslationTree = {
     "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
   "dashboardServices.empty.title": "No services yet",
   "dashboardServices.empty.body":
-    "Add your first service above. Then assign staff to it from the Staff page so customers can book it.",
+    "Add your first service so customers can see what you offer.",
+  "dashboardServices.empty.cta": "Add your first service",
   "dashboardServices.card.untitled": "Untitled service",
   "dashboardServices.card.visible": "Visible",
   "dashboardServices.card.hidden": "Hidden",
@@ -1406,7 +1407,8 @@ export const en: TranslationTree = {
   "dashboardStaff.active.nowHidden": "is hidden from booking.",
   "dashboardStaff.empty.title": "No staff yet",
   "dashboardStaff.empty.body":
-    "Add the first person customers can book, then assign services and working hours.",
+    "Add your team members to manage appointments and keep services covered.",
+  "dashboardStaff.empty.cta": "Add your first staff member",
   "dashboardStaff.image.chooseFirst": "Choose an image file first.",
   "dashboardStaff.image.uploaded": "Staff image uploaded.",
   "dashboardStaff.image.uploadedLower": "image uploaded.",

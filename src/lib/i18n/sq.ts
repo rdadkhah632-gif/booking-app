@@ -1264,7 +1264,8 @@ export const sq: TranslationTree = {
     "Shto një përshkrim të shkurtër që klientët ta kuptojnë këtë shërbim.",
   "dashboardServices.empty.title": "Nuk ka ende shërbime",
   "dashboardServices.empty.body":
-    "Shto shërbimin e parë më sipër. Pastaj cakto staf nga faqja Staff që klientët ta rezervojnë.",
+    "Shto shërbimin e parë që klientët të shohin çfarë ofron.",
+  "dashboardServices.empty.cta": "Shto shërbimin e parë",
   "dashboardServices.card.untitled": "Shërbim pa emër",
   "dashboardServices.card.visible": "I dukshëm",
   "dashboardServices.card.hidden": "I fshehur",
@@ -1377,7 +1378,8 @@ export const sq: TranslationTree = {
   "dashboardStaff.noServices.cta": "Shto shërbime",
   "dashboardStaff.empty.title": "Nuk ka ende staf",
   "dashboardStaff.empty.body":
-    "Shto personin e parë që klientët mund të rezervojnë, pastaj cakto shërbimet dhe oraret.",
+    "Shto anëtarët e ekipit për të menaxhuar takimet dhe për të mbuluar shërbimet.",
+  "dashboardStaff.empty.cta": "Shto anëtarin e parë të stafit",
   "dashboardStaff.image.chooseFirst": "Zgjidh një skedar imazhi fillimisht.",
   "dashboardStaff.image.uploaded": "Imazhi i stafit u ngarkua.",
   "dashboardStaff.image.uploadedLower": "imazhi u ngarkua.",
