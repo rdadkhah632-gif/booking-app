@@ -1024,15 +1024,14 @@ export const en: TranslationTree = {
     "Follow the next step, then preview what customers will see.",
   "dashboardBusinesses.setup.profile": "Business profile",
   "dashboardBusinesses.setup.profileBody":
-    "Add the customer details people need before booking.",
+    "Add the basics customers see first.",
   "dashboardBusinesses.setup.profileAction": "Edit profile",
   "dashboardBusinesses.setup.services": "Services",
   "dashboardBusinesses.setup.servicesBody":
     "Create at least one active service customers can choose.",
   "dashboardBusinesses.setup.servicesAction": "Add service",
   "dashboardBusinesses.setup.team": "Team",
-  "dashboardBusinesses.setup.teamBody":
-    "Add bookable people and connect them to services.",
+  "dashboardBusinesses.setup.teamBody": "Add the people customers can book.",
   "dashboardBusinesses.setup.teamAction": "Manage team",
   "dashboardBusinesses.setup.hours": "Working hours",
   "dashboardBusinesses.setup.hoursBody":
@@ -1040,7 +1039,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.setup.hoursAction": "Set hours",
   "dashboardBusinesses.setup.preview": "Preview and publish",
   "dashboardBusinesses.setup.previewBody":
-    "Check the customer page, then publish when ready.",
+    "Check the customer page when setup is ready.",
   "dashboardBusinesses.setup.previewAction": "Preview profile",
   "dashboardBusinesses.setup.finishFirst": "Finish setup",
   "dashboardBusinesses.setup.of": "of",
@@ -2482,13 +2481,12 @@ export const en: TranslationTree = {
   "support.customer.viewConversation": "View conversation",
   "support.customer.allConversations": "All support messages",
   "support.customer.myMessages": "My support messages",
-  "support.customer.formBody":
-    "This creates a customer support conversation. Replies from Mirëbook support will appear in your support messages.",
+  "support.customer.formBody": "Replies appear in your support messages.",
   "support.customer.beforeSending.kicker": "Before sending",
   "support.customer.beforeSending.body":
-    "Include the business name, appointment date, service and what you expected to happen. This helps support trace the booking faster.",
+    "Include the business name, appointment date and what you expected to happen.",
   "support.customer.myMessagesBody":
-    "Read replies from Mirëbook support and continue conversations.",
+    "Read support replies and continue conversations.",
   "support.customer.guide.kicker": "Customer support guide",
   "support.customer.guide.pendingTitle": "Booking still pending",
   "support.customer.guide.pendingBody":
@@ -2533,17 +2531,17 @@ export const en: TranslationTree = {
     "This creates a staff support conversation. Replies from Mirëbook support will appear in your support messages.",
   "support.staff.myMessagesBody":
     "Read support replies and continue staff support conversations.",
-  "support.customer.heroTitle": "Customer booking support",
+  "support.customer.heroTitle": "Customer support",
   "support.customer.heroBody":
-    "Get help with your customer bookings, appointment requests, cancellations, notifications or account details.",
+    "Message Mirëbook support about a booking, account or notification issue.",
   "support.customer.loading": "Loading customer support...",
   "support.customer.loginRequired":
     "You need to be logged in to contact customer support.",
   "support.customer.validation":
     "Choose a subject and write a message before sending.",
   "support.customer.success": "Your customer support message has been sent.",
-  "support.customer.formKicker": "Customer support request",
-  "support.customer.formTitle": "Send a message to support",
+  "support.customer.formKicker": "Support request",
+  "support.customer.formTitle": "Send a message",
   "support.customer.namePlaceholder": "Your name",
   "support.customer.emailPlaceholder": "Your email",
   "support.customer.subjectLabel": "What is this about?",
@@ -2551,9 +2549,9 @@ export const en: TranslationTree = {
   "support.customer.messagePlaceholder":
     "Explain the issue. Include the business name, booking date, service or anything support needs to trace it.",
   "support.customer.sending": "Sending...",
-  "support.customer.sendButton": "Send customer support message",
-  "support.customer.linksKicker": "Useful customer links",
-  "support.customer.quickActions": "Quick actions",
+  "support.customer.sendButton": "Send message",
+  "support.customer.linksKicker": "Shortcuts",
+  "support.customer.quickActions": "Useful links",
   "support.customer.bookingsBody":
     "Track customer appointments, pending requests and reschedules.",
   "support.customer.notificationsBody":

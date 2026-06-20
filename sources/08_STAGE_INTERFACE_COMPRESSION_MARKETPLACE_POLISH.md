@@ -334,3 +334,24 @@ Stage 8.10 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.11 Cross-Role Visual QA Cleanup Implemented
+
+- visually reviewed customer, business owner and staff-intent flows with Browser
+  on a mobile viewport before editing
+- fixed the staff/account top navigation overflow by shortening staff work
+  labels to Today, Calendar, Availability and Inbox and allowing the rows to
+  wrap cleanly on mobile
+- aligned the Setup page's displayed progress with the Today dashboard's setup
+  steps so the same business no longer appears as 2 of 5 complete on Today but
+  0 of 5 on Setup
+- kept publishing and Explore-readiness validation unchanged; Setup still uses
+  existing booking-readiness rules before publishing
+- compressed the customer support page by removing duplicate hero/form/guide
+  explanations and keeping one support form plus three useful links
+- updated English and Albanian translation values for the touched visible copy
+
+Stage 8.11 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

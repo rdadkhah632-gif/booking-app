@@ -484,6 +484,10 @@ export default function Businesses() {
   const primaryReadiness = primaryBusiness
     ? getReadiness(primaryBusiness)
     : null;
+  const primaryProfileBasicsComplete = Boolean(
+    primaryBusiness?.name?.trim() &&
+    (primaryBusiness.category?.trim() || primaryBusiness.city?.trim()),
+  );
   const ownerStaffProfile = primaryBusiness
     ? ownerStaffProfileForBusiness(primaryBusiness.id)
     : null;
@@ -492,7 +496,7 @@ export default function Businesses() {
       ? [
           {
             key: "profile",
-            complete: primaryReadiness.profileComplete,
+            complete: primaryProfileBasicsComplete,
             href: "#business-profile-details",
             label: t("dashboardBusinesses.setup.profile", "Business profile"),
             helper: t(
@@ -520,9 +524,7 @@ export default function Businesses() {
           },
           {
             key: "team",
-            complete:
-              primaryReadiness.hasActiveStaff &&
-              primaryReadiness.hasStaffServiceAssignments,
+            complete: primaryReadiness.hasActiveStaff,
             href: "/dashboard/staff",
             label: t("dashboardBusinesses.setup.team", "Team"),
             helper: t(

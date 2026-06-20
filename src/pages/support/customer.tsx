@@ -179,13 +179,10 @@ export default function CustomerSupportPage() {
 
       <section
         className="container"
-        style={{ paddingTop: 42, paddingBottom: 72 }}
+        style={{ paddingTop: 32, paddingBottom: 64 }}
       >
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: "var(--accent)" }}>
-              {t("nav.customerSupport")}
-            </p>
             <h1 className="page-title">{t("support.customer.heroTitle")}</h1>
             <p className="page-sub" style={{ marginTop: "0.6rem" }}>
               {t(
@@ -196,9 +193,6 @@ export default function CustomerSupportPage() {
             <div className="support-hero-actions">
               <Link href="/support/messages" className="btn btn-accent">
                 {t("support.customer.myMessages", "My support messages")}
-              </Link>
-              <Link href="/my-bookings" className="btn btn-ghost">
-                {t("nav.myBookings", "My bookings")}
               </Link>
             </div>
           </div>
@@ -256,16 +250,7 @@ export default function CustomerSupportPage() {
                 className="card support-form-card"
               >
                 <div>
-                  <p className="small muted">
-                    {t("support.customer.formKicker")}
-                  </p>
                   <h2>{t("support.customer.formTitle")}</h2>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                    {t(
-                      "support.customer.formBody",
-                      "This creates a customer support conversation. Replies from Mirëbook support will appear in your support messages.",
-                    )}
-                  </p>
                 </div>
 
                 <div className="support-form-grid">
@@ -320,20 +305,12 @@ export default function CustomerSupportPage() {
                   </div>
                 </div>
 
-                <div className="support-submit-note">
-                  <p className="small muted">
-                    {t(
-                      "support.customer.beforeSending.kicker",
-                      "Before sending",
-                    )}
-                  </p>
-                  <p className="small muted">
-                    {t(
-                      "support.customer.beforeSending.body",
-                      "Include the business name, appointment date, service and what you expected to happen. This helps support trace the booking faster.",
-                    )}
-                  </p>
-                </div>
+                <p className="small muted support-submit-note">
+                  {t(
+                    "support.customer.beforeSending.body",
+                    "Include the business name, appointment date and what you expected to happen.",
+                  )}
+                </p>
 
                 <button
                   type="submit"
@@ -347,12 +324,27 @@ export default function CustomerSupportPage() {
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">
-                  {t("support.customer.linksKicker")}
-                </p>
                 <h2>{t("support.customer.quickActions")}</h2>
 
                 <div className="support-link-list">
+                  <Link href="/support/messages" className="support-link-row">
+                    <span>
+                      <strong>
+                        {t(
+                          "support.customer.myMessages",
+                          "My support messages",
+                        )}
+                      </strong>
+                      <small>
+                        {t(
+                          "support.customer.myMessagesBody",
+                          "Read support replies and continue conversations.",
+                        )}
+                      </small>
+                    </span>
+                    <span aria-hidden="true">→</span>
+                  </Link>
+
                   <Link href="/my-bookings" className="support-link-row">
                     <span>
                       <strong>{t("nav.myBookings")}</strong>
@@ -368,93 +360,6 @@ export default function CustomerSupportPage() {
                     </span>
                     <span aria-hidden="true">→</span>
                   </Link>
-
-                  <Link href="/support/messages" className="support-link-row">
-                    <span>
-                      <strong>
-                        {t(
-                          "support.customer.myMessages",
-                          "My support messages",
-                        )}
-                      </strong>
-                      <small>
-                        {t(
-                          "support.customer.myMessagesBody",
-                          "Read replies from Mirëbook support and continue conversations.",
-                        )}
-                      </small>
-                    </span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-
-                  <Link href="/explore" className="support-link-row">
-                    <span>
-                      <strong>{t("nav.explore")}</strong>
-                      <small>{t("support.customer.exploreBody")}</small>
-                    </span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-
-                  <Link href="/account" className="support-link-row">
-                    <span>
-                      <strong>{t("nav.account")}</strong>
-                      <small>{t("support.customer.accountBody")}</small>
-                    </span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-                </div>
-
-                <div className="support-customer-guide">
-                  <p className="small muted">
-                    {t(
-                      "support.customer.guide.kicker",
-                      "Customer support guide",
-                    )}
-                  </p>
-                  <div className="support-guide-list">
-                    <div>
-                      <strong>
-                        {t(
-                          "support.customer.guide.pendingTitle",
-                          "Booking still pending",
-                        )}
-                      </strong>
-                      <p className="small muted">
-                        {t(
-                          "support.customer.guide.pendingBody",
-                          "The business must approve some bookings before they become confirmed appointments.",
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <strong>
-                        {t(
-                          "support.customer.guide.changeTitle",
-                          "Need to change a time",
-                        )}
-                      </strong>
-                      <p className="small muted">
-                        {t(
-                          "support.customer.guide.changeBody",
-                          "Use My bookings first. If the business has not responded, send support the booking date and business name.",
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <strong>
-                        {t(
-                          "support.customer.guide.notificationsTitle",
-                          "Missing notifications",
-                        )}
-                      </strong>
-                      <p className="small muted">
-                        {t(
-                          "support.customer.guide.notificationsBody",
-                          "Check Notifications and your account email first, then message support if the booking status looks wrong.",
-                        )}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -464,18 +369,15 @@ export default function CustomerSupportPage() {
 
       <style jsx>{`
         .support-shell {
-          max-width: 1080px;
+          max-width: 980px;
           margin: 0 auto;
           display: grid;
-          gap: 1rem;
+          gap: 0.85rem;
         }
 
         .support-hero {
-          background: linear-gradient(
-            135deg,
-            rgba(255, 107, 53, 0.12),
-            rgba(45, 212, 191, 0.08)
-          );
+          padding: 1.25rem;
+          background: rgba(255, 107, 53, 0.08);
           border-color: rgba(255, 107, 53, 0.25);
         }
 
@@ -494,7 +396,7 @@ export default function CustomerSupportPage() {
 
         .support-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+          grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
           gap: 1rem;
           align-items: start;
         }
@@ -516,10 +418,7 @@ export default function CustomerSupportPage() {
         }
 
         .support-submit-note {
-          border: 1px solid rgba(45, 212, 191, 0.2);
-          border-radius: var(--radius);
-          padding: 0.85rem;
-          background: rgba(45, 212, 191, 0.06);
+          margin: -0.15rem 0 0;
         }
 
         .support-link-list {
@@ -543,25 +442,6 @@ export default function CustomerSupportPage() {
           margin-top: 0.2rem;
           color: var(--text-muted);
           line-height: 1.5;
-        }
-
-        .support-customer-guide {
-          border-top: 1px solid var(--border);
-          padding-top: 1rem;
-          display: grid;
-          gap: 0.75rem;
-        }
-
-        .support-guide-list {
-          display: grid;
-          gap: 0.75rem;
-        }
-
-        .support-guide-list div {
-          background: var(--surface-2);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 0.85rem;
         }
 
         @media (max-width: 860px) {

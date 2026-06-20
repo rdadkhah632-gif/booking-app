@@ -2094,7 +2094,7 @@ export const sq: TranslationTree = {
     "Ndiq hapin tjetër, pastaj shiko çfarë do të shohin klientët.",
   "dashboardBusinesses.setup.profile": "Profili i biznesit",
   "dashboardBusinesses.setup.profileBody":
-    "Shto detajet që klientët kanë nevojë para rezervimit.",
+    "Shto bazat që klientët shohin të parat.",
   "dashboardBusinesses.setup.profileAction": "Ndrysho profilin",
   "dashboardBusinesses.setup.services": "Shërbimet",
   "dashboardBusinesses.setup.servicesBody":
@@ -2102,7 +2102,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setup.servicesAction": "Shto shërbim",
   "dashboardBusinesses.setup.team": "Ekipi",
   "dashboardBusinesses.setup.teamBody":
-    "Shto persona të rezervueshëm dhe lidhi me shërbimet.",
+    "Shto personat që klientët mund të rezervojnë.",
   "dashboardBusinesses.setup.teamAction": "Menaxho ekipin",
   "dashboardBusinesses.setup.hours": "Orari i punës",
   "dashboardBusinesses.setup.hoursBody":
@@ -2110,7 +2110,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setup.hoursAction": "Vendos oraret",
   "dashboardBusinesses.setup.preview": "Shiko dhe publiko",
   "dashboardBusinesses.setup.previewBody":
-    "Kontrollo faqen e klientit, pastaj publiko kur të jetë gati.",
+    "Kontrollo faqen e klientit kur konfigurimi të jetë gati.",
   "dashboardBusinesses.setup.previewAction": "Shiko profilin",
   "dashboardBusinesses.setup.finishFirst": "Përfundo konfigurimin",
   "dashboardBusinesses.setup.of": "nga",
@@ -2557,13 +2557,12 @@ export const sq: TranslationTree = {
   "support.customer.viewConversation": "Shiko bisedën",
   "support.customer.allConversations": "Të gjitha mesazhet e suportit",
   "support.customer.myMessages": "Mesazhet e mia të suportit",
-  "support.customer.formBody":
-    "Kjo krijon një bisedë suporti për klientin. Përgjigjet nga suporti i Mirëbook do të shfaqen te mesazhet e suportit.",
+  "support.customer.formBody": "Përgjigjet shfaqen te mesazhet e suportit.",
   "support.customer.beforeSending.kicker": "Para se ta dërgosh",
   "support.customer.beforeSending.body":
-    "Përfshi emrin e biznesit, datën e takimit, shërbimin dhe çfarë prisje të ndodhte. Kjo e ndihmon suportin ta gjurmojë rezervimin më shpejt.",
+    "Përfshi emrin e biznesit, datën e takimit dhe çfarë prisje të ndodhte.",
   "support.customer.myMessagesBody":
-    "Lexo përgjigjet nga suporti i Mirëbook dhe vazhdo bisedat.",
+    "Lexo përgjigjet e suportit dhe vazhdo bisedat.",
   "support.customer.guide.kicker": "Udhëzues për suportin e klientit",
   "support.customer.guide.pendingTitle": "Rezervimi është ende në pritje",
   "support.customer.guide.pendingBody":
@@ -2610,17 +2609,17 @@ export const sq: TranslationTree = {
     "Kjo krijon një bisedë suporti për stafin. Përgjigjet nga suporti i Mirëbook do të shfaqen te mesazhet e suportit.",
   "support.staff.myMessagesBody":
     "Lexo përgjigjet e suportit dhe vazhdo bisedat e suportit të stafit.",
-  "support.customer.heroTitle": "Ndihmë për rezervimet e klientit",
+  "support.customer.heroTitle": "Ndihmë për klientët",
   "support.customer.heroBody":
-    "Merr ndihmë për rezervimet, kërkesat e takimeve, anulimet, njoftimet ose detajet e llogarisë.",
+    "Dërgo mesazh për një rezervim, llogari ose njoftim.",
   "support.customer.loading": "Duke ngarkuar ndihmën për klientë...",
   "support.customer.loginRequired":
     "Duhet të jesh i/e kyçur për të kontaktuar ndihmën për klientë.",
   "support.customer.validation":
     "Zgjidh një subjekt dhe shkruaj një mesazh para dërgimit.",
   "support.customer.success": "Mesazhi yt për ndihmën e klientit u dërgua.",
-  "support.customer.formKicker": "Kërkesë ndihme për klient",
-  "support.customer.formTitle": "Dërgo mesazh te suporti",
+  "support.customer.formKicker": "Kërkesë suporti",
+  "support.customer.formTitle": "Dërgo mesazh",
   "support.customer.namePlaceholder": "Emri yt",
   "support.customer.emailPlaceholder": "Email-i yt",
   "support.customer.subjectLabel": "Për çfarë bëhet fjalë?",
@@ -2628,9 +2627,9 @@ export const sq: TranslationTree = {
   "support.customer.messagePlaceholder":
     "Shpjego problemin. Përfshi emrin e biznesit, datën e rezervimit, shërbimin ose çdo gjë që suporti duhet të gjurmojë.",
   "support.customer.sending": "Duke dërguar...",
-  "support.customer.sendButton": "Dërgo mesazh për ndihmën e klientit",
-  "support.customer.linksKicker": "Linke të dobishme për klientët",
-  "support.customer.quickActions": "Veprime të shpejta",
+  "support.customer.sendButton": "Dërgo mesazhin",
+  "support.customer.linksKicker": "Shkurtore",
+  "support.customer.quickActions": "Linke të dobishme",
   "support.customer.bookingsBody":
     "Gjurmo takimet, kërkesat në pritje dhe ndryshimet e orarit.",
   "support.customer.notificationsBody":
