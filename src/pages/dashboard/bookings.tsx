@@ -867,6 +867,21 @@ export default function Bookings() {
     statusFilter !== "all" ||
     staffFilter !== "all" ||
     Boolean(searchTerm.trim());
+  const emptyWorkspaceTitle = isBookingListMode
+    ? t("dashboardBookings.emptyRecords.title", "No booking records yet")
+    : t(
+        "dashboardBookings.emptyCalendar.title",
+        "No appointments scheduled yet",
+      );
+  const emptyWorkspaceBody = isBookingListMode
+    ? t(
+        "dashboardBookings.emptyRecords.body",
+        "Requests, upcoming appointments and booking history will appear here after customers start booking.",
+      )
+    : t(
+        "dashboardBookings.emptyCalendar.body",
+        "Confirmed appointments will appear here by time once customers book.",
+      );
 
   function customerHistoryLink(booking: Booking) {
     if (booking.customer_user_id) {
@@ -1089,15 +1104,8 @@ export default function Bookings() {
       {!pageLoading && business && bookings.length === 0 && (
         <section className="calendar-empty-state">
           <div>
-            <h2>
-              {t("dashboardBookings.emptyCalendar.title", "No schedule yet")}
-            </h2>
-            <p className="muted">
-              {t(
-                "dashboardBookings.emptyCalendar.body",
-                "When customers book, your schedule and booking records will appear here.",
-              )}
-            </p>
+            <h2>{emptyWorkspaceTitle}</h2>
+            <p className="muted">{emptyWorkspaceBody}</p>
           </div>
 
           <div className="calendar-empty-ready-card">
@@ -1752,12 +1760,50 @@ export default function Bookings() {
           text-decoration: none;
         }
 
+        .calendar-empty-action strong,
+        .calendar-empty-action span {
+          display: block;
+          min-width: 0;
+        }
+
         .calendar-empty-action span {
           overflow: hidden;
           color: var(--text-muted);
           font-size: 0.82rem;
           text-overflow: ellipsis;
-          white-space: nowrap;
+          white-space: normal;
+        }
+
+        :global(.calendar-empty-action-grid) {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 0.65rem;
+        }
+
+        :global(.calendar-empty-action) {
+          display: grid;
+          gap: 0.2rem;
+          min-width: 0;
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        :global(.calendar-empty-action strong),
+        :global(.calendar-empty-action span) {
+          display: block;
+          min-width: 0;
+        }
+
+        :global(.calendar-empty-action span) {
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          text-overflow: ellipsis;
+          white-space: normal;
         }
 
         .calendar-empty-today {
@@ -1821,6 +1867,10 @@ export default function Bookings() {
           }
 
           .calendar-empty-action-grid {
+            grid-template-columns: 1fr;
+          }
+
+          :global(.calendar-empty-action-grid) {
             grid-template-columns: 1fr;
           }
 

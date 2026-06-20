@@ -176,3 +176,34 @@ Stage 8.7 remaining QA notes:
   Account and Staff routes
 - continue treating old admin-only/debug copy as outside the launch customer and
   business surface unless it appears in normal user flows
+
+## Stage 8.7A Business Ease-Of-Use Review Fixes Implemented
+
+- fixed the authenticated business mobile nav so the first viewport shows the
+  product instead of stretched active navigation blocks
+- kept business navigation as product-level links while moving account actions
+  into a compact secondary row on mobile
+- compressed Setup by leaving the guided checklist, next action and customer
+  preview as the primary experience
+- changed the heavy business profile editor into an intentionally expandable
+  section instead of opening automatically on fresh businesses
+- removed duplicate setup/readiness card grids and old shortcut buttons from the
+  business profile editor, including the old billing-groundwork link surface
+- gave Calendar and Bookings distinct no-data states:
+  Calendar explains the schedule, while Bookings explains requests, records and
+  history
+- cleaned normal business copy that exposed internal/planning language such as
+  billing groundwork, business-wide hours and future-launch wording
+
+Stage 8.7A did not change booking creation, status transitions, availability
+calculation, auth/session behavior, RLS, staff invite/linking, billing writes,
+notification generation or database schema.
+
+Remaining QA notes after Stage 8.7A:
+
+- visually inspect Setup after adding the first service, team member and working
+  hours to confirm the next-action checklist advances cleanly
+- inspect Booking rules and Account again for any remaining density issues after
+  the mobile nav and Setup fixes land
+- continue the next pass from the heaviest remaining owner pages rather than
+  adding new features

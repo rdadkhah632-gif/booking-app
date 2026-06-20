@@ -227,7 +227,7 @@ export const sq: TranslationTree = {
   "home.trust.supportCustomerTitle": "Ndihmë për klientët kur nevojitet",
   "home.trust.supportCustomerBody":
     "Ndihma për klientët, privatësia dhe udhëzimet për rezervimet janë të lehta për t’u arritur.",
-  "home.trust.billing": "Bazat e faturimit",
+  "home.trust.billing": "Anëtarësimi",
   "home.trust.supportKicker": "Ndihmë",
   "home.trust.supportTitle": "Ndihmë për klientë, biznese dhe staf",
   "home.trust.supportBody":
@@ -400,7 +400,7 @@ export const sq: TranslationTree = {
   "explore.trust.businessTitle": "Profile të bazuara në disponueshmëri reale",
   "explore.trust.businessBody":
     "Bizneset publikojnë shërbimet, caktojnë stafin dhe vendosin oraret para se të shfaqen si të rezervueshme.",
-  "explore.trust.billing": "Bazat e faturimit",
+  "explore.trust.billing": "Anëtarësimi",
   "explore.trust.supportKicker": "Ndihmë dhe besim",
   "explore.trust.supportTitle": "Ndihmë kur të duhet",
   "explore.trust.supportBody":
@@ -817,7 +817,7 @@ export const sq: TranslationTree = {
   "dashboardSettings.region.kicker": "Cilësimet rajonale",
   "dashboardSettings.region.title": "Zona kohore dhe monedha",
   "dashboardSettings.region.body":
-    "Këto parazgjedhje mbështesin MB, Shqipërinë dhe lançime ndërkombëtare në të ardhmen.",
+    "Përdoret për oraret e takimeve, çmimet dhe detajet që shohin klientët.",
   "dashboardSettings.region.timezone": "Zona kohore",
   "dashboardSettings.region.currency": "Monedha",
   "dashboardSettings.cancellation.kicker": "Politika e anulimit",
@@ -998,7 +998,7 @@ export const sq: TranslationTree = {
     "Menaxho stafin e rezervueshëm, caktimet e shërbimeve, ftesat dhe pronarin si staf.",
   "dashboardHome.shortcuts.availability.title": "Vendos disponueshmërinë",
   "dashboardHome.shortcuts.availability.body":
-    "Vendos ditët dhe oraret e biznesit kur klientët mund të rezervojnë.",
+    "Vendos ditët dhe oraret kur klientët mund të rezervojnë.",
   "dashboardBusinesses.pageTitle": "Konfigurimi",
   "dashboardBusinesses.pageSubtitle":
     "Përgatit biznesin që klientët të rezervojnë.",
@@ -1015,7 +1015,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.hero.title":
     "Konfiguro biznesin para se klientët të rezervojnë.",
   "dashboardBusinesses.hero.body":
-    "Shumica e bizneseve kanë nevojë vetëm për një profil. Kjo qendër mban bashkë profilin, shërbimet, stafin, oraret dhe kontrollet e publikimit.",
+    "Shumica e bizneseve kanë nevojë vetëm për një profil. Shto shërbimet, ekipin dhe oraret, pastaj publiko kur të jesh gati.",
   "dashboardBusinesses.workingHours": "Orari i punës",
   "dashboardBusinesses.stats.businesses": "Biznese",
   "dashboardBusinesses.stats.totalProfiles": "Profile biznesi gjithsej",
@@ -1098,7 +1098,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.profile.kicker": "Profili që shikon klienti",
   "dashboardBusinesses.profile.title": "Detajet e profilit",
   "dashboardBusinesses.profile.body":
-    "Këto detaje shfaqen në marketplace-in publik Mirëbook, faqen e rezervimit dhe më vonë në pamjen e aplikacionit mobile.",
+    "Këto detaje shfaqen në faqen publike ku klientët vendosin dhe rezervojnë.",
   "dashboardBusinesses.profile.nameLabel": "Emri i biznesit",
   "dashboardBusinesses.profile.categoryLabel": "Kategoria",
   "dashboardBusinesses.profile.cityLabel": "Qyteti",
@@ -1157,7 +1157,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.manualApproveBookings":
     "Mirato manualisht rezervimet e klientëve",
   "dashboardBusinesses.bookingApprovalBody":
-    "Pranimi automatik konfirmon menjëherë rezervimet e disponueshme. Miratimi manual i dërgon rezervimet e reja te Kërkon veprim për shqyrtim.",
+    "Zgjidh nëse rezervimet konfirmohen menjëherë apo presin miratim nga biznesi.",
   "dashboardBusinesses.autoAcceptNewBookings":
     "Prano automatikisht rezervimet e reja",
   "dashboardBusinesses.saveSetup": "Ruaj konfigurimin",
@@ -1464,7 +1464,7 @@ export const sq: TranslationTree = {
   "dashboardAvailability.businessPicker.manageBody":
     "Menaxho oraret e punës për këtë biznes.",
   "dashboardAvailability.businessPicker.manageCta": "Menaxho oraret",
-  "dashboardAvailability.hero.kicker": "Orari i punës së biznesit",
+  "dashboardAvailability.hero.kicker": "Orari i punës",
   "dashboardAvailability.hero.body":
     "Këto janë oraret e përgjithshme të hapjes. Orari i ekipit mund ta kufizojë më tej kur mund të rezervohet secili person.",
   "dashboardAvailability.stats.openDays": "Ditë të hapura",
@@ -1475,7 +1475,7 @@ export const sq: TranslationTree = {
     "Ditë biznesi të shënuara si të mbyllura",
   "dashboardAvailability.stats.weeklyHours": "Orë javore",
   "dashboardAvailability.stats.weeklyHoursBody":
-    "Orë të përgjithshme të hapura të biznesit",
+    "Orët e hapjes të vlerësuara për javën",
   "dashboardAvailability.stats.invalidDays": "Ditë të pavlefshme",
   "dashboardAvailability.stats.invalidDaysBody":
     "Ditë të hapura ku ora e fillimit nuk është para orës së mbarimit",
@@ -1754,9 +1754,12 @@ export const sq: TranslationTree = {
     "Nuk ka regjistra rezervimi që përputhen",
   "dashboardBookings.empty.noBookingRecordsBody":
     "Provo një status, anëtar ekipi ose term kërkimi tjetër.",
-  "dashboardBookings.emptyCalendar.title": "Nuk ka ende orar",
+  "dashboardBookings.emptyCalendar.title": "Nuk ka ende takime të planifikuara",
   "dashboardBookings.emptyCalendar.body":
-    "Kur klientët të rezervojnë, orari dhe regjistrat e rezervimeve do të shfaqen këtu.",
+    "Takimet e konfirmuara do të shfaqen këtu sipas orarit pasi klientët të rezervojnë.",
+  "dashboardBookings.emptyRecords.title": "Nuk ka ende regjistra rezervimi",
+  "dashboardBookings.emptyRecords.body":
+    "Kërkesat, takimet e ardhshme dhe historiku do të shfaqen këtu pasi klientët të fillojnë të rezervojnë.",
   "dashboardBookings.empty.checkSetup": "Kontrollo konfigurimin",
   "dashboardBookings.pendingStrip.title": "Kërkesa në pritje",
   "dashboardBookings.pendingStrip.body":
@@ -2115,7 +2118,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setup.advancedTitle": "Të avancuara",
   "dashboardBusinesses.setup.detailsTitle": "Detajet e profilit të biznesit",
   "dashboardBusinesses.setup.detailsBody":
-    "Ndrysho fushat e profilit, imazhin, rregullat e rezervimit dhe publikimin.",
+    "Ndrysho detajet që shohin klientët dhe publiko kur të jesh gati.",
   "dashboardBusinesses.setup.statusReady": "Gati për rezervime",
   "dashboardBusinesses.setup.statusHidden": "I fshehur nga Explore",
   "dashboardBusinesses.setup.statusPublish": "Gati për publikim",

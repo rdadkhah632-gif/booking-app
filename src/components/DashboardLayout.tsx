@@ -548,15 +548,33 @@ export default function DashboardLayout({
 
         @media (max-width: 720px) {
           .sidebar-nav {
-            flex-direction: row;
+            display: grid;
+            min-height: 0;
             gap: 0.5rem;
-            overflow-x: auto;
+            overflow: visible;
           }
 
           .sidebar-main-links,
-          .sidebar-lower-links,
+          .sidebar-account-actions {
+            display: flex;
+            gap: 0.45rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .sidebar-main-links::-webkit-scrollbar,
+          .sidebar-account-actions::-webkit-scrollbar {
+            display: none;
+          }
+
           .sidebar-account {
-            display: contents;
+            display: grid;
+            gap: 0.45rem;
+            margin-top: 0;
+            padding: 0;
+            border-top: 0;
           }
 
           .sidebar-section-label {
@@ -581,14 +599,11 @@ export default function DashboardLayout({
           }
 
           .sidebar-nav {
-            display: flex;
-            flex-direction: row;
-            gap: 0.45rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-bottom: 0.25rem;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
+            display: grid;
+            min-height: 0;
+            gap: 0.55rem;
+            overflow: visible;
+            padding-bottom: 0;
           }
 
           .sidebar-nav::-webkit-scrollbar {
@@ -596,27 +611,41 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links,
-          .sidebar-lower-links,
+          .sidebar-account-actions {
+            display: flex;
+            gap: 0.45rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .sidebar-main-links::-webkit-scrollbar,
+          .sidebar-account-actions::-webkit-scrollbar {
+            display: none;
+          }
+
           .sidebar-account {
-            display: contents;
+            display: grid;
+            gap: 0.45rem;
+            margin-top: 0;
+            padding: 0;
+            border-top: 0;
           }
 
           .sidebar-account-main {
             display: none;
           }
 
-          .sidebar-account-actions {
-            display: contents;
-          }
-
           .sidebar-account-actions a,
           .sidebar-account-actions button {
-            min-height: 2.6rem;
+            min-height: 2.35rem;
             padding: 0.65rem 0.85rem;
             flex: 0 0 auto;
             white-space: nowrap;
-            border-bottom: 3px solid transparent;
-            border-radius: 0;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface-2);
             color: var(--text-muted);
           }
 
@@ -627,17 +656,22 @@ export default function DashboardLayout({
           .sidebar-link,
           .sidebar-logout {
             width: auto;
-            min-height: 2.6rem;
+            min-height: 2.35rem;
+            display: inline-flex;
+            align-items: center;
             flex: 0 0 auto;
             white-space: nowrap;
             border-left: 0;
-            border-bottom: 3px solid transparent;
+            border-bottom: 0;
+            border-radius: 999px;
+            padding: 0.65rem 0.85rem;
           }
 
           .sidebar-link.active,
           .sidebar-link.urgent {
             border-left: 0;
-            border-bottom-color: var(--accent);
+            border-bottom-color: transparent;
+            background: rgba(255, 107, 53, 0.16);
           }
 
           .sidebar-link::after {

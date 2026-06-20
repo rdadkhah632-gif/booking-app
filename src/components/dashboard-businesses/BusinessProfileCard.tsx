@@ -6,8 +6,6 @@ import {
   UpdateBusinessField,
 } from "./dashboardBusinessesTypes";
 import BusinessImageUpload from "./BusinessImageUpload";
-import BusinessReadinessRow from "./BusinessReadinessRow";
-import BusinessSetupLinkCard from "./BusinessSetupLinkCard";
 
 type Props = {
   business: Business;
@@ -187,188 +185,7 @@ export default function BusinessProfileCard({
         </button>
       </div>
 
-      <div className="business-readiness-overview">
-        <div
-          className={
-            readiness.profileComplete
-              ? "business-readiness-panel ready"
-              : "business-readiness-panel"
-          }
-        >
-          <p className="small muted">
-            {t("dashboardBusinesses.overview.profileTitle", "Profile details")}
-          </p>
-          <strong>
-            {readiness.profileComplete
-              ? t("dashboardBusinesses.overview.complete", "Complete")
-              : t("dashboardBusinesses.overview.needsDetails", "Needs details")}
-          </strong>
-          <p className="small muted">
-            {t(
-              "dashboardBusinesses.overview.profileBody",
-              "Presentation details for customers. An image is recommended, not required for booking readiness.",
-            )}
-          </p>
-        </div>
-
-        <div
-          className={
-            readiness.bookingReady
-              ? "business-readiness-panel ready"
-              : "business-readiness-panel"
-          }
-        >
-          <p className="small muted">
-            {t(
-              "dashboardBusinesses.overview.bookingTitle",
-              "Booking readiness",
-            )}
-          </p>
-          <strong>
-            {readiness.bookingReady
-              ? t("dashboardBusinesses.overview.ready", "Ready")
-              : t("dashboardBusinesses.overview.actionNeeded", "Action needed")}
-          </strong>
-          <p className="small muted">
-            {t(
-              "dashboardBusinesses.overview.bookingBody",
-              "Requires an active service, team member and working hours.",
-            )}
-          </p>
-        </div>
-
-        <div
-          className={
-            readiness.publicListingReady
-              ? "business-readiness-panel ready"
-              : "business-readiness-panel"
-          }
-        >
-          <p className="small muted">
-            {t("dashboardBusinesses.overview.publicTitle", "Public listing")}
-          </p>
-          <strong>
-            {readiness.publicListingReady
-              ? t("dashboardBusinesses.overview.listed", "Listed and bookable")
-              : business.published
-                ? t(
-                    "dashboardBusinesses.overview.hiddenUntilReady",
-                    "Published, awaiting booking setup",
-                  )
-                : t("dashboardBusinesses.overview.hidden", "Hidden")}
-          </strong>
-          <p className="small muted">
-            {t(
-              "dashboardBusinesses.overview.publicBody",
-              "Explore only shows published businesses that pass the booking-readiness checks.",
-            )}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid-2 business-setup-card-grid">
-        <BusinessSetupLinkCard
-          title={t("support.business.services", "Services")}
-          value={`${readiness.activeServices} ${t("dashboardBusinesses.active", "active")}`}
-          helper={t(
-            "dashboardBusinesses.servicesHelper",
-            "Create bookable services with prices, durations, descriptions and optional images.",
-          )}
-          ready={readiness.hasActiveServices}
-          href={`/dashboard/services?businessId=${business.id}`}
-          cta={t("dashboardBusinesses.manageServices", "Manage services")}
-        />
-
-        <BusinessSetupLinkCard
-          title={t("dashboardBusinesses.setup.team", "Team")}
-          value={`${readiness.activeStaff} ${t("dashboardBusinesses.active", "active")}`}
-          helper={t(
-            "dashboardBusinesses.staffHelper",
-            "Add bookable people and connect them to services.",
-          )}
-          ready={
-            readiness.hasActiveStaff && readiness.hasStaffServiceAssignments
-          }
-          href={`/dashboard/staff?businessId=${business.id}`}
-          cta={t("dashboardBusinesses.manageStaff", "Manage team")}
-        />
-
-        <BusinessSetupLinkCard
-          title={t(
-            "dashboardBusinesses.myBusiness.bookingRules",
-            "Booking rules",
-          )}
-          value={
-            (business.auto_accept_bookings ?? true)
-              ? t("dashboardBusinesses.autoAccept", "Book instantly")
-              : t("dashboardSettings.approval.manualTitle", "Manual approval")
-          }
-          helper={t(
-            "dashboardBusinesses.settingsHelper",
-            "Choose how appointments are approved and how far ahead customers can book.",
-          )}
-          ready
-          href={`/dashboard/settings?businessId=${business.id}`}
-          cta={t("dashboardBusinesses.openSettings", "Open booking rules")}
-        />
-
-        <BusinessSetupLinkCard
-          title={t("dashboardLayout.nav.membership", "Membership")}
-          value={t("dashboardBusinesses.subscription", "Early partner")}
-          helper={t(
-            "dashboardBusinesses.billingHelper",
-            "Membership details are separate from customer bookings.",
-          )}
-          ready
-          href={`/dashboard/billing?businessId=${business.id}`}
-          cta={t("dashboardBusinesses.openBilling", "Open membership")}
-        />
-
-        <BusinessSetupLinkCard
-          title={t("dashboardBusinesses.workingHours", "Working hours")}
-          value={`${readiness.workingDays} ${t("dashboardBusinesses.openDay", "open day")}${readiness.workingDays === 1 ? "" : "s"}`}
-          helper={t(
-            "dashboardBusinesses.hoursHelper",
-            "Set the general hours customers can book.",
-          )}
-          ready={readiness.hasWorkingHours}
-          href={`/dashboard/availability?businessId=${business.id}`}
-          cta={t("dashboardBusinesses.setHours", "Set hours")}
-        />
-
-        <BusinessSetupLinkCard
-          title={t(
-            "dashboardBusinesses.marketplacePreview",
-            "Marketplace preview",
-          )}
-          value={
-            business.published
-              ? t("dashboardBusinesses.live", "Live")
-              : t("dashboardBusinesses.hidden", "Hidden")
-          }
-          helper={
-            business.published
-              ? t(
-                  "dashboardBusinesses.previewLiveHelper",
-                  "Preview how customers see this business on Mirëbook.",
-                )
-              : readiness.bookingReady
-                ? t(
-                    "dashboardBusinesses.previewReadyHelper",
-                    "Preview the public page before publishing.",
-                  )
-                : t(
-                    "dashboardBusinesses.previewIncompleteHelper",
-                    "Preview is available, but customers may not be able to book until setup is complete.",
-                  )
-          }
-          ready={readiness.publicListingReady}
-          href={`/explore/${business.id}`}
-          cta={t("dashboardBusinesses.openPublicPage", "Open public page")}
-        />
-      </div>
-
-      <div className="grid-2 business-detail-grid">
+      <div className="business-detail-grid">
         <div className="card" style={{ background: "var(--surface-2)" }}>
           <p className="small muted">
             {t("dashboardBusinesses.profile.kicker", "Customer-facing profile")}
@@ -381,7 +198,7 @@ export default function BusinessProfileCard({
           <p className="small muted" style={{ marginTop: "0.35rem" }}>
             {t(
               "dashboardBusinesses.profile.body",
-              "These details appear on the public Mirëbook marketplace, booking page and later in the mobile app view.",
+              "These details appear on the public page customers use to decide and book.",
             )}
           </p>
 
@@ -511,99 +328,6 @@ export default function BusinessProfileCard({
             />
           </label>
         </div>
-
-        <div className="card" style={{ background: "var(--surface-2)" }}>
-          <p className="small muted">
-            {t("dashboardBusinesses.readiness.kicker", "Readiness checklist")}
-          </p>
-
-          <h3 style={{ marginTop: "0.25rem" }}>
-            {readiness.bookingReady
-              ? t(
-                  "dashboardBusinesses.readiness.readyTitle",
-                  "Booking readiness complete",
-                )
-              : t(
-                  "dashboardBusinesses.readiness.notReadyTitle",
-                  "Booking setup needs attention",
-                )}
-          </h3>
-
-          <p className="small muted" style={{ marginTop: "0.35rem" }}>
-            {t(
-              "dashboardBusinesses.readiness.body",
-              "Booking readiness controls whether customers can actually book. Profile details and images improve presentation but do not create appointment availability.",
-            )}
-          </p>
-
-          <div style={{ marginTop: "0.8rem" }}>
-            <BusinessReadinessRow
-              label={t(
-                "dashboardBusinesses.readiness.profile",
-                "Profile details",
-              )}
-              complete={readiness.profileComplete}
-              helper={t(
-                "dashboardBusinesses.readiness.profileBody",
-                "Name, category, city, phone and description are filled in.",
-              )}
-              incompleteLabel={t(
-                "dashboardBusinesses.readiness.addDetails",
-                "Add details",
-              )}
-            />
-
-            <BusinessReadinessRow
-              label={t("dashboardBusinesses.readiness.image", "Business image")}
-              complete={readiness.hasBusinessImage}
-              helper={
-                readiness.hasBusinessImage
-                  ? t(
-                      "dashboardBusinesses.readiness.imageReady",
-                      "A marketplace image is uploaded.",
-                    )
-                  : t(
-                      "dashboardBusinesses.readiness.imageMissing",
-                      "Recommended for a stronger marketplace profile; not required for booking readiness.",
-                    )
-              }
-              incompleteLabel={t(
-                "dashboardBusinesses.readiness.recommended",
-                "Recommended",
-              )}
-            />
-
-            <BusinessReadinessRow
-              label={t(
-                "dashboardBusinesses.readiness.services",
-                "Active services",
-              )}
-              complete={readiness.hasActiveServices}
-              helper={`${readiness.activeServices} ${t("dashboardBusinesses.readiness.activeServiceFound", "active service")}${readiness.activeServices === 1 ? "" : "s"} ${t("dashboardBusinesses.readiness.found", "found")}.`}
-            />
-
-            <BusinessReadinessRow
-              label={t("dashboardBusinesses.readiness.staff", "Active staff")}
-              complete={readiness.hasActiveStaff}
-              helper={`${readiness.activeStaff} ${t("dashboardBusinesses.readiness.activeStaffFound", "active staff member")}${readiness.activeStaff === 1 ? "" : "s"} ${t("dashboardBusinesses.readiness.found", "found")}.`}
-            />
-
-            <BusinessReadinessRow
-              label={t(
-                "dashboardBusinesses.readiness.assignment",
-                "Staff-service assignment",
-              )}
-              complete={readiness.hasStaffServiceAssignments}
-              helper={`${readiness.staffServiceAssignments} ${t("dashboardBusinesses.readiness.assignmentFound", "active staff-service assignment")}${readiness.staffServiceAssignments === 1 ? "" : "s"} ${t("dashboardBusinesses.readiness.found", "found")}.`}
-            />
-
-            <BusinessReadinessRow
-              label={t("dashboardBusinesses.readiness.hours", "Working hours")}
-              complete={readiness.hasWorkingHours}
-              helper={`${readiness.workingDays} ${t("dashboardBusinesses.openDay", "open day")}${readiness.workingDays === 1 ? "" : "s"} ${t("dashboardBusinesses.readiness.configured", "configured")}.`}
-            />
-          </div>
-        </div>
       </div>
 
       <div
@@ -635,7 +359,7 @@ export default function BusinessProfileCard({
             <p className="small muted" style={{ marginTop: "0.35rem" }}>
               {t(
                 "dashboardBusinesses.bookingApprovalBody",
-                "Auto-accept confirms available customer bookings instantly. Manual approval sends new bookings to Needs action for review.",
+                "Choose whether bookings confirm instantly or wait for business approval.",
               )}
             </p>
           </div>
@@ -671,56 +395,6 @@ export default function BusinessProfileCard({
             : t("dashboardBusinesses.saveSetup", "Save setup")}
         </button>
 
-        <Link
-          href={`/dashboard/services?businessId=${business.id}`}
-          className="btn btn-ghost"
-        >
-          {t("support.business.services", "Services")}
-        </Link>
-
-        <Link
-          href={`/dashboard/staff?businessId=${business.id}`}
-          className="btn btn-ghost"
-        >
-          {t("support.business.staff", "Staff")}
-        </Link>
-
-        <Link
-          href={`/dashboard/availability?businessId=${business.id}`}
-          className="btn btn-ghost"
-        >
-          {t("dashboardBusinesses.workingHours", "Working hours")}
-        </Link>
-
-        <Link
-          href={`/dashboard/bookings?businessId=${business.id}`}
-          className="btn btn-ghost"
-        >
-          {t("support.business.bookings", "Bookings")}
-        </Link>
-
-        <Link href="/dashboard/notifications" className="btn btn-ghost">
-          {t("account.needsAction", "Needs action")}
-        </Link>
-
-        <Link
-          href={`/dashboard/settings?businessId=${business.id}`}
-          className="btn btn-ghost"
-        >
-          {t("nav.settings", "Settings")}
-        </Link>
-
-        <Link
-          href={`/dashboard/billing?businessId=${business.id}`}
-          className="btn btn-ghost"
-        >
-          {t("home.trust.billing", "Billing")}
-        </Link>
-
-        <Link href="/support/business" className="btn btn-ghost">
-          {t("nav.support", "Support")}
-        </Link>
-
         <Link href={`/explore/${business.id}`} className="btn btn-ghost">
           {t("account.publicPage", "Public page")}
         </Link>
@@ -740,30 +414,6 @@ export default function BusinessProfileCard({
           gap: 0.5rem;
           flex-wrap: wrap;
           margin-top: 0.7rem;
-        }
-
-        .business-readiness-overview {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.75rem;
-        }
-
-        .business-readiness-panel {
-          display: grid;
-          gap: 0.35rem;
-          padding: 0.9rem;
-          border: 1px solid rgba(255, 190, 11, 0.28);
-          border-radius: var(--radius);
-          background: rgba(255, 190, 11, 0.06);
-        }
-
-        .business-readiness-panel.ready {
-          border-color: rgba(45, 212, 191, 0.28);
-          background: rgba(45, 212, 191, 0.06);
-        }
-
-        .business-readiness-panel p {
-          margin-top: 0;
         }
 
         .business-profile-input-grid {
@@ -809,10 +459,6 @@ export default function BusinessProfileCard({
           .business-profile-image-preview {
             min-height: 160px;
             height: auto;
-          }
-
-          .business-readiness-overview {
-            grid-template-columns: 1fr;
           }
         }
 

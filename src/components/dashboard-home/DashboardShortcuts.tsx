@@ -1,43 +1,64 @@
-import Link from 'next/link'
-import { useI18n } from '@/lib/useI18n'
+import Link from "next/link";
+import { useI18n } from "@/lib/useI18n";
 
 export default function DashboardShortcuts() {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   const shortcuts = [
     {
-      href: '/dashboard/bookings',
-      title: t('dashboardHome.shortcuts.bookings.title', 'Bookings'),
-      body: t('dashboardHome.shortcuts.bookings.body', 'Review customer appointments, pending approvals and completed bookings.')
+      href: "/dashboard/bookings",
+      title: t("dashboardHome.shortcuts.bookings.title", "Bookings"),
+      body: t(
+        "dashboardHome.shortcuts.bookings.body",
+        "Review customer appointments, pending approvals and completed bookings.",
+      ),
     },
     {
-      href: '/dashboard/services',
-      title: t('dashboardHome.shortcuts.services.title', 'Services'),
-      body: t('dashboardHome.shortcuts.services.body', 'Edit service names, durations, prices, images and active status.')
+      href: "/dashboard/services",
+      title: t("dashboardHome.shortcuts.services.title", "Services"),
+      body: t(
+        "dashboardHome.shortcuts.services.body",
+        "Edit service names, durations, prices, images and active status.",
+      ),
     },
     {
-      href: '/dashboard/staff',
-      title: t('dashboardHome.shortcuts.team.title', 'Team'),
-      body: t('dashboardHome.shortcuts.team.body', 'Manage bookable staff, service assignments, invites and owner-as-staff setup.')
+      href: "/dashboard/staff",
+      title: t("dashboardHome.shortcuts.team.title", "Team"),
+      body: t(
+        "dashboardHome.shortcuts.team.body",
+        "Manage bookable staff, service assignments, invites and owner-as-staff setup.",
+      ),
     },
     {
-      href: '/dashboard/availability',
-      title: t('dashboardHome.shortcuts.availability.title', 'Set availability'),
-      body: t('dashboardHome.shortcuts.availability.body', 'Set the business-wide days and hours customers can book.')
-    }
-  ]
+      href: "/dashboard/availability",
+      title: t(
+        "dashboardHome.shortcuts.availability.title",
+        "Set availability",
+      ),
+      body: t(
+        "dashboardHome.shortcuts.availability.body",
+        "Set the days and hours customers can book.",
+      ),
+    },
+  ];
 
   return (
     <div className="card">
-      <p className="small muted">{t('dashboardHome.shortcuts.kicker', 'Business tools')}</p>
+      <p className="small muted">
+        {t("dashboardHome.shortcuts.kicker", "Business tools")}
+      </p>
 
-      <h3 style={{ marginTop: '0.25rem' }}>
-        {t('dashboardHome.shortcuts.title', 'Manage your business')}
+      <h3 style={{ marginTop: "0.25rem" }}>
+        {t("dashboardHome.shortcuts.title", "Manage your business")}
       </h3>
 
       <div className="dashboard-shortcut-grid">
         {shortcuts.map((shortcut) => (
-          <Link key={shortcut.href} href={shortcut.href} className="dashboard-shortcut-card">
+          <Link
+            key={shortcut.href}
+            href={shortcut.href}
+            className="dashboard-shortcut-card"
+          >
             <strong>{shortcut.title}</strong>
             <p className="small muted">{shortcut.body}</p>
           </Link>
@@ -64,9 +85,9 @@ export default function DashboardShortcuts() {
         }
 
         .dashboard-shortcut-card:hover {
-          border-color: rgba(255,107,53,0.35);
+          border-color: rgba(255, 107, 53, 0.35);
         }
       `}</style>
     </div>
-  )
+  );
 }

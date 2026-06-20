@@ -47,6 +47,7 @@ export default function Businesses() {
   const [creatingOwnerStaffId, setCreatingOwnerStaffId] = useState<
     string | null
   >(null);
+  const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -576,6 +577,14 @@ export default function Businesses() {
             : t("dashboardBusinesses.setup.statusNeeded", "Setup needed")
       : "";
 
+  function shouldOpenProfileDetails(href: string) {
+    return href === "#business-profile-details";
+  }
+
+  function openProfileDetails() {
+    setProfileDetailsOpen(true);
+  }
+
   async function saveBusiness(business: Business) {
     setSavingBusinessId(business.id);
     setError(null);
@@ -723,7 +732,15 @@ export default function Businesses() {
               </div>
             </div>
             {nextSetupStep && (
-              <a href={nextSetupStep.href} className="btn btn-accent">
+              <a
+                href={nextSetupStep.href}
+                className="btn btn-accent"
+                onClick={
+                  shouldOpenProfileDetails(nextSetupStep.href)
+                    ? openProfileDetails
+                    : undefined
+                }
+              >
                 {nextSetupStep.action}
               </a>
             )}
@@ -737,6 +754,11 @@ export default function Businesses() {
                   href={item.href}
                   className={
                     item.complete ? "setup-step complete" : "setup-step"
+                  }
+                  onClick={
+                    shouldOpenProfileDetails(item.href)
+                      ? openProfileDetails
+                      : undefined
                   }
                 >
                   <span className="setup-step-marker">
@@ -920,7 +942,8 @@ export default function Businesses() {
         <details
           id="business-profile-details"
           className="setup-details-panel"
-          open={Boolean(primaryReadiness && !primaryReadiness.profileComplete)}
+          open={profileDetailsOpen}
+          onToggle={(event) => setProfileDetailsOpen(event.currentTarget.open)}
         >
           <summary>
             <span>
@@ -933,7 +956,7 @@ export default function Businesses() {
               <small>
                 {t(
                   "dashboardBusinesses.setup.detailsBody",
-                  "Edit profile fields, image, booking rules and publish controls.",
+                  "Edit the customer-facing details and publish when ready.",
                 )}
               </small>
             </span>

@@ -178,7 +178,7 @@ export const en: TranslationTree = {
   "home.trust.supportCustomerTitle": "Customer help when needed",
   "home.trust.supportCustomerBody":
     "Customer support, privacy information and booking guidance remain easy to reach.",
-  "home.trust.billing": "Billing groundwork",
+  "home.trust.billing": "Membership",
   "home.trust.supportKicker": "Support",
   "home.trust.supportTitle": "Help for customers, businesses and staff",
   "home.trust.supportBody":
@@ -228,7 +228,7 @@ export const en: TranslationTree = {
     "Review the working day and keep pending, confirmed, cancelled and completed appointments easy to scan.",
   "businessHome.features.staff.title": "Staff and availability",
   "businessHome.features.staff.body":
-    "Assign services and set business-wide or personal staff working hours.",
+    "Assign services and set working hours for the business or each person.",
   "businessHome.features.bookingModes.title":
     "Requests or instant confirmation",
   "businessHome.features.bookingModes.body":
@@ -351,7 +351,7 @@ export const en: TranslationTree = {
   "explore.trust.businessTitle": "Profiles built around real availability",
   "explore.trust.businessBody":
     "Businesses publish services, assign staff and set working hours before they appear as bookable.",
-  "explore.trust.billing": "Billing groundwork",
+  "explore.trust.billing": "Membership",
   "explore.trust.supportKicker": "Support and trust",
   "explore.trust.supportTitle": "Help when you need it",
   "explore.trust.supportBody":
@@ -770,7 +770,7 @@ export const en: TranslationTree = {
   "dashboardSettings.region.kicker": "Region settings",
   "dashboardSettings.region.title": "Timezone and currency",
   "dashboardSettings.region.body":
-    "These defaults support UK, Albania and future international launches.",
+    "Used for appointment times, prices and customer-facing details.",
   "dashboardSettings.region.timezone": "Timezone",
   "dashboardSettings.region.currency": "Currency",
   "dashboardSettings.cancellation.kicker": "Cancellation policy",
@@ -828,7 +828,7 @@ export const en: TranslationTree = {
     "End this Mirëbook Business session on this device.",
   "dashboardSettings.tools.availability": "Availability",
   "dashboardSettings.tools.availabilityBody":
-    "Set business-wide opening days and hours.",
+    "Set the days and hours customers can book.",
   "dashboardSettings.tools.billing": "Billing",
   "dashboardSettings.tools.billingBody":
     "View plan, trial and payment settings.",
@@ -953,7 +953,7 @@ export const en: TranslationTree = {
     "Manage bookable staff, service assignments, invites and owner-as-staff setup.",
   "dashboardHome.shortcuts.availability.title": "Set availability",
   "dashboardHome.shortcuts.availability.body":
-    "Set the business-wide days and hours customers can book.",
+    "Set the days and hours customers can book.",
   "dashboardHome.shortcuts.settings.title": "Business settings",
   "dashboardHome.shortcuts.settings.body":
     "Control booking approval, notice rules, buffers, policies and region settings.",
@@ -976,7 +976,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.hero.title":
     "Set up your business before customers book.",
   "dashboardBusinesses.hero.body":
-    "Most businesses only need one profile. This hub keeps your profile, services, staff, hours and publishing controls together so Mirëbook stays easy to run from desktop now and mobile app later.",
+    "Most businesses only need one profile. Add services, team and hours, then publish when you are ready.",
   "dashboardBusinesses.workingHours": "Working hours",
   "dashboardBusinesses.stats.businesses": "Businesses",
   "dashboardBusinesses.stats.totalProfiles": "Total business profiles",
@@ -1056,7 +1056,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.setup.advancedTitle": "Advanced",
   "dashboardBusinesses.setup.detailsTitle": "Business profile details",
   "dashboardBusinesses.setup.detailsBody":
-    "Edit profile fields, image, booking rules and publish controls.",
+    "Edit the customer-facing details and publish when ready.",
   "dashboardBusinesses.setup.statusReady": "Ready to take bookings",
   "dashboardBusinesses.setup.statusHidden": "Hidden from Explore",
   "dashboardBusinesses.setup.statusPublish": "Ready to publish",
@@ -1117,7 +1117,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.profile.kicker": "Customer-facing profile",
   "dashboardBusinesses.profile.title": "Profile details",
   "dashboardBusinesses.profile.body":
-    "These details appear on the public Mirëbook marketplace, booking page and later in the mobile app view.",
+    "These details appear on the public page customers use to decide and book.",
   "dashboardBusinesses.profile.nameLabel": "Business name",
   "dashboardBusinesses.profile.categoryLabel": "Category",
   "dashboardBusinesses.profile.cityLabel": "City",
@@ -1174,7 +1174,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.manualApproveBookings":
     "Manually approve customer bookings",
   "dashboardBusinesses.bookingApprovalBody":
-    "Auto-accept confirms available customer bookings instantly. Manual approval sends new bookings to Needs action for review.",
+    "Choose whether bookings confirm instantly or wait for business approval.",
   "dashboardBusinesses.autoAcceptNewBookings": "Auto-accept new bookings",
   "dashboardBusinesses.saveSetup": "Save setup",
   "dashboardBusinesses.save.success": "setup saved.",
@@ -1493,7 +1493,7 @@ export const en: TranslationTree = {
   "dashboardAvailability.businessPicker.manageBody":
     "Manage working hours for this business.",
   "dashboardAvailability.businessPicker.manageCta": "Manage hours",
-  "dashboardAvailability.hero.kicker": "Business working hours",
+  "dashboardAvailability.hero.kicker": "Working hours",
   "dashboardAvailability.hero.body":
     "These are your general opening hours. Team member hours can narrow when each person can be booked.",
   "dashboardAvailability.stats.openDays": "Open days",
@@ -1503,7 +1503,7 @@ export const en: TranslationTree = {
     "Business days marked as closed",
   "dashboardAvailability.stats.weeklyHours": "Weekly hours",
   "dashboardAvailability.stats.weeklyHoursBody":
-    "Estimated business-wide open hours",
+    "Estimated weekly opening hours",
   "dashboardAvailability.stats.invalidDays": "Invalid days",
   "dashboardAvailability.stats.invalidDaysBody":
     "Open days where start time is not before end time",
@@ -1768,9 +1768,12 @@ export const en: TranslationTree = {
   "dashboardBookings.empty.noBookingRecordsTitle": "No booking records match",
   "dashboardBookings.empty.noBookingRecordsBody":
     "Try a different status, staff member or search term.",
-  "dashboardBookings.emptyCalendar.title": "No schedule yet",
+  "dashboardBookings.emptyCalendar.title": "No appointments scheduled yet",
   "dashboardBookings.emptyCalendar.body":
-    "When customers book, your schedule and booking records will appear here.",
+    "Confirmed appointments will appear here by time once customers book.",
+  "dashboardBookings.emptyRecords.title": "No booking records yet",
+  "dashboardBookings.emptyRecords.body":
+    "Requests, upcoming appointments and booking history will appear here after customers start booking.",
   "dashboardBookings.empty.checkSetup": "Check setup",
   "dashboardBookings.pendingStrip.title": "Requests waiting",
   "dashboardBookings.pendingStrip.body":

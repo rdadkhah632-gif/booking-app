@@ -51,7 +51,7 @@ export default function AvailabilityStats({ stats }: Props) {
         <p className="muted small">
           {t(
             "dashboardAvailability.stats.weeklyHoursBody",
-            "Estimated business-wide open hours.",
+            "Estimated weekly opening hours.",
           )}
         </p>
       </div>
