@@ -59,13 +59,6 @@ export default function CreateServiceCard({
       <div className="services-form-header">
         <div className="services-form-copy">
           <h3>{t("dashboardServices.create.title", "Add a new service")}</h3>
-
-          <p className="muted small">
-            {t(
-              "dashboardServices.create.body",
-              "Keep service names simple. Customers should understand what they are booking without needing to ask.",
-            )}
-          </p>
         </div>
 
         <button
@@ -185,7 +178,7 @@ export default function CreateServiceCard({
       <style jsx>{`
         .create-service-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.85rem;
         }
 
         .services-form-header {
@@ -199,11 +192,10 @@ export default function CreateServiceCard({
 
         .services-form-copy {
           display: grid;
-          gap: 0.55rem;
+          gap: 0.25rem;
         }
 
-        .services-form-copy h3,
-        .services-form-copy p {
+        .services-form-copy h3 {
           margin-top: 0;
         }
 

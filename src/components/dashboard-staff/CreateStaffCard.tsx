@@ -38,13 +38,6 @@ export default function CreateStaffCard({
       <div className="staff-form-header">
         <div className="staff-form-copy">
           <h3>{t("dashboardStaff.create.title", "Add a staff member")}</h3>
-
-          <p className="muted small">
-            {t(
-              "dashboardStaff.create.body",
-              "Add the person first, then assign services and availability. Add their email if they need their own staff login later.",
-            )}
-          </p>
         </div>
 
         <button
@@ -114,7 +107,7 @@ export default function CreateStaffCard({
       <style jsx>{`
         .create-staff-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.85rem;
         }
 
         .staff-form-header {
@@ -128,11 +121,10 @@ export default function CreateStaffCard({
 
         .staff-form-copy {
           display: grid;
-          gap: 0.55rem;
+          gap: 0.25rem;
         }
 
-        .staff-form-copy h3,
-        .staff-form-copy p {
+        .staff-form-copy h3 {
           margin-top: 0;
         }
 

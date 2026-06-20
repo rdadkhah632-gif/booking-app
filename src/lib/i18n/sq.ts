@@ -1175,9 +1175,8 @@ export const sq: TranslationTree = {
     "tani është i dukshëm në Mirëbook.",
   "dashboardBusinesses.publish.hiddenSuccess":
     "tani është i fshehur nga klientët.",
-  "dashboardServices.pageTitle": "Konfigurimi i shërbimeve",
-  "dashboardServices.pageSubtitle":
-    "Zgjidh cilat shërbime biznesi do të menaxhosh.",
+  "dashboardServices.pageTitle": "Shërbimet",
+  "dashboardServices.pageSubtitle": "Krijo fillimisht një biznes.",
   "dashboardServices.pageSubtitleSelected":
     "Krijo shërbime Mirëbook, çmime dhe rregulla rezervimi për",
   "dashboardServices.loading": "Duke ngarkuar shërbimet Mirëbook...",
@@ -1311,8 +1310,7 @@ export const sq: TranslationTree = {
   "dashboardStaff.pageSubtitle": "Zgjidh cilin staf biznesi do të menaxhosh.",
   "dashboardStaff.pageSubtitleSelected":
     "Menaxho stafin, caktimet e shërbimeve dhe gatishmërinë e rezervimeve për",
-  "dashboardStaff.teamSubtitle":
-    "Krijo biznesin fillimisht, pastaj ndërto ekipin që klientët mund të rezervojnë.",
+  "dashboardStaff.teamSubtitle": "Krijo fillimisht një biznes.",
   "dashboardStaff.teamSubtitleSelected":
     "Menaxho stafin dhe personat e rezervueshëm që klientët mund të zgjedhin te",
   "dashboardStaff.teamTools.kicker": "Konfigurimi i ekipit",
@@ -1656,8 +1654,7 @@ export const sq: TranslationTree = {
   "account.linkedBusiness": "Biznes i lidhur",
   "account.saving": "Duke ruajtur...",
   "dashboardBookings.pageTitle": "Kalendari",
-  "dashboardBookings.pageSubtitle":
-    "Zgjidh cilat rezervime biznesi do të shohësh.",
+  "dashboardBookings.pageSubtitle": "Krijo fillimisht një biznes.",
   "dashboardBookings.pageSubtitleSelected": "Shiko çfarë ndodh dhe kur për",
   "dashboardBookings.recordsTitle": "Rezervimet",
   "dashboardBookings.recordsSubtitleSelected":
@@ -2814,7 +2811,7 @@ export const sq: TranslationTree = {
   "billing.trialEndsOn": "Periudha provuese përfundon",
   "billing.noTrialConfigured": "Nuk është caktuar datë për periudhën provuese.",
   "billing.pageTitle": "Anëtarësimi",
-  "billing.pageSubtitle": "Shiko detajet e anëtarësimit Mirëbook Business.",
+  "billing.pageSubtitle": "Detajet e anëtarësimit.",
   "billing.pageSubtitleBusiness": "Detajet e anëtarësimit për {{business}}.",
   "billing.loading": "Po ngarkohen detajet e anëtarësimit...",
   "billing.error.load": "Detajet e anëtarësimit nuk u ngarkuan dot.",
@@ -2925,6 +2922,7 @@ export const sq: TranslationTree = {
 
   "dashboardStaff.ownerAsStaff.linkedTitle":
     "Pronari është konfiguruar edhe si staf i rezervueshëm",
+  "dashboardStaff.ownerAsStaff.linkedTitleShort": "Ti merr edhe takime",
   "dashboardStaff.ownerAsStaff.linkedBody":
     "Ti merr edhe takime, kështu mund të menaxhosh biznesin dhe të përdorësh Stafin për orarin tënd.",
   "dashboardStaff.ownerAsStaff.linkedBodyCompact":

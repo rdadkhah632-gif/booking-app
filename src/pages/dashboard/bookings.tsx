@@ -1026,13 +1026,8 @@ export default function Bookings() {
       }
       subtitle={
         business
-          ? isBookingListMode
-            ? `${t("dashboardBookings.recordsSubtitleSelected", "Manage appointment requests, upcoming bookings and history for")} ${business.name}.`
-            : `${t("dashboardBookings.pageSubtitleSelected", "See what is happening when for")} ${business.name}.`
-          : t(
-              "dashboardBookings.pageSubtitle",
-              "Create your business first, then customer bookings will appear here.",
-            )
+          ? business.name
+          : t("dashboardBookings.pageSubtitle", "Create a business first.")
       }
     >
       {success && (
@@ -1190,12 +1185,6 @@ export default function Bookings() {
                 onClick={() => updateBookingView("today")}
               >
                 <strong>{t("dashboardLayout.nav.calendar", "Calendar")}</strong>
-                <span>
-                  {t(
-                    "dashboardBookings.mode.calendarBody",
-                    "Schedule by day and time",
-                  )}
-                </span>
               </button>
               <button
                 type="button"
@@ -1207,22 +1196,11 @@ export default function Bookings() {
                 onClick={() => updateBookingView("upcoming")}
               >
                 <strong>{t("dashboardLayout.nav.bookings", "Bookings")}</strong>
-                <span>
-                  {t(
-                    "dashboardBookings.mode.bookingsBody",
-                    "Requests, upcoming records and history",
-                  )}
-                </span>
               </button>
             </div>
 
             <div className="calendar-toolbar">
               <div>
-                <p className="small muted">
-                  {isBookingListMode
-                    ? t("dashboardBookings.recordsKicker", "Booking records")
-                    : t("dashboardBookings.calendar.kicker", "Schedule")}
-                </p>
                 <h2>
                   {isBookingListMode
                     ? t("dashboardBookings.recordsHeading", "Manage bookings")
@@ -1487,23 +1465,18 @@ export default function Bookings() {
         }
 
         .booking-mode-tab {
-          display: grid;
-          gap: 0.2rem;
+          display: flex;
+          align-items: center;
           flex: 1 1 14rem;
-          min-height: 4rem;
+          min-height: 2.85rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
           color: var(--text);
-          padding: 0.8rem;
-          text-align: left;
+          padding: 0.65rem 0.8rem;
+          text-align: center;
+          justify-content: center;
           cursor: pointer;
-        }
-
-        .booking-mode-tab span {
-          color: var(--text-muted);
-          font-size: 0.82rem;
-          line-height: 1.35;
         }
 
         .booking-mode-tab.active {

@@ -1190,8 +1190,8 @@ export const en: TranslationTree = {
     "before publishing this business to Mirëbook.",
   "dashboardBusinesses.publish.visibleSuccess": "is now visible on Mirëbook.",
   "dashboardBusinesses.publish.hiddenSuccess": "is now hidden from customers.",
-  "dashboardServices.pageTitle": "Services setup",
-  "dashboardServices.pageSubtitle": "Choose which business services to manage.",
+  "dashboardServices.pageTitle": "Services",
+  "dashboardServices.pageSubtitle": "Create a business first.",
   "dashboardServices.pageSubtitleSelected":
     "Create Mirëbook services, pricing and bookability rules for",
   "dashboardServices.loading": "Loading Mirëbook services...",
@@ -1327,8 +1327,7 @@ export const en: TranslationTree = {
   "dashboardStaff.pageSubtitle": "Choose which business staff to manage.",
   "dashboardStaff.pageSubtitleSelected":
     "Manage staff, service assignments and booking readiness for",
-  "dashboardStaff.teamSubtitle":
-    "Create your business first, then build the team customers can book.",
+  "dashboardStaff.teamSubtitle": "Create a business first.",
   "dashboardStaff.teamSubtitleSelected":
     "Manage the staff and bookable people customers can choose at",
   "dashboardStaff.teamTools.kicker": "Team setup",
@@ -1672,7 +1671,7 @@ export const en: TranslationTree = {
   "account.contactSupport": "Contact support",
   "account.savedLanguage": "Saved account language",
   "dashboardBookings.pageTitle": "Calendar",
-  "dashboardBookings.pageSubtitle": "Choose which business bookings to view.",
+  "dashboardBookings.pageSubtitle": "Create a business first.",
   "dashboardBookings.pageSubtitleSelected": "See what is happening when for",
   "dashboardBookings.recordsTitle": "Bookings",
   "dashboardBookings.recordsSubtitleSelected":
@@ -2748,7 +2747,7 @@ export const en: TranslationTree = {
   "billing.planCustomTitle": "Enterprise",
   "billing.planCustomBody": "Multi-location and tailored solutions.",
   "billing.pageTitle": "Membership",
-  "billing.pageSubtitle": "View your Mirëbook Business membership details.",
+  "billing.pageSubtitle": "Membership details.",
   "billing.pageSubtitleBusiness": "Membership details for {{business}}.",
   "billing.loading": "Loading membership details...",
   "billing.error.load": "Could not load membership details.",
@@ -2874,6 +2873,7 @@ export const en: TranslationTree = {
 
   "dashboardStaff.ownerAsStaff.linkedTitle":
     "Owner is also set up as bookable staff",
+  "dashboardStaff.ownerAsStaff.linkedTitleShort": "You also take appointments",
   "dashboardStaff.ownerAsStaff.linkedBody":
     "You also take appointments, so you can manage the business and use Staff for your own schedule.",
   "dashboardStaff.ownerAsStaff.linkedBodyCompact":

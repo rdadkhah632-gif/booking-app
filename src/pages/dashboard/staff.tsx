@@ -738,11 +738,8 @@ export default function StaffPage() {
       title={t("dashboardLayout.nav.team", "Team")}
       subtitle={
         business
-          ? `${t("dashboardStaff.teamSubtitleSelected", "Manage the staff and bookable people customers can choose at")} ${business.name}.`
-          : t(
-              "dashboardStaff.teamSubtitle",
-              "Create your business first, then build the team customers can book.",
-            )
+          ? business.name
+          : t("dashboardStaff.teamSubtitle", "Create a business first.")
       }
     >
       {pageLoading && (
@@ -812,39 +809,23 @@ export default function StaffPage() {
             </div>
           )}
 
-          <div className="staff-owner-note">
-            <div className="staff-owner-note-copy">
-              <strong>
-                {ownerStaffProfile
-                  ? t(
-                      "dashboardStaff.ownerAsStaff.linkedTitle",
-                      "Owner is also set up as bookable staff",
-                    )
-                  : t(
-                      "dashboardStaff.ownerAsStaff.title",
-                      "Only add people who can be booked by customers",
-                    )}
-              </strong>
-              <p className="small muted">
-                {ownerStaffProfile
-                  ? t(
-                      "dashboardStaff.ownerAsStaff.linkedBodyCompact",
-                      "You also take appointments and have a personal staff workspace.",
-                    )
-                  : t(
-                      "dashboardStaff.ownerAsStaff.bodyCompact",
-                      "Add yourself only if customers should book you directly.",
-                    )}
-              </p>
-            </div>
-            {ownerStaffProfile && (
+          {ownerStaffProfile && (
+            <div className="staff-owner-note">
+              <div className="staff-owner-note-copy">
+                <strong>
+                  {t(
+                    "dashboardStaff.ownerAsStaff.linkedTitleShort",
+                    "You also take appointments",
+                  )}
+                </strong>
+              </div>
               <div className="staff-owner-note-actions">
                 <Link href="/staff" className="btn btn-ghost">
                   {t("dashboardSettings.more.myWork", "My staff work")}
                 </Link>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div id="create-staff-panel">
             <CreateStaffCard
@@ -889,26 +870,17 @@ export default function StaffPage() {
             </div>
           )}
 
-          <div className="staff-section-heading">
-            <h2>{t("dashboardStaff.list.title", "Your team")}</h2>
-            <p className="small muted">
-              {t(
-                "dashboardStaff.list.body",
-                "People customers can book. Open a person’s details to manage services, access and working hours.",
-              )}
-              {staff.length > 0 && (
-                <span className="staff-login-summary">
-                  {t("dashboardStaff.list.accountSummary", "Account links:")}{" "}
-                  {linkedStaffCount}{" "}
-                  {t("dashboardStaff.list.linkedLogins", "linked")} ·{" "}
-                  {pendingInviteCount}{" "}
-                  {t("dashboardStaff.list.pendingInvites", "invite pending")} ·{" "}
-                  {loginReadyStaffCount}{" "}
-                  {t("dashboardStaff.list.readyToLink", "ready to link")}
-                </span>
-              )}
-            </p>
-          </div>
+          {staff.length > 0 && (
+            <div className="staff-summary-strip">
+              {t("dashboardStaff.list.accountSummary", "Account links:")}{" "}
+              {linkedStaffCount}{" "}
+              {t("dashboardStaff.list.linkedLogins", "linked")} ·{" "}
+              {pendingInviteCount}{" "}
+              {t("dashboardStaff.list.pendingInvites", "invite pending")} ·{" "}
+              {loginReadyStaffCount}{" "}
+              {t("dashboardStaff.list.readyToLink", "ready to link")}
+            </div>
+          )}
 
           <div className="staff-card-list">
             {staff.length === 0 && (
@@ -987,10 +959,6 @@ export default function StaffPage() {
           gap: 0.25rem;
         }
 
-        .staff-owner-note-copy p {
-          margin: 0;
-        }
-
         .staff-owner-note-actions {
           display: flex;
           gap: 0.65rem;
@@ -999,25 +967,10 @@ export default function StaffPage() {
           justify-content: flex-end;
         }
 
-        .staff-section-heading {
-          display: grid;
-          gap: 0.45rem;
-          margin: 1.1rem 0 0.75rem;
-        }
-
-        .staff-section-heading h2 {
-          font-family: var(--font-display);
-          margin-top: 0;
-        }
-
-        .staff-section-heading p {
-          margin-top: 0;
-        }
-
-        .staff-login-summary {
-          display: block;
-          margin-top: 0.25rem;
+        .staff-summary-strip {
+          margin: 0 0 0.75rem;
           color: var(--text-muted);
+          font-size: 0.85rem;
         }
 
         .staff-card-list {

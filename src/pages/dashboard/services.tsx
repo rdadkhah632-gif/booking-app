@@ -506,11 +506,8 @@ export default function Services() {
       title={t("dashboardServices.pageTitle", "Services")}
       subtitle={
         business
-          ? `${t("dashboardServices.pageSubtitleSelected", "Create and manage the services customers can book at")} ${business.name}.`
-          : t(
-              "dashboardServices.pageSubtitle",
-              "Create your business first, then add services customers can book.",
-            )
+          ? business.name
+          : t("dashboardServices.pageSubtitle", "Create a business first.")
       }
     >
       {pageLoading && (
@@ -611,18 +608,6 @@ export default function Services() {
             />
           </div>
 
-          <div className="services-section-heading">
-            <h2>
-              {t("dashboardServices.list.title", "Your bookable services")}
-            </h2>
-            <p className="small muted">
-              {t(
-                "dashboardServices.list.body",
-                "Services become bookable when they are active and assigned to at least one staff member.",
-              )}
-            </p>
-          </div>
-
           <div className="services-list-grid">
             {services.length === 0 && (
               <IllustratedEmptyState
@@ -672,20 +657,6 @@ export default function Services() {
         </>
       )}
       <style jsx>{`
-        .services-section-heading {
-          display: grid;
-          gap: 0.45rem;
-          margin: 1.1rem 0 0.75rem;
-        }
-
-        .services-section-heading h2 {
-          font-family: var(--font-display);
-          margin-top: 0;
-        }
-
-        .services-section-heading p {
-          margin-top: 0;
-        }
         .services-list-grid {
           display: grid;
           gap: 1rem;

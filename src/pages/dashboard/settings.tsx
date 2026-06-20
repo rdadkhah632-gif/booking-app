@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import BusinessSettingsActions from "@/components/dashboard-settings/BusinessSettingsActions";
-import BusinessSettingsHeader from "@/components/dashboard-settings/BusinessSettingsHeader";
 import BookingApprovalSettings from "@/components/dashboard-settings/BookingApprovalSettings";
 import BookingRuleSettings from "@/components/dashboard-settings/BookingRuleSettings";
 import PolicySettings from "@/components/dashboard-settings/PolicySettings";
@@ -173,10 +172,11 @@ export default function DashboardSettingsPage() {
   return (
     <DashboardLayout
       title={t("dashboardSettings.pageTitle", "Booking rules")}
-      subtitle={t(
-        "dashboardSettings.pageSubtitle",
-        "Choose how appointments are approved and how far ahead customers can book.",
-      )}
+      subtitle={
+        selectedBusiness
+          ? selectedBusiness.name
+          : t("dashboardSettings.pageSubtitle", "Set appointment rules.")
+      }
     >
       {loading && (
         <div className="card">
@@ -225,8 +225,6 @@ export default function DashboardSettingsPage() {
             </div>
           )}
 
-          <BusinessSettingsHeader selectedBusiness={selectedBusiness} />
-
           {businesses.length > 1 && (
             <div
               className="card"
@@ -243,21 +241,6 @@ export default function DashboardSettingsPage() {
               </p>
             </div>
           )}
-
-          <div className="settings-section-heading">
-            <h2>
-              {t(
-                "dashboardSettings.bookingSection.title",
-                "Rules and policies",
-              )}
-            </h2>
-            <p className="small muted" style={{ marginTop: "0.35rem" }}>
-              {t(
-                "dashboardSettings.bookingSection.body",
-                "Control how customers book, how far ahead they can book, and what happens when they need to cancel or reschedule.",
-              )}
-            </p>
-          </div>
 
           <div className="settings-grid">
             <BookingApprovalSettings
@@ -285,15 +268,6 @@ export default function DashboardSettingsPage() {
       )}
 
       <style jsx>{`
-        .settings-section-heading {
-          margin: 1.5rem 0 0.85rem;
-          padding-top: 0.25rem;
-        }
-
-        .settings-section-heading h2 {
-          font-family: var(--font-display);
-          margin-top: 0;
-        }
         .more-inline-notice {
           margin: 0 0 1.5rem;
           color: var(--text-muted);

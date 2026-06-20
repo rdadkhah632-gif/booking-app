@@ -260,14 +260,8 @@ export default function DashboardBillingPage() {
       title={t("billing.pageTitle", "Membership")}
       subtitle={
         selectedBusiness
-          ? t(
-              "billing.pageSubtitleBusiness",
-              "Membership details for {{business}}.",
-            ).replace("{{business}}", selectedBusiness.name)
-          : t(
-              "billing.pageSubtitle",
-              "View your Mirëbook Business membership details.",
-            )
+          ? selectedBusiness.name
+          : t("billing.pageSubtitle", "Membership details.")
       }
     >
       {loading && (
@@ -409,27 +403,6 @@ export default function DashboardBillingPage() {
             </div>
           )}
 
-          <div className="billing-hero card">
-            <div>
-              <p className="small" style={{ color: "var(--accent)" }}>
-                {t("billing.heroKicker", "Membership")}
-              </p>
-              <h2 style={{ marginTop: "0.25rem" }}>
-                {billing.plan_name ||
-                  t("billing.launchPlan", "Mirëbook Launch")}
-              </h2>
-              <p className="muted" style={{ marginTop: "0.5rem" }}>
-                {t(
-                  "billing.heroBody",
-                  "Mirëbook Business is currently available for early partners.",
-                )}
-              </p>
-            </div>
-            <Link href="/support/business" className="btn btn-ghost">
-              {t("billing.contactSupport", "Contact Mirëbook")}
-            </Link>
-          </div>
-
           <div className="grid-3" style={{ marginBottom: "1.5rem" }}>
             <div className="card">
               <p className="small muted">
@@ -566,14 +539,6 @@ export default function DashboardBillingPage() {
       )}
 
       <style jsx>{`
-        .billing-hero {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
         .billing-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -596,12 +561,6 @@ export default function DashboardBillingPage() {
         }
 
         @media (max-width: 760px) {
-          .billing-hero {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .billing-hero :global(.btn),
           .billing-grid,
           .billing-date-grid {
             width: 100%;

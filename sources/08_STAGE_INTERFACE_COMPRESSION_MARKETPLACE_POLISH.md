@@ -271,3 +271,21 @@ schema.
 Stage 8.8C did not change availability save behavior, availability row data,
 booking logic, auth, staff linking, billing writes, notifications or database
 schema.
+
+## Stage 8.8D Business Workspace Copy Compression Implemented
+
+- applied the Working Hours "say it once" rule across key owner pages so page
+  headers, section headings and intro cards no longer repeat the same purpose
+- shortened Services, Team, Booking rules, Membership and Calendar/Bookings
+  selected-business subtitles to the business name only
+- removed redundant Services and Team list-intro sections while keeping empty
+  states, creation forms, staff account-link status and existing actions
+- removed the extra Booking rules header component and the Membership hero card
+  so both pages start closer to their functional controls and status content
+- compressed the Calendar/Bookings view switch into a true control while
+  preserving the distinction between schedule view and booking records
+- updated English and Albanian translation values for the active shortened copy
+
+Stage 8.8D did not change booking logic, booking status transitions, service or
+staff creation behavior, availability save behavior, auth, route protection,
+staff linking, billing writes, notifications or database schema.
