@@ -89,24 +89,22 @@ export default function AvailabilityDayRow({
         </div>
       ) : (
         <p className="small muted availability-closed-copy">
-          {t(
-            "dashboardAvailability.day.closedBody",
-            "Customers cannot book this business on this day.",
-          )}
+          {t("dashboardAvailability.day.closedBody", "Closed to customers.")}
         </p>
       )}
 
       <style jsx>{`
         .availability-day-row {
           display: grid;
-          gap: 1rem;
+          gap: 0.7rem;
           align-content: start;
+          padding: 0.85rem !important;
         }
 
         .availability-day-header {
           display: flex;
           justify-content: space-between;
-          gap: 1rem;
+          gap: 0.75rem;
           align-items: center;
         }
 
@@ -149,7 +147,9 @@ export default function AvailabilityDayRow({
 
         .availability-time-editor {
           display: grid;
-          gap: 0.75rem;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 0.65rem;
+          align-items: end;
         }
 
         .availability-time-range {
@@ -157,7 +157,7 @@ export default function AvailabilityDayRow({
           align-items: center;
           gap: 0.55rem;
           width: fit-content;
-          padding: 0.45rem 0.7rem;
+          padding: 0.4rem 0.65rem;
           border-radius: 999px;
           border: 1px solid var(--border);
           background: var(--surface-2);
@@ -168,7 +168,7 @@ export default function AvailabilityDayRow({
         .availability-time-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .availability-time-grid input {
@@ -183,6 +183,10 @@ export default function AvailabilityDayRow({
         @media (max-width: 520px) {
           .availability-day-header {
             align-items: center;
+          }
+
+          .availability-time-editor {
+            grid-template-columns: 1fr;
           }
 
           .availability-time-grid {

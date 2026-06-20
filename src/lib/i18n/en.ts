@@ -1050,6 +1050,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.setup.finishFirst": "Finish setup",
   "dashboardBusinesses.setup.of": "of",
   "dashboardBusinesses.setup.nextTitle": "Next step",
+  "dashboardBusinesses.setup.nextInline": "Next",
   "dashboardBusinesses.setup.completeBody": "Your booking setup is ready.",
   "dashboardBusinesses.setup.done": "Done",
   "dashboardBusinesses.setup.previewLabel": "Customer preview",
@@ -1504,6 +1505,7 @@ export const en: TranslationTree = {
   "dashboardAvailability.stats.closedDaysBody":
     "Business days marked as closed",
   "dashboardAvailability.stats.weeklyHours": "Weekly hours",
+  "dashboardAvailability.stats.weeklyHoursShort": "hours/week",
   "dashboardAvailability.stats.weeklyHoursBody":
     "Estimated weekly opening hours",
   "dashboardAvailability.stats.invalidDays": "Invalid days",
@@ -1514,14 +1516,16 @@ export const en: TranslationTree = {
     "At least one valid open day helps Mirëbook generate customer booking dates",
   "dashboardAvailability.presets.kicker": "Quick presets",
   "dashboardAvailability.presets.title": "Set common business hours",
+  "dashboardAvailability.presets.compactTitle": "Quick presets",
   "dashboardAvailability.presets.body":
-    "Presets update the table below. You still need to click Save working hours before customers see the change.",
+    "Presets fill the week below. Save when you are done.",
   "dashboardAvailability.presets.weekday": "Mon-Fri 9-5",
   "dashboardAvailability.presets.extended": "Mon-Sat 9-7",
   "dashboardAvailability.presets.closeAll": "Close all days",
   "dashboardAvailability.day.invalid": "Invalid time range",
   "dashboardAvailability.day.closed": "Closed",
   "dashboardAvailability.day.open": "Open",
+  "dashboardAvailability.day.closedBody": "Closed to customers.",
   "dashboardAvailability.day.start": "Start",
   "dashboardAvailability.day.end": "End",
   "dashboardAvailability.saveCta": "Save working hours",
@@ -1556,8 +1560,7 @@ export const en: TranslationTree = {
     "No customer actions need review right now. Use Preview business page to check how customers see your business.",
   "dashboardLayout.noActions": "No actions",
   "account.pageTitle": "Account settings",
-  "account.pageSubtitle":
-    "Manage your personal account details, language preference and security. Business setup is managed separately in Business settings.",
+  "account.pageSubtitle": "Manage your login, language and security.",
   "account.kicker": "Account",
   "account.businessSettingsKicker": "Business settings are separate",
   "account.businessSettingsTitle": "Need to change your business setup?",
@@ -1589,7 +1592,7 @@ export const en: TranslationTree = {
   "account.emailPreferences.kicker": "Email preferences",
   "account.emailPreferences.title": "Choose your transactional email updates",
   "account.emailPreferences.body":
-    "These controls affect email delivery only. In-app notifications always stay on, and email delivery depends on provider setup.",
+    "Choose which email updates you want. In-app notifications stay on.",
   "account.emailPreferences.setupRequired": "Supabase setup required",
   "account.emailPreferences.setupRequiredBody":
     "The preferences SQL has not been installed yet. Safe transactional defaults remain enabled, but changes cannot be saved.",
@@ -1627,6 +1630,14 @@ export const en: TranslationTree = {
   "account.emailPreferences.saveError": "Could not save email preferences.",
   "account.emailPreferences.schemaMissingError":
     "Email preferences cannot be saved until the Stage 6 preferences SQL is installed in Supabase.",
+  "account.security.kicker": "Security",
+  "account.security.title": "Password and login",
+  "account.security.body": "Send a secure reset link to your login email.",
+  "account.security.sending": "Sending reset...",
+  "account.security.resetPassword": "Send password reset",
+  "account.region.kicker": "Detected region",
+  "account.region.body":
+    "Used as a default for timezone, currency and localisation.",
   "account.emailBody":
     "Used for login, booking confirmations, staff linking and future email notifications.",
   "account.accessSummary": "Access summary",

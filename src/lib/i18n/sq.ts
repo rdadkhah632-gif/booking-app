@@ -1476,6 +1476,7 @@ export const sq: TranslationTree = {
   "dashboardAvailability.stats.closedDaysBody":
     "Ditë biznesi të shënuara si të mbyllura",
   "dashboardAvailability.stats.weeklyHours": "Orë javore",
+  "dashboardAvailability.stats.weeklyHoursShort": "orë/javë",
   "dashboardAvailability.stats.weeklyHoursBody":
     "Orët e hapjes të vlerësuara për javën",
   "dashboardAvailability.stats.invalidDays": "Ditë të pavlefshme",
@@ -1486,14 +1487,16 @@ export const sq: TranslationTree = {
     "Të paktën një ditë e hapur e vlefshme ndihmon Mirëbook të krijojë data rezervimi për klientët",
   "dashboardAvailability.presets.kicker": "Konfigurime të shpejta",
   "dashboardAvailability.presets.title": "Vendos orare të zakonshme biznesi",
+  "dashboardAvailability.presets.compactTitle": "Konfigurime të shpejta",
   "dashboardAvailability.presets.body":
-    "Konfigurimet e shpejta përditësojnë tabelën më poshtë. Duhet ende të klikosh Ruaj oraret që klientët ta shohin ndryshimin.",
+    "Konfigurimet mbushin javën më poshtë. Ruaj kur të përfundosh.",
   "dashboardAvailability.presets.weekday": "Hën-Prem 9-5",
   "dashboardAvailability.presets.extended": "Hën-Sht 9-7",
   "dashboardAvailability.presets.closeAll": "Mbyll të gjitha ditët",
   "dashboardAvailability.day.invalid": "Interval kohe i pavlefshëm",
   "dashboardAvailability.day.closed": "Mbyllur",
   "dashboardAvailability.day.open": "Hapur",
+  "dashboardAvailability.day.closedBody": "Mbyllur për klientët.",
   "dashboardAvailability.day.start": "Fillimi",
   "dashboardAvailability.day.end": "Mbarimi",
   "dashboardAvailability.saveCta": "Ruaj oraret e punës",
@@ -1528,8 +1531,7 @@ export const sq: TranslationTree = {
     "Nuk ka veprime klientësh për shqyrtim tani. Përdor Shiko faqen e biznesit për të parë si e shohin klientët biznesin tënd.",
   "dashboardLayout.noActions": "Nuk ka veprime",
   "account.pageTitle": "Cilësimet e llogarisë",
-  "account.pageSubtitle":
-    "Menaxho detajet personale të llogarisë, gjuhën dhe sigurinë. Konfigurimi i biznesit menaxhohet veçmas te Cilësimet e biznesit.",
+  "account.pageSubtitle": "Menaxho hyrjen, gjuhën dhe sigurinë.",
   "account.kicker": "Llogaria",
   "account.businessSettingsKicker": "Cilësimet e biznesit janë të ndara",
   "account.businessSettingsTitle":
@@ -1564,7 +1566,7 @@ export const sq: TranslationTree = {
   "account.emailPreferences.title":
     "Zgjidh përditësimet transaksionale me email",
   "account.emailPreferences.body":
-    "Këto kontrolle ndikojnë vetëm dërgimin me email. Njoftimet brenda aplikacionit mbeten gjithmonë aktive dhe dërgimi me email varet nga konfigurimi i ofruesit.",
+    "Zgjidh cilat përditësime me email do. Njoftimet brenda aplikacionit mbeten aktive.",
   "account.emailPreferences.setupRequired": "Kërkohet konfigurim në Supabase",
   "account.emailPreferences.setupRequiredBody":
     "SQL-ja e preferencave nuk është instaluar ende. Parazgjedhjet e sigurta transaksionale mbeten aktive, por ndryshimet nuk mund të ruhen.",
@@ -1606,6 +1608,15 @@ export const sq: TranslationTree = {
     "Nuk mund të ruheshin preferencat e email-it.",
   "account.emailPreferences.schemaMissingError":
     "Preferencat e email-it nuk mund të ruhen derisa SQL-ja e Stage 6 të instalohet në Supabase.",
+  "account.security.kicker": "Siguria",
+  "account.security.title": "Fjalëkalimi dhe hyrja",
+  "account.security.body":
+    "Dërgo një link të sigurt rivendosjeje te email-i i hyrjes.",
+  "account.security.sending": "Po dërgohet rivendosja...",
+  "account.security.resetPassword": "Dërgo rivendosje fjalëkalimi",
+  "account.region.kicker": "Rajoni i zbuluar",
+  "account.region.body":
+    "Përdoret si parazgjedhje për zonën kohore, monedhën dhe lokalizimin.",
   "account.emailBody":
     "Përdoret për hyrje, konfirmime rezervimi, lidhje stafi dhe njoftime email në të ardhmen.",
   "account.accessSummary": "Përmbledhje aksesi",
@@ -2113,6 +2124,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setup.finishFirst": "Përfundo konfigurimin",
   "dashboardBusinesses.setup.of": "nga",
   "dashboardBusinesses.setup.nextTitle": "Hapi tjetër",
+  "dashboardBusinesses.setup.nextInline": "Hapi tjetër",
   "dashboardBusinesses.setup.completeBody":
     "Konfigurimi i rezervimeve është gati.",
   "dashboardBusinesses.setup.done": "Përfunduar",

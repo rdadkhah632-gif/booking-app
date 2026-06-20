@@ -35,9 +35,7 @@ export default function ExploreFilters({
   const { t } = useI18n();
   return (
     <aside className="explore-filter-panel">
-      <h3 style={{ marginBottom: "0.35rem", marginTop: 0 }}>
-        {t("explore.filters.title")}
-      </h3>
+      <h3 className="explore-filter-title">{t("explore.filters.title")}</h3>
 
       <div className="explore-filter-grid">
         <div>
@@ -91,27 +89,27 @@ export default function ExploreFilters({
         </div>
 
         {resultCount > 1 && (
-        <div>
-          <label className="small muted">
-            {t("explore.filters.sortLabel", "Sort")}
-          </label>
-          <select
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value as SortOption)}
-            style={{ width: "100%", marginTop: "0.4rem" }}
-          >
-            <option value="newest">
-              {t("explore.sort.newest", "Newest first")}
-            </option>
-            <option value="name">
-              {t("explore.sort.name", "Business name")}
-            </option>
-            <option value="city">{t("explore.sort.city", "City")}</option>
-            <option value="services">
-              {t("explore.sort.services", "Most services")}
-            </option>
-          </select>
-        </div>
+          <div>
+            <label className="small muted">
+              {t("explore.filters.sortLabel", "Sort")}
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => onSortChange(e.target.value as SortOption)}
+              style={{ width: "100%", marginTop: "0.4rem" }}
+            >
+              <option value="newest">
+                {t("explore.sort.newest", "Newest first")}
+              </option>
+              <option value="name">
+                {t("explore.sort.name", "Business name")}
+              </option>
+              <option value="city">{t("explore.sort.city", "City")}</option>
+              <option value="services">
+                {t("explore.sort.services", "Most services")}
+              </option>
+            </select>
+          </div>
         )}
 
         <button className="btn btn-accent" onClick={onApplyFilters}>
@@ -121,20 +119,26 @@ export default function ExploreFilters({
         <button className="btn btn-ghost" onClick={onClearFilters}>
           {t("explore.filters.clearButton", "Clear filters")}
         </button>
-
       </div>
       <style jsx>{`
         .explore-filter-panel {
-          margin-bottom: 1rem;
-          padding: 1rem;
+          margin-bottom: 0.85rem;
+          padding: 0.85rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface);
         }
 
+        .explore-filter-title {
+          margin: 0 0 0.35rem;
+          font-size: 0.95rem;
+        }
+
         .explore-filter-grid {
           display: grid;
-          grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(150px, 0.8fr)) auto auto;
+          grid-template-columns:
+            minmax(220px, 1.4fr) repeat(2, minmax(150px, 0.8fr))
+            auto auto;
           gap: 0.75rem;
           align-items: end;
         }
@@ -146,6 +150,14 @@ export default function ExploreFilters({
         }
 
         @media (max-width: 640px) {
+          .explore-filter-panel {
+            padding: 0.75rem;
+          }
+
+          .explore-filter-title {
+            margin-bottom: 0.55rem;
+          }
+
           .explore-filter-grid,
           .explore-filter-grid :global(.btn),
           .explore-filter-grid button {

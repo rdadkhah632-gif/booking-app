@@ -1,53 +1,72 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/router'
-import { supabase } from '@/lib/supabaseClient'
-import AuthNav from '@/components/AuthNav'
-import ExploreHero from '@/components/explore/ExploreHero'
-import ExploreFilters from '@/components/explore/ExploreFilters'
-import ExploreResultsHeader from '@/components/explore/ExploreResultsHeader'
-import ExploreBusinessCard from '@/components/explore/ExploreBusinessCard'
-import ExploreEmptyState from '@/components/explore/ExploreEmptyState'
-import { Business, BusinessCardStats, SortOption } from '@/components/explore/exploreTypes'
-import { useI18n } from '@/lib/useI18n'
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "@/lib/supabaseClient";
+import AuthNav from "@/components/AuthNav";
+import ExploreHero from "@/components/explore/ExploreHero";
+import ExploreFilters from "@/components/explore/ExploreFilters";
+import ExploreResultsHeader from "@/components/explore/ExploreResultsHeader";
+import ExploreBusinessCard from "@/components/explore/ExploreBusinessCard";
+import ExploreEmptyState from "@/components/explore/ExploreEmptyState";
+import {
+  Business,
+  BusinessCardStats,
+  SortOption,
+} from "@/components/explore/exploreTypes";
+import { useI18n } from "@/lib/useI18n";
 
 export default function Explore() {
-  const router = useRouter()
-  const { t } = useI18n()
+  const router = useRouter();
+  const { t } = useI18n();
 
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [search, setSearch] = useState('')
-  const [city, setCity] = useState('')
-  const [category, setCategory] = useState('')
-  const [sortBy, setSortBy] = useState<SortOption>('newest')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [search, setSearch] = useState("");
+  const [city, setCity] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!router.isReady) return
+    if (!router.isReady) return;
 
-    const queryParam = typeof router.query.query === 'string' ? router.query.query : ''
-    const cityParam = typeof router.query.city === 'string' ? router.query.city : ''
-    const categoryParam = typeof router.query.category === 'string' ? router.query.category : ''
-    const sortParam = typeof router.query.sort === 'string' ? router.query.sort : 'newest'
+    const queryParam =
+      typeof router.query.query === "string" ? router.query.query : "";
+    const cityParam =
+      typeof router.query.city === "string" ? router.query.city : "";
+    const categoryParam =
+      typeof router.query.category === "string" ? router.query.category : "";
+    const sortParam =
+      typeof router.query.sort === "string" ? router.query.sort : "newest";
 
-    setSearch(queryParam)
-    setCity(cityParam)
-    setCategory(categoryParam)
-    setSortBy(['newest', 'name', 'city', 'services'].includes(sortParam) ? sortParam as SortOption : 'newest')
-  }, [router.isReady, router.query.query, router.query.city, router.query.category, router.query.sort])
+    setSearch(queryParam);
+    setCity(cityParam);
+    setCategory(categoryParam);
+    setSortBy(
+      ["newest", "name", "city", "services"].includes(sortParam)
+        ? (sortParam as SortOption)
+        : "newest",
+    );
+  }, [
+    router.isReady,
+    router.query.query,
+    router.query.city,
+    router.query.category,
+    router.query.sort,
+  ]);
 
   async function loadBusinesses() {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
       const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(t('explore.empty.timeout'))), 8000)
-      )
+        setTimeout(() => reject(new Error(t("explore.empty.timeout"))), 8000),
+      );
 
       const query = supabase
-        .from('businesses')
-        .select(`
+        .from("businesses")
+        .select(
+          `
           id,
           name,
           description,
@@ -75,17 +94,18 @@ export default function Explore() {
             id,
             is_closed
           )
-        `)
-        .eq('published', true)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .eq("published", true)
+        .order("created_at", { ascending: false });
 
-      const { data, error } = await Promise.race([query, timeout])
+      const { data, error } = await Promise.race([query, timeout]);
 
       if (error) {
-        setError(error.message)
-        setBusinesses([])
-        setLoading(false)
-        return
+        setError(error.message);
+        setBusinesses([]);
+        setLoading(false);
+        return;
       }
 
       const normalisedBusinesses = (data || [])
@@ -93,41 +113,52 @@ export default function Explore() {
           ...business,
           services: business.services || [],
           staff_members: business.staff_members || [],
-          availability: business.availability || []
+          availability: business.availability || [],
         }))
         .filter((business: Business) => {
-          const stats = getBusinessStats(business)
-          return business.published === true && stats.bookable
-        })
+          const stats = getBusinessStats(business);
+          return business.published === true && stats.bookable;
+        });
 
-      setBusinesses(normalisedBusinesses)
-      setLoading(false)
+      setBusinesses(normalisedBusinesses);
+      setLoading(false);
     } catch (err: any) {
-      setError(err.message || t('explore.empty.genericError'))
-      setBusinesses([])
-      setLoading(false)
+      setError(err.message || t("explore.empty.genericError"));
+      setBusinesses([]);
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadBusinesses()
-  }, [])
+    loadBusinesses();
+  }, []);
 
   function getBusinessStats(business: Business): BusinessCardStats {
-    const activeStaffIds = new Set((business.staff_members || []).filter((staff) => staff.active).map((staff) => staff.id))
-    const activeServices = (business.services || []).filter((service) => service.active).length
-    const assignedServices = (business.services || []).filter((service) =>
-      service.active &&
-      (service.staff_services || []).some((assignment) => activeStaffIds.has(assignment.staff_member_id))
-    ).length
-    const activeStaff = activeStaffIds.size
-    const openDays = (business.availability || []).filter((row) => row.is_closed !== true).length
-    const missing: string[] = []
+    const activeStaffIds = new Set(
+      (business.staff_members || [])
+        .filter((staff) => staff.active)
+        .map((staff) => staff.id),
+    );
+    const activeServices = (business.services || []).filter(
+      (service) => service.active,
+    ).length;
+    const assignedServices = (business.services || []).filter(
+      (service) =>
+        service.active &&
+        (service.staff_services || []).some((assignment) =>
+          activeStaffIds.has(assignment.staff_member_id),
+        ),
+    ).length;
+    const activeStaff = activeStaffIds.size;
+    const openDays = (business.availability || []).filter(
+      (row) => row.is_closed !== true,
+    ).length;
+    const missing: string[] = [];
 
-    if (activeServices === 0) missing.push('active services')
-    if (activeStaff === 0) missing.push('active staff')
-    if (assignedServices === 0) missing.push('staff-service assignments')
-    if (openDays === 0) missing.push('working hours')
+    if (activeServices === 0) missing.push("active services");
+    if (activeStaff === 0) missing.push("active staff");
+    if (assignedServices === 0) missing.push("staff-service assignments");
+    if (openDays === 0) missing.push("working hours");
 
     return {
       activeServices,
@@ -135,123 +166,145 @@ export default function Explore() {
       openDays,
       assignedServices,
       missing,
-      bookable: assignedServices > 0 && activeStaff > 0 && openDays > 0
-    }
+      bookable: assignedServices > 0 && activeStaff > 0 && openDays > 0,
+    };
   }
 
   function businessIcon(business: Business) {
-    const categoryText = business.category?.toLowerCase() || ''
+    const categoryText = business.category?.toLowerCase() || "";
 
-    if (categoryText.includes('dent')) return '🦷'
-    if (categoryText.includes('barber')) return '💈'
-    if (categoryText.includes('salon')) return '✂️'
-    if (categoryText.includes('restaurant')) return '🍽️'
-    if (categoryText.includes('clinic')) return '🏥'
-    if (categoryText.includes('spa')) return '🧖'
-    if (categoryText.includes('nail')) return '💅'
-    if (categoryText.includes('tattoo')) return '🖊️'
-    if (categoryText.includes('pet')) return '🐾'
-    if (categoryText.includes('beauty')) return '✨'
-    return '✨'
+    if (categoryText.includes("dent")) return "🦷";
+    if (categoryText.includes("barber")) return "💈";
+    if (categoryText.includes("salon")) return "✂️";
+    if (categoryText.includes("restaurant")) return "🍽️";
+    if (categoryText.includes("clinic")) return "🏥";
+    if (categoryText.includes("spa")) return "🧖";
+    if (categoryText.includes("nail")) return "💅";
+    if (categoryText.includes("tattoo")) return "🖊️";
+    if (categoryText.includes("pet")) return "🐾";
+    if (categoryText.includes("beauty")) return "✨";
+    return "✨";
   }
 
   function locationLabel(business: Business) {
-    return [business.address, business.city, business.country]
-      .filter(Boolean)
-      .join(', ') || t('explore.card.locationComingSoon')
+    return (
+      [business.address, business.city, business.country]
+        .filter(Boolean)
+        .join(", ") || t("explore.card.locationComingSoon")
+    );
   }
 
   function imageBackground(business: Business) {
-    if (!business.image_url) return 'var(--accent-dim)'
+    if (!business.image_url) return "var(--accent-dim)";
 
-    return `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.68)), url("${business.image_url}")`
+    return `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.68)), url("${business.image_url}")`;
   }
 
   const cities = useMemo(() => {
     const unique = new Set(
       businesses
         .map((business) => business.city?.trim())
-        .filter(Boolean) as string[]
-    )
+        .filter(Boolean) as string[],
+    );
 
-    return Array.from(unique).sort((a, b) => a.localeCompare(b))
-  }, [businesses])
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }, [businesses]);
 
   const categories = useMemo(() => {
     const unique = new Set(
       businesses
         .map((business) => business.category?.trim())
-        .filter(Boolean) as string[]
-    )
+        .filter(Boolean) as string[],
+    );
 
-    return Array.from(unique).sort((a, b) => a.localeCompare(b))
-  }, [businesses])
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }, [businesses]);
 
   const filteredBusinesses = useMemo(() => {
     const filtered = businesses.filter((business) => {
-      const searchText = `${business.name || ''} ${business.description || ''} ${business.category || ''} ${business.city || ''} ${business.country || ''} ${business.address || ''}`.toLowerCase()
+      const searchText =
+        `${business.name || ""} ${business.description || ""} ${business.category || ""} ${business.city || ""} ${business.country || ""} ${business.address || ""}`.toLowerCase();
 
       const matchesSearch = search.trim()
         ? searchText.includes(search.toLowerCase())
-        : true
+        : true;
 
       const matchesCity = city.trim()
-        ? (business.city || '').toLowerCase().includes(city.toLowerCase())
-        : true
+        ? (business.city || "").toLowerCase().includes(city.toLowerCase())
+        : true;
 
       const matchesCategory = category.trim()
-        ? (business.category || '').toLowerCase().includes(category.toLowerCase())
-        : true
+        ? (business.category || "")
+            .toLowerCase()
+            .includes(category.toLowerCase())
+        : true;
 
-      return matchesSearch && matchesCity && matchesCategory
-    })
+      return matchesSearch && matchesCity && matchesCategory;
+    });
 
     return [...filtered].sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name)
-      if (sortBy === 'city') return (a.city || '').localeCompare(b.city || '') || a.name.localeCompare(b.name)
-      if (sortBy === 'services') return getBusinessStats(b).activeServices - getBusinessStats(a).activeServices
-      return 0
-    })
-  }, [businesses, search, city, category, sortBy])
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "city")
+        return (
+          (a.city || "").localeCompare(b.city || "") ||
+          a.name.localeCompare(b.name)
+        );
+      if (sortBy === "services")
+        return (
+          getBusinessStats(b).activeServices -
+          getBusinessStats(a).activeServices
+        );
+      return 0;
+    });
+  }, [businesses, search, city, category, sortBy]);
 
   const marketplaceStats = useMemo(() => {
     return {
       businesses: businesses.length,
       cities: cities.length,
       categories: categories.length,
-      visible: filteredBusinesses.length
-    }
-  }, [businesses.length, cities.length, categories.length, filteredBusinesses.length])
+      visible: filteredBusinesses.length,
+    };
+  }, [
+    businesses.length,
+    cities.length,
+    categories.length,
+    filteredBusinesses.length,
+  ]);
 
   function applyFiltersToUrl() {
     router.push({
-      pathname: '/explore',
+      pathname: "/explore",
       query: {
         ...(search.trim() ? { query: search.trim() } : {}),
         ...(city.trim() ? { city: city.trim() } : {}),
         ...(category.trim() ? { category: category.trim() } : {}),
-        ...(sortBy !== 'newest' ? { sort: sortBy } : {})
-      }
-    })
+        ...(sortBy !== "newest" ? { sort: sortBy } : {}),
+      },
+    });
   }
 
   function clearFilters() {
-    setSearch('')
-    setCity('')
-    setCategory('')
-    setSortBy('newest')
-    router.push('/explore')
+    setSearch("");
+    setCity("");
+    setCategory("");
+    setSortBy("newest");
+    router.push("/explore");
   }
 
   return (
     <main>
       <AuthNav />
 
-      <section className="container" style={{ padding: '32px 24px 70px' }}>
+      <section className="container" style={{ padding: "32px 24px 70px" }}>
         <ExploreHero marketplaceStats={marketplaceStats} />
 
         {error && (
-          <ExploreEmptyState type="error" error={error} onRetry={loadBusinesses} />
+          <ExploreEmptyState
+            type="error"
+            error={error}
+            onRetry={loadBusinesses}
+          />
         )}
 
         <div className="explore-layout-grid">
@@ -271,7 +324,7 @@ export default function Explore() {
             onClearFilters={clearFilters}
           />
 
-          <section>
+          <section className="explore-results-section">
             <ExploreResultsHeader
               loading={loading}
               filteredCount={filteredBusinesses.length}
@@ -281,7 +334,7 @@ export default function Explore() {
 
             {loading && (
               <div className="card">
-                <p className="muted">{t('explore.results.loadingBookable')}</p>
+                <p className="muted">{t("explore.results.loadingBookable")}</p>
               </div>
             )}
 
@@ -289,28 +342,45 @@ export default function Explore() {
               <ExploreEmptyState type="no-businesses" />
             )}
 
-            {!loading && !error && businesses.length > 0 && filteredBusinesses.length === 0 && (
-              <ExploreEmptyState type="no-results" onClearFilters={clearFilters} />
-            )}
+            {!loading &&
+              !error &&
+              businesses.length > 0 &&
+              filteredBusinesses.length === 0 && (
+                <ExploreEmptyState
+                  type="no-results"
+                  onClearFilters={clearFilters}
+                />
+              )}
 
             <div className="explore-results-grid">
-              {!loading && !error && filteredBusinesses.map((business) => (
-                <ExploreBusinessCard
-                  key={business.id}
-                  business={business}
-                  stats={getBusinessStats(business)}
-                  businessIcon={businessIcon}
-                  locationLabel={locationLabel}
-                  imageBackground={imageBackground}
-                />
-              ))}
+              {!loading &&
+                !error &&
+                filteredBusinesses.map((business) => (
+                  <ExploreBusinessCard
+                    key={business.id}
+                    business={business}
+                    stats={getBusinessStats(business)}
+                    businessIcon={businessIcon}
+                    locationLabel={locationLabel}
+                    imageBackground={imageBackground}
+                  />
+                ))}
             </div>
           </section>
         </div>
       </section>
       <style jsx>{`
         .explore-layout-grid {
-          display: block;
+          display: flex;
+          flex-direction: column;
+        }
+
+        :global(.explore-filter-panel) {
+          order: 1;
+        }
+
+        .explore-results-section {
+          order: 2;
         }
 
         :global(.explore-results-header) {
@@ -394,20 +464,29 @@ export default function Explore() {
           }
 
           :global(.explore-business-image) {
-            min-height: 180px !important;
+            min-height: 126px !important;
             border-right: 0;
             border-bottom: 1px solid var(--border);
           }
 
           :global(.explore-business-content) {
-            padding: 1rem;
+            padding: 0.85rem;
           }
 
           :global(.explore-business-actions) {
             align-items: stretch;
-            padding: 0 1rem 1rem;
+            padding: 0 0.85rem 0.85rem;
             min-width: 0;
             width: 100%;
+          }
+
+          :global(.explore-filter-panel) {
+            order: 2;
+            margin-top: 0.85rem;
+          }
+
+          .explore-results-section {
+            order: 1;
           }
 
           :global(.explore-business-actions .btn) {
@@ -431,5 +510,5 @@ export default function Explore() {
         }
       `}</style>
     </main>
-  )
+  );
 }

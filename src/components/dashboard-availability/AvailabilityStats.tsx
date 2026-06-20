@@ -13,106 +13,83 @@ export default function AvailabilityStats({ stats }: Props) {
   const { t } = useI18n();
 
   return (
-    <div
-      className="availability-stats-grid"
-      style={{ marginBottom: "1.25rem" }}
-    >
-      <div className="card availability-stat-card">
-        <h3>{stats.openDays}</h3>
-        <strong>
-          {t("dashboardAvailability.stats.openDays", "Open days")}
-        </strong>
-        <p className="muted small">
-          {t(
-            "dashboardAvailability.stats.openDaysBody",
-            "Business days customers can book.",
-          )}
-        </p>
-      </div>
-
-      <div className="card availability-stat-card">
-        <h3>{stats.closedDays}</h3>
-        <strong>
-          {t("dashboardAvailability.stats.closedDays", "Closed days")}
-        </strong>
-        <p className="muted small">
-          {t(
-            "dashboardAvailability.stats.closedDaysBody",
-            "Hidden from new customer bookings.",
-          )}
-        </p>
-      </div>
-
-      <div className="card availability-stat-card">
-        <h3>{formatHours(stats.totalHours)} hrs</h3>
-        <strong>
-          {t("dashboardAvailability.stats.weeklyHours", "Weekly availability")}
-        </strong>
-        <p className="muted small">
-          {t(
-            "dashboardAvailability.stats.weeklyHoursBody",
-            "Estimated weekly opening hours.",
-          )}
-        </p>
-      </div>
-
-      <div
-        className="card availability-stat-card"
-        style={{
-          borderColor:
-            stats.invalidDays > 0 ? "rgba(255,77,109,0.35)" : "var(--border)",
-        }}
+    <div className="card availability-summary-strip">
+      <span
+        className={`availability-status-dot ${stats.ready ? "ready" : "needs-work"}`}
       >
-        <h3>{stats.invalidDays}</h3>
-        <strong>
+        {stats.ready
+          ? t("dashboardBusinesses.ready", "Ready")
+          : t("dashboardBusinesses.needsWork", "Needs work")}
+      </span>
+      <span>
+        <strong>{stats.openDays}</strong>{" "}
+        {t("dashboardAvailability.stats.openDays", "Open days")}
+      </span>
+      <span>
+        <strong>{stats.closedDays}</strong>{" "}
+        {t("dashboardAvailability.stats.closedDays", "Closed days")}
+      </span>
+      <span>
+        <strong>{formatHours(stats.totalHours)}</strong>{" "}
+        {t("dashboardAvailability.stats.weeklyHoursShort", "hours/week")}
+      </span>
+      {stats.invalidDays > 0 && (
+        <span className="availability-invalid-chip">
+          <strong>{stats.invalidDays}</strong>{" "}
           {t("dashboardAvailability.stats.invalidDays", "Invalid days")}
-        </strong>
-        <p className="muted small">
-          {t(
-            "dashboardAvailability.stats.invalidDaysBody",
-            "Open days where start time is not before end time.",
-          )}
-        </p>
-      </div>
-
-      <div
-        className="card availability-stat-card"
-        style={{
-          borderColor: stats.ready
-            ? "rgba(45,212,191,0.25)"
-            : "rgba(255,190,11,0.35)",
-        }}
-      >
-        <h3>
-          {stats.ready
-            ? t("dashboardBusinesses.ready", "Ready")
-            : t("dashboardBusinesses.needsWork", "Needs work")}
-        </h3>
-        <strong>{t("dashboardAvailability.stats.status", "Status")}</strong>
-        <p className="muted small">
-          {t(
-            "dashboardAvailability.stats.statusBody",
-            "At least one valid open day helps Mirëbook generate customer booking dates.",
-          )}
-        </p>
-      </div>
+        </span>
+      )}
 
       <style jsx>{`
-        .availability-stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-          gap: 1rem;
-        }
-
-        .availability-stat-card {
-          display: grid;
+        .availability-summary-strip {
+          display: flex;
+          align-items: center;
           gap: 0.55rem;
-          align-content: start;
+          flex-wrap: wrap;
+          margin-bottom: 0.85rem;
+          padding: 0.8rem;
         }
 
-        .availability-stat-card h3,
-        .availability-stat-card p {
-          margin-top: 0;
+        .availability-summary-strip span {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          min-height: 2rem;
+          padding: 0.32rem 0.65rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          font-weight: 700;
+        }
+
+        .availability-summary-strip strong {
+          color: var(--text);
+        }
+
+        .availability-status-dot.ready {
+          border-color: rgba(45, 212, 191, 0.32);
+          background: rgba(45, 212, 191, 0.08);
+          color: var(--success);
+        }
+
+        .availability-status-dot.needs-work,
+        .availability-invalid-chip {
+          border-color: rgba(255, 190, 11, 0.32);
+          background: rgba(255, 190, 11, 0.08);
+          color: var(--warning);
+        }
+
+        @media (max-width: 560px) {
+          .availability-summary-strip {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .availability-summary-strip span {
+            justify-content: center;
+          }
         }
       `}</style>
     </div>

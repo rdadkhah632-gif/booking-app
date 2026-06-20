@@ -239,3 +239,23 @@ database schema.
 
 Stage 8.8A did not change protected auth, role routing, booking, availability
 save logic, staff linking, billing writes, notifications or database schema.
+
+## Stage 8.8B Customer And Setup Compression Implemented
+
+- moved Explore mobile into a results-first flow so bookable businesses appear
+  before the filter panel on small screens
+- reduced Explore mobile card image/action spacing so more marketplace content
+  fits in the first scroll
+- merged the Setup page progress and next-action panels into one compact status
+  panel
+- compressed Working hours by replacing separate stat cards with one status
+  strip, tightening presets and shortening closed-day copy
+- reordered Account so personal details, verification and security appear before
+  secondary account summaries
+- collapsed email preferences into a compact account details row instead of a
+  full always-open settings section
+- updated English and Albanian translation keys for every touched visible string
+
+Stage 8.8B did not change booking logic, availability save behavior, auth,
+route protection, staff linking, billing writes, notifications or database
+schema.

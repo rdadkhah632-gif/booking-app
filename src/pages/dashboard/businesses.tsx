@@ -683,47 +683,23 @@ export default function Businesses() {
 
       {businesses.length > 0 && primaryBusiness && primaryReadiness && (
         <section className="setup-workspace">
-          <div className="setup-hero">
-            <div>
-              <p className="small muted">
-                {t("dashboardBusinesses.setup.progressLabel", "Setup progress")}
-              </p>
-              <h2>
-                {primaryBusiness.name ||
-                  t(
-                    "dashboardBusinesses.untitledBusiness",
-                    "Untitled business",
-                  )}
-              </h2>
-              <p className="small muted">
-                {t(
-                  "dashboardBusinesses.setup.body",
-                  "Follow the next step, then preview what customers will see.",
-                )}
-              </p>
-            </div>
-            <span
-              className={
-                primaryReadiness.publicListingReady
-                  ? "setup-status ready"
-                  : "setup-status"
-              }
-            >
-              {setupStatus}
-            </span>
-          </div>
-
-          <div className="setup-progress-panel">
+          <div className="setup-summary-panel">
             <div className="setup-progress-main">
               <span className="setup-progress-count">
                 {completedSetupSteps} {t("dashboardBusinesses.setup.of", "of")}{" "}
                 {setupSteps.length}
               </span>
               <div>
-                <h3>{t("dashboardBusinesses.setup.nextTitle", "Next step")}</h3>
+                <h2>
+                  {primaryBusiness.name ||
+                    t(
+                      "dashboardBusinesses.untitledBusiness",
+                      "Untitled business",
+                    )}
+                </h2>
                 <p className="muted">
                   {nextSetupStep
-                    ? `${nextSetupStep.label}: ${nextSetupStep.helper}`
+                    ? `${t("dashboardBusinesses.setup.nextInline", "Next")}: ${nextSetupStep.label}`
                     : t(
                         "dashboardBusinesses.setup.completeBody",
                         "Your booking setup is ready.",
@@ -731,19 +707,30 @@ export default function Businesses() {
                 </p>
               </div>
             </div>
-            {nextSetupStep && (
-              <a
-                href={nextSetupStep.href}
-                className="btn btn-accent"
-                onClick={
-                  shouldOpenProfileDetails(nextSetupStep.href)
-                    ? openProfileDetails
-                    : undefined
+            <div className="setup-summary-actions">
+              <span
+                className={
+                  primaryReadiness.publicListingReady
+                    ? "setup-status ready"
+                    : "setup-status"
                 }
               >
-                {nextSetupStep.action}
-              </a>
-            )}
+                {setupStatus}
+              </span>
+              {nextSetupStep && (
+                <a
+                  href={nextSetupStep.href}
+                  className="btn btn-accent"
+                  onClick={
+                    shouldOpenProfileDetails(nextSetupStep.href)
+                      ? openProfileDetails
+                      : undefined
+                  }
+                >
+                  {nextSetupStep.action}
+                </a>
+              )}
+            </div>
           </div>
 
           <div className="setup-grid">
@@ -983,14 +970,13 @@ export default function Businesses() {
       <style jsx>{`
         .setup-workspace {
           display: grid;
-          gap: 1rem;
+          gap: 0.85rem;
           margin-bottom: 1.25rem;
           padding-bottom: 1.25rem;
           border-bottom: 1px solid var(--border);
         }
 
-        .setup-hero,
-        .setup-progress-panel,
+        .setup-summary-panel,
         .setup-secondary {
           display: flex;
           justify-content: space-between;
@@ -999,13 +985,15 @@ export default function Businesses() {
           flex-wrap: wrap;
         }
 
-        .setup-hero h2,
-        .setup-hero p,
-        .setup-progress-panel h3,
-        .setup-progress-panel p,
+        .setup-summary-panel h2,
+        .setup-summary-panel p,
         .setup-preview h3,
         .setup-preview p {
           margin-top: 0;
+        }
+
+        .setup-summary-panel h2 {
+          margin-bottom: 0.2rem;
         }
 
         .setup-status,
@@ -1025,7 +1013,7 @@ export default function Businesses() {
           color: var(--success);
         }
 
-        .setup-progress-panel,
+        .setup-summary-panel,
         .setup-preview,
         .setup-details-panel {
           border: 1px solid var(--border);
@@ -1033,8 +1021,8 @@ export default function Businesses() {
           background: var(--surface);
         }
 
-        .setup-progress-panel {
-          padding: 1rem;
+        .setup-summary-panel {
+          padding: 0.95rem;
         }
 
         .setup-progress-main {
@@ -1044,12 +1032,20 @@ export default function Businesses() {
           min-width: min(100%, 28rem);
         }
 
+        .setup-summary-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 0.6rem;
+          flex-wrap: wrap;
+        }
+
         .setup-progress-count {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 4rem;
-          height: 4rem;
+          width: 3.45rem;
+          height: 3.45rem;
           flex: 0 0 auto;
           border-radius: 50%;
           background: var(--accent-dim);
@@ -1196,9 +1192,9 @@ export default function Businesses() {
         }
 
         @media (max-width: 700px) {
-          .setup-hero,
-          .setup-progress-panel,
+          .setup-summary-panel,
           .setup-progress-main,
+          .setup-summary-actions,
           .setup-secondary,
           .setup-owner-note,
           .setup-advanced {
@@ -1224,7 +1220,7 @@ export default function Businesses() {
             white-space: normal;
           }
 
-          .setup-progress-panel :global(.btn),
+          .setup-summary-panel :global(.btn),
           .setup-preview :global(.btn),
           .setup-owner-note :global(.btn),
           .setup-owner-note button {
