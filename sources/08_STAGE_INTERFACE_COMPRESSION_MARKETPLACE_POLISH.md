@@ -223,3 +223,19 @@ Remaining QA notes after Stage 8.7A:
 Stage 8.7B did not change service creation, staff creation, booking logic,
 availability logic, auth, RLS, billing writes, notification behavior or
 database schema.
+
+## Stage 8.8A Authenticated Mobile Shell Cleanup Implemented
+
+- audited public, customer, business and staff flows with throwaway `@test.com`
+  accounts across desktop and mobile screenshots
+- tightened authenticated mobile navigation so customer links wrap instead of
+  clipping account/logout controls off-screen
+- compacted business and staff mobile shells by removing the large avatar/email
+  account block from the first viewport while keeping Account, Membership/Help
+  and Log out actions available
+- shortened the Working hours setup summary and removed repeated Setup/Team/
+  Services shortcut buttons from the first card so the page gets to the actual
+  hours controls faster
+
+Stage 8.8A did not change protected auth, role routing, booking, availability
+save logic, staff linking, billing writes, notifications or database schema.

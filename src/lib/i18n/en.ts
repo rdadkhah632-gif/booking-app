@@ -1497,7 +1497,7 @@ export const en: TranslationTree = {
   "dashboardAvailability.businessPicker.manageCta": "Manage hours",
   "dashboardAvailability.hero.kicker": "Working hours",
   "dashboardAvailability.hero.body":
-    "These are your general opening hours. Team member hours can narrow when each person can be booked.",
+    "These are the general hours customers can book. Team member hours can narrow individual schedules.",
   "dashboardAvailability.stats.openDays": "Open days",
   "dashboardAvailability.stats.openDaysBody": "Business days marked as open",
   "dashboardAvailability.stats.closedDays": "Closed days",

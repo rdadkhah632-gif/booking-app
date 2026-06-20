@@ -1468,7 +1468,7 @@ export const sq: TranslationTree = {
   "dashboardAvailability.businessPicker.manageCta": "Menaxho oraret",
   "dashboardAvailability.hero.kicker": "Orari i punës",
   "dashboardAvailability.hero.body":
-    "Këto janë oraret e përgjithshme të hapjes. Orari i ekipit mund ta kufizojë më tej kur mund të rezervohet secili person.",
+    "Këto janë oraret e përgjithshme kur klientët mund të rezervojnë. Orari i ekipit mund të kufizojë oraret individuale.",
   "dashboardAvailability.stats.openDays": "Ditë të hapura",
   "dashboardAvailability.stats.openDaysBody":
     "Ditë biznesi të shënuara si të hapura",

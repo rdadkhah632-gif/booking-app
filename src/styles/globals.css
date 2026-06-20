@@ -1,34 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap");
 
 :root {
   --bg: #0f0e17;
   --surface: #1a1927;
   --surface-2: #222135;
   --surface-3: #2a2840;
-  --border: rgba(255,255,255,0.08);
-  --border-2: rgba(255,255,255,0.14);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-2: rgba(255, 255, 255, 0.14);
   --accent: #ff6b35;
-  --accent-dim: rgba(255,107,53,0.12);
+  --accent-dim: rgba(255, 107, 53, 0.12);
   --accent-2: #ffbe0b;
   --text: #fffffe;
   --text-muted: #a7a5c0;
   --text-faint: #5e5c78;
   --success: #06d6a0;
-  --success-dim: rgba(6,214,160,0.12);
+  --success-dim: rgba(6, 214, 160, 0.12);
   --warning: #ffbe0b;
-  --warning-dim: rgba(255,190,11,0.12);
+  --warning-dim: rgba(255, 190, 11, 0.12);
   --danger: #ff4d6d;
-  --danger-dim: rgba(255,77,109,0.12);
-  --font-display: 'Playfair Display', serif;
-  --font-body: 'Outfit', sans-serif;
+  --danger-dim: rgba(255, 77, 109, 0.12);
+  --font-display: "Playfair Display", serif;
+  --font-body: "Outfit", sans-serif;
   --radius: 14px;
   --max-w: 1160px;
   --content-pad: 24px;
-  --shadow-soft: 0 18px 60px rgba(0,0,0,0.22);
-  --shadow-card: 0 12px 40px rgba(0,0,0,0.18);
+  --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.22);
+  --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.18);
   --nav-h: 72px;
   --tap-size: 44px;
-  --ease: cubic-bezier(0.4,0,0.2,1);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 *,
@@ -70,7 +70,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid rgba(255,107,53,0.55);
+  outline: 3px solid rgba(255, 107, 53, 0.55);
   outline-offset: 3px;
 }
 
@@ -113,7 +113,7 @@ hr {
 }
 
 ::selection {
-  background: rgba(255,107,53,0.28);
+  background: rgba(255, 107, 53, 0.28);
   color: var(--text);
 }
 
@@ -129,7 +129,9 @@ textarea {
   width: 100%;
   min-width: 0;
   min-height: var(--tap-size);
-  transition: border-color 0.25s, box-shadow 0.25s;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
 }
 
 input::placeholder,
@@ -141,7 +143,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255,107,53,0.14);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.14);
 }
 
 select option {
@@ -231,7 +233,10 @@ select option {
   font-size: 0.88rem;
   font-weight: 600;
   border: none;
-  transition: opacity 0.22s, transform 0.22s, border-color 0.22s;
+  transition:
+    opacity 0.22s,
+    transform 0.22s,
+    border-color 0.22s;
   min-height: var(--tap-size);
   text-align: center;
   white-space: nowrap;
@@ -258,19 +263,19 @@ select option {
 .btn-danger {
   background: var(--danger-dim);
   color: var(--danger);
-  border: 1px solid rgba(255,77,109,0.2);
+  border: 1px solid rgba(255, 77, 109, 0.2);
 }
 
 .btn-success {
   background: var(--success-dim);
   color: var(--success);
-  border: 1px solid rgba(6,214,160,0.22);
+  border: 1px solid rgba(6, 214, 160, 0.22);
 }
 
 .btn-warning {
   background: var(--warning-dim);
   color: var(--warning);
-  border: 1px solid rgba(255,190,11,0.22);
+  border: 1px solid rgba(255, 190, 11, 0.22);
 }
 
 .card {
@@ -482,8 +487,8 @@ select option {
 
 .language-toggle button.active,
 .account-mode-pill button.active,
-.language-toggle button[aria-pressed='true'],
-.account-mode-pill button[aria-pressed='true'] {
+.language-toggle button[aria-pressed="true"],
+.account-mode-pill button[aria-pressed="true"] {
   background: var(--accent-dim);
   color: var(--accent);
 }
@@ -493,7 +498,7 @@ select option {
 }
 
 .nav-simple {
-  background: rgba(15,14,23,0.94);
+  background: rgba(15, 14, 23, 0.94);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(18px);
   padding: 16px 0;
@@ -568,7 +573,9 @@ select option {
   color: var(--text-muted);
   font-size: 0.9rem;
   font-weight: 500;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .sidebar-link:hover,
@@ -609,7 +616,11 @@ select option {
   right: -10%;
   width: 650px;
   height: 650px;
-  background: radial-gradient(circle, rgba(255,107,53,0.14) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 107, 53, 0.14) 0%,
+    transparent 70%
+  );
 }
 
 .home-glow-two {
@@ -617,7 +628,11 @@ select option {
   left: -5%;
   width: 420px;
   height: 420px;
-  background: radial-gradient(circle, rgba(255,190,11,0.09) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 190, 11, 0.09) 0%,
+    transparent 70%
+  );
 }
 
 .home-hero-grid {
@@ -637,8 +652,8 @@ select option {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,107,53,0.12);
-  border: 1px solid rgba(255,107,53,0.3);
+  background: rgba(255, 107, 53, 0.12);
+  border: 1px solid rgba(255, 107, 53, 0.3);
   color: var(--accent);
   font-size: 0.78rem;
   font-weight: 700;
@@ -800,9 +815,9 @@ select option {
   }
 
   .nav-simple-inner > div {
-  justify-content: flex-start !important;
-  flex-wrap: nowrap;
-}
+    justify-content: flex-start !important;
+    flex-wrap: nowrap;
+  }
 
   .dashboard-layout {
     grid-template-columns: 1fr;
@@ -814,19 +829,19 @@ select option {
     overflow: hidden;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 16px;
+    padding: 12px;
   }
 
   .sidebar-logo {
-    margin-bottom: 14px;
-    padding-bottom: 12px;
+    margin-bottom: 10px;
+    padding: 0 4px 10px;
   }
 
   .sidebar-nav {
-    display: flex;
+    display: grid;
     gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    overflow: visible;
+    padding-bottom: 0;
     scrollbar-width: none;
   }
 
@@ -841,6 +856,33 @@ select option {
   .sidebar-link {
     white-space: nowrap;
     flex: 0 0 auto;
+  }
+
+  .dashboard-layout .sidebar-account {
+    gap: 6px;
+    margin-top: 0;
+    padding: 0;
+    border-top: 0;
+  }
+
+  .dashboard-layout .sidebar-account-main {
+    display: none !important;
+  }
+
+  .dashboard-layout .sidebar-main-links,
+  .dashboard-layout .sidebar-account-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  .dashboard-layout .sidebar-account-actions a,
+  .dashboard-layout .sidebar-account-actions button,
+  .dashboard-layout .sidebar-link {
+    min-height: 36px;
+    padding: 8px 10px;
+    border-radius: 999px;
   }
 
   .dashboard-main {

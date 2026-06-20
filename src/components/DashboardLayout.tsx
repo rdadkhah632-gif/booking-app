@@ -577,6 +577,10 @@ export default function DashboardLayout({
             border-top: 0;
           }
 
+          .sidebar-account-main {
+            display: none !important;
+          }
+
           .sidebar-section-label {
             display: none;
           }
@@ -592,10 +596,12 @@ export default function DashboardLayout({
             top: 0;
             z-index: 35;
             overflow: hidden;
+            padding: 0.75rem;
           }
 
           .sidebar-logo {
-            margin-bottom: 0.65rem;
+            margin-bottom: 0.5rem;
+            padding: 0 0.25rem 0.55rem;
           }
 
           .sidebar-nav {
@@ -614,8 +620,8 @@ export default function DashboardLayout({
           .sidebar-account-actions {
             display: flex;
             gap: 0.45rem;
-            overflow-x: auto;
-            overflow-y: hidden;
+            overflow: visible;
+            flex-wrap: wrap;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
           }
@@ -627,20 +633,20 @@ export default function DashboardLayout({
 
           .sidebar-account {
             display: grid;
-            gap: 0.45rem;
+            gap: 0.35rem;
             margin-top: 0;
             padding: 0;
             border-top: 0;
           }
 
           .sidebar-account-main {
-            display: none;
+            display: none !important;
           }
 
           .sidebar-account-actions a,
           .sidebar-account-actions button {
-            min-height: 2.35rem;
-            padding: 0.65rem 0.85rem;
+            min-height: 2.2rem;
+            padding: 0.5rem 0.7rem;
             flex: 0 0 auto;
             white-space: nowrap;
             border: 1px solid var(--border);
@@ -656,7 +662,7 @@ export default function DashboardLayout({
           .sidebar-link,
           .sidebar-logout {
             width: auto;
-            min-height: 2.35rem;
+            min-height: 2.2rem;
             display: inline-flex;
             align-items: center;
             flex: 0 0 auto;
@@ -664,7 +670,7 @@ export default function DashboardLayout({
             border-left: 0;
             border-bottom: 0;
             border-radius: 999px;
-            padding: 0.65rem 0.85rem;
+            padding: 0.5rem 0.7rem;
           }
 
           .sidebar-link.active,

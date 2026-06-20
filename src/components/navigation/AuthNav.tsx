@@ -401,15 +401,9 @@ export default function AuthNav() {
             width: 100%;
             justify-content: flex-start;
             gap: 0.5rem;
-            overflow-x: auto;
-            overflow-y: hidden;
+            flex-wrap: wrap;
+            overflow: visible;
             padding: 0.15rem 0 0.3rem;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-          }
-
-          .auth-nav-links::-webkit-scrollbar {
-            display: none;
           }
 
           :global(.nav-wide-only) {
@@ -439,6 +433,8 @@ export default function AuthNav() {
             max-width: none;
             justify-content: center;
             white-space: nowrap;
+            min-height: 2.25rem;
+            padding: 0.58rem 0.78rem;
           }
 
           .logo {
