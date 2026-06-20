@@ -60,7 +60,6 @@ export default function CustomerNotifications() {
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingRead, setMarkingRead] = useState(false);
-  const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   async function loadNotifications(options?: { silent?: boolean }) {
@@ -76,8 +75,6 @@ export default function CustomerNotifications() {
         router.replace("/login");
         return;
       }
-
-      setEmail(session.user.email || "");
 
       const { data: notificationData, error: notificationError } =
         await supabase
@@ -412,7 +409,6 @@ export default function CustomerNotifications() {
 
       <section className="container" style={{ padding: "36px 24px 70px" }}>
         <NotificationsHeader
-          email={email}
           loading={loading}
           markingRead={markingRead}
           unreadCount={unreadCount}

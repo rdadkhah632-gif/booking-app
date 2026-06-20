@@ -25,8 +25,8 @@ export const sq: TranslationTree = {
   "staff.schedule.title": "Orari im",
   "staffCalendar.title": "Kalendari",
   "staff.actions.updateAvailability": "Disponueshmëria ime",
-  "staffNotifications.title": "Njoftime",
-  "staffAvailability.title": "Orari yt i punës",
+  "staffNotifications.title": "Inbox",
+  "staffAvailability.title": "Orari i punës",
   "staffAvailability.staffOnly": "Orari yt i punës",
   "staffAvailability.actions.saveAvailability": "Ruaj disponueshmërinë",
   "staffAvailability.actions.saveWeekly": "Ruaj disponueshmërinë javore",
@@ -43,7 +43,7 @@ export const sq: TranslationTree = {
   "staffAvailability.summary.weeklyHours": "Disponueshmëri javore",
   "staffAvailability.summary.weeklyHoursBody":
     "Kohë e përafërt e stafit për rezervime.",
-  "staffAvailability.templates.compactTitle": "Modele të shpejta",
+  "staffAvailability.templates.compactTitle": "Modele",
   "staffAvailability.templates.title": "Modele të shpejta",
   "staffAvailability.templates.body":
     "Modelet përditësojnë vetëm formularin. Ruaj disponueshmërinë javore kur oraret të jenë gati.",
@@ -538,7 +538,7 @@ export const sq: TranslationTree = {
   "myBookings.kicker": "Takimet e tua",
   "myBookings.title": "Rezervimet e mia",
   "myBookings.signedInAs": "Hyrë si",
-  "myBookings.subtitle": "Shiko dhe menaxho takimet e tua në Mirëbook.",
+  "myBookings.subtitle": "Kërkesat, takimet e ardhshme dhe historia.",
   "myBookings.requestSent.kicker": "Kërkesa u dërgua",
   "myBookings.requestSent.title": "Në pritje që biznesi ta konfirmojë.",
   "myBookings.requestSent.body":
@@ -573,7 +573,7 @@ export const sq: TranslationTree = {
   "myBookings.stats.noHistory": "Nuk ka ende histori",
   "myBookings.empty.title": "Nuk ka ende rezervime",
   "myBookings.empty.body":
-    "Nuk ke rezervuar ende asnjë takim. Eksploro bizneset në Mirëbook dhe bëj rezervimin tënd të parë.",
+    "Eksploro shërbimet për të bërë rezervimin tënd të parë.",
   "myBookings.card.changePending": "Kërkesë ndryshimi në pritje",
   "myBookings.card.originalStillConfirmed":
     "Orari origjinal mbetet i konfirmuar",
@@ -618,9 +618,8 @@ export const sq: TranslationTree = {
   "myBookings.card.lockedBody":
     "Ky rezervim nuk mund të ndryshohet ose anulohet më.",
   "notifications.kicker": "Përditësime rezervimesh",
-  "notifications.title": "Njoftimet",
-  "notifications.subtitle":
-    "Gjurmo miratimet e rezervimeve, vendimet për ndryshim orari dhe përditësimet e takimeve.",
+  "notifications.title": "Përditësime",
+  "notifications.subtitle": "Përditësime rezervimesh dhe ndryshime takimesh.",
   "notifications.refreshing": "Duke rifreskuar...",
   "notifications.refresh": "Rifresko njoftimet",
   "notifications.markingRead": "Duke shënuar si të lexuara...",
@@ -638,8 +637,7 @@ export const sq: TranslationTree = {
   "notifications.stats.unread": "Të palexuara",
   "notifications.stats.unreadBody": "Përditësime të palexuara nga Mirëbook",
   "notifications.empty.title": "Nuk ka ende njoftime",
-  "notifications.empty.body":
-    "Miratimet e rezervimeve, vendimet për ndryshim orari dhe takimet e përfunduara do të shfaqen këtu kur bizneset përditësojnë takimet e tua.",
+  "notifications.empty.body": "Përditësimet e rezervimeve do të shfaqen këtu.",
   "notifications.inbox.kicker": "Inbox i njoftimeve",
   "notifications.inbox.title": "Përditësimet e fundit nga Mirëbook",
   "notifications.inbox.body":
@@ -2280,6 +2278,7 @@ export const sq: TranslationTree = {
     "Kjo llogari nuk është lidhur ende me një profil stafi. Kërkoji biznesit të shtojë email-in tënd te Ekipi, pastaj hyr përsëri.",
   "staff.workspace.kicker": "Hapësira e stafit",
   "staff.workspace.greeting": "Përshëndetje",
+  "staff.workspace.title": "Sot",
   "staff.workspace.staffOnly": "Hapësira e stafit",
   "staff.actions.backToDashboard": "Kthehu te paneli i stafit",
   "staff.actions.dashboard": "Paneli i stafit",
@@ -2348,9 +2347,8 @@ export const sq: TranslationTree = {
   "staff.filter.activePlural": "rezervime aktive",
   "staffNotifications.inbox.kicker": "Statusi i kutisë",
   "staffNotifications.inbox.body":
-    "Kjo kuti shfaq vetëm përditësimet e lidhura me hapësirën tënde të stafit.",
-  "staffNotifications.inboxClear":
-    "Të gjitha përditësimet e stafit janë lexuar",
+    "Përditësimet e rezervimeve dhe orarit shfaqen këtu.",
+  "staffNotifications.inboxClear": "Çdo gjë është lexuar",
   "staffNotifications.unreadSingle": "përditësim i palexuar",
   "staffNotifications.unreadPlural": "përditësime të palexuara",
   "staffNotifications.filter.all": "Të gjitha",
@@ -2401,16 +2399,15 @@ export const sq: TranslationTree = {
     "Nuk ka rezervime të ardhshme të caktuara. Takimet e reja do të shfaqen këtu pasi të të caktohen.",
   "staffAvailability.upcoming.pendingBody":
     "Rezervimet në pritje shfaqen për dijeni. Pronarët ose menaxherët i miratojnë nga paneli i biznesit.",
-  "staffNotifications.body":
-    "Përditësime vetëm për stafin, orarin, profilin dhe rezervimet e caktuara.",
+  "staffNotifications.body": "Përditësime orari dhe rezervimesh.",
   "staffNotifications.loading": "Duke ngarkuar njoftimet e stafit...",
   "staffNotifications.mark": "Shëno",
   "staffNotifications.read": "si të lexuara",
   "staffNotifications.allRead": "Të gjitha të lexuara",
   "staffNotifications.markRead": "Shëno si të lexuar",
-  "staffNotifications.empty.title": "Ende nuk ka njoftime për stafin",
+  "staffNotifications.empty.title": "Ende nuk ka përditësime",
   "staffNotifications.empty.body":
-    "Përditësimet e rezervimeve, ndryshimet e orarit dhe mesazhet e llogarisë së stafit do të shfaqen këtu.",
+    "Përditësimet e rezervimeve dhe orarit do të shfaqen këtu.",
   "staffNotifications.fallback.title": "Përditësim për stafin",
   "staffNotifications.fallback.message": "Ke një përditësim të ri për stafin.",
   "dashboardHome.ownerCommand.kicker": "Qendra e komandës së pronarit",

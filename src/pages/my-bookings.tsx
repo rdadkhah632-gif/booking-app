@@ -20,7 +20,6 @@ export default function MyBookings() {
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [requests, setRequests] = useState<BookingRequest[]>([]);
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +46,6 @@ export default function MyBookings() {
       router.replace("/login?redirectTo=/my-bookings");
       return;
     }
-
-    setEmail(session.user.email || "");
 
     const { data, error } = await supabase
       .from("bookings")
@@ -602,8 +599,8 @@ export default function MyBookings() {
 
       <section className="container" style={{ padding: "36px 24px 70px" }}>
         <MyBookingsHeader
-          email={email}
           loading={loading}
+          showExploreAction={!loading && bookings.length > 0}
           bookingRequested={router.query.bookingRequested}
           requestSent={router.query.requestSent}
           success={success}
@@ -649,10 +646,7 @@ export default function MyBookings() {
                 sectionRef={pendingSectionRef}
                 id="waiting-approval"
                 kicker={t("myBookings.sections.actionStatus", "Action status")}
-                title={t(
-                  "myBookings.sections.waitingTitle",
-                  "Request sent",
-                )}
+                title={t("myBookings.sections.waitingTitle", "Request sent")}
                 body={t(
                   "myBookings.sections.waitingBody",
                   "Waiting for the business to confirm. You can cancel the request while it is still waiting.",
@@ -727,10 +721,7 @@ export default function MyBookings() {
                 sectionRef={historySectionRef}
                 id="booking-history"
                 kicker={t("dashboardBookings.summary.history", "History")}
-                title={t(
-                  "myBookings.sections.historyTitle",
-                  "Booking history",
-                )}
+                title={t("myBookings.sections.historyTitle", "Booking history")}
                 body={t(
                   "myBookings.sections.historyBody",
                   "Completed, cancelled and past bookings stay here so you can review them whenever you need.",

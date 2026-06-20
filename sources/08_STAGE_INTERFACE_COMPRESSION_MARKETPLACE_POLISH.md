@@ -310,3 +310,27 @@ Stage 8.9 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 linking, billing checkout/webhook writes, notifications behavior or database
 schema.
+
+## Stage 8.10 Staff And Customer Visual Polish Implemented
+
+- visually reviewed staff and customer surfaces with Browser before editing,
+  including Staff Today, Staff Calendar, Staff Working hours, Staff Inbox,
+  My bookings, customer Updates and Account on mobile
+- tightened Staff Today so it no longer uses a long email-like staff name as
+  the main heading, and fixed quick-link spacing so labels and helper text do
+  not run together
+- compressed Staff Working hours by removing the repeated explanatory paragraph
+  and duplicate staff/business context before the actual controls
+- made Staff Calendar mobile fit the seven-day week in view, using simple dots
+  for booked days and keeping appointment details in the selected-day panel
+- simplified Staff Inbox and customer Updates so read/refresh actions do not
+  dominate empty states
+- removed raw signed-in email copy from customer My bookings and Updates page
+  headers, shortened empty-state copy and kept one clear Explore path
+- added a small Account mobile/input polish for long email values
+- updated English and Albanian translation values for the touched visible copy
+
+Stage 8.10 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

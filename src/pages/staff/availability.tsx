@@ -80,7 +80,6 @@ export default function StaffAvailabilityPage() {
   const { t } = useI18n();
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
-  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
   const [availability, setAvailability] = useState<StaffAvailability[]>([]);
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,8 +105,6 @@ export default function StaffAvailabilityPage() {
         session.user.id,
         session.user.email,
       );
-
-      setHasBusinessWorkspace(capabilities.canUseBusiness);
 
       if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
         setStaffProfile(null);
@@ -397,30 +394,16 @@ export default function StaffAvailabilityPage() {
             <div className="staff-availability-hero card">
               <div>
                 <h1 className="page-title">
-                  {t("staffAvailability.title", "Your working hours")}
+                  {t("staffAvailability.title", "Working hours")}
                 </h1>
                 <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-                  {staffProfile.name} ·{" "}
                   {businessName(
                     staffProfile,
                     t("staff.fallback.business", "Your business"),
-                  )}{" "}
-                  ·{" "}
-                  {hasBusinessWorkspace
-                    ? t(
-                        "staffAvailability.ownerStaffAvailability",
-                        "Personal working hours for this business",
-                      )
-                    : t("staffAvailability.staffOnly", "Your working hours")}
+                  )}
                 </p>
               </div>
             </div>
-            <p className="staff-availability-note">
-              {t(
-                "staffAvailability.note.compactBody",
-                "These hours control when customers can book you. Existing appointments are not moved when your hours change.",
-              )}
-            </p>
             {error && (
               <div
                 className="card"
@@ -470,17 +453,8 @@ export default function StaffAvailabilityPage() {
                   <h2
                     style={{ fontFamily: "var(--font-display)", marginTop: 0 }}
                   >
-                    {t(
-                      "staffAvailability.templates.compactTitle",
-                      "Quick templates",
-                    )}
+                    {t("staffAvailability.templates.compactTitle", "Templates")}
                   </h2>
-                  <p className="muted small">
-                    {t(
-                      "staffAvailability.templates.body",
-                      "Templates only update the form. Save your weekly availability when the hours look right.",
-                    )}
-                  </p>
                 </div>
 
                 <div className="staff-template-actions">

@@ -167,7 +167,6 @@ export default function StaffNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unread">("all");
-  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
 
   useEffect(() => {
     loadNotifications();
@@ -190,8 +189,6 @@ export default function StaffNotificationsPage() {
       session.user.id,
       session.user.email,
     );
-
-    setHasBusinessWorkspace(capabilities.canUseBusiness);
 
     if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
       window.location.href = capabilities.defaultRoute;
@@ -278,33 +275,24 @@ export default function StaffNotificationsPage() {
         <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
           <div>
             <h1 className="page-title">
-              {t("staffNotifications.title", "Notifications")}
+              {t("staffNotifications.title", "Inbox")}
             </h1>
             <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-              {hasBusinessWorkspace
-                ? t(
-                    "staffNotifications.ownerStaffBody",
-                    "Updates about your schedule, profile and assigned bookings.",
-                  )
-                : t(
-                    "staffNotifications.body",
-                    "Staff-only updates for your schedule, profile and assigned bookings.",
-                  )}
+              {t("staffNotifications.body", "Schedule and booking updates.")}
             </p>
           </div>
 
-          <div className="page-header-actions">
-            <button
-              type="button"
-              onClick={markAllRead}
-              disabled={unreadCount === 0}
-              className="btn btn-accent"
-            >
-              {unreadCount > 0
-                ? `${t("staffNotifications.mark", "Mark")} ${unreadCount} ${t("staffNotifications.read", "read")}`
-                : t("staffNotifications.allRead", "All read")}
-            </button>
-          </div>
+          {unreadCount > 0 && (
+            <div className="page-header-actions">
+              <button
+                type="button"
+                onClick={markAllRead}
+                className="btn btn-accent"
+              >
+                {`${t("staffNotifications.mark", "Mark")} ${unreadCount} ${t("staffNotifications.read", "read")}`}
+              </button>
+            </div>
+          )}
         </div>
 
         {!loading && !error && (
@@ -313,15 +301,12 @@ export default function StaffNotificationsPage() {
               <strong>
                 {unreadCount > 0
                   ? `${unreadCount} ${unreadCount === 1 ? t("staffNotifications.unreadSingle", "unread update") : t("staffNotifications.unreadPlural", "unread updates")}`
-                  : t(
-                      "staffNotifications.inboxClear",
-                      "All staff updates are read",
-                    )}
+                  : t("staffNotifications.inboxClear", "Everything is read")}
               </strong>
               <p className="small muted">
                 {t(
                   "staffNotifications.inbox.body",
-                  "This inbox only shows updates linked to your staff workspace.",
+                  "Booking and schedule updates appear here.",
                 )}
               </p>
             </div>
@@ -374,10 +359,7 @@ export default function StaffNotificationsPage() {
             <h3>
               {filter === "unread"
                 ? t("staffNotifications.empty.unreadTitle", "No unread updates")
-                : t(
-                    "staffNotifications.empty.title",
-                    "No staff notifications yet",
-                  )}
+                : t("staffNotifications.empty.title", "No updates yet")}
             </h3>
             <p className="muted">
               {filter === "unread"
@@ -387,7 +369,7 @@ export default function StaffNotificationsPage() {
                   )
                 : t(
                     "staffNotifications.empty.body",
-                    "Booking updates, schedule changes and staff account messages will appear here.",
+                    "Booking and schedule updates will appear here.",
                   )}
             </p>
             <div className="staff-notification-empty-actions">
@@ -545,12 +527,21 @@ export default function StaffNotificationsPage() {
             justify-content: stretch;
           }
 
-          .staff-notification-filters :global(.btn),
-          .staff-notification-filters button,
           .staff-notification-actions :global(.btn),
           .staff-notification-actions button,
           .staff-notification-empty-actions :global(.btn) {
             width: 100%;
+          }
+
+          .staff-notification-filters {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .staff-notification-filters :global(.btn),
+          .staff-notification-filters button {
+            width: 100%;
+            justify-content: center;
           }
 
           .page-header-actions :global(.btn),

@@ -74,7 +74,6 @@ export default function StaffCalendarPage() {
   const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
 
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
-  const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState(
     formatDateInputValue(new Date()),
@@ -105,8 +104,6 @@ export default function StaffCalendarPage() {
       session.user.id,
       session.user.email,
     );
-
-    setHasBusinessWorkspace(capabilities.canUseBusiness);
 
     if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
       setStaffProfile(null);
@@ -276,22 +273,15 @@ export default function StaffCalendarPage() {
       <section className="staff-workspace-page">
         <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
           <div>
-            <p className="small muted">
-              {t("staffCalendar.kicker", "Staff calendar")}
-            </p>
             <h1 className="page-title">
               {t("staffCalendar.title", "Calendar")}
             </h1>
             <p className="page-sub" style={{ marginTop: "0.5rem" }}>
               {staffProfile
-                ? `${staffBusinessName(staffProfile, t("staff.fallback.business", "Your business"))} · ${
-                    hasBusinessWorkspace
-                      ? t(
-                          "staff.workspace.ownerStaffWorkspace",
-                          "My work inside this business",
-                        )
-                      : t("staff.workspace.staffOnly", "Staff workspace")
-                  }`
+                ? staffBusinessName(
+                    staffProfile,
+                    t("staff.fallback.business", "Your business"),
+                  )
                 : t(
                     "staffCalendar.body",
                     "Look ahead across your assigned bookings and plan your working days.",
@@ -679,17 +669,26 @@ export default function StaffCalendarPage() {
 
           .staff-calendar-grid {
             gap: 0.35rem;
-            min-width: 560px;
+            min-width: 0;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
           }
 
           .staff-calendar-day {
-            min-height: 4.6rem;
-            padding: 0.55rem;
+            min-height: 3.95rem;
+            padding: 0.45rem;
             border-radius: 0.75rem;
           }
 
+          .staff-calendar-day strong {
+            font-size: 0.85rem;
+          }
+
           .staff-calendar-day span {
-            font-size: 0.68rem;
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 999px;
+            background: var(--accent);
+            font-size: 0;
           }
 
           .staff-calendar-booking-actions,

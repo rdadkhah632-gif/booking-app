@@ -352,6 +352,26 @@ export default function StaffDashboardPage() {
     return upcomingBookings.filter((booking) => booking.status === "confirmed");
   }, [upcomingBookings]);
 
+  const staffBusinessLabel =
+    (Array.isArray(staffProfile?.businesses)
+      ? staffProfile.businesses[0]?.name
+      : staffProfile?.businesses?.name) ||
+    t("staff.fallback.business", "Your business");
+
+  const staffRoleLabel =
+    staffProfile?.role_title ||
+    staffProfile?.permission_role ||
+    t("staff.fallback.member", "Staff member");
+
+  const staffInitials =
+    staffProfile?.name
+      .split(" ")
+      .map((part) => part[0])
+      .filter(Boolean)
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "MB";
+
   if (loading) {
     return (
       <DashboardLayout workspace="staff">
@@ -495,44 +515,16 @@ export default function StaffDashboardPage() {
                   {staffProfile.image_url ? (
                     <img src={staffProfile.image_url} alt={staffProfile.name} />
                   ) : (
-                    <span>
-                      {staffProfile.name
-                        .split(" ")
-                        .map((part) => part[0])
-                        .filter(Boolean)
-                        .join("")
-                        .slice(0, 2)
-                        .toUpperCase() || "MB"}
-                    </span>
+                    <span>{staffInitials}</span>
                   )}
                 </div>
 
                 <div>
-                  <p
-                    className="small"
-                    style={{ color: "var(--accent)", marginBottom: "0.35rem" }}
-                  >
-                    {t("staff.workspace.kicker", "Staff workspace")}
-                  </p>
                   <h1 className="page-title">
-                    {t("staff.workspace.greeting", "Hi")} {staffProfile.name}
+                    {t("staff.workspace.title", "Today")}
                   </h1>
                   <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-                    {(Array.isArray(staffProfile.businesses)
-                      ? staffProfile.businesses[0]?.name
-                      : staffProfile.businesses?.name) ||
-                      t("staff.fallback.business", "Your business")}{" "}
-                    ·{" "}
-                    {staffProfile.role_title ||
-                      staffProfile.permission_role ||
-                      t("staff.fallback.member", "Staff member")}{" "}
-                    ·{" "}
-                    {hasBusinessWorkspace
-                      ? t(
-                          "staff.workspace.ownerStaffWorkspace",
-                          "My work inside this business",
-                        )
-                      : t("staff.workspace.staffOnly", "Staff workspace")}
+                    {staffBusinessLabel} · {staffRoleLabel}
                   </p>
                 </div>
               </div>
@@ -822,6 +814,32 @@ export default function StaffDashboardPage() {
         }
 
         .staff-quick-link span {
+          color: var(--text-muted);
+          font-size: 0.84rem;
+          line-height: 1.45;
+        }
+
+        :global(.staff-quick-link) {
+          display: grid;
+          gap: 0.35rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          color: var(--text);
+          text-decoration: none;
+          background: var(--surface);
+        }
+
+        :global(.staff-quick-link:hover) {
+          border-color: rgba(255, 107, 53, 0.35);
+        }
+
+        :global(.staff-quick-link strong),
+        :global(.staff-quick-link span) {
+          display: block;
+        }
+
+        :global(.staff-quick-link span) {
           color: var(--text-muted);
           font-size: 0.84rem;
           line-height: 1.45;

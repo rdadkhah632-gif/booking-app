@@ -1677,8 +1677,14 @@ export default function AccountPage() {
 
         .account-form-grid input,
         .account-form-grid select {
+          min-width: 0;
           width: 100%;
           margin-top: 0.35rem;
+        }
+
+        .account-form-grid input:disabled {
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .account-field-help {
@@ -1772,6 +1778,11 @@ export default function AccountPage() {
 
           .account-form-grid {
             grid-template-columns: 1fr;
+          }
+
+          .account-form-grid input,
+          .account-form-grid select {
+            font-size: 0.9rem;
           }
 
           .account-preference-groups {

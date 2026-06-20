@@ -494,7 +494,7 @@ export const en: TranslationTree = {
   "myBookings.kicker": "Your appointments",
   "myBookings.title": "My bookings",
   "myBookings.signedInAs": "Signed in as",
-  "myBookings.subtitle": "View and manage your Mirëbook appointments.",
+  "myBookings.subtitle": "Requests, upcoming appointments and history.",
   "myBookings.requestSent.kicker": "Request sent",
   "myBookings.requestSent.title": "Waiting for the business to confirm.",
   "myBookings.requestSent.body":
@@ -528,8 +528,7 @@ export const en: TranslationTree = {
   "myBookings.stats.tapHistory": "Tap to view history ↓",
   "myBookings.stats.noHistory": "No history yet",
   "myBookings.empty.title": "No bookings yet",
-  "myBookings.empty.body":
-    "You have not booked any appointments yet. Explore Mirëbook businesses and make your first booking.",
+  "myBookings.empty.body": "Explore services to make your first booking.",
   "myBookings.card.changePending": "Change request pending",
   "myBookings.card.originalStillConfirmed": "Original time still confirmed",
   "myBookings.card.locked": "Locked",
@@ -573,9 +572,8 @@ export const en: TranslationTree = {
   "myBookings.card.lockedBody":
     "This booking can no longer be rescheduled or cancelled.",
   "notifications.kicker": "Booking updates",
-  "notifications.title": "Notifications",
-  "notifications.subtitle":
-    "Track booking approvals, reschedule decisions and appointment updates.",
+  "notifications.title": "Updates",
+  "notifications.subtitle": "Booking updates and appointment changes.",
   "notifications.refreshing": "Refreshing...",
   "notifications.refresh": "Refresh notifications",
   "notifications.markingRead": "Marking read...",
@@ -592,8 +590,7 @@ export const en: TranslationTree = {
   "notifications.stats.unread": "Unread",
   "notifications.stats.unreadBody": "Unread Mirëbook notification updates",
   "notifications.empty.title": "No notifications yet",
-  "notifications.empty.body":
-    "Booking approvals, reschedule decisions and completed appointments will appear here when businesses update your appointments.",
+  "notifications.empty.body": "Booking updates will appear here.",
   "notifications.inbox.kicker": "Notification inbox",
   "notifications.inbox.title": "Recent Mirëbook updates",
   "notifications.inbox.body":
@@ -2184,6 +2181,7 @@ export const en: TranslationTree = {
     "This account is not linked to a staff profile yet. Ask the business to add your email to Team, then log in again.",
   "staff.workspace.kicker": "Staff workspace",
   "staff.workspace.greeting": "Hi",
+  "staff.workspace.title": "Today",
   "staff.workspace.staffOnly": "Staff workspace",
   "staff.actions.updateAvailability": "Update availability",
   "staff.actions.backToDashboard": "Back to staff dashboard",
@@ -2251,9 +2249,8 @@ export const en: TranslationTree = {
   "staff.filter.activeSingle": "active booking",
   "staff.filter.activePlural": "active bookings",
   "staffNotifications.inbox.kicker": "Inbox status",
-  "staffNotifications.inbox.body":
-    "This inbox only shows updates linked to your staff workspace.",
-  "staffNotifications.inboxClear": "All staff updates are read",
+  "staffNotifications.inbox.body": "Booking and schedule updates appear here.",
+  "staffNotifications.inboxClear": "Everything is read",
   "staffNotifications.unreadSingle": "unread update",
   "staffNotifications.unreadPlural": "unread updates",
   "staffNotifications.filter.all": "All",
@@ -2285,7 +2282,7 @@ export const en: TranslationTree = {
   "staff.pending.body":
     "These bookings are assigned to you but still need business approval before they become confirmed appointments.",
   "staff.schedule.chooseDate": "Choose schedule date",
-  "staffAvailability.title": "Your working hours",
+  "staffAvailability.title": "Working hours",
   "staffAvailability.staffOnly": "Your working hours",
   "staffAvailability.actions.saveAvailability": "Save availability",
   "staffAvailability.actions.saveWeekly": "Save weekly availability",
@@ -2328,17 +2325,16 @@ export const en: TranslationTree = {
     "No upcoming assigned bookings found. New appointments will appear here once they are assigned to you.",
   "staffAvailability.upcoming.pendingBody":
     "Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.",
-  "staffNotifications.title": "Notifications",
-  "staffNotifications.body":
-    "Staff-only updates for your schedule, profile and assigned bookings.",
+  "staffNotifications.title": "Inbox",
+  "staffNotifications.body": "Schedule and booking updates.",
   "staffNotifications.loading": "Loading staff notifications...",
   "staffNotifications.mark": "Mark",
   "staffNotifications.read": "read",
   "staffNotifications.allRead": "All read",
   "staffNotifications.markRead": "Mark read",
-  "staffNotifications.empty.title": "No staff notifications yet",
+  "staffNotifications.empty.title": "No updates yet",
   "staffNotifications.empty.body":
-    "Booking updates, schedule changes and staff account messages will appear here.",
+    "Booking and schedule updates will appear here.",
   "staffNotifications.fallback.title": "Staff update",
   "staffNotifications.fallback.message": "You have a new staff update.",
   "dashboardHome.ownerCommand.kicker": "Owner command centre",
@@ -2848,7 +2844,7 @@ export const en: TranslationTree = {
   "explore.filters.sortLabel": "Sort",
   "explore.filters.clearButton": "Clear filters",
   "explore.filters.refreshButton": "Refresh results",
-  "staffAvailability.templates.compactTitle": "Quick templates",
+  "staffAvailability.templates.compactTitle": "Templates",
   "staff.workspace.ownerStaffWorkspace": "My work inside this business",
   "staff.actions.businessDashboard": "Business dashboard",
 
