@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import AvailabilityBusinessPicker from "@/components/dashboard-availability/AvailabilityBusinessPicker";
-import AvailabilitySetupHero from "@/components/dashboard-availability/AvailabilitySetupHero";
 import AvailabilityStats from "@/components/dashboard-availability/AvailabilityStats";
 import AvailabilityPresetsCard from "@/components/dashboard-availability/AvailabilityPresetsCard";
 import AvailabilityDayRow from "@/components/dashboard-availability/AvailabilityDayRow";
@@ -310,10 +309,10 @@ export default function Availability() {
       title={t("dashboardAvailability.pageTitle", "Working hours")}
       subtitle={
         business
-          ? `${t("dashboardAvailability.pageSubtitleSelected", "Set the days customers can book for")} ${business.name}`
+          ? business.name
           : t(
               "dashboardAvailability.pageSubtitle",
-              "Choose which business working hours to manage.",
+              "Choose a business to manage.",
             )
       }
     >
@@ -377,8 +376,6 @@ export default function Availability() {
 
       {!pageLoading && business && (
         <>
-          <AvailabilitySetupHero business={business} />
-
           <AvailabilityStats stats={availabilityStats} />
 
           <AvailabilityPresetsCard

@@ -259,3 +259,15 @@ save logic, staff linking, billing writes, notifications or database schema.
 Stage 8.8B did not change booking logic, availability save behavior, auth,
 route protection, staff linking, billing writes, notifications or database
 schema.
+
+## Stage 8.8C Working Hours Copy Compression Implemented
+
+- removed the redundant Working hours intro card that repeated the page title,
+  business name and explanation before the actual controls
+- shortened the selected-business subtitle to the business name only
+- kept the status strip, presets and day rows as the first functional content
+  on the page
+
+Stage 8.8C did not change availability save behavior, availability row data,
+booking logic, auth, staff linking, billing writes, notifications or database
+schema.

@@ -1439,10 +1439,8 @@ export const sq: TranslationTree = {
   "dashboardStaff.card.deactivate": "Çaktivizo",
   "dashboardStaff.card.activate": "Aktivizo",
   "dashboardAvailability.pageTitle": "Orari i punës",
-  "dashboardAvailability.pageSubtitle":
-    "Zgjidh cilin orar pune biznesi do të menaxhosh.",
-  "dashboardAvailability.pageSubtitleSelected":
-    "Vendos ditët kur klientët mund të rezervojnë për",
+  "dashboardAvailability.pageSubtitle": "Zgjidh një biznes për të menaxhuar.",
+  "dashboardAvailability.pageSubtitleSelected": "Orari i punës për",
   "dashboardAvailability.loading": "Duke ngarkuar oraret e punës Mirëbook...",
   "dashboardAvailability.error.noAccess": "Nuk ke akses te ky biznes.",
   "dashboardAvailability.error.load": "Orari i punës nuk u ngarkua.",
@@ -1466,9 +1464,6 @@ export const sq: TranslationTree = {
   "dashboardAvailability.businessPicker.manageBody":
     "Menaxho oraret e punës për këtë biznes.",
   "dashboardAvailability.businessPicker.manageCta": "Menaxho oraret",
-  "dashboardAvailability.hero.kicker": "Orari i punës",
-  "dashboardAvailability.hero.body":
-    "Këto janë oraret e përgjithshme kur klientët mund të rezervojnë. Orari i ekipit mund të kufizojë oraret individuale.",
   "dashboardAvailability.stats.openDays": "Ditë të hapura",
   "dashboardAvailability.stats.openDaysBody":
     "Ditë biznesi të shënuara si të hapura",

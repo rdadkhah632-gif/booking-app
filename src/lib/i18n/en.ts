@@ -1468,10 +1468,8 @@ export const en: TranslationTree = {
   "dashboardStaff.card.deactivate": "Deactivate",
   "dashboardStaff.card.activate": "Activate",
   "dashboardAvailability.pageTitle": "Working hours",
-  "dashboardAvailability.pageSubtitle":
-    "Choose which business working hours to manage.",
-  "dashboardAvailability.pageSubtitleSelected":
-    "Set the days customers can book for",
+  "dashboardAvailability.pageSubtitle": "Choose a business to manage.",
+  "dashboardAvailability.pageSubtitleSelected": "Working hours for",
   "dashboardAvailability.loading": "Loading Mirëbook working hours...",
   "dashboardAvailability.error.noAccess":
     "You do not have access to this business.",
@@ -1496,9 +1494,6 @@ export const en: TranslationTree = {
   "dashboardAvailability.businessPicker.manageBody":
     "Manage working hours for this business.",
   "dashboardAvailability.businessPicker.manageCta": "Manage hours",
-  "dashboardAvailability.hero.kicker": "Working hours",
-  "dashboardAvailability.hero.body":
-    "These are the general hours customers can book. Team member hours can narrow individual schedules.",
   "dashboardAvailability.stats.openDays": "Open days",
   "dashboardAvailability.stats.openDaysBody": "Business days marked as open",
   "dashboardAvailability.stats.closedDays": "Closed days",
