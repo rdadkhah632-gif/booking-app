@@ -376,3 +376,26 @@ Stage 8.12 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.13 Customer Booking Conversion Compression Implemented
+
+- visually audited customer/public booking screens with Browser before editing,
+  using the Booksy/Fresha principle of getting customers to services and times
+  faster
+- compressed public business profile headers so the first viewport no longer
+  spends most of its space on a large profile image and support/back actions
+- moved the public business page toward a booking-first flow by tightening the
+  hero, service picker spacing, booking summary actions and support links
+- reduced Explore result repetition by removing the duplicate results heading
+  when no filters are active and by hiding generic fallback description copy on
+  business cards
+- simplified Login into a focused sign-in form instead of a split explanatory
+  promo layout
+- hid the four zero-count My Bookings summary tiles when a customer has no
+  bookings, leaving one clear Explore action
+- updated English and Albanian translation values for touched visible copy
+
+Stage 8.13 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

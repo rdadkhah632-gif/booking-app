@@ -533,6 +533,7 @@ export default function MyBookings() {
   }, [bookings]);
 
   const pendingRescheduleCount = Object.keys(pendingRequestByBookingId).length;
+  const hasBookingActivity = bookings.length > 0 || pendingRescheduleCount > 0;
 
   function scrollToSection(
     section: "pending" | "upcoming" | "changes" | "history",
@@ -608,14 +609,16 @@ export default function MyBookings() {
           onRefresh={() => loadBookings({ keepSuccess: true })}
         />
 
-        <MyBookingsStats
-          pendingCount={pendingBookings.length}
-          upcomingCount={confirmedUpcomingBookings.length}
-          changeCount={pendingRescheduleCount}
-          historyCount={historyBookings.length}
-          onJump={scrollToSection}
-          statCardStyle={statCardStyle}
-        />
+        {hasBookingActivity && (
+          <MyBookingsStats
+            pendingCount={pendingBookings.length}
+            upcomingCount={confirmedUpcomingBookings.length}
+            changeCount={pendingRescheduleCount}
+            historyCount={historyBookings.length}
+            onJump={scrollToSection}
+            statCardStyle={statCardStyle}
+          />
+        )}
 
         {error && (
           <div

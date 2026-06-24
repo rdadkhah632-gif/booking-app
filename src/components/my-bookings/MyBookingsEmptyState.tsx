@@ -18,10 +18,6 @@ export default function MyBookingsEmptyState() {
         <Link href="/explore" className="btn btn-accent">
           {t("home.cta.explore", "Explore businesses")}
         </Link>
-
-        <Link href="/support/customer" className="btn btn-ghost">
-          {t("nav.customerSupport", "Customer support")}
-        </Link>
       </div>
 
       <style jsx>{`

@@ -1005,7 +1005,9 @@ export default function BusinessBookingPage() {
     const { data: freshBookingsData, error: freshBookingsError } =
       await supabase
         .from("bookings")
-        .select("id, staff_member_id, start_at, end_at, duration_minutes, status")
+        .select(
+          "id, staff_member_id, start_at, end_at, duration_minutes, status",
+        )
         .eq("business_id", businessId)
         .in("status", ["pending", "confirmed"]);
 
@@ -1255,15 +1257,15 @@ export default function BusinessBookingPage() {
           "publicBusiness.availability.noAssignedStaff",
           "No active staff are assigned to this service yet. Choose another service or contact the business.",
         )
-    : !selectedDate
-      ? t(
-          "publicBusiness.availability.chooseDateFirst",
-          "Choose a date to see available booking times.",
-        )
-      : t(
-          "publicBusiness.availability.none",
-          "No available times for this date. Try another date or staff member.",
-        );
+      : !selectedDate
+        ? t(
+            "publicBusiness.availability.chooseDateFirst",
+            "Choose a date to see available booking times.",
+          )
+        : t(
+            "publicBusiness.availability.none",
+            "No available times for this date. Try another date or staff member.",
+          );
 
   const staffPreferenceLabel =
     staffFilter === "any"
@@ -1274,7 +1276,7 @@ export default function BusinessBookingPage() {
     <main>
       <AuthNav />
 
-      <section className="container" style={{ padding: "36px 24px 70px" }}>
+      <section className="container booking-public-container">
         <Link href="/explore" className="muted small">
           ← {t("publicBusiness.backToResults", "Back to results")}
         </Link>
@@ -1343,7 +1345,7 @@ export default function BusinessBookingPage() {
           </div>
         )}
 
-        <div style={{ marginTop: "1.5rem" }}>
+        <div style={{ marginTop: "0.85rem" }}>
           <PublicBusinessHero
             business={business}
             heroBackgroundImage={heroBackgroundImage}
@@ -1352,7 +1354,7 @@ export default function BusinessBookingPage() {
             bookingModeDescription={bookingModeDescription}
           />
 
-        <p className="small muted" style={{ marginTop: "0.75rem" }}>
+          <p className="small muted" style={{ marginTop: "0.55rem" }}>
             {t("publicBusiness.timesShownIn", "Times shown in")}{" "}
             {businessTimezoneLabel()}
           </p>
@@ -1495,6 +1497,10 @@ export default function BusinessBookingPage() {
       </section>
 
       <style jsx>{`
+        .booking-public-container {
+          padding: 24px 24px 64px;
+        }
+
         .booking-action-row {
           display: flex;
           gap: 0.75rem;
@@ -1508,18 +1514,40 @@ export default function BusinessBookingPage() {
         }
 
         :global(.public-business-hero) {
+          display: grid;
+          grid-template-columns: 118px minmax(0, 1fr);
+          gap: 1rem;
           overflow: hidden;
-          padding: 0;
+          padding: 0.9rem;
+          align-items: center;
         }
 
         :global(.public-business-hero-image) {
-          min-height: 210px;
+          width: 118px;
+          min-height: 118px;
+          border-radius: 18px;
           background-size: cover;
           background-position: center;
         }
 
         :global(.public-business-hero-content) {
-          padding: 1.25rem 1.5rem;
+          padding: 0;
+          min-width: 0;
+        }
+
+        :global(.public-business-hero-tags) {
+          display: flex;
+          gap: 0.45rem;
+          flex-wrap: wrap;
+          margin-bottom: 0.55rem;
+        }
+
+        :global(.public-business-hero-description) {
+          margin-top: 0.45rem;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         :global(.public-business-pill-accent) {
@@ -1539,14 +1567,27 @@ export default function BusinessBookingPage() {
 
         :global(.public-business-meta-grid) {
           display: grid;
-          gap: 0.4rem;
-          margin-top: 1rem;
+          gap: 0.25rem;
+          margin-top: 0.55rem;
+        }
+
+        :global(.public-business-section-head) {
+          display: flex;
+          gap: 0.6rem;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+        }
+
+        :global(.public-business-section-note) {
+          flex-basis: 100%;
+          margin-top: 0.1rem;
         }
 
         :global(.public-business-service-list) {
           display: grid;
-          gap: 0.75rem;
-          margin-top: 1rem;
+          gap: 0.65rem;
+          margin-top: 0.75rem;
         }
 
         :global(.public-business-service-card) {
@@ -1557,7 +1598,7 @@ export default function BusinessBookingPage() {
           width: 100%;
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 0.85rem;
+          padding: 0.75rem;
           color: var(--text);
           cursor: pointer;
         }
@@ -1642,9 +1683,9 @@ export default function BusinessBookingPage() {
         .booking-page-grid {
           display: grid;
           grid-template-columns: minmax(0, 1fr) 430px;
-          gap: 2rem;
+          gap: 1rem;
           align-items: start;
-          margin-top: 1.5rem;
+          margin-top: 1rem;
         }
 
         .booking-summary-panel {
@@ -1676,6 +1717,31 @@ export default function BusinessBookingPage() {
         }
 
         @media (max-width: 520px) {
+          .booking-public-container {
+            padding: 20px 14px 56px;
+          }
+
+          :global(.public-business-hero) {
+            grid-template-columns: 74px minmax(0, 1fr);
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 16px;
+          }
+
+          :global(.public-business-hero-image) {
+            width: 74px;
+            min-height: 74px;
+            border-radius: 14px;
+          }
+
+          :global(.public-business-hero .page-title) {
+            font-size: clamp(1.65rem, 9vw, 2.1rem);
+          }
+
+          :global(.public-business-meta-grid p:nth-child(2)) {
+            display: none;
+          }
+
           .booking-page-grid {
             gap: 1rem;
           }

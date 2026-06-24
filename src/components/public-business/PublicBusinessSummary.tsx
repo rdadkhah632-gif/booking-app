@@ -108,7 +108,8 @@ export default function PublicBusinessSummary({
         </p>
         <strong>
           {selectedSlot
-            ? selectedDateLabel || new Date(selectedSlot.startAt).toLocaleString()
+            ? selectedDateLabel ||
+              new Date(selectedSlot.startAt).toLocaleString()
             : t("publicBusiness.summary.chooseTime", "Choose a time")}
         </strong>
 
@@ -152,9 +153,6 @@ export default function PublicBusinessSummary({
             <Link href="/register" className="btn btn-ghost">
               {t("publicBusiness.summary.createAccount", "Create account")}
             </Link>
-            <Link href="/support/customer" className="btn btn-ghost">
-              {t("common.help", "Help")}
-            </Link>
           </div>
         </div>
       )}
@@ -169,10 +167,7 @@ export default function PublicBusinessSummary({
         >
           <p className="small" style={{ color: "var(--warning)" }}>
             {isOwnerPreview
-              ? t(
-                  "publicBusiness.summary.ownerPreview",
-                  "Your business page",
-                )
+              ? t("publicBusiness.summary.ownerPreview", "Your business page")
               : t(
                   "publicBusiness.summary.customerRequired",
                   "Customer account required",
@@ -321,7 +316,7 @@ export default function PublicBusinessSummary({
         )}
       </div>
 
-      <Link href="/support/customer" className="btn btn-ghost">
+      <Link href="/support/customer" className="small muted">
         {t("common.needHelp", "Need help?")}
       </Link>
     </aside>

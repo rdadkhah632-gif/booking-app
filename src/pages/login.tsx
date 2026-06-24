@@ -233,93 +233,7 @@ export default function LoginPage() {
 
       <section className="auth-wrap">
         <div className="login-shell">
-          <div className="login-promo-panel">
-            <div
-              style={{
-                position: "absolute",
-                top: "-30%",
-                left: "-20%",
-                width: 400,
-                height: 400,
-                background:
-                  "radial-gradient(circle, rgba(255,107,53,0.18) 0%, transparent 70%)",
-              }}
-            />
-
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <div className="logo login-promo-logo">
-                Mirë<span>book</span>
-                {isBusinessEntry && (
-                  <em>{t("product.business.suffix", "Business")}</em>
-                )}
-              </div>
-
-              <h1
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "2.2rem",
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.03em",
-                  marginBottom: 16,
-                }}
-              >
-                {isBusinessEntry
-                  ? t(
-                      "login.business.promoTitle",
-                      "Welcome back to Mirëbook Business.",
-                    )
-                  : t("login.promoTitle", "Welcome back to Mirëbook")}
-              </h1>
-
-              <p className="muted">
-                {isBusinessEntry
-                  ? t(
-                      "login.business.promoBody",
-                      "Business owners and invited staff use the same secure login, then continue to the workspace their account can access.",
-                    )
-                  : t(
-                      "login.promoBody",
-                      "Sign in and Mirëbook will take you to the right workspace for your account.",
-                    )}
-              </p>
-            </div>
-
-            <div className="login-proof-list">
-              <div className="card login-proof-card">
-                <strong>{t("login.proof.customerTitle", "Customers")}</strong>
-                <span>
-                  {t(
-                    "login.proof.customerBody",
-                    "View bookings, requests and appointment history.",
-                  )}
-                </span>
-              </div>
-              <div className="card login-proof-card">
-                <strong>{t("login.proof.staffTitle", "Staff")}</strong>
-                <span>
-                  {t(
-                    "login.proof.staffBody",
-                    "Open your schedule, calendar, availability and updates.",
-                  )}
-                </span>
-              </div>
-              <div className="card login-proof-card">
-                <strong>{t("login.proof.businessTitle", "Businesses")}</strong>
-                <span>
-                  {t(
-                    "login.proof.businessBody",
-                    "Manage setup, services, staff, bookings and publishing.",
-                  )}
-                </span>
-              </div>
-            </div>
-          </div>
-
           <div className="login-form-panel">
-            <p className="small muted" style={{ marginBottom: "0.5rem" }}>
-              {t("login.kicker", "Sign in")}
-            </p>
-
             <h2
               style={{
                 fontFamily: "var(--font-display)",
@@ -336,12 +250,9 @@ export default function LoginPage() {
               {isBusinessEntry
                 ? t(
                     "login.business.subtitle",
-                    "Use your business or invited staff account. Mirëbook opens the right workspace for your access.",
+                    "Use your business or invited staff account.",
                   )
-                : t(
-                    "login.subtitle",
-                    "Use one login. Mirëbook opens the right product for your account.",
-                  )}
+                : t("login.subtitle", "Sign in to manage your bookings.")}
             </p>
 
             <form onSubmit={onLogin} className="form-grid">
@@ -444,12 +355,14 @@ export default function LoginPage() {
                   {t("login.createAccount", "Create account")}
                 </Link>
               </p>
-              <p className="small muted">
-                {t(
-                  "login.staffHint",
-                  "Staff invited by a business should sign in or register using the invited email address.",
-                )}
-              </p>
+              {isBusinessEntry && (
+                <p className="small muted">
+                  {t(
+                    "login.staffHint",
+                    "Invited staff should use the email the business added.",
+                  )}
+                </p>
+              )}
               <p className="small muted">
                 <Link
                   href={forgotPasswordUrl}
@@ -464,9 +377,8 @@ export default function LoginPage() {
       </section>
       <style jsx>{`
         .login-shell {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
-          max-width: 980px;
+          display: block;
+          max-width: 520px;
           width: 100%;
           background: var(--surface);
           border: 1px solid var(--border);
@@ -475,61 +387,8 @@ export default function LoginPage() {
           box-shadow: 0 22px 70px rgba(0, 0, 0, 0.22);
         }
 
-        .login-promo-panel {
-          background: linear-gradient(145deg, #13121e 0%, #1f1d30 100%);
-          padding: 44px 40px;
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          min-height: 500px;
-        }
-
-        .login-promo-logo {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          margin-bottom: 2rem;
-        }
-
-        .login-promo-logo em {
-          font-style: normal;
-          font-size: 0.7rem;
-          line-height: 1;
-          padding: 0.22rem 0.45rem;
-          border-radius: 999px;
-          color: var(--accent);
-          background: var(--accent-dim);
-          border: 1px solid rgba(255, 107, 53, 0.24);
-        }
-
-        .login-proof-list {
-          position: relative;
-          z-index: 1;
-          display: grid;
-          gap: 12px;
-        }
-
-        .login-proof-card {
-          background: rgba(255, 255, 255, 0.04);
-          display: grid;
-          gap: 0.25rem;
-        }
-
-        .login-proof-card strong {
-          color: var(--text);
-        }
-
-        .login-proof-card span {
-          color: var(--text-muted);
-          font-size: 0.85rem;
-          line-height: 1.4;
-        }
-
         .login-form-panel {
           padding: 40px;
-          align-self: center;
         }
 
         .login-subtitle {
@@ -573,33 +432,6 @@ export default function LoginPage() {
           margin-top: 1rem;
           color: var(--success);
         }
-
-        @media (max-width: 860px) {
-          .login-shell {
-            grid-template-columns: 1fr;
-            max-width: 560px;
-          }
-
-          .login-form-panel {
-            order: 1;
-          }
-
-          .login-promo-panel {
-            order: 2;
-            min-height: auto;
-            padding: 20px 22px;
-            gap: 0.75rem;
-          }
-
-          .login-promo-logo {
-            display: none;
-          }
-
-          .login-proof-list {
-            display: none;
-          }
-        }
-
         @media (max-width: 520px) {
           .login-shell {
             border-radius: 18px;
@@ -611,10 +443,6 @@ export default function LoginPage() {
 
           .login-form-panel h2 {
             font-size: 1.55rem !important;
-          }
-
-          .login-promo-panel {
-            display: none;
           }
         }
       `}</style>

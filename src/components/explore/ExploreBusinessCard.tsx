@@ -1,33 +1,33 @@
-import Link from 'next/link'
-import { useI18n } from '@/lib/useI18n'
-import { Business, BusinessCardStats } from './exploreTypes'
+import Link from "next/link";
+import { useI18n } from "@/lib/useI18n";
+import { Business, BusinessCardStats } from "./exploreTypes";
 
 type Props = {
-  business: Business
-  stats: BusinessCardStats
-  businessIcon: (business: Business) => string
-  locationLabel: (business: Business) => string
-  imageBackground: (business: Business) => string
-}
+  business: Business;
+  stats: BusinessCardStats;
+  businessIcon: (business: Business) => string;
+  locationLabel: (business: Business) => string;
+  imageBackground: (business: Business) => string;
+};
 
 export default function ExploreBusinessCard({
   business,
   stats,
   businessIcon,
   locationLabel,
-  imageBackground
+  imageBackground,
 }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
   const serviceText = `${stats.assignedServices} ${
     stats.assignedServices === 1
-      ? t('explore.card.serviceSingle', 'service')
-      : t('explore.card.servicePlural', 'services')
-  }`
+      ? t("explore.card.serviceSingle", "service")
+      : t("explore.card.servicePlural", "services")
+  }`;
   const staffText = `${stats.activeStaff} ${
     stats.activeStaff === 1
-      ? t('explore.card.staffSingle', 'staff member')
-      : t('explore.card.staffPlural', 'staff members')
-  }`
+      ? t("explore.card.staffSingle", "staff member")
+      : t("explore.card.staffPlural", "staff members")
+  }`;
 
   return (
     <div className="card explore-business-card">
@@ -36,32 +36,37 @@ export default function ExploreBusinessCard({
         style={{
           minHeight: 150,
           background: imageBackground(business),
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          borderRight: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '2rem'
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          borderRight: "1px solid var(--border)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "2rem",
         }}
       >
         {!business.image_url && businessIcon(business)}
       </div>
 
       <div className="explore-business-content">
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <h3 style={{ marginBottom: '0.25rem' }}>
-            {business.name}
-          </h3>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <h3 style={{ marginBottom: "0.25rem" }}>{business.name}</h3>
 
           {business.category && (
             <span
               className="small"
               style={{
-                background: 'var(--accent-dim)',
-                color: 'var(--accent)',
-                padding: '0.2rem 0.55rem',
-                borderRadius: 999
+                background: "var(--accent-dim)",
+                color: "var(--accent)",
+                padding: "0.2rem 0.55rem",
+                borderRadius: 999,
               }}
             >
               {business.category}
@@ -71,35 +76,55 @@ export default function ExploreBusinessCard({
           <span
             className="small"
             style={{
-              background: business.auto_accept_bookings === false ? 'rgba(255,107,53,0.12)' : 'rgba(45,212,191,0.12)',
-              color: business.auto_accept_bookings === false ? 'var(--accent)' : 'var(--success)',
-              padding: '0.2rem 0.55rem',
-              borderRadius: 999
+              background:
+                business.auto_accept_bookings === false
+                  ? "rgba(255,107,53,0.12)"
+                  : "rgba(45,212,191,0.12)",
+              color:
+                business.auto_accept_bookings === false
+                  ? "var(--accent)"
+                  : "var(--success)",
+              padding: "0.2rem 0.55rem",
+              borderRadius: 999,
             }}
           >
             {business.auto_accept_bookings === false
-              ? t('explore.card.requestAppointment', 'Request appointment')
-              : t('explore.card.bookInstantly', 'Book instantly')}
+              ? t("explore.card.requestAppointment", "Request appointment")
+              : t("explore.card.bookInstantly", "Book instantly")}
           </span>
         </div>
 
-        <p className="muted small explore-card-description" style={{ marginBottom: '0.65rem', marginTop: '0.35rem', maxWidth: 680 }}>
-          {business.description || t('explore.card.fallbackDescription')}
-        </p>
+        {business.description && (
+          <p
+            className="muted small explore-card-description"
+            style={{
+              marginBottom: "0.65rem",
+              marginTop: "0.35rem",
+              maxWidth: 680,
+            }}
+          >
+            {business.description}
+          </p>
+        )}
 
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            flexWrap: "wrap",
+            marginBottom: "0.65rem",
+          }}
+        >
           <span className="small explore-muted-pill">{serviceText}</span>
           <span className="small explore-muted-pill">{staffText}</span>
         </div>
 
-        <p className="small muted">
-          {locationLabel(business)}
-        </p>
+        <p className="small muted">{locationLabel(business)}</p>
       </div>
 
       <div className="explore-business-actions">
         <Link href={`/explore/${business.id}`} className="btn btn-accent">
-          {t('explore.card.viewTimes')}
+          {t("explore.card.viewTimes")}
         </Link>
       </div>
       <style jsx>{`
@@ -111,5 +136,5 @@ export default function ExploreBusinessCard({
         }
       `}</style>
     </div>
-  )
+  );
 }

@@ -33,14 +33,12 @@ export const en: TranslationTree = {
   "login.proof.workflows": "✓ Approval, reschedule and notification workflows",
   "login.kicker": "Sign in",
   "login.title": "Login to Mirëbook",
-  "login.subtitle":
-    "Use one login. Mirëbook opens customer bookings or Mirëbook Business automatically from your account capabilities.",
+  "login.subtitle": "Sign in to manage your bookings.",
   "login.business.promoTitle": "Welcome back to Mirëbook Business.",
   "login.business.promoBody":
     "Business accounts and invited staff use the same secure login, then continue to the right workspace.",
   "login.business.title": "Login to Mirëbook Business",
-  "login.business.subtitle":
-    "Use your business or invited staff account. Mirëbook opens the right workspace for your access.",
+  "login.business.subtitle": "Use your business or invited staff account.",
   "login.emailLabel": "Email address",
   "login.emailPlaceholder": "you@example.com",
   "login.passwordLabel": "Password",
@@ -372,8 +370,7 @@ export const en: TranslationTree = {
   "publicBusiness.services.title": "Choose a service",
   "publicBusiness.services.bookableCount": "can currently be booked",
   "publicBusiness.services.none": "No active services are available yet.",
-  "publicBusiness.services.assignmentHint":
-    "Only services assigned to active staff are shown for booking.",
+  "publicBusiness.services.assignmentHint": "Only bookable services are shown.",
   "publicBusiness.services.staffReady": "Assigned staff available",
   "publicBusiness.staff.step": "Step 2",
   "publicBusiness.staff.title": "Choose staff",
@@ -407,7 +404,7 @@ export const en: TranslationTree = {
   "publicBusiness.summary.loginRequired": "Login required",
   "publicBusiness.summary.signIn": "Sign in to continue",
   "publicBusiness.summary.signInBody":
-    "Customers need to log in before sending booking requests or confirming appointments.",
+    "Log in so this booking is saved to your account.",
   "publicBusiness.summary.customerRequired": "Customer account required",
   "publicBusiness.summary.customerRequiredTitle":
     "Use a customer account to book",
@@ -2423,8 +2420,7 @@ export const en: TranslationTree = {
   "login.proof.businessTitle": "Businesses",
   "login.proof.businessBody":
     "Manage setup, services, staff, bookings and publishing.",
-  "login.staffHint":
-    "Staff invited by a business should sign in or register using the invited email address.",
+  "login.staffHint": "Invited staff should use the email the business added.",
   "register.roleExplainer.kicker": "Account type guide",
   "register.roleExplainer.businessTitle": "Business account",
   "register.roleExplainer.staffTitle": "Staff account",

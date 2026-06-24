@@ -399,12 +399,12 @@ export default function Explore() {
 
         :global(.explore-business-card) {
           display: grid;
-          grid-template-columns: 132px 1fr auto;
+          grid-template-columns: 112px 1fr auto;
           gap: 0.9rem;
           align-items: stretch;
           overflow: hidden;
           padding: 0;
-          min-height: 142px;
+          min-height: 118px;
         }
 
         :global(.explore-business-image) {
@@ -464,7 +464,7 @@ export default function Explore() {
           }
 
           :global(.explore-business-image) {
-            min-height: 126px !important;
+            min-height: 92px !important;
             border-right: 0;
             border-bottom: 1px solid var(--border);
           }

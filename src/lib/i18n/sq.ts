@@ -80,14 +80,12 @@ export const sq: TranslationTree = {
   "login.proof.workflows": "✓ Miratime, ndryshime orari dhe njoftime",
   "login.kicker": "Hyr",
   "login.title": "Hyr në Mirëbook",
-  "login.subtitle":
-    "Përdor një hyrje. Mirëbook hap automatikisht rezervimet e klientit ose Mirëbook Biznes sipas aksesit të llogarisë.",
+  "login.subtitle": "Hyr për të menaxhuar rezervimet e tua.",
   "login.business.promoTitle": "Mirë se u ktheve në Mirëbook Biznes.",
   "login.business.promoBody":
     "Llogaritë e biznesit dhe stafi i ftuar përdorin të njëjtën hyrje të sigurt dhe vazhdojnë te hapësira e duhur.",
   "login.business.title": "Hyr në Mirëbook Biznes",
-  "login.business.subtitle":
-    "Përdor llogarinë e biznesit ose stafit të ftuar. Mirëbook hap hapësirën e duhur për aksesin tënd.",
+  "login.business.subtitle": "Përdor llogarinë e biznesit ose stafit të ftuar.",
   "login.emailLabel": "Adresa e email-it",
   "login.emailPlaceholder": "ti@shembull.com",
   "login.passwordLabel": "Fjalëkalimi",
@@ -424,7 +422,7 @@ export const sq: TranslationTree = {
   "publicBusiness.services.none":
     "Nuk ka ende shërbime aktive të disponueshme.",
   "publicBusiness.services.assignmentHint":
-    "Shfaqen vetëm shërbimet e caktuara te staf aktiv.",
+    "Shfaqen vetëm shërbimet që mund të rezervohen.",
   "publicBusiness.services.staffReady": "Staf i caktuar i disponueshëm",
   "publicBusiness.availability.step": "Hapi 3",
   "publicBusiness.availability.title": "Zgjidh një orar",
@@ -448,7 +446,7 @@ export const sq: TranslationTree = {
   "publicBusiness.summary.loginRequired": "Kërkohet hyrja",
   "publicBusiness.summary.signIn": "Hyr për të vazhduar",
   "publicBusiness.summary.signInBody":
-    "Klientët duhet të hyjnë në llogari para se të dërgojnë kërkesa rezervimi ose të konfirmojnë takime.",
+    "Hyr që ky rezervim të ruhet në llogarinë tënde.",
   "publicBusiness.summary.customerRequired": "Kërkohet llogari klienti",
   "publicBusiness.summary.customerRequiredTitle":
     "Përdor një llogari klienti për të rezervuar",
@@ -2498,7 +2496,7 @@ export const sq: TranslationTree = {
   "login.proof.businessBody":
     "Menaxho konfigurimin, shërbimet, stafin, rezervimet dhe publikimin.",
   "login.staffHint":
-    "Stafi i ftuar nga një biznes duhet të hyjë ose regjistrohet me email-in e ftuar.",
+    "Stafi i ftuar duhet të përdorë email-in që shtoi biznesi.",
   "register.roleExplainer.kicker": "Udhëzues për llojin e llogarisë",
   "register.roleExplainer.businessTitle": "Llogari pronari biznesi",
   "register.roleExplainer.staffTitle": "Llogari stafi",
