@@ -355,3 +355,24 @@ Stage 8.11 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.12 Booksy/Fresha Compactness Pass Implemented
+
+- reviewed the business owner flow with Browser against the Stage 8 principle:
+  one clear page purpose, immediate primary action, less repeated explanation
+  and denser useful information
+- removed the full setup checklist from Today so the business dashboard starts
+  with operational work, today's attention items and the next action only
+- shortened registration copy and removed the after-registration explanation
+  card so signup stays focused on account creation
+- made Account more personal by removing the booking/business summary card pile,
+  support promo card and long account-mode explanations
+- kept Account access to workspace, notifications and support as compact links
+  instead of large destination cards
+- shortened account helper copy for email and language preferences in English
+  and Albanian
+
+Stage 8.12 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

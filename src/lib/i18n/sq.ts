@@ -1608,6 +1608,7 @@ export const sq: TranslationTree = {
     "Përdoret si parazgjedhje për zonën kohore, monedhën dhe lokalizimin.",
   "account.emailBody":
     "Përdoret për hyrje, konfirmime rezervimi, lidhje stafi dhe njoftime email në të ardhmen.",
+  "account.emailChangeBody": "Kontakto suportin nëse ky email është gabim.",
   "account.accessSummary": "Përmbledhje aksesi",
   "account.profileRole": "Roli i profilit",
   "account.accessBody":
@@ -1636,8 +1637,7 @@ export const sq: TranslationTree = {
   "account.fullNamePlaceholder": "Emri yt i plotë",
   "account.phonePlaceholder": "Numri i telefonit",
   "account.languagePreference": "Preferenca e gjuhës",
-  "account.languageBody":
-    "Kjo gjuhë ruhet në llogarinë tënde dhe përdoret në faqet e përkthyera Mirëbook kur hyn.",
+  "account.languageBody": "Ruhet në faqet e përkthyera të Mirëbook.",
   "account.saveChanges": "Ruaj ndryshimet",
   "account.helpKicker": "Ndihmë dhe gjuhë",
   "account.supportBody":
@@ -2160,17 +2160,16 @@ export const sq: TranslationTree = {
   "register.checkingSession": "Duke kontrolluar llogarinë...",
   "register.kicker": "Krijo llogari",
   "register.title": "Krijo llogarinë tënde Mirëbook",
-  "register.subtitle":
-    "Zgjidh nëse po rezervon si klient apo po hyn në Mirëbook Biznes si pronar ose staf i ftuar.",
+  "register.subtitle": "Zgjidh llojin e llogarisë dhe plotëso detajet.",
   "register.businessAccountTitle": "Fillo me Mirëbook Biznes",
   "register.businessAccountSubtitle":
-    "Krijo një llogari Mirëbook, shto profilin fillestar të biznesit dhe vazhdo te konfigurimi në Mirëbook Biznes.",
+    "Krijo llogarinë dhe profilin fillestar të biznesit.",
   "register.role.customer": "Klient",
   "register.role.customerBody": "Rezervo dhe menaxho takimet.",
   "register.role.business": "Biznes",
   "register.role.businessBody": "Krijo shërbime, staf dhe rezervime.",
   "register.role.staff": "Staf",
-  "register.role.staffBody": "Bashkohu me një biznes ku je ftuar.",
+  "register.role.staffBody": "Për staf të ftuar me email-in që shtoi biznesi.",
   "register.role.selected": "Zgjedhur",
   "register.accountType": "Lloji i llogarisë",
   "register.staffInviteFound": "U gjet ftesë për staf",
@@ -2218,7 +2217,7 @@ export const sq: TranslationTree = {
   "register.business.kicker": "Konfigurim i shpejtë i biznesit",
   "register.business.title": "Na trego për biznesin tënd",
   "register.business.body":
-    "Këto detaje krijojnë profilin fillestar të biznesit. Shërbimet, stafin, imazhet dhe oraret mund t’i plotësosh pasi të hysh.",
+    "Shërbimet, ekipin dhe oraret mund t'i shtosh pas regjistrimit.",
   "register.business.nameLabel": "Emri i biznesit",
   "register.business.namePlaceholder": "Shembull: Studio Mira",
   "register.business.phoneLabel": "Telefoni i biznesit",
@@ -2511,7 +2510,9 @@ export const sq: TranslationTree = {
   "register.roleExplainer.customerBody":
     "Përdore nëse dëshiron të gjesh biznese, të rezervosh shërbime dhe të menaxhosh takimet.",
   "register.staffNotice.noInvite":
-    "Nëse nuk gjendet profil stafi, kërkoji biznesit të shtojë email-in tënd më parë, pastaj regjistrohu përsëri.",
+    "Nëse nuk gjendet profil stafi, kërkoji biznesit të shtojë email-in tënd më parë.",
+  "register.staffNotice.body":
+    "Përdor email-in që shtoi biznesi. Nëse ende nuk është lidhur, hapësira e stafit do të presë ftesën.",
   "register.nextStep.kicker": "Pas regjistrimit",
   "register.nextStep.business":
     "Do të shkosh te paneli i biznesit për të përfunduar shërbimet, stafin, disponueshmërinë dhe publikimin.",
@@ -3036,7 +3037,7 @@ export const sq: TranslationTree = {
   "dashboardStaff.list.pendingInvites": "ftesë në pritje",
   "register.business.ownerTakesBookings": "Unë gjithashtu marr rezervime vetë",
   "register.business.ownerTakesBookingsBody":
-    "Krijo një profil stafi të lidhur për pronarin, që klientët të mund të rezervojnë takime drejtpërdrejt me ty. Shërbimet dhe disponueshmërinë mund t’i caktosh pas regjistrimit.",
+    "Shto një profil stafi të lidhur për veten.",
 
   "account.ownerBooking.kicker": "Statusi i rezervimeve të pronarit",
   "account.ownerBooking.linkedTitle": "Je konfiguruar si staf i rezervueshëm",

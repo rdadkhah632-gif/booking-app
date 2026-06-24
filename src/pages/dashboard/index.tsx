@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import SchedulePreviewCard from "@/components/dashboard-home/SchedulePreviewCard";
-import SetupProgressChecklist from "@/components/dashboard-home/SetupProgressChecklist";
 import {
   AvailabilityRow,
   Booking,
@@ -348,7 +347,6 @@ export default function DashboardHome() {
     t,
   ]);
 
-  const completedSetupCount = setupSteps.filter((step) => step.complete).length;
   const nextSetupStep = setupSteps.find((step) => !step.complete) || null;
   const primaryNextAction = pendingActionCount
     ? {
@@ -560,14 +558,6 @@ export default function DashboardHome() {
             </Link>
           </div>
         </section>
-      )}
-
-      {businesses.length > 0 && (
-        <SetupProgressChecklist
-          steps={setupSteps}
-          completedCount={completedSetupCount}
-          previewHref={publicPreviewHref}
-        />
       )}
 
       <SchedulePreviewCard

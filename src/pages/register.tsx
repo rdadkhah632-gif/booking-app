@@ -405,10 +405,6 @@ export default function RegisterPage() {
 
       <section className="auth-wrap">
         <div className="auth-card">
-          <p className="small muted" style={{ marginBottom: "0.5rem" }}>
-            {t("register.kicker", "Create account")}
-          </p>
-
           <h1
             style={{
               fontFamily: "var(--font-display)",
@@ -428,11 +424,11 @@ export default function RegisterPage() {
             {role === "business"
               ? t(
                   "register.businessAccountSubtitle",
-                  "Create one Mirëbook account, add your starter business profile and continue into Mirëbook Business setup.",
+                  "Create your account and starter business profile.",
                 )
               : t(
                   "register.subtitle",
-                  "Choose how you will use Mirëbook. Customers book services, while owners and staff use Mirëbook Business.",
+                  "Choose an account type and enter your details.",
                 )}
           </p>
 
@@ -546,13 +542,7 @@ export default function RegisterPage() {
               <p className="small muted" style={{ marginTop: "0.35rem" }}>
                 {t(
                   "register.staffNotice.body",
-                  "Use the exact email your business uses for your staff invite. Mirëbook will check and link your staff profile after your account is created.",
-                )}
-              </p>
-              <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                {t(
-                  "register.staffNotice.noInvite",
-                  "If no business is linked yet, your staff account will still open the staff area with limited setup information until a business invite is connected.",
+                  "Use the email your business added. If it is not linked yet, your staff area will wait for the invite.",
                 )}
               </p>
             </div>
@@ -563,10 +553,7 @@ export default function RegisterPage() {
               <span>{t("register.emailLabel", "Email address")}</span>
               <input
                 type="email"
-                placeholder={t(
-                  "register.emailPlaceholder",
-                  "you@example.com",
-                )}
+                placeholder={t("register.emailPlaceholder", "you@example.com")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -645,7 +632,7 @@ export default function RegisterPage() {
                   <p className="small muted" style={{ marginTop: "0.35rem" }}>
                     {t(
                       "register.business.body",
-                      "These details create your starter business profile. You can complete services, staff, images and opening hours after signing in.",
+                      "You can add services, team and hours after signup.",
                     )}
                   </p>
                 </div>
@@ -735,7 +722,9 @@ export default function RegisterPage() {
                   </label>
 
                   <label className="auth-field">
-                    <span>{t("register.business.countryLabel", "Country")}</span>
+                    <span>
+                      {t("register.business.countryLabel", "Country")}
+                    </span>
                     <input
                       value={businessCountry}
                       onChange={(e) => setBusinessCountry(e.target.value)}
@@ -765,7 +754,7 @@ export default function RegisterPage() {
                     <span className="small muted">
                       {t(
                         "register.business.ownerTakesBookingsBody",
-                        "Create a linked owner staff profile so customers can book appointments with you personally. You can assign services and availability after registration.",
+                        "Add a linked staff profile for yourself.",
                       )}
                     </span>
                   </span>
@@ -773,42 +762,12 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div className="register-next-step-card">
-              <p className="small muted">
-                {t("register.nextStep.kicker", "After registration")}
-              </p>
-              <p className="small muted">
-                {role === "business"
-                  ? t(
-                      "register.nextStep.business",
-                      "You will go to your business dashboard to finish services, staff, availability and publishing.",
-                    )
-                  : role === "staff"
-                    ? t(
-                        "register.nextStep.staff",
-                        "You will go to your staff workspace. If your email matches an invited staff profile, it will link automatically; otherwise it will show that no business is linked yet.",
-                      )
-                    : t(
-                        "register.nextStep.customer",
-                        "You will go to your bookings page and can start exploring services.",
-                      )}
-              </p>
-              <p className="small muted register-verification-guidance">
-                {t(
-                  "register.verification.guidance",
-                  "If email confirmation is enabled, check your inbox after creating the account. Your selected setup will continue after you verify and sign in.",
-                )}
-              </p>
-            </div>
-
             <p className="small muted register-legal-copy">
               {t(
                 "register.legal.prefix",
                 "By creating an account, you agree to Mirëbook’s",
               )}{" "}
-              <Link href="/terms">
-                {t("register.legal.terms", "Terms")}
-              </Link>{" "}
+              <Link href="/terms">{t("register.legal.terms", "Terms")}</Link>{" "}
               {t("register.legal.and", "and")}{" "}
               <Link href="/privacy">
                 {t("register.legal.privacy", "Privacy Policy")}
@@ -857,10 +816,7 @@ export default function RegisterPage() {
                           "verification.resending",
                           "Sending verification email...",
                         )
-                      : t(
-                          "verification.resend",
-                          "Resend verification email",
-                        )}
+                      : t("verification.resend", "Resend verification email")}
                   </button>
                 </>
               )}
@@ -993,13 +949,6 @@ export default function RegisterPage() {
           margin-bottom: 1rem;
         }
 
-        .register-next-step-card {
-          border: 1px solid rgba(45, 212, 191, 0.2);
-          border-radius: var(--radius);
-          padding: 0.85rem;
-          background: rgba(45, 212, 191, 0.06);
-        }
-
         .register-submit-button {
           width: 100%;
           justify-content: center;
@@ -1050,8 +999,7 @@ export default function RegisterPage() {
 
           .register-role-explainer,
           .register-staff-notice,
-          .register-business-fields,
-          .register-next-step-card {
+          .register-business-fields {
             padding: 0.85rem;
           }
 

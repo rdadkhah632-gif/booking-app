@@ -1628,6 +1628,7 @@ export const en: TranslationTree = {
     "Used as a default for timezone, currency and localisation.",
   "account.emailBody":
     "Used for login, booking confirmations, staff linking and future email notifications.",
+  "account.emailChangeBody": "Contact support if this email is wrong.",
   "account.accessSummary": "Access summary",
   "account.profileRole": "Profile role",
   "account.accessBody":
@@ -1656,8 +1657,7 @@ export const en: TranslationTree = {
   "account.fullNamePlaceholder": "Your full name",
   "account.phonePlaceholder": "Phone number",
   "account.languagePreference": "Language preference",
-  "account.languageBody":
-    "This language is saved to your account and used across translated Mirëbook pages when you sign in.",
+  "account.languageBody": "Saved across translated Mirëbook pages.",
   "account.saveChanges": "Save changes",
   "account.helpKicker": "Help and language",
   "account.supportBody":
@@ -2061,17 +2061,17 @@ export const en: TranslationTree = {
   "register.checkingSession": "Checking your account...",
   "register.kicker": "Create account",
   "register.title": "Create your Mirëbook account",
-  "register.subtitle":
-    "Choose whether you are booking as a customer or entering Mirëbook Business as an owner or invited staff member.",
+  "register.subtitle": "Choose an account type and enter your details.",
   "register.businessAccountTitle": "Start with Mirëbook Business",
   "register.businessAccountSubtitle":
-    "Create one Mirëbook account, add your starter business profile and continue into Mirëbook Business setup.",
+    "Create your account and starter business profile.",
   "register.role.customer": "Customer",
   "register.role.customerBody": "Book and manage appointments.",
   "register.role.business": "Business",
   "register.role.businessBody": "Create services, staff and bookings.",
   "register.role.staff": "Staff",
-  "register.role.staffBody": "Join a business you have been invited to.",
+  "register.role.staffBody":
+    "For invited staff using the email the business added.",
   "register.role.selected": "Selected",
   "register.accountType": "Account type",
   "register.staffInviteFound": "Staff invite found",
@@ -2118,7 +2118,7 @@ export const en: TranslationTree = {
   "register.business.kicker": "Business quick setup",
   "register.business.title": "Tell us about your business",
   "register.business.body":
-    "These details create your starter business profile. You can complete services, staff, images and opening hours after signing in.",
+    "You can add services, team and hours after signup.",
   "register.business.nameLabel": "Business name",
   "register.business.namePlaceholder": "Example: Studio Mira",
   "register.business.phoneLabel": "Business phone",
@@ -2436,7 +2436,9 @@ export const en: TranslationTree = {
   "register.roleExplainer.customerBody":
     "Use this if you want to find businesses, book services and manage your appointments.",
   "register.staffNotice.noInvite":
-    "If no staff profile is found, ask the business to add your email first, then register again.",
+    "Ask the business to add your email first if no staff profile is found.",
+  "register.staffNotice.body":
+    "Use the email your business added. If it is not linked yet, your staff area will wait for the invite.",
   "register.nextStep.kicker": "After registration",
   "register.nextStep.business":
     "You will go to your business dashboard to finish services, staff, availability and publishing.",
@@ -2984,7 +2986,7 @@ export const en: TranslationTree = {
   "dashboardStaff.list.pendingInvites": "invite pending",
   "register.business.ownerTakesBookings": "I also take bookings myself",
   "register.business.ownerTakesBookingsBody":
-    "Create a linked owner staff profile so customers can book appointments with you personally. You can assign services and availability after registration.",
+    "Add a linked staff profile for yourself.",
 
   "account.ownerBooking.kicker": "Owner booking status",
   "account.ownerBooking.linkedTitle": "You are set up as bookable staff",

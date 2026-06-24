@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
@@ -47,15 +47,6 @@ type StaffProfile = {
   permission_role?: string | null;
   invite_status?: string | null;
   business_name?: string | null;
-};
-
-type AccountStats = {
-  bookings: number;
-  unreadNotifications: number;
-  businessNotifications: number;
-  adminNotifications: number;
-  pendingCustomerBookings: number;
-  pendingBusinessActions: number;
 };
 
 type RegionInfo = {
@@ -115,10 +106,6 @@ function detectRegion(): RegionInfo {
   };
 }
 
-function pluralLabel(count: number, singular: string, plural?: string) {
-  return `${count} ${count === 1 ? singular : plural || `${singular}s`}`;
-}
-
 export default function AccountPage() {
   const router = useRouter();
   const { locale, setLocale, t } = useI18n();
@@ -128,15 +115,6 @@ export default function AccountPage() {
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
   const [isStaffIntentAccount, setIsStaffIntentAccount] = useState(false);
   const [hasLinkedStaffProfile, setHasLinkedStaffProfile] = useState(false);
-  const [stats, setStats] = useState<AccountStats>({
-    bookings: 0,
-    unreadNotifications: 0,
-    businessNotifications: 0,
-    adminNotifications: 0,
-    pendingCustomerBookings: 0,
-    pendingBusinessActions: 0,
-  });
-
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState<Locale>("en");
@@ -167,16 +145,6 @@ export default function AccountPage() {
   const isAdmin = !!profile?.is_admin;
   const isStaffIntentOnly = isStaffIntentAccount && !hasLinkedStaffProfile;
   const isCustomerOnly = !ownsBusiness && !hasStaffAccess && !isAdmin;
-
-  const primaryAccountMode = useMemo(() => {
-    if (isAdmin) return t("account.access.operator", "Operator");
-    if (ownsBusiness)
-      return t("account.access.businessOwner", "Business owner");
-    if (hasLinkedStaffProfile) return t("account.access.staff", "Staff member");
-    if (isStaffIntentAccount)
-      return t("account.access.staffIntent", "Staff account");
-    return t("account.access.customer", "Customer");
-  }, [isAdmin, ownsBusiness, hasLinkedStaffProfile, isStaffIntentAccount, t]);
 
   async function loadProfile() {
     setLoading(true);
@@ -234,11 +202,6 @@ export default function AccountPage() {
 
     setStaffProfile(resolvedStaffProfile);
     await loadEmailPreferences(session.user.id);
-    await loadStats(
-      session.user.id,
-      loadedBusinesses.map((business) => business.id),
-      !!currentProfile.is_admin,
-    );
     setLoading(false);
   }
 
@@ -270,75 +233,6 @@ export default function AccountPage() {
       ...(data || {}),
     } as EmailPreferences);
     setPreferencesState("available");
-  }
-
-  async function loadStats(
-    userId: string,
-    businessIds: string[],
-    adminUser: boolean,
-  ) {
-    const { data: customerBookings } = await supabase
-      .from("bookings")
-      .select("id, status")
-      .eq("customer_user_id", userId)
-      .limit(200);
-
-    const { data: notifications } = await supabase
-      .from("notifications")
-      .select("id, audience, read_at")
-      .eq("user_id", userId)
-      .limit(200);
-
-    let pendingBusinessActions = 0;
-
-    if (businessIds.length > 0) {
-      const { count: pendingBookingsCount } = await supabase
-        .from("bookings")
-        .select("id", { count: "exact", head: true })
-        .in("business_id", businessIds)
-        .eq("status", "pending");
-
-      const { data: pendingRequests } = await supabase
-        .from("booking_requests")
-        .select("booking_id")
-        .in("business_id", businessIds)
-        .eq("status", "pending");
-
-      const uniquePendingReschedules = new Set(
-        (pendingRequests || []).map((request) => request.booking_id),
-      ).size;
-      pendingBusinessActions =
-        (pendingBookingsCount || 0) + uniquePendingReschedules;
-    }
-
-    let adminNotifications = 0;
-
-    if (adminUser) {
-      const { count: adminUnreadCount } = await supabase
-        .from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("audience", "admin")
-        .is("read_at", null);
-
-      adminNotifications = adminUnreadCount || 0;
-    }
-
-    const notificationRows = notifications || [];
-    const bookingRows = customerBookings || [];
-
-    setStats({
-      bookings: bookingRows.length,
-      unreadNotifications: notificationRows.filter((row: any) => !row.read_at)
-        .length,
-      businessNotifications: notificationRows.filter(
-        (row: any) => !row.read_at && row.audience === "business",
-      ).length,
-      adminNotifications,
-      pendingCustomerBookings: bookingRows.filter(
-        (row: any) => row.status === "pending",
-      ).length,
-      pendingBusinessActions,
-    });
   }
 
   useEffect(() => {
@@ -977,22 +871,6 @@ export default function AccountPage() {
             >
               <div className="account-card-heading">
                 <h2>{t("account.personalDetails", "Personal details")}</h2>
-                <p className="small muted">
-                  {ownsBusiness
-                    ? t(
-                        "account.accountOnlyBusinessBody",
-                        "These settings belong to your owner login. Business profile, team and booking rules stay in your business workspace.",
-                      )
-                    : hasStaffAccess
-                      ? t(
-                          "account.accountOnlyStaffBody",
-                          "These settings belong to your staff login. If no business is linked yet, your staff workspace will stay limited until a matching invite is connected.",
-                        )
-                      : t(
-                          "account.accountOnlyCustomerBody",
-                          "These settings belong to your customer login and are used for bookings, notifications and support conversations.",
-                        )}
-                </p>
               </div>
 
               <div className="account-form-grid">
@@ -1029,7 +907,7 @@ export default function AccountPage() {
                   <p className="small muted account-field-help">
                     {t(
                       "account.emailChangeBody",
-                      "Email changes require confirmation. Use password reset or contact support if this email is wrong.",
+                      "Contact support if this email is wrong.",
                     )}
                   </p>
                 </div>
@@ -1054,7 +932,7 @@ export default function AccountPage() {
                   <p className="small muted account-field-help">
                     {t(
                       "account.languageBody",
-                      "This language is saved to your account and used across translated Mirëbook pages when you sign in.",
+                      "Saved across translated Mirëbook pages.",
                     )}
                   </p>
                 </div>
@@ -1154,225 +1032,30 @@ export default function AccountPage() {
               </div>
             )}
 
-            {isCustomerOnly && (
-              <div className="card account-customer-guide">
-                <div>
-                  <h2>
-                    {t("account.customerGuide.title", "Your booking journey")}
-                  </h2>
-                  <p className="small muted">
-                    {t(
-                      "account.customerGuide.body",
-                      "Find a business, track requests and manage confirmed appointments from your customer workspace.",
-                    )}
-                  </p>
-                </div>
-                <div className="account-customer-guide-steps">
-                  <Link href="/explore">
-                    <strong>
-                      {t("account.customerGuide.explore", "Explore businesses")}
-                    </strong>
-                    <span>
-                      {t(
-                        "account.customerGuide.exploreBody",
-                        "Choose a service, staff member and available time.",
-                      )}
-                    </span>
-                  </Link>
-                  <Link href="/my-bookings">
-                    <strong>
-                      {t("account.customerGuide.bookings", "Track bookings")}
-                    </strong>
-                    <span>
-                      {t(
-                        "account.customerGuide.bookingsBody",
-                        "Follow requests, upcoming appointments and history.",
-                      )}
-                    </span>
-                  </Link>
-                  <Link href="/notifications">
-                    <strong>
-                      {t(
-                        "account.customerGuide.notifications",
-                        "Check updates",
-                      )}
-                    </strong>
-                    <span>
-                      {t(
-                        "account.customerGuide.notificationsBody",
-                        "See confirmations, changes and support replies.",
-                      )}
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            <div className="grid-2 account-summary-grid">
-              <div className="card account-role-card">
-                <strong>{primaryAccountMode}</strong>
-                <p className="small muted">
-                  {isAdmin
-                    ? t(
-                        "account.operatorSummaryBody",
-                        "Operator access is for platform management, support inbox, business onboarding and account lookup.",
-                      )
-                    : ownsBusiness
-                      ? t(
-                          "account.businessSummaryBody",
-                          "Owner access is linked to your Mirëbook Business workspace.",
-                        )
+            {!isAdmin && (
+              <div className="account-quick-links">
+                <Link
+                  href={
+                    ownsBusiness
+                      ? "/dashboard"
                       : hasStaffAccess
-                        ? t(
-                            "account.staffSummaryBody",
-                            "Staff access is linked to your assigned appointments and availability.",
-                          )
-                        : t(
-                            "account.customerSummaryBody",
-                            "Customer access lets you book services, manage appointments, receive notifications and contact support.",
-                          )}
-                </p>
-              </div>
-
-              {isCustomerOnly && (
-                <div className="card">
-                  <strong>
-                    {pluralLabel(
-                      stats.bookings,
-                      t("account.bookingSingular", "booking"),
-                      t("account.bookingPlural", "bookings"),
-                    )}
-                  </strong>
-                  <p className="small muted">
-                    {pluralLabel(
-                      stats.pendingCustomerBookings,
-                      t("account.pendingBookingSingular", "pending booking"),
-                      t("account.pendingBookingPlural", "pending bookings"),
-                    )}
-                    .
-                  </p>
-                  <Link
-                    href="/my-bookings"
-                    className="btn btn-ghost"
-                    style={{ marginTop: "0.75rem" }}
-                  >
-                    {t("nav.myBookings", "My bookings")}
-                  </Link>
-                </div>
-              )}
-
-              {ownsBusiness && (
-                <div
-                  className="card"
-                  style={{ borderColor: "rgba(45,212,191,0.25)" }}
+                        ? "/staff"
+                        : "/my-bookings"
+                  }
                 >
-                  <strong>
-                    {pluralLabel(
-                      ownedBusinesses.length,
-                      t("account.businessProfile", "business profile"),
-                    )}
-                  </strong>
-                  <p className="small muted">
-                    {pluralLabel(
-                      stats.pendingBusinessActions,
-                      t("account.businessAction", "business action"),
-                    )}{" "}
-                    {t("account.currentlyPending", "currently pending.")}
-                  </p>
-                  <div className="account-card-actions">
-                    <Link href="/dashboard" className="btn btn-accent">
-                      {t("dashboardLayout.nav.today", "Today")}
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {hasStaffAccess && (
-                <div
-                  className="card"
-                  style={{ borderColor: "rgba(45,212,191,0.25)" }}
-                >
-                  <strong>
-                    {hasLinkedStaffProfile
-                      ? t("account.linkedStaffProfile", "Linked staff profile")
-                      : t("account.staffIntentProfile", "Staff account")}
-                  </strong>
-                  <p className="small muted">
-                    {hasLinkedStaffProfile
-                      ? `${staffProfile?.name} · ${staffProfile?.role_title || staffProfile?.permission_role || t("account.access.staff", "Staff")} ${t("account.at", "at")} ${staffBusinessName()}`
-                      : t(
-                          "account.staffIntentUnlinkedBody",
-                          "This login is set up as a staff account, but it is not connected to a business staff profile yet. Ask the business to invite this exact email, then refresh your staff workspace.",
-                        )}
-                  </p>
-                  <div className="account-card-actions">
-                    <Link href="/staff" className="btn btn-accent">
-                      {hasLinkedStaffProfile
-                        ? t("dashboardLayout.staffNav.today", "Today")
-                        : t("staff.unlinked.title", "No business linked yet")}
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {!hasStaffAccess && !isCustomerOnly && (
-                <div className="card">
-                  <strong>
-                    {t("dashboardStaff.card.notLinked", "Not linked")}
-                  </strong>
-                  <p className="small muted">
-                    {t(
-                      "account.staffAccessBody",
-                      "Staff access appears here only when a business links this login to a staff profile, or when the account was registered as staff.",
-                    )}
-                  </p>
-                </div>
-              )}
-
-              <div className="card">
-                <strong>
-                  {stats.unreadNotifications + stats.adminNotifications}{" "}
-                  {t("account.unread", "unread")}
-                </strong>
-                <p className="small muted">
-                  {isAdmin
-                    ? `${stats.adminNotifications} ${t("account.operatorNotice", "operator notice")}${stats.adminNotifications === 1 ? "" : "s"}.`
-                    : ownsBusiness
-                      ? `${stats.businessNotifications} ${t("account.businessNotice", "business notice")}${stats.businessNotifications === 1 ? "" : "s"}.`
-                      : hasStaffAccess
-                        ? t(
-                            "account.staffNotificationsBody",
-                            "Staff workspace updates appear here once your account is linked to a business profile.",
-                          )
-                        : t(
-                            "account.customerNotificationsBody",
-                            "Customer booking updates appear here.",
-                          )}
-                </p>
+                  {ownsBusiness
+                    ? t("dashboardLayout.nav.today", "Today")
+                    : hasStaffAccess
+                      ? t("dashboardLayout.staffNav.today", "Today")
+                      : t("nav.myBookings", "My bookings")}
+                </Link>
                 <Link
                   href={
                     hasStaffAccess ? "/staff/notifications" : "/notifications"
                   }
-                  className="btn btn-ghost"
-                  style={{ marginTop: "0.75rem" }}
                 >
                   {t("nav.notifications", "Notifications")}
                 </Link>
-              </div>
-            </div>
-
-            <div className="card support-card">
-              <div className="account-card-heading">
-                <h2>{t("nav.support", "Support")}</h2>
-                <p className="small muted">
-                  {t(
-                    "account.supportBody",
-                    "Contact Mirëbook support or review your support messages.",
-                  )}
-                </p>
-              </div>
-
-              <div className="workspace-actions">
                 <Link
                   href={
                     hasStaffAccess
@@ -1381,18 +1064,11 @@ export default function AccountPage() {
                         ? "/support/business"
                         : "/support/customer"
                   }
-                  className="btn btn-ghost"
                 >
-                  {t("account.contactSupport", "Contact support")}
-                </Link>
-                <Link href="/support/messages" className="btn btn-ghost">
-                  {t(
-                    "support.customer.allConversations",
-                    "All support messages",
-                  )}
+                  {t("nav.support", "Support")}
                 </Link>
               </div>
-            </div>
+            )}
           </div>
         )}
       </section>
@@ -1425,8 +1101,7 @@ export default function AccountPage() {
         }
 
         .account-header,
-        .operator-account-row,
-        .support-card {
+        .operator-account-row {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
@@ -1434,9 +1109,7 @@ export default function AccountPage() {
           flex-wrap: wrap;
         }
 
-        .operator-account-actions,
-        .workspace-actions,
-        .account-card-actions {
+        .operator-account-actions {
           display: flex;
           gap: 0.55rem;
           flex-wrap: wrap;
@@ -1459,24 +1132,16 @@ export default function AccountPage() {
           order: 4;
         }
 
-        .account-summary-grid {
+        .account-quick-links {
           order: 5;
         }
 
-        .account-customer-guide {
+        .account-email-preferences {
           order: 6;
         }
 
-        .account-email-preferences {
-          order: 7;
-        }
-
-        .support-card {
-          order: 8;
-        }
-
         .operator-account-card {
-          order: 9;
+          order: 7;
         }
 
         .account-details-panel {
@@ -1528,30 +1193,22 @@ export default function AccountPage() {
           padding: 0 1rem 1rem;
         }
 
-        .account-summary-grid {
-          align-items: stretch;
-        }
-
         .account-settings-grid {
           align-items: stretch;
         }
 
         .account-security-card,
-        .account-region-card,
-        .account-role-card {
+        .account-region-card {
           display: grid;
           gap: 0.55rem;
         }
 
-        .account-summary-grid :global(.card),
         .account-settings-grid :global(.card) {
           display: grid;
           gap: 0.55rem;
         }
 
-        .account-summary-grid p,
         .account-settings-grid p,
-        .support-card p,
         .account-form-card p {
           margin-top: 0;
         }
@@ -1695,48 +1352,36 @@ export default function AccountPage() {
           justify-self: flex-start;
         }
 
-        .account-customer-guide {
-          display: grid;
-          gap: 0.75rem;
-          border-color: rgba(45, 212, 191, 0.25);
-        }
-
-        .account-customer-guide h2,
-        .account-customer-guide p {
-          margin-top: 0;
-        }
-
-        .account-customer-guide-steps {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+        .account-quick-links {
+          display: flex;
           gap: 0.55rem;
+          flex-wrap: wrap;
+          padding-top: 0.1rem;
         }
 
-        .account-customer-guide-steps a {
-          display: grid;
-          gap: 0.18rem;
-          padding: 0.7rem;
+        .account-quick-links :global(a) {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 2.35rem;
+          padding: 0.58rem 0.85rem;
           border: 1px solid var(--border);
-          border-radius: var(--radius);
+          border-radius: 999px;
           background: var(--surface-2);
-          color: var(--text);
+          color: var(--text-muted);
+          font-size: 0.86rem;
+          font-weight: 800;
           text-decoration: none;
         }
 
-        .account-customer-guide-steps span {
-          color: var(--text-muted);
-          font-size: 0.84rem;
-          line-height: 1.4;
-        }
-
-        .support-card {
-          border-color: rgba(255, 190, 11, 0.22);
+        .account-quick-links :global(a:hover) {
+          color: var(--accent);
+          border-color: rgba(255, 107, 53, 0.35);
         }
 
         @media (max-width: 700px) {
           .account-header,
-          .operator-account-row,
-          .support-card {
+          .operator-account-row {
             display: grid;
           }
 
@@ -1753,15 +1398,8 @@ export default function AccountPage() {
           }
 
           .operator-account-actions,
-          .workspace-actions,
-          .account-card-actions,
           .operator-account-actions :global(.btn),
-          .workspace-actions :global(.btn),
-          .account-card-actions :global(.btn),
           .operator-account-actions a,
-          .workspace-actions a,
-          .workspace-actions button,
-          .account-card-actions a,
           .account-security-card button {
             width: 100%;
             justify-content: center;
@@ -1794,13 +1432,13 @@ export default function AccountPage() {
             justify-content: center;
           }
 
-          .account-customer-guide-steps {
-            grid-template-columns: 1fr;
-          }
-
           .account-save-button {
             width: 100%;
             justify-content: center;
+          }
+
+          .account-quick-links {
+            display: grid;
           }
         }
       `}</style>
