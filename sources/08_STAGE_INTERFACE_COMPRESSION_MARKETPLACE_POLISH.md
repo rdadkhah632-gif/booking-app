@@ -399,3 +399,30 @@ Stage 8.13 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.14 Business Manual Booking Entry Implemented
+
+- added a compact Add booking panel to the business Calendar workspace so owners
+  can create a confirmed appointment from existing business services, active
+  staff and service assignments
+- kept the first manual-booking slice inside the existing bookings table and
+  existing booking lifecycle: manual bookings are created as confirmed records
+  after live pending/confirmed clash checks
+- added live validation for active service, active staff, service assignment,
+  future date/time and overlapping appointments before insert
+- requested the existing transactional booking-status email after successful
+  owner-created booking where email delivery is configured
+- kept Calendar as the operational schedule view and Bookings as the record
+  management view
+- updated English and Albanian translation keys for the new compact panel
+
+Stage 8.14 did not change customer public booking, slot generation,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
+
+Remaining follow-up:
+
+- build the richer manual booking invite/account-sync flow so an entered
+  customer email can attach to an existing Mirëbook customer account where safe,
+  or receive a join/view-booking invitation when no account exists.

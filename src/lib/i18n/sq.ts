@@ -116,11 +116,13 @@ export const sq: TranslationTree = {
   "common.business": "Biznesi",
   "common.service": "Shërbimi",
   "common.staff": "Stafi",
+  "common.date": "Data",
   "common.time": "Ora",
   "common.name": "Emri",
   "common.email": "Email",
   "common.phone": "Telefoni",
   "common.notes": "Shënime",
+  "common.cancel": "Anulo",
   "common.selected": "Zgjedhur",
   "common.choose": "Zgjidh",
   "common.working": "Duke punuar...",
@@ -1740,6 +1742,45 @@ export const sq: TranslationTree = {
   "dashboardBookings.actions.markCompleted": "Shëno si përfunduar",
   "dashboardBookings.actions.reschedule": "Ndrysho orarin",
   "dashboardBookings.actions.cancel": "Anulo",
+  "dashboardBookings.manual.open": "Shto rezervim",
+  "dashboardBookings.manual.title": "Shto rezervim",
+  "dashboardBookings.manual.body":
+    "Krijo një takim të konfirmuar për këtë kalendar.",
+  "dashboardBookings.manual.setupNeeded":
+    "Shto një shërbim aktiv, staf aktiv dhe lidhje shërbimi para se të shtosh rezervime manualisht.",
+  "dashboardBookings.manual.customerName": "Emri i klientit",
+  "dashboardBookings.manual.customerEmail": "Email-i i klientit",
+  "dashboardBookings.manual.customerPhone": "Telefoni",
+  "dashboardBookings.manual.service": "Shërbimi",
+  "dashboardBookings.manual.chooseService": "Zgjidh shërbimin",
+  "dashboardBookings.manual.chooseStaff": "Zgjidh stafin",
+  "dashboardBookings.manual.notes": "Shënime",
+  "dashboardBookings.manual.durationHint":
+    "Kohëzgjatja merret nga shërbimi i zgjedhur.",
+  "dashboardBookings.manual.saving": "Duke shtuar...",
+  "dashboardBookings.manual.create": "Shto rezervim",
+  "dashboardBookings.manual.noAssignedStaff":
+    "Nuk ka staf aktiv të lidhur me këtë shërbim.",
+  "dashboardBookings.manual.error.customerName": "Shto emrin e klientit.",
+  "dashboardBookings.manual.error.customerEmail":
+    "Shto një email të vlefshëm të klientit.",
+  "dashboardBookings.manual.error.service": "Zgjidh një shërbim.",
+  "dashboardBookings.manual.error.staff": "Zgjidh stafin.",
+  "dashboardBookings.manual.error.time": "Zgjidh datën dhe orën.",
+  "dashboardBookings.manual.error.future":
+    "Zgjidh një orar takimi në të ardhmen.",
+  "dashboardBookings.manual.error.serviceUnavailable":
+    "Ky shërbim nuk është më aktiv.",
+  "dashboardBookings.manual.error.staffUnavailable":
+    "Ky anëtar stafi nuk është më aktiv.",
+  "dashboardBookings.manual.error.staffServiceUnavailable":
+    "Ky anëtar stafi nuk është i lidhur me shërbimin e zgjedhur.",
+  "dashboardBookings.manual.error.conflict":
+    "Ky orar përplaset me një takim ose kërkesë tjetër në pritje.",
+  "dashboardBookings.manual.error.create":
+    "Ky rezervim nuk u shtua. Provo përsëri.",
+  "dashboardBookings.manual.success":
+    "Rezervimi u shtua në kalendar. Dërgimi i email-it të konfirmimit do të kërkohet aty ku email-i është aktiv.",
   "dashboardBookings.empty.noBusinessTitle": "Nuk u gjet biznes",
   "dashboardBookings.empty.noBusinessBody":
     "Krijo fillimisht një profil biznesi, pastaj rezervimet e klientëve do të shfaqen këtu.",

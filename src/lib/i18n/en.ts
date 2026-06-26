@@ -69,11 +69,13 @@ export const en: TranslationTree = {
   "common.business": "Business",
   "common.service": "Service",
   "common.staff": "Staff",
+  "common.date": "Date",
   "common.time": "Time",
   "common.name": "Name",
   "common.email": "Email",
   "common.phone": "Phone",
   "common.notes": "Notes",
+  "common.cancel": "Cancel",
   "common.selected": "Selected",
   "common.choose": "Choose",
   "common.working": "Working...",
@@ -1754,6 +1756,43 @@ export const en: TranslationTree = {
   "dashboardBookings.actions.markCompleted": "Mark completed",
   "dashboardBookings.actions.reschedule": "Reschedule",
   "dashboardBookings.actions.cancel": "Cancel",
+  "dashboardBookings.manual.open": "Add booking",
+  "dashboardBookings.manual.title": "Add booking",
+  "dashboardBookings.manual.body":
+    "Create a confirmed appointment for this calendar.",
+  "dashboardBookings.manual.setupNeeded":
+    "Add an active service, active staff and a service assignment before adding bookings manually.",
+  "dashboardBookings.manual.customerName": "Customer name",
+  "dashboardBookings.manual.customerEmail": "Customer email",
+  "dashboardBookings.manual.customerPhone": "Phone",
+  "dashboardBookings.manual.service": "Service",
+  "dashboardBookings.manual.chooseService": "Choose service",
+  "dashboardBookings.manual.chooseStaff": "Choose staff",
+  "dashboardBookings.manual.notes": "Notes",
+  "dashboardBookings.manual.durationHint":
+    "Duration follows the selected service.",
+  "dashboardBookings.manual.saving": "Adding...",
+  "dashboardBookings.manual.create": "Add booking",
+  "dashboardBookings.manual.noAssignedStaff":
+    "No active staff are assigned to this service.",
+  "dashboardBookings.manual.error.customerName": "Add the customer's name.",
+  "dashboardBookings.manual.error.customerEmail": "Add a valid customer email.",
+  "dashboardBookings.manual.error.service": "Choose a service.",
+  "dashboardBookings.manual.error.staff": "Choose staff.",
+  "dashboardBookings.manual.error.time": "Choose a date and time.",
+  "dashboardBookings.manual.error.future": "Choose a future appointment time.",
+  "dashboardBookings.manual.error.serviceUnavailable":
+    "This service is no longer active.",
+  "dashboardBookings.manual.error.staffUnavailable":
+    "This staff member is no longer active.",
+  "dashboardBookings.manual.error.staffServiceUnavailable":
+    "This staff member is not assigned to the selected service.",
+  "dashboardBookings.manual.error.conflict":
+    "That time clashes with another appointment or pending request.",
+  "dashboardBookings.manual.error.create":
+    "Could not add this booking. Try again.",
+  "dashboardBookings.manual.success":
+    "Booking added to the calendar. Confirmation email delivery will be requested where email is enabled.",
   "dashboardBookings.empty.noBusinessTitle": "No business found",
   "dashboardBookings.empty.noBusinessBody":
     "Create a business profile first, then customer bookings will appear here.",

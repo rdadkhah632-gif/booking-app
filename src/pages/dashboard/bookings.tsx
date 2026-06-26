@@ -42,10 +42,58 @@ function addDays(date: Date, days: number) {
   return result;
 }
 
+function addMinutes(date: Date, minutes: number) {
+  return new Date(date.getTime() + minutes * 60000);
+}
+
 const CALENDAR_HOUR_HEIGHT = 72;
 const CALENDAR_MIN_BLOCK_HEIGHT = 52;
 const DEFAULT_CALENDAR_START_HOUR = 8;
 const DEFAULT_CALENDAR_END_HOUR = 18;
+
+type ManualBookingService = {
+  id: string;
+  business_id: string;
+  name: string;
+  duration_minutes: number;
+  active: boolean;
+};
+
+type ManualBookingStaff = {
+  id: string;
+  business_id: string;
+  name: string;
+  role_title?: string | null;
+  email?: string | null;
+  active: boolean;
+};
+
+type ManualStaffService = {
+  staff_member_id: string;
+  service_id: string;
+};
+
+type ManualBookingDraft = {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerNotes: string;
+  serviceId: string;
+  staffMemberId: string;
+  date: string;
+  time: string;
+};
+
+const emptyManualBookingDraft: ManualBookingDraft = {
+  customerName: "",
+  customerEmail: "",
+  customerPhone: "",
+  customerNotes: "",
+  serviceId: "",
+  staffMemberId: "",
+  date: "",
+  time: "09:00",
+};
 
 function minutesSinceMidnight(date: Date) {
   return date.getHours() * 60 + date.getMinutes();
@@ -72,6 +120,13 @@ export default function Bookings() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [business, setBusiness] = useState<Business | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [manualServices, setManualServices] = useState<ManualBookingService[]>(
+    [],
+  );
+  const [manualStaff, setManualStaff] = useState<ManualBookingStaff[]>([]);
+  const [manualStaffServices, setManualStaffServices] = useState<
+    ManualStaffService[]
+  >([]);
 
   const [rangeFilter, setRangeFilter] = useState<RangeFilter>("today");
   const [selectedDate, setSelectedDate] = useState(() =>
@@ -89,6 +144,17 @@ export default function Bookings() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [manualBookingOpen, setManualBookingOpen] = useState(false);
+  const [manualBookingSaving, setManualBookingSaving] = useState(false);
+  const [manualBookingError, setManualBookingError] = useState<string | null>(
+    null,
+  );
+  const [manualBooking, setManualBooking] = useState<ManualBookingDraft>(
+    () => ({
+      ...emptyManualBookingDraft,
+      date: toDateInputValue(new Date()),
+    }),
+  );
 
   function buildBookingsQuery(next?: {
     nextBusinessId?: string;
@@ -202,43 +268,86 @@ export default function Bookings() {
       if (!selectedBusiness) {
         setBusiness(null);
         setBookings([]);
+        setManualServices([]);
+        setManualStaff([]);
+        setManualStaffServices([]);
         setPageLoading(false);
         return;
       }
 
       setBusiness(selectedBusiness);
 
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(
-          `
-          id,
-          business_id,
-          customer_user_id,
-          customer_name,
-          customer_email,
-          customer_phone,
-          customer_notes,
-          internal_notes,
-          start_at,
-          end_at,
-          duration_minutes,
-          status,
-          created_at,
-          services (
-            name,
-            price
-          ),
-          staff_members (
-            name,
-            role_title
+      const [
+        { data, error },
+        { data: serviceData, error: serviceError },
+        { data: staffData, error: staffError },
+      ] = await Promise.all([
+        supabase
+          .from("bookings")
+          .select(
+            `
+            id,
+            business_id,
+            staff_member_id,
+            customer_user_id,
+            customer_name,
+            customer_email,
+            customer_phone,
+            customer_notes,
+            internal_notes,
+            start_at,
+            end_at,
+            duration_minutes,
+            status,
+            created_at,
+            services (
+              name,
+              price
+            ),
+            staff_members (
+              name,
+              role_title
+            )
+          `,
           )
-        `,
-        )
-        .eq("business_id", selectedBusiness.id)
-        .order("start_at", { ascending: true });
+          .eq("business_id", selectedBusiness.id)
+          .order("start_at", { ascending: true }),
+        supabase
+          .from("services")
+          .select("id, business_id, name, duration_minutes, active")
+          .eq("business_id", selectedBusiness.id)
+          .eq("active", true)
+          .order("name", { ascending: true }),
+        supabase
+          .from("staff_members")
+          .select("id, business_id, name, role_title, email, active")
+          .eq("business_id", selectedBusiness.id)
+          .eq("active", true)
+          .order("name", { ascending: true }),
+      ]);
 
       if (error) throw error;
+      if (serviceError) throw serviceError;
+      if (staffError) throw staffError;
+
+      setManualServices(serviceData || []);
+      setManualStaff(staffData || []);
+
+      const staffIds = (staffData || []).map((staff) => staff.id);
+
+      if (staffIds.length > 0) {
+        const { data: staffServiceData, error: staffServiceError } =
+          await supabase
+            .from("staff_services")
+            .select("staff_member_id, service_id")
+            .in("staff_member_id", staffIds);
+
+        if (staffServiceError) throw staffServiceError;
+
+        setManualStaffServices(staffServiceData || []);
+      } else {
+        setManualStaffServices([]);
+      }
 
       const normalisedBookings = (data || []).map((booking: any) => ({
         ...booking,
@@ -772,6 +881,30 @@ export default function Bookings() {
     ).sort((a, b) => a.localeCompare(b));
   }, [bookings]);
 
+  const selectedManualService = useMemo(
+    () =>
+      manualServices.find(
+        (service) => service.id === manualBooking.serviceId,
+      ) || null,
+    [manualServices, manualBooking.serviceId],
+  );
+
+  const manualStaffOptions = useMemo(() => {
+    if (!manualBooking.serviceId) return manualStaff;
+    const assignedStaffIds = new Set(
+      manualStaffServices
+        .filter((link) => link.service_id === manualBooking.serviceId)
+        .map((link) => link.staff_member_id),
+    );
+
+    return manualStaff.filter((staff) => assignedStaffIds.has(staff.id));
+  }, [manualBooking.serviceId, manualStaff, manualStaffServices]);
+
+  const manualBookingSetupReady =
+    manualServices.length > 0 &&
+    manualStaff.length > 0 &&
+    manualStaffServices.length > 0;
+
   const filteredBookings = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
     const range = dateRangeForFilter(rangeFilter);
@@ -948,6 +1081,300 @@ export default function Bookings() {
     setSelectedDate(value);
     setRangeFilter("custom");
     replaceBookingsQuery({ nextFilter: "custom", nextDate: value });
+  }
+
+  function updateManualBookingField(
+    field: keyof ManualBookingDraft,
+    value: string,
+  ) {
+    setManualBooking((current) => {
+      if (field === "serviceId") {
+        return { ...current, serviceId: value, staffMemberId: "" };
+      }
+
+      return { ...current, [field]: value };
+    });
+    setManualBookingError(null);
+  }
+
+  function openManualBooking() {
+    setManualBooking((current) => ({
+      ...current,
+      date: selectedDate || toDateInputValue(new Date()),
+    }));
+    setManualBookingError(null);
+    setManualBookingOpen(true);
+  }
+
+  function closeManualBooking() {
+    if (manualBookingSaving) return;
+    setManualBookingOpen(false);
+    setManualBookingError(null);
+  }
+
+  function bookingOverlaps(
+    booking: Pick<
+      Booking,
+      "staff_member_id" | "start_at" | "end_at" | "duration_minutes"
+    >,
+    nextStaffId: string,
+    nextStart: Date,
+    nextEnd: Date,
+  ) {
+    if (booking.staff_member_id !== nextStaffId) return false;
+
+    const bookingStart = new Date(booking.start_at);
+    const bookingEnd = booking.end_at
+      ? new Date(booking.end_at)
+      : addMinutes(bookingStart, booking.duration_minutes);
+
+    return nextStart < bookingEnd && nextEnd > bookingStart;
+  }
+
+  function validateManualBookingDraft() {
+    const customerName = manualBooking.customerName.trim();
+    const customerEmail = manualBooking.customerEmail.trim().toLowerCase();
+
+    if (!customerName) {
+      return t(
+        "dashboardBookings.manual.error.customerName",
+        "Add the customer's name.",
+      );
+    }
+
+    if (!customerEmail || !customerEmail.includes("@")) {
+      return t(
+        "dashboardBookings.manual.error.customerEmail",
+        "Add a valid customer email.",
+      );
+    }
+
+    if (!selectedManualService) {
+      return t("dashboardBookings.manual.error.service", "Choose a service.");
+    }
+
+    if (!manualBooking.staffMemberId) {
+      return t("dashboardBookings.manual.error.staff", "Choose staff.");
+    }
+
+    if (!manualBooking.date || !manualBooking.time) {
+      return t(
+        "dashboardBookings.manual.error.time",
+        "Choose a date and time.",
+      );
+    }
+
+    const start = new Date(`${manualBooking.date}T${manualBooking.time}:00`);
+    if (Number.isNaN(start.getTime())) {
+      return t(
+        "dashboardBookings.manual.error.time",
+        "Choose a date and time.",
+      );
+    }
+
+    if (start <= new Date()) {
+      return t(
+        "dashboardBookings.manual.error.future",
+        "Choose a future appointment time.",
+      );
+    }
+
+    return null;
+  }
+
+  async function createManualBooking() {
+    if (!business || manualBookingSaving) return;
+
+    const validationError = validateManualBookingDraft();
+    if (validationError || !selectedManualService) {
+      setManualBookingError(validationError);
+      return;
+    }
+
+    setManualBookingSaving(true);
+    setManualBookingError(null);
+    setError(null);
+    setSuccess(null);
+
+    const start = new Date(`${manualBooking.date}T${manualBooking.time}:00`);
+    const startAt = start.toISOString();
+    const customerName = manualBooking.customerName.trim();
+    const customerEmail = manualBooking.customerEmail.trim().toLowerCase();
+
+    try {
+      const [
+        { data: freshService, error: freshServiceError },
+        { data: freshStaff, error: freshStaffError },
+        { data: freshStaffService, error: freshStaffServiceError },
+        { data: freshBookings, error: freshBookingsError },
+      ] = await Promise.all([
+        supabase
+          .from("services")
+          .select("id, duration_minutes, active")
+          .eq("id", selectedManualService.id)
+          .eq("business_id", business.id)
+          .eq("active", true)
+          .maybeSingle(),
+        supabase
+          .from("staff_members")
+          .select("id, active")
+          .eq("id", manualBooking.staffMemberId)
+          .eq("business_id", business.id)
+          .eq("active", true)
+          .maybeSingle(),
+        supabase
+          .from("staff_services")
+          .select("staff_member_id")
+          .eq("staff_member_id", manualBooking.staffMemberId)
+          .eq("service_id", selectedManualService.id)
+          .maybeSingle(),
+        supabase
+          .from("bookings")
+          .select(
+            "id, staff_member_id, start_at, end_at, duration_minutes, status",
+          )
+          .eq("business_id", business.id)
+          .eq("staff_member_id", manualBooking.staffMemberId)
+          .in("status", ["pending", "confirmed"])
+          .gte("start_at", addDays(startOfDay(start), -1).toISOString())
+          .lte("start_at", addDays(endOfDay(start), 1).toISOString()),
+      ]);
+
+      if (freshServiceError) throw freshServiceError;
+      if (freshStaffError) throw freshStaffError;
+      if (freshStaffServiceError) throw freshStaffServiceError;
+      if (freshBookingsError) throw freshBookingsError;
+
+      if (!freshService) {
+        setManualBookingError(
+          t(
+            "dashboardBookings.manual.error.serviceUnavailable",
+            "This service is no longer active.",
+          ),
+        );
+        return;
+      }
+
+      if (!freshStaff) {
+        setManualBookingError(
+          t(
+            "dashboardBookings.manual.error.staffUnavailable",
+            "This staff member is no longer active.",
+          ),
+        );
+        return;
+      }
+
+      if (!freshStaffService) {
+        setManualBookingError(
+          t(
+            "dashboardBookings.manual.error.staffServiceUnavailable",
+            "This staff member is not assigned to the selected service.",
+          ),
+        );
+        return;
+      }
+
+      const durationMinutes =
+        freshService.duration_minutes || selectedManualService.duration_minutes;
+      const appointmentEnd = addMinutes(start, durationMinutes);
+      const hasConflict = ((freshBookings || []) as Booking[]).some((booking) =>
+        bookingOverlaps(
+          booking,
+          manualBooking.staffMemberId,
+          start,
+          appointmentEnd,
+        ),
+      );
+
+      if (hasConflict) {
+        setManualBookingError(
+          t(
+            "dashboardBookings.manual.error.conflict",
+            "That time clashes with another appointment or pending request.",
+          ),
+        );
+        return;
+      }
+
+      const { data: createdBooking, error: createError } = await supabase
+        .from("bookings")
+        .insert({
+          business_id: business.id,
+          service_id: selectedManualService.id,
+          staff_member_id: manualBooking.staffMemberId,
+          customer_user_id: null,
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_phone: manualBooking.customerPhone.trim() || null,
+          customer_notes: manualBooking.customerNotes.trim() || null,
+          start_at: startAt,
+          duration_minutes: durationMinutes,
+          status: "confirmed",
+        })
+        .select("id")
+        .single();
+
+      if (createError) {
+        if (createError.message.includes("prevent_overlapping_bookings")) {
+          setManualBookingError(
+            t(
+              "dashboardBookings.manual.error.conflict",
+              "That time clashes with another appointment or pending request.",
+            ),
+          );
+        } else {
+          setManualBookingError(
+            t(
+              "dashboardBookings.manual.error.create",
+              "Could not add this booking. Try again.",
+            ),
+          );
+        }
+        return;
+      }
+
+      if (createdBooking?.id) {
+        void requestTransactionalEmail({
+          event: "booking_status_changed",
+          bookingId: createdBooking.id,
+        });
+      }
+
+      setManualBooking({
+        ...emptyManualBookingDraft,
+        date: manualBooking.date,
+        time: manualBooking.time,
+      });
+      setManualBookingOpen(false);
+      setSearchTerm("");
+      setStaffFilter("all");
+      setStatusFilter("all");
+      setSelectedDate(manualBooking.date);
+      setRangeFilter("custom");
+      replaceBookingsQuery({
+        nextFilter: "custom",
+        nextDate: manualBooking.date,
+        nextStatus: "all",
+      });
+      setSuccess(
+        t(
+          "dashboardBookings.manual.success",
+          "Booking added to the calendar. Confirmation email delivery will be requested where email is enabled.",
+        ),
+      );
+      await loadBookings({ keepSuccess: true, silent: true });
+    } catch (err: any) {
+      setManualBookingError(
+        err.message ||
+          t(
+            "dashboardBookings.manual.error.create",
+            "Could not add this booking. Try again.",
+          ),
+      );
+    } finally {
+      setManualBookingSaving(false);
+    }
   }
 
   function scheduleWindowFor(dayBookings: Booking[]) {
@@ -1334,6 +1761,13 @@ export default function Bookings() {
               <div className="calendar-date-controls">
                 <button
                   type="button"
+                  className="btn btn-accent"
+                  onClick={openManualBooking}
+                >
+                  {t("dashboardBookings.manual.open", "Add booking")}
+                </button>
+                <button
+                  type="button"
                   className="btn btn-ghost"
                   onClick={goToToday}
                 >
@@ -1350,6 +1784,255 @@ export default function Bookings() {
                 />
               </div>
             </div>
+
+            {manualBookingOpen && (
+              <section
+                className="manual-booking-panel"
+                aria-label={t("dashboardBookings.manual.title", "Add booking")}
+              >
+                <div className="manual-booking-heading">
+                  <div>
+                    <strong>
+                      {t("dashboardBookings.manual.title", "Add booking")}
+                    </strong>
+                    <p className="small muted">
+                      {t(
+                        "dashboardBookings.manual.body",
+                        "Create a confirmed appointment for this calendar.",
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={closeManualBooking}
+                    disabled={manualBookingSaving}
+                  >
+                    {t("common.cancel", "Cancel")}
+                  </button>
+                </div>
+
+                {!manualBookingSetupReady ? (
+                  <div className="manual-booking-setup">
+                    <p>
+                      {t(
+                        "dashboardBookings.manual.setupNeeded",
+                        "Add an active service, active staff and a service assignment before adding bookings manually.",
+                      )}
+                    </p>
+                    <div className="manual-booking-actions">
+                      <Link
+                        href="/dashboard/services"
+                        className="btn btn-ghost"
+                      >
+                        {t(
+                          "dashboardBookings.empty.addService",
+                          "Add first service",
+                        )}
+                      </Link>
+                      <Link href="/dashboard/staff" className="btn btn-ghost">
+                        {t("dashboardLayout.nav.team", "Team")}
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <form
+                    className="manual-booking-form"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void createManualBooking();
+                    }}
+                  >
+                    <label>
+                      <span>
+                        {t(
+                          "dashboardBookings.manual.customerName",
+                          "Customer name",
+                        )}
+                      </span>
+                      <input
+                        value={manualBooking.customerName}
+                        onChange={(event) =>
+                          updateManualBookingField(
+                            "customerName",
+                            event.target.value,
+                          )
+                        }
+                        autoComplete="name"
+                      />
+                    </label>
+
+                    <label>
+                      <span>
+                        {t(
+                          "dashboardBookings.manual.customerEmail",
+                          "Customer email",
+                        )}
+                      </span>
+                      <input
+                        type="email"
+                        value={manualBooking.customerEmail}
+                        onChange={(event) =>
+                          updateManualBookingField(
+                            "customerEmail",
+                            event.target.value,
+                          )
+                        }
+                        autoComplete="email"
+                      />
+                    </label>
+
+                    <label>
+                      <span>
+                        {t("dashboardBookings.manual.customerPhone", "Phone")}
+                      </span>
+                      <input
+                        value={manualBooking.customerPhone}
+                        onChange={(event) =>
+                          updateManualBookingField(
+                            "customerPhone",
+                            event.target.value,
+                          )
+                        }
+                        autoComplete="tel"
+                      />
+                    </label>
+
+                    <label>
+                      <span>
+                        {t("dashboardBookings.manual.service", "Service")}
+                      </span>
+                      <select
+                        value={manualBooking.serviceId}
+                        onChange={(event) =>
+                          updateManualBookingField(
+                            "serviceId",
+                            event.target.value,
+                          )
+                        }
+                      >
+                        <option value="">
+                          {t(
+                            "dashboardBookings.manual.chooseService",
+                            "Choose service",
+                          )}
+                        </option>
+                        {manualServices.map((service) => (
+                          <option key={service.id} value={service.id}>
+                            {service.name} · {service.duration_minutes}{" "}
+                            {t("common.minutes", "minutes")}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      <span>{t("support.business.staff", "Staff")}</span>
+                      <select
+                        value={manualBooking.staffMemberId}
+                        onChange={(event) =>
+                          updateManualBookingField(
+                            "staffMemberId",
+                            event.target.value,
+                          )
+                        }
+                        disabled={!manualBooking.serviceId}
+                      >
+                        <option value="">
+                          {t(
+                            "dashboardBookings.manual.chooseStaff",
+                            "Choose staff",
+                          )}
+                        </option>
+                        {manualStaffOptions.map((staff) => (
+                          <option key={staff.id} value={staff.id}>
+                            {staff.name}
+                            {staff.role_title ? ` · ${staff.role_title}` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      <span>{t("common.date", "Date")}</span>
+                      <input
+                        type="date"
+                        value={manualBooking.date}
+                        onChange={(event) =>
+                          updateManualBookingField("date", event.target.value)
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>{t("common.time", "Time")}</span>
+                      <input
+                        type="time"
+                        value={manualBooking.time}
+                        onChange={(event) =>
+                          updateManualBookingField("time", event.target.value)
+                        }
+                      />
+                    </label>
+
+                    <label className="manual-booking-notes">
+                      <span>
+                        {t("dashboardBookings.manual.notes", "Notes")}
+                      </span>
+                      <textarea
+                        value={manualBooking.customerNotes}
+                        onChange={(event) =>
+                          updateManualBookingField(
+                            "customerNotes",
+                            event.target.value,
+                          )
+                        }
+                        rows={3}
+                      />
+                    </label>
+
+                    <div className="manual-booking-footer">
+                      <p className="small muted">
+                        {selectedManualService
+                          ? `${selectedManualService.duration_minutes} ${t(
+                              "common.minutes",
+                              "minutes",
+                            )}`
+                          : t(
+                              "dashboardBookings.manual.durationHint",
+                              "Duration follows the selected service.",
+                            )}
+                      </p>
+                      <button
+                        type="submit"
+                        className="btn btn-accent"
+                        disabled={manualBookingSaving}
+                      >
+                        {manualBookingSaving
+                          ? t("dashboardBookings.manual.saving", "Adding...")
+                          : t("dashboardBookings.manual.create", "Add booking")}
+                      </button>
+                    </div>
+
+                    {manualBooking.serviceId &&
+                      manualStaffOptions.length === 0 && (
+                        <p className="small manual-booking-warning">
+                          {t(
+                            "dashboardBookings.manual.noAssignedStaff",
+                            "No active staff are assigned to this service.",
+                          )}
+                        </p>
+                      )}
+
+                    {manualBookingError && (
+                      <p role="alert" className="small manual-booking-error">
+                        {manualBookingError}
+                      </p>
+                    )}
+                  </form>
+                )}
+              </section>
+            )}
 
             <div className="calendar-range-row">
               {[
@@ -1562,6 +2245,89 @@ export default function Bookings() {
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface);
+        }
+
+        .manual-booking-panel {
+          display: grid;
+          gap: 0.85rem;
+          padding: 0.9rem;
+          border: 1px solid rgba(255, 107, 53, 0.24);
+          border-radius: var(--radius);
+          background: rgba(255, 107, 53, 0.06);
+        }
+
+        .manual-booking-heading,
+        .manual-booking-footer,
+        .manual-booking-actions {
+          display: flex;
+          gap: 0.75rem;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+        }
+
+        .manual-booking-heading p,
+        .manual-booking-footer p,
+        .manual-booking-setup p {
+          margin: 0;
+        }
+
+        .manual-booking-form {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 0.7rem;
+          align-items: end;
+        }
+
+        .manual-booking-form label {
+          display: grid;
+          gap: 0.3rem;
+          min-width: 0;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .manual-booking-form input,
+        .manual-booking-form select,
+        .manual-booking-form textarea {
+          width: 100%;
+          min-height: 2.55rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text);
+          color-scheme: dark;
+          padding: 0.55rem 0.7rem;
+        }
+
+        .manual-booking-form textarea {
+          resize: vertical;
+        }
+
+        .manual-booking-notes,
+        .manual-booking-footer,
+        .manual-booking-error,
+        .manual-booking-warning {
+          grid-column: span 2;
+        }
+
+        .manual-booking-error,
+        .manual-booking-warning {
+          margin: 0;
+        }
+
+        .manual-booking-error {
+          color: var(--danger);
+        }
+
+        .manual-booking-warning {
+          color: var(--warning);
+        }
+
+        .manual-booking-setup {
+          display: grid;
+          gap: 0.75rem;
         }
 
         .calendar-toolbar,
@@ -2035,6 +2801,35 @@ export default function Bookings() {
           .calendar-shell,
           .calendar-empty-state {
             padding: 0.85rem;
+          }
+
+          .manual-booking-heading,
+          .manual-booking-footer,
+          .manual-booking-actions {
+            display: grid;
+            align-items: stretch;
+            justify-content: stretch;
+          }
+
+          .manual-booking-form {
+            grid-template-columns: 1fr;
+          }
+
+          .manual-booking-notes,
+          .manual-booking-footer,
+          .manual-booking-error,
+          .manual-booking-warning {
+            grid-column: auto;
+          }
+
+          .manual-booking-heading :global(.btn),
+          .manual-booking-actions :global(.btn),
+          .manual-booking-footer :global(.btn),
+          .manual-booking-heading button,
+          .manual-booking-actions a,
+          .manual-booking-footer button {
+            width: 100%;
+            justify-content: center;
           }
 
           .calendar-toolbar,
