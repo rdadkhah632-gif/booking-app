@@ -17,10 +17,7 @@ function notificationText(
 
   if (type === "booking_requested") {
     return {
-      title: t(
-        "notifications.types.bookingRequested.title",
-        "Request sent",
-      ),
+      title: t("notifications.types.bookingRequested.title", "Request sent"),
       message:
         notification.message ||
         t(
@@ -209,27 +206,19 @@ export default function NotificationInboxSection({
         return (
           <div
             key={notification.id}
-            className="card"
+            className="card customer-notification-card"
             style={{
               borderColor: notificationBorder(notification),
               background: notificationBackground(notification),
             }}
           >
             <div className="customer-notification-card-row">
-              <div style={{ flex: 1, minWidth: 260 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    marginBottom: "0.5rem",
-                  }}
-                >
+              <div className="customer-notification-card-main">
+                <div className="customer-notification-title-row">
                   <strong>{displayNotification.title}</strong>
 
                   <span
-                    className="small"
+                    className="small customer-notification-status"
                     style={{
                       background: notification.read_at
                         ? "var(--surface-2)"
@@ -237,9 +226,6 @@ export default function NotificationInboxSection({
                       color: notification.read_at
                         ? "var(--text-muted)"
                         : "var(--accent)",
-                      padding: "0.2rem 0.55rem",
-                      borderRadius: 999,
-                      border: "1px solid var(--border)",
                     }}
                   >
                     {notification.read_at
@@ -249,10 +235,12 @@ export default function NotificationInboxSection({
                 </div>
 
                 {displayNotification.message && (
-                  <p className="small muted">{displayNotification.message}</p>
+                  <p className="small muted customer-notification-message">
+                    {displayNotification.message}
+                  </p>
                 )}
 
-                <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                <p className="small muted customer-notification-time">
                   {notification.created_at
                     ? new Date(notification.created_at).toLocaleString()
                     : t("notifications.recently", "Recently")}
@@ -284,6 +272,65 @@ export default function NotificationInboxSection({
           </div>
         );
       })}
+
+      <style jsx>{`
+        .customer-notification-card {
+          padding: 0.95rem;
+        }
+
+        .customer-notification-card-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+
+        .customer-notification-card-main {
+          flex: 1;
+          min-width: 0;
+          display: grid;
+          gap: 0.4rem;
+        }
+
+        .customer-notification-title-row {
+          display: flex;
+          gap: 0.55rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .customer-notification-status {
+          padding: 0.18rem 0.5rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+        }
+
+        .customer-notification-message,
+        .customer-notification-time {
+          margin: 0;
+        }
+
+        .customer-notification-card-actions {
+          display: flex;
+          gap: 0.65rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 640px) {
+          .customer-notification-card-row,
+          .customer-notification-card-actions {
+            display: grid;
+          }
+
+          .customer-notification-card-actions,
+          .customer-notification-card-actions :global(.btn),
+          .customer-notification-card-actions button,
+          .customer-notification-card-actions a {
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -434,32 +434,39 @@ export default function StaffCalendarPage() {
                         key={booking.id}
                         className="card staff-calendar-booking"
                       >
-                        <div>
+                        <div className="staff-booking-time">
                           <strong>
-                            {booking.customer_name ||
-                              t("common.customer", "Customer")}
-                          </strong>
-                          <p className="small muted">
-                            {serviceName(
-                              booking,
-                              t("common.service", "Service"),
-                            )}{" "}
-                            ·{" "}
                             {start.toLocaleTimeString(dateLocale, {
                               hour: "2-digit",
                               minute: "2-digit",
-                            })}{" "}
-                            -{" "}
+                            })}
+                          </strong>
+                          <span>
                             {end.toLocaleTimeString(dateLocale, {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
-                          </p>
-                          <p
-                            className="small"
-                            style={{ color: statusColor(booking.status) }}
-                          >
-                            {statusLabel(booking.status)}
+                          </span>
+                        </div>
+
+                        <div className="staff-booking-main">
+                          <div className="staff-booking-title-row">
+                            <strong>
+                              {booking.customer_name ||
+                                t("common.customer", "Customer")}
+                            </strong>
+                            <span
+                              className="small staff-booking-status"
+                              style={{ color: statusColor(booking.status) }}
+                            >
+                              {statusLabel(booking.status)}
+                            </span>
+                          </div>
+                          <p className="small muted">
+                            {serviceName(
+                              booking,
+                              t("common.service", "Service"),
+                            )}
                           </p>
                           {booking.status === "pending" && (
                             <p className="small muted">
@@ -632,11 +639,49 @@ export default function StaffCalendarPage() {
         }
 
         .staff-calendar-booking {
-          display: flex;
-          justify-content: space-between;
+          display: grid;
+          grid-template-columns: minmax(4.5rem, 0.18fr) minmax(0, 1fr) auto;
           gap: 1rem;
           align-items: flex-start;
           background: var(--surface-2);
+        }
+
+        .staff-booking-time {
+          display: grid;
+          gap: 0.15rem;
+          padding: 0.65rem;
+          border: 1px solid var(--border);
+          border-radius: calc(var(--radius) - 4px);
+          background: rgba(255, 107, 53, 0.08);
+        }
+
+        .staff-booking-time strong,
+        .staff-booking-time span {
+          line-height: 1.1;
+        }
+
+        .staff-booking-time span {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        .staff-booking-main {
+          min-width: 0;
+          display: grid;
+          gap: 0.35rem;
+        }
+
+        .staff-booking-title-row {
+          display: flex;
+          gap: 0.55rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .staff-booking-status {
+          padding: 0.16rem 0.5rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.06);
         }
 
         .staff-calendar-booking-actions {
@@ -650,6 +695,11 @@ export default function StaffCalendarPage() {
           .staff-calendar-toolbar,
           .staff-calendar-booking {
             display: grid;
+          }
+
+          .staff-calendar-booking {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
           }
 
           .staff-calendar-toolbar :global(.btn),

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
@@ -435,44 +434,27 @@ export default function StaffDashboardPage() {
                 )}
               </p>
             ) : (
-              <div className="staff-unlinked-steps">
-                <div className="staff-unlinked-step">
-                  <strong>
-                    {t("staff.unlinked.stepEmailTitle", "Use the same email")}
-                  </strong>
-                  <p className="small muted">
-                    {currentUserEmail ||
-                      t(
-                        "staff.unlinked.emailFallback",
-                        "Use the email address shown in your account.",
-                      )}
-                  </p>
-                </div>
-                <div className="staff-unlinked-step">
-                  <strong>
-                    {t(
-                      "staff.unlinked.stepInviteTitle",
-                      "Ask the business to invite you",
+              <div className="staff-link-note">
+                <span>
+                  {t("staff.unlinked.stepEmailTitle", "Use the same email")}
+                </span>
+                <strong>
+                  {currentUserEmail ||
+                    t(
+                      "staff.unlinked.emailFallback",
+                      "Use the email address shown in your account.",
                     )}
-                  </strong>
-                  <p className="small muted">
-                    {t(
-                      "staff.unlinked.stepInviteBody",
-                      "The business should add this exact email from Team.",
-                    )}
-                  </p>
-                </div>
-                <div className="staff-unlinked-step">
-                  <strong>
-                    {t("staff.unlinked.stepLinkTitle", "Refresh after linking")}
-                  </strong>
-                  <p className="small muted">
-                    {t(
-                      "staff.unlinked.stepLinkBody",
-                      "Once linked, your schedule, availability and staff notifications will appear here.",
-                    )}
-                  </p>
-                </div>
+                </strong>
+                <p className="small muted">
+                  {t(
+                    "staff.unlinked.stepInviteBody",
+                    "The business should add this exact email from Team.",
+                  )}{" "}
+                  {t(
+                    "staff.unlinked.stepLinkBody",
+                    "Once linked, your schedule, availability and staff notifications will appear here.",
+                  )}
+                </p>
               </div>
             )}
             <div className="staff-unlinked-actions">
@@ -569,42 +551,6 @@ export default function StaffDashboardPage() {
               </div>
             </div>
 
-            <div className="staff-quick-links">
-              <Link href="/staff/calendar" className="staff-quick-link">
-                <strong>
-                  {t("dashboardLayout.staffNav.calendar", "Calendar")}
-                </strong>
-                <span>
-                  {t(
-                    "staff.home.calendarBody",
-                    "Review appointment details and upcoming work.",
-                  )}
-                </span>
-              </Link>
-              <Link href="/staff/availability" className="staff-quick-link">
-                <strong>
-                  {t("dashboardLayout.staffNav.availability", "Availability")}
-                </strong>
-                <span>
-                  {t(
-                    "staff.home.availabilityBody",
-                    "Set the days and hours customers can book you.",
-                  )}
-                </span>
-              </Link>
-              <Link href="/staff/notifications" className="staff-quick-link">
-                <strong>
-                  {t("dashboardLayout.staffNav.notifications", "Notifications")}
-                </strong>
-                <span>
-                  {t(
-                    "staff.home.notificationsBody",
-                    "See booking, schedule and profile updates.",
-                  )}
-                </span>
-              </Link>
-            </div>
-
             <div className="staff-service-summary">
               <div>
                 <strong>
@@ -659,23 +605,23 @@ export default function StaffDashboardPage() {
           max-width: 760px;
         }
 
-        .staff-unlinked-steps {
+        .staff-link-note {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-          gap: 0.75rem;
-        }
-
-        .staff-unlinked-step {
-          padding: 0.85rem;
+          gap: 0.3rem;
+          padding: 0.8rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
-          display: grid;
-          gap: 0.35rem;
         }
 
-        .staff-unlinked-step p {
-          margin-top: 0;
+        .staff-link-note span {
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .staff-link-note p {
+          margin: 0;
         }
 
         .staff-unlinked-actions {
@@ -727,67 +673,15 @@ export default function StaffDashboardPage() {
           font-size: 0.78rem;
         }
 
-        .staff-quick-links {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.8rem;
-          margin-bottom: 1rem;
-        }
-
-        .staff-quick-link {
-          display: grid;
-          gap: 0.35rem;
-          padding: 0.85rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          color: var(--text);
-          text-decoration: none;
-          background: var(--surface);
-        }
-
-        .staff-quick-link:hover {
-          border-color: rgba(255, 107, 53, 0.35);
-        }
-
-        .staff-quick-link span {
-          color: var(--text-muted);
-          font-size: 0.84rem;
-          line-height: 1.45;
-        }
-
-        :global(.staff-quick-link) {
-          display: grid;
-          gap: 0.35rem;
-          padding: 0.85rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          color: var(--text);
-          text-decoration: none;
-          background: var(--surface);
-        }
-
-        :global(.staff-quick-link:hover) {
-          border-color: rgba(255, 107, 53, 0.35);
-        }
-
-        :global(.staff-quick-link strong),
-        :global(.staff-quick-link span) {
-          display: block;
-        }
-
-        :global(.staff-quick-link span) {
-          color: var(--text-muted);
-          font-size: 0.84rem;
-          line-height: 1.45;
-        }
-
         .staff-service-summary {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
           align-items: flex-start;
-          padding-top: 1.25rem;
-          border-top: 1px solid var(--border);
+          padding: 0.95rem 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
         }
 
         .staff-service-summary p {
@@ -808,12 +702,6 @@ export default function StaffDashboardPage() {
           margin-top: 0;
         }
 
-        @media (max-width: 820px) {
-          .staff-quick-links {
-            grid-template-columns: 1fr;
-          }
-        }
-
         @media (max-width: 620px) {
           .staff-today-card,
           .staff-service-summary {
@@ -827,10 +715,6 @@ export default function StaffDashboardPage() {
 
           .staff-owner-context {
             text-align: left;
-          }
-
-          .staff-unlinked-steps {
-            grid-template-columns: 1fr;
           }
 
           .staff-unlinked-actions,

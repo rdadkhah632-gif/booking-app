@@ -423,25 +423,6 @@ export default function MyBookings() {
     return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
   }
 
-  function lifecycleTitle(booking: Booking, pendingRequest?: BookingRequest) {
-    if (booking.status === "pending")
-      return t("myBookings.lifecycle.waitingTitle", "Request sent");
-    if (pendingRequest && booking.status === "confirmed")
-      return t(
-        "myBookings.lifecycle.pendingChangeTitle",
-        "Confirmed booking with a pending change request",
-      );
-    if (booking.status === "confirmed")
-      return t("myBookings.status.confirmed", "Confirmed");
-    if (booking.status === "completed")
-      return t("myBookings.status.completed", "Completed");
-    if (booking.status === "cancelled")
-      return t("myBookings.status.cancelled", "Cancelled");
-    if (booking.status === "declined")
-      return t("myBookings.status.declined", "Declined");
-    return statusLabel(booking.status);
-  }
-
   function lifecycleCopy(booking: Booking, pendingRequest?: BookingRequest) {
     if (booking.status === "pending") {
       return t(
@@ -584,7 +565,6 @@ export default function MyBookings() {
         servicePrice={servicePrice}
         staffName={staffName}
         requestedStaffName={requestedStaffName}
-        lifecycleTitle={lifecycleTitle}
         lifecycleCopy={lifecycleCopy}
         statusLabel={statusLabel}
         statusColor={statusColor}

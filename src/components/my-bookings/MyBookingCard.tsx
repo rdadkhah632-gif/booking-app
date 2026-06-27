@@ -1,28 +1,31 @@
-import Link from 'next/link'
-import { useI18n } from '@/lib/useI18n'
-import { Booking, BookingMode, BookingRequest } from './myBookingsTypes'
+import Link from "next/link";
+import { useI18n } from "@/lib/useI18n";
+import { Booking, BookingMode, BookingRequest } from "./myBookingsTypes";
 
 type Props = {
-  booking: Booking
-  mode: BookingMode
-  pendingRequest?: BookingRequest
-  isWorking: boolean
-  onCancel: (booking: Booking) => void
-  businessName: (booking: Booking) => string
-  serviceName: (booking: Booking) => string
-  servicePrice: (booking: Booking) => number
-  staffName: (booking: Booking) => string
-  requestedStaffName: (request: BookingRequest) => string
-  lifecycleTitle: (booking: Booking, pendingRequest?: BookingRequest) => string
-  lifecycleCopy: (booking: Booking, pendingRequest?: BookingRequest) => string
-  statusLabel: (status: string) => string
-  statusColor: (status: string) => string
-  statusBackground: (status: string) => string
-  cardTone: (status: string, hasPendingRequest: boolean, mode: BookingMode) => {
-    border: string
-    background: string
-  }
-}
+  booking: Booking;
+  mode: BookingMode;
+  pendingRequest?: BookingRequest;
+  isWorking: boolean;
+  onCancel: (booking: Booking) => void;
+  businessName: (booking: Booking) => string;
+  serviceName: (booking: Booking) => string;
+  servicePrice: (booking: Booking) => number;
+  staffName: (booking: Booking) => string;
+  requestedStaffName: (request: BookingRequest) => string;
+  lifecycleCopy: (booking: Booking, pendingRequest?: BookingRequest) => string;
+  statusLabel: (status: string) => string;
+  statusColor: (status: string) => string;
+  statusBackground: (status: string) => string;
+  cardTone: (
+    status: string,
+    hasPendingRequest: boolean,
+    mode: BookingMode,
+  ) => {
+    border: string;
+    background: string;
+  };
+};
 
 export default function MyBookingCard({
   booking,
@@ -35,16 +38,23 @@ export default function MyBookingCard({
   servicePrice,
   staffName,
   requestedStaffName,
-  lifecycleTitle,
   lifecycleCopy,
   statusLabel,
   statusColor,
   statusBackground,
-  cardTone
+  cardTone,
 }: Props) {
-  const { t } = useI18n()
-  const isLocked = booking.status === 'cancelled' || booking.status === 'declined' || booking.status === 'completed' || mode === 'history'
-  const tone = cardTone(booking.status, Boolean(pendingRequest), mode)
+  const { t } = useI18n();
+  const isLocked =
+    booking.status === "cancelled" ||
+    booking.status === "declined" ||
+    booking.status === "completed" ||
+    mode === "history";
+  const hasPendingChange = Boolean(
+    pendingRequest && booking.status === "confirmed",
+  );
+  const tone = cardTone(booking.status, Boolean(pendingRequest), mode);
+  const appointmentTime = new Date(booking.start_at).toLocaleString();
 
   return (
     <div
@@ -53,192 +63,344 @@ export default function MyBookingCard({
       style={{
         opacity: isLocked ? 0.78 : 1,
         borderColor: tone.border,
-        background: tone.background
+        background: tone.background,
       }}
     >
       <div className="my-booking-card-row">
-        <div style={{ flex: 1, minWidth: 260 }}>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
-            <strong>{businessName(booking)}</strong>
-
+        <div className="my-booking-card-main">
+          <div className="my-booking-card-head">
+            <div>
+              <strong>{businessName(booking)}</strong>
+              <h3>{serviceName(booking)}</h3>
+            </div>
             <span
-              className="small"
+              className="small my-booking-status-pill"
               style={{
-                background: pendingRequest && booking.status === 'confirmed'
-                  ? 'rgba(255,107,53,0.12)'
+                background: hasPendingChange
+                  ? "rgba(255,107,53,0.12)"
                   : statusBackground(booking.status),
-                color: pendingRequest && booking.status === 'confirmed'
-                  ? 'var(--accent)'
+                color: hasPendingChange
+                  ? "var(--accent)"
                   : statusColor(booking.status),
-                padding: '0.2rem 0.55rem',
-                borderRadius: 999
               }}
             >
-              {pendingRequest && booking.status === 'confirmed'
-                ? t('myBookings.card.changePending', 'Change request pending')
+              {hasPendingChange
+                ? t("myBookings.card.changePending", "Change request pending")
                 : statusLabel(booking.status)}
             </span>
-
-            {pendingRequest && booking.status === 'confirmed' && (
-              <span className="small my-booking-pill-success">
-                {t('myBookings.card.originalStillConfirmed', 'Original time still confirmed')}
-              </span>
-            )}
-
-            {booking.status === 'completed' && (
-              <span className="small my-booking-pill-success">
-                {t('myBookings.card.locked', 'Locked')}
-              </span>
-            )}
           </div>
 
-          <h3 style={{ marginBottom: '0.35rem' }}>
-            {lifecycleTitle(booking, pendingRequest)}
-          </h3>
-
-          <p className="small muted" style={{ marginBottom: '0.65rem' }}>
+          <p className="small muted my-booking-lifecycle-copy">
             {lifecycleCopy(booking, pendingRequest)}
           </p>
 
-          <p className="small muted">{t('common.service', 'Service')}: {serviceName(booking)}</p>
-          <p className="small muted">{t('common.staff', 'Staff')}: {staffName(booking)}</p>
-          <p className="small muted">{t('myBookings.card.price', 'Price')}: £{servicePrice(booking).toFixed(2)}</p>
+          <div className="my-booking-appointment-strip">
+            <div>
+              <p className="small muted">
+                {booking.status === "pending"
+                  ? t(
+                      "myBookings.card.requestedTime",
+                      "Requested appointment time",
+                    )
+                  : hasPendingChange
+                    ? t(
+                        "myBookings.card.originalConfirmedTime",
+                        "Original confirmed appointment time",
+                      )
+                    : booking.status === "completed"
+                      ? t(
+                          "myBookings.card.completedTime",
+                          "Completed appointment time",
+                        )
+                      : booking.status === "cancelled"
+                        ? t(
+                            "myBookings.card.cancelledTime",
+                            "Cancelled appointment time",
+                          )
+                        : booking.status === "declined"
+                          ? t(
+                              "myBookings.card.declinedTime",
+                              "Declined requested time",
+                            )
+                          : t(
+                              "myBookings.card.currentConfirmed",
+                              "Current confirmed appointment",
+                            )}
+              </p>
+              <strong>{appointmentTime}</strong>
+            </div>
 
-          <div
-            style={{
-              marginTop: '0.75rem',
-              padding: '0.8rem',
-              borderRadius: 'var(--radius)',
-              background: booking.status === 'pending' || pendingRequest ? 'rgba(255,107,53,0.08)' : 'var(--surface-2)',
-              border: booking.status === 'pending' || pendingRequest ? '1px solid rgba(255,107,53,0.28)' : '1px solid var(--border)'
-            }}
-          >
-            <p className="small muted">
-              {booking.status === 'pending'
-                ? t('myBookings.card.requestedTime', 'Requested appointment time')
-                : pendingRequest && booking.status === 'confirmed'
-                  ? t('myBookings.card.originalConfirmedTime', 'Original confirmed appointment time')
-                  : booking.status === 'completed'
-                    ? t('myBookings.card.completedTime', 'Completed appointment time')
-                    : booking.status === 'cancelled'
-                      ? t('myBookings.card.cancelledTime', 'Cancelled appointment time')
-                      : booking.status === 'declined'
-                        ? t('myBookings.card.declinedTime', 'Declined requested time')
-                      : t('myBookings.card.currentConfirmed', 'Current confirmed appointment')}
-            </p>
-
-            <strong>{new Date(booking.start_at).toLocaleString()}</strong>
-
-            <p className="small muted" style={{ marginTop: '0.25rem' }}>
-              {booking.status === 'pending'
-                ? t('myBookings.card.pendingHint', 'This booking is not confirmed until the business accepts it.')
-                : pendingRequest && booking.status === 'confirmed'
-                  ? t('myBookings.card.originalHint', 'This remains your active appointment until the business accepts your new requested time.')
-                  : booking.status === 'confirmed'
-                    ? t('myBookings.card.activeHint', 'This is your active booked time.')
-                    : booking.status === 'completed'
-                      ? t('myBookings.card.completedHint', 'Completed bookings cannot be rescheduled or cancelled.')
-                      : t('myBookings.card.inactiveHint', 'This appointment is no longer active.')}
-            </p>
+            <div className="my-booking-meta-grid">
+              <span>
+                <b>{t("common.staff", "Staff")}</b>
+                {staffName(booking)}
+              </span>
+              <span>
+                <b>{t("myBookings.card.duration", "Duration")}</b>
+                {booking.duration_minutes} {t("common.minutes", "minutes")}
+              </span>
+              <span>
+                <b>{t("myBookings.card.price", "Price")}</b>£
+                {servicePrice(booking).toFixed(2)}
+              </span>
+            </div>
           </div>
 
-          <p className="small muted" style={{ marginTop: '0.65rem' }}>
-            {t('myBookings.card.duration', 'Duration')}: {booking.duration_minutes} {t('common.minutes', 'minutes')}
-          </p>
+          {hasPendingChange && (
+            <p className="small my-booking-inline-note">
+              {t(
+                "myBookings.card.originalHint",
+                "This remains your active appointment until the business accepts your new requested time.",
+              )}
+            </p>
+          )}
 
-          <p className="small" style={{ color: statusColor(booking.status), marginTop: '0.4rem' }}>
-            {t('myBookings.card.status', 'Status')}: {statusLabel(booking.status)}
-          </p>
-
-          {pendingRequest && booking.status === 'confirmed' && (
-            <div className="card my-booking-pending-change-card">
+          {hasPendingChange && pendingRequest && (
+            <div className="my-booking-pending-change-card">
               <div className="my-booking-card-row">
                 <div>
-                  <p className="small" style={{ color: 'var(--accent)' }}>
-                    {t('myBookings.card.changeAwaiting', 'Requested change awaiting business review')}
+                  <p className="small" style={{ color: "var(--accent)" }}>
+                    {t(
+                      "myBookings.card.changeAwaiting",
+                      "Requested change awaiting business review",
+                    )}
                   </p>
-                  <h3 style={{ marginTop: '0.25rem', marginBottom: '0.5rem' }}>
-                    {t('myBookings.card.newRequestedTime', 'New requested appointment time')}
+                  <h3 style={{ marginTop: "0.25rem", marginBottom: "0.5rem" }}>
+                    {new Date(
+                      pendingRequest.requested_start_at,
+                    ).toLocaleString()}
                   </h3>
                 </div>
 
                 <span className="small my-booking-pill-accent">
-                  {t('myBookings.card.businessApprovalNeeded', 'Business approval needed')}
+                  {t(
+                    "myBookings.card.businessApprovalNeeded",
+                    "Business approval needed",
+                  )}
                 </span>
               </div>
 
               <div className="my-booking-requested-time-box">
-                <p className="small muted">{t('myBookings.card.requestedNewTime', 'Requested new time')}</p>
-                <strong>{new Date(pendingRequest.requested_start_at).toLocaleString()}</strong>
-
-                <p className="small muted" style={{ marginTop: '0.55rem' }}>
-                  {t('myBookings.card.requestedStaff', 'Requested staff')}: {requestedStaffName(pendingRequest)}
-                </p>
-
-                <p className="small muted">
-                  {t('myBookings.card.requestedDuration', 'Requested duration')}: {pendingRequest.requested_duration_minutes} {t('common.minutes', 'minutes')}
-                </p>
+                <span>
+                  <b>
+                    {t("myBookings.card.requestedStaff", "Requested staff")}
+                  </b>
+                  {requestedStaffName(pendingRequest)}
+                </span>
+                <span>
+                  <b>
+                    {t(
+                      "myBookings.card.requestedDuration",
+                      "Requested duration",
+                    )}
+                  </b>
+                  {pendingRequest.requested_duration_minutes}{" "}
+                  {t("common.minutes", "minutes")}
+                </span>
               </div>
-
-              <p className="small muted" style={{ marginTop: '0.75rem' }}>
-                {t('myBookings.card.changeHint', 'The business can accept or decline this request. Until then, the original confirmed appointment time above remains active.')}
-              </p>
             </div>
           )}
         </div>
 
         <div className="my-booking-card-actions">
-          {booking.status === 'pending' && (
-            <button onClick={() => onCancel(booking)} className="btn btn-danger" disabled={isWorking}>
-              {isWorking ? t('common.working', 'Working...') : t('myBookings.card.cancelRequest', 'Cancel request')}
+          {booking.status === "pending" && (
+            <button
+              onClick={() => onCancel(booking)}
+              className="btn btn-danger"
+              disabled={isWorking}
+            >
+              {isWorking
+                ? t("common.working", "Working...")
+                : t("myBookings.card.cancelRequest", "Cancel request")}
             </button>
           )}
 
-          {booking.status === 'confirmed' && mode !== 'history' && (
+          {booking.status === "confirmed" && mode !== "history" && (
             <>
               {pendingRequest ? (
                 <span className="small muted">
-                  {t('myBookings.card.pendingRequestTitle', 'The business needs to approve your latest requested time before you can request another change.')}
+                  {t(
+                    "myBookings.card.originalStillConfirmed",
+                    "Original time still confirmed",
+                  )}
                 </span>
               ) : (
-                <Link href={`/reschedule-booking?id=${booking.id}`} className="btn btn-ghost">
-                  {t('myBookings.card.reschedule', 'Reschedule')}
+                <Link
+                  href={`/reschedule-booking?id=${booking.id}`}
+                  className="btn btn-ghost"
+                >
+                  {t("myBookings.card.reschedule", "Reschedule")}
                 </Link>
               )}
 
-              <button onClick={() => onCancel(booking)} className="btn btn-danger" disabled={isWorking}>
-                {isWorking ? t('common.working', 'Working...') : t('myBookings.card.cancelBooking', 'Cancel booking')}
+              <button
+                onClick={() => onCancel(booking)}
+                className="btn btn-danger"
+                disabled={isWorking}
+              >
+                {isWorking
+                  ? t("common.working", "Working...")
+                  : t("myBookings.card.cancelBooking", "Cancel booking")}
               </button>
             </>
           )}
 
-          {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'declined' || mode === 'history') && booking.status !== 'pending' && (
-            <div className="card my-booking-locked-card">
-              <p className="small" style={{ color: statusColor(booking.status) }}>
-                {booking.status === 'completed'
-                  ? t('myBookings.card.lockedCompleted', 'Locked completed record')
-                  : booking.status === 'cancelled'
-                    ? t('myBookings.card.lockedCancelled', 'Locked cancelled record')
-                    : booking.status === 'declined'
-                      ? t('myBookings.card.lockedDeclined', 'Locked declined request')
-                    : t('myBookings.card.pastRecord', 'Past appointment record')}
+          {(booking.status === "completed" ||
+            booking.status === "cancelled" ||
+            booking.status === "declined" ||
+            mode === "history") &&
+            booking.status !== "pending" && (
+              <p className="small muted my-booking-locked-note">
+                {t(
+                  "myBookings.card.lockedBody",
+                  "This booking can no longer be rescheduled or cancelled.",
+                )}
               </p>
-              <p className="small muted" style={{ marginTop: '0.3rem' }}>
-                {t('myBookings.card.lockedBody', 'This booking can no longer be rescheduled or cancelled.')}
-              </p>
-            </div>
-          )}
+            )}
         </div>
       </div>
 
       <style jsx>{`
-        .my-booking-pill-success {
-          background: rgba(45,212,191,0.12);
-          color: var(--success);
+        .my-booking-card {
+          padding: 1rem;
+        }
+
+        .my-booking-card-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+
+        .my-booking-card-main {
+          flex: 1;
+          min-width: 0;
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .my-booking-card-head {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: flex-start;
+        }
+
+        .my-booking-card-head h3,
+        .my-booking-card-head strong,
+        .my-booking-lifecycle-copy,
+        .my-booking-appointment-strip p,
+        .my-booking-inline-note,
+        .my-booking-locked-note {
+          margin: 0;
+        }
+
+        .my-booking-card-head h3 {
+          margin-top: 0.15rem;
+          font-family: var(--font-display);
+        }
+
+        .my-booking-status-pill,
+        .my-booking-pill-accent {
           padding: 0.2rem 0.55rem;
           border-radius: 999px;
+          white-space: nowrap;
+        }
+
+        .my-booking-lifecycle-copy {
+          max-width: 46rem;
+        }
+
+        .my-booking-appointment-strip {
+          display: grid;
+          gap: 0.75rem;
+          padding: 0.8rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+        }
+
+        .my-booking-meta-grid,
+        .my-booking-requested-time-box {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.55rem;
+        }
+
+        .my-booking-meta-grid span,
+        .my-booking-requested-time-box span {
+          display: grid;
+          gap: 0.15rem;
+          min-width: 0;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        .my-booking-meta-grid b,
+        .my-booking-requested-time-box b {
+          color: var(--text);
+          font-size: 0.72rem;
+          font-weight: 800;
+        }
+
+        .my-booking-inline-note {
+          color: var(--accent);
+        }
+
+        .my-booking-pending-change-card {
+          padding: 0.85rem;
+          border: 1px solid rgba(255, 107, 53, 0.32);
+          border-radius: var(--radius);
+          background: rgba(255, 107, 53, 0.07);
+        }
+
+        .my-booking-pill-accent {
+          background: rgba(255, 107, 53, 0.14);
+          color: var(--accent);
+        }
+
+        .my-booking-card-actions {
+          display: flex;
+          gap: 0.65rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          align-items: flex-start;
+          max-width: 18rem;
+        }
+
+        .my-booking-locked-note {
+          max-width: 14rem;
+        }
+
+        @media (max-width: 760px) {
+          .my-booking-card-row,
+          .my-booking-card-head,
+          .my-booking-card-actions {
+            display: grid;
+          }
+
+          .my-booking-card-actions {
+            max-width: none;
+            width: 100%;
+          }
+
+          .my-booking-card-actions :global(.btn),
+          .my-booking-card-actions button,
+          .my-booking-card-actions a {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .my-booking-meta-grid,
+          .my-booking-requested-time-box {
+            grid-template-columns: 1fr;
+          }
+
+          .my-booking-status-pill {
+            justify-self: start;
+          }
         }
       `}</style>
     </div>
-  )
+  );
 }

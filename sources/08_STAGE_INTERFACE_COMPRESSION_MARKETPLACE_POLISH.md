@@ -523,3 +523,25 @@ Stage 8.19 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.20 Real Data Account State Compression Implemented
+
+- compressed customer booking cards for real booking states so service,
+  business, status, appointment time, staff, duration and price read as one
+  appointment record instead of several repeated explanation blocks
+- replaced the customer booking count cards with a compact status strip while
+  preserving jump behavior to Request sent, Upcoming, Change requests and
+  History sections
+- tightened customer notification cards so read/unread state, title, message,
+  date and actions scan in one compact row
+- removed duplicate staff Today shortcut cards that repeated the Staff nav
+  destinations and made the assigned-services summary a smaller context block
+- rebuilt staff calendar appointment cards into schedule-style rows with time
+  first, customer/service second and actions last
+- kept cancel/reschedule/mark-complete/read actions, destinations and status
+  wording unchanged
+
+Stage 8.20 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
