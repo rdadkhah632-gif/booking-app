@@ -449,3 +449,23 @@ Stage 8.15 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.16 Customer Booking Conversion Compression Implemented
+
+- visually reviewed the public/customer booking path before editing, with
+  emphasis on the mobile public business booking page
+- compressed the public booking summary into a progressive panel: before a
+  customer chooses a service/time, it now shows only the next booking action
+  instead of account prompts, forms, policies and repeated status text
+- revealed sign-in/customer-role guidance, customer details and booking policies
+  only after an appointment slot has been selected
+- removed repeated step/helper copy from the public staff and time selection
+  cards so customers reach the actual choices faster
+- made the booking summary styling apply correctly across the child component
+  boundary and tightened the mobile form/policy spacing
+- updated English and Albanian translation keys for the touched visible copy
+
+Stage 8.16 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

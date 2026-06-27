@@ -442,8 +442,14 @@ export const sq: TranslationTree = {
     "Nuk ka staf aktiv të caktuar te ky shërbim. Zgjidh një shërbim tjetër ose kontakto biznesin.",
   "publicBusiness.summary.title": "Përmbledhja e rezervimit",
   "publicBusiness.summary.nextStep": "Pas dërgimit",
+  "publicBusiness.summary.reviewTitle": "Rishiko dhe rezervo",
+  "publicBusiness.summary.pickAppointmentTitle": "Zgjidh shërbim dhe orar",
+  "publicBusiness.summary.pickAppointmentBody":
+    "Zgjidh një orar takimi, pastaj shto të dhënat për të rezervuar.",
   "publicBusiness.summary.chooseService": "Zgjidh një shërbim",
   "publicBusiness.summary.chooseTime": "Zgjidh një orar",
+  "publicBusiness.summary.chooseTimeNext": "Tani zgjidh një orar të lirë.",
+  "publicBusiness.summary.customerDetails": "Të dhënat e tua",
   "publicBusiness.summary.loginRequired": "Kërkohet hyrja",
   "publicBusiness.summary.signIn": "Hyr për të vazhduar",
   "publicBusiness.summary.signInBody":

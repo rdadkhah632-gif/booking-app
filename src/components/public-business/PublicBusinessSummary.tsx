@@ -61,72 +61,91 @@ export default function PublicBusinessSummary({
   const blockedByRole = Boolean(
     customerUserId && userRole && userRole !== "customer",
   );
+  const hasSelectedService = Boolean(selectedService);
+  const hasAppointmentSelection = Boolean(selectedService && selectedSlot);
 
   return (
     <aside className="card booking-summary-panel">
-      <div>
+      <div className="booking-summary-heading">
         <p className="small muted">
           {t("publicBusiness.summary.title", "Booking summary")}
         </p>
         <h2 style={{ fontFamily: "var(--font-display)" }}>
-          {bookingModeText()}
+          {hasAppointmentSelection
+            ? t("publicBusiness.summary.reviewTitle", "Review and book")
+            : hasSelectedService
+              ? t("publicBusiness.summary.chooseTime", "Choose a time")
+              : t(
+                  "publicBusiness.summary.pickAppointmentTitle",
+                  "Choose service and time",
+                )}
         </h2>
-        <p className="small muted" style={{ marginTop: "0.35rem" }}>
-          {bookingModeDescription()}
-        </p>
-      </div>
-
-      <div className="public-business-summary-box">
-        <p className="small muted">{t("common.business", "Business")}</p>
-        <strong>{business.name}</strong>
-
-        <p className="small muted" style={{ marginTop: "0.75rem" }}>
-          {t("common.service", "Service")}
-        </p>
-        <strong>
-          {selectedService
-            ? selectedService.name
-            : t("publicBusiness.summary.chooseService", "Choose a service")}
-        </strong>
-
-        {selectedService && (
-          <p className="small muted" style={{ marginTop: "0.25rem" }}>
-            {selectedService.duration_minutes} {t("common.minutes", "minutes")}
-            {Number(selectedService.price || 0) > 0
-              ? ` · ${formatServicePrice(selectedService.price)}`
-              : ""}
+        {!hasAppointmentSelection && (
+          <p className="small muted" style={{ marginTop: "0.35rem" }}>
+            {t(
+              "publicBusiness.summary.pickAppointmentBody",
+              "Pick an appointment slot, then add your details to book.",
+            )}
           </p>
         )}
-
-        <p className="small muted" style={{ marginTop: "0.75rem" }}>
-          {t("common.staff", "Staff")}
-        </p>
-        <strong>{selectedStaffSummary()}</strong>
-
-        <p className="small muted" style={{ marginTop: "0.75rem" }}>
-          {t("common.time", "Time")}
-        </p>
-        <strong>
-          {selectedSlot
-            ? selectedDateLabel ||
-              new Date(selectedSlot.startAt).toLocaleString()
-            : t("publicBusiness.summary.chooseTime", "Choose a time")}
-        </strong>
-
-        <p className="small muted" style={{ marginTop: "0.75rem" }}>
-          {business.auto_accept_bookings === false
-            ? t(
-                "publicBusiness.summary.requestNotice",
-                "The business will review and confirm your request.",
-              )
-            : t(
-                "publicBusiness.summary.instantNotice",
-                "Your booking will be confirmed immediately after you submit.",
-              )}
-        </p>
       </div>
 
-      {!customerUserId && (
+      <div className="public-business-summary-box booking-summary-details">
+        <div className="booking-summary-detail-row">
+          <span className="small muted">{t("common.service", "Service")}</span>
+          <strong>
+            {selectedService
+              ? selectedService.name
+              : t("publicBusiness.summary.chooseService", "Choose a service")}
+          </strong>
+          {selectedService && (
+            <span className="small muted">
+              {selectedService.duration_minutes}{" "}
+              {t("common.minutes", "minutes")}
+              {Number(selectedService.price || 0) > 0
+                ? ` · ${formatServicePrice(selectedService.price)}`
+                : ""}
+            </span>
+          )}
+        </div>
+
+        <div className="booking-summary-detail-row">
+          <span className="small muted">{t("common.time", "Time")}</span>
+          <strong>
+            {selectedSlot
+              ? selectedDateLabel ||
+                new Date(selectedSlot.startAt).toLocaleString()
+              : t("publicBusiness.summary.chooseTime", "Choose a time")}
+          </strong>
+        </div>
+
+        {hasAppointmentSelection && (
+          <div className="booking-summary-detail-row">
+            <span className="small muted">{t("common.staff", "Staff")}</span>
+            <strong>{selectedStaffSummary()}</strong>
+          </div>
+        )}
+
+        {hasSelectedService && !hasAppointmentSelection && (
+          <p className="small muted booking-summary-next-line">
+            {t(
+              "publicBusiness.summary.chooseTimeNext",
+              "Now choose an available time.",
+            )}
+          </p>
+        )}
+      </div>
+
+      {hasAppointmentSelection && (
+        <div className="booking-summary-mode-row">
+          <span className="small public-business-pill-accent">
+            {bookingModeText()}
+          </span>
+          <p className="small muted">{bookingModeDescription()}</p>
+        </div>
+      )}
+
+      {hasAppointmentSelection && !customerUserId && (
         <div
           className="public-business-summary-box"
           style={{
@@ -157,7 +176,7 @@ export default function PublicBusinessSummary({
         </div>
       )}
 
-      {blockedByRole && (
+      {hasAppointmentSelection && blockedByRole && (
         <div
           className="public-business-summary-box"
           style={{
@@ -217,108 +236,122 @@ export default function PublicBusinessSummary({
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="public-business-form">
-        <label className="small muted">
-          {t("common.name", "Name")}
-          <input
-            value={customerName}
-            onChange={(e) => onCustomerNameChange(e.target.value)}
-            placeholder={t(
-              "publicBusiness.summary.namePlaceholder",
-              "Your name",
-            )}
-            style={{ marginTop: "0.35rem" }}
-          />
-        </label>
-
-        <label className="small muted">
-          {t("common.email", "Email")}
-          <input
-            value={customerEmail}
-            onChange={(e) => onCustomerEmailChange(e.target.value)}
-            placeholder={t(
-              "publicBusiness.summary.emailPlaceholder",
-              "Your email",
-            )}
-            style={{ marginTop: "0.35rem" }}
-          />
-        </label>
-
-        <label className="small muted">
-          {t("common.phone", "Phone")}
-          <input
-            value={customerPhone}
-            onChange={(e) => onCustomerPhoneChange(e.target.value)}
-            placeholder={t(
-              "publicBusiness.summary.phonePlaceholder",
-              "Phone number",
-            )}
-            style={{ marginTop: "0.35rem" }}
-          />
-        </label>
-
-        <label className="small muted">
-          {t("common.notes", "Notes")}
-          <textarea
-            value={customerNotes}
-            onChange={(e) => onCustomerNotesChange(e.target.value)}
-            placeholder={t(
-              "publicBusiness.summary.notesPlaceholder",
-              "Anything the business should know?",
-            )}
-            rows={4}
-            style={{ marginTop: "0.35rem" }}
-          />
-        </label>
-
-        {error && (
-          <div
-            className="card"
-            style={{
-              borderColor: "rgba(255,77,109,0.35)",
-              background: "rgba(255,77,109,0.05)",
-              padding: "0.85rem",
-            }}
-          >
-            <p className="small" style={{ color: "var(--danger)" }}>
-              {error}
-            </p>
-          </div>
-        )}
-
-        <button
-          type="submit"
-          className="btn btn-accent"
-          disabled={submitting || !canSubmit}
-        >
-          {submitting
-            ? t("common.working", "Working...")
-            : business.auto_accept_bookings === false
-              ? t("publicBusiness.summary.sendRequest", "Send booking request")
-              : t(
-                  "publicBusiness.summary.confirmAppointment",
-                  "Confirm booking",
-                )}
-        </button>
-      </form>
-
-      <div className="public-business-summary-box">
-        <p className="small muted">
-          {t("publicBusiness.summary.policies", "Booking policies")}
-        </p>
-        <p className="small muted" style={{ marginTop: "0.25rem" }}>
-          {reschedulePolicyText()}
-        </p>
-        {business.cancellation_policy && (
-          <p className="small muted" style={{ marginTop: "0.45rem" }}>
-            {business.cancellation_policy}
+      {hasAppointmentSelection && customerUserId && !blockedByRole && (
+        <form onSubmit={onSubmit} className="public-business-form">
+          <p className="small muted">
+            {t("publicBusiness.summary.customerDetails", "Your details")}
           </p>
-        )}
-      </div>
 
-      <Link href="/support/customer" className="small muted">
-        {t("common.needHelp", "Need help?")}
-      </Link>
+          <label className="small muted">
+            {t("common.name", "Name")}
+            <input
+              value={customerName}
+              onChange={(e) => onCustomerNameChange(e.target.value)}
+              placeholder={t(
+                "publicBusiness.summary.namePlaceholder",
+                "Your name",
+              )}
+              style={{ marginTop: "0.35rem" }}
+            />
+          </label>
+
+          <label className="small muted">
+            {t("common.email", "Email")}
+            <input
+              value={customerEmail}
+              onChange={(e) => onCustomerEmailChange(e.target.value)}
+              placeholder={t(
+                "publicBusiness.summary.emailPlaceholder",
+                "Your email",
+              )}
+              style={{ marginTop: "0.35rem" }}
+            />
+          </label>
+
+          <label className="small muted">
+            {t("common.phone", "Phone")}
+            <input
+              value={customerPhone}
+              onChange={(e) => onCustomerPhoneChange(e.target.value)}
+              placeholder={t(
+                "publicBusiness.summary.phonePlaceholder",
+                "Phone number",
+              )}
+              style={{ marginTop: "0.35rem" }}
+            />
+          </label>
+
+          <label className="small muted">
+            {t("common.notes", "Notes")}
+            <textarea
+              value={customerNotes}
+              onChange={(e) => onCustomerNotesChange(e.target.value)}
+              placeholder={t(
+                "publicBusiness.summary.notesPlaceholder",
+                "Anything the business should know?",
+              )}
+              rows={3}
+              style={{ marginTop: "0.35rem" }}
+            />
+          </label>
+
+          {error && (
+            <div
+              className="card"
+              style={{
+                borderColor: "rgba(255,77,109,0.35)",
+                background: "rgba(255,77,109,0.05)",
+                padding: "0.85rem",
+              }}
+            >
+              <p className="small" style={{ color: "var(--danger)" }}>
+                {error}
+              </p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="btn btn-accent"
+            disabled={submitting || !canSubmit}
+          >
+            {submitting
+              ? t("common.working", "Working...")
+              : business.auto_accept_bookings === false
+                ? t(
+                    "publicBusiness.summary.sendRequest",
+                    "Send booking request",
+                  )
+                : t(
+                    "publicBusiness.summary.confirmAppointment",
+                    "Confirm booking",
+                  )}
+          </button>
+        </form>
+      )}
+
+      {hasAppointmentSelection && (
+        <details className="booking-summary-policies">
+          <summary className="small muted">
+            {t("publicBusiness.summary.policies", "Booking policies")}
+          </summary>
+          <p className="small muted" style={{ marginTop: "0.6rem" }}>
+            {reschedulePolicyText()}
+          </p>
+          {business.cancellation_policy && (
+            <p className="small muted" style={{ marginTop: "0.45rem" }}>
+              {business.cancellation_policy}
+            </p>
+          )}
+        </details>
+      )}
+
+      <div className="booking-summary-meta-links">
+        <span className="small muted">{business.name}</span>
+        <Link href="/support/customer" className="small muted">
+          {t("common.needHelp", "Need help?")}
+        </Link>
+      </div>
     </aside>
   );
 }

@@ -1501,14 +1501,14 @@ export default function BusinessBookingPage() {
           padding: 24px 24px 64px;
         }
 
-        .booking-action-row {
+        :global(.booking-action-row) {
           display: flex;
           gap: 0.75rem;
           margin-top: 1rem;
           flex-wrap: wrap;
         }
 
-        .booking-action-row.compact {
+        :global(.booking-action-row.compact) {
           gap: 0.5rem;
           margin-top: 0.75rem;
         }
@@ -1664,12 +1664,71 @@ export default function BusinessBookingPage() {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 0.85rem;
+          padding: 0.8rem;
         }
 
         :global(.public-business-form) {
           display: grid;
+          gap: 0.65rem;
+        }
+
+        :global(.booking-summary-panel) {
+          position: sticky;
+          top: 96px;
+          display: grid;
           gap: 0.75rem;
+          min-width: 0;
+        }
+
+        :global(.booking-summary-heading h2) {
+          font-size: 1.35rem;
+          line-height: 1.08;
+        }
+
+        :global(.booking-summary-details) {
+          display: grid;
+          gap: 0.65rem;
+        }
+
+        :global(.booking-summary-detail-row) {
+          display: grid;
+          gap: 0.18rem;
+        }
+
+        :global(.booking-summary-detail-row strong) {
+          overflow-wrap: anywhere;
+        }
+
+        :global(.booking-summary-next-line) {
+          border-top: 1px solid var(--border);
+          padding-top: 0.65rem;
+        }
+
+        :global(.booking-summary-mode-row) {
+          display: grid;
+          gap: 0.4rem;
+        }
+
+        :global(.booking-summary-mode-row .public-business-pill-accent) {
+          width: fit-content;
+        }
+
+        :global(.booking-summary-policies) {
+          border-top: 1px solid var(--border);
+          padding-top: 0.2rem;
+        }
+
+        :global(.booking-summary-policies summary) {
+          cursor: pointer;
+          width: fit-content;
+        }
+
+        :global(.booking-summary-meta-links) {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          flex-wrap: wrap;
         }
 
         .booking-section-heading {
@@ -1688,11 +1747,6 @@ export default function BusinessBookingPage() {
           margin-top: 1rem;
         }
 
-        .booking-summary-panel {
-          position: sticky;
-          top: 96px;
-        }
-
         .booking-time-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
@@ -1705,12 +1759,12 @@ export default function BusinessBookingPage() {
             grid-template-columns: 1fr;
           }
 
-          .booking-summary-panel {
+          :global(.booking-summary-panel) {
             position: static;
           }
 
           .booking-page-grid > section,
-          .booking-summary-panel {
+          :global(.booking-summary-panel) {
             min-width: 0;
             max-width: 100%;
           }
@@ -1792,22 +1846,22 @@ export default function BusinessBookingPage() {
             padding-inline: 0.6rem;
           }
 
-          .booking-action-row,
+          :global(.booking-action-row),
           .booking-section-heading {
             display: grid;
           }
 
-          .booking-action-row :global(.btn),
-          .booking-action-row a,
-          .booking-action-row button {
+          :global(.booking-action-row .btn),
+          :global(.booking-action-row a),
+          :global(.booking-action-row button) {
             width: 100%;
             justify-content: center;
           }
 
-          .booking-summary-panel input,
-          .booking-summary-panel textarea,
-          .booking-summary-panel select,
-          .booking-summary-panel .btn {
+          :global(.booking-summary-panel input),
+          :global(.booking-summary-panel textarea),
+          :global(.booking-summary-panel select),
+          :global(.booking-summary-panel .btn) {
             width: 100%;
             min-width: 0;
           }
