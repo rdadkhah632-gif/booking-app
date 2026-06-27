@@ -53,8 +53,7 @@ export const sq: TranslationTree = {
   "staffAvailability.day.closed": "Mbyllur",
   "staffAvailability.day.start": "Fillimi",
   "staffAvailability.day.end": "Mbarimi",
-  "staffAvailability.day.closedBody":
-    "Klientët nuk mund të të rezervojnë këtë ditë, përveç nëse biznesi riorganizon manualisht një takim ekzistues.",
+  "staffAvailability.day.closedBody": "Mbyllur për klientët.",
   "calendar.days.0": "E diel",
   "calendar.days.1": "E hënë",
   "calendar.days.2": "E martë",

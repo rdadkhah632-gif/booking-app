@@ -526,15 +526,16 @@ export default function DashboardBillingPage() {
         .billing-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 1rem;
+          gap: 0.8rem;
         }
 
         .membership-summary-card {
           display: grid;
           grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
-          gap: 1rem;
+          gap: 0.85rem;
           align-items: center;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1rem;
+          padding: 1rem;
         }
 
         .membership-summary-card h2,
@@ -544,14 +545,14 @@ export default function DashboardBillingPage() {
 
         .membership-summary-details {
           display: grid;
-          gap: 0.7rem;
+          gap: 0.5rem;
         }
 
         .membership-summary-details div {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
-          padding: 0.75rem;
+          padding: 0.6rem 0.7rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
@@ -560,16 +561,22 @@ export default function DashboardBillingPage() {
         .billing-date-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 1rem;
-          margin-top: 1rem;
+          gap: 0.75rem;
+          margin-top: 0.75rem;
         }
 
         .billing-feature-list {
           display: grid;
-          gap: 0.7rem;
-          margin: 1rem 0 0;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 0.45rem 1rem;
+          margin: 0.75rem 0 0;
           padding-left: 1.2rem;
           color: var(--muted);
+          font-size: 0.9rem;
+        }
+
+        .billing-grid :global(.card) {
+          padding: 1rem;
         }
 
         @media (max-width: 760px) {
@@ -585,8 +592,13 @@ export default function DashboardBillingPage() {
             grid-template-columns: 1fr;
           }
 
+          .membership-summary-details {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
           .membership-summary-details div {
             display: grid;
+            gap: 0.2rem;
           }
         }
       `}</style>

@@ -51,7 +51,6 @@ export default function DashboardLayout({
       setHasBusinessWorkspace(capabilities.canUseBusiness);
       setAccountLabel(
         session.user.user_metadata?.full_name ||
-          session.user.email?.split("@")[0] ||
           t("dashboardLayout.account.fallback", "Account"),
       );
       setWorkspaceLabel(
@@ -599,18 +598,18 @@ export default function DashboardLayout({
             top: 0;
             z-index: 35;
             overflow: hidden;
-            padding: 0.75rem;
+            padding: 0.65rem;
           }
 
           .sidebar-logo {
-            margin-bottom: 0.5rem;
-            padding: 0 0.25rem 0.55rem;
+            margin-bottom: 0.35rem;
+            padding: 0 0.2rem 0.45rem;
           }
 
           .sidebar-nav {
             display: grid;
             min-height: 0;
-            gap: 0.55rem;
+            gap: 0.45rem;
             overflow: visible;
             padding-bottom: 0;
           }
@@ -622,9 +621,10 @@ export default function DashboardLayout({
           .sidebar-main-links,
           .sidebar-account-actions {
             display: flex;
-            gap: 0.45rem;
-            overflow: visible;
-            flex-wrap: wrap;
+            gap: 0.35rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
           }
@@ -648,8 +648,8 @@ export default function DashboardLayout({
 
           .sidebar-account-actions a,
           .sidebar-account-actions button {
-            min-height: 2.2rem;
-            padding: 0.5rem 0.7rem;
+            min-height: 2rem;
+            padding: 0.42rem 0.62rem;
             flex: 0 0 auto;
             white-space: nowrap;
             border: 1px solid var(--border);
@@ -665,7 +665,7 @@ export default function DashboardLayout({
           .sidebar-link,
           .sidebar-logout {
             width: auto;
-            min-height: 2.2rem;
+            min-height: 2rem;
             display: inline-flex;
             align-items: center;
             flex: 0 0 auto;
@@ -673,7 +673,7 @@ export default function DashboardLayout({
             border-left: 0;
             border-bottom: 0;
             border-radius: 999px;
-            padding: 0.5rem 0.7rem;
+            padding: 0.42rem 0.62rem;
           }
 
           .sidebar-link.active,

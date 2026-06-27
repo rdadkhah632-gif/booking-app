@@ -269,27 +269,19 @@ export default function StaffCalendarPage() {
   }
 
   return (
-    <DashboardLayout workspace="staff">
+    <DashboardLayout
+      workspace="staff"
+      title={t("staffCalendar.title", "Calendar")}
+      subtitle={
+        staffProfile
+          ? staffBusinessName(
+              staffProfile,
+              t("staff.fallback.business", "Your business"),
+            )
+          : undefined
+      }
+    >
       <section className="staff-workspace-page">
-        <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
-          <div>
-            <h1 className="page-title">
-              {t("staffCalendar.title", "Calendar")}
-            </h1>
-            <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-              {staffProfile
-                ? staffBusinessName(
-                    staffProfile,
-                    t("staff.fallback.business", "Your business"),
-                  )
-                : t(
-                    "staffCalendar.body",
-                    "Look ahead across your assigned bookings and plan your working days.",
-                  )}
-            </p>
-          </div>
-        </div>
-
         {loading && (
           <div className="card">
             <p className="muted">

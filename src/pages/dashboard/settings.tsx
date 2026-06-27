@@ -276,14 +276,15 @@ export default function DashboardSettingsPage() {
 
         .settings-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 1rem;
+          grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+          gap: 0.8rem;
         }
 
         :global(.settings-card) {
           display: grid;
-          gap: 1rem;
+          gap: 0.7rem;
           align-content: start;
+          padding: 0.95rem;
         }
 
         :global(.settings-card h2),
@@ -291,10 +292,19 @@ export default function DashboardSettingsPage() {
           margin-bottom: 0;
         }
 
+        :global(.settings-card h2) {
+          font-size: 1.05rem;
+          line-height: 1.2;
+        }
+
+        :global(.settings-card .small) {
+          line-height: 1.35;
+        }
+
         :global(.settings-two-column) {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         :global(.settings-approval-card) {
@@ -312,8 +322,8 @@ export default function DashboardSettingsPage() {
         }
 
         :global(.settings-card select) {
-          min-height: 2.75rem;
-          padding: 0.65rem 0.75rem;
+          min-height: 2.45rem;
+          padding: 0.5rem 0.65rem;
         }
 
         @media (max-width: 640px) {

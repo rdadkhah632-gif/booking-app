@@ -2341,8 +2341,7 @@ export const en: TranslationTree = {
   "staffAvailability.day.closed": "Closed",
   "staffAvailability.day.start": "Start",
   "staffAvailability.day.end": "End",
-  "staffAvailability.day.closedBody":
-    "Customers cannot book you on this day unless the business reschedules an existing appointment manually.",
+  "staffAvailability.day.closedBody": "Closed to customers.",
   "staffAvailability.error.invalidTime":
     "Each open day needs a valid start and end time. End time must be after start time.",
   "staffAvailability.error.load": "Could not load staff availability.",

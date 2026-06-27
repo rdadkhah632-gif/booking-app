@@ -693,19 +693,16 @@ export default function Businesses() {
               </span>
               <div>
                 <h2>
+                  {nextSetupStep
+                    ? `${t("dashboardBusinesses.setup.nextInline", "Next")}: ${nextSetupStep.label}`
+                    : setupStatus}
+                </h2>
+                <p className="muted">
                   {primaryBusiness.name ||
                     t(
                       "dashboardBusinesses.untitledBusiness",
                       "Untitled business",
                     )}
-                </h2>
-                <p className="muted">
-                  {nextSetupStep
-                    ? `${t("dashboardBusinesses.setup.nextInline", "Next")}: ${nextSetupStep.label}`
-                    : t(
-                        "dashboardBusinesses.setup.completeBody",
-                        "Your booking setup is ready.",
-                      )}
                 </p>
               </div>
             </div>

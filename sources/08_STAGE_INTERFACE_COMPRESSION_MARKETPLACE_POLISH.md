@@ -426,3 +426,26 @@ Remaining follow-up:
 - build the richer manual booking invite/account-sync flow so an entered
   customer email can attach to an existing Mirëbook customer account where safe,
   or receive a join/view-booking invitation when no account exists.
+
+## Stage 8.15 Authenticated Workspace Compression Implemented
+
+- tightened the shared business/staff sidebar so mobile account actions stay in
+  one compact horizontal row instead of taking over the first viewport
+- stopped using long email prefixes as the visible account label when no full
+  name is available, keeping the account area calmer on test and production
+  accounts
+- removed duplicate staff page hero cards from Today, Calendar, Working hours
+  and Inbox so the shared page header carries the title once
+- compressed Staff Working hours with tighter templates, day cards and closed
+  day copy while leaving availability save behavior unchanged
+- compacted Booking rules cards and controls so owners reach the actual
+  settings faster without changing any setting values or persistence
+- compacted Membership status/details so it reads as a secondary account
+  surface rather than a billing implementation screen
+- made the Setup status panel focus on the next setup step while leaving the
+  business name in the customer preview where it belongs
+
+Stage 8.15 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

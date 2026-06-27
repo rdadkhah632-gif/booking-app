@@ -363,15 +363,6 @@ export default function StaffDashboardPage() {
     staffProfile?.permission_role ||
     t("staff.fallback.member", "Staff member");
 
-  const staffInitials =
-    staffProfile?.name
-      .split(" ")
-      .map((part) => part[0])
-      .filter(Boolean)
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "MB";
-
   if (loading) {
     return (
       <DashboardLayout workspace="staff">
@@ -390,7 +381,13 @@ export default function StaffDashboardPage() {
   }
 
   return (
-    <DashboardLayout workspace="staff">
+    <DashboardLayout
+      workspace="staff"
+      title={staffProfile ? t("staff.workspace.title", "Today") : undefined}
+      subtitle={
+        staffProfile ? `${staffBusinessLabel} · ${staffRoleLabel}` : undefined
+      }
+    >
       <section className="staff-workspace-page">
         {!staffProfile && (
           <div className="card staff-unlinked-card">
@@ -509,27 +506,6 @@ export default function StaffDashboardPage() {
 
         {staffProfile && (
           <>
-            <div className="staff-hero-card card">
-              <div className="staff-profile-row">
-                <div className="staff-avatar">
-                  {staffProfile.image_url ? (
-                    <img src={staffProfile.image_url} alt={staffProfile.name} />
-                  ) : (
-                    <span>{staffInitials}</span>
-                  )}
-                </div>
-
-                <div>
-                  <h1 className="page-title">
-                    {t("staff.workspace.title", "Today")}
-                  </h1>
-                  <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-                    {staffBusinessLabel} · {staffRoleLabel}
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {success && (
               <div
                 className="card"
@@ -557,9 +533,6 @@ export default function StaffDashboardPage() {
 
             <div className="card staff-today-card">
               <div>
-                <p className="small muted">
-                  {t("staff.home.todayKicker", "Today")}
-                </p>
                 <h2>
                   {todayBookings.length > 0
                     ? t(
@@ -717,49 +690,12 @@ export default function StaffDashboardPage() {
           border-top: 1px solid var(--border);
           color: var(--text-muted);
         }
-        .staff-hero-card {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          flex-wrap: wrap;
-          margin-bottom: 1.5rem;
-        }
-
-        .staff-profile-row {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-        }
-
-        .staff-avatar {
-          width: 72px;
-          height: 72px;
-          border-radius: 24px;
-          overflow: hidden;
-          background: var(--accent-dim);
-          border: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--accent);
-          font-weight: 900;
-          font-size: 1.1rem;
-          flex: 0 0 auto;
-        }
-
-        .staff-avatar img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
         .staff-today-card {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
           align-items: flex-start;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1rem;
           border-color: rgba(255, 107, 53, 0.24);
           background: linear-gradient(
             135deg,
@@ -794,14 +730,14 @@ export default function StaffDashboardPage() {
         .staff-quick-links {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 1rem;
-          margin-bottom: 1.5rem;
+          gap: 0.8rem;
+          margin-bottom: 1rem;
         }
 
         .staff-quick-link {
           display: grid;
           gap: 0.35rem;
-          padding: 1rem;
+          padding: 0.85rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           color: var(--text);
@@ -822,7 +758,7 @@ export default function StaffDashboardPage() {
         :global(.staff-quick-link) {
           display: grid;
           gap: 0.35rem;
-          padding: 1rem;
+          padding: 0.85rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           color: var(--text);
@@ -879,8 +815,6 @@ export default function StaffDashboardPage() {
         }
 
         @media (max-width: 620px) {
-          .staff-hero-card,
-          .staff-profile-row,
           .staff-today-card,
           .staff-service-summary {
             display: grid;

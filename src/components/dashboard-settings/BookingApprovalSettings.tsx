@@ -1,77 +1,87 @@
-import { useI18n } from '@/lib/useI18n'
-import { Business, UpdateBusinessSetting } from './dashboardSettingsTypes'
+import { useI18n } from "@/lib/useI18n";
+import { Business, UpdateBusinessSetting } from "./dashboardSettingsTypes";
 
 type Props = {
-  settings: Business
-  approvalModeLabel: string
-  updateSetting: UpdateBusinessSetting
-}
+  settings: Business;
+  approvalModeLabel: string;
+  updateSetting: UpdateBusinessSetting;
+};
 
 export default function BookingApprovalSettings({
   settings,
   approvalModeLabel,
-  updateSetting
+  updateSetting,
 }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   return (
     <div className="card settings-card settings-approval-card">
       <div>
         <p className="small muted">
-          {t('dashboardSettings.approval.kicker', 'Booking approval')}
+          {t("dashboardSettings.approval.kicker", "Booking approval")}
         </p>
 
-        <h2 style={{ fontFamily: 'var(--font-display)', marginTop: '0.25rem' }}>
-          {t('dashboardSettings.approval.title', 'Confirmation mode')}
+        <h2 style={{ fontFamily: "var(--font-display)", marginTop: "0.25rem" }}>
+          {t("dashboardSettings.approval.title", "Confirmation mode")}
         </h2>
-
-        <p className="muted small" style={{ marginTop: '0.35rem' }}>
-          {t('dashboardSettings.approval.body', 'Choose whether customers are confirmed instantly or whether each booking needs business approval first.')}
-        </p>
       </div>
 
       <div
         className="settings-mode-grid"
         role="radiogroup"
-        aria-label={t(
-          'dashboardSettings.approval.title',
-          'Confirmation mode'
-        )}
+        aria-label={t("dashboardSettings.approval.title", "Confirmation mode")}
       >
         <button
           type="button"
-          className={settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
-          onClick={() => updateSetting('auto_accept_bookings', true)}
+          className={
+            settings.auto_accept_bookings
+              ? "settings-mode-card settings-mode-card-active"
+              : "settings-mode-card"
+          }
+          onClick={() => updateSetting("auto_accept_bookings", true)}
           role="radio"
           aria-checked={Boolean(settings.auto_accept_bookings)}
         >
           <span className="settings-mode-title">
-            {t('dashboardSettings.approval.instantTitle', 'Instant confirmation')}
+            {t(
+              "dashboardSettings.approval.instantTitle",
+              "Instant confirmation",
+            )}
           </span>
           <span className="small muted">
-            {t('dashboardSettings.approval.instantBody', 'Customers get a confirmed booking as soon as they pick an available slot.')}
+            {t(
+              "dashboardSettings.approval.instantBody",
+              "Customers get a confirmed booking as soon as they pick an available slot.",
+            )}
           </span>
         </button>
 
         <button
           type="button"
-          className={!settings.auto_accept_bookings ? 'settings-mode-card settings-mode-card-active' : 'settings-mode-card'}
-          onClick={() => updateSetting('auto_accept_bookings', false)}
+          className={
+            !settings.auto_accept_bookings
+              ? "settings-mode-card settings-mode-card-active"
+              : "settings-mode-card"
+          }
+          onClick={() => updateSetting("auto_accept_bookings", false)}
           role="radio"
           aria-checked={!settings.auto_accept_bookings}
         >
           <span className="settings-mode-title">
-            {t('dashboardSettings.approval.manualTitle', 'Manual approval')}
+            {t("dashboardSettings.approval.manualTitle", "Manual approval")}
           </span>
           <span className="small muted">
-            {t('dashboardSettings.approval.manualBody', 'New bookings appear in Needs action until the business accepts or declines them.')}
+            {t(
+              "dashboardSettings.approval.manualBody",
+              "New bookings appear in Needs action until the business accepts or declines them.",
+            )}
           </span>
         </button>
       </div>
 
       <div className="settings-current-mode">
         <p className="small muted">
-          {t('dashboardSettings.approval.currentMode', 'Current mode')}
+          {t("dashboardSettings.approval.currentMode", "Current mode")}
         </p>
         <strong>{approvalModeLabel}</strong>
       </div>
@@ -80,14 +90,14 @@ export default function BookingApprovalSettings({
         .settings-mode-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.85rem;
+          gap: 0.65rem;
         }
 
         .settings-mode-card {
           display: grid;
-          gap: 0.55rem;
-          min-height: 7.5rem;
-          padding: 1rem;
+          gap: 0.35rem;
+          min-height: 0;
+          padding: 0.75rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
@@ -110,7 +120,7 @@ export default function BookingApprovalSettings({
 
         .settings-mode-title {
           color: var(--text);
-          font-size: 1rem;
+          font-size: 0.95rem;
           font-weight: 800;
         }
 
@@ -119,7 +129,7 @@ export default function BookingApprovalSettings({
           justify-content: space-between;
           gap: 1rem;
           align-items: center;
-          padding: 0.8rem 0;
+          padding: 0.6rem 0 0;
           border-top: 1px solid var(--border);
         }
 
@@ -129,10 +139,10 @@ export default function BookingApprovalSettings({
 
         @media (max-width: 640px) {
           .settings-mode-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
       `}</style>
     </div>
-  )
+  );
 }

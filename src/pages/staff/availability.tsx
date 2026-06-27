@@ -355,7 +355,20 @@ export default function StaffAvailabilityPage() {
   }
 
   return (
-    <DashboardLayout workspace="staff">
+    <DashboardLayout
+      workspace="staff"
+      title={
+        staffProfile ? t("staffAvailability.title", "Working hours") : undefined
+      }
+      subtitle={
+        staffProfile
+          ? businessName(
+              staffProfile,
+              t("staff.fallback.business", "Your business"),
+            )
+          : undefined
+      }
+    >
       <section className="staff-workspace-page">
         {!staffProfile && (
           <div className="card">
@@ -391,19 +404,6 @@ export default function StaffAvailabilityPage() {
 
         {staffProfile && (
           <>
-            <div className="staff-availability-hero card">
-              <div>
-                <h1 className="page-title">
-                  {t("staffAvailability.title", "Working hours")}
-                </h1>
-                <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-                  {businessName(
-                    staffProfile,
-                    t("staff.fallback.business", "Your business"),
-                  )}
-                </p>
-              </div>
-            </div>
             {error && (
               <div
                 className="card"
@@ -446,12 +446,16 @@ export default function StaffAvailabilityPage() {
 
             <div
               className="card staff-template-card"
-              style={{ marginBottom: "1.5rem" }}
+              style={{ marginBottom: "1rem" }}
             >
               <div className="staff-template-header">
                 <div>
                   <h2
-                    style={{ fontFamily: "var(--font-display)", marginTop: 0 }}
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontSize: "1rem",
+                      marginTop: 0,
+                    }}
                   >
                     {t("staffAvailability.templates.compactTitle", "Templates")}
                   </h2>
@@ -581,7 +585,7 @@ export default function StaffAvailabilityPage() {
                       <p className="muted small staff-closed-copy">
                         {t(
                           "staffAvailability.day.closedBody",
-                          "Customers cannot book you on this day unless the business reschedules an existing appointment manually.",
+                          "Closed to customers.",
                         )}
                       </p>
                     )}
@@ -613,18 +617,9 @@ export default function StaffAvailabilityPage() {
           min-width: 0;
         }
 
-        .staff-availability-hero {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
-          margin-bottom: 1.5rem;
-        }
-
         .staff-template-actions {
           display: flex;
-          gap: 0.75rem;
+          gap: 0.55rem;
           flex-wrap: wrap;
           justify-content: flex-end;
         }
@@ -650,10 +645,10 @@ export default function StaffAvailabilityPage() {
 
         .staff-availability-summary {
           display: flex;
-          gap: 1.25rem;
+          gap: 1rem;
           flex-wrap: wrap;
-          margin-bottom: 1.5rem;
-          padding: 0.85rem 0;
+          margin-bottom: 1rem;
+          padding: 0.7rem 0;
           border-top: 1px solid var(--border);
           border-bottom: 1px solid var(--border);
           color: var(--text-muted);
@@ -684,20 +679,20 @@ export default function StaffAvailabilityPage() {
         .staff-template-header {
           display: flex;
           justify-content: space-between;
-          gap: 1rem;
+          gap: 0.75rem;
           align-items: flex-start;
           flex-wrap: wrap;
         }
 
         .staff-availability-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 1rem;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 0.8rem;
         }
 
         .staff-day-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.7rem;
           align-content: start;
         }
 
@@ -742,15 +737,15 @@ export default function StaffAvailabilityPage() {
 
         .staff-time-editor {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .staff-time-range {
           display: inline-flex;
           align-items: center;
-          gap: 0.55rem;
+          gap: 0.45rem;
           width: fit-content;
-          padding: 0.45rem 0.7rem;
+          padding: 0.35rem 0.6rem;
           border-radius: 999px;
           border: 1px solid var(--border);
           background: var(--surface-2);
@@ -761,7 +756,7 @@ export default function StaffAvailabilityPage() {
         .staff-time-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .staff-time-grid input {
@@ -781,13 +776,13 @@ export default function StaffAvailabilityPage() {
         }
 
         @media (max-width: 620px) {
-          .staff-availability-hero,
           .staff-template-header {
             display: grid;
           }
 
           .staff-template-actions {
             display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 
           .staff-template-actions,
@@ -796,8 +791,8 @@ export default function StaffAvailabilityPage() {
             justify-content: center;
           }
 
-          .staff-time-grid {
-            grid-template-columns: 1fr;
+          .staff-template-actions :global(.btn:last-child) {
+            grid-column: 1 / -1;
           }
 
           .staff-day-card-header {

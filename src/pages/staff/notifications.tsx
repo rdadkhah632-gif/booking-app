@@ -270,31 +270,12 @@ export default function StaffNotificationsPage() {
   }
 
   return (
-    <DashboardLayout workspace="staff">
+    <DashboardLayout
+      workspace="staff"
+      title={t("staffNotifications.title", "Inbox")}
+      subtitle={t("staffNotifications.body", "Schedule and booking updates.")}
+    >
       <section className="staff-workspace-page">
-        <div className="page-header-row" style={{ marginBottom: "1.5rem" }}>
-          <div>
-            <h1 className="page-title">
-              {t("staffNotifications.title", "Inbox")}
-            </h1>
-            <p className="page-sub" style={{ marginTop: "0.5rem" }}>
-              {t("staffNotifications.body", "Schedule and booking updates.")}
-            </p>
-          </div>
-
-          {unreadCount > 0 && (
-            <div className="page-header-actions">
-              <button
-                type="button"
-                onClick={markAllRead}
-                className="btn btn-accent"
-              >
-                {`${t("staffNotifications.mark", "Mark")} ${unreadCount} ${t("staffNotifications.read", "read")}`}
-              </button>
-            </div>
-          )}
-        </div>
-
         {!loading && !error && (
           <div className="staff-notification-toolbar card">
             <div>
@@ -303,12 +284,6 @@ export default function StaffNotificationsPage() {
                   ? `${unreadCount} ${unreadCount === 1 ? t("staffNotifications.unreadSingle", "unread update") : t("staffNotifications.unreadPlural", "unread updates")}`
                   : t("staffNotifications.inboxClear", "Everything is read")}
               </strong>
-              <p className="small muted">
-                {t(
-                  "staffNotifications.inbox.body",
-                  "Booking and schedule updates appear here.",
-                )}
-              </p>
             </div>
 
             <div className="staff-notification-filters">
@@ -330,6 +305,15 @@ export default function StaffNotificationsPage() {
               >
                 {t("staffNotifications.filter.unread", "Unread")}
               </button>
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={markAllRead}
+                  className="btn btn-ghost"
+                >
+                  {`${t("staffNotifications.mark", "Mark")} ${unreadCount} ${t("staffNotifications.read", "read")}`}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -535,17 +519,11 @@ export default function StaffNotificationsPage() {
 
           .staff-notification-filters {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
           }
 
           .staff-notification-filters :global(.btn),
           .staff-notification-filters button {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .page-header-actions :global(.btn),
-          .page-header-actions button {
             width: 100%;
             justify-content: center;
           }
