@@ -578,6 +578,11 @@ export default function Businesses() {
             ? t("dashboardBusinesses.setup.statusPublish", "Ready to publish")
             : t("dashboardBusinesses.setup.statusNeeded", "Setup needed")
       : "";
+  const canPublishPrimaryBusiness = Boolean(
+    primaryBusiness &&
+    primaryReadiness?.bookingReady &&
+    !primaryBusiness.published,
+  );
 
   function shouldOpenProfileDetails(href: string) {
     return href === "#business-profile-details";
@@ -716,7 +721,18 @@ export default function Businesses() {
               >
                 {setupStatus}
               </span>
-              {nextSetupStep && (
+              {canPublishPrimaryBusiness && primaryBusiness ? (
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  onClick={() => togglePublished(primaryBusiness)}
+                  disabled={publishingBusinessId === primaryBusiness.id}
+                >
+                  {publishingBusinessId === primaryBusiness.id
+                    ? t("common.updating", "Updating...")
+                    : t("dashboardBusinesses.publish", "Publish to Mirëbook")}
+                </button>
+              ) : nextSetupStep ? (
                 <a
                   href={nextSetupStep.href}
                   className="btn btn-accent"
@@ -728,7 +744,7 @@ export default function Businesses() {
                 >
                   {nextSetupStep.action}
                 </a>
-              )}
+              ) : null}
             </div>
           </div>
 

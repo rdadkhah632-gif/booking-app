@@ -390,6 +390,8 @@ export const en: TranslationTree = {
   "publicBusiness.availability.subtitle":
     "Only available booking slots are shown.",
   "publicBusiness.availability.date": "Date",
+  "publicBusiness.availability.today": "Today",
+  "publicBusiness.availability.moreDates": "More dates",
   "publicBusiness.availability.loading": "Loading available slots...",
   "publicBusiness.availability.none":
     "No available slots for this date. Try another date or staff member.",

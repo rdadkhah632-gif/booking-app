@@ -545,3 +545,24 @@ Stage 8.20 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.21 Booking Flow Visual QA Fixes Implemented
+
+- visually tested the fresh business setup path with Browser using a throwaway
+  business account, service, staff member and working hours
+- surfaced the existing Publish to Mirëbook action in the visible Setup summary
+  when a business is ready but still hidden, instead of burying it inside the
+  expanded profile editor
+- added compact tappable date options to the public booking time picker so
+  customers can choose near-term appointment dates without relying on the native
+  mobile date input
+- kept the native date input as a secondary More dates fallback and added input
+  handling/labels for better browser and accessibility behavior
+- removed seconds from customer-facing confirmation and My bookings appointment
+  date/time displays after the live booking QA exposed the awkward default format
+- updated English and Albanian translation keys for the touched visible labels
+
+Stage 8.21 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

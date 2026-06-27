@@ -430,6 +430,8 @@ export const sq: TranslationTree = {
   "publicBusiness.availability.subtitle":
     "Shfaqen vetëm oraret e disponueshme për rezervim.",
   "publicBusiness.availability.date": "Data",
+  "publicBusiness.availability.today": "Sot",
+  "publicBusiness.availability.moreDates": "Më shumë data",
   "publicBusiness.availability.loading":
     "Duke ngarkuar oraret e disponueshme...",
   "publicBusiness.availability.none":

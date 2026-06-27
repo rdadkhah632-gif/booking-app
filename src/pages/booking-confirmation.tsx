@@ -239,6 +239,14 @@ export default function BookingConfirmation() {
     return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
   }
 
+  function appointmentDateTime() {
+    if (!booking) return "";
+    return new Date(booking.start_at).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }
+
   function businessLocation() {
     const business = businessRelation();
     return (
@@ -448,7 +456,7 @@ export default function BookingConfirmation() {
                           "Confirmed date and time",
                         )}
                   </p>
-                  <strong>{new Date(booking.start_at).toLocaleString()}</strong>
+                  <strong>{appointmentDateTime()}</strong>
                 </div>
 
                 <div>

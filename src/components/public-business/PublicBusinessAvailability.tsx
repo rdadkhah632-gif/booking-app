@@ -1,6 +1,12 @@
 import { TimeSlot } from "./publicBusinessTypes";
 import { useI18n } from "@/lib/useI18n";
 
+type DateOption = {
+  value: string;
+  weekday: string;
+  dateLabel: string;
+};
+
 type Props = {
   selectedServiceName?: string | null;
   selectedStaffLabel?: string | null;
@@ -27,6 +33,31 @@ export default function PublicBusinessAvailability({
   onSelectSlot,
 }: Props) {
   const { t } = useI18n();
+  const dateOptions = Array.from({ length: 10 }, (_, index): DateOption => {
+    const date = new Date();
+    date.setDate(date.getDate() + index);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return {
+      value: `${year}-${month}-${day}`,
+      weekday:
+        index === 0
+          ? t("publicBusiness.availability.today", "Today")
+          : date.toLocaleDateString(undefined, { weekday: "short" }),
+      dateLabel: date.toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+      }),
+    };
+  });
+
+  function handleDateValue(value: string) {
+    onDateChange(value);
+  }
+
   return (
     <div className="card">
       <div>
@@ -42,19 +73,45 @@ export default function PublicBusinessAvailability({
         )}
       </div>
 
-      <label
-        className="small muted"
-        style={{ display: "block", marginTop: "1rem" }}
-      >
-        {t("publicBusiness.availability.date", "Date")}
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => onDateChange(e.target.value)}
-          disabled={!canPickDate}
-          style={{ marginTop: "0.4rem" }}
-        />
-      </label>
+      <div className="public-business-date-picker">
+        <span className="small muted">
+          {t("publicBusiness.availability.date", "Date")}
+        </span>
+        <div className="public-business-date-strip">
+          {dateOptions.map((option) => {
+            const selected = selectedDate === option.value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                className={
+                  selected
+                    ? "public-business-date-option selected"
+                    : "public-business-date-option"
+                }
+                disabled={!canPickDate}
+                onClick={() => handleDateValue(option.value)}
+                aria-pressed={selected}
+              >
+                <span>{option.weekday}</span>
+                <strong>{option.dateLabel}</strong>
+              </button>
+            );
+          })}
+        </div>
+        <label className="public-business-more-date small muted">
+          {t("publicBusiness.availability.moreDates", "More dates")}
+          <input
+            aria-label={t("publicBusiness.availability.date", "Date")}
+            type="date"
+            value={selectedDate}
+            onInput={(e) => handleDateValue(e.currentTarget.value)}
+            onChange={(e) => handleDateValue(e.target.value)}
+            disabled={!canPickDate}
+          />
+        </label>
+      </div>
 
       <div className="public-business-slot-grid">
         {loadingSlots && (
@@ -99,6 +156,69 @@ export default function PublicBusinessAvailability({
             );
           })}
       </div>
+      <style jsx>{`
+        .public-business-date-picker {
+          display: grid;
+          gap: 0.65rem;
+          margin-top: 1rem;
+        }
+
+        .public-business-date-strip {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+          gap: 0.45rem;
+        }
+
+        .public-business-date-option {
+          display: grid;
+          gap: 0.12rem;
+          min-height: 4.15rem;
+          padding: 0.7rem 0.55rem;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          background: var(--surface-2);
+          color: var(--text);
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .public-business-date-option span {
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          font-weight: 800;
+        }
+
+        .public-business-date-option strong {
+          font-size: 0.96rem;
+        }
+
+        .public-business-date-option.selected {
+          border-color: rgba(255, 107, 53, 0.7);
+          background: rgba(255, 107, 53, 0.12);
+          box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.18);
+        }
+
+        .public-business-date-option:disabled,
+        .public-business-more-date input:disabled {
+          cursor: not-allowed;
+          opacity: 0.55;
+        }
+
+        .public-business-more-date {
+          display: grid;
+          gap: 0.35rem;
+        }
+
+        @media (max-width: 520px) {
+          .public-business-date-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .public-business-date-option {
+            min-height: 3.75rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }

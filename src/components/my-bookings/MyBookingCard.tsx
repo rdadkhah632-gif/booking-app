@@ -54,7 +54,14 @@ export default function MyBookingCard({
     pendingRequest && booking.status === "confirmed",
   );
   const tone = cardTone(booking.status, Boolean(pendingRequest), mode);
-  const appointmentTime = new Date(booking.start_at).toLocaleString();
+  const appointmentTime = formatAppointmentDateTime(booking.start_at);
+
+  function formatAppointmentDateTime(value: string) {
+    return new Date(value).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }
 
   return (
     <div
@@ -166,9 +173,9 @@ export default function MyBookingCard({
                     )}
                   </p>
                   <h3 style={{ marginTop: "0.25rem", marginBottom: "0.5rem" }}>
-                    {new Date(
+                    {formatAppointmentDateTime(
                       pendingRequest.requested_start_at,
-                    ).toLocaleString()}
+                    )}
                   </h3>
                 </div>
 
