@@ -412,6 +412,11 @@ export default function CustomerNotifications() {
           loading={loading}
           markingRead={markingRead}
           unreadCount={unreadCount}
+          showActions={
+            actionCount > 0 ||
+            historyCount > 0 ||
+            recentNotifications.length > 0
+          }
           onRefresh={() => loadNotifications()}
           onMarkAllRead={markAllNotificationsRead}
         />

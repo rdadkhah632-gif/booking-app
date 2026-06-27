@@ -698,10 +698,15 @@ export default function DashboardLayout({
         }
 
         @media (max-width: 900px) {
+          .dashboard-layout {
+            align-content: start;
+          }
+
           .sidebar {
             position: sticky;
             top: 0;
             z-index: 35;
+            align-self: start;
             overflow: hidden;
             padding: 0.65rem;
           }

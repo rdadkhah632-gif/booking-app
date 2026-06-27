@@ -5,6 +5,7 @@ type Props = {
   loading: boolean;
   markingRead: boolean;
   unreadCount: number;
+  showActions?: boolean;
   onRefresh: () => void;
   onMarkAllRead: () => void;
 };
@@ -13,6 +14,7 @@ export default function NotificationsHeader({
   loading,
   markingRead,
   unreadCount,
+  showActions = true,
   onRefresh,
   onMarkAllRead,
 }: Props) {
@@ -29,33 +31,39 @@ export default function NotificationsHeader({
         )}
       </p>
 
-      <div className="customer-notification-actions">
-        <Link href="/my-bookings" className="btn btn-ghost">
-          {t("nav.myBookings")}
-        </Link>
+      {(showActions || unreadCount > 0) && (
+        <div className="customer-notification-actions">
+          {showActions && (
+            <>
+              <Link href="/my-bookings" className="btn btn-ghost">
+                {t("nav.myBookings")}
+              </Link>
 
-        <button
-          onClick={onRefresh}
-          className="btn btn-ghost"
-          disabled={loading}
-        >
-          {loading
-            ? t("notifications.refreshing", "Refreshing...")
-            : t("common.refresh", "Refresh")}
-        </button>
+              <button
+                onClick={onRefresh}
+                className="btn btn-ghost"
+                disabled={loading}
+              >
+                {loading
+                  ? t("notifications.refreshing", "Refreshing...")
+                  : t("common.refresh", "Refresh")}
+              </button>
+            </>
+          )}
 
-        {unreadCount > 0 && (
-          <button
-            onClick={onMarkAllRead}
-            className="btn btn-accent"
-            disabled={markingRead}
-          >
-            {markingRead
-              ? t("notifications.markingRead", "Marking read...")
-              : `${t("notifications.mark", "Mark")} ${unreadCount} ${t("notifications.read", "read")}`}
-          </button>
-        )}
-      </div>
+          {unreadCount > 0 && (
+            <button
+              onClick={onMarkAllRead}
+              className="btn btn-accent"
+              disabled={markingRead}
+            >
+              {markingRead
+                ? t("notifications.markingRead", "Marking read...")
+                : `${t("notifications.mark", "Mark")} ${unreadCount} ${t("notifications.read", "read")}`}
+            </button>
+          )}
+        </div>
+      )}
 
       <style jsx>{`
         .customer-notification-actions {

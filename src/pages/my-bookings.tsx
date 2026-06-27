@@ -605,6 +605,7 @@ export default function MyBookings() {
           bookingRequested={router.query.bookingRequested}
           requestSent={router.query.requestSent}
           success={success}
+          showRefreshAction={!loading && hasBookingActivity}
           onClearSuccess={() => setSuccess(null)}
           onRefresh={() => loadBookings({ keepSuccess: true })}
         />

@@ -504,3 +504,22 @@ Stage 8.18 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.19 Staff And Customer Account Polish Implemented
+
+- visually reviewed customer My bookings, customer Updates and staff Working
+  hours mobile states after the business workspace compression pass
+- collapsed mobile authenticated customer/business account controls into one
+  Account menu so language, Account and Log out no longer dominate empty
+  customer pages
+- removed full-width refresh/action bars from empty My bookings and empty
+  Updates so the first clear action is the useful empty-state CTA
+- fixed the mobile staff dashboard grid spacing that left a large blank area
+  between the staff nav and unlinked staff content
+- kept existing destinations, logout behavior, language persistence, staff
+  route protection and booking status behaviour unchanged
+
+Stage 8.19 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

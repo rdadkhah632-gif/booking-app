@@ -274,6 +274,7 @@ export default function AuthNav() {
     <nav
       className={[
         "nav-simple",
+        role ? `nav-role-${role}` : "",
         role === "admin" ? "nav-operator" : "",
         !role && isPublicBusinessEntry ? "nav-public-business" : "",
       ]
@@ -397,13 +398,24 @@ export default function AuthNav() {
         }
 
         @media (max-width: 860px) {
+          :global(.nav-simple) {
+            overflow: visible;
+          }
+
+          :global(.nav-simple-inner) {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.6rem 0.75rem;
+            align-items: center;
+          }
+
           .auth-nav-links {
-            width: 100%;
-            justify-content: flex-start;
+            width: auto;
+            justify-content: flex-end;
             gap: 0.5rem;
             flex-wrap: wrap;
             overflow: visible;
-            padding: 0.15rem 0 0.3rem;
+            padding: 0;
           }
 
           :global(.nav-wide-only) {
@@ -417,6 +429,28 @@ export default function AuthNav() {
         }
 
         @media (max-width: 540px) {
+          .auth-nav-links {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: visible;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .auth-nav-links::-webkit-scrollbar {
+            display: none;
+          }
+
+          :global(.nav-role-business .auth-nav-links),
+          :global(.nav-role-admin .auth-nav-links) {
+            grid-column: 2;
+            grid-row: 1;
+            justify-content: flex-end;
+            overflow: visible;
+          }
+
           :global(.nav-mobile-optional),
           :global(.public-register-link) {
             display: none;
@@ -438,14 +472,11 @@ export default function AuthNav() {
           }
 
           .logo {
-            font-size: 1rem;
+            font-size: 1.35rem;
           }
 
           .product-role-badge {
-            max-width: 5.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            display: none;
           }
 
           :global(.language-toggle),

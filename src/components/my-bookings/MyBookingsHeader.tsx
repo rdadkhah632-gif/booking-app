@@ -7,6 +7,7 @@ type Props = {
   bookingRequested?: string | string[];
   requestSent?: string | string[];
   success: string | null;
+  showRefreshAction?: boolean;
   onClearSuccess: () => void;
   onRefresh: () => void;
 };
@@ -17,6 +18,7 @@ export default function MyBookingsHeader({
   bookingRequested,
   requestSent,
   success,
+  showRefreshAction = true,
   onClearSuccess,
   onRefresh,
 }: Props) {
@@ -75,22 +77,26 @@ export default function MyBookingsHeader({
         </div>
       )}
 
-      <div className="my-bookings-header-actions">
-        {showExploreAction && (
-          <Link href="/explore" className="btn btn-accent">
-            {t("home.cta.explore", "Explore")}
-          </Link>
-        )}
-        <button
-          onClick={onRefresh}
-          className="btn btn-ghost"
-          disabled={loading}
-        >
-          {loading
-            ? t("myBookings.refreshing", "Refreshing...")
-            : t("myBookings.refresh", "Refresh")}
-        </button>
-      </div>
+      {(showExploreAction || showRefreshAction) && (
+        <div className="my-bookings-header-actions">
+          {showExploreAction && (
+            <Link href="/explore" className="btn btn-accent">
+              {t("home.cta.explore", "Explore")}
+            </Link>
+          )}
+          {showRefreshAction && (
+            <button
+              onClick={onRefresh}
+              className="btn btn-ghost"
+              disabled={loading}
+            >
+              {loading
+                ? t("myBookings.refreshing", "Refreshing...")
+                : t("myBookings.refresh", "Refresh")}
+            </button>
+          )}
+        </div>
+      )}
 
       <style jsx>{`
         .my-bookings-header-actions {
