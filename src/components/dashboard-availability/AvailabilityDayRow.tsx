@@ -96,9 +96,9 @@ export default function AvailabilityDayRow({
       <style jsx>{`
         .availability-day-row {
           display: grid;
-          gap: 0.7rem;
+          gap: 0.55rem;
           align-content: start;
-          padding: 0.85rem !important;
+          padding: 0.75rem !important;
         }
 
         .availability-day-header {
@@ -189,8 +189,16 @@ export default function AvailabilityDayRow({
             grid-template-columns: 1fr;
           }
 
+          .availability-time-range {
+            display: none;
+          }
+
           .availability-time-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .availability-time-grid input {
+            min-width: 0;
           }
         }
       `}</style>

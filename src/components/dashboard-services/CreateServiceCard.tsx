@@ -74,91 +74,87 @@ export default function CreateServiceCard({
 
       {formExpanded && (
         <form onSubmit={addService} className="services-create-form">
-          <div className="services-create-grid">
-            <div className="services-create-fields">
-              <input
-                placeholder={t(
-                  "dashboardServices.create.namePlaceholder",
-                  "Service name e.g. Haircut, Dental Checkup",
-                )}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+          <div className="services-create-fields">
+            <input
+              placeholder={t(
+                "dashboardServices.create.namePlaceholder",
+                "Service name e.g. Haircut, Dental Checkup",
+              )}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
 
-              <div className="services-create-small-grid">
-                <label className="small muted">
-                  {t("dashboardServices.create.duration", "Duration")}
-                  <input
-                    type="number"
-                    placeholder={t(
-                      "dashboardServices.create.durationPlaceholder",
-                      "Duration in minutes",
-                    )}
-                    value={duration}
-                    onChange={(e) => setDuration(Number(e.target.value))}
-                    min={5}
-                    required
-                  />
+            <div className="services-create-small-grid">
+              <label className="small muted">
+                {t("dashboardServices.create.duration", "Duration")}
+                <select
+                  value={duration}
+                  onChange={(e) => setDuration(Number(e.target.value))}
+                >
+                  {durationOptions().map((minutes) => (
+                    <option key={minutes} value={minutes}>
+                      {minutes} {t("common.minutes", "minutes")}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                  <select
-                    value={duration}
-                    onChange={(e) => setDuration(Number(e.target.value))}
-                  >
-                    {durationOptions().map((minutes) => (
-                      <option key={minutes} value={minutes}>
-                        {minutes} {t("common.minutes", "minutes")}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="small muted">
-                  {t("dashboardServices.create.price", "Price")}
-                  <input
-                    type="number"
-                    placeholder={t(
-                      "dashboardServices.create.pricePlaceholder",
-                      "Price",
-                    )}
-                    value={price}
-                    onChange={(e) => setPrice(Number(e.target.value))}
-                    min={0}
-                    step="0.01"
-                    required
-                  />
-                </label>
-              </div>
-
-              <ServiceImageUpload
-                mode="create"
-                imageUrl={imageUrl}
-                imagePreviewUrl={imagePreviewUrl}
-                imageFile={imageFile}
-                uploading={uploadingImage}
-                onCreateImageChange={handleCreateImageChange}
-                onUploadCreate={uploadCreateImage}
-                onClearCreate={clearCreateImage}
-              />
-
-              <textarea
-                placeholder={t(
-                  "dashboardServices.create.descriptionPlaceholder",
-                  "Short description shown to customers optional",
-                )}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-              />
+              <label className="small muted">
+                {t("dashboardServices.create.price", "Price")}
+                <input
+                  type="number"
+                  placeholder={t(
+                    "dashboardServices.create.pricePlaceholder",
+                    "Price",
+                  )}
+                  value={price}
+                  onChange={(e) => setPrice(Number(e.target.value))}
+                  min={0}
+                  step="0.01"
+                  required
+                />
+              </label>
             </div>
 
-            <ServicePreviewCard
-              name={name}
-              duration={duration}
-              price={price}
-              description={description}
-              imageUrl={imagePreviewUrl || imageUrl}
-            />
+            <details className="services-more-details">
+              <summary>
+                {t("dashboardServices.create.moreDetails", "More details")}
+              </summary>
+
+              <div className="services-create-grid">
+                <div className="services-create-fields">
+                  <textarea
+                    placeholder={t(
+                      "dashboardServices.create.descriptionPlaceholder",
+                      "Short description shown to customers optional",
+                    )}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                  />
+
+                  <ServiceImageUpload
+                    mode="create"
+                    imageUrl={imageUrl}
+                    imagePreviewUrl={imagePreviewUrl}
+                    imageFile={imageFile}
+                    uploading={uploadingImage}
+                    onCreateImageChange={handleCreateImageChange}
+                    onUploadCreate={uploadCreateImage}
+                    onClearCreate={clearCreateImage}
+                  />
+                </div>
+
+                <ServicePreviewCard
+                  name={name}
+                  duration={duration}
+                  price={price}
+                  description={description}
+                  imageUrl={imagePreviewUrl || imageUrl}
+                />
+              </div>
+            </details>
           </div>
 
           <div className="services-create-actions">
@@ -225,6 +221,24 @@ export default function CreateServiceCard({
         .services-create-small-grid input,
         .services-create-small-grid select {
           margin-top: 0.35rem;
+        }
+
+        .services-more-details {
+          border-top: 1px solid var(--border);
+          padding-top: 0.75rem;
+        }
+
+        .services-more-details summary {
+          width: fit-content;
+          color: var(--text-muted);
+          cursor: pointer;
+          font-size: 0.88rem;
+          font-weight: 800;
+        }
+
+        .services-more-details[open] summary {
+          margin-bottom: 0.75rem;
+          color: var(--text);
         }
 
         .services-create-actions {

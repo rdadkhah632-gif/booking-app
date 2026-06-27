@@ -469,3 +469,23 @@ Stage 8.16 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.17 Business Setup And Forms Compression Implemented
+
+- visually reviewed the business, customer and staff workspaces before editing,
+  with emphasis on the places that still felt over-explained or space-heavy
+- compressed the Add Service form so the primary path is service name, duration,
+  price and save; moved description, image upload and preview under More details
+- tightened the Today mobile summary into a compact three-column strip so the
+  first viewport is less dominated by stacked stat cards
+- reduced Working hours repetition by removing the quick-preset helper paragraph
+  and hiding the duplicate time-range display on mobile while keeping the inputs
+  visible
+- demoted timing, region and policy controls under Advanced booking rules while
+  keeping confirmation mode visible as the main booking rule
+- updated English and Albanian translation keys for the touched visible copy
+
+Stage 8.17 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

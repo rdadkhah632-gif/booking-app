@@ -798,6 +798,8 @@ export const sq: TranslationTree = {
   "dashboardSettings.approval.manualBody":
     "Rezervimet e reja shfaqen te Kërkon veprim derisa biznesi t’i pranojë ose refuzojë.",
   "dashboardSettings.approval.currentMode": "Mënyra aktuale",
+  "dashboardSettings.advanced.summary": "Rregulla të avancuara rezervimi",
+  "dashboardSettings.advanced.body": "Orari, rajoni dhe teksti i politikave.",
   "dashboardSettings.slot.kicker": "Intervali i orareve",
   "dashboardSettings.slot.title": "Madhësia e intervalit të rezervimit",
   "dashboardSettings.slot.body":
@@ -1235,6 +1237,7 @@ export const sq: TranslationTree = {
   "dashboardServices.create.pricePlaceholder": "Çmimi",
   "dashboardServices.create.descriptionPlaceholder":
     "Përshkrim i shkurtër opsional për klientët",
+  "dashboardServices.create.moreDetails": "Më shumë detaje",
   "dashboardServices.create.adding": "Duke shtuar...",
   "dashboardServices.create.clearForm": "Pastro formularin",
   "dashboardServices.create.success":

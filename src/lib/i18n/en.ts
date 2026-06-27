@@ -751,6 +751,8 @@ export const en: TranslationTree = {
   "dashboardSettings.approval.manualBody":
     "New bookings appear in Needs action until the business accepts or declines them.",
   "dashboardSettings.approval.currentMode": "Current mode",
+  "dashboardSettings.advanced.summary": "Advanced booking rules",
+  "dashboardSettings.advanced.body": "Timing, region and policy wording.",
   "dashboardSettings.slot.kicker": "Slot interval",
   "dashboardSettings.slot.title": "Booking slot size",
   "dashboardSettings.slot.body":
@@ -1247,6 +1249,7 @@ export const en: TranslationTree = {
   "dashboardServices.create.pricePlaceholder": "Price",
   "dashboardServices.create.descriptionPlaceholder":
     "Short description shown to customers optional",
+  "dashboardServices.create.moreDetails": "More details",
   "dashboardServices.create.adding": "Adding...",
   "dashboardServices.create.clearForm": "Clear form",
   "dashboardServices.create.success":

@@ -20,13 +20,6 @@ export default function AvailabilityPresetsCard({
           <strong>
             {t("dashboardAvailability.presets.compactTitle", "Quick presets")}
           </strong>
-
-          <p className="small muted">
-            {t(
-              "dashboardAvailability.presets.body",
-              "Presets fill the week below. Save when you are done.",
-            )}
-          </p>
         </div>
 
         <div className="availability-preset-actions">
@@ -78,10 +71,6 @@ export default function AvailabilityPresetsCard({
           gap: 0.45rem;
           flex-wrap: wrap;
           align-items: center;
-        }
-
-        .availability-preset-card p {
-          margin: 0.15rem 0 0;
         }
 
         @media (max-width: 640px) {

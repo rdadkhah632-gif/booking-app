@@ -677,7 +677,26 @@ export default function DashboardHome() {
 
         @media (max-width: 560px) {
           .dashboard-today-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.45rem;
+          }
+
+          :global(.today-stat) {
+            display: grid;
             grid-template-columns: 1fr;
+            gap: 0.25rem;
+            justify-items: center;
+            padding: 0.65rem 0.4rem;
+            text-align: center;
+          }
+
+          :global(.today-stat-number) {
+            min-width: 0;
+            font-size: 1.45rem;
+          }
+
+          :global(.today-stat-label) {
+            font-size: 0.72rem;
           }
 
           .dashboard-next-action :global(.btn) {

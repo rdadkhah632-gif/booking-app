@@ -248,16 +248,38 @@ export default function DashboardSettingsPage() {
               approvalModeLabel={approvalModeLabel}
               updateSetting={updateSetting}
             />
-
-            <BookingRuleSettings
-              settings={settings}
-              updateSetting={updateSetting}
-            />
-
-            <RegionSettings settings={settings} updateSetting={updateSetting} />
           </div>
 
-          <PolicySettings settings={settings} updateSetting={updateSetting} />
+          <details className="settings-advanced-panel">
+            <summary>
+              <span>
+                {t(
+                  "dashboardSettings.advanced.summary",
+                  "Advanced booking rules",
+                )}
+              </span>
+              <span className="small muted">
+                {t(
+                  "dashboardSettings.advanced.body",
+                  "Timing, region and policy wording.",
+                )}
+              </span>
+            </summary>
+
+            <div className="settings-grid settings-advanced-grid">
+              <BookingRuleSettings
+                settings={settings}
+                updateSetting={updateSetting}
+              />
+
+              <RegionSettings
+                settings={settings}
+                updateSetting={updateSetting}
+              />
+            </div>
+
+            <PolicySettings settings={settings} updateSetting={updateSetting} />
+          </details>
 
           <BusinessSettingsActions
             selectedBusiness={selectedBusiness}
@@ -311,6 +333,36 @@ export default function DashboardSettingsPage() {
           grid-column: 1 / -1;
         }
 
+        .settings-advanced-panel {
+          margin-top: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(255, 255, 255, 0.02);
+        }
+
+        .settings-advanced-panel summary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          padding: 0.9rem 0.95rem;
+          cursor: pointer;
+          font-weight: 800;
+        }
+
+        .settings-advanced-panel summary::marker {
+          color: var(--accent);
+        }
+
+        .settings-advanced-grid {
+          padding: 0 0.95rem 0.95rem;
+        }
+
+        :global(.settings-advanced-panel .grid-2) {
+          margin-top: 0 !important;
+          padding: 0 0.95rem 0.95rem;
+        }
+
         :global(.settings-card select),
         :global(.settings-card textarea) {
           width: 100%;
@@ -327,6 +379,10 @@ export default function DashboardSettingsPage() {
         }
 
         @media (max-width: 640px) {
+          .settings-advanced-panel summary {
+            display: grid;
+          }
+
           .settings-tools-grid {
             grid-template-columns: 1fr;
           }
