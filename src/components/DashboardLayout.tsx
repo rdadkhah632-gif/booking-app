@@ -108,16 +108,12 @@ export default function DashboardLayout({
   const businessMainLinks = [
     { href: "/dashboard", label: t("dashboardLayout.nav.today", "Today") },
     {
-      href: "/dashboard/bookings?view=today",
+      href: "/dashboard/bookings",
       label:
         pendingCount > 0
           ? `${t("dashboardLayout.nav.calendar", "Calendar")} (${pendingCount > 9 ? "9+" : pendingCount})`
           : t("dashboardLayout.nav.calendar", "Calendar"),
       urgent: pendingCount > 0,
-    },
-    {
-      href: "/dashboard/bookings?view=upcoming",
-      label: t("dashboardLayout.nav.bookings", "Bookings"),
     },
     {
       href: "/dashboard/businesses",
@@ -196,9 +192,7 @@ export default function DashboardLayout({
   ];
 
   function isActiveLink(href: string) {
-    const [hrefPath, hrefQuery = ""] = href.split("?");
-    const params = new URLSearchParams(hrefQuery);
-    const hrefView = params.get("view");
+    const [hrefPath] = href.split("?");
 
     if (workspace !== "staff" && hrefPath === "/dashboard/businesses") {
       return myBusinessRoutes.some(
@@ -208,25 +202,7 @@ export default function DashboardLayout({
     }
 
     if (workspace !== "staff" && hrefPath === "/dashboard/bookings") {
-      if (router.pathname !== "/dashboard/bookings") return false;
-
-      const currentView =
-        typeof router.query.view === "string" ? router.query.view : "";
-
-      if (hrefView === "today") {
-        return (
-          !currentView || currentView === "today" || Boolean(router.query.date)
-        );
-      }
-
-      if (hrefView === "upcoming") {
-        return (
-          currentView === "upcoming" ||
-          currentView === "week" ||
-          currentView === "history" ||
-          Boolean(router.query.status)
-        );
-      }
+      return router.pathname === "/dashboard/bookings";
     }
 
     if (hrefPath === "/dashboard" || hrefPath === "/staff") {

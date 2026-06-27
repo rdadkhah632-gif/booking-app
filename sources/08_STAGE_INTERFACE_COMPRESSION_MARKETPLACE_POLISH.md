@@ -566,3 +566,46 @@ Stage 8.21 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.22 Business Calendar Simplification Implemented
+
+- removed the duplicate empty Services add panel so an empty Services page shows
+  one clear empty state with one add action
+- removed Bookings as a separate primary business navigation concept and kept
+  the existing `/dashboard/bookings` route as the Calendar workspace for
+  compatibility
+- rebuilt the business Calendar surface around a week-first schedule with
+  previous/today/next controls, date selection and clickable appointment blocks
+  that reveal appointment details
+- removed the old Calendar/Bookings toggle, status filters, staff filters,
+  range chips and pending strip from the Calendar page
+- routed Today page attention items to Inbox and appointment schedule links to
+  Calendar, matching the product split of Inbox for actions and Calendar for
+  appointments
+- updated business-side labels from View/Open/Back to bookings to Calendar or
+  appointment language while leaving customer My bookings wording intact
+
+Stage 8.22 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
+
+## Stage 8.23 Account And Team Duplication Cleanup Implemented
+
+- removed the bottom Account shortcut row for Today, Notifications and Support
+  so Account stays focused on personal details, verification, email
+  preferences, security and region
+- removed the Team page's account-link counter strip because invite/link status
+  is already visible where it matters, on each staff row
+- removed the owner-as-staff "My staff work" jump from the business Team page
+  so owners are not pushed into a separate staff workspace for appointment
+  management
+- made the owner's own staff row display as "You" with a "Your profile" status,
+  making it clear when the listed staff member is the signed-in owner
+- kept actual staff workspace routes available for staff accounts, while
+  leaving business appointment management in Inbox and Calendar
+
+Stage 8.23 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

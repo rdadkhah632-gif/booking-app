@@ -328,7 +328,7 @@ function businessNotificationActionLabel(
   }
 
   if (notification.booking_id) {
-    return t("dashboardNotifications.actions.openBooking", "Open booking");
+    return t("dashboardNotifications.actions.openBooking", "Open appointment");
   }
 
   if (type.includes("support")) {
@@ -1175,13 +1175,6 @@ export default function BusinessNotifications() {
               ? `${t("dashboardNotifications.toolbar.mark", "Mark")} ${unreadBusinessNotifications.length} ${t("dashboardNotifications.toolbar.read", "read")}`
               : t("dashboardNotifications.toolbar.allRead", "All read")}
           </button>
-
-          <Link
-            href="/dashboard/bookings?view=upcoming&status=pending"
-            className="btn btn-accent"
-          >
-            {t("dashboardNotifications.toolbar.openBookings", "Open bookings")}
-          </Link>
         </div>
       </div>
 
@@ -1292,18 +1285,6 @@ export default function BusinessNotifications() {
                 "Booking requests and important updates will appear here.",
               )}
             </p>
-
-            <div className="business-notification-empty-actions">
-              <Link
-                href="/dashboard/bookings?view=today"
-                className="btn btn-ghost"
-              >
-                {t(
-                  "dashboardNotifications.empty.openToday",
-                  "Open today’s bookings",
-                )}
-              </Link>
-            </div>
           </div>
         )}
 
@@ -1634,12 +1615,12 @@ export default function BusinessNotifications() {
                     )}
 
                     <Link
-                      href={`/dashboard/bookings?businessId=${booking.business_id}&view=upcoming&status=pending`}
+                      href={`/dashboard/bookings?businessId=${booking.business_id}`}
                       className="btn btn-ghost"
                     >
                       {t(
                         "dashboardNotifications.actions.openBooking",
-                        "Open booking",
+                        "Open appointment",
                       )}
                     </Link>
                   </div>
@@ -1850,12 +1831,12 @@ export default function BusinessNotifications() {
                     </button>
 
                     <Link
-                      href={`/dashboard/bookings?businessId=${request.business_id}&view=upcoming`}
+                      href={`/dashboard/bookings?businessId=${request.business_id}`}
                       className="btn btn-ghost"
                     >
                       {t(
-                        "dashboardBookings.businessPicker.cta",
-                        "View bookings",
+                        "dashboardNotifications.actions.openBooking",
+                        "Open appointment",
                       )}
                     </Link>
                   </div>

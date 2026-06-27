@@ -76,6 +76,7 @@ export const en: TranslationTree = {
   "common.phone": "Phone",
   "common.notes": "Notes",
   "common.cancel": "Cancel",
+  "common.close": "Close",
   "common.selected": "Selected",
   "common.choose": "Choose",
   "common.working": "Working...",
@@ -896,7 +897,7 @@ export const en: TranslationTree = {
   "dashboardHome.schedule.kicker": "Schedule preview",
   "dashboardHome.schedule.title": "Next 7 days",
   "dashboardHome.schedule.body": "Upcoming confirmed bookings.",
-  "dashboardHome.schedule.openBookings": "Open booking manager",
+  "dashboardHome.schedule.openBookings": "Open calendar",
   "dashboardHome.schedule.today": "Today",
   "dashboardHome.schedule.tomorrow": "Tomorrow",
   "dashboardHome.schedule.booking": "booking",
@@ -940,9 +941,8 @@ export const en: TranslationTree = {
   "dashboardHome.warnings.publish.cta": "Review profile",
   "dashboardHome.shortcuts.kicker": "Business tools",
   "dashboardHome.shortcuts.title": "Manage your business",
-  "dashboardHome.shortcuts.bookings.title": "Bookings",
-  "dashboardHome.shortcuts.bookings.body":
-    "Review customer appointments, pending approvals and completed bookings.",
+  "dashboardHome.shortcuts.bookings.title": "Calendar",
+  "dashboardHome.shortcuts.bookings.body": "See appointments by day and time.",
   "dashboardHome.shortcuts.setup.title": "Setup hub",
   "dashboardHome.shortcuts.setup.body":
     "Manage business profiles, publish status, photos and core setup.",
@@ -1677,7 +1677,7 @@ export const en: TranslationTree = {
   "dashboardBookings.pageTitle": "Calendar",
   "dashboardBookings.pageSubtitle": "Create a business first.",
   "dashboardBookings.pageSubtitleSelected": "See what is happening when for",
-  "dashboardBookings.recordsTitle": "Bookings",
+  "dashboardBookings.recordsTitle": "Calendar",
   "dashboardBookings.recordsSubtitleSelected":
     "Manage appointment requests, upcoming bookings and history for",
   "dashboardBookings.recordsKicker": "Booking records",
@@ -1686,6 +1686,7 @@ export const en: TranslationTree = {
   "dashboardBookings.mode.bookingsBody":
     "Requests, upcoming records and history",
   "dashboardBookings.appointments": "appointments",
+  "dashboardBookings.appointmentCount": "appointment",
   "dashboardBookings.needsApproval": "need approval",
   "dashboardBookings.loading": "Loading bookings...",
   "dashboardBookings.error.noAccess":
@@ -1700,10 +1701,10 @@ export const en: TranslationTree = {
   "dashboardBookings.businessPicker.kicker": "Multiple businesses found",
   "dashboardBookings.businessPicker.title": "Choose a business to continue",
   "dashboardBookings.businessPicker.body":
-    "Select one business to view and manage its bookings.",
+    "Select one business to open its calendar.",
   "dashboardBookings.businessPicker.manageBody":
-    "View bookings for this business.",
-  "dashboardBookings.businessPicker.cta": "View bookings",
+    "Open the calendar for this business.",
+  "dashboardBookings.businessPicker.cta": "Open calendar",
   "dashboardBookings.toolbar.body":
     "Use the date, status and search filters to manage appointments, approvals and booking history as the business grows.",
   "dashboardBookings.toolbar.refreshing": "Refreshing...",
@@ -1722,6 +1723,9 @@ export const en: TranslationTree = {
   "dashboardBookings.range.tomorrow": "Tomorrow",
   "dashboardBookings.range.upcoming": "All upcoming",
   "dashboardBookings.calendar.kicker": "Schedule",
+  "dashboardBookings.week.previous": "Previous",
+  "dashboardBookings.week.next": "Next",
+  "dashboardBookings.details.kicker": "Selected appointment",
   "dashboardBookings.filters.calendarView": "Calendar view",
   "dashboardBookings.filters.body":
     "Start with today, jump to a specific date, or open a filtered Mirëbook view from the dashboard calendar.",
@@ -2393,7 +2397,7 @@ export const en: TranslationTree = {
   "dashboardHome.ownerCommand.noNextBooking":
     "No confirmed upcoming bookings are waiting. Keep setup and availability up to date for new customers.",
   "dashboardHome.ownerCommand.reviewActions": "Review actions",
-  "dashboardHome.ownerCommand.viewBookings": "View bookings",
+  "dashboardHome.ownerCommand.viewBookings": "Open calendar",
   "dashboardHome.ownerCommand.manageSetup": "Manage setup",
   "dashboardHome.ownerCommand.finishSetup": "Finish setup",
   "dashboardHome.readiness.services": "active services",
@@ -2904,6 +2908,10 @@ export const en: TranslationTree = {
   "dashboardStaff.card.invitePending": "Invite pending",
   "dashboardStaff.card.readyToLink": "Ready to link",
   "dashboardStaff.card.noLoginEmail": "No login email",
+  "dashboardStaff.card.currentUserName": "You",
+  "dashboardStaff.card.currentAccount": "Your profile",
+  "dashboardStaff.card.currentAccountBody":
+    "This is your own bookable staff profile. Manage services and working hours here; appointment requests stay in Inbox and Calendar.",
   "dashboardStaff.card.readyToLinkBody":
     "This profile can link automatically when the staff member signs up or logs in using this exact email.",
   "dashboardStaff.card.noLoginEmailBody":
@@ -3108,7 +3116,7 @@ export const en: TranslationTree = {
     "Review booking request",
   "dashboardNotifications.actions.reviewRescheduleRequest":
     "Review reschedule request",
-  "dashboardNotifications.actions.openBooking": "Open booking",
+  "dashboardNotifications.actions.openBooking": "Open appointment",
   "dashboardNotifications.actions.openSupport": "Open support",
   "dashboardNotifications.actions.openUpdate": "Open update",
   "notifications.types.businessBookingDeclined.message":
@@ -3516,7 +3524,7 @@ export const en: TranslationTree = {
   "dashboardHome.today.nextRequests": "Review appointment requests",
   "dashboardHome.today.nextRequestsBody":
     "Customers are waiting for a decision.",
-  "dashboardHome.today.nextRequestsCta": "Open requests",
+  "dashboardHome.today.nextRequestsCta": "Open inbox",
   "dashboardHome.today.nextCalendar": "Run today from Calendar",
   "dashboardHome.today.nextCalendarBody":
     "Confirmed appointments for today are ready.",

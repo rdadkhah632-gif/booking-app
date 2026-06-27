@@ -358,8 +358,8 @@ export default function DashboardHome() {
           "dashboardHome.today.nextRequestsBody",
           "Customers are waiting for a decision.",
         ),
-        href: "/dashboard/bookings?view=upcoming&status=pending",
-        cta: t("dashboardHome.today.nextRequestsCta", "Open requests"),
+        href: "/dashboard/notifications",
+        cta: t("dashboardHome.today.nextRequestsCta", "Open inbox"),
       }
     : todayBookings.length
       ? {
@@ -371,7 +371,7 @@ export default function DashboardHome() {
             "dashboardHome.today.nextCalendarBody",
             "Confirmed appointments for today are ready.",
           ),
-          href: "/dashboard/bookings?view=today",
+          href: bookingsLinkForDate(formatDateValue(new Date())),
           cta: t("dashboardHome.today.nextCalendarCta", "Open today"),
         }
       : nextSetupStep
@@ -512,7 +512,7 @@ export default function DashboardHome() {
 
             <div className="dashboard-today-stats">
               <Link
-                href="/dashboard/bookings?view=upcoming&status=pending"
+                href="/dashboard/notifications"
                 className={
                   pendingActionCount > 0 ? "today-stat urgent" : "today-stat"
                 }
@@ -523,7 +523,7 @@ export default function DashboardHome() {
                 </span>
               </Link>
               <Link
-                href="/dashboard/bookings?view=today"
+                href={bookingsLinkForDate(formatDateValue(new Date()))}
                 className="today-stat"
               >
                 <span className="today-stat-number">
@@ -533,10 +533,7 @@ export default function DashboardHome() {
                   {t("dashboardHome.today.confirmedToday", "Today")}
                 </span>
               </Link>
-              <Link
-                href="/dashboard/bookings?view=upcoming"
-                className="today-stat"
-              >
+              <Link href="/dashboard/bookings" className="today-stat">
                 <span className="today-stat-number">
                   {upcomingBookings.length}
                 </span>

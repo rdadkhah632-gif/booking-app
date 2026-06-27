@@ -28,6 +28,7 @@ type Props = {
     serviceId: string,
     currentlyAssigned: boolean,
   ) => void;
+  isCurrentUser?: boolean;
 };
 
 export default function StaffProfileCard({
@@ -44,6 +45,7 @@ export default function StaffProfileCard({
   setEditingStaffId,
   loadData,
   toggleStaffService,
+  isCurrentUser = false,
 }: Props) {
   const { t } = useI18n();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -57,33 +59,43 @@ export default function StaffProfileCard({
   const normalisedInviteStatus = (staff.invite_status || "").toLowerCase();
   const isLinked = Boolean(staff.user_id);
   const hasInviteEmail = Boolean(staff.email);
-  const inviteStatusLabel = isLinked
-    ? t("dashboardStaff.card.accountLinked", "Account linked")
-    : hasInviteEmail
-      ? normalisedInviteStatus === "invited" ||
-        normalisedInviteStatus === "pending"
-        ? t("dashboardStaff.card.invitePending", "Invite pending")
-        : t("dashboardStaff.card.readyToLink", "Ready to link")
-      : t("dashboardStaff.card.noLoginEmail", "No login email");
-  const inviteStatusBody = isLinked
+  const inviteStatusLabel = isCurrentUser
+    ? t("dashboardStaff.card.currentAccount", "Your profile")
+    : isLinked
+      ? t("dashboardStaff.card.accountLinked", "Account linked")
+      : hasInviteEmail
+        ? normalisedInviteStatus === "invited" ||
+          normalisedInviteStatus === "pending"
+          ? t("dashboardStaff.card.invitePending", "Invite pending")
+          : t("dashboardStaff.card.readyToLink", "Ready to link")
+        : t("dashboardStaff.card.noLoginEmail", "No login email");
+  const inviteStatusBody = isCurrentUser
     ? t(
-        "dashboardStaff.card.accountLinkedBody",
-        "This staff profile is connected to a user login. They can access their own staff workspace.",
+        "dashboardStaff.card.currentAccountBody",
+        "This is your own bookable staff profile. Manage services and working hours here; appointment requests stay in Inbox and Calendar.",
       )
-    : hasInviteEmail
+    : isLinked
       ? t(
-          "dashboardStaff.card.readyToLinkBody",
-          "This profile can link automatically when the staff member signs up or logs in using this exact email.",
+          "dashboardStaff.card.accountLinkedBody",
+          "This staff profile is connected to a user login. They can access their own staff workspace.",
         )
-      : t(
-          "dashboardStaff.card.noLoginEmailBody",
-          "Add an email if this staff member needs their own Mirëbook login. Leave it blank for owner-managed or non-login staff.",
-        );
+      : hasInviteEmail
+        ? t(
+            "dashboardStaff.card.readyToLinkBody",
+            "This profile can link automatically when the staff member signs up or logs in using this exact email.",
+          )
+        : t(
+            "dashboardStaff.card.noLoginEmailBody",
+            "Add an email if this staff member needs their own Mirëbook login. Leave it blank for owner-managed or non-login staff.",
+          );
   const inviteStatusTone = isLinked
     ? "success"
     : hasInviteEmail
       ? "warning"
       : "muted";
+  const displayName = isCurrentUser
+    ? t("dashboardStaff.card.currentUserName", "You")
+    : staff.name || t("dashboardStaff.card.untitled", "Untitled staff member");
 
   const bookableStatusLabel = staff.active
     ? t("dashboardStaff.card.bookableActive", "Bookable: active")
@@ -111,17 +123,15 @@ export default function StaffProfileCard({
       <div className="staff-card-top">
         <div className="staff-main-copy">
           <div className="staff-title-row">
-            <strong>
-              {staff.name ||
-                t("dashboardStaff.card.untitled", "Untitled staff member")}
-            </strong>
+            <strong>{displayName}</strong>
 
             <span
               className={`small staff-status-pill staff-status-${inviteStatusTone}`}
               title={t("dashboardStaff.card.accountLink", "Account link")}
             >
-              {t("dashboardStaff.card.accountLink", "Account link")}:{" "}
-              {inviteStatusLabel}
+              {isCurrentUser
+                ? inviteStatusLabel
+                : `${t("dashboardStaff.card.accountLink", "Account link")}: ${inviteStatusLabel}`}
             </span>
 
             <span
@@ -130,14 +140,18 @@ export default function StaffProfileCard({
             >
               {bookableStatusLabel}
             </span>
-
           </div>
 
           {!isEditing && (
             <>
               <p className="small muted staff-line">
-                {staff.role_title ||
-                  t("dashboardStaff.card.noRole", "No role title added")}{" "}
+                {[
+                  isCurrentUser && staff.name ? staff.name : null,
+                  staff.role_title ||
+                    t("dashboardStaff.card.noRole", "No role title added"),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}{" "}
                 · {activeAssignedCount}{" "}
                 {t("dashboardStaff.card.servicesAssigned", "services")} ·{" "}
                 {openDayCount} {t("dashboardStaff.card.openDays", "open days")}
@@ -148,7 +162,9 @@ export default function StaffProfileCard({
                   <p className="small muted staff-line">
                     {staff.email ||
                       t("dashboardStaff.card.noEmail", "No email")}{" "}
-                    · {staff.phone || t("dashboardStaff.card.noPhone", "No phone")}
+                    ·{" "}
+                    {staff.phone ||
+                      t("dashboardStaff.card.noPhone", "No phone")}
                   </p>
                   <p className="small muted staff-line">{inviteStatusBody}</p>
                   <p className="small muted staff-line">{bookableStatusBody}</p>

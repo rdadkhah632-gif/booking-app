@@ -176,9 +176,11 @@ export default function Services() {
 
   function openCreateServiceForm() {
     setFormExpanded(true);
-    document
-      .getElementById("create-service-panel")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => {
+      document
+        .getElementById("create-service-panel")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   }
 
   function handleCreateImageChange(file: File | null) {
@@ -578,35 +580,37 @@ export default function Services() {
               </p>
             </div>
           )}
-          <div id="create-service-panel">
-            <CreateServiceCard
-              formExpanded={formExpanded}
-              loading={loading}
-              uploadingImage={uploadingImage}
-              name={name}
-              description={description}
-              imageUrl={imageUrl}
-              imagePreviewUrl={imagePreviewUrl}
-              imageFile={imageFile}
-              duration={duration}
-              price={price}
-              durationOptions={durationOptions}
-              setFormExpanded={setFormExpanded}
-              setName={setName}
-              setDescription={setDescription}
-              setDuration={setDuration}
-              setPrice={setPrice}
-              handleCreateImageChange={handleCreateImageChange}
-              uploadCreateImage={uploadCreateImage}
-              clearCreateImage={() => {
-                setImageUrl("");
-                setImageFile(null);
-                setImagePreviewUrl("");
-              }}
-              resetForm={resetForm}
-              addService={addService}
-            />
-          </div>
+          {(services.length > 0 || formExpanded) && (
+            <div id="create-service-panel">
+              <CreateServiceCard
+                formExpanded={formExpanded}
+                loading={loading}
+                uploadingImage={uploadingImage}
+                name={name}
+                description={description}
+                imageUrl={imageUrl}
+                imagePreviewUrl={imagePreviewUrl}
+                imageFile={imageFile}
+                duration={duration}
+                price={price}
+                durationOptions={durationOptions}
+                setFormExpanded={setFormExpanded}
+                setName={setName}
+                setDescription={setDescription}
+                setDuration={setDuration}
+                setPrice={setPrice}
+                handleCreateImageChange={handleCreateImageChange}
+                uploadCreateImage={uploadCreateImage}
+                clearCreateImage={() => {
+                  setImageUrl("");
+                  setImageFile(null);
+                  setImagePreviewUrl("");
+                }}
+                resetForm={resetForm}
+                addService={addService}
+              />
+            </div>
+          )}
 
           <div className="services-list-grid">
             {services.length === 0 && (

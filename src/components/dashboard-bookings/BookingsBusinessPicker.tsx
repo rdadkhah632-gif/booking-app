@@ -1,44 +1,58 @@
-import Link from 'next/link'
-import { useI18n } from '@/lib/useI18n'
-import { Business } from './dashboardBookingsTypes'
+import Link from "next/link";
+import { useI18n } from "@/lib/useI18n";
+import { Business } from "./dashboardBookingsTypes";
 
 type Props = {
-  businesses: Business[]
-}
+  businesses: Business[];
+};
 
 export default function BookingsBusinessPicker({ businesses }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   return (
-    <div style={{ display: 'grid', gap: '1rem' }}>
+    <div style={{ display: "grid", gap: "1rem" }}>
       <div className="card">
-        <p className="small muted">{t('dashboardBookings.businessPicker.kicker', 'Multiple businesses found')}</p>
+        <p className="small muted">
+          {t(
+            "dashboardBookings.businessPicker.kicker",
+            "Multiple businesses found",
+          )}
+        </p>
 
-        <h3 style={{ marginTop: '0.25rem' }}>
-          {t('dashboardBookings.businessPicker.title', 'Choose a business to continue')}
+        <h3 style={{ marginTop: "0.25rem" }}>
+          {t(
+            "dashboardBookings.businessPicker.title",
+            "Choose a business to continue",
+          )}
         </h3>
 
-        <p className="muted" style={{ marginTop: '0.35rem' }}>
-          {t('dashboardBookings.businessPicker.body', 'Select one business to view and manage its bookings.')}
+        <p className="muted" style={{ marginTop: "0.35rem" }}>
+          {t(
+            "dashboardBookings.businessPicker.body",
+            "Select one business to open its calendar.",
+          )}
         </p>
       </div>
 
       {businesses.map((business) => (
         <Link
           key={business.id}
-          href={`/dashboard/bookings?businessId=${business.id}&view=today`}
+          href={`/dashboard/bookings?businessId=${business.id}`}
           className="card business-select-card"
         >
           <div>
             <strong>{business.name}</strong>
 
-            <p className="small muted" style={{ marginTop: '0.35rem' }}>
-              {t('dashboardBookings.businessPicker.manageBody', 'View bookings for this business.')}
+            <p className="small muted" style={{ marginTop: "0.35rem" }}>
+              {t(
+                "dashboardBookings.businessPicker.manageBody",
+                "Open the calendar for this business.",
+              )}
             </p>
           </div>
 
           <span className="btn btn-accent">
-            {t('dashboardBookings.businessPicker.cta', 'View bookings')}
+            {t("dashboardBookings.businessPicker.cta", "Open calendar")}
           </span>
         </Link>
       ))}
@@ -66,5 +80,5 @@ export default function BookingsBusinessPicker({ businesses }: Props) {
         }
       `}</style>
     </div>
-  )
+  );
 }

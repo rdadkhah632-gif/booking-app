@@ -188,41 +188,6 @@ export default function StaffPage() {
     loadPage();
   }, [router.isReady, businessId]);
 
-  const ownerStaffProfile = useMemo(
-    () =>
-      staff.find(
-        (member) => member.user_id && member.user_id === accountUserId,
-      ) || null,
-    [staff, accountUserId],
-  );
-
-  const linkedStaffCount = useMemo(
-    () => staff.filter((member) => Boolean(member.user_id)).length,
-    [staff],
-  );
-
-  const pendingInviteCount = useMemo(
-    () =>
-      staff.filter(
-        (member) =>
-          Boolean(member.email) &&
-          !member.user_id &&
-          (member.invite_status || "").toLowerCase() === "invited",
-      ).length,
-    [staff],
-  );
-
-  const loginReadyStaffCount = useMemo(
-    () =>
-      staff.filter(
-        (member) =>
-          Boolean(member.email) &&
-          !member.user_id &&
-          (member.invite_status || "").toLowerCase() !== "invited",
-      ).length,
-    [staff],
-  );
-
   function assignedServicesForStaff(staffId: string) {
     return services.filter((service) => staffCanDoService(staffId, service.id));
   }
@@ -809,24 +774,6 @@ export default function StaffPage() {
             </div>
           )}
 
-          {ownerStaffProfile && (
-            <div className="staff-owner-note">
-              <div className="staff-owner-note-copy">
-                <strong>
-                  {t(
-                    "dashboardStaff.ownerAsStaff.linkedTitleShort",
-                    "You also take appointments",
-                  )}
-                </strong>
-              </div>
-              <div className="staff-owner-note-actions">
-                <Link href="/staff" className="btn btn-ghost">
-                  {t("dashboardSettings.more.myWork", "My staff work")}
-                </Link>
-              </div>
-            </div>
-          )}
-
           <div id="create-staff-panel">
             <CreateStaffCard
               loading={saving}
@@ -867,18 +814,6 @@ export default function StaffPage() {
               >
                 {t("dashboardStaff.noServices.cta", "Add services")}
               </Link>
-            </div>
-          )}
-
-          {staff.length > 0 && (
-            <div className="staff-summary-strip">
-              {t("dashboardStaff.list.accountSummary", "Account links:")}{" "}
-              {linkedStaffCount}{" "}
-              {t("dashboardStaff.list.linkedLogins", "linked")} ·{" "}
-              {pendingInviteCount}{" "}
-              {t("dashboardStaff.list.pendingInvites", "invite pending")} ·{" "}
-              {loginReadyStaffCount}{" "}
-              {t("dashboardStaff.list.readyToLink", "ready to link")}
             </div>
           )}
 
@@ -934,61 +869,18 @@ export default function StaffPage() {
                 setEditingStaffId={setEditingStaffId}
                 loadData={loadPage}
                 toggleStaffService={toggleStaffService}
+                isCurrentUser={Boolean(
+                  member.user_id && member.user_id === accountUserId,
+                )}
               />
             ))}
           </div>
         </>
       )}
       <style jsx>{`
-        .staff-owner-note {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          flex-wrap: wrap;
-          gap: 0.85rem;
-          margin-bottom: 1rem;
-          padding: 0.75rem 0;
-          border-top: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-        }
-
-        .staff-owner-note-copy {
-          flex: 1;
-          min-width: 260px;
-          display: grid;
-          gap: 0.25rem;
-        }
-
-        .staff-owner-note-actions {
-          display: flex;
-          gap: 0.65rem;
-          flex-wrap: wrap;
-          align-items: center;
-          justify-content: flex-end;
-        }
-
-        .staff-summary-strip {
-          margin: 0 0 0.75rem;
-          color: var(--text-muted);
-          font-size: 0.85rem;
-        }
-
         .staff-card-list {
           display: grid;
           gap: 1rem;
-        }
-
-        @media (max-width: 700px) {
-          .staff-owner-note,
-          .staff-owner-note-actions {
-            display: grid;
-          }
-
-          .staff-owner-note-actions,
-          .staff-owner-note-actions :global(.btn) {
-            width: 100%;
-            justify-content: center;
-          }
         }
       `}</style>
     </DashboardLayout>

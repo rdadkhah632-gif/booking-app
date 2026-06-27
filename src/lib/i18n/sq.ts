@@ -122,6 +122,7 @@ export const sq: TranslationTree = {
   "common.phone": "Telefoni",
   "common.notes": "Shënime",
   "common.cancel": "Anulo",
+  "common.close": "Mbyll",
   "common.selected": "Zgjedhur",
   "common.choose": "Zgjidh",
   "common.working": "Duke punuar...",
@@ -946,7 +947,7 @@ export const sq: TranslationTree = {
   "dashboardHome.schedule.kicker": "Parashikim orari",
   "dashboardHome.schedule.title": "7 ditët e ardhshme",
   "dashboardHome.schedule.body": "Rezervimet e ardhshme të konfirmuara.",
-  "dashboardHome.schedule.openBookings": "Hap menaxherin e rezervimeve",
+  "dashboardHome.schedule.openBookings": "Hap kalendarin",
   "dashboardHome.schedule.today": "Sot",
   "dashboardHome.schedule.tomorrow": "Nesër",
   "dashboardHome.schedule.booking": "rezervim",
@@ -990,9 +991,9 @@ export const sq: TranslationTree = {
   "dashboardHome.warnings.publish.cta": "Shqyrto profilin",
   "dashboardHome.shortcuts.kicker": "Mjetet e biznesit",
   "dashboardHome.shortcuts.title": "Menaxho biznesin tënd",
-  "dashboardHome.shortcuts.bookings.title": "Rezervimet",
+  "dashboardHome.shortcuts.bookings.title": "Kalendari",
   "dashboardHome.shortcuts.bookings.body":
-    "Shqyrto takimet e klientëve, miratimet në pritje dhe rezervimet e përfunduara.",
+    "Shiko takimet sipas ditës dhe orës.",
   "dashboardHome.shortcuts.setup.title": "Qendra e konfigurimit",
   "dashboardHome.shortcuts.setup.body":
     "Menaxho profile biznesi, status publikimi, foto dhe konfigurimin kryesor.",
@@ -1662,7 +1663,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.pageTitle": "Kalendari",
   "dashboardBookings.pageSubtitle": "Krijo fillimisht një biznes.",
   "dashboardBookings.pageSubtitleSelected": "Shiko çfarë ndodh dhe kur për",
-  "dashboardBookings.recordsTitle": "Rezervimet",
+  "dashboardBookings.recordsTitle": "Kalendari",
   "dashboardBookings.recordsSubtitleSelected":
     "Menaxho kërkesat, rezervimet e ardhshme dhe historikun për",
   "dashboardBookings.recordsKicker": "Regjistrat e rezervimeve",
@@ -1671,6 +1672,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.mode.bookingsBody":
     "Kërkesa, rezervime të ardhshme dhe historik",
   "dashboardBookings.appointments": "takime",
+  "dashboardBookings.appointmentCount": "takim",
   "dashboardBookings.needsApproval": "kërkojnë miratim",
   "dashboardBookings.loading": "Duke ngarkuar rezervimet...",
   "dashboardBookings.error.noAccess": "Nuk ke akses te ky biznes.",
@@ -1684,10 +1686,10 @@ export const sq: TranslationTree = {
   "dashboardBookings.businessPicker.kicker": "U gjetën disa biznese",
   "dashboardBookings.businessPicker.title": "Zgjidh një biznes për të vazhduar",
   "dashboardBookings.businessPicker.body":
-    "Zgjidh një biznes për të parë dhe menaxhuar rezervimet e tij.",
+    "Zgjidh një biznes për të hapur kalendarin e tij.",
   "dashboardBookings.businessPicker.manageBody":
-    "Shiko rezervimet për këtë biznes.",
-  "dashboardBookings.businessPicker.cta": "Shiko rezervimet",
+    "Hap kalendarin për këtë biznes.",
+  "dashboardBookings.businessPicker.cta": "Hap kalendarin",
   "dashboardBookings.toolbar.body":
     "Përdor filtrat e datës, statusit dhe kërkimit për të menaxhuar takimet, miratimet dhe historikun e rezervimeve ndërsa biznesi rritet.",
   "dashboardBookings.toolbar.refreshing": "Duke rifreskuar...",
@@ -1707,6 +1709,9 @@ export const sq: TranslationTree = {
   "dashboardBookings.range.tomorrow": "Nesër",
   "dashboardBookings.range.upcoming": "Të gjitha në vazhdim",
   "dashboardBookings.calendar.kicker": "Orari",
+  "dashboardBookings.week.previous": "Mbrapa",
+  "dashboardBookings.week.next": "Para",
+  "dashboardBookings.details.kicker": "Takimi i zgjedhur",
   "dashboardBookings.filters.calendarView": "Pamja e kalendarit",
   "dashboardBookings.filters.body":
     "Fillo me sot, shko te një datë specifike, ose hap një pamje Mirëbook të filtruar nga kalendari i dashboard-it.",
@@ -2470,7 +2475,7 @@ export const sq: TranslationTree = {
   "dashboardHome.ownerCommand.noNextBooking":
     "Nuk ka rezervime të ardhshme të konfirmuara. Mbaje konfigurimin dhe disponueshmërinë të përditësuar për klientët e rinj.",
   "dashboardHome.ownerCommand.reviewActions": "Rishiko veprimet",
-  "dashboardHome.ownerCommand.viewBookings": "Shiko rezervimet",
+  "dashboardHome.ownerCommand.viewBookings": "Hap kalendarin",
   "dashboardHome.ownerCommand.manageSetup": "Menaxho konfigurimin",
   "dashboardHome.ownerCommand.finishSetup": "Përfundo konfigurimin",
   "dashboardHome.readiness.services": "shërbime aktive",
@@ -2958,6 +2963,10 @@ export const sq: TranslationTree = {
   "dashboardStaff.card.invitePending": "Ftesa në pritje",
   "dashboardStaff.card.readyToLink": "Gati për lidhje",
   "dashboardStaff.card.noLoginEmail": "Pa email hyrjeje",
+  "dashboardStaff.card.currentUserName": "Ti",
+  "dashboardStaff.card.currentAccount": "Profili yt",
+  "dashboardStaff.card.currentAccountBody":
+    "Ky është profili yt i rezervueshëm i stafit. Menaxho shërbimet dhe orarin këtu; kërkesat për takim qëndrojnë në Inbox dhe Kalendar.",
   "dashboardStaff.card.readyToLinkBody":
     "Ky profil mund të lidhet automatikisht kur anëtari i stafit regjistrohet ose hyn duke përdorur pikërisht këtë email.",
   "dashboardStaff.card.noLoginEmailBody":
@@ -3164,7 +3173,7 @@ export const sq: TranslationTree = {
     "Shqyrto kërkesën e rezervimit",
   "dashboardNotifications.actions.reviewRescheduleRequest":
     "Shqyrto kërkesën për ndryshim orari",
-  "dashboardNotifications.actions.openBooking": "Hap rezervimin",
+  "dashboardNotifications.actions.openBooking": "Hap takimin",
   "dashboardNotifications.actions.openSupport": "Hap mbështetjen",
   "dashboardNotifications.actions.openUpdate": "Hap përditësimin",
   "notifications.types.businessBookingDeclined.message":
@@ -3589,7 +3598,7 @@ export const sq: TranslationTree = {
   "dashboardHome.today.nextLabel": "Veprimi tjetër",
   "dashboardHome.today.nextRequests": "Shqyrto kërkesat për takim",
   "dashboardHome.today.nextRequestsBody": "Klientët presin një vendim.",
-  "dashboardHome.today.nextRequestsCta": "Hap kërkesat",
+  "dashboardHome.today.nextRequestsCta": "Hap Inbox",
   "dashboardHome.today.nextCalendar": "Menaxho ditën nga Kalendari",
   "dashboardHome.today.nextCalendarBody":
     "Takimet e konfirmuara për sot janë gati.",

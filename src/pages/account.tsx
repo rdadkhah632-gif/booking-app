@@ -1031,44 +1031,6 @@ export default function AccountPage() {
                 </div>
               </div>
             )}
-
-            {!isAdmin && (
-              <div className="account-quick-links">
-                <Link
-                  href={
-                    ownsBusiness
-                      ? "/dashboard"
-                      : hasStaffAccess
-                        ? "/staff"
-                        : "/my-bookings"
-                  }
-                >
-                  {ownsBusiness
-                    ? t("dashboardLayout.nav.today", "Today")
-                    : hasStaffAccess
-                      ? t("dashboardLayout.staffNav.today", "Today")
-                      : t("nav.myBookings", "My bookings")}
-                </Link>
-                <Link
-                  href={
-                    hasStaffAccess ? "/staff/notifications" : "/notifications"
-                  }
-                >
-                  {t("nav.notifications", "Notifications")}
-                </Link>
-                <Link
-                  href={
-                    hasStaffAccess
-                      ? "/support/staff"
-                      : ownsBusiness
-                        ? "/support/business"
-                        : "/support/customer"
-                  }
-                >
-                  {t("nav.support", "Support")}
-                </Link>
-              </div>
-            )}
           </div>
         )}
       </section>
@@ -1132,16 +1094,12 @@ export default function AccountPage() {
           order: 4;
         }
 
-        .account-quick-links {
+        .account-email-preferences {
           order: 5;
         }
 
-        .account-email-preferences {
-          order: 6;
-        }
-
         .operator-account-card {
-          order: 7;
+          order: 6;
         }
 
         .account-details-panel {
@@ -1352,33 +1310,6 @@ export default function AccountPage() {
           justify-self: flex-start;
         }
 
-        .account-quick-links {
-          display: flex;
-          gap: 0.55rem;
-          flex-wrap: wrap;
-          padding-top: 0.1rem;
-        }
-
-        .account-quick-links :global(a) {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 2.35rem;
-          padding: 0.58rem 0.85rem;
-          border: 1px solid var(--border);
-          border-radius: 999px;
-          background: var(--surface-2);
-          color: var(--text-muted);
-          font-size: 0.86rem;
-          font-weight: 800;
-          text-decoration: none;
-        }
-
-        .account-quick-links :global(a:hover) {
-          color: var(--accent);
-          border-color: rgba(255, 107, 53, 0.35);
-        }
-
         @media (max-width: 700px) {
           .account-header,
           .operator-account-row {
@@ -1435,10 +1366,6 @@ export default function AccountPage() {
           .account-save-button {
             width: 100%;
             justify-content: center;
-          }
-
-          .account-quick-links {
-            display: grid;
           }
         }
       `}</style>

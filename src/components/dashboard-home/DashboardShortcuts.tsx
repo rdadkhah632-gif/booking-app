@@ -7,10 +7,10 @@ export default function DashboardShortcuts() {
   const shortcuts = [
     {
       href: "/dashboard/bookings",
-      title: t("dashboardHome.shortcuts.bookings.title", "Bookings"),
+      title: t("dashboardHome.shortcuts.bookings.title", "Calendar"),
       body: t(
         "dashboardHome.shortcuts.bookings.body",
-        "Review customer appointments, pending approvals and completed bookings.",
+        "See appointments by day and time.",
       ),
     },
     {

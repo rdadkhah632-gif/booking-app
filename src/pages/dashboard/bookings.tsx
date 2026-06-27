@@ -7,7 +7,6 @@ import EmptyBookingsCard from "@/components/dashboard-bookings/EmptyBookingsCard
 import {
   Booking,
   Business,
-  RangeFilter,
 } from "@/components/dashboard-bookings/dashboardBookingsTypes";
 import { useBookingStatusLabel } from "@/components/dashboard-bookings/BookingStatusBadge";
 import { useI18n } from "@/lib/useI18n";
@@ -44,6 +43,13 @@ function addDays(date: Date, days: number) {
 
 function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60000);
+}
+
+function startOfWeek(date: Date) {
+  const result = startOfDay(date);
+  const daysSinceMonday = (result.getDay() + 6) % 7;
+  result.setDate(result.getDate() - daysSinceMonday);
+  return result;
 }
 
 const CALENDAR_HOUR_HEIGHT = 72;
@@ -115,7 +121,7 @@ export default function Bookings() {
   const router = useRouter();
   const { t } = useI18n();
   const bookingStatusLabel = useBookingStatusLabel();
-  const { businessId, date, status, view } = router.query;
+  const { businessId, date } = router.query;
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [business, setBusiness] = useState<Business | null>(null);
@@ -128,13 +134,9 @@ export default function Bookings() {
     ManualStaffService[]
   >([]);
 
-  const [rangeFilter, setRangeFilter] = useState<RangeFilter>("today");
   const [selectedDate, setSelectedDate] = useState(() =>
     toDateInputValue(new Date()),
   );
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [staffFilter, setStaffFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
 
   const [pageLoading, setPageLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
@@ -146,6 +148,9 @@ export default function Bookings() {
   const [success, setSuccess] = useState<string | null>(null);
   const [manualBookingOpen, setManualBookingOpen] = useState(false);
   const [manualBookingSaving, setManualBookingSaving] = useState(false);
+  const [selectedCalendarBookingId, setSelectedCalendarBookingId] = useState<
+    string | null
+  >(null);
   const [manualBookingError, setManualBookingError] = useState<string | null>(
     null,
   );
@@ -158,37 +163,24 @@ export default function Bookings() {
 
   function buildBookingsQuery(next?: {
     nextBusinessId?: string;
-    nextFilter?: RangeFilter;
     nextDate?: string;
-    nextStatus?: string;
   }) {
     const query: Record<string, string> = {};
     const effectiveBusinessId =
       next?.nextBusinessId ||
       business?.id ||
       (typeof businessId === "string" ? businessId : "");
-    const effectiveFilter = next?.nextFilter || rangeFilter;
     const effectiveDate = next?.nextDate || selectedDate;
-    const effectiveStatus = next?.nextStatus ?? statusFilter;
 
     if (effectiveBusinessId) query.businessId = effectiveBusinessId;
-
-    if (effectiveFilter === "custom") {
-      query.date = effectiveDate;
-    } else {
-      query.view = effectiveFilter;
-    }
-
-    if (effectiveStatus !== "all") query.status = effectiveStatus;
+    if (effectiveDate) query.date = effectiveDate;
 
     return query;
   }
 
   function replaceBookingsQuery(next?: {
     nextBusinessId?: string;
-    nextFilter?: RangeFilter;
     nextDate?: string;
-    nextStatus?: string;
   }) {
     router.replace(
       {
@@ -198,17 +190,6 @@ export default function Bookings() {
       undefined,
       { shallow: true },
     );
-  }
-
-  function updateBookingView(nextFilter: RangeFilter, nextDate?: string) {
-    const effectiveDate = nextDate || selectedDate;
-    setSelectedDate(effectiveDate);
-    setRangeFilter(nextFilter);
-
-    replaceBookingsQuery({
-      nextFilter,
-      nextDate: effectiveDate,
-    });
   }
 
   async function getBusinessContext(sessionUserId: string) {
@@ -441,39 +422,10 @@ export default function Bookings() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    const validViews: RangeFilter[] = [
-      "today",
-      "tomorrow",
-      "week",
-      "upcoming",
-      "history",
-      "custom",
-    ];
-    const validStatuses = [
-      "all",
-      "pending",
-      "confirmed",
-      "completed",
-      "cancelled",
-      "declined",
-    ];
-
     if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       setSelectedDate(date);
-      setRangeFilter("custom");
-      return;
     }
-
-    if (typeof view === "string" && validViews.includes(view as RangeFilter)) {
-      setRangeFilter(view as RangeFilter);
-    }
-
-    if (typeof status === "string" && validStatuses.includes(status)) {
-      setStatusFilter(status);
-    } else if (typeof status === "undefined") {
-      setStatusFilter("all");
-    }
-  }, [router.isReady, date, status, view]);
+  }, [router.isReady, date]);
 
   async function createCustomerNotification(params: {
     booking: Booking;
@@ -814,73 +766,6 @@ export default function Bookings() {
     };
   }
 
-  function dateRangeForFilter(filter: RangeFilter) {
-    const today = startOfDay(new Date());
-
-    if (filter === "today") {
-      return {
-        start: today,
-        end: endOfDay(today),
-        label: t("dashboardHome.summary.today", "Today"),
-      };
-    }
-
-    if (filter === "tomorrow") {
-      const tomorrow = addDays(today, 1);
-      return {
-        start: tomorrow,
-        end: endOfDay(tomorrow),
-        label: t("dashboardBookings.range.tomorrow", "Tomorrow"),
-      };
-    }
-
-    if (filter === "week") {
-      return {
-        start: today,
-        end: endOfDay(addDays(today, 6)),
-        label: t("dashboardHome.schedule.title", "Next 7 days"),
-      };
-    }
-
-    if (filter === "custom") {
-      const selected = new Date(`${selectedDate}T12:00:00`);
-      return {
-        start: startOfDay(selected),
-        end: endOfDay(selected),
-        label: selected.toLocaleDateString(undefined, {
-          weekday: "long",
-          day: "numeric",
-          month: "short",
-        }),
-      };
-    }
-
-    return {
-      start: null,
-      end: null,
-      label:
-        filter === "history"
-          ? t("dashboardBookings.summary.history", "History")
-          : t("dashboardBookings.range.upcoming", "All upcoming"),
-    };
-  }
-
-  const now = new Date();
-
-  const pendingBookings = useMemo(() => {
-    return bookings.filter((booking) => booking.status === "pending");
-  }, [bookings]);
-
-  const staffOptions = useMemo(() => {
-    return Array.from(
-      new Set(
-        bookings
-          .map((booking) => booking.staff_members?.name?.trim())
-          .filter(Boolean) as string[],
-      ),
-    ).sort((a, b) => a.localeCompare(b));
-  }, [bookings]);
-
   const selectedManualService = useMemo(
     () =>
       manualServices.find(
@@ -905,154 +790,78 @@ export default function Bookings() {
     manualStaff.length > 0 &&
     manualStaffServices.length > 0;
 
-  const filteredBookings = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
-    const range = dateRangeForFilter(rangeFilter);
-
-    return bookings.filter((booking) => {
-      const bookingDate = new Date(booking.start_at);
-
-      const matchesStatus =
-        statusFilter === "all" ? true : booking.status === statusFilter;
-      const matchesStaff =
-        staffFilter === "all"
-          ? true
-          : booking.staff_members?.name?.trim() === staffFilter;
-      const matchesSearch = !search
-        ? true
-        : [
-            booking.customer_name,
-            booking.customer_email,
-            booking.customer_phone,
-            booking.services?.name,
-            booking.staff_members?.name,
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase()
-            .includes(search);
-
-      let matchesRange = true;
-
-      if (rangeFilter === "history") {
-        matchesRange =
-          booking.status === "cancelled" ||
-          booking.status === "declined" ||
-          booking.status === "completed" ||
-          (booking.status === "confirmed" && bookingDate < now);
-      } else if (rangeFilter === "upcoming") {
-        matchesRange =
-          booking.status === "pending" ||
-          (booking.status === "confirmed" && bookingDate >= now);
-      } else if (range.start && range.end) {
-        matchesRange = bookingDate >= range.start && bookingDate <= range.end;
-      }
-
-      return matchesStatus && matchesStaff && matchesSearch && matchesRange;
-    });
-  }, [
-    bookings,
-    rangeFilter,
-    selectedDate,
-    statusFilter,
-    staffFilter,
-    searchTerm,
-    now,
-  ]);
-
-  const groupedFilteredBookings = useMemo(() => {
-    const groups = filteredBookings.reduce<Record<string, Booking[]>>(
-      (acc, booking) => {
-        const key = new Date(booking.start_at).toISOString().slice(0, 10);
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(booking);
-        return acc;
-      },
-      {},
-    );
-
-    return Object.entries(groups)
-      .sort(([a], [b]) => {
-        if (rangeFilter === "history") return b.localeCompare(a);
-        return a.localeCompare(b);
+  const selectedDateObject = useMemo(
+    () => new Date(`${selectedDate}T12:00:00`),
+    [selectedDate],
+  );
+  const weekStartDate = useMemo(
+    () => startOfWeek(selectedDateObject),
+    [selectedDateObject],
+  );
+  const weekEndDate = useMemo(
+    () => endOfDay(addDays(weekStartDate, 6)),
+    [weekStartDate],
+  );
+  const weekDays = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, index) => addDays(weekStartDate, index)),
+    [weekStartDate],
+  );
+  const weekBookings = useMemo(() => {
+    return bookings
+      .filter((booking) => {
+        const bookingDate = new Date(booking.start_at);
+        return bookingDate >= weekStartDate && bookingDate <= weekEndDate;
       })
-      .map(([dateKey, rows]) => ({
+      .sort(
+        (a, b) =>
+          new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
+      );
+  }, [bookings, weekStartDate, weekEndDate]);
+  const weekGroups = useMemo(() => {
+    return weekDays.map((day) => {
+      const dateKey = dateKeyForDate(day);
+
+      return {
+        date: day,
         dateKey,
         label: labelForDateKey(dateKey),
-        bookings: rows.sort(
-          (a, b) =>
-            new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
+        shortLabel: day.toLocaleDateString(undefined, {
+          weekday: "short",
+          day: "numeric",
+        }),
+        bookings: weekBookings.filter(
+          (booking) => dateKeyForDate(new Date(booking.start_at)) === dateKey,
         ),
-      }));
-  }, [filteredBookings, rangeFilter]);
-
-  const selectedRange = dateRangeForFilter(rangeFilter);
-
-  const selectedDateLabel = new Date(
-    `${selectedDate}T12:00:00`,
-  ).toLocaleDateString(undefined, {
-    weekday: "long",
+      };
+    });
+  }, [weekDays, weekBookings]);
+  const selectedCalendarBooking = useMemo(
+    () =>
+      weekBookings.find(
+        (booking) => booking.id === selectedCalendarBookingId,
+      ) || null,
+    [weekBookings, selectedCalendarBookingId],
+  );
+  const weekPendingCount = weekBookings.filter(
+    (booking) => booking.status === "pending",
+  ).length;
+  const weekLabel = `${weekStartDate.toLocaleDateString(undefined, {
     day: "numeric",
-    month: "long",
-  });
+    month: "short",
+  })} - ${weekEndDate.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  })}`;
 
-  const activeFilterSummary = [
-    selectedRange.label,
-    statusFilter === "all"
-      ? t("dashboardBookings.status.all", "All statuses")
-      : statusLabel(statusFilter),
-    staffFilter !== "all"
-      ? `${t("support.business.staff", "Staff")}: ${staffFilter}`
-      : "",
-    searchTerm.trim()
-      ? `${t("dashboardBookings.filters.searchShort", "Search")}: ${searchTerm.trim()}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  const isBookingListMode =
-    rangeFilter === "upcoming" ||
-    rangeFilter === "history" ||
-    statusFilter !== "all" ||
-    staffFilter !== "all" ||
-    Boolean(searchTerm.trim());
-
-  const calendarGroups = useMemo(() => {
-    if (isBookingListMode) return [];
-    if (groupedFilteredBookings.length > 0) return groupedFilteredBookings;
-
-    const today = startOfDay(new Date());
-    const dateForFilter =
-      rangeFilter === "tomorrow"
-        ? addDays(today, 1)
-        : rangeFilter === "custom"
-          ? new Date(`${selectedDate}T12:00:00`)
-          : today;
-
-    if (rangeFilter === "week") {
-      return Array.from({ length: 7 }, (_, index) => {
-        const date = addDays(today, index);
-        const dateKey = dateKeyForDate(date);
-
-        return {
-          dateKey,
-          label: labelForDateKey(dateKey),
-          bookings: [] as Booking[],
-        };
-      });
+  useEffect(() => {
+    if (
+      selectedCalendarBookingId &&
+      !bookings.some((booking) => booking.id === selectedCalendarBookingId)
+    ) {
+      setSelectedCalendarBookingId(null);
     }
-
-    const dateKey = dateKeyForDate(dateForFilter);
-
-    return [
-      {
-        dateKey,
-        label: labelForDateKey(dateKey),
-        bookings: [] as Booking[],
-      },
-    ];
-  }, [groupedFilteredBookings, isBookingListMode, rangeFilter, selectedDate]);
+  }, [bookings, selectedCalendarBookingId]);
 
   function customerHistoryLink(booking: Booking) {
     if (booking.customer_user_id) {
@@ -1062,25 +871,18 @@ export default function Bookings() {
     return `/dashboard/customers/by-email?email=${encodeURIComponent(booking.customer_email || "")}&businessId=${business?.id || booking.business_id}`;
   }
 
-  function resetFilters() {
-    setSearchTerm("");
-    setStatusFilter("all");
-    setStaffFilter("all");
-    updateBookingView("today");
-    replaceBookingsQuery({ nextFilter: "today", nextStatus: "all" });
+  function changeCalendarDate(value: string) {
+    setSelectedDate(value);
+    setSelectedCalendarBookingId(null);
+    replaceBookingsQuery({ nextDate: value });
   }
 
   function goToToday() {
-    const today = toDateInputValue(new Date());
-    setSelectedDate(today);
-    setRangeFilter("today");
-    replaceBookingsQuery({ nextFilter: "today", nextDate: today });
+    changeCalendarDate(toDateInputValue(new Date()));
   }
 
-  function changeSelectedDate(value: string) {
-    setSelectedDate(value);
-    setRangeFilter("custom");
-    replaceBookingsQuery({ nextFilter: "custom", nextDate: value });
+  function moveWeek(direction: -1 | 1) {
+    changeCalendarDate(toDateInputValue(addDays(weekStartDate, direction * 7)));
   }
 
   function updateManualBookingField(
@@ -1347,15 +1149,9 @@ export default function Bookings() {
         time: manualBooking.time,
       });
       setManualBookingOpen(false);
-      setSearchTerm("");
-      setStaffFilter("all");
-      setStatusFilter("all");
       setSelectedDate(manualBooking.date);
-      setRangeFilter("custom");
       replaceBookingsQuery({
-        nextFilter: "custom",
         nextDate: manualBooking.date,
-        nextStatus: "all",
       });
       setSuccess(
         t(
@@ -1529,15 +1325,24 @@ export default function Bookings() {
       (durationMinutes / 60) * CALENDAR_HOUR_HEIGHT,
     );
 
+    const isSelected = selectedCalendarBookingId === booking.id;
+
     return (
-      <Link
+      <button
         key={booking.id}
-        href={customerHistoryLink(booking)}
-        className={`calendar-schedule-block ${booking.status}`}
+        type="button"
+        onClick={() => setSelectedCalendarBookingId(booking.id)}
+        className={`calendar-schedule-block ${booking.status} ${
+          isSelected ? "selected" : ""
+        }`}
         style={{
           top: `${Math.max(0, blockTop)}px`,
           height: `${blockHeight}px`,
         }}
+        aria-label={`${time.label} ${
+          booking.customer_name ||
+          t("dashboardBookings.card.customerFallback", "Customer")
+        }`}
       >
         <span className="schedule-block-time">{time.label}</span>
         <strong>
@@ -1554,16 +1359,12 @@ export default function Bookings() {
         <span className={`calendar-status status-${booking.status}`}>
           {statusLabel(booking.status)}
         </span>
-      </Link>
+      </button>
     );
   }
 
-  function renderScheduleDay(group: {
-    dateKey: string;
-    label: string;
-    bookings: Booking[];
-  }) {
-    const { startHour, endHour } = scheduleWindowFor(group.bookings);
+  function renderWeekCalendar() {
+    const { startHour, endHour } = scheduleWindowFor(weekBookings);
     const hours = Array.from(
       { length: endHour - startHour + 1 },
       (_, index) => startHour + index,
@@ -1571,23 +1372,53 @@ export default function Bookings() {
     const scheduleHeight = (endHour - startHour) * CALENDAR_HOUR_HEIGHT;
 
     return (
-      <section key={group.dateKey} className="calendar-day calendar-day-visual">
-        <div className="calendar-day-heading">
-          {group.bookings.length > 0 && (
-            <p className="small muted">
-              {group.bookings.length}{" "}
+      <section className="week-calendar">
+        <div className="week-calendar-summary">
+          <div>
+            <strong>{weekLabel}</strong>
+            <span>
+              {weekBookings.length}{" "}
               {t("dashboardBookings.appointmentCount", "appointment")}
-              {group.bookings.length === 1 ? "" : "s"}
-            </p>
+              {weekBookings.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          {weekPendingCount > 0 && (
+            <span className="calendar-pending">
+              {weekPendingCount}{" "}
+              {t("dashboardBookings.needsApproval", "need approval")}
+            </span>
           )}
-          <h2 style={{ fontFamily: "var(--font-display)" }}>{group.label}</h2>
         </div>
 
-        <div
-          className="calendar-schedule-grid"
-          style={{ minHeight: `${scheduleHeight}px` }}
-        >
-          <div className="calendar-time-rail" aria-hidden="true">
+        <div className="week-calendar-grid">
+          <div className="week-calendar-corner" />
+          {weekGroups.map((group) => (
+            <button
+              key={group.dateKey}
+              type="button"
+              className={
+                group.dateKey === selectedDate
+                  ? "week-day-header active"
+                  : "week-day-header"
+              }
+              onClick={() => changeCalendarDate(group.dateKey)}
+            >
+              <span>{group.shortLabel}</span>
+              {group.bookings.length > 0 && (
+                <small>
+                  {group.bookings.length}{" "}
+                  {t("dashboardBookings.appointmentCount", "appointment")}
+                  {group.bookings.length === 1 ? "" : "s"}
+                </small>
+              )}
+            </button>
+          ))}
+
+          <div
+            className="week-time-rail"
+            style={{ height: `${scheduleHeight}px` }}
+            aria-hidden="true"
+          >
             {hours.map((hour) => (
               <span
                 key={hour}
@@ -1600,41 +1431,31 @@ export default function Bookings() {
             ))}
           </div>
 
-          <div
-            className="calendar-schedule-lane"
-            style={{ height: `${scheduleHeight}px` }}
-          >
-            {hours.slice(0, -1).map((hour) => (
-              <span
-                key={hour}
-                className="calendar-hour-line"
-                style={{
-                  top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
-                }}
-              />
-            ))}
+          {weekGroups.map((group) => (
+            <div
+              key={group.dateKey}
+              className="week-day-lane"
+              style={{ height: `${scheduleHeight}px` }}
+            >
+              {hours.slice(0, -1).map((hour) => (
+                <span
+                  key={hour}
+                  className="calendar-hour-line"
+                  style={{
+                    top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
+                  }}
+                />
+              ))}
 
-            {group.bookings.length === 0 ? (
-              <div className="calendar-schedule-empty">
-                <strong>
-                  {t(
-                    "dashboardBookings.calendar.emptySlotTitle",
-                    "No appointments on this day",
-                  )}
-                </strong>
-                <span>
-                  {t(
-                    "dashboardBookings.calendar.emptySlotBody",
-                    "Bookings will appear here at their scheduled time.",
-                  )}
-                </span>
-              </div>
-            ) : (
-              group.bookings.map((booking) =>
-                renderCalendarBlock(booking, startHour),
-              )
-            )}
-          </div>
+              {group.bookings.length === 0 ? (
+                <span className="week-day-empty" aria-hidden="true" />
+              ) : (
+                group.bookings.map((booking) =>
+                  renderCalendarBlock(booking, startHour),
+                )
+              )}
+            </div>
+          ))}
         </div>
       </section>
     );
@@ -1642,11 +1463,7 @@ export default function Bookings() {
 
   return (
     <DashboardLayout
-      title={
-        isBookingListMode
-          ? t("dashboardBookings.recordsTitle", "Bookings")
-          : t("dashboardBookings.pageTitle", "Calendar")
-      }
+      title={t("dashboardBookings.pageTitle", "Calendar")}
       subtitle={
         business
           ? business.name
@@ -1722,49 +1539,18 @@ export default function Bookings() {
       {!pageLoading && business && (
         <div className="calendar-workspace">
           <section className="calendar-shell">
-            <div className="booking-mode-switch">
-              <button
-                type="button"
-                className={
-                  !isBookingListMode
-                    ? "booking-mode-tab active"
-                    : "booking-mode-tab"
-                }
-                onClick={() => updateBookingView("today")}
-              >
-                <strong>{t("dashboardLayout.nav.calendar", "Calendar")}</strong>
-              </button>
-              <button
-                type="button"
-                className={
-                  isBookingListMode
-                    ? "booking-mode-tab active"
-                    : "booking-mode-tab"
-                }
-                onClick={() => updateBookingView("upcoming")}
-              >
-                <strong>{t("dashboardLayout.nav.bookings", "Bookings")}</strong>
-              </button>
-            </div>
-
             <div className="calendar-toolbar">
               <div>
-                <h2>
-                  {isBookingListMode
-                    ? t("dashboardBookings.recordsHeading", "Manage bookings")
-                    : rangeFilter === "custom"
-                      ? selectedDateLabel
-                      : selectedRange.label}
-                </h2>
+                <h2>{weekLabel}</h2>
               </div>
 
               <div className="calendar-date-controls">
                 <button
                   type="button"
-                  className="btn btn-accent"
-                  onClick={openManualBooking}
+                  className="btn btn-ghost"
+                  onClick={() => moveWeek(-1)}
                 >
-                  {t("dashboardBookings.manual.open", "Add booking")}
+                  {t("dashboardBookings.week.previous", "Previous")}
                 </button>
                 <button
                   type="button"
@@ -1776,12 +1562,26 @@ export default function Bookings() {
                 <input
                   type="date"
                   value={selectedDate}
-                  onChange={(event) => changeSelectedDate(event.target.value)}
+                  onChange={(event) => changeCalendarDate(event.target.value)}
                   aria-label={t(
                     "dashboardBookings.filters.jumpDate",
                     "Jump to date",
                   )}
                 />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => moveWeek(1)}
+                >
+                  {t("dashboardBookings.week.next", "Next")}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  onClick={openManualBooking}
+                >
+                  {t("dashboardBookings.manual.open", "Add booking")}
+                </button>
               </div>
             </div>
 
@@ -2033,201 +1833,36 @@ export default function Bookings() {
                 )}
               </section>
             )}
-
-            <div className="calendar-range-row">
-              {[
-                {
-                  key: "today",
-                  label: t("dashboardHome.summary.today", "Today"),
-                },
-                {
-                  key: "tomorrow",
-                  label: t("dashboardBookings.range.tomorrow", "Tomorrow"),
-                },
-                {
-                  key: "week",
-                  label: t("dashboardHome.schedule.title", "Next 7 days"),
-                },
-                {
-                  key: "upcoming",
-                  label: t("dashboardBookings.range.upcoming", "Upcoming"),
-                },
-                {
-                  key: "history",
-                  label: t("dashboardBookings.summary.history", "History"),
-                },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  className={
-                    rangeFilter === item.key
-                      ? "calendar-chip active"
-                      : "calendar-chip"
-                  }
-                  onClick={() => updateBookingView(item.key as RangeFilter)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="calendar-filter-row">
-              <label>
-                <span>{t("dashboardBookings.filters.status", "Status")}</span>
-                <select
-                  value={statusFilter}
-                  onChange={(event) => {
-                    setStatusFilter(event.target.value);
-                    replaceBookingsQuery({ nextStatus: event.target.value });
-                  }}
-                >
-                  <option value="all">
-                    {t("dashboardBookings.status.all", "All statuses")}
-                  </option>
-                  <option value="pending">{statusLabel("pending")}</option>
-                  <option value="confirmed">{statusLabel("confirmed")}</option>
-                  <option value="completed">{statusLabel("completed")}</option>
-                  <option value="cancelled">{statusLabel("cancelled")}</option>
-                  <option value="declined">{statusLabel("declined")}</option>
-                </select>
-              </label>
-
-              {staffOptions.length > 0 && (
-                <label>
-                  <span>{t("support.business.staff", "Staff")}</span>
-                  <select
-                    value={staffFilter}
-                    onChange={(event) => setStaffFilter(event.target.value)}
-                  >
-                    <option value="all">
-                      {t("dashboardBookings.filters.allStaff", "All staff")}
-                    </option>
-                    {staffOptions.map((staffName) => (
-                      <option key={staffName} value={staffName}>
-                        {staffName}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-
-              <label>
-                <span>
-                  {t("dashboardBookings.filters.searchShort", "Search")}
-                </span>
-                <input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder={t(
-                    "dashboardBookings.filters.searchPlaceholder",
-                    "Search bookings",
-                  )}
-                />
-              </label>
-            </div>
           </section>
 
-          <div className="calendar-overview">
-            <div>
-              <strong>{activeFilterSummary}</strong>
-              <span className="small muted">
-                {filteredBookings.length}{" "}
-                {t("dashboardBookings.appointments", "appointments")}
-              </span>
-            </div>
-            {pendingBookings.length > 0 && (
-              <span className="calendar-pending">
-                {pendingBookings.length}{" "}
-                {t("dashboardBookings.needsApproval", "need approval")}
-              </span>
-            )}
-          </div>
+          {renderWeekCalendar()}
 
-          {pendingBookings.length > 0 && rangeFilter !== "history" && (
-            <section className="pending-strip">
-              <div>
-                <strong>
-                  {t(
-                    "dashboardBookings.pendingStrip.title",
-                    "Requests waiting",
-                  )}
-                </strong>
-                <p className="small muted">
-                  {t(
-                    "dashboardBookings.pendingStrip.body",
-                    "Review pending booking requests before they become part of the confirmed schedule.",
-                  )}
-                </p>
-              </div>
-              <div className="pending-strip-list">
-                {pendingBookings.slice(0, 3).map((booking) => (
-                  <button
-                    key={booking.id}
-                    type="button"
-                    className="pending-pill"
-                    onClick={() => {
-                      setStatusFilter("pending");
-                      updateBookingView("upcoming");
-                    }}
-                  >
-                    <span>
-                      {booking.customer_name ||
-                        t("common.customer", "Customer")}
-                    </span>
-                    <small>{bookingTime(booking).label}</small>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {filteredBookings.length === 0 && isBookingListMode && (
-            <section className="calendar-empty-state">
-              <h2>
-                {t(
-                  "dashboardBookings.empty.noBookingRecordsTitle",
-                  "No booking records match",
-                )}
-              </h2>
-              <p className="muted">
-                {t(
-                  "dashboardBookings.empty.noBookingRecordsBody",
-                  "Try a different status, staff member or search term.",
-                )}
-              </p>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={resetFilters}
-              >
-                {t("dashboardBookings.filters.reset", "Reset filters")}
-              </button>
-            </section>
-          )}
-
-          {isBookingListMode
-            ? groupedFilteredBookings.map((group) => (
-                <section key={group.dateKey} className="calendar-day">
-                  <div className="calendar-day-heading">
-                    <p className="small muted">
-                      {group.bookings.length}{" "}
-                      {t("dashboardBookings.appointmentCount", "appointment")}
-                      {group.bookings.length === 1 ? "" : "s"}
-                    </p>
-                    <h2 style={{ fontFamily: "var(--font-display)" }}>
-                      {group.label}
-                    </h2>
-                  </div>
-
-                  <div className="calendar-day-schedule">
-                    {group.bookings.map((booking) =>
-                      renderAppointment(booking),
+          {selectedCalendarBooking && (
+            <section className="calendar-selected-details">
+              <div className="calendar-selected-heading">
+                <div>
+                  <p className="small muted">
+                    {t(
+                      "dashboardBookings.details.kicker",
+                      "Selected appointment",
                     )}
-                  </div>
-                </section>
-              ))
-            : calendarGroups.map((group) => renderScheduleDay(group))}
+                  </p>
+                  <h2>
+                    {selectedCalendarBooking.customer_name ||
+                      t("dashboardBookings.card.customerFallback", "Customer")}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setSelectedCalendarBookingId(null)}
+                >
+                  {t("common.close", "Close")}
+                </button>
+              </div>
+              {renderAppointment(selectedCalendarBooking)}
+            </section>
+          )}
         </div>
       )}
 
@@ -2331,39 +1966,11 @@ export default function Bookings() {
         }
 
         .calendar-toolbar,
-        .calendar-date-controls,
-        .calendar-filter-row,
-        .calendar-range-row,
-        .booking-mode-switch {
+        .calendar-date-controls {
           display: flex;
           gap: 0.75rem;
           align-items: center;
           flex-wrap: wrap;
-        }
-
-        .booking-mode-switch {
-          align-items: stretch;
-        }
-
-        .booking-mode-tab {
-          display: flex;
-          align-items: center;
-          flex: 1 1 14rem;
-          min-height: 2.85rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: var(--surface-2);
-          color: var(--text);
-          padding: 0.65rem 0.8rem;
-          text-align: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-
-        .booking-mode-tab.active {
-          border-color: rgba(255, 107, 53, 0.38);
-          background: rgba(255, 107, 53, 0.08);
-          color: var(--accent);
         }
 
         .calendar-toolbar {
@@ -2377,9 +1984,7 @@ export default function Bookings() {
           margin-top: 0;
         }
 
-        .calendar-date-controls input,
-        .calendar-filter-row input,
-        .calendar-filter-row select {
+        .calendar-date-controls input {
           min-height: 2.55rem;
           border: 1px solid var(--border);
           background: var(--surface-2);
@@ -2388,51 +1993,8 @@ export default function Bookings() {
           color-scheme: dark;
         }
 
-        .calendar-date-controls input,
-        .calendar-filter-row input,
-        .calendar-filter-row select {
+        .calendar-date-controls input {
           padding: 0.55rem 0.7rem;
-        }
-
-        .calendar-filter-row label {
-          display: grid;
-          gap: 0.3rem;
-          flex: 1 1 180px;
-          color: var(--text-muted);
-          font-size: 0.78rem;
-          font-weight: 700;
-        }
-
-        .calendar-chip {
-          min-height: 2.35rem;
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text-muted);
-          border-radius: 999px;
-          padding: 0.45rem 0.8rem;
-          cursor: pointer;
-        }
-
-        .calendar-chip.active {
-          border-color: rgba(255, 107, 53, 0.4);
-          background: var(--accent-dim);
-          color: var(--accent);
-          font-weight: 800;
-        }
-
-        .calendar-overview {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          padding: 0.75rem 0;
-          border-top: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-        }
-
-        .calendar-overview > div {
-          display: grid;
-          gap: 0.2rem;
         }
 
         .calendar-pending {
@@ -2441,97 +2003,145 @@ export default function Bookings() {
           font-weight: 800;
         }
 
-        .pending-strip {
+        .week-calendar {
           display: grid;
-          grid-template-columns: minmax(180px, 0.85fr) minmax(0, 1.4fr);
+          gap: 0.75rem;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+          overflow: hidden;
+        }
+
+        .week-calendar-summary {
+          display: flex;
+          justify-content: space-between;
           gap: 1rem;
           align-items: center;
-          padding: 0.9rem 1rem;
-          border: 1px solid rgba(255, 107, 53, 0.24);
-          border-radius: var(--radius);
-          background: rgba(255, 107, 53, 0.07);
         }
 
-        .pending-strip p {
-          margin-top: 0.25rem;
-        }
-
-        .pending-strip-list {
+        .week-calendar-summary div {
           display: flex;
-          gap: 0.6rem;
+          gap: 0.5rem;
+          align-items: baseline;
           flex-wrap: wrap;
-          justify-content: flex-end;
         }
 
-        .pending-pill {
+        .week-calendar-summary span {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+        }
+
+        .week-calendar-grid {
           display: grid;
-          gap: 0.15rem;
-          min-width: 9rem;
-          text-align: left;
-          border: 1px solid rgba(255, 107, 53, 0.24);
+          grid-template-columns: 4rem repeat(7, minmax(0, 1fr));
+          overflow: hidden;
+          border: 1px solid var(--border);
           border-radius: var(--radius);
-          background: rgba(11, 18, 32, 0.45);
+          background: rgba(11, 18, 32, 0.28);
+        }
+
+        .week-calendar-corner,
+        .week-day-header {
+          min-height: 3.6rem;
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          background: rgba(255, 255, 255, 0.02);
+        }
+
+        .week-day-header {
+          display: grid;
+          gap: 0.12rem;
+          align-content: center;
+          justify-items: center;
+          min-width: 0;
+          padding: 0.4rem 0.25rem;
           color: var(--text);
-          padding: 0.65rem 0.75rem;
+          font: inherit;
+          text-align: center;
           cursor: pointer;
         }
 
-        .pending-pill small {
+        .week-day-header.active {
+          background: rgba(255, 107, 53, 0.08);
+          color: var(--accent);
+        }
+
+        .week-day-header span,
+        .week-day-header small {
+          overflow: hidden;
+          max-width: 100%;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .week-day-header span {
+          font-weight: 900;
+        }
+
+        .week-day-header small {
           color: var(--text-muted);
+          font-size: 0.7rem;
+          font-weight: 800;
         }
 
-        :global(.calendar-day) {
-          display: grid;
-          gap: 0.8rem;
-        }
-
-        :global(.calendar-day-heading) {
-          padding-top: 0.35rem;
-          border-bottom: 1px solid var(--border);
-        }
-
-        :global(.calendar-day-heading h2),
-        :global(.calendar-day-heading p) {
-          margin-top: 0;
-        }
-
-        :global(.calendar-day-schedule) {
-          display: grid;
-          gap: 0.55rem;
-        }
-
-        :global(.calendar-day-visual) {
-          padding-bottom: 0.35rem;
-        }
-
-        :global(.calendar-schedule-grid) {
-          display: grid;
-          grid-template-columns: 4.5rem minmax(0, 1fr);
-          gap: 0.75rem;
-          min-width: 0;
-        }
-
-        :global(.calendar-time-rail),
-        :global(.calendar-schedule-lane) {
+        .week-time-rail,
+        .week-day-lane {
           position: relative;
           min-width: 0;
         }
 
-        :global(.calendar-time-rail span) {
+        .week-time-rail {
+          border-right: 1px solid var(--border);
+        }
+
+        .week-time-rail span {
           position: absolute;
-          right: 0;
+          right: 0.45rem;
           transform: translateY(-0.55rem);
           color: var(--text-muted);
-          font-size: 0.76rem;
+          font-size: 0.72rem;
           font-weight: 800;
           white-space: nowrap;
         }
 
-        :global(.calendar-schedule-lane) {
-          overflow: hidden;
-          border: 1px solid var(--border);
+        .week-day-lane {
+          border-right: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .week-day-lane:last-child,
+        .week-day-header:last-of-type {
+          border-right: 0;
+        }
+
+        .week-day-empty {
+          position: absolute;
+          inset: 0.35rem;
+          border: 1px dashed rgba(148, 163, 184, 0.1);
+          border-radius: calc(var(--radius) - 4px);
+          pointer-events: none;
+        }
+
+        .calendar-selected-details {
+          display: grid;
+          gap: 0.75rem;
+          padding: 1rem;
+          border: 1px solid rgba(255, 107, 53, 0.22);
           border-radius: var(--radius);
-          background: rgba(11, 18, 32, 0.34);
+          background: rgba(255, 107, 53, 0.05);
+        }
+
+        .calendar-selected-heading {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .calendar-selected-heading h2,
+        .calendar-selected-heading p {
+          margin: 0;
         }
 
         :global(.calendar-hour-line) {
@@ -2542,32 +2152,15 @@ export default function Bookings() {
           background: var(--border);
         }
 
-        :global(.calendar-schedule-empty) {
-          position: absolute;
-          inset: 0.75rem;
-          display: grid;
-          place-content: center;
-          gap: 0.3rem;
-          border: 1px dashed rgba(148, 163, 184, 0.28);
-          border-radius: calc(var(--radius) - 2px);
-          color: var(--text);
-          text-align: center;
-        }
-
-        :global(.calendar-schedule-empty span) {
-          color: var(--text-muted);
-          font-size: 0.86rem;
-        }
-
         :global(.calendar-schedule-block) {
           position: absolute;
-          left: 0.75rem;
-          right: 0.75rem;
+          left: 0.35rem;
+          right: 0.35rem;
           display: grid;
           align-content: start;
           gap: 0.14rem;
           overflow: hidden;
-          padding: 0.62rem 0.72rem;
+          padding: 0.48rem 0.5rem;
           border: 1px solid rgba(45, 212, 191, 0.28);
           border-left: 4px solid var(--success);
           border-radius: calc(var(--radius) - 2px);
@@ -2579,8 +2172,15 @@ export default function Bookings() {
             ),
             rgba(15, 23, 42, 0.92);
           color: var(--text);
-          text-decoration: none;
+          font: inherit;
+          text-align: left;
+          cursor: pointer;
           box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+        }
+
+        :global(.calendar-schedule-block.selected) {
+          outline: 2px solid rgba(255, 107, 53, 0.72);
+          outline-offset: 1px;
         }
 
         :global(.calendar-schedule-block.pending) {
@@ -2616,6 +2216,7 @@ export default function Bookings() {
 
         :global(.calendar-schedule-block strong) {
           overflow: hidden;
+          font-size: 0.84rem;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
@@ -2835,15 +2436,6 @@ export default function Bookings() {
           .calendar-toolbar,
           .calendar-date-controls,
           .calendar-date-controls input,
-          .calendar-range-row,
-          .calendar-range-row button,
-          .booking-mode-switch,
-          .booking-mode-tab,
-          .calendar-filter-row,
-          .calendar-filter-row label,
-          .pending-strip,
-          .pending-strip-list,
-          .pending-pill,
           .calendar-empty-action-grid,
           .calendar-empty-actions,
           .calendar-empty-actions :global(.btn),
@@ -2852,24 +2444,51 @@ export default function Bookings() {
             width: 100%;
           }
 
-          .calendar-overview {
-            align-items: flex-start;
+          .week-calendar {
+            padding: 0.65rem;
           }
 
-          :global(.calendar-schedule-grid) {
-            grid-template-columns: 3.7rem minmax(0, 1fr);
-            gap: 0.55rem;
+          .week-calendar-summary,
+          .calendar-selected-heading {
+            display: grid;
+            align-items: stretch;
+          }
+
+          .week-calendar-grid {
+            grid-template-columns: 3.2rem repeat(7, minmax(0, 1fr));
+          }
+
+          .week-calendar-corner,
+          .week-day-header {
+            min-height: 3.1rem;
+          }
+
+          .week-day-header {
+            padding: 0.3rem 0.15rem;
+          }
+
+          .week-day-header small {
+            font-size: 0.62rem;
+          }
+
+          .week-time-rail span {
+            right: 0.3rem;
+            font-size: 0.66rem;
           }
 
           :global(.calendar-schedule-block) {
-            left: 0.45rem;
-            right: 0.45rem;
-            padding: 0.55rem 0.6rem;
+            left: 0.18rem;
+            right: 0.18rem;
+            padding: 0.42rem 0.42rem;
           }
 
           :global(.calendar-time-rail span),
           :global(.schedule-block-time),
           :global(.schedule-block-meta) {
+            font-size: 0.66rem;
+          }
+
+          :global(.calendar-schedule-block strong) {
             font-size: 0.72rem;
           }
 
