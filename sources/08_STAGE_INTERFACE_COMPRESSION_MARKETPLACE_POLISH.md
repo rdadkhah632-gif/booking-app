@@ -489,3 +489,18 @@ Stage 8.17 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.18 Mobile Workspace Navigation Compression Implemented
+
+- visually reviewed the business mobile dashboard header and confirmed the
+  account actions were acting like a second full navigation row
+- kept the primary business navigation visible on mobile while collapsing
+  Account, Membership, Help and Log out behind one compact Account control
+- preserved the desktop sidebar account card and desktop action links
+- kept the same account destinations and logout behavior; only the mobile
+  presentation changed
+
+Stage 8.18 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

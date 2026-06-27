@@ -301,7 +301,35 @@ export default function DashboardLayout({
                   <small>{workspaceLabel}</small>
                 </span>
               </Link>
-              <div className="sidebar-account-actions">
+              <details className="sidebar-mobile-account">
+                <summary>
+                  <span className="sidebar-mobile-account-label">
+                    <span className="sidebar-account-avatar" aria-hidden="true">
+                      {accountLabel.slice(0, 1).toUpperCase() || "M"}
+                    </span>
+                    <span>{t("dashboardLayout.nav.account", "Account")}</span>
+                  </span>
+                </summary>
+                <div className="sidebar-account-actions sidebar-account-actions-menu">
+                  {accountActions.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="sidebar-account-action"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="sidebar-account-action logout"
+                  >
+                    {t("auth.logout", "Log out")}
+                  </button>
+                </div>
+              </details>
+              <div className="sidebar-account-actions sidebar-account-actions-desktop">
                 {accountActions.map((link) => (
                   <Link
                     key={link.href}
@@ -392,6 +420,10 @@ export default function DashboardLayout({
           border-top: 1px solid var(--border);
         }
 
+        .sidebar-mobile-account {
+          display: none;
+        }
+
         .sidebar-account-main {
           display: flex;
           align-items: center;
@@ -438,6 +470,10 @@ export default function DashboardLayout({
         .sidebar-account-actions {
           display: grid;
           gap: 0.35rem;
+        }
+
+        .sidebar-account-actions-menu {
+          display: none;
         }
 
         .sidebar-account-actions a,
@@ -551,13 +587,14 @@ export default function DashboardLayout({
         @media (max-width: 720px) {
           .sidebar-nav {
             display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start;
             min-height: 0;
             gap: 0.5rem;
             overflow: visible;
           }
 
-          .sidebar-main-links,
-          .sidebar-account-actions {
+          .sidebar-main-links {
             display: flex;
             gap: 0.45rem;
             overflow-x: auto;
@@ -566,14 +603,13 @@ export default function DashboardLayout({
             -webkit-overflow-scrolling: touch;
           }
 
-          .sidebar-main-links::-webkit-scrollbar,
-          .sidebar-account-actions::-webkit-scrollbar {
+          .sidebar-main-links::-webkit-scrollbar {
             display: none;
           }
 
           .sidebar-account {
-            display: grid;
-            gap: 0.45rem;
+            position: relative;
+            display: block;
             margin-top: 0;
             padding: 0;
             border-top: 0;
@@ -581,6 +617,75 @@ export default function DashboardLayout({
 
           .sidebar-account-main {
             display: none !important;
+          }
+
+          .sidebar-account-actions-desktop {
+            display: none;
+          }
+
+          .sidebar-mobile-account {
+            display: block;
+          }
+
+          .sidebar-mobile-account summary {
+            min-height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.36rem 0.58rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface-2);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 800;
+            list-style: none;
+            white-space: nowrap;
+          }
+
+          .sidebar-mobile-account summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .sidebar-mobile-account summary::after {
+            content: "";
+            width: 0.35rem;
+            height: 0.35rem;
+            border-right: 1.5px solid currentColor;
+            border-bottom: 1.5px solid currentColor;
+            transform: rotate(45deg) translateY(-1px);
+            opacity: 0.75;
+          }
+
+          .sidebar-mobile-account[open] summary::after {
+            transform: rotate(225deg) translateY(-1px);
+          }
+
+          .sidebar-mobile-account-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+          }
+
+          .sidebar-mobile-account .sidebar-account-avatar {
+            width: 1.35rem;
+            height: 1.35rem;
+            font-size: 0.72rem;
+          }
+
+          .sidebar-account-actions-menu {
+            position: absolute;
+            top: calc(100% + 0.4rem);
+            right: 0;
+            z-index: 45;
+            width: min(13rem, calc(100vw - 1.3rem));
+            display: grid;
+            gap: 0.2rem;
+            padding: 0.4rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: rgba(24, 23, 34, 0.98);
+            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
           }
 
           .sidebar-section-label {
@@ -619,7 +724,7 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links,
-          .sidebar-account-actions {
+          .sidebar-account-actions-desktop {
             display: flex;
             gap: 0.35rem;
             overflow-x: auto;
@@ -630,7 +735,7 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links::-webkit-scrollbar,
-          .sidebar-account-actions::-webkit-scrollbar {
+          .sidebar-account-actions-desktop::-webkit-scrollbar {
             display: none;
           }
 
@@ -689,6 +794,50 @@ export default function DashboardLayout({
 
           .sidebar-link:hover {
             transform: none;
+          }
+        }
+
+        @media (max-width: 720px) {
+          .sidebar {
+            overflow: visible;
+          }
+
+          .sidebar-nav {
+            grid-template-columns: 1fr;
+            align-items: start;
+          }
+
+          .sidebar-logo {
+            padding-right: 7.75rem;
+          }
+
+          .sidebar-main-links {
+            min-width: 0;
+          }
+
+          .sidebar-account {
+            position: absolute;
+            top: 0.65rem;
+            right: 0.65rem;
+            display: block;
+          }
+
+          .sidebar-account-actions-desktop {
+            display: none;
+          }
+
+          .sidebar-mobile-account {
+            display: block;
+          }
+
+          .sidebar-account-actions-menu a,
+          .sidebar-account-actions-menu button {
+            width: 100%;
+            min-height: 2.1rem;
+            justify-content: flex-start;
+            border-radius: 0.7rem;
+            background: transparent;
+            text-align: left;
           }
         }
       `}</style>
