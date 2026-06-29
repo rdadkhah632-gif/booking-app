@@ -1889,6 +1889,11 @@ export const sq: TranslationTree = {
   "common.dismiss": "Mbyll",
   "dashboardNotifications.pageSubtitle":
     "Kërkesa dhe përditësime për këtë biznes.",
+  "dashboardNotifications.overview.kicker": "Qendra e veprimeve",
+  "dashboardNotifications.overview.actionsTitle":
+    "Kërkesat e klientëve kërkojnë shqyrtim",
+  "dashboardNotifications.overview.clearTitle":
+    "Nuk ka veprime klientësh në pritje",
   "dashboardNotifications.error.load": "Njoftimet nuk u ngarkuan.",
   "dashboardNotifications.success.markedRead":
     "Njoftimet e biznesit u shënuan si të lexuara.",
@@ -1930,18 +1935,16 @@ export const sq: TranslationTree = {
   "dashboardNotifications.toolbar.allRead": "Të gjitha të lexuara",
   "dashboardNotifications.toolbar.pendingBookings":
     "Rezervime që kërkojnë miratim",
-  "dashboardNotifications.summary.bookingApprovals":
-    "Rezervime që kërkojnë miratim",
+  "dashboardNotifications.summary.bookingApprovals": "Kërkesa rezervimi",
   "dashboardNotifications.summary.bookingApprovalsBody":
     "Kërkesa të reja rezervimi që kërkojnë shqyrtim nga biznesi",
-  "dashboardNotifications.summary.rescheduleRequests":
-    "Kërkesa për ndryshim orari",
+  "dashboardNotifications.summary.rescheduleRequests": "Ndryshime orari",
   "dashboardNotifications.summary.rescheduleRequestsBody":
     "Ndryshime nga klientët që kërkojnë shqyrtim nga biznesi",
   "dashboardNotifications.summary.totalAction": "Veprime gjithsej të kërkuara",
   "dashboardNotifications.summary.totalActionBody":
     "Artikuj që kërkojnë shqyrtim nga biznesi",
-  "dashboardNotifications.summary.unreadUpdates": "Përditësime të palexuara",
+  "dashboardNotifications.summary.unreadUpdates": "Të palexuara",
   "dashboardNotifications.summary.unreadUpdatesBody":
     "Përditësime rezervimesh dhe llogarie ende të palexuara",
   "dashboardNotifications.loading": "Duke ngarkuar njoftimet Mirëbook...",
@@ -1950,8 +1953,8 @@ export const sq: TranslationTree = {
     "Kërkesat e rezervimeve dhe përditësimet e rëndësishme do të shfaqen këtu.",
   "dashboardNotifications.empty.openToday": "Hap rezervimet e sotme",
   "dashboardNotifications.empty.bookingSettings": "Cilësimet e rezervimeve",
-  "dashboardNotifications.inbox.kicker": "Kutia e njoftimeve",
-  "dashboardNotifications.inbox.title": "Përditësime të fundit biznesi",
+  "dashboardNotifications.inbox.kicker": "Të fundit",
+  "dashboardNotifications.inbox.title": "Përditësime të fundit",
   "dashboardNotifications.inbox.body":
     "Përditësimet e fundit për rezervimet, klientët dhe ndihmën e këtij biznesi.",
   "dashboardNotifications.inbox.recently": "Së fundmi",
@@ -1959,7 +1962,9 @@ export const sq: TranslationTree = {
   "dashboardNotifications.actions.markRead": "Shëno si lexuar",
   "dashboardNotifications.actions.acceptNewTime": "Prano orarin e ri",
   "dashboardNotifications.actions.declineRequest": "Refuzo kërkesën",
-  "dashboardNotifications.sections.actionRequired": "Kërkohet veprim",
+  "dashboardNotifications.sections.actionRequired": "Kërkon veprim",
+  "dashboardNotifications.sections.needsActionTitle":
+    "Shqyrto kërkesat e klientëve",
   "dashboardNotifications.sections.pendingBookingApprovals":
     "Miratime rezervimesh në pritje",
   "dashboardNotifications.sections.pendingBookingApprovalsBody":
@@ -1967,16 +1972,17 @@ export const sq: TranslationTree = {
   "dashboardNotifications.sections.pendingRescheduleRequests":
     "Kërkesa në pritje për ndryshim orari",
   "dashboardNotifications.sections.previousRescheduleRequests":
-    "Kërkesa të mëparshme për ndryshim orari",
+    "Kërkesa të trajtuara për ndryshim orari",
+  "dashboardNotifications.booking.requestTitle": "Kërkesë rezervimi",
   "dashboardNotifications.booking.newRequest": "Kërkon miratim",
   "dashboardNotifications.booking.reservedUntilAction":
     "Ky orar është i rezervuar derisa ta pranosh ose refuzosh kërkesën.",
   "dashboardNotifications.reschedule.latestPending":
     "Kërkesa më e fundit në pritje për ndryshim orari",
-  "dashboardNotifications.reschedule.currentAppointment":
-    "Takimi aktual i konfirmuar",
-  "dashboardNotifications.reschedule.requestedAppointment":
-    "Takimi i ri i kërkuar",
+  "dashboardNotifications.reschedule.requestTitle":
+    "Kërkesë për ndryshim orari",
+  "dashboardNotifications.reschedule.currentAppointment": "Ora aktuale",
+  "dashboardNotifications.reschedule.requestedAppointment": "Ora e kërkuar",
   "dashboardNotifications.labels.business": "Biznesi",
   "dashboardNotifications.labels.businessFallback": "Biznes",
   "dashboardNotifications.labels.serviceFallback": "Shërbim",

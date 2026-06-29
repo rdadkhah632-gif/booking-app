@@ -1901,6 +1901,10 @@ export const en: TranslationTree = {
   "common.dismiss": "Dismiss",
   "dashboardNotifications.pageSubtitle":
     "Requests and updates for this business.",
+  "dashboardNotifications.overview.kicker": "Action centre",
+  "dashboardNotifications.overview.actionsTitle":
+    "Customer actions need review",
+  "dashboardNotifications.overview.clearTitle": "No customer actions waiting",
   "dashboardNotifications.error.load": "Could not load notifications.",
   "dashboardNotifications.success.markedRead":
     "Business notifications marked as read.",
@@ -1941,17 +1945,16 @@ export const en: TranslationTree = {
   "dashboardNotifications.toolbar.read": "read",
   "dashboardNotifications.toolbar.allRead": "All read",
   "dashboardNotifications.toolbar.pendingBookings": "Bookings needing approval",
-  "dashboardNotifications.summary.bookingApprovals":
-    "Bookings needing approval",
+  "dashboardNotifications.summary.bookingApprovals": "Booking requests",
   "dashboardNotifications.summary.bookingApprovalsBody":
     "New booking requests that need business review",
-  "dashboardNotifications.summary.rescheduleRequests": "Reschedule requests",
+  "dashboardNotifications.summary.rescheduleRequests": "Reschedules",
   "dashboardNotifications.summary.rescheduleRequestsBody":
     "Customer changes that need business review",
   "dashboardNotifications.summary.totalAction": "Total action required",
   "dashboardNotifications.summary.totalActionBody":
     "Items needing business review",
-  "dashboardNotifications.summary.unreadUpdates": "Unread updates",
+  "dashboardNotifications.summary.unreadUpdates": "Unread",
   "dashboardNotifications.summary.unreadUpdatesBody":
     "Booking and account updates not read yet",
   "dashboardNotifications.loading": "Loading Mirëbook notifications...",
@@ -1960,8 +1963,8 @@ export const en: TranslationTree = {
     "Booking requests and important updates will appear here.",
   "dashboardNotifications.empty.openToday": "Open today’s bookings",
   "dashboardNotifications.empty.bookingSettings": "Booking settings",
-  "dashboardNotifications.inbox.kicker": "Notification inbox",
-  "dashboardNotifications.inbox.title": "Recent business updates",
+  "dashboardNotifications.inbox.kicker": "Recent",
+  "dashboardNotifications.inbox.title": "Recent updates",
   "dashboardNotifications.inbox.body":
     "Recent booking, customer and support updates for this business.",
   "dashboardNotifications.inbox.recently": "Recently",
@@ -1969,7 +1972,9 @@ export const en: TranslationTree = {
   "dashboardNotifications.actions.markRead": "Mark read",
   "dashboardNotifications.actions.acceptNewTime": "Accept new time",
   "dashboardNotifications.actions.declineRequest": "Decline request",
-  "dashboardNotifications.sections.actionRequired": "Action required",
+  "dashboardNotifications.sections.actionRequired": "Needs action",
+  "dashboardNotifications.sections.needsActionTitle":
+    "Review customer requests",
   "dashboardNotifications.sections.pendingBookingApprovals":
     "Pending booking approvals",
   "dashboardNotifications.sections.pendingBookingApprovalsBody":
@@ -1977,16 +1982,16 @@ export const en: TranslationTree = {
   "dashboardNotifications.sections.pendingRescheduleRequests":
     "Pending reschedule requests",
   "dashboardNotifications.sections.previousRescheduleRequests":
-    "Previous reschedule requests",
+    "Handled reschedule requests",
+  "dashboardNotifications.booking.requestTitle": "Booking request",
   "dashboardNotifications.booking.newRequest": "Needs approval",
   "dashboardNotifications.booking.reservedUntilAction":
     "This time is reserved until you accept or decline the request.",
   "dashboardNotifications.reschedule.latestPending":
     "Latest pending reschedule request",
-  "dashboardNotifications.reschedule.currentAppointment":
-    "Current confirmed appointment",
-  "dashboardNotifications.reschedule.requestedAppointment":
-    "Requested new appointment",
+  "dashboardNotifications.reschedule.requestTitle": "Reschedule request",
+  "dashboardNotifications.reschedule.currentAppointment": "Current time",
+  "dashboardNotifications.reschedule.requestedAppointment": "Requested time",
   "dashboardNotifications.labels.business": "Business",
   "dashboardNotifications.labels.businessFallback": "Business",
   "dashboardNotifications.labels.serviceFallback": "Service",

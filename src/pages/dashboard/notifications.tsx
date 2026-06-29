@@ -1084,7 +1084,38 @@ export default function BusinessNotifications() {
   const unreadBusinessNotifications = notifications.filter(
     (notification) => !notification.read_at,
   );
-  const recentBusinessNotifications = notifications.slice(0, 10);
+  const pendingBookingIds = new Set(
+    pendingBookings.map((booking) => booking.id),
+  );
+  const pendingRequestIds = new Set(
+    pendingRequests.map((request) => request.id),
+  );
+  const recentBusinessNotifications = notifications
+    .filter((notification) => {
+      if (
+        notification.booking_id &&
+        pendingBookingIds.has(notification.booking_id) &&
+        (notification.type === "booking_created" ||
+          notification.type === "booking_requested" ||
+          notification.type === "booking_approval_requested")
+      ) {
+        return false;
+      }
+
+      if (
+        notification.booking_request_id &&
+        pendingRequestIds.has(notification.booking_request_id)
+      ) {
+        return false;
+      }
+
+      return true;
+    })
+    .slice(0, 8);
+  const hasInboxContent =
+    actionCount > 0 ||
+    recentBusinessNotifications.length > 0 ||
+    pastRequests.length > 0;
 
   function statusLabel(status: string) {
     if (status === "pending")
@@ -1122,6 +1153,25 @@ export default function BusinessNotifications() {
     if (status === "declined") return "rgba(255,190,11,0.12)";
     if (status === "completed") return "rgba(255,107,53,0.12)";
     return "var(--surface-2)";
+  }
+
+  function formatInboxDateTime(value?: string | null) {
+    if (!value) {
+      return t("dashboardNotifications.inbox.recently", "Recently");
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return t("dashboardNotifications.inbox.recently", "Recently");
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
   }
 
   return (
@@ -1163,95 +1213,6 @@ export default function BusinessNotifications() {
         </div>
       )}
 
-      <div className="business-notification-toolbar">
-        <div className="business-notification-toolbar-actions">
-          <button
-            type="button"
-            onClick={markAllBusinessNotificationsRead}
-            className="btn btn-ghost"
-            disabled={unreadBusinessNotifications.length === 0}
-          >
-            {unreadBusinessNotifications.length > 0
-              ? `${t("dashboardNotifications.toolbar.mark", "Mark")} ${unreadBusinessNotifications.length} ${t("dashboardNotifications.toolbar.read", "read")}`
-              : t("dashboardNotifications.toolbar.allRead", "All read")}
-          </button>
-        </div>
-      </div>
-
-      <div className="business-notification-summary-grid">
-        <div
-          className="card"
-          style={{
-            borderColor:
-              pendingBookings.length > 0
-                ? "rgba(255,107,53,0.35)"
-                : "var(--border)",
-          }}
-        >
-          <p className="small muted">
-            {t(
-              "dashboardNotifications.summary.bookingApprovals",
-              "Bookings needing approval",
-            )}
-          </p>
-          <h3>{pendingBookings.length}</h3>
-          <p className="muted small">
-            {t(
-              "dashboardNotifications.summary.bookingApprovalsBody",
-              "New booking requests that need business review",
-            )}
-          </p>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            borderColor:
-              pendingRequests.length > 0
-                ? "rgba(255,107,53,0.35)"
-                : "var(--border)",
-          }}
-        >
-          <p className="small muted">
-            {t(
-              "dashboardNotifications.summary.rescheduleRequests",
-              "Reschedule requests",
-            )}
-          </p>
-          <h3>{pendingRequests.length}</h3>
-          <p className="muted small">
-            {t(
-              "dashboardNotifications.summary.rescheduleRequestsBody",
-              "Customer changes that need business review",
-            )}
-          </p>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            borderColor:
-              unreadBusinessNotifications.length > 0
-                ? "rgba(255,107,53,0.35)"
-                : "var(--border)",
-          }}
-        >
-          <p className="small muted">
-            {t(
-              "dashboardNotifications.summary.unreadUpdates",
-              "Unread updates",
-            )}
-          </p>
-          <h3>{unreadBusinessNotifications.length}</h3>
-          <p className="muted small">
-            {t(
-              "dashboardNotifications.summary.unreadUpdatesBody",
-              "Booking and account updates not read yet",
-            )}
-          </p>
-        </div>
-      </div>
-
       {loading && (
         <div className="card">
           <p className="muted">
@@ -1272,168 +1233,91 @@ export default function BusinessNotifications() {
         </div>
       )}
 
-      {!loading &&
-        actionCount === 0 &&
-        recentBusinessNotifications.length === 0 && (
-          <div className="card" style={{ marginBottom: "1.5rem" }}>
-            <h3>
-              {t("dashboardNotifications.empty.title", "No pending actions")}
-            </h3>
-            <p className="muted" style={{ marginTop: "0.5rem" }}>
-              {t(
-                "dashboardNotifications.empty.body",
-                "Booking requests and important updates will appear here.",
-              )}
-            </p>
-          </div>
-        )}
-
-      {!loading && recentBusinessNotifications.length > 0 && (
-        <div className="business-notification-section">
+      {!loading && (
+        <div className="business-inbox-overview">
           <div>
             <p className="small muted">
-              {t("dashboardNotifications.inbox.kicker", "Notification inbox")}
+              {t("dashboardNotifications.overview.kicker", "Action centre")}
             </p>
-            <h2 style={{ fontFamily: "var(--font-display)" }}>
-              {t(
-                "dashboardNotifications.inbox.title",
-                "Recent business updates",
-              )}
+            <h2>
+              {actionCount > 0
+                ? t(
+                    "dashboardNotifications.overview.actionsTitle",
+                    "Customer actions need review",
+                  )
+                : t(
+                    "dashboardNotifications.overview.clearTitle",
+                    "No customer actions waiting",
+                  )}
             </h2>
-            <p className="muted small" style={{ marginTop: "0.35rem" }}>
-              {t(
-                "dashboardNotifications.inbox.body",
-                "Recent booking, customer and support updates for this business.",
-              )}
-            </p>
           </div>
 
-          {recentBusinessNotifications.map((notification) => {
-            const linkedBooking = notification.booking_id
-              ? bookings.find(
-                  (booking) => booking.id === notification.booking_id,
-                )
-              : null;
-            const displayNotification = businessNotificationText(
-              notification,
-              t,
-              linkedBooking?.status,
-            );
+          <div className="business-inbox-metrics">
+            <span>
+              <strong>{pendingBookings.length}</strong>{" "}
+              {t(
+                "dashboardNotifications.summary.bookingApprovals",
+                "Booking requests",
+              )}
+            </span>
+            <span>
+              <strong>{pendingRequests.length}</strong>{" "}
+              {t(
+                "dashboardNotifications.summary.rescheduleRequests",
+                "Reschedules",
+              )}
+            </span>
+            <span>
+              <strong>{unreadBusinessNotifications.length}</strong>{" "}
+              {t("dashboardNotifications.summary.unreadUpdates", "Unread")}
+            </span>
+          </div>
 
-            return (
-              <div
-                key={notification.id}
-                className="card"
-                style={{
-                  borderColor: notificationBorder(notification),
-                  background: notificationBackground(notification),
-                }}
-              >
-                <div className="business-notification-card-row">
-                  <div style={{ flex: 1, minWidth: 260 }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
-                      <strong>{displayNotification.title}</strong>
-
-                      <span
-                        className="small"
-                        style={{
-                          background: notification.read_at
-                            ? "var(--surface-2)"
-                            : "var(--accent-dim)",
-                          color: notification.read_at
-                            ? "var(--text-muted)"
-                            : "var(--accent)",
-                          padding: "0.2rem 0.55rem",
-                          borderRadius: 999,
-                          border: "1px solid var(--border)",
-                        }}
-                      >
-                        {notification.read_at
-                          ? t("dashboardNotifications.status.read", "Read")
-                          : t("dashboardNotifications.status.unread", "Unread")}
-                      </span>
-                    </div>
-
-                    {displayNotification.message && (
-                      <p className="small muted">
-                        {displayNotification.message}
-                      </p>
-                    )}
-
-                    <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                      {notification.created_at
-                        ? new Date(notification.created_at).toLocaleString()
-                        : t(
-                            "dashboardNotifications.inbox.recently",
-                            "Recently",
-                          )}
-                    </p>
-                  </div>
-
-                  <div className="business-notification-card-actions">
-                    {notification.action_url && (
-                      <Link
-                        href={notification.action_url}
-                        className="btn btn-accent"
-                        onClick={() => markNotificationRead(notification)}
-                      >
-                        {businessNotificationActionLabel(
-                          notification,
-                          linkedBooking?.status || null,
-                          t,
-                        )}
-                      </Link>
-                    )}
-
-                    {!notification.read_at && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        onClick={() => markNotificationRead(notification)}
-                      >
-                        {t(
-                          "dashboardNotifications.actions.markRead",
-                          "Mark read",
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <button
+            type="button"
+            onClick={markAllBusinessNotificationsRead}
+            className="btn btn-ghost"
+            disabled={unreadBusinessNotifications.length === 0}
+          >
+            {unreadBusinessNotifications.length > 0
+              ? `${t("dashboardNotifications.toolbar.mark", "Mark")} ${unreadBusinessNotifications.length} ${t("dashboardNotifications.toolbar.read", "read")}`
+              : t("dashboardNotifications.toolbar.allRead", "All read")}
+          </button>
         </div>
       )}
 
-      {!loading && pendingBookings.length > 0 && (
+      {!loading && !hasInboxContent && (
+        <div className="card" style={{ marginBottom: "1.5rem" }}>
+          <h3>
+            {t("dashboardNotifications.empty.title", "No pending actions")}
+          </h3>
+          <p className="muted" style={{ marginTop: "0.5rem" }}>
+            {t(
+              "dashboardNotifications.empty.body",
+              "Booking requests and important updates will appear here.",
+            )}
+          </p>
+        </div>
+      )}
+
+      {!loading && actionCount > 0 && (
         <div className="business-notification-section">
-          <div>
-            <p className="small muted">
-              {t(
-                "dashboardNotifications.sections.actionRequired",
-                "Action required",
-              )}
-            </p>
-            <h2 style={{ fontFamily: "var(--font-display)" }}>
-              {t(
-                "dashboardNotifications.sections.pendingBookingApprovals",
-                "Pending booking approvals",
-              )}
-            </h2>
-            <p className="muted small" style={{ marginTop: "0.35rem" }}>
-              {t(
-                "dashboardNotifications.sections.pendingBookingApprovalsBody",
-                "These customers requested bookings while manual approval was enabled. Accepting confirms the appointment.",
-              )}
-            </p>
+          <div className="business-inbox-section-header">
+            <div>
+              <p className="small muted">
+                {t(
+                  "dashboardNotifications.sections.actionRequired",
+                  "Needs action",
+                )}
+              </p>
+              <h2 style={{ fontFamily: "var(--font-display)" }}>
+                {t(
+                  "dashboardNotifications.sections.needsActionTitle",
+                  "Review customer requests",
+                )}
+              </h2>
+            </div>
+            <span className="business-inbox-count">{actionCount}</span>
           </div>
 
           {pendingBookings.map((booking) => {
@@ -1442,26 +1326,18 @@ export default function BusinessNotifications() {
             return (
               <div
                 key={booking.id}
-                className="card"
+                className="business-action-card"
                 style={{ borderColor: "rgba(255,107,53,0.35)" }}
               >
                 <div className="business-notification-card-row">
                   <div style={{ flex: 1, minWidth: 280 }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
-                      <p className="small" style={{ color: "var(--accent)" }}>
+                    <div className="business-action-card-heading">
+                      <span className="business-action-type">
                         {t(
-                          "dashboardNotifications.booking.newRequest",
-                          "Needs approval",
+                          "dashboardNotifications.booking.requestTitle",
+                          "Booking request",
                         )}
-                      </p>
+                      </span>
 
                       <span
                         className="small"
@@ -1487,91 +1363,61 @@ export default function BusinessNotifications() {
                         )}
                     </h3>
 
-                    <p className="small muted">
-                      {t("dashboardNotifications.labels.business", "Business")}:{" "}
-                      {businessName(
-                        booking,
-                        t(
-                          "dashboardNotifications.labels.businessFallback",
-                          "Business",
-                        ),
-                      )}
-                    </p>
-
-                    <p className="small muted">
-                      {t("dashboardBookings.card.service", "Service")}:{" "}
-                      {serviceName(
-                        booking,
-                        t(
-                          "dashboardNotifications.labels.serviceFallback",
-                          "Service",
-                        ),
-                      )}
-                    </p>
-
-                    <p className="small muted">
-                      {t("support.business.staff", "Staff")}:{" "}
-                      {staffName(
-                        booking,
-                        t(
-                          "dashboardBookings.card.noStaff",
-                          "Staff not recorded",
-                        ),
-                      )}
-                    </p>
-
-                    <div
-                      style={{
-                        marginTop: "1rem",
-                        padding: "0.8rem",
-                        borderRadius: "var(--radius)",
-                        background: "rgba(255,107,53,0.08)",
-                        border: "1px solid rgba(255,107,53,0.28)",
-                      }}
-                    >
-                      <p className="small muted">
+                    <div className="business-action-meta">
+                      <span>
                         {t(
-                          "dashboardBookings.card.requestedTime",
-                          "Requested appointment time",
+                          "dashboardNotifications.labels.requestedTime",
+                          "Requested time",
                         )}
-                      </p>
-                      <strong>
-                        {new Date(booking.start_at).toLocaleString()}
-                      </strong>
-                      <p
-                        className="small muted"
-                        style={{ marginTop: "0.3rem" }}
-                      >
+                        : {formatInboxDateTime(booking.start_at)}
+                      </span>
+                      <span>
+                        {t("dashboardBookings.card.service", "Service")}:{" "}
+                        {serviceName(
+                          booking,
+                          t(
+                            "dashboardNotifications.labels.serviceFallback",
+                            "Service",
+                          ),
+                        )}
+                      </span>
+                      <span>
+                        {t("support.business.staff", "Staff")}:{" "}
+                        {staffName(
+                          booking,
+                          t(
+                            "dashboardBookings.card.noStaff",
+                            "Staff not recorded",
+                          ),
+                        )}
+                      </span>
+                      <span>
                         {t(
-                          "dashboardNotifications.booking.reservedUntilAction",
-                          "This time is reserved until you accept or decline the request.",
+                          "dashboardNotifications.labels.duration",
+                          "Duration",
                         )}
-                      </p>
+                        : {booking.duration_minutes}{" "}
+                        {t("common.minutes", "minutes")}
+                      </span>
                     </div>
 
-                    <p className="small muted" style={{ marginTop: "0.75rem" }}>
-                      {t("dashboardNotifications.labels.duration", "Duration")}:{" "}
-                      {booking.duration_minutes}{" "}
-                      {t("common.minutes", "minutes")}
-                    </p>
-
-                    <p className="small muted">
-                      {t("account.email", "Email")}:{" "}
-                      {booking.customer_email ||
-                        t(
-                          "dashboardNotifications.labels.notProvided",
-                          "Not provided",
+                    <div className="business-action-contact">
+                      <span>
+                        {businessName(
+                          booking,
+                          t(
+                            "dashboardNotifications.labels.businessFallback",
+                            "Business",
+                          ),
                         )}
-                    </p>
-
-                    <p className="small muted">
-                      {t("common.phone", "Phone")}:{" "}
-                      {booking.customer_phone ||
-                        t(
-                          "dashboardNotifications.labels.notProvided",
-                          "Not provided",
-                        )}
-                    </p>
+                      </span>
+                      {booking.customer_email && (
+                        <span>{booking.customer_email}</span>
+                      )}
+                      {booking.customer_phone && (
+                        <span>{booking.customer_phone}</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="business-notification-card-actions">
@@ -1628,49 +1474,22 @@ export default function BusinessNotifications() {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {!loading && pendingRequests.length > 0 && (
-        <div className="business-notification-section">
-          <div>
-            <p className="small muted">
-              {t(
-                "dashboardNotifications.sections.actionRequired",
-                "Action required",
-              )}
-            </p>
-            <h2 style={{ fontFamily: "var(--font-display)" }}>
-              {t(
-                "dashboardNotifications.sections.pendingRescheduleRequests",
-                "Pending reschedule requests",
-              )}
-            </h2>
-          </div>
 
           {pendingRequests.map((request) => {
             const isWorking = actionLoadingId === `request-${request.id}`;
             const linkedBooking = requestBooking(request);
 
             return (
-              <div key={request.id} className="card">
+              <div key={request.id} className="business-action-card">
                 <div className="business-notification-card-row">
                   <div style={{ flex: 1, minWidth: 280 }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
-                      <p className="small" style={{ color: "var(--accent)" }}>
+                    <div className="business-action-card-heading">
+                      <span className="business-action-type">
                         {t(
-                          "dashboardNotifications.reschedule.latestPending",
-                          "Latest pending reschedule request",
+                          "dashboardNotifications.reschedule.requestTitle",
+                          "Reschedule request",
                         )}
-                      </p>
+                      </span>
 
                       <span
                         className="small"
@@ -1696,52 +1515,19 @@ export default function BusinessNotifications() {
                         )}
                     </h3>
 
-                    <p className="small muted">
-                      {t("dashboardNotifications.labels.business", "Business")}:{" "}
-                      {businessName(
-                        request,
-                        t(
-                          "dashboardNotifications.labels.businessFallback",
-                          "Business",
-                        ),
-                      )}
-                    </p>
-
-                    <p className="small muted">
-                      {t("dashboardBookings.card.service", "Service")}:{" "}
-                      {serviceName(
-                        linkedBooking,
-                        t(
-                          "dashboardNotifications.labels.serviceFallback",
-                          "Service",
-                        ),
-                      )}
-                    </p>
-
                     <div className="business-notification-time-grid">
-                      <div
-                        style={{
-                          padding: "0.8rem",
-                          borderRadius: "var(--radius)",
-                          background: "var(--surface-2)",
-                          border: "1px solid var(--border)",
-                        }}
-                      >
+                      <div className="business-time-chip">
                         <p className="small muted">
                           {t(
                             "dashboardNotifications.reschedule.currentAppointment",
-                            "Current confirmed appointment",
+                            "Current time",
                           )}
                         </p>
                         <strong>
                           {request.current_start_at
-                            ? new Date(
-                                request.current_start_at,
-                              ).toLocaleString()
+                            ? formatInboxDateTime(request.current_start_at)
                             : linkedBooking?.start_at
-                              ? new Date(
-                                  linkedBooking.start_at,
-                                ).toLocaleString()
+                              ? formatInboxDateTime(linkedBooking.start_at)
                               : t(
                                   "dashboardNotifications.labels.notRecorded",
                                   "Not recorded",
@@ -1749,42 +1535,54 @@ export default function BusinessNotifications() {
                         </strong>
                       </div>
 
-                      <div
-                        style={{
-                          padding: "0.8rem",
-                          borderRadius: "var(--radius)",
-                          background: "var(--accent-dim)",
-                          border: "1px solid rgba(255,107,53,0.35)",
-                        }}
-                      >
+                      <div className="business-time-chip is-requested">
                         <p className="small muted">
                           {t(
                             "dashboardNotifications.reschedule.requestedAppointment",
-                            "Requested new appointment",
+                            "Requested time",
                           )}
                         </p>
                         <strong>
-                          {new Date(
-                            request.requested_start_at,
-                          ).toLocaleString()}
+                          {formatInboxDateTime(request.requested_start_at)}
                         </strong>
                       </div>
                     </div>
 
-                    <p className="small muted" style={{ marginTop: "0.75rem" }}>
-                      {t(
-                        "dashboardNotifications.labels.requestedStaff",
-                        "Requested staff",
-                      )}
-                      :{" "}
-                      {requestedStaffName(
-                        request,
-                        t(
-                          "dashboardBookings.card.noStaff",
-                          "Staff not recorded",
-                        ),
-                      )}
-                    </p>
+                    <div className="business-action-meta">
+                      <span>
+                        {t("dashboardBookings.card.service", "Service")}:{" "}
+                        {serviceName(
+                          linkedBooking,
+                          t(
+                            "dashboardNotifications.labels.serviceFallback",
+                            "Service",
+                          ),
+                        )}
+                      </span>
+                      <span>
+                        {t(
+                          "dashboardNotifications.labels.requestedStaff",
+                          "Requested staff",
+                        )}
+                        :{" "}
+                        {requestedStaffName(
+                          request,
+                          t(
+                            "dashboardBookings.card.noStaff",
+                            "Staff not recorded",
+                          ),
+                        )}
+                      </span>
+                      <span>
+                        {businessName(
+                          request,
+                          t(
+                            "dashboardNotifications.labels.businessFallback",
+                            "Business",
+                          ),
+                        )}
+                      </span>
+                    </div>
 
                     {request.message && (
                       <p
@@ -1801,7 +1599,7 @@ export default function BusinessNotifications() {
                         "dashboardNotifications.labels.requested",
                         "Requested",
                       )}
-                      : {new Date(request.created_at).toLocaleString()}
+                      : {formatInboxDateTime(request.created_at)}
                     </p>
                   </div>
 
@@ -1847,19 +1645,121 @@ export default function BusinessNotifications() {
         </div>
       )}
 
-      {!loading && pastRequests.length > 0 && (
+      {!loading && recentBusinessNotifications.length > 0 && (
         <div className="business-notification-section">
-          <div>
-            <p className="small muted">
-              {t("dashboardBookings.summary.history", "History")}
-            </p>
-            <h2 style={{ fontFamily: "var(--font-display)" }}>
+          <div className="business-inbox-section-header">
+            <div>
+              <p className="small muted">
+                {t("dashboardNotifications.inbox.kicker", "Recent")}
+              </p>
+              <h2 style={{ fontFamily: "var(--font-display)" }}>
+                {t("dashboardNotifications.inbox.title", "Recent updates")}
+              </h2>
+            </div>
+          </div>
+
+          <div className="business-update-list">
+            {recentBusinessNotifications.map((notification) => {
+              const linkedBooking = notification.booking_id
+                ? bookings.find(
+                    (booking) => booking.id === notification.booking_id,
+                  )
+                : null;
+              const displayNotification = businessNotificationText(
+                notification,
+                t,
+                linkedBooking?.status,
+              );
+
+              return (
+                <div
+                  key={notification.id}
+                  className="business-update-row"
+                  style={{
+                    borderColor: notificationBorder(notification),
+                    background: notificationBackground(notification),
+                  }}
+                >
+                  <div className="business-update-copy">
+                    <div className="business-update-heading">
+                      <strong>{displayNotification.title}</strong>
+                      <span
+                        className="small"
+                        style={{
+                          background: notification.read_at
+                            ? "var(--surface-2)"
+                            : "var(--accent-dim)",
+                          color: notification.read_at
+                            ? "var(--text-muted)"
+                            : "var(--accent)",
+                          padding: "0.18rem 0.5rem",
+                          borderRadius: 999,
+                          border: "1px solid var(--border)",
+                        }}
+                      >
+                        {notification.read_at
+                          ? t("dashboardNotifications.status.read", "Read")
+                          : t("dashboardNotifications.status.unread", "Unread")}
+                      </span>
+                    </div>
+
+                    {displayNotification.message && (
+                      <p className="small muted">
+                        {displayNotification.message}
+                      </p>
+                    )}
+
+                    <p className="small muted">
+                      {formatInboxDateTime(notification.created_at)}
+                    </p>
+                  </div>
+
+                  <div className="business-notification-card-actions">
+                    {notification.action_url && (
+                      <Link
+                        href={notification.action_url}
+                        className="btn btn-accent"
+                        onClick={() => markNotificationRead(notification)}
+                      >
+                        {businessNotificationActionLabel(
+                          notification,
+                          linkedBooking?.status || null,
+                          t,
+                        )}
+                      </Link>
+                    )}
+
+                    {!notification.read_at && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => markNotificationRead(notification)}
+                      >
+                        {t(
+                          "dashboardNotifications.actions.markRead",
+                          "Mark read",
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {!loading && pastRequests.length > 0 && (
+        <details className="business-notification-history">
+          <summary>
+            <span>
               {t(
                 "dashboardNotifications.sections.previousRescheduleRequests",
-                "Previous reschedule requests",
+                "Handled reschedule requests",
               )}
-            </h2>
-          </div>
+            </span>
+            <span className="small muted">{pastRequests.length}</span>
+          </summary>
 
           {pastRequests.map((request) => {
             const linkedBooking = requestBooking(request);
@@ -1894,12 +1794,12 @@ export default function BusinessNotifications() {
                       "dashboardNotifications.labels.requestedTime",
                       "Requested time",
                     )}
-                    : {new Date(request.requested_start_at).toLocaleString()}
+                    : {formatInboxDateTime(request.requested_start_at)}
                   </p>
 
                   <p className="small muted">
                     {t("dashboardNotifications.labels.requested", "Requested")}:{" "}
-                    {new Date(request.created_at).toLocaleString()}
+                    {formatInboxDateTime(request.created_at)}
                   </p>
 
                   <p
@@ -1920,23 +1820,66 @@ export default function BusinessNotifications() {
               </div>
             );
           })}
-        </div>
+        </details>
       )}
 
       <style jsx>{`
-        .business-notification-summary-grid {
+        .business-inbox-overview {
+          align-items: center;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 1rem;
-          margin-bottom: 1.5rem;
+          grid-template-columns: minmax(0, 1.2fr) minmax(280px, 1fr) auto;
+          margin-bottom: 1.25rem;
+          padding: 1rem;
         }
-        .business-notification-toolbar {
+
+        .business-inbox-overview h2 {
+          font-family: var(--font-display);
+          margin-top: 0.15rem;
+        }
+
+        .business-inbox-metrics {
+          display: grid;
+          gap: 0.5rem;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .business-inbox-metrics span {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          color: var(--text-muted);
+          display: grid;
+          gap: 0.2rem;
+          padding: 0.65rem;
+        }
+
+        .business-inbox-metrics strong {
+          color: var(--text);
+          font-size: 1.25rem;
+          line-height: 1;
+        }
+
+        .business-inbox-section-header {
+          align-items: center;
           display: flex;
           justify-content: space-between;
           gap: 1rem;
-          align-items: center;
           flex-wrap: wrap;
-          margin-bottom: 1rem;
+        }
+
+        .business-inbox-count {
+          background: var(--accent-dim);
+          border: 1px solid rgba(255, 107, 53, 0.32);
+          border-radius: 999px;
+          color: var(--accent);
+          font-weight: 700;
+          min-width: 2.35rem;
+          padding: 0.4rem 0.75rem;
+          text-align: center;
         }
 
         .business-notification-banner-row,
@@ -1953,18 +1896,10 @@ export default function BusinessNotifications() {
           margin-top: 1rem;
         }
 
-        .business-notification-toolbar-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-          margin-left: auto;
-        }
-
         .business-notification-section {
           display: grid;
           gap: 1rem;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
         }
 
         .business-notification-card-row {
@@ -1982,6 +1917,66 @@ export default function BusinessNotifications() {
           justify-content: flex-end;
         }
 
+        .business-action-card,
+        .business-update-row {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 1rem;
+        }
+
+        .business-action-card-heading,
+        .business-update-heading {
+          align-items: center;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin-bottom: 0.45rem;
+        }
+
+        .business-action-type {
+          color: var(--accent);
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+
+        .business-action-meta,
+        .business-action-contact {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.45rem;
+          margin-top: 0.7rem;
+        }
+
+        .business-action-meta span,
+        .business-action-contact span {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          padding: 0.32rem 0.65rem;
+        }
+
+        .business-update-list {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .business-update-row {
+          align-items: center;
+          display: flex;
+          gap: 1rem;
+          justify-content: space-between;
+        }
+
+        .business-update-copy {
+          display: grid;
+          gap: 0.25rem;
+          min-width: 0;
+        }
+
         .business-notification-time-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1989,11 +1984,57 @@ export default function BusinessNotifications() {
           margin-top: 1rem;
         }
 
+        .business-time-chip {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 0.75rem;
+        }
+
+        .business-time-chip.is-requested {
+          background: var(--accent-dim);
+          border-color: rgba(255, 107, 53, 0.35);
+        }
+
+        .business-notification-history {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          margin-bottom: 1.5rem;
+          padding: 0.85rem 1rem;
+        }
+
+        .business-notification-history summary {
+          align-items: center;
+          cursor: pointer;
+          display: flex;
+          font-weight: 700;
+          justify-content: space-between;
+          list-style: none;
+        }
+
+        .business-notification-history summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .business-notification-history .card {
+          margin-top: 0.75rem;
+        }
+
         @media (max-width: 640px) {
-          .business-notification-summary-grid {
+          .business-inbox-overview {
             grid-template-columns: 1fr;
           }
-          .business-notification-toolbar-actions,
+
+          .business-inbox-metrics {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          .business-inbox-metrics span {
+            font-size: 0.76rem;
+            padding: 0.55rem;
+          }
+
           .business-notification-card-actions,
           .business-notification-banner-row,
           .business-notification-empty-actions {
@@ -2001,9 +2042,11 @@ export default function BusinessNotifications() {
             justify-content: stretch;
           }
 
-          .business-notification-toolbar-actions :global(.btn),
-          .business-notification-toolbar-actions button,
-          .business-notification-toolbar-actions a,
+          .business-update-row {
+            align-items: stretch;
+            display: grid;
+          }
+
           .business-notification-card-actions :global(.btn),
           .business-notification-card-actions button,
           .business-notification-card-actions a,

@@ -683,3 +683,23 @@ Stage 8.27 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.28 Business Inbox Action Centre Polish Implemented
+
+- rebuilt the business Inbox presentation around one compact action-centre
+  overview instead of separate summary cards and repeated notification headings
+- grouped pending booking approvals and pending reschedule requests under one
+  Needs action section so customer requests are the first visible work
+- compacted approval and reschedule rows into scannable customer, time, service,
+  staff and contact chips while keeping the existing accept/decline/open actions
+- moved general notification rows into a denser Recent updates section and hid
+  duplicate pending-action notifications when the matching action row is already
+  visible
+- folded handled reschedule requests into a collapsible history block so old
+  records do not dominate the active work surface
+- updated English and Albanian copy for the shorter Inbox/action-centre labels
+
+Stage 8.28 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
