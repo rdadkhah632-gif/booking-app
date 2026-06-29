@@ -609,3 +609,21 @@ Stage 8.23 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.24 Calendar Consistency Polish Implemented
+
+- rebuilt the staff Calendar from a month-grid plus selected-day list into the
+  same week-first schedule pattern used by the business Calendar
+- added previous/today/next week controls, date jump, seven-day headers, time
+  rail and duration-sized appointment blocks to the staff Calendar
+- made staff appointment blocks clickable so details, contact actions and mark
+  complete appear in one selected-appointment panel
+- kept pending staff appointments read-only with the existing "Awaiting
+  business approval" meaning
+- aligned business and staff calendar appointment count copy so plurals use
+  translation keys rather than appending English `s`
+
+Stage 8.24 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection,
+staff invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

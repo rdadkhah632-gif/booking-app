@@ -1378,8 +1378,9 @@ export default function Bookings() {
             <strong>{weekLabel}</strong>
             <span>
               {weekBookings.length}{" "}
-              {t("dashboardBookings.appointmentCount", "appointment")}
-              {weekBookings.length === 1 ? "" : "s"}
+              {weekBookings.length === 1
+                ? t("dashboardBookings.appointmentCount", "appointment")
+                : t("dashboardBookings.appointments", "appointments")}
             </span>
           </div>
           {weekPendingCount > 0 && (
@@ -1407,8 +1408,9 @@ export default function Bookings() {
               {group.bookings.length > 0 && (
                 <small>
                   {group.bookings.length}{" "}
-                  {t("dashboardBookings.appointmentCount", "appointment")}
-                  {group.bookings.length === 1 ? "" : "s"}
+                  {group.bookings.length === 1
+                    ? t("dashboardBookings.appointmentCount", "appointment")
+                    : t("dashboardBookings.appointments", "appointments")}
                 </small>
               )}
             </button>

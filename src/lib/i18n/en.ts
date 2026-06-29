@@ -2326,6 +2326,9 @@ export const en: TranslationTree = {
   "staffCalendar.emptyTitle": "No assigned bookings for this date",
   "staffCalendar.emptyDay":
     "Choose another day to review your schedule. New appointments will appear here once they are assigned to you.",
+  "staffCalendar.emptyWeekTitle": "No appointments this week",
+  "staffCalendar.emptyWeekBody":
+    "Assigned appointments will appear in this weekly schedule.",
   "staff.summary.confirmedShort": "confirmed",
   "staff.summary.pendingShort": "pending",
   "staff.pending.kicker": "Pending bookings",

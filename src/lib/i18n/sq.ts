@@ -2426,6 +2426,9 @@ export const sq: TranslationTree = {
   "staffCalendar.emptyTitle": "Nuk ka rezervime të caktuara për këtë datë",
   "staffCalendar.emptyDay":
     "Zgjidh një ditë tjetër për të parë orarin. Takimet e reja do të shfaqen këtu pasi të të caktohen.",
+  "staffCalendar.emptyWeekTitle": "Nuk ka takime këtë javë",
+  "staffCalendar.emptyWeekBody":
+    "Takimet e caktuara do të shfaqen në këtë orar javor.",
   "staff.summary.confirmedShort": "të konfirmuara",
   "staff.summary.pendingShort": "në pritje",
   "staff.pending.kicker": "Rezervime në pritje",
