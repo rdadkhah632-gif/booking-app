@@ -13,7 +13,7 @@ export default function AvailabilityStats({ stats }: Props) {
   const { t } = useI18n();
 
   return (
-    <div className="card availability-summary-strip">
+    <div className="availability-summary-strip">
       <span
         className={`availability-status-dot ${stats.ready ? "ready" : "needs-work"}`}
       >
@@ -46,8 +46,10 @@ export default function AvailabilityStats({ stats }: Props) {
           align-items: center;
           gap: 0.55rem;
           flex-wrap: wrap;
-          margin-bottom: 0.85rem;
-          padding: 0.8rem;
+          margin-bottom: 0.7rem;
+          padding: 0.65rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
         }
 
         .availability-summary-strip span {

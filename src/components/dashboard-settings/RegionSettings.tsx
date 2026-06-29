@@ -12,22 +12,9 @@ export default function RegionSettings({ settings, updateSetting }: Props) {
 
   return (
     <div className="card settings-card">
-      <div>
-        <p className="small muted">
-          {t("dashboardSettings.region.kicker", "Region settings")}
-        </p>
-
-        <h2 style={{ fontFamily: "var(--font-display)", marginTop: "0.25rem" }}>
-          {t("dashboardSettings.region.title", "Timezone and currency")}
-        </h2>
-
-        <p className="muted small" style={{ marginTop: "0.35rem" }}>
-          {t(
-            "dashboardSettings.region.body",
-            "Used for appointment times, prices and customer-facing details.",
-          )}
-        </p>
-      </div>
+      <h2 style={{ fontFamily: "var(--font-display)", marginTop: 0 }}>
+        {t("dashboardSettings.region.title", "Region")}
+      </h2>
 
       <div className="settings-two-column">
         <label className="small muted">

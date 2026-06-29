@@ -1391,73 +1391,75 @@ export default function Bookings() {
           )}
         </div>
 
-        <div className="week-calendar-grid">
-          <div className="week-calendar-corner" />
-          {weekGroups.map((group) => (
-            <button
-              key={group.dateKey}
-              type="button"
-              className={
-                group.dateKey === selectedDate
-                  ? "week-day-header active"
-                  : "week-day-header"
-              }
-              onClick={() => changeCalendarDate(group.dateKey)}
-            >
-              <span>{group.shortLabel}</span>
-              {group.bookings.length > 0 && (
-                <small>
-                  {group.bookings.length}{" "}
-                  {group.bookings.length === 1
-                    ? t("dashboardBookings.appointmentCount", "appointment")
-                    : t("dashboardBookings.appointments", "appointments")}
-                </small>
-              )}
-            </button>
-          ))}
-
-          <div
-            className="week-time-rail"
-            style={{ height: `${scheduleHeight}px` }}
-            aria-hidden="true"
-          >
-            {hours.map((hour) => (
-              <span
-                key={hour}
-                style={{
-                  top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
-                }}
+        <div className="week-calendar-scroll">
+          <div className="week-calendar-grid">
+            <div className="week-calendar-corner" />
+            {weekGroups.map((group) => (
+              <button
+                key={group.dateKey}
+                type="button"
+                className={
+                  group.dateKey === selectedDate
+                    ? "week-day-header active"
+                    : "week-day-header"
+                }
+                onClick={() => changeCalendarDate(group.dateKey)}
               >
-                {String(hour).padStart(2, "0")}:00
-              </span>
+                <span>{group.shortLabel}</span>
+                {group.bookings.length > 0 && (
+                  <small>
+                    {group.bookings.length}{" "}
+                    {group.bookings.length === 1
+                      ? t("dashboardBookings.appointmentCount", "appointment")
+                      : t("dashboardBookings.appointments", "appointments")}
+                  </small>
+                )}
+              </button>
             ))}
-          </div>
 
-          {weekGroups.map((group) => (
             <div
-              key={group.dateKey}
-              className="week-day-lane"
+              className="week-time-rail"
               style={{ height: `${scheduleHeight}px` }}
+              aria-hidden="true"
             >
-              {hours.slice(0, -1).map((hour) => (
+              {hours.map((hour) => (
                 <span
                   key={hour}
-                  className="calendar-hour-line"
                   style={{
                     top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
                   }}
-                />
+                >
+                  {String(hour).padStart(2, "0")}:00
+                </span>
               ))}
-
-              {group.bookings.length === 0 ? (
-                <span className="week-day-empty" aria-hidden="true" />
-              ) : (
-                group.bookings.map((booking) =>
-                  renderCalendarBlock(booking, startHour),
-                )
-              )}
             </div>
-          ))}
+
+            {weekGroups.map((group) => (
+              <div
+                key={group.dateKey}
+                className="week-day-lane"
+                style={{ height: `${scheduleHeight}px` }}
+              >
+                {hours.slice(0, -1).map((hour) => (
+                  <span
+                    key={hour}
+                    className="calendar-hour-line"
+                    style={{
+                      top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
+                    }}
+                  />
+                ))}
+
+                {group.bookings.length === 0 ? (
+                  <span className="week-day-empty" aria-hidden="true" />
+                ) : (
+                  group.bookings.map((booking) =>
+                    renderCalendarBlock(booking, startHour),
+                  )
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -1872,6 +1874,7 @@ export default function Bookings() {
         .calendar-workspace {
           display: grid;
           gap: 1rem;
+          min-width: 0;
         }
 
         .calendar-shell,
@@ -1882,6 +1885,7 @@ export default function Bookings() {
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface);
+          min-width: 0;
         }
 
         .manual-booking-panel {
@@ -2005,125 +2009,6 @@ export default function Bookings() {
           font-weight: 800;
         }
 
-        .week-calendar {
-          display: grid;
-          gap: 0.75rem;
-          padding: 1rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: var(--surface);
-          overflow: hidden;
-        }
-
-        .week-calendar-summary {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-        }
-
-        .week-calendar-summary div {
-          display: flex;
-          gap: 0.5rem;
-          align-items: baseline;
-          flex-wrap: wrap;
-        }
-
-        .week-calendar-summary span {
-          color: var(--text-muted);
-          font-size: 0.85rem;
-        }
-
-        .week-calendar-grid {
-          display: grid;
-          grid-template-columns: 4rem repeat(7, minmax(0, 1fr));
-          overflow: hidden;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: rgba(11, 18, 32, 0.28);
-        }
-
-        .week-calendar-corner,
-        .week-day-header {
-          min-height: 3.6rem;
-          border-right: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.02);
-        }
-
-        .week-day-header {
-          display: grid;
-          gap: 0.12rem;
-          align-content: center;
-          justify-items: center;
-          min-width: 0;
-          padding: 0.4rem 0.25rem;
-          color: var(--text);
-          font: inherit;
-          text-align: center;
-          cursor: pointer;
-        }
-
-        .week-day-header.active {
-          background: rgba(255, 107, 53, 0.08);
-          color: var(--accent);
-        }
-
-        .week-day-header span,
-        .week-day-header small {
-          overflow: hidden;
-          max-width: 100%;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .week-day-header span {
-          font-weight: 900;
-        }
-
-        .week-day-header small {
-          color: var(--text-muted);
-          font-size: 0.7rem;
-          font-weight: 800;
-        }
-
-        .week-time-rail,
-        .week-day-lane {
-          position: relative;
-          min-width: 0;
-        }
-
-        .week-time-rail {
-          border-right: 1px solid var(--border);
-        }
-
-        .week-time-rail span {
-          position: absolute;
-          right: 0.45rem;
-          transform: translateY(-0.55rem);
-          color: var(--text-muted);
-          font-size: 0.72rem;
-          font-weight: 800;
-          white-space: nowrap;
-        }
-
-        .week-day-lane {
-          border-right: 1px solid rgba(148, 163, 184, 0.12);
-        }
-
-        .week-day-lane:last-child,
-        .week-day-header:last-of-type {
-          border-right: 0;
-        }
-
-        .week-day-empty {
-          position: absolute;
-          inset: 0.35rem;
-          border: 1px dashed rgba(148, 163, 184, 0.1);
-          border-radius: calc(var(--radius) - 4px);
-          pointer-events: none;
-        }
-
         .calendar-selected-details {
           display: grid;
           gap: 0.75rem;
@@ -2144,6 +2029,150 @@ export default function Bookings() {
         .calendar-selected-heading h2,
         .calendar-selected-heading p {
           margin: 0;
+        }
+
+        :global(.week-calendar) {
+          display: grid;
+          gap: 0.75rem;
+          min-width: 0;
+          max-width: 100%;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+          overflow: hidden;
+        }
+
+        :global(.week-calendar-scroll) {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(11, 18, 32, 0.28);
+          scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
+          scrollbar-width: thin;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        :global(.week-calendar-summary) {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        :global(.week-calendar-summary div) {
+          display: flex;
+          gap: 0.5rem;
+          align-items: baseline;
+          flex-wrap: wrap;
+        }
+
+        :global(.week-calendar-summary span) {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+        }
+
+        :global(.week-calendar-grid) {
+          display: grid;
+          grid-template-columns: 4.25rem repeat(7, minmax(5.75rem, 1fr));
+          min-width: 760px;
+          overflow: hidden;
+          background: rgba(11, 18, 32, 0.18);
+        }
+
+        :global(.week-calendar-corner) {
+          min-height: 3.6rem;
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          background: rgba(255, 255, 255, 0.02);
+        }
+
+        :global(.week-day-header) {
+          min-height: 3.6rem;
+          margin: 0;
+          appearance: none;
+          -webkit-appearance: none;
+          display: grid;
+          gap: 0.12rem;
+          align-content: center;
+          justify-items: center;
+          min-width: 0;
+          padding: 0.4rem 0.25rem;
+          border: 0;
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          border-radius: 0;
+          background: rgba(255, 255, 255, 0.02);
+          color: var(--text);
+          font: inherit;
+          text-align: center;
+          cursor: pointer;
+        }
+
+        :global(.week-day-header.active) {
+          background: rgba(255, 107, 53, 0.08);
+          color: var(--accent);
+        }
+
+        :global(.week-day-header span),
+        :global(.week-day-header small) {
+          overflow: hidden;
+          max-width: 100%;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        :global(.week-day-header span) {
+          font-weight: 900;
+        }
+
+        :global(.week-day-header small) {
+          color: var(--text-muted);
+          font-size: 0.7rem;
+          font-weight: 800;
+        }
+
+        :global(.week-time-rail),
+        :global(.week-day-lane) {
+          position: relative;
+          min-width: 0;
+        }
+
+        :global(.week-time-rail) {
+          border-right: 1px solid var(--border);
+          background: rgba(15, 23, 42, 0.42);
+        }
+
+        :global(.week-time-rail span) {
+          position: absolute;
+          right: 0.45rem;
+          transform: translateY(-0.55rem);
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        :global(.week-day-lane) {
+          border-right: 1px solid rgba(148, 163, 184, 0.12);
+          overflow: hidden;
+          background: rgba(15, 23, 42, 0.16);
+        }
+
+        :global(.week-day-lane:last-child),
+        :global(.week-day-header:last-of-type) {
+          border-right: 0;
+        }
+
+        :global(.week-day-empty) {
+          position: absolute;
+          inset: 0.35rem;
+          border: 1px dashed rgba(148, 163, 184, 0.1);
+          border-radius: calc(var(--radius) - 4px);
+          pointer-events: none;
         }
 
         :global(.calendar-hour-line) {
@@ -2446,34 +2475,39 @@ export default function Bookings() {
             width: 100%;
           }
 
-          .week-calendar {
+          :global(.week-calendar) {
             padding: 0.65rem;
           }
 
-          .week-calendar-summary,
           .calendar-selected-heading {
             display: grid;
             align-items: stretch;
           }
 
-          .week-calendar-grid {
-            grid-template-columns: 3.2rem repeat(7, minmax(0, 1fr));
+          :global(.week-calendar-summary) {
+            display: grid;
+            align-items: stretch;
           }
 
-          .week-calendar-corner,
-          .week-day-header {
+          :global(.week-calendar-grid) {
+            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
+            min-width: 660px;
+          }
+
+          :global(.week-calendar-corner),
+          :global(.week-day-header) {
             min-height: 3.1rem;
           }
 
-          .week-day-header {
+          :global(.week-day-header) {
             padding: 0.3rem 0.15rem;
           }
 
-          .week-day-header small {
+          :global(.week-day-header small) {
             font-size: 0.62rem;
           }
 
-          .week-time-rail span {
+          :global(.week-time-rail span) {
             right: 0.3rem;
             font-size: 0.66rem;
           }

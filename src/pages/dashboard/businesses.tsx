@@ -852,20 +852,7 @@ export default function Businesses() {
                 </Link>
               </div>
             </div>
-            {ownerStaffProfile ? (
-              <p className="small muted setup-owner-note">
-                {t(
-                  "dashboardBusinesses.onboarding.ownerStaffLinked",
-                  "You also take appointments. Manage your personal schedule in My Work.",
-                )}{" "}
-                <Link href="/staff">
-                  {t(
-                    "dashboardBusinesses.onboarding.openMyWork",
-                    "Open My Work",
-                  )}
-                </Link>
-              </p>
-            ) : (
+            {!ownerStaffProfile && (
               <div className="setup-owner-note">
                 <span className="small muted">
                   {t(

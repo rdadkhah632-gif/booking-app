@@ -1,23 +1,29 @@
-import { useI18n } from '@/lib/useI18n'
-import { Business } from './dashboardSettingsTypes'
+import { useI18n } from "@/lib/useI18n";
+import { Business } from "./dashboardSettingsTypes";
 
 type Props = {
-  selectedBusiness: Business | null
-  saving: boolean
-  onSave: () => void
-}
+  selectedBusiness: Business | null;
+  saving: boolean;
+  onSave: () => void;
+};
 
 export default function BusinessSettingsActions({
   selectedBusiness,
   saving,
-  onSave
+  onSave,
 }: Props) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   return (
     <div className="settings-final-actions">
-      <button className="btn btn-accent" onClick={onSave} disabled={saving || !selectedBusiness}>
-        {saving ? t('account.saving', 'Saving...') : t('dashboardSettings.saveMirebookSettings', 'Save Mirëbook settings')}
+      <button
+        className="btn btn-accent"
+        onClick={onSave}
+        disabled={saving || !selectedBusiness}
+      >
+        {saving
+          ? t("account.saving", "Saving...")
+          : t("dashboardSettings.saveMirebookSettings", "Save rules")}
       </button>
 
       <style jsx>{`
@@ -41,5 +47,5 @@ export default function BusinessSettingsActions({
         }
       `}</style>
     </div>
-  )
+  );
 }

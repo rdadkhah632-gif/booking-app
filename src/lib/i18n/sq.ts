@@ -761,7 +761,7 @@ export const sq: TranslationTree = {
   "dashboardSettings.chooseBusiness":
     "Zgjidh një biznes për të menaxhuar rregullat e rezervimit.",
   "dashboardSettings.saveSettings": "Ruaj cilësimet",
-  "dashboardSettings.saveMirebookSettings": "Ruaj cilësimet Mirëbook",
+  "dashboardSettings.saveMirebookSettings": "Ruaj rregullat",
   "dashboardSettings.setupHub": "Qendra e konfigurimit",
   "dashboardSettings.manageBusinesses": "Hap konfigurimin",
   "dashboardSettings.backToSetup": "Kthehu te qendra e konfigurimit",
@@ -796,47 +796,44 @@ export const sq: TranslationTree = {
     "Zgjidh nëse klientët konfirmohen menjëherë ose nëse çdo rezervim ka nevojë për miratim nga biznesi.",
   "dashboardSettings.approval.instantTitle": "Konfirmim i menjëhershëm",
   "dashboardSettings.approval.instantBody":
-    "Klientët marrin rezervim të konfirmuar sapo zgjedhin një orar të disponueshëm.",
+    "Konfirmohet menjëherë pas rezervimit.",
   "dashboardSettings.approval.manualTitle": "Miratim manual",
-  "dashboardSettings.approval.manualBody":
-    "Rezervimet e reja shfaqen te Kërkon veprim derisa biznesi t’i pranojë ose refuzojë.",
+  "dashboardSettings.approval.manualBody": "Kërkesat presin në Inbox.",
   "dashboardSettings.approval.currentMode": "Mënyra aktuale",
   "dashboardSettings.advanced.summary": "Rregulla të avancuara rezervimi",
-  "dashboardSettings.advanced.body": "Orari, rajoni dhe teksti i politikave.",
+  "dashboardSettings.advanced.body": "Orari, rajoni dhe politikat.",
   "dashboardSettings.slot.kicker": "Intervali i orareve",
-  "dashboardSettings.slot.title": "Madhësia e intervalit të rezervimit",
+  "dashboardSettings.slot.title": "Madhësia e intervalit",
   "dashboardSettings.slot.body":
     "Kjo kontrollon rrjetin e orareve që klientët shohin kur zgjedhin takime.",
   "dashboardSettings.notice.kicker": "Njoftimi minimal",
-  "dashboardSettings.notice.title": "Sa shpejt mund të rezervojnë klientët",
+  "dashboardSettings.notice.title": "Njoftimi minimal",
   "dashboardSettings.notice.body":
     "Parandalon rezervimet në minutën e fundit nëse biznesi ka nevojë për kohë përgatitjeje.",
   "dashboardSettings.advance.kicker": "Dritarja e rezervimit paraprak",
-  "dashboardSettings.advance.title":
-    "Sa larg përpara mund të rezervojnë klientët",
+  "dashboardSettings.advance.title": "Dritarja e rezervimit",
   "dashboardSettings.advance.body":
     "E dobishme për biznese që duan të shfaqin vetëm një kalendar të kufizuar në të ardhmen.",
   "dashboardSettings.buffers.kicker": "Buffer-at",
-  "dashboardSettings.buffers.title": "Koha rreth takimeve",
+  "dashboardSettings.buffers.title": "Buffer-at",
   "dashboardSettings.buffers.body":
     "Buffer-at bllokojnë kohë shtesë para ose pas takimeve për pastrim, udhëtim, administrim ose përgatitje.",
   "dashboardSettings.buffers.before": "Para",
   "dashboardSettings.buffers.after": "Pas",
   "dashboardSettings.region.kicker": "Cilësimet rajonale",
-  "dashboardSettings.region.title": "Zona kohore dhe monedha",
+  "dashboardSettings.region.title": "Rajoni",
   "dashboardSettings.region.body":
     "Përdoret për oraret e takimeve, çmimet dhe detajet që shohin klientët.",
   "dashboardSettings.region.timezone": "Zona kohore",
   "dashboardSettings.region.currency": "Monedha",
   "dashboardSettings.cancellation.kicker": "Politika e anulimit",
-  "dashboardSettings.cancellation.title": "Teksti i anulimit për klientët",
+  "dashboardSettings.cancellation.title": "Anulimi",
   "dashboardSettings.cancellation.body":
     "Ky tekst mund të shfaqet në faqet e rezervimit, konfirmimit dhe llogarisë.",
   "dashboardSettings.cancellation.placeholder":
     "Shembull: Klientët mund të anulojnë deri në 24 orë para takimit.",
   "dashboardSettings.reschedule.kicker": "Politika e ndryshimit të orarit",
-  "dashboardSettings.reschedule.title":
-    "Teksti i ndryshimit të orarit për klientët",
+  "dashboardSettings.reschedule.title": "Ndryshimi i orarit",
   "dashboardSettings.reschedule.body":
     "Mbaje të qartë që klientët të dinë nëse kërkesat kanë nevojë për miratim nga biznesi.",
   "dashboardSettings.reschedule.placeholder":

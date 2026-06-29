@@ -3,24 +3,18 @@ import { Business, UpdateBusinessSetting } from "./dashboardSettingsTypes";
 
 type Props = {
   settings: Business;
-  approvalModeLabel: string;
   updateSetting: UpdateBusinessSetting;
 };
 
 export default function BookingApprovalSettings({
   settings,
-  approvalModeLabel,
   updateSetting,
 }: Props) {
   const { t } = useI18n();
 
   return (
     <div className="card settings-card settings-approval-card">
-      <div>
-        <p className="small muted">
-          {t("dashboardSettings.approval.kicker", "Booking approval")}
-        </p>
-
+      <div className="settings-card-heading">
         <h2 style={{ fontFamily: "var(--font-display)", marginTop: "0.25rem" }}>
           {t("dashboardSettings.approval.title", "Confirmation mode")}
         </h2>
@@ -79,14 +73,11 @@ export default function BookingApprovalSettings({
         </button>
       </div>
 
-      <div className="settings-current-mode">
-        <p className="small muted">
-          {t("dashboardSettings.approval.currentMode", "Current mode")}
-        </p>
-        <strong>{approvalModeLabel}</strong>
-      </div>
-
       <style jsx>{`
+        .settings-card-heading h2 {
+          margin: 0 !important;
+        }
+
         .settings-mode-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -122,19 +113,6 @@ export default function BookingApprovalSettings({
           color: var(--text);
           font-size: 0.95rem;
           font-weight: 800;
-        }
-
-        .settings-current-mode {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          padding: 0.6rem 0 0;
-          border-top: 1px solid var(--border);
-        }
-
-        .settings-current-mode p {
-          margin: 0;
         }
 
         @media (max-width: 640px) {

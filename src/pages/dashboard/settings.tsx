@@ -29,10 +29,6 @@ export default function DashboardSettingsPage() {
     );
   }, [businesses, selectedBusinessId]);
 
-  const approvalModeLabel = settings?.auto_accept_bookings
-    ? t("dashboardSettings.approval.instantTitle", "Instant confirmation")
-    : t("dashboardSettings.approval.manualTitle", "Manual approval");
-
   async function loadSettings() {
     setLoading(true);
     setError(null);
@@ -245,7 +241,6 @@ export default function DashboardSettingsPage() {
           <div className="settings-grid">
             <BookingApprovalSettings
               settings={settings}
-              approvalModeLabel={approvalModeLabel}
               updateSetting={updateSetting}
             />
           </div>
@@ -261,7 +256,7 @@ export default function DashboardSettingsPage() {
               <span className="small muted">
                 {t(
                   "dashboardSettings.advanced.body",
-                  "Timing, region and policy wording.",
+                  "Timing, region and policies.",
                 )}
               </span>
             </summary>
@@ -298,15 +293,15 @@ export default function DashboardSettingsPage() {
 
         .settings-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-          gap: 0.8rem;
+          grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+          gap: 0.65rem;
         }
 
         :global(.settings-card) {
           display: grid;
-          gap: 0.7rem;
+          gap: 0.55rem;
           align-content: start;
-          padding: 0.95rem;
+          padding: 0.8rem;
         }
 
         :global(.settings-card h2),
@@ -345,7 +340,7 @@ export default function DashboardSettingsPage() {
           align-items: center;
           justify-content: space-between;
           gap: 0.75rem;
-          padding: 0.9rem 0.95rem;
+          padding: 0.75rem 0.85rem;
           cursor: pointer;
           font-weight: 800;
         }
@@ -355,12 +350,12 @@ export default function DashboardSettingsPage() {
         }
 
         .settings-advanced-grid {
-          padding: 0 0.95rem 0.95rem;
+          padding: 0 0.85rem 0.85rem;
         }
 
         :global(.settings-advanced-panel .grid-2) {
           margin-top: 0 !important;
-          padding: 0 0.95rem 0.95rem;
+          padding: 0 0.85rem 0.85rem;
         }
 
         :global(.settings-card select),

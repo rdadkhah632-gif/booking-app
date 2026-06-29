@@ -420,8 +420,7 @@ export default function Availability() {
       <style jsx>{`
         .availability-day-list {
           display: grid;
-          gap: 0.75rem;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0;
         }
 
         .availability-save-actions {

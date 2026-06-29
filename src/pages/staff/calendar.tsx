@@ -462,73 +462,75 @@ export default function StaffCalendarPage() {
           )}
         </div>
 
-        <div className="staff-week-grid">
-          <div className="staff-week-corner" />
-          {weekGroups.map((group) => (
-            <button
-              key={group.dateString}
-              type="button"
-              className={
-                group.dateString === selectedDate
-                  ? "staff-week-day-header active"
-                  : "staff-week-day-header"
-              }
-              onClick={() => changeCalendarDate(group.dateString)}
-            >
-              <span>{group.shortLabel}</span>
-              {group.bookings.length > 0 && (
-                <small>
-                  {group.bookings.length}{" "}
-                  {group.bookings.length === 1
-                    ? t("dashboardBookings.appointmentCount", "appointment")
-                    : t("dashboardBookings.appointments", "appointments")}
-                </small>
-              )}
-            </button>
-          ))}
-
-          <div
-            className="staff-week-time-rail"
-            style={{ height: `${scheduleHeight}px` }}
-            aria-hidden="true"
-          >
-            {hours.map((hour) => (
-              <span
-                key={hour}
-                style={{
-                  top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
-                }}
+        <div className="staff-week-scroll">
+          <div className="staff-week-grid">
+            <div className="staff-week-corner" />
+            {weekGroups.map((group) => (
+              <button
+                key={group.dateString}
+                type="button"
+                className={
+                  group.dateString === selectedDate
+                    ? "staff-week-day-header active"
+                    : "staff-week-day-header"
+                }
+                onClick={() => changeCalendarDate(group.dateString)}
               >
-                {String(hour).padStart(2, "0")}:00
-              </span>
+                <span>{group.shortLabel}</span>
+                {group.bookings.length > 0 && (
+                  <small>
+                    {group.bookings.length}{" "}
+                    {group.bookings.length === 1
+                      ? t("dashboardBookings.appointmentCount", "appointment")
+                      : t("dashboardBookings.appointments", "appointments")}
+                  </small>
+                )}
+              </button>
             ))}
-          </div>
 
-          {weekGroups.map((group) => (
             <div
-              key={group.dateString}
-              className="staff-week-lane"
+              className="staff-week-time-rail"
               style={{ height: `${scheduleHeight}px` }}
+              aria-hidden="true"
             >
-              {hours.slice(0, -1).map((hour) => (
+              {hours.map((hour) => (
                 <span
                   key={hour}
-                  className="staff-hour-line"
                   style={{
                     top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
                   }}
-                />
+                >
+                  {String(hour).padStart(2, "0")}:00
+                </span>
               ))}
-
-              {group.bookings.length === 0 ? (
-                <span className="staff-week-empty" aria-hidden="true" />
-              ) : (
-                group.bookings.map((booking) =>
-                  renderCalendarBlock(booking, startHour),
-                )
-              )}
             </div>
-          ))}
+
+            {weekGroups.map((group) => (
+              <div
+                key={group.dateString}
+                className="staff-week-lane"
+                style={{ height: `${scheduleHeight}px` }}
+              >
+                {hours.slice(0, -1).map((hour) => (
+                  <span
+                    key={hour}
+                    className="staff-hour-line"
+                    style={{
+                      top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
+                    }}
+                  />
+                ))}
+
+                {group.bookings.length === 0 ? (
+                  <span className="staff-week-empty" aria-hidden="true" />
+                ) : (
+                  group.bookings.map((booking) =>
+                    renderCalendarBlock(booking, startHour),
+                  )
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -788,6 +790,8 @@ export default function StaffCalendarPage() {
         .staff-week-calendar {
           display: grid;
           gap: 0.75rem;
+          min-width: 0;
+          max-width: 100%;
           padding: 1rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
@@ -795,7 +799,52 @@ export default function StaffCalendarPage() {
           overflow: hidden;
         }
 
+        :global(.staff-week-calendar) {
+          display: grid;
+          gap: 0.75rem;
+          min-width: 0;
+          max-width: 100%;
+          padding: 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+          overflow: hidden;
+        }
+
+        .staff-week-scroll {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(11, 18, 32, 0.28);
+          scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
+          scrollbar-width: thin;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        :global(.staff-week-scroll) {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(11, 18, 32, 0.28);
+          scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
+          scrollbar-width: thin;
+          -webkit-overflow-scrolling: touch;
+        }
+
         .staff-week-summary {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        :global(.staff-week-summary) {
           display: flex;
           justify-content: space-between;
           gap: 1rem;
@@ -809,7 +858,19 @@ export default function StaffCalendarPage() {
           flex-wrap: wrap;
         }
 
+        :global(.staff-week-summary div) {
+          display: flex;
+          gap: 0.5rem;
+          align-items: baseline;
+          flex-wrap: wrap;
+        }
+
         .staff-week-summary span {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+        }
+
+        :global(.staff-week-summary span) {
           color: var(--text-muted);
           font-size: 0.85rem;
         }
@@ -820,17 +881,36 @@ export default function StaffCalendarPage() {
           font-weight: 800;
         }
 
-        .staff-week-grid {
-          display: grid;
-          grid-template-columns: 4rem repeat(7, minmax(0, 1fr));
-          overflow: hidden;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: rgba(11, 18, 32, 0.28);
+        :global(.staff-week-pending) {
+          color: var(--accent);
+          font-size: 0.85rem;
+          font-weight: 800;
         }
 
-        .staff-week-corner,
-        .staff-week-day-header {
+        .staff-week-grid {
+          display: grid;
+          grid-template-columns: 4.25rem repeat(7, minmax(5.75rem, 1fr));
+          min-width: 760px;
+          overflow: hidden;
+          background: rgba(11, 18, 32, 0.18);
+        }
+
+        :global(.staff-week-grid) {
+          display: grid;
+          grid-template-columns: 4.25rem repeat(7, minmax(5.75rem, 1fr));
+          min-width: 760px;
+          overflow: hidden;
+          background: rgba(11, 18, 32, 0.18);
+        }
+
+        .staff-week-corner {
+          min-height: 3.6rem;
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          background: rgba(255, 255, 255, 0.02);
+        }
+
+        :global(.staff-week-corner) {
           min-height: 3.6rem;
           border-right: 1px solid var(--border);
           border-bottom: 1px solid var(--border);
@@ -838,12 +918,43 @@ export default function StaffCalendarPage() {
         }
 
         .staff-week-day-header {
+          min-height: 3.6rem;
+          margin: 0;
+          appearance: none;
+          -webkit-appearance: none;
           display: grid;
           gap: 0.12rem;
           align-content: center;
           justify-items: center;
           min-width: 0;
           padding: 0.4rem 0.25rem;
+          border: 0;
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          border-radius: 0;
+          background: rgba(255, 255, 255, 0.02);
+          color: var(--text);
+          font: inherit;
+          text-align: center;
+          cursor: pointer;
+        }
+
+        :global(.staff-week-day-header) {
+          min-height: 3.6rem;
+          margin: 0;
+          appearance: none;
+          -webkit-appearance: none;
+          display: grid;
+          gap: 0.12rem;
+          align-content: center;
+          justify-items: center;
+          min-width: 0;
+          padding: 0.4rem 0.25rem;
+          border: 0;
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          border-radius: 0;
+          background: rgba(255, 255, 255, 0.02);
           color: var(--text);
           font: inherit;
           text-align: center;
@@ -851,6 +962,11 @@ export default function StaffCalendarPage() {
         }
 
         .staff-week-day-header.active {
+          background: rgba(255, 107, 53, 0.08);
+          color: var(--accent);
+        }
+
+        :global(.staff-week-day-header.active) {
           background: rgba(255, 107, 53, 0.08);
           color: var(--accent);
         }
@@ -863,11 +979,29 @@ export default function StaffCalendarPage() {
           white-space: nowrap;
         }
 
+        :global(.staff-week-day-header span),
+        :global(.staff-week-day-header small) {
+          overflow: hidden;
+          max-width: 100%;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
         .staff-week-day-header span {
           font-weight: 900;
         }
 
+        :global(.staff-week-day-header span) {
+          font-weight: 900;
+        }
+
         .staff-week-day-header small {
+          color: var(--text-muted);
+          font-size: 0.7rem;
+          font-weight: 800;
+        }
+
+        :global(.staff-week-day-header small) {
           color: var(--text-muted);
           font-size: 0.7rem;
           font-weight: 800;
@@ -879,8 +1013,20 @@ export default function StaffCalendarPage() {
           min-width: 0;
         }
 
+        :global(.staff-week-time-rail),
+        :global(.staff-week-lane) {
+          position: relative;
+          min-width: 0;
+        }
+
         .staff-week-time-rail {
           border-right: 1px solid var(--border);
+          background: rgba(15, 23, 42, 0.42);
+        }
+
+        :global(.staff-week-time-rail) {
+          border-right: 1px solid var(--border);
+          background: rgba(15, 23, 42, 0.42);
         }
 
         .staff-week-time-rail span {
@@ -893,12 +1039,35 @@ export default function StaffCalendarPage() {
           white-space: nowrap;
         }
 
+        :global(.staff-week-time-rail span) {
+          position: absolute;
+          right: 0.45rem;
+          transform: translateY(-0.55rem);
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
         .staff-week-lane {
           border-right: 1px solid rgba(148, 163, 184, 0.12);
+          overflow: hidden;
+          background: rgba(15, 23, 42, 0.16);
+        }
+
+        :global(.staff-week-lane) {
+          border-right: 1px solid rgba(148, 163, 184, 0.12);
+          overflow: hidden;
+          background: rgba(15, 23, 42, 0.16);
         }
 
         .staff-week-lane:last-child,
         .staff-week-day-header:last-of-type {
+          border-right: 0;
+        }
+
+        :global(.staff-week-lane:last-child),
+        :global(.staff-week-day-header:last-of-type) {
           border-right: 0;
         }
 
@@ -910,7 +1079,23 @@ export default function StaffCalendarPage() {
           background: var(--border);
         }
 
+        :global(.staff-hour-line) {
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: var(--border);
+        }
+
         .staff-week-empty {
+          position: absolute;
+          inset: 0.35rem;
+          border: 1px dashed rgba(148, 163, 184, 0.1);
+          border-radius: calc(var(--radius) - 4px);
+          pointer-events: none;
+        }
+
+        :global(.staff-week-empty) {
           position: absolute;
           inset: 0.35rem;
           border: 1px dashed rgba(148, 163, 184, 0.1);
@@ -944,12 +1129,55 @@ export default function StaffCalendarPage() {
           box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
         }
 
+        :global(.staff-schedule-block) {
+          position: absolute;
+          left: 0.35rem;
+          right: 0.35rem;
+          display: grid;
+          align-content: start;
+          gap: 0.14rem;
+          overflow: hidden;
+          padding: 0.48rem 0.5rem;
+          border: 1px solid rgba(45, 212, 191, 0.28);
+          border-left: 4px solid var(--success);
+          border-radius: calc(var(--radius) - 2px);
+          background:
+            linear-gradient(
+              135deg,
+              rgba(45, 212, 191, 0.14),
+              rgba(45, 212, 191, 0.06)
+            ),
+            rgba(15, 23, 42, 0.92);
+          color: var(--text);
+          font: inherit;
+          text-align: left;
+          cursor: pointer;
+          box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+        }
+
         .staff-schedule-block.selected {
           outline: 2px solid rgba(255, 107, 53, 0.72);
           outline-offset: 1px;
         }
 
+        :global(.staff-schedule-block.selected) {
+          outline: 2px solid rgba(255, 107, 53, 0.72);
+          outline-offset: 1px;
+        }
+
         .staff-schedule-block.pending {
+          border-color: rgba(255, 107, 53, 0.34);
+          border-left-color: var(--accent);
+          background:
+            linear-gradient(
+              135deg,
+              rgba(255, 107, 53, 0.16),
+              rgba(255, 107, 53, 0.06)
+            ),
+            rgba(15, 23, 42, 0.94);
+        }
+
+        :global(.staff-schedule-block.pending) {
           border-color: rgba(255, 107, 53, 0.34);
           border-left-color: var(--accent);
           background:
@@ -967,7 +1195,17 @@ export default function StaffCalendarPage() {
           opacity: 0.76;
         }
 
+        :global(.staff-schedule-block.cancelled),
+        :global(.staff-schedule-block.declined) {
+          border-left-color: var(--warning);
+          opacity: 0.76;
+        }
+
         .staff-schedule-block.completed {
+          opacity: 0.82;
+        }
+
+        :global(.staff-schedule-block.completed) {
           opacity: 0.82;
         }
 
@@ -980,7 +1218,23 @@ export default function StaffCalendarPage() {
           white-space: nowrap;
         }
 
+        :global(.staff-schedule-block span),
+        :global(.staff-schedule-block small) {
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
         .staff-schedule-block strong {
+          overflow: hidden;
+          font-size: 0.84rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        :global(.staff-schedule-block strong) {
           overflow: hidden;
           font-size: 0.84rem;
           text-overflow: ellipsis;
@@ -999,13 +1253,36 @@ export default function StaffCalendarPage() {
           font-weight: 800;
         }
 
+        :global(.staff-schedule-block em) {
+          width: fit-content;
+          margin-top: 0.18rem;
+          border-radius: 999px;
+          padding: 0.18rem 0.5rem;
+          background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-style: normal;
+          font-weight: 800;
+        }
+
         .staff-schedule-block.pending em {
+          background: rgba(255, 107, 53, 0.12);
+          color: var(--accent);
+        }
+
+        :global(.staff-schedule-block.pending em) {
           background: rgba(255, 107, 53, 0.12);
           color: var(--accent);
         }
 
         .staff-schedule-block.confirmed em,
         .staff-schedule-block.completed em {
+          background: rgba(45, 212, 191, 0.12);
+          color: var(--success);
+        }
+
+        :global(.staff-schedule-block.confirmed em),
+        :global(.staff-schedule-block.completed em) {
           background: rgba(45, 212, 191, 0.12);
           color: var(--success);
         }
@@ -1119,13 +1396,28 @@ export default function StaffCalendarPage() {
             padding: 0.65rem;
           }
 
+          :global(.staff-week-calendar) {
+            padding: 0.65rem;
+          }
+
           .staff-week-summary {
             display: grid;
             align-items: stretch;
           }
 
+          :global(.staff-week-summary) {
+            display: grid;
+            align-items: stretch;
+          }
+
           .staff-week-grid {
-            grid-template-columns: 3.2rem repeat(7, minmax(0, 1fr));
+            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
+            min-width: 660px;
+          }
+
+          :global(.staff-week-grid) {
+            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
+            min-width: 660px;
           }
 
           .staff-week-corner,
@@ -1133,11 +1425,24 @@ export default function StaffCalendarPage() {
             min-height: 3.1rem;
           }
 
+          :global(.staff-week-corner),
+          :global(.staff-week-day-header) {
+            min-height: 3.1rem;
+          }
+
           .staff-week-day-header {
             padding: 0.3rem 0.15rem;
           }
 
+          :global(.staff-week-day-header) {
+            padding: 0.3rem 0.15rem;
+          }
+
           .staff-week-day-header small {
+            font-size: 0.62rem;
+          }
+
+          :global(.staff-week-day-header small) {
             font-size: 0.62rem;
           }
 
@@ -1146,7 +1451,18 @@ export default function StaffCalendarPage() {
             font-size: 0.66rem;
           }
 
+          :global(.staff-week-time-rail span) {
+            right: 0.3rem;
+            font-size: 0.66rem;
+          }
+
           .staff-schedule-block {
+            left: 0.18rem;
+            right: 0.18rem;
+            padding: 0.42rem;
+          }
+
+          :global(.staff-schedule-block) {
             left: 0.18rem;
             right: 0.18rem;
             padding: 0.42rem;

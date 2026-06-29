@@ -59,11 +59,9 @@ export default function AvailabilityPresetsCard({
         }
 
         .availability-preset-card {
-          margin-bottom: 0.85rem;
-          padding: 0.75rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: rgba(255, 255, 255, 0.02);
+          margin-bottom: 0.75rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid var(--border);
         }
 
         .availability-preset-actions {

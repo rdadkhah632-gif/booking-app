@@ -715,7 +715,7 @@ export const en: TranslationTree = {
   "dashboardSettings.chooseBusiness":
     "Choose a business to manage its booking rules.",
   "dashboardSettings.saveSettings": "Save settings",
-  "dashboardSettings.saveMirebookSettings": "Save Mirëbook settings",
+  "dashboardSettings.saveMirebookSettings": "Save rules",
   "dashboardSettings.setupHub": "Setup hub",
   "dashboardSettings.manageBusinesses": "Open setup",
   "dashboardSettings.backToSetup": "Back to setup hub",
@@ -749,45 +749,44 @@ export const en: TranslationTree = {
     "Choose whether customers are confirmed instantly or whether each booking needs business approval first.",
   "dashboardSettings.approval.instantTitle": "Instant confirmation",
   "dashboardSettings.approval.instantBody":
-    "Customers get a confirmed booking as soon as they pick an available slot.",
+    "Confirmed immediately after booking.",
   "dashboardSettings.approval.manualTitle": "Manual approval",
-  "dashboardSettings.approval.manualBody":
-    "New bookings appear in Needs action until the business accepts or declines them.",
+  "dashboardSettings.approval.manualBody": "Requests wait in Inbox.",
   "dashboardSettings.approval.currentMode": "Current mode",
   "dashboardSettings.advanced.summary": "Advanced booking rules",
-  "dashboardSettings.advanced.body": "Timing, region and policy wording.",
+  "dashboardSettings.advanced.body": "Timing, region and policies.",
   "dashboardSettings.slot.kicker": "Slot interval",
-  "dashboardSettings.slot.title": "Booking slot size",
+  "dashboardSettings.slot.title": "Slot size",
   "dashboardSettings.slot.body":
     "This controls the time grid customers see when choosing appointment slots.",
   "dashboardSettings.notice.kicker": "Minimum notice",
-  "dashboardSettings.notice.title": "How soon customers can book",
+  "dashboardSettings.notice.title": "Minimum notice",
   "dashboardSettings.notice.body":
     "Prevents last-minute bookings if your business needs preparation time.",
   "dashboardSettings.advance.kicker": "Advance booking window",
-  "dashboardSettings.advance.title": "How far ahead customers can book",
+  "dashboardSettings.advance.title": "Booking window",
   "dashboardSettings.advance.body":
     "Useful for businesses that only want to expose a limited future calendar.",
   "dashboardSettings.buffers.kicker": "Buffers",
-  "dashboardSettings.buffers.title": "Time around appointments",
+  "dashboardSettings.buffers.title": "Buffers",
   "dashboardSettings.buffers.body":
     "Buffers block extra time before or after appointments for clean-up, travel, admin or setup.",
   "dashboardSettings.buffers.before": "Before",
   "dashboardSettings.buffers.after": "After",
   "dashboardSettings.region.kicker": "Region settings",
-  "dashboardSettings.region.title": "Timezone and currency",
+  "dashboardSettings.region.title": "Region",
   "dashboardSettings.region.body":
     "Used for appointment times, prices and customer-facing details.",
   "dashboardSettings.region.timezone": "Timezone",
   "dashboardSettings.region.currency": "Currency",
   "dashboardSettings.cancellation.kicker": "Cancellation policy",
-  "dashboardSettings.cancellation.title": "Customer cancellation wording",
+  "dashboardSettings.cancellation.title": "Cancellation",
   "dashboardSettings.cancellation.body":
     "This wording can be shown on booking, confirmation and account pages.",
   "dashboardSettings.cancellation.placeholder":
     "Example: Customers can cancel up to 24 hours before their appointment.",
   "dashboardSettings.reschedule.kicker": "Reschedule policy",
-  "dashboardSettings.reschedule.title": "Customer reschedule wording",
+  "dashboardSettings.reschedule.title": "Reschedule",
   "dashboardSettings.reschedule.body":
     "Keep this clear so customers know whether requests need business approval.",
   "dashboardSettings.reschedule.placeholder":

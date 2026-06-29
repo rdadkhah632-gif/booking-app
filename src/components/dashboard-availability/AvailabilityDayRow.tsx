@@ -23,7 +23,7 @@ export default function AvailabilityDayRow({
 
   return (
     <div
-      className="card availability-day-row"
+      className="availability-day-row"
       style={{
         borderColor: invalid
           ? "rgba(255,77,109,0.35)"
@@ -42,31 +42,25 @@ export default function AvailabilityDayRow({
             </p>
           )}
         </div>
-
-        <label
-          className={`availability-status-pill ${row.is_closed ? "closed" : "open"}`}
-        >
-          <input
-            type="checkbox"
-            checked={!row.is_closed}
-            onChange={(e) => updateRow(index, "is_closed", !e.target.checked)}
-          />
-          <span>
-            {row.is_closed
-              ? t("dashboardAvailability.day.closed", "Closed")
-              : t("dashboardAvailability.day.open", "Open")}
-          </span>
-        </label>
       </div>
+
+      <label
+        className={`availability-status-pill ${row.is_closed ? "closed" : "open"}`}
+      >
+        <input
+          type="checkbox"
+          checked={!row.is_closed}
+          onChange={(e) => updateRow(index, "is_closed", !e.target.checked)}
+        />
+        <span>
+          {row.is_closed
+            ? t("dashboardAvailability.day.closed", "Closed")
+            : t("dashboardAvailability.day.open", "Open")}
+        </span>
+      </label>
 
       {!row.is_closed ? (
         <div className="availability-time-editor">
-          <div className="availability-time-range">
-            <span>{row.start_time}</span>
-            <span aria-hidden="true">→</span>
-            <span>{row.end_time}</span>
-          </div>
-
           <div className="availability-time-grid">
             <label className="small muted">
               {t("dashboardAvailability.day.start", "Start")}
@@ -96,16 +90,15 @@ export default function AvailabilityDayRow({
       <style jsx>{`
         .availability-day-row {
           display: grid;
-          gap: 0.55rem;
-          align-content: start;
-          padding: 0.75rem !important;
+          grid-template-columns: minmax(8rem, 1fr) auto minmax(14rem, 1.25fr);
+          gap: 0.75rem;
+          align-items: center;
+          padding: 0.7rem 0;
+          border-bottom: 1px solid var(--border);
         }
 
         .availability-day-header {
-          display: flex;
-          justify-content: space-between;
-          gap: 0.75rem;
-          align-items: center;
+          min-width: 0;
         }
 
         .availability-day-header p,
@@ -147,22 +140,6 @@ export default function AvailabilityDayRow({
 
         .availability-time-editor {
           display: grid;
-          grid-template-columns: auto minmax(0, 1fr);
-          gap: 0.65rem;
-          align-items: end;
-        }
-
-        .availability-time-range {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.55rem;
-          width: fit-content;
-          padding: 0.4rem 0.65rem;
-          border-radius: 999px;
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text);
-          font-weight: 800;
         }
 
         .availability-time-grid {
@@ -177,23 +154,18 @@ export default function AvailabilityDayRow({
         }
 
         .availability-closed-copy {
+          margin: 0;
           max-width: 32ch;
         }
 
-        @media (max-width: 520px) {
-          .availability-day-header {
-            align-items: center;
+        @media (max-width: 700px) {
+          .availability-day-row {
+            grid-template-columns: 1fr auto;
           }
 
-          .availability-time-editor {
-            grid-template-columns: 1fr;
-          }
-
-          .availability-time-range {
-            display: none;
-          }
-
+          .availability-time-editor,
           .availability-time-grid {
+            grid-column: 1 / -1;
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 

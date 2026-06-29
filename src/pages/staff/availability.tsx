@@ -444,22 +444,11 @@ export default function StaffAvailabilityPage() {
               </span>
             </div>
 
-            <div
-              className="card staff-template-card"
-              style={{ marginBottom: "1rem" }}
-            >
+            <div className="staff-template-card">
               <div className="staff-template-header">
-                <div>
-                  <h2
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontSize: "1rem",
-                      marginTop: 0,
-                    }}
-                  >
-                    {t("staffAvailability.templates.compactTitle", "Templates")}
-                  </h2>
-                </div>
+                <strong>
+                  {t("staffAvailability.templates.compactTitle", "Templates")}
+                </strong>
 
                 <div className="staff-template-actions">
                   <button
@@ -500,7 +489,7 @@ export default function StaffAvailabilityPage() {
                   defaultAvailabilityRow(staffProfile, day);
 
                 return (
-                  <div key={day} className="card staff-day-card">
+                  <div key={day} className="staff-day-card">
                     <div className="staff-day-card-header">
                       <div>
                         <h3>
@@ -543,12 +532,6 @@ export default function StaffAvailabilityPage() {
 
                     {!row.is_closed ? (
                       <div className="staff-time-editor">
-                        <div className="staff-time-range">
-                          <span>{row.start_time}</span>
-                          <span aria-hidden="true">→</span>
-                          <span>{row.end_time}</span>
-                        </div>
-
                         <div className="staff-time-grid">
                           <label className="small muted">
                             {t("staffAvailability.day.start", "Start")}
@@ -623,6 +606,13 @@ export default function StaffAvailabilityPage() {
           flex-wrap: wrap;
           justify-content: flex-end;
         }
+
+        .staff-template-card {
+          margin-bottom: 0.75rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid var(--border);
+        }
+
         .staff-availability-note {
           margin: -0.5rem 0 1.25rem;
           color: var(--text-muted);
@@ -680,20 +670,22 @@ export default function StaffAvailabilityPage() {
           display: flex;
           justify-content: space-between;
           gap: 0.75rem;
-          align-items: flex-start;
+          align-items: center;
           flex-wrap: wrap;
         }
 
         .staff-availability-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 0.8rem;
+          gap: 0;
         }
 
         .staff-day-card {
           display: grid;
-          gap: 0.7rem;
-          align-content: start;
+          grid-template-columns: minmax(8rem, 1fr) auto minmax(14rem, 1.25fr);
+          gap: 0.75rem;
+          align-items: center;
+          padding: 0.7rem 0;
+          border-bottom: 1px solid var(--border);
         }
 
         .staff-day-card-header {
@@ -737,20 +729,6 @@ export default function StaffAvailabilityPage() {
 
         .staff-time-editor {
           display: grid;
-          gap: 0.55rem;
-        }
-
-        .staff-time-range {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          width: fit-content;
-          padding: 0.35rem 0.6rem;
-          border-radius: 999px;
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text);
-          font-weight: 800;
         }
 
         .staff-time-grid {
@@ -797,6 +775,16 @@ export default function StaffAvailabilityPage() {
 
           .staff-day-card-header {
             align-items: center;
+          }
+
+          .staff-day-card {
+            grid-template-columns: 1fr auto;
+          }
+
+          .staff-time-editor,
+          .staff-time-grid,
+          .staff-closed-copy {
+            grid-column: 1 / -1;
           }
         }
       `}</style>

@@ -646,3 +646,40 @@ Stage 8.25 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.26 Calendar Visual QA Fix Implemented
+
+- fixed the business Calendar week view so the day headers render as dark
+  schedule controls instead of native white buttons
+- contained the business Calendar week grid in its own horizontal scroll area,
+  preventing mobile page overflow while keeping the week schedule readable
+- applied the same contained week-grid treatment to the staff Calendar so both
+  workspaces use consistent schedule presentation
+- kept hour rails, day lanes and appointment blocks inside the calendar surface
+  so the page no longer shows stray long schedule lines
+- removed the remaining Setup prompt that sent owner-as-staff users to My Work,
+  keeping business setup focused on business readiness
+
+Stage 8.26 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
+
+## Stage 8.27 Working Hours And Booking Rules Compression Implemented
+
+- compressed business Working hours from card-heavy day blocks into compact
+  day rows with one open/closed control and direct start/end inputs
+- removed repeated time-range display where the same start/end times were
+  already visible in editable inputs
+- made business Working hours summary and preset controls lighter so the page
+  reads as one schedule editor rather than several explanation cards
+- applied the same list-first treatment to staff Working hours while preserving
+  staff availability save behavior
+- simplified Booking rules so confirmation mode, timing, buffers, region and
+  policies use shorter labels and denser controls
+- updated English and Albanian copy for the shortened Booking rules labels
+
+Stage 8.27 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
