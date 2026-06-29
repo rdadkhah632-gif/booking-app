@@ -1705,6 +1705,43 @@ export const en: TranslationTree = {
   "dashboardBookings.businessPicker.manageBody":
     "Open the calendar for this business.",
   "dashboardBookings.businessPicker.cta": "Open calendar",
+  "dashboardCustomers.page.title": "Customer",
+  "dashboardCustomers.page.subtitle":
+    "Appointments across your business profiles.",
+  "dashboardCustomers.page.subtitleBusiness": "Appointments for this business.",
+  "dashboardCustomers.page.subtitleEmail":
+    "Appointments matched by customer email.",
+  "dashboardCustomers.loading": "Loading customer...",
+  "dashboardCustomers.profile.label": "Customer",
+  "dashboardCustomers.empty.noBusinessTitle": "No business",
+  "dashboardCustomers.empty.noBusinessBody":
+    "Create a business before viewing customer history.",
+  "dashboardCustomers.empty.noHistoryTitle": "No customer history",
+  "dashboardCustomers.empty.noHistoryBody":
+    "No appointments were found for this customer in the selected business.",
+  "dashboardCustomers.empty.noHistoryEmailBody":
+    "No appointments were found for this email in the selected business.",
+  "dashboardCustomers.actions.setup": "Setup",
+  "dashboardCustomers.actions.email": "Email",
+  "dashboardCustomers.actions.accountProfile": "Account",
+  "dashboardCustomers.actions.reviewRequest": "Review request",
+  "dashboardCustomers.fallback.service": "Service not recorded",
+  "dashboardCustomers.fallback.noEmail": "No email",
+  "dashboardCustomers.fallback.noPhone": "No phone",
+  "dashboardCustomers.labels.minutes": "min",
+  "dashboardCustomers.labels.appointment": "appointment",
+  "dashboardCustomers.labels.appointments": "appointments",
+  "dashboardCustomers.summary.total": "Appointments",
+  "dashboardCustomers.summary.upcoming": "Upcoming",
+  "dashboardCustomers.summary.completedValue": "Completed value",
+  "dashboardCustomers.summary.noFavourite": "No top service",
+  "dashboardCustomers.summary.topService": "Top service",
+  "dashboardCustomers.match.email": "Matched by email",
+  "dashboardCustomers.match.emailBody":
+    "This history is matched by email. Future logged-in bookings can open the account profile directly.",
+  "dashboardCustomers.sections.needsAction": "Needs action",
+  "dashboardCustomers.sections.upcoming": "Upcoming",
+  "dashboardCustomers.sections.history": "History",
   "dashboardBookings.toolbar.body":
     "Use the date, status and search filters to manage appointments, approvals and booking history as the business grows.",
   "dashboardBookings.toolbar.refreshing": "Refreshing...",

@@ -1690,6 +1690,43 @@ export const sq: TranslationTree = {
   "dashboardBookings.businessPicker.manageBody":
     "Hap kalendarin për këtë biznes.",
   "dashboardBookings.businessPicker.cta": "Hap kalendarin",
+  "dashboardCustomers.page.title": "Klienti",
+  "dashboardCustomers.page.subtitle":
+    "Takime në të gjitha profilet e tua të biznesit.",
+  "dashboardCustomers.page.subtitleBusiness": "Takimet për këtë biznes.",
+  "dashboardCustomers.page.subtitleEmail":
+    "Takime të përputhura sipas email-it të klientit.",
+  "dashboardCustomers.loading": "Duke ngarkuar klientin...",
+  "dashboardCustomers.profile.label": "Klient",
+  "dashboardCustomers.empty.noBusinessTitle": "Nuk ka biznes",
+  "dashboardCustomers.empty.noBusinessBody":
+    "Krijo një biznes para se të shikosh historikun e klientit.",
+  "dashboardCustomers.empty.noHistoryTitle": "Nuk ka historik klienti",
+  "dashboardCustomers.empty.noHistoryBody":
+    "Nuk u gjetën takime për këtë klient në biznesin e zgjedhur.",
+  "dashboardCustomers.empty.noHistoryEmailBody":
+    "Nuk u gjetën takime për këtë email në biznesin e zgjedhur.",
+  "dashboardCustomers.actions.setup": "Konfigurimi",
+  "dashboardCustomers.actions.email": "Email",
+  "dashboardCustomers.actions.accountProfile": "Llogaria",
+  "dashboardCustomers.actions.reviewRequest": "Shqyrto kërkesën",
+  "dashboardCustomers.fallback.service": "Shërbimi nuk është regjistruar",
+  "dashboardCustomers.fallback.noEmail": "Pa email",
+  "dashboardCustomers.fallback.noPhone": "Pa telefon",
+  "dashboardCustomers.labels.minutes": "min",
+  "dashboardCustomers.labels.appointment": "takim",
+  "dashboardCustomers.labels.appointments": "takime",
+  "dashboardCustomers.summary.total": "Takime",
+  "dashboardCustomers.summary.upcoming": "Në vazhdim",
+  "dashboardCustomers.summary.completedValue": "Vlera e përfunduar",
+  "dashboardCustomers.summary.noFavourite": "Pa shërbim kryesor",
+  "dashboardCustomers.summary.topService": "Shërbimi kryesor",
+  "dashboardCustomers.match.email": "Përputhur me email",
+  "dashboardCustomers.match.emailBody":
+    "Ky historik është përputhur sipas email-it. Rezervimet e ardhshme nga llogaria mund të hapin direkt profilin e klientit.",
+  "dashboardCustomers.sections.needsAction": "Kërkon veprim",
+  "dashboardCustomers.sections.upcoming": "Në vazhdim",
+  "dashboardCustomers.sections.history": "Historiku",
   "dashboardBookings.toolbar.body":
     "Përdor filtrat e datës, statusit dhe kërkimit për të menaxhuar takimet, miratimet dhe historikun e rezervimeve ndërsa biznesi rritet.",
   "dashboardBookings.toolbar.refreshing": "Duke rifreskuar...",

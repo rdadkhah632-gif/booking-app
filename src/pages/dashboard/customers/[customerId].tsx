@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import DashboardLayout from "@/components/DashboardLayout";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { useI18n } from "@/lib/useI18n";
+import CustomerHistoryView from "@/components/dashboard-customers/CustomerHistoryView";
 
 type Business = {
   id: string;
@@ -163,238 +164,26 @@ export default function CustomerDetailPage() {
     };
   }, [bookings]);
 
-  const stats = useMemo(() => {
-    const now = new Date();
-
-    const upcoming = bookings.filter(
-      (booking) =>
-        booking.status === "confirmed" && new Date(booking.start_at) >= now,
-    );
-
-    const pending = bookings.filter((booking) => booking.status === "pending");
-
-    const completed = bookings.filter(
-      (booking) => booking.status === "completed",
-    );
-
-    const cancelled = bookings.filter(
-      (booking) => booking.status === "cancelled",
-    );
-
-    const history = bookings.filter(
-      (booking) =>
-        booking.status === "completed" ||
-        booking.status === "cancelled" ||
-        (booking.status === "confirmed" && new Date(booking.start_at) < now),
-    );
-
-    const estimatedCompletedValue = completed.reduce((total, booking) => {
-      return total + Number(booking.services?.price || 0);
-    }, 0);
-
-    const estimatedTotalValue = bookings.reduce((total, booking) => {
-      return total + Number(booking.services?.price || 0);
-    }, 0);
-
-    const nextAppointment =
-      [...upcoming].sort(
-        (a, b) =>
-          new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
-      )[0] || null;
-
-    const lastAppointment =
-      [...history].sort(
-        (a, b) =>
-          new Date(b.start_at).getTime() - new Date(a.start_at).getTime(),
-      )[0] || null;
-
-    const serviceMap = bookings.reduce<
-      Record<string, { name: string; count: number }>
-    >((acc, booking) => {
-      const name = booking.services?.name || "Unknown service";
-
-      if (!acc[name]) {
-        acc[name] = { name, count: 0 };
-      }
-
-      acc[name].count += 1;
-      return acc;
-    }, {});
-
-    const favouriteService =
-      Object.values(serviceMap).sort((a, b) => b.count - a.count)[0] || null;
-
-    return {
-      total: bookings.length,
-      upcoming,
-      pending,
-      completed,
-      cancelled,
-      history,
-      estimatedCompletedValue,
-      estimatedTotalValue,
-      nextAppointment,
-      lastAppointment,
-      favouriteService,
-    };
-  }, [bookings]);
-
-  function statusLabel(status: string) {
-    if (status === "pending") return "Pending approval";
-    if (status === "confirmed") return "Confirmed appointment";
-    if (status === "completed") return "Completed appointment";
-    if (status === "cancelled") return "Cancelled booking";
-    return status;
-  }
-
-  function statusColor(status: string) {
-    if (status === "pending") return "var(--accent)";
-    if (status === "confirmed") return "var(--success)";
-    if (status === "completed") return "var(--success)";
-    if (status === "cancelled") return "var(--warning)";
-    return "var(--text-muted)";
-  }
-
-  function statusBackground(status: string) {
-    if (status === "pending") return "rgba(255,107,53,0.12)";
-    if (status === "confirmed") return "rgba(45,212,191,0.12)";
-    if (status === "completed") return "rgba(45,212,191,0.12)";
-    if (status === "cancelled") return "rgba(255,190,11,0.12)";
-    return "var(--surface-2)";
-  }
-
-  function bookingTime(booking: Booking) {
-    const start = new Date(booking.start_at);
-    const end = booking.end_at
-      ? new Date(booking.end_at)
-      : new Date(start.getTime() + booking.duration_minutes * 60000);
-
-    return `${start.toLocaleDateString(undefined, {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    })} · ${start.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })} - ${end.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-  }
-
-  function renderBookingCard(booking: Booking) {
-    return (
-      <div
-        key={booking.id}
-        className="card"
-        style={{ background: "var(--surface-2)" }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "1rem",
-            flexWrap: "wrap",
-            alignItems: "flex-start",
-          }}
-        >
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <div
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                alignItems: "center",
-                flexWrap: "wrap",
-                marginBottom: "0.45rem",
-              }}
-            >
-              <strong>
-                {booking.services?.name || "Service not recorded"}
-              </strong>
-
-              <span
-                className="small"
-                style={{
-                  background: statusBackground(booking.status),
-                  color: statusColor(booking.status),
-                  padding: "0.2rem 0.55rem",
-                  borderRadius: 999,
-                }}
-              >
-                {statusLabel(booking.status)}
-              </span>
-            </div>
-
-            <p className="small muted">{bookingTime(booking)}</p>
-
-            <p className="small muted" style={{ marginTop: "0.35rem" }}>
-              Staff: {booking.staff_members?.name || "Staff not recorded"}
-              {booking.staff_members?.role_title
-                ? ` — ${booking.staff_members.role_title}`
-                : ""}
-            </p>
-
-            <p className="small muted">
-              Duration: {booking.duration_minutes} minutes · £
-              {Number(booking.services?.price || 0).toFixed(2)}
-            </p>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              gap: "0.75rem",
-              flexWrap: "wrap",
-              justifyContent: "flex-end",
-            }}
-          >
-            {booking.status === "confirmed" &&
-              new Date(booking.start_at) >= new Date() && (
-                <>
-                  <Link
-                    href={`/reschedule-booking?id=${booking.id}`}
-                    className="btn btn-ghost"
-                  >
-                    Reschedule
-                  </Link>
-
-                  <Link
-                    href={`/dashboard/bookings?businessId=${booking.business_id}`}
-                    className="btn btn-ghost"
-                  >
-                    {t("dashboardBookings.businessPicker.cta", "Open calendar")}
-                  </Link>
-                </>
-              )}
-
-            {(booking.status === "completed" ||
-              booking.status === "cancelled") && (
-              <span
-                className="small"
-                style={{ color: statusColor(booking.status) }}
-              >
-                Locked record
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <DashboardLayout
-      title="Customer details"
+      title={t("dashboardCustomers.page.title", "Customer")}
       subtitle={
         selectedBusiness
-          ? `Customer history for ${selectedBusiness.name}`
-          : "Customer booking history across your business profiles."
+          ? t(
+              "dashboardCustomers.page.subtitleBusiness",
+              "Appointments for this business.",
+            )
+          : t(
+              "dashboardCustomers.page.subtitle",
+              "Appointments across your business profiles.",
+            )
       }
     >
       {pageLoading && (
         <div className="card">
-          <p className="muted">Loading customer details...</p>
+          <p className="muted">
+            {t("dashboardCustomers.loading", "Loading customer...")}
+          </p>
         </div>
       )}
 
@@ -409,26 +198,38 @@ export default function CustomerDetailPage() {
 
       {!pageLoading && businesses.length === 0 && (
         <div className="card">
-          <h3>No businesses found</h3>
+          <h3>
+            {t("dashboardCustomers.empty.noBusinessTitle", "No business")}
+          </h3>
           <p className="muted" style={{ marginTop: "0.5rem" }}>
-            Create a business before viewing customer history.
+            {t(
+              "dashboardCustomers.empty.noBusinessBody",
+              "Create a business before viewing customer history.",
+            )}
           </p>
           <Link
             href="/dashboard/businesses"
             className="btn btn-accent"
             style={{ marginTop: "1rem" }}
           >
-            Business setup
+            {t("dashboardCustomers.actions.setup", "Setup")}
           </Link>
         </div>
       )}
 
       {!pageLoading && bookings.length === 0 && businesses.length > 0 && (
         <div className="card">
-          <h3>No customer history found</h3>
+          <h3>
+            {t(
+              "dashboardCustomers.empty.noHistoryTitle",
+              "No customer history",
+            )}
+          </h3>
           <p className="muted" style={{ marginTop: "0.5rem" }}>
-            This customer has no bookings for the selected business scope, or
-            the booking record does not include a customer account ID.
+            {t(
+              "dashboardCustomers.empty.noHistoryBody",
+              "No appointments were found for this customer in the selected business.",
+            )}
           </p>
           <Link
             href="/dashboard/bookings"
@@ -441,213 +242,12 @@ export default function CustomerDetailPage() {
       )}
 
       {!pageLoading && bookings.length > 0 && (
-        <div style={{ display: "grid", gap: "1.5rem" }}>
-          <div
-            className="card"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(255,107,53,0.12), rgba(45,212,191,0.07))",
-              borderColor: "rgba(255,107,53,0.22)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "1rem",
-                flexWrap: "wrap",
-                alignItems: "flex-start",
-              }}
-            >
-              <div>
-                <p className="small muted">Customer profile</p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {customer.name}
-                </h2>
-
-                <div
-                  style={{
-                    display: "grid",
-                    gap: "0.25rem",
-                    marginTop: "0.65rem",
-                  }}
-                >
-                  <p className="small muted">
-                    Email: {customer.email || "Not provided"}
-                  </p>
-                  <p className="small muted">
-                    Phone: {customer.phone || "Not provided"}
-                  </p>
-                  <p className="small muted">
-                    Customer ID: {Array.isArray(customerId) ? "" : customerId}
-                  </p>
-                </div>
-              </div>
-
-              <div
-                style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}
-              >
-                {customer.email && (
-                  <a
-                    href={`mailto:${customer.email}`}
-                    className="btn btn-accent"
-                  >
-                    Email customer
-                  </a>
-                )}
-
-                {customer.phone && (
-                  <a href={`tel:${customer.phone}`} className="btn btn-ghost">
-                    Call customer
-                  </a>
-                )}
-
-                <Link
-                  href={
-                    selectedBusiness
-                      ? `/dashboard/bookings?businessId=${selectedBusiness.id}`
-                      : "/dashboard/bookings"
-                  }
-                  className="btn btn-ghost"
-                >
-                  {t("dashboardBookings.businessPicker.cta", "Open calendar")}
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid-2">
-            <div className="card">
-              <p className="small muted">Total bookings</p>
-              <h3>{stats.total}</h3>
-              <p className="muted small">
-                All booking activity for this customer
-              </p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">Upcoming</p>
-              <h3>{stats.upcoming.length}</h3>
-              <p className="muted small">Confirmed future appointments</p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">Completed value</p>
-              <h3>£{stats.estimatedCompletedValue.toFixed(2)}</h3>
-              <p className="muted small">
-                Estimated from completed appointment prices
-              </p>
-            </div>
-
-            <div className="card">
-              <p className="small muted">Favourite service</p>
-              <h3>{stats.favouriteService?.name || "No clear favourite"}</h3>
-              <p className="muted small">
-                {stats.favouriteService
-                  ? `${stats.favouriteService.count} booking${stats.favouriteService.count === 1 ? "" : "s"}`
-                  : "More bookings needed"}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid-2">
-            <div className="card">
-              <p className="small muted">Next appointment</p>
-              {stats.nextAppointment ? (
-                <>
-                  <h3 style={{ marginTop: "0.25rem" }}>
-                    {stats.nextAppointment.services?.name || "Service"}
-                  </h3>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                    {bookingTime(stats.nextAppointment)}
-                  </p>
-                  <Link
-                    href={`/dashboard/bookings?businessId=${stats.nextAppointment.business_id}`}
-                    className="btn btn-ghost"
-                    style={{ marginTop: "1rem" }}
-                  >
-                    {t("dashboardBookings.businessPicker.cta", "Open calendar")}
-                  </Link>
-                </>
-              ) : (
-                <p className="muted" style={{ marginTop: "0.5rem" }}>
-                  No upcoming confirmed appointment.
-                </p>
-              )}
-            </div>
-
-            <div className="card">
-              <p className="small muted">Last appointment</p>
-              {stats.lastAppointment ? (
-                <>
-                  <h3 style={{ marginTop: "0.25rem" }}>
-                    {stats.lastAppointment.services?.name || "Service"}
-                  </h3>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                    {bookingTime(stats.lastAppointment)}
-                  </p>
-                  <p
-                    className="small"
-                    style={{
-                      color: statusColor(stats.lastAppointment.status),
-                      marginTop: "0.45rem",
-                    }}
-                  >
-                    {statusLabel(stats.lastAppointment.status)}
-                  </p>
-                </>
-              ) : (
-                <p className="muted" style={{ marginTop: "0.5rem" }}>
-                  No past appointment record yet.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {stats.pending.length > 0 && (
-            <section style={{ display: "grid", gap: "1rem" }}>
-              <div>
-                <p className="small muted">Needs action</p>
-                <h2 style={{ fontFamily: "var(--font-display)" }}>
-                  Pending requests
-                </h2>
-              </div>
-
-              {stats.pending.map(renderBookingCard)}
-            </section>
-          )}
-
-          {stats.upcoming.length > 0 && (
-            <section style={{ display: "grid", gap: "1rem" }}>
-              <div>
-                <p className="small muted">Schedule</p>
-                <h2 style={{ fontFamily: "var(--font-display)" }}>
-                  Upcoming appointments
-                </h2>
-              </div>
-
-              {stats.upcoming.map(renderBookingCard)}
-            </section>
-          )}
-
-          {stats.history.length > 0 && (
-            <section style={{ display: "grid", gap: "1rem" }}>
-              <div>
-                <p className="small muted">History</p>
-                <h2 style={{ fontFamily: "var(--font-display)" }}>
-                  Past and locked bookings
-                </h2>
-              </div>
-
-              {stats.history.map(renderBookingCard)}
-            </section>
-          )}
-        </div>
+        <CustomerHistoryView
+          customer={customer}
+          bookings={bookings}
+          selectedBusiness={selectedBusiness}
+          matchMode="account"
+        />
       )}
     </DashboardLayout>
   );

@@ -627,3 +627,22 @@ Stage 8.24 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection,
 staff invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.25 Business Customer History Compression Implemented
+
+- compressed the business-facing customer detail and email-matched customer
+  history routes into one shared compact customer profile view
+- removed technical customer IDs, "locked record" copy and older status labels
+  such as "Pending approval" from these owner-facing customer pages
+- replaced stacked metric cards and next/last appointment cards with one compact
+  customer summary strip and dense appointment rows
+- kept account-ID and email-matched customer history data loading unchanged,
+  while making email-matched history a small note instead of a warning-style
+  card
+- added English and Albanian translation keys for the new customer-history
+  labels, empty states and actions
+
+Stage 8.25 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
