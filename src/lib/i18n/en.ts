@@ -1845,7 +1845,13 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.error.conflict":
     "That time clashes with another appointment or pending request.",
   "dashboardBookings.manual.error.create":
-    "Could not add this booking. Try again.",
+    "Could not add this appointment. Try again.",
+  "dashboardBookings.manual.error.auth":
+    "Sign in again before adding appointments.",
+  "dashboardBookings.manual.error.config":
+    "Manual appointment saving is not configured yet.",
+  "dashboardBookings.manual.error.forbidden":
+    "You can only add appointments for a business you own.",
   "dashboardBookings.manual.success": "Appointment added to the calendar.",
   "dashboardBookings.empty.noBusinessTitle": "No business found",
   "dashboardBookings.empty.noBusinessBody":

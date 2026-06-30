@@ -71,6 +71,7 @@ type ManualBookingStaff = {
   name: string;
   role_title?: string | null;
   email?: string | null;
+  user_id?: string | null;
   active: boolean;
 };
 
@@ -150,6 +151,7 @@ export default function Bookings() {
   );
 
   const [pageLoading, setPageLoading] = useState(true);
+  const [accountUserId, setAccountUserId] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<{
     bookingId: string;
@@ -251,9 +253,11 @@ export default function Bookings() {
       } = await supabase.auth.getSession();
 
       if (!session) {
+        setAccountUserId(null);
         router.replace("/login");
         return;
       }
+      setAccountUserId(session.user.id);
 
       const selectedBusiness = await getBusinessContext(session.user.id);
 
@@ -312,7 +316,7 @@ export default function Bookings() {
           .order("name", { ascending: true }),
         supabase
           .from("staff_members")
-          .select("id, business_id, name, role_title, email, active")
+          .select("id, business_id, name, role_title, email, user_id, active")
           .eq("business_id", selectedBusiness.id)
           .eq("active", true)
           .order("name", { ascending: true }),
@@ -813,6 +817,30 @@ export default function Bookings() {
     return manualStaff.filter((staff) => assignedStaffIds.has(staff.id));
   }
 
+  function manualStaffLabel(staff: ManualBookingStaff) {
+    const name =
+      accountUserId && staff.user_id === accountUserId
+        ? t("dashboardStaff.card.currentUserName", "You")
+        : staff.name ||
+          staff.email ||
+          t("dashboardBookings.card.noStaff", "Staff not recorded");
+
+    return staff.role_title ? `${name} · ${staff.role_title}` : name;
+  }
+
+  function bookingStaffLabel(booking: Booking) {
+    const manualStaffRecord = manualStaff.find(
+      (staff) => staff.id === booking.staff_member_id,
+    );
+
+    if (manualStaffRecord) return manualStaffLabel(manualStaffRecord);
+
+    return (
+      booking.staff_members?.name ||
+      t("dashboardBookings.card.noStaff", "Staff not recorded")
+    );
+  }
+
   const selectedDateObject = useMemo(
     () => new Date(`${selectedDate}T12:00:00`),
     [selectedDate],
@@ -1032,6 +1060,69 @@ export default function Bookings() {
     return null;
   }
 
+  function manualBookingSaveError(code?: string) {
+    if (code === "auth_required" || code === "invalid_session") {
+      return t(
+        "dashboardBookings.manual.error.auth",
+        "Sign in again before adding appointments.",
+      );
+    }
+
+    if (code === "server_not_configured") {
+      return t(
+        "dashboardBookings.manual.error.config",
+        "Manual appointment saving is not configured yet.",
+      );
+    }
+
+    if (code === "forbidden") {
+      return t(
+        "dashboardBookings.manual.error.forbidden",
+        "You can only add appointments for a business you own.",
+      );
+    }
+
+    if (code === "service_unavailable") {
+      return t(
+        "dashboardBookings.manual.error.serviceUnavailable",
+        "This service is no longer active.",
+      );
+    }
+
+    if (code === "staff_unavailable") {
+      return t(
+        "dashboardBookings.manual.error.staffUnavailable",
+        "This staff member is no longer active.",
+      );
+    }
+
+    if (code === "staff_service_unavailable") {
+      return t(
+        "dashboardBookings.manual.error.staffServiceUnavailable",
+        "This staff member is not assigned to the selected service.",
+      );
+    }
+
+    if (code === "conflict") {
+      return t(
+        "dashboardBookings.manual.error.conflict",
+        "That time clashes with another appointment or pending request.",
+      );
+    }
+
+    if (code === "past_time" || code === "invalid_time") {
+      return t(
+        "dashboardBookings.manual.error.future",
+        "Choose a future appointment time.",
+      );
+    }
+
+    return t(
+      "dashboardBookings.manual.error.create",
+      "Could not add this appointment. Try again.",
+    );
+  }
+
   async function createManualBooking() {
     if (!business || manualBookingSaving) return;
 
@@ -1047,7 +1138,6 @@ export default function Bookings() {
     setSuccess(null);
 
     const start = new Date(`${manualBooking.date}T${manualBooking.time}:00`);
-    const startAt = start.toISOString();
     const customerName = manualBooking.customerName.trim();
     const customerEmail = manualBooking.customerEmail.trim().toLowerCase();
 
@@ -1147,47 +1237,44 @@ export default function Bookings() {
         return;
       }
 
-      const { data: createdBooking, error: createError } = await supabase
-        .from("bookings")
-        .insert({
-          business_id: business.id,
-          service_id: selectedManualService.id,
-          staff_member_id: manualBooking.staffMemberId,
-          customer_user_id: null,
-          customer_name: customerName,
-          customer_email: customerEmail,
-          customer_phone: manualBooking.customerPhone.trim() || null,
-          customer_notes: manualBooking.customerNotes.trim() || null,
-          start_at: startAt,
-          duration_minutes: durationMinutes,
-          status: "confirmed",
-        })
-        .select("id")
-        .single();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (createError) {
-        if (createError.message.includes("prevent_overlapping_bookings")) {
-          setManualBookingError(
-            t(
-              "dashboardBookings.manual.error.conflict",
-              "That time clashes with another appointment or pending request.",
-            ),
-          );
-        } else {
-          setManualBookingError(
-            t(
-              "dashboardBookings.manual.error.create",
-              "Could not add this booking. Try again.",
-            ),
-          );
-        }
+      if (!session?.access_token) {
+        setManualBookingError(manualBookingSaveError("auth_required"));
         return;
       }
 
-      if (createdBooking?.id) {
+      const response = await fetch("/api/dashboard/manual-booking", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          businessId: business.id,
+          serviceId: selectedManualService.id,
+          staffMemberId: manualBooking.staffMemberId,
+          customerName,
+          customerEmail,
+          customerPhone: manualBooking.customerPhone,
+          customerNotes: manualBooking.customerNotes,
+          date: manualBooking.date,
+          time: manualBooking.time,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setManualBookingError(manualBookingSaveError(result?.code));
+        return;
+      }
+
+      if (result?.bookingId) {
         void requestTransactionalEmail({
           event: "booking_status_changed",
-          bookingId: createdBooking.id,
+          bookingId: result.bookingId,
         });
       }
 
@@ -1288,8 +1375,7 @@ export default function Bookings() {
             {booking.services?.name ||
               t("dashboardBookings.card.noService", "No service recorded")}
             {" · "}
-            {booking.staff_members?.name ||
-              t("dashboardBookings.card.noStaff", "Staff not recorded")}
+            {bookingStaffLabel(booking)}
           </p>
 
           {(booking.customer_notes || booking.internal_notes) && (
@@ -1403,9 +1489,8 @@ export default function Bookings() {
         <span className="schedule-block-meta">
           {booking.services?.name ||
             t("dashboardBookings.card.noService", "No service recorded")}
-          {booking.staff_members?.name
-            ? ` · ${booking.staff_members.name}`
-            : ""}
+          {" · "}
+          {bookingStaffLabel(booking)}
         </span>
         <span className={`calendar-status status-${booking.status}`}>
           {statusLabel(booking.status)}
@@ -1863,10 +1948,7 @@ export default function Bookings() {
                             </option>
                             {manualStaffOptions.map((staff) => (
                               <option key={staff.id} value={staff.id}>
-                                {staff.name}
-                                {staff.role_title
-                                  ? ` · ${staff.role_title}`
-                                  : ""}
+                                {manualStaffLabel(staff)}
                               </option>
                             ))}
                           </select>

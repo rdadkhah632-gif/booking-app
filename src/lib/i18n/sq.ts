@@ -1831,7 +1831,13 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.error.conflict":
     "Ky orar përplaset me një takim ose kërkesë tjetër në pritje.",
   "dashboardBookings.manual.error.create":
-    "Ky rezervim nuk u shtua. Provo përsëri.",
+    "Ky takim nuk u shtua. Provo përsëri.",
+  "dashboardBookings.manual.error.auth":
+    "Hyr përsëri para se të shtosh takime.",
+  "dashboardBookings.manual.error.config":
+    "Ruajtja manuale e takimeve nuk është konfiguruar ende.",
+  "dashboardBookings.manual.error.forbidden":
+    "Mund të shtosh takime vetëm për një biznes që zotëron.",
   "dashboardBookings.manual.success": "Takimi u shtua në kalendar.",
   "dashboardBookings.empty.noBusinessTitle": "Nuk u gjet biznes",
   "dashboardBookings.empty.noBusinessBody":

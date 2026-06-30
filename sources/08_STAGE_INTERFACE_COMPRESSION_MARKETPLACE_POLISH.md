@@ -745,3 +745,31 @@ Stage 8.30 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.31 Manual Appointment QA Fixes Implemented
+
+- visually tested a fresh business-owner setup flow with Browser: signup,
+  first service, owner-as-staff service assignment, working hours and Calendar
+  add-appointment
+- removed the duplicate Services empty state that stayed visible underneath the
+  open add-service form
+- changed the Calendar manual appointment staff selector to show the current
+  owner staff profile as "You" instead of the generated email-name fallback
+- confirmed the previous client-side manual appointment insert was blocked by
+  Supabase RLS for `bookings`
+- added an owner-authorized manual appointment API route using the existing
+  Supabase service-role server pattern; the route verifies the signed-in owner,
+  validates service/staff assignment and checks overlapping pending/confirmed
+  appointments before inserting a confirmed manual appointment
+- kept public customer booking, booking status transitions, availability
+  calculation, staff linking, route protection and database schema unchanged
+
+Local QA note:
+
+- full manual appointment creation now requires `SUPABASE_SERVICE_ROLE_KEY` in
+  the local environment, matching the existing server-admin routes
+
+Stage 8.31 did not change public booking creation, booking lifecycle/status
+transitions, availability calculation/save behavior, auth session resolution,
+RLS policies, route protection, staff invite/linking, owner-as-staff data logic,
+billing writes, notification generation/read behavior or database schema.

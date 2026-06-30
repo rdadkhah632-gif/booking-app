@@ -613,7 +613,7 @@ export default function Services() {
           )}
 
           <div className="services-list-grid">
-            {services.length === 0 && (
+            {services.length === 0 && !formExpanded && (
               <IllustratedEmptyState
                 variant="services"
                 title={t("dashboardServices.empty.title", "No services yet")}
