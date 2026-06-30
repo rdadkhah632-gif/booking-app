@@ -703,3 +703,24 @@ Stage 8.28 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.29 Customer Booking Conversion Compression Implemented
+
+- visually reviewed Explore and the public business booking page on desktop and
+  mobile against the Stage 8 compactness standard
+- compressed the public booking summary so it stays quiet before a service is
+  selected, then shows useful appointment state instead of repeated empty
+  service/time rows
+- changed the mobile date chooser into a horizontal date strip and collapsed
+  the native date input behind More dates
+- auto-selected today after service selection and preserved the selected date
+  when switching staff, reducing a needless tap before slots appear
+- masked generated-looking staff names such as `live-business-*` on the public
+  customer booking page while keeping real staff names visible
+- removed a duplicate Staff label in the booking summary value after slot
+  selection
+
+Stage 8.29 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

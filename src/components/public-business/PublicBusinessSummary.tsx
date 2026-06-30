@@ -73,14 +73,9 @@ export default function PublicBusinessSummary({
         <h2 style={{ fontFamily: "var(--font-display)" }}>
           {hasAppointmentSelection
             ? t("publicBusiness.summary.reviewTitle", "Review and book")
-            : hasSelectedService
-              ? t("publicBusiness.summary.chooseTime", "Choose a time")
-              : t(
-                  "publicBusiness.summary.pickAppointmentTitle",
-                  "Choose service and time",
-                )}
+            : t("publicBusiness.summary.emptyTitle", "Your appointment")}
         </h2>
-        {!hasAppointmentSelection && (
+        {!hasAppointmentSelection && hasSelectedService && (
           <p className="small muted" style={{ marginTop: "0.35rem" }}>
             {t(
               "publicBusiness.summary.pickAppointmentBody",
@@ -90,51 +85,49 @@ export default function PublicBusinessSummary({
         )}
       </div>
 
-      <div className="public-business-summary-box booking-summary-details">
-        <div className="booking-summary-detail-row">
-          <span className="small muted">{t("common.service", "Service")}</span>
-          <strong>
-            {selectedService
-              ? selectedService.name
-              : t("publicBusiness.summary.chooseService", "Choose a service")}
-          </strong>
-          {selectedService && (
+      {hasSelectedService && (
+        <div className="public-business-summary-box booking-summary-details">
+          <div className="booking-summary-detail-row">
             <span className="small muted">
-              {selectedService.duration_minutes}{" "}
+              {t("common.service", "Service")}
+            </span>
+            <strong>{selectedService?.name}</strong>
+            <span className="small muted">
+              {selectedService?.duration_minutes}{" "}
               {t("common.minutes", "minutes")}
-              {Number(selectedService.price || 0) > 0
-                ? ` · ${formatServicePrice(selectedService.price)}`
+              {Number(selectedService?.price || 0) > 0
+                ? ` · ${formatServicePrice(selectedService?.price || 0)}`
                 : ""}
             </span>
+          </div>
+
+          {hasAppointmentSelection && (
+            <div className="booking-summary-detail-row">
+              <span className="small muted">{t("common.time", "Time")}</span>
+              <strong>
+                {selectedDateLabel ||
+                  new Date(selectedSlot!.startAt).toLocaleString()}
+              </strong>
+            </div>
+          )}
+
+          {hasAppointmentSelection && (
+            <div className="booking-summary-detail-row">
+              <span className="small muted">{t("common.staff", "Staff")}</span>
+              <strong>{selectedStaffSummary()}</strong>
+            </div>
+          )}
+
+          {!hasAppointmentSelection && (
+            <p className="small muted booking-summary-next-line">
+              {t(
+                "publicBusiness.summary.chooseTimeNext",
+                "Now choose an available time.",
+              )}
+            </p>
           )}
         </div>
-
-        <div className="booking-summary-detail-row">
-          <span className="small muted">{t("common.time", "Time")}</span>
-          <strong>
-            {selectedSlot
-              ? selectedDateLabel ||
-                new Date(selectedSlot.startAt).toLocaleString()
-              : t("publicBusiness.summary.chooseTime", "Choose a time")}
-          </strong>
-        </div>
-
-        {hasAppointmentSelection && (
-          <div className="booking-summary-detail-row">
-            <span className="small muted">{t("common.staff", "Staff")}</span>
-            <strong>{selectedStaffSummary()}</strong>
-          </div>
-        )}
-
-        {hasSelectedService && !hasAppointmentSelection && (
-          <p className="small muted booking-summary-next-line">
-            {t(
-              "publicBusiness.summary.chooseTimeNext",
-              "Now choose an available time.",
-            )}
-          </p>
-        )}
-      </div>
+      )}
 
       {hasAppointmentSelection && (
         <div className="booking-summary-mode-row">

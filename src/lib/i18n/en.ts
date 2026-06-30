@@ -404,6 +404,7 @@ export const en: TranslationTree = {
     "No active staff are assigned to this service yet. Choose another service or contact the business.",
   "publicBusiness.summary.title": "Booking summary",
   "publicBusiness.summary.nextStep": "After submit",
+  "publicBusiness.summary.emptyTitle": "Your appointment",
   "publicBusiness.summary.reviewTitle": "Review and book",
   "publicBusiness.summary.pickAppointmentTitle": "Choose service and time",
   "publicBusiness.summary.pickAppointmentBody":

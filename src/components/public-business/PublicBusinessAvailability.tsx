@@ -58,6 +58,10 @@ export default function PublicBusinessAvailability({
     onDateChange(value);
   }
 
+  const selectedDateInStrip = dateOptions.some(
+    (option) => option.value === selectedDate,
+  );
+
   return (
     <div className="card">
       <div>
@@ -100,8 +104,13 @@ export default function PublicBusinessAvailability({
             );
           })}
         </div>
-        <label className="public-business-more-date small muted">
-          {t("publicBusiness.availability.moreDates", "More dates")}
+        <details
+          className="public-business-more-date"
+          open={Boolean(selectedDate && !selectedDateInStrip)}
+        >
+          <summary className="small muted">
+            {t("publicBusiness.availability.moreDates", "More dates")}
+          </summary>
           <input
             aria-label={t("publicBusiness.availability.date", "Date")}
             type="date"
@@ -110,7 +119,7 @@ export default function PublicBusinessAvailability({
             onChange={(e) => handleDateValue(e.target.value)}
             disabled={!canPickDate}
           />
-        </label>
+        </details>
       </div>
 
       <div className="public-business-slot-grid">
@@ -209,13 +218,23 @@ export default function PublicBusinessAvailability({
           gap: 0.35rem;
         }
 
+        .public-business-more-date summary {
+          cursor: pointer;
+          width: fit-content;
+        }
+
         @media (max-width: 520px) {
           .public-business-date-strip {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 0.15rem;
+            scroll-snap-type: x proximity;
           }
 
           .public-business-date-option {
             min-height: 3.75rem;
+            min-width: 5.75rem;
+            scroll-snap-align: start;
           }
         }
       `}</style>

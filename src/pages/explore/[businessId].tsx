@@ -9,6 +9,7 @@ import PublicBusinessServices from "@/components/public-business/PublicBusinessS
 import PublicBusinessStaffPicker from "@/components/public-business/PublicBusinessStaffPicker";
 import PublicBusinessAvailability from "@/components/public-business/PublicBusinessAvailability";
 import PublicBusinessSummary from "@/components/public-business/PublicBusinessSummary";
+import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
 
@@ -438,6 +439,13 @@ export default function BusinessBookingPage() {
         );
   }
 
+  function publicStaffDisplayName(staff?: StaffMember | null) {
+    return publicStaffName(
+      staff,
+      t("publicBusiness.staff.memberFallback", "Staff member"),
+    );
+  }
+
   function businessTimezoneLabel() {
     return (
       business?.timezone ||
@@ -483,7 +491,7 @@ export default function BusinessBookingPage() {
     const appointmentTime = new Date(startAt).toLocaleString();
     const staff = staffMembers.find((member) => member.id === staffMemberId);
     const staffLabel = staff
-      ? staff.name
+      ? publicStaffDisplayName(staff)
       : t("publicBusiness.staff.anyAvailable", "Any available staff");
 
     await supabase.from("notifications").insert([
@@ -874,7 +882,7 @@ export default function BusinessBookingPage() {
           "Staff choice appears after choosing a time",
         );
       return selectedFilterStaff
-        ? `${t("publicBusiness.staff.onlyShowing", "Only showing slots with")} ${selectedFilterStaff.name}`
+        ? `${t("publicBusiness.staff.onlyShowing", "Only showing slots with")} ${publicStaffDisplayName(selectedFilterStaff)}`
         : t(
             "publicBusiness.staff.chooseTimeToPick",
             "Choose a time to pick staff",
@@ -887,13 +895,26 @@ export default function BusinessBookingPage() {
       if (staffForSelectedSlot.length === 0)
         return t("publicBusiness.staff.anyAvailable", "Any available staff");
 
-      return staffForSelectedSlot.length === 1
-        ? `${t("publicBusiness.staff.assignedAutomatically", "Assigned automatically")}: ${staffForSelectedSlot[0].name}`
-        : `${t("publicBusiness.staff.anyAvailable", "Any available staff")} · ${staffForSelectedSlot.length} ${t("support.business.staff", "staff")} ${t("publicBusiness.staff.canDoThisTime", "can do this time")}`;
+      if (staffForSelectedSlot.length === 1) {
+        const displayName = publicStaffDisplayName(staffForSelectedSlot[0]);
+        const fallback = t(
+          "publicBusiness.staff.memberFallback",
+          "Staff member",
+        );
+
+        return displayName === fallback
+          ? t(
+              "publicBusiness.staff.assignedAutomatically",
+              "Assigned automatically",
+            )
+          : `${t("publicBusiness.staff.assignedAutomatically", "Assigned automatically")}: ${displayName}`;
+      }
+
+      return `${t("publicBusiness.staff.anyAvailable", "Any available staff")} · ${staffForSelectedSlot.length} ${t("support.business.staff", "staff")} ${t("publicBusiness.staff.canDoThisTime", "can do this time")}`;
     }
 
     return selectedStaff
-      ? `${t("support.business.staff", "Staff")}: ${selectedStaff.name}`
+      ? publicStaffDisplayName(selectedStaff)
       : t("publicBusiness.staff.noneSelected", "No staff selected");
   }
 
@@ -1270,7 +1291,9 @@ export default function BusinessBookingPage() {
   const staffPreferenceLabel =
     staffFilter === "any"
       ? t("publicBusiness.staff.any", "Any available staff")
-      : selectedFilterStaff?.name || null;
+      : selectedFilterStaff
+        ? publicStaffDisplayName(selectedFilterStaff)
+        : null;
 
   return (
     <main>
@@ -1375,7 +1398,7 @@ export default function BusinessBookingPage() {
                 const nextService =
                   services.find((service) => service.id === serviceId) || null;
                 setSelectedService(nextService);
-                setSelectedDate("");
+                setSelectedDate(formatDateInputValue(new Date()));
                 setStaffFilter("any");
                 setSelectedStaffChoice("any");
                 setSelectedTime("");
@@ -1432,7 +1455,6 @@ export default function BusinessBookingPage() {
                   selectedStaffId={staffFilter}
                   onSelectStaff={(staffId) => {
                     setStaffFilter(staffId);
-                    setSelectedDate("");
                     setSelectedTime("");
                     setSelectedStaffChoice("any");
                   }}

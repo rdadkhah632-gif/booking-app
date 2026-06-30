@@ -1,5 +1,6 @@
 import { StaffMember } from "./publicBusinessTypes";
 import { useI18n } from "@/lib/useI18n";
+import { publicStaffInitial, publicStaffName } from "./publicStaffDisplay";
 
 type Props = {
   staffMembers: StaffMember[];
@@ -48,40 +49,49 @@ export default function PublicBusinessStaffPicker({
           </button>
         )}
 
-        {availableStaffForSelectedService.map((staff) => (
-          <button
-            key={staff.id}
-            type="button"
-            onClick={() => onSelectStaff(staff.id)}
-            className="public-business-staff-card"
-            style={{
-              borderColor:
-                selectedStaffId === staff.id
-                  ? "rgba(255,107,53,0.55)"
-                  : "var(--border)",
-              background:
-                selectedStaffId === staff.id
-                  ? "rgba(255,107,53,0.08)"
-                  : "var(--surface-2)",
-            }}
-          >
-            <div className="public-business-staff-avatar">
-              {staff.image_url ? (
-                <span style={{ backgroundImage: `url(${staff.image_url})` }} />
-              ) : (
-                staff.name.slice(0, 1).toUpperCase()
-              )}
-            </div>
+        {availableStaffForSelectedService.map((staff) => {
+          const displayName = publicStaffName(
+            staff,
+            t("publicBusiness.staff.memberFallback", "Staff member"),
+          );
 
-            <div>
-              <strong>{staff.name}</strong>
-              <p className="small muted" style={{ marginTop: "0.25rem" }}>
-                {staff.role_title ||
-                  t("publicBusiness.staff.memberFallback", "Staff member")}
-              </p>
-            </div>
-          </button>
-        ))}
+          return (
+            <button
+              key={staff.id}
+              type="button"
+              onClick={() => onSelectStaff(staff.id)}
+              className="public-business-staff-card"
+              style={{
+                borderColor:
+                  selectedStaffId === staff.id
+                    ? "rgba(255,107,53,0.55)"
+                    : "var(--border)",
+                background:
+                  selectedStaffId === staff.id
+                    ? "rgba(255,107,53,0.08)"
+                    : "var(--surface-2)",
+              }}
+            >
+              <div className="public-business-staff-avatar">
+                {staff.image_url ? (
+                  <span
+                    style={{ backgroundImage: `url(${staff.image_url})` }}
+                  />
+                ) : (
+                  publicStaffInitial(staff)
+                )}
+              </div>
+
+              <div>
+                <strong>{displayName}</strong>
+                <p className="small muted" style={{ marginTop: "0.25rem" }}>
+                  {staff.role_title ||
+                    t("publicBusiness.staff.memberFallback", "Staff member")}
+                </p>
+              </div>
+            </button>
+          );
+        })}
 
         {availableStaffForSelectedService.length === 0 && (
           <div className="card" style={{ background: "var(--surface-2)" }}>
