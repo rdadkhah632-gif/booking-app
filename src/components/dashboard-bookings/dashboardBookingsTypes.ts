@@ -9,6 +9,7 @@ export type RangeFilter =
 export type Business = {
   id: string;
   name: string;
+  timezone?: string | null;
 };
 
 export type Booking = {

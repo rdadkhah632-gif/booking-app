@@ -773,3 +773,19 @@ Stage 8.31 did not change public booking creation, booking lifecycle/status
 transitions, availability calculation/save behavior, auth session resolution,
 RLS policies, route protection, staff invite/linking, owner-as-staff data logic,
 billing writes, notification generation/read behavior or database schema.
+
+## Stage 8.32 Manual Calendar Time QA Fix Implemented
+
+- fixed the business Calendar manual appointment flow so selected date/time
+  values are converted from the business timezone before being saved
+- aligned manual appointment conflict checks, week grouping and appointment
+  block placement with the business timezone
+- kept duplicate appointment prevention intact and did not change booking
+  statuses, availability calculation, staff linking, auth, RLS or billing logic
+
+Remaining QA notes after Stage 8.32:
+
+- re-test the live Calendar flow by adding a future appointment and confirming
+  the visible block matches the selected time
+- re-test same-staff same-time duplicate creation to confirm the clash message
+  still appears

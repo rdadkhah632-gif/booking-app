@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
+import {
+  DEFAULT_TIME_ZONE,
+  zonedDateTimeToUtc,
+} from "@/lib/timezone";
 
 type ManualBookingRequest = {
   businessId?: string;
@@ -116,13 +120,9 @@ export default async function handler(
     return errorResponse(res, 400, "invalid_request", "Invalid appointment");
   }
 
-  const start = new Date(`${date}T${time}:00`);
-  if (Number.isNaN(start.getTime())) {
+  const requestedStart = zonedDateTimeToUtc(date, time, DEFAULT_TIME_ZONE);
+  if (Number.isNaN(requestedStart.getTime())) {
     return errorResponse(res, 400, "invalid_time", "Invalid appointment time");
-  }
-
-  if (start <= new Date()) {
-    return errorResponse(res, 400, "past_time", "Appointment must be future");
   }
 
   let supabaseAdmin: ReturnType<typeof createSupabaseAdminClient>;
@@ -148,9 +148,9 @@ export default async function handler(
 
   const { data: business, error: businessError } = await supabaseAdmin
     .from("businesses")
-    .select("id, user_id")
+    .select("id, user_id, timezone")
     .eq("id", businessId)
-    .maybeSingle<{ id: string; user_id: string }>();
+    .maybeSingle<{ id: string; user_id: string; timezone?: string | null }>();
 
   if (businessError) {
     return errorResponse(
@@ -163,6 +163,19 @@ export default async function handler(
 
   if (!business || business.user_id !== user.id) {
     return errorResponse(res, 403, "forbidden", "Appointment not permitted");
+  }
+
+  const start = zonedDateTimeToUtc(
+    date,
+    time,
+    business.timezone || DEFAULT_TIME_ZONE,
+  );
+  if (Number.isNaN(start.getTime())) {
+    return errorResponse(res, 400, "invalid_time", "Invalid appointment time");
+  }
+
+  if (start <= new Date()) {
+    return errorResponse(res, 400, "past_time", "Appointment must be future");
   }
 
   const [

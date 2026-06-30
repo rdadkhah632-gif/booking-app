@@ -15,6 +15,13 @@ import {
   supabaseErrorDetails,
 } from "@/lib/bookingStatusErrors";
 import { requestTransactionalEmail } from "@/lib/email/client";
+import {
+  DEFAULT_TIME_ZONE,
+  dateKeyInTimeZone,
+  formatTimeRangeInTimeZone,
+  minutesSinceMidnightInTimeZone,
+  zonedDateTimeToUtc,
+} from "@/lib/timezone";
 
 function toDateInputValue(date: Date) {
   const yyyy = date.getFullYear();
@@ -101,10 +108,6 @@ const emptyManualBookingDraft: ManualBookingDraft = {
   date: "",
   time: "09:00",
 };
-
-function minutesSinceMidnight(date: Date) {
-  return date.getHours() * 60 + date.getMinutes();
-}
 
 function dateKeyForDate(date: Date) {
   return toDateInputValue(date);
@@ -208,7 +211,7 @@ export default function Bookings() {
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
       .from("businesses")
-      .select("id, name")
+      .select("id, name, timezone")
       .eq("user_id", sessionUserId)
       .order("created_at", { ascending: false });
 
@@ -767,17 +770,14 @@ export default function Bookings() {
     const end = booking.end_at
       ? new Date(booking.end_at)
       : new Date(start.getTime() + booking.duration_minutes * 60000);
+    const timeZone = business?.timezone || DEFAULT_TIME_ZONE;
 
     return {
       start,
       end,
-      label: `${start.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })} - ${end.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`,
+      startMinutes: minutesSinceMidnightInTimeZone(start, timeZone),
+      endMinutes: minutesSinceMidnightInTimeZone(end, timeZone),
+      label: formatTimeRangeInTimeZone(start, end, timeZone),
     };
   }
 
@@ -804,6 +804,7 @@ export default function Bookings() {
     manualServices.length > 0 &&
     manualStaff.length > 0 &&
     manualStaffServices.length > 0;
+  const calendarTimeZone = business?.timezone || DEFAULT_TIME_ZONE;
 
   function staffOptionsForService(serviceId: string) {
     if (!serviceId) return manualStaff;
@@ -859,16 +860,19 @@ export default function Bookings() {
     [weekStartDate],
   );
   const weekBookings = useMemo(() => {
+    const weekDateKeys = new Set(weekDays.map((day) => dateKeyForDate(day)));
+
     return bookings
       .filter((booking) => {
-        const bookingDate = new Date(booking.start_at);
-        return bookingDate >= weekStartDate && bookingDate <= weekEndDate;
+        return weekDateKeys.has(
+          dateKeyInTimeZone(new Date(booking.start_at), calendarTimeZone),
+        );
       })
       .sort(
         (a, b) =>
           new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
       );
-  }, [bookings, weekStartDate, weekEndDate]);
+  }, [bookings, weekDays, calendarTimeZone]);
   const weekGroups = useMemo(() => {
     return weekDays.map((day) => {
       const dateKey = dateKeyForDate(day);
@@ -882,11 +886,13 @@ export default function Bookings() {
           day: "numeric",
         }),
         bookings: weekBookings.filter(
-          (booking) => dateKeyForDate(new Date(booking.start_at)) === dateKey,
+          (booking) =>
+            dateKeyInTimeZone(new Date(booking.start_at), calendarTimeZone) ===
+            dateKey,
         ),
       };
     });
-  }, [weekDays, weekBookings]);
+  }, [weekDays, weekBookings, calendarTimeZone]);
   const selectedCalendarBooking = useMemo(
     () =>
       weekBookings.find(
@@ -1042,7 +1048,11 @@ export default function Bookings() {
       );
     }
 
-    const start = new Date(`${manualBooking.date}T${manualBooking.time}:00`);
+    const start = zonedDateTimeToUtc(
+      manualBooking.date,
+      manualBooking.time,
+      calendarTimeZone,
+    );
     if (Number.isNaN(start.getTime())) {
       return t(
         "dashboardBookings.manual.error.time",
@@ -1137,7 +1147,11 @@ export default function Bookings() {
     setError(null);
     setSuccess(null);
 
-    const start = new Date(`${manualBooking.date}T${manualBooking.time}:00`);
+    const start = zonedDateTimeToUtc(
+      manualBooking.date,
+      manualBooking.time,
+      calendarTimeZone,
+    );
     const customerName = manualBooking.customerName.trim();
     const customerEmail = manualBooking.customerEmail.trim().toLowerCase();
 
@@ -1317,10 +1331,10 @@ export default function Bookings() {
     }
 
     const startMinutes = dayBookings.map((booking) =>
-      minutesSinceMidnight(bookingTime(booking).start),
+      bookingTime(booking).startMinutes,
     );
     const endMinutes = dayBookings.map((booking) =>
-      minutesSinceMidnight(bookingTime(booking).end),
+      bookingTime(booking).endMinutes,
     );
 
     const earliest = Math.min(...startMinutes);
@@ -1446,8 +1460,8 @@ export default function Bookings() {
 
   function renderCalendarBlock(booking: Booking, startHour: number) {
     const time = bookingTime(booking);
-    const startMinutes = minutesSinceMidnight(time.start);
-    const endMinutes = minutesSinceMidnight(time.end);
+    const startMinutes = time.startMinutes;
+    const endMinutes = time.endMinutes;
     const durationMinutes = Math.max(
       15,
       endMinutes - startMinutes || booking.duration_minutes,
