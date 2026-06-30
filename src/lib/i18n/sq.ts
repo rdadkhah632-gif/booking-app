@@ -1746,6 +1746,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.calendar.kicker": "Orari",
   "dashboardBookings.week.previous": "Mbrapa",
   "dashboardBookings.week.next": "Para",
+  "dashboardBookings.week.controls": "Kontrollet e javës",
   "dashboardBookings.details.kicker": "Takimi i zgjedhur",
   "dashboardBookings.filters.calendarView": "Pamja e kalendarit",
   "dashboardBookings.filters.body":
@@ -1790,14 +1791,16 @@ export const sq: TranslationTree = {
   "dashboardBookings.actions.accept": "Prano rezervimin",
   "dashboardBookings.actions.decline": "Refuzo rezervimin",
   "dashboardBookings.actions.markCompleted": "Shëno si përfunduar",
+  "dashboardBookings.actions.complete": "Përfundo",
   "dashboardBookings.actions.reschedule": "Ndrysho orarin",
   "dashboardBookings.actions.cancel": "Anulo",
-  "dashboardBookings.manual.open": "Shto rezervim",
-  "dashboardBookings.manual.title": "Shto rezervim",
+  "dashboardBookings.manual.open": "Shto takim",
+  "dashboardBookings.manual.title": "Shto takim",
   "dashboardBookings.manual.body":
-    "Krijo një takim të konfirmuar për këtë kalendar.",
+    "Zgjidh klientin, shërbimin, anëtarin e ekipit dhe orarin.",
+  "dashboardBookings.manual.addAt": "Shto takim",
   "dashboardBookings.manual.setupNeeded":
-    "Shto një shërbim aktiv, staf aktiv dhe lidhje shërbimi para se të shtosh rezervime manualisht.",
+    "Lidh një anëtar ekipi me një shërbim para se të shtosh takime.",
   "dashboardBookings.manual.customerName": "Emri i klientit",
   "dashboardBookings.manual.customerEmail": "Email-i i klientit",
   "dashboardBookings.manual.customerPhone": "Telefoni",
@@ -1808,7 +1811,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.durationHint":
     "Kohëzgjatja merret nga shërbimi i zgjedhur.",
   "dashboardBookings.manual.saving": "Duke shtuar...",
-  "dashboardBookings.manual.create": "Shto rezervim",
+  "dashboardBookings.manual.create": "Shto takim",
   "dashboardBookings.manual.noAssignedStaff":
     "Nuk ka staf aktiv të lidhur me këtë shërbim.",
   "dashboardBookings.manual.error.customerName": "Shto emrin e klientit.",
@@ -1829,8 +1832,7 @@ export const sq: TranslationTree = {
     "Ky orar përplaset me një takim ose kërkesë tjetër në pritje.",
   "dashboardBookings.manual.error.create":
     "Ky rezervim nuk u shtua. Provo përsëri.",
-  "dashboardBookings.manual.success":
-    "Rezervimi u shtua në kalendar. Dërgimi i email-it të konfirmimit do të kërkohet aty ku email-i është aktiv.",
+  "dashboardBookings.manual.success": "Takimi u shtua në kalendar.",
   "dashboardBookings.empty.noBusinessTitle": "Nuk u gjet biznes",
   "dashboardBookings.empty.noBusinessBody":
     "Krijo fillimisht një profil biznesi, pastaj rezervimet e klientëve do të shfaqen këtu.",

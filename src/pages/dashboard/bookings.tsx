@@ -117,6 +117,17 @@ function labelForDateKey(dateKey: string) {
   });
 }
 
+function timeInputForMinutes(totalMinutes: number) {
+  const safeMinutes = Math.max(0, Math.min(23 * 60 + 45, totalMinutes));
+  const hours = Math.floor(safeMinutes / 60);
+  const minutes = safeMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0",
+  )}`;
+}
+
 export default function Bookings() {
   const router = useRouter();
   const { t } = useI18n();
@@ -790,6 +801,18 @@ export default function Bookings() {
     manualStaff.length > 0 &&
     manualStaffServices.length > 0;
 
+  function staffOptionsForService(serviceId: string) {
+    if (!serviceId) return manualStaff;
+
+    const assignedStaffIds = new Set(
+      manualStaffServices
+        .filter((link) => link.service_id === serviceId)
+        .map((link) => link.staff_member_id),
+    );
+
+    return manualStaff.filter((staff) => assignedStaffIds.has(staff.id));
+  }
+
   const selectedDateObject = useMemo(
     () => new Date(`${selectedDate}T12:00:00`),
     [selectedDate],
@@ -874,6 +897,9 @@ export default function Bookings() {
   function changeCalendarDate(value: string) {
     setSelectedDate(value);
     setSelectedCalendarBookingId(null);
+    if (manualBookingOpen) {
+      setManualBooking((current) => ({ ...current, date: value }));
+    }
     replaceBookingsQuery({ nextDate: value });
   }
 
@@ -891,7 +917,11 @@ export default function Bookings() {
   ) {
     setManualBooking((current) => {
       if (field === "serviceId") {
-        return { ...current, serviceId: value, staffMemberId: "" };
+        return {
+          ...current,
+          serviceId: value,
+          staffMemberId: staffOptionsForService(value)[0]?.id || "",
+        };
       }
 
       return { ...current, [field]: value };
@@ -899,13 +929,31 @@ export default function Bookings() {
     setManualBookingError(null);
   }
 
-  function openManualBooking() {
+  function openManualBookingAt(next?: { date?: string; time?: string }) {
+    if (next?.date) {
+      setSelectedDate(next.date);
+      replaceBookingsQuery({ nextDate: next.date });
+    }
+
     setManualBooking((current) => ({
       ...current,
-      date: selectedDate || toDateInputValue(new Date()),
+      serviceId: current.serviceId || manualServices[0]?.id || "",
+      staffMemberId:
+        current.staffMemberId ||
+        staffOptionsForService(
+          current.serviceId || manualServices[0]?.id || "",
+        )[0]?.id ||
+        "",
+      date: next?.date || selectedDate || toDateInputValue(new Date()),
+      time: next?.time || current.time || "09:00",
     }));
     setManualBookingError(null);
+    setSelectedCalendarBookingId(null);
     setManualBookingOpen(true);
+  }
+
+  function openManualBooking() {
+    openManualBookingAt();
   }
 
   function closeManualBooking() {
@@ -1331,7 +1379,10 @@ export default function Bookings() {
       <button
         key={booking.id}
         type="button"
-        onClick={() => setSelectedCalendarBookingId(booking.id)}
+        onClick={() => {
+          setManualBookingOpen(false);
+          setSelectedCalendarBookingId(booking.id);
+        }}
         className={`calendar-schedule-block ${booking.status} ${
           isSelected ? "selected" : ""
         }`}
@@ -1441,8 +1492,33 @@ export default function Bookings() {
                 style={{ height: `${scheduleHeight}px` }}
               >
                 {hours.slice(0, -1).map((hour) => (
-                  <span
+                  <button
                     key={hour}
+                    type="button"
+                    tabIndex={-1}
+                    className="calendar-slot-hit"
+                    style={{
+                      top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
+                      height: `${CALENDAR_HOUR_HEIGHT}px`,
+                    }}
+                    onClick={() =>
+                      openManualBookingAt({
+                        date: group.dateKey,
+                        time: timeInputForMinutes(hour * 60),
+                      })
+                    }
+                    aria-label={`${t(
+                      "dashboardBookings.manual.addAt",
+                      "Add appointment",
+                    )} ${group.shortLabel} ${String(hour).padStart(2, "0")}:00`}
+                  >
+                    <span aria-hidden="true">+</span>
+                  </button>
+                ))}
+
+                {hours.slice(0, -1).map((hour) => (
+                  <span
+                    key={`line-${hour}`}
                     className="calendar-hour-line"
                     style={{
                       top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
@@ -1549,20 +1625,40 @@ export default function Bookings() {
               </div>
 
               <div className="calendar-date-controls">
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={() => moveWeek(-1)}
+                <div
+                  className="calendar-week-stepper"
+                  aria-label={t(
+                    "dashboardBookings.week.controls",
+                    "Week controls",
+                  )}
                 >
-                  {t("dashboardBookings.week.previous", "Previous")}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={goToToday}
-                >
-                  {t("dashboardHome.summary.today", "Today")}
-                </button>
+                  <button
+                    type="button"
+                    className="calendar-step-button"
+                    onClick={() => moveWeek(-1)}
+                    aria-label={t(
+                      "dashboardBookings.week.previous",
+                      "Previous",
+                    )}
+                  >
+                    <span aria-hidden="true">‹</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="calendar-today-button"
+                    onClick={goToToday}
+                  >
+                    {t("dashboardHome.summary.today", "Today")}
+                  </button>
+                  <button
+                    type="button"
+                    className="calendar-step-button"
+                    onClick={() => moveWeek(1)}
+                    aria-label={t("dashboardBookings.week.next", "Next")}
+                  >
+                    <span aria-hidden="true">›</span>
+                  </button>
+                </div>
                 <input
                   type="date"
                   value={selectedDate}
@@ -1574,299 +1670,336 @@ export default function Bookings() {
                 />
                 <button
                   type="button"
-                  className="btn btn-ghost"
-                  onClick={() => moveWeek(1)}
-                >
-                  {t("dashboardBookings.week.next", "Next")}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-accent"
+                  className="btn btn-accent calendar-add-button"
                   onClick={openManualBooking}
                 >
-                  {t("dashboardBookings.manual.open", "Add booking")}
+                  {t("dashboardBookings.manual.open", "Add appointment")}
                 </button>
               </div>
             </div>
+          </section>
 
-            {manualBookingOpen && (
-              <section
-                className="manual-booking-panel"
-                aria-label={t("dashboardBookings.manual.title", "Add booking")}
-              >
-                <div className="manual-booking-heading">
-                  <div>
-                    <strong>
-                      {t("dashboardBookings.manual.title", "Add booking")}
-                    </strong>
-                    <p className="small muted">
-                      {t(
-                        "dashboardBookings.manual.body",
-                        "Create a confirmed appointment for this calendar.",
-                      )}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={closeManualBooking}
-                    disabled={manualBookingSaving}
+          <div
+            className={`calendar-body ${
+              manualBookingOpen || selectedCalendarBooking
+                ? "has-side-panel"
+                : ""
+            }`.trim()}
+          >
+            <div className="calendar-main-column">{renderWeekCalendar()}</div>
+
+            {(manualBookingOpen || selectedCalendarBooking) && (
+              <aside className="calendar-side-panel">
+                {manualBookingOpen && (
+                  <section
+                    className="manual-booking-panel"
+                    aria-label={t(
+                      "dashboardBookings.manual.title",
+                      "Add appointment",
+                    )}
                   >
-                    {t("common.cancel", "Cancel")}
-                  </button>
-                </div>
-
-                {!manualBookingSetupReady ? (
-                  <div className="manual-booking-setup">
-                    <p>
-                      {t(
-                        "dashboardBookings.manual.setupNeeded",
-                        "Add an active service, active staff and a service assignment before adding bookings manually.",
-                      )}
-                    </p>
-                    <div className="manual-booking-actions">
-                      <Link
-                        href="/dashboard/services"
-                        className="btn btn-ghost"
-                      >
-                        {t(
-                          "dashboardBookings.empty.addService",
-                          "Add first service",
-                        )}
-                      </Link>
-                      <Link href="/dashboard/staff" className="btn btn-ghost">
-                        {t("dashboardLayout.nav.team", "Team")}
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <form
-                    className="manual-booking-form"
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      void createManualBooking();
-                    }}
-                  >
-                    <label>
-                      <span>
-                        {t(
-                          "dashboardBookings.manual.customerName",
-                          "Customer name",
-                        )}
-                      </span>
-                      <input
-                        value={manualBooking.customerName}
-                        onChange={(event) =>
-                          updateManualBookingField(
-                            "customerName",
-                            event.target.value,
-                          )
-                        }
-                        autoComplete="name"
-                      />
-                    </label>
-
-                    <label>
-                      <span>
-                        {t(
-                          "dashboardBookings.manual.customerEmail",
-                          "Customer email",
-                        )}
-                      </span>
-                      <input
-                        type="email"
-                        value={manualBooking.customerEmail}
-                        onChange={(event) =>
-                          updateManualBookingField(
-                            "customerEmail",
-                            event.target.value,
-                          )
-                        }
-                        autoComplete="email"
-                      />
-                    </label>
-
-                    <label>
-                      <span>
-                        {t("dashboardBookings.manual.customerPhone", "Phone")}
-                      </span>
-                      <input
-                        value={manualBooking.customerPhone}
-                        onChange={(event) =>
-                          updateManualBookingField(
-                            "customerPhone",
-                            event.target.value,
-                          )
-                        }
-                        autoComplete="tel"
-                      />
-                    </label>
-
-                    <label>
-                      <span>
-                        {t("dashboardBookings.manual.service", "Service")}
-                      </span>
-                      <select
-                        value={manualBooking.serviceId}
-                        onChange={(event) =>
-                          updateManualBookingField(
-                            "serviceId",
-                            event.target.value,
-                          )
-                        }
-                      >
-                        <option value="">
+                    <div className="manual-booking-heading">
+                      <div>
+                        <strong>
                           {t(
-                            "dashboardBookings.manual.chooseService",
-                            "Choose service",
+                            "dashboardBookings.manual.title",
+                            "Add appointment",
                           )}
-                        </option>
-                        {manualServices.map((service) => (
-                          <option key={service.id} value={service.id}>
-                            {service.name} · {service.duration_minutes}{" "}
-                            {t("common.minutes", "minutes")}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label>
-                      <span>{t("support.business.staff", "Staff")}</span>
-                      <select
-                        value={manualBooking.staffMemberId}
-                        onChange={(event) =>
-                          updateManualBookingField(
-                            "staffMemberId",
-                            event.target.value,
-                          )
-                        }
-                        disabled={!manualBooking.serviceId}
-                      >
-                        <option value="">
+                        </strong>
+                        <p className="small muted">
                           {t(
-                            "dashboardBookings.manual.chooseStaff",
-                            "Choose staff",
+                            "dashboardBookings.manual.body",
+                            "Choose the customer, service, team member and time.",
                           )}
-                        </option>
-                        {manualStaffOptions.map((staff) => (
-                          <option key={staff.id} value={staff.id}>
-                            {staff.name}
-                            {staff.role_title ? ` · ${staff.role_title}` : ""}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label>
-                      <span>{t("common.date", "Date")}</span>
-                      <input
-                        type="date"
-                        value={manualBooking.date}
-                        onChange={(event) =>
-                          updateManualBookingField("date", event.target.value)
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      <span>{t("common.time", "Time")}</span>
-                      <input
-                        type="time"
-                        value={manualBooking.time}
-                        onChange={(event) =>
-                          updateManualBookingField("time", event.target.value)
-                        }
-                      />
-                    </label>
-
-                    <label className="manual-booking-notes">
-                      <span>
-                        {t("dashboardBookings.manual.notes", "Notes")}
-                      </span>
-                      <textarea
-                        value={manualBooking.customerNotes}
-                        onChange={(event) =>
-                          updateManualBookingField(
-                            "customerNotes",
-                            event.target.value,
-                          )
-                        }
-                        rows={3}
-                      />
-                    </label>
-
-                    <div className="manual-booking-footer">
-                      <p className="small muted">
-                        {selectedManualService
-                          ? `${selectedManualService.duration_minutes} ${t(
-                              "common.minutes",
-                              "minutes",
-                            )}`
-                          : t(
-                              "dashboardBookings.manual.durationHint",
-                              "Duration follows the selected service.",
-                            )}
-                      </p>
+                        </p>
+                      </div>
                       <button
-                        type="submit"
-                        className="btn btn-accent"
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={closeManualBooking}
                         disabled={manualBookingSaving}
                       >
-                        {manualBookingSaving
-                          ? t("dashboardBookings.manual.saving", "Adding...")
-                          : t("dashboardBookings.manual.create", "Add booking")}
+                        {t("common.cancel", "Cancel")}
                       </button>
                     </div>
 
-                    {manualBooking.serviceId &&
-                      manualStaffOptions.length === 0 && (
-                        <p className="small manual-booking-warning">
+                    {!manualBookingSetupReady ? (
+                      <div className="manual-booking-setup">
+                        <p>
                           {t(
-                            "dashboardBookings.manual.noAssignedStaff",
-                            "No active staff are assigned to this service.",
+                            "dashboardBookings.manual.setupNeeded",
+                            "Assign a team member to a service before adding appointments.",
                           )}
                         </p>
-                      )}
+                        <div className="manual-booking-actions">
+                          <Link
+                            href="/dashboard/services"
+                            className="btn btn-ghost"
+                          >
+                            {t(
+                              "dashboardBookings.empty.addService",
+                              "Add first service",
+                            )}
+                          </Link>
+                          <Link
+                            href="/dashboard/staff"
+                            className="btn btn-ghost"
+                          >
+                            {t("dashboardLayout.nav.team", "Team")}
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <form
+                        className="manual-booking-form"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          void createManualBooking();
+                        }}
+                      >
+                        <label>
+                          <span>
+                            {t(
+                              "dashboardBookings.manual.customerName",
+                              "Customer name",
+                            )}
+                          </span>
+                          <input
+                            value={manualBooking.customerName}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "customerName",
+                                event.target.value,
+                              )
+                            }
+                            autoComplete="name"
+                          />
+                        </label>
 
-                    {manualBookingError && (
-                      <p role="alert" className="small manual-booking-error">
-                        {manualBookingError}
-                      </p>
+                        <label>
+                          <span>
+                            {t(
+                              "dashboardBookings.manual.customerEmail",
+                              "Customer email",
+                            )}
+                          </span>
+                          <input
+                            type="email"
+                            value={manualBooking.customerEmail}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "customerEmail",
+                                event.target.value,
+                              )
+                            }
+                            autoComplete="email"
+                          />
+                        </label>
+
+                        <label>
+                          <span>
+                            {t(
+                              "dashboardBookings.manual.customerPhone",
+                              "Phone",
+                            )}
+                          </span>
+                          <input
+                            value={manualBooking.customerPhone}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "customerPhone",
+                                event.target.value,
+                              )
+                            }
+                            autoComplete="tel"
+                          />
+                        </label>
+
+                        <label>
+                          <span>
+                            {t("dashboardBookings.manual.service", "Service")}
+                          </span>
+                          <select
+                            value={manualBooking.serviceId}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "serviceId",
+                                event.target.value,
+                              )
+                            }
+                          >
+                            <option value="">
+                              {t(
+                                "dashboardBookings.manual.chooseService",
+                                "Choose service",
+                              )}
+                            </option>
+                            {manualServices.map((service) => (
+                              <option key={service.id} value={service.id}>
+                                {service.name} · {service.duration_minutes}{" "}
+                                {t("common.minutes", "minutes")}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          <span>{t("support.business.staff", "Staff")}</span>
+                          <select
+                            value={manualBooking.staffMemberId}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "staffMemberId",
+                                event.target.value,
+                              )
+                            }
+                            disabled={!manualBooking.serviceId}
+                          >
+                            <option value="">
+                              {t(
+                                "dashboardBookings.manual.chooseStaff",
+                                "Choose staff",
+                              )}
+                            </option>
+                            {manualStaffOptions.map((staff) => (
+                              <option key={staff.id} value={staff.id}>
+                                {staff.name}
+                                {staff.role_title
+                                  ? ` · ${staff.role_title}`
+                                  : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          <span>{t("common.date", "Date")}</span>
+                          <input
+                            type="date"
+                            value={manualBooking.date}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "date",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          <span>{t("common.time", "Time")}</span>
+                          <input
+                            type="time"
+                            value={manualBooking.time}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "time",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </label>
+
+                        <label className="manual-booking-notes">
+                          <span>
+                            {t("dashboardBookings.manual.notes", "Notes")}
+                          </span>
+                          <textarea
+                            value={manualBooking.customerNotes}
+                            onChange={(event) =>
+                              updateManualBookingField(
+                                "customerNotes",
+                                event.target.value,
+                              )
+                            }
+                            rows={3}
+                          />
+                        </label>
+
+                        <div className="manual-booking-footer">
+                          <p className="small muted">
+                            {selectedManualService
+                              ? `${selectedManualService.duration_minutes} ${t(
+                                  "common.minutes",
+                                  "minutes",
+                                )}`
+                              : t(
+                                  "dashboardBookings.manual.durationHint",
+                                  "Duration follows the selected service.",
+                                )}
+                          </p>
+                          <button
+                            type="submit"
+                            className="btn btn-accent"
+                            disabled={manualBookingSaving}
+                          >
+                            {manualBookingSaving
+                              ? t(
+                                  "dashboardBookings.manual.saving",
+                                  "Adding...",
+                                )
+                              : t(
+                                  "dashboardBookings.manual.create",
+                                  "Add appointment",
+                                )}
+                          </button>
+                        </div>
+
+                        {manualBooking.serviceId &&
+                          manualStaffOptions.length === 0 && (
+                            <p className="small manual-booking-warning">
+                              {t(
+                                "dashboardBookings.manual.noAssignedStaff",
+                                "No active staff are assigned to this service.",
+                              )}
+                            </p>
+                          )}
+
+                        {manualBookingError && (
+                          <p
+                            role="alert"
+                            className="small manual-booking-error"
+                          >
+                            {manualBookingError}
+                          </p>
+                        )}
+                      </form>
                     )}
-                  </form>
+                  </section>
                 )}
-              </section>
+
+                {selectedCalendarBooking && (
+                  <section className="calendar-selected-details">
+                    <div className="calendar-selected-heading">
+                      <div>
+                        <p className="small muted">
+                          {t(
+                            "dashboardBookings.details.kicker",
+                            "Selected appointment",
+                          )}
+                        </p>
+                        <h2>
+                          {selectedCalendarBooking.customer_name ||
+                            t(
+                              "dashboardBookings.card.customerFallback",
+                              "Customer",
+                            )}
+                        </h2>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setSelectedCalendarBookingId(null)}
+                      >
+                        {t("common.close", "Close")}
+                      </button>
+                    </div>
+                    {renderAppointment(selectedCalendarBooking)}
+                  </section>
+                )}
+              </aside>
             )}
-          </section>
-
-          {renderWeekCalendar()}
-
-          {selectedCalendarBooking && (
-            <section className="calendar-selected-details">
-              <div className="calendar-selected-heading">
-                <div>
-                  <p className="small muted">
-                    {t(
-                      "dashboardBookings.details.kicker",
-                      "Selected appointment",
-                    )}
-                  </p>
-                  <h2>
-                    {selectedCalendarBooking.customer_name ||
-                      t("dashboardBookings.card.customerFallback", "Customer")}
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={() => setSelectedCalendarBookingId(null)}
-                >
-                  {t("common.close", "Close")}
-                </button>
-              </div>
-              {renderAppointment(selectedCalendarBooking)}
-            </section>
-          )}
+          </div>
         </div>
       )}
 
@@ -1877,11 +2010,34 @@ export default function Bookings() {
           min-width: 0;
         }
 
+        .calendar-body {
+          display: grid;
+          gap: 1rem;
+          min-width: 0;
+        }
+
+        .calendar-body.has-side-panel {
+          grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+          align-items: start;
+        }
+
+        .calendar-main-column,
+        .calendar-side-panel {
+          display: grid;
+          gap: 1rem;
+          min-width: 0;
+        }
+
+        .calendar-side-panel {
+          position: sticky;
+          top: 1rem;
+        }
+
         .calendar-shell,
         .calendar-empty-state {
           display: grid;
-          gap: 1rem;
-          padding: 1rem;
+          gap: 0.75rem;
+          padding: 0.85rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface);
@@ -1891,13 +2047,17 @@ export default function Bookings() {
         .manual-booking-panel {
           display: grid;
           gap: 0.85rem;
-          padding: 0.9rem;
+          padding: 0.85rem;
           border: 1px solid rgba(255, 107, 53, 0.24);
           border-radius: var(--radius);
-          background: rgba(255, 107, 53, 0.06);
+          background: var(--surface);
         }
 
-        .manual-booking-heading,
+        .manual-booking-heading {
+          display: grid;
+          gap: 0.65rem;
+        }
+
         .manual-booking-footer,
         .manual-booking-actions {
           display: flex;
@@ -1915,9 +2075,7 @@ export default function Bookings() {
 
         .manual-booking-form {
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 0.7rem;
-          align-items: end;
+          gap: 0.65rem;
         }
 
         .manual-booking-form label {
@@ -1950,7 +2108,7 @@ export default function Bookings() {
         .manual-booking-footer,
         .manual-booking-error,
         .manual-booking-warning {
-          grid-column: span 2;
+          grid-column: auto;
         }
 
         .manual-booking-error,
@@ -1974,13 +2132,59 @@ export default function Bookings() {
         .calendar-toolbar,
         .calendar-date-controls {
           display: flex;
-          gap: 0.75rem;
+          gap: 0.55rem;
           align-items: center;
           flex-wrap: wrap;
         }
 
         .calendar-toolbar {
           justify-content: space-between;
+        }
+
+        .calendar-date-controls {
+          flex: 1 1 auto;
+          justify-content: flex-end;
+        }
+
+        .calendar-week-stepper {
+          display: inline-flex;
+          align-items: center;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface-2);
+        }
+
+        .calendar-step-button,
+        .calendar-today-button {
+          min-height: 2.35rem;
+          border: 0;
+          background: transparent;
+          color: var(--text);
+          font: inherit;
+          font-weight: 900;
+          cursor: pointer;
+        }
+
+        .calendar-step-button {
+          width: 2.35rem;
+          padding: 0;
+          font-size: 1.35rem;
+          line-height: 1;
+        }
+
+        .calendar-today-button {
+          padding: 0 0.75rem;
+          border-right: 1px solid var(--border);
+          border-left: 1px solid var(--border);
+          color: var(--text-muted);
+          font-size: 0.85rem;
+        }
+
+        .calendar-step-button:hover,
+        .calendar-today-button:hover {
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--accent);
         }
 
         .calendar-toolbar h2,
@@ -1991,7 +2195,8 @@ export default function Bookings() {
         }
 
         .calendar-date-controls input {
-          min-height: 2.55rem;
+          min-height: 2.35rem;
+          max-width: 9.5rem;
           border: 1px solid var(--border);
           background: var(--surface-2);
           color: var(--text);
@@ -2001,6 +2206,12 @@ export default function Bookings() {
 
         .calendar-date-controls input {
           padding: 0.55rem 0.7rem;
+        }
+
+        .calendar-add-button {
+          min-height: 2.35rem;
+          padding: 0.55rem 0.95rem;
+          white-space: nowrap;
         }
 
         .calendar-pending {
@@ -2016,6 +2227,16 @@ export default function Bookings() {
           border: 1px solid rgba(255, 107, 53, 0.22);
           border-radius: var(--radius);
           background: rgba(255, 107, 53, 0.05);
+        }
+
+        .calendar-side-panel :global(.calendar-appointment) {
+          grid-template-columns: 1fr;
+          padding: 0;
+          border-bottom: 0;
+        }
+
+        .calendar-side-panel :global(.calendar-actions) {
+          justify-content: flex-start;
         }
 
         .calendar-selected-heading {
@@ -2081,6 +2302,11 @@ export default function Bookings() {
           min-width: 760px;
           overflow: hidden;
           background: rgba(11, 18, 32, 0.18);
+        }
+
+        .calendar-body.has-side-panel :global(.week-calendar-grid) {
+          grid-template-columns: 3.75rem repeat(7, minmax(4.15rem, 1fr));
+          min-width: 0;
         }
 
         :global(.week-calendar-corner) {
@@ -2175,12 +2401,58 @@ export default function Bookings() {
           pointer-events: none;
         }
 
+        :global(.calendar-slot-hit) {
+          position: absolute;
+          left: 0;
+          right: 0;
+          z-index: 1;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding-top: 0.28rem;
+          border: 0;
+          border-radius: 0;
+          background: transparent;
+          color: transparent;
+          cursor: copy;
+        }
+
+        :global(.calendar-slot-hit span) {
+          width: 1.55rem;
+          height: 1.55rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(255, 107, 53, 0.32);
+          border-radius: 999px;
+          background: rgba(255, 107, 53, 0.12);
+          color: var(--accent);
+          font-weight: 900;
+          opacity: 0;
+          transform: translateY(-0.2rem);
+          transition:
+            opacity 0.15s ease,
+            transform 0.15s ease;
+        }
+
+        :global(.calendar-slot-hit:hover),
+        :global(.calendar-slot-hit:focus-visible) {
+          background: rgba(255, 107, 53, 0.05);
+        }
+
+        :global(.calendar-slot-hit:hover span),
+        :global(.calendar-slot-hit:focus-visible span) {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
         :global(.calendar-hour-line) {
           position: absolute;
           left: 0;
           right: 0;
           height: 1px;
           background: var(--border);
+          pointer-events: none;
         }
 
         :global(.calendar-schedule-block) {
@@ -2207,6 +2479,7 @@ export default function Bookings() {
           text-align: left;
           cursor: pointer;
           box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+          z-index: 3;
         }
 
         :global(.calendar-schedule-block.selected) {
@@ -2429,13 +2702,27 @@ export default function Bookings() {
           flex-wrap: wrap;
         }
 
+        @media (max-width: 980px) {
+          .calendar-body.has-side-panel {
+            grid-template-columns: 1fr;
+          }
+
+          .calendar-side-panel {
+            position: static;
+            order: -1;
+          }
+        }
+
         @media (max-width: 700px) {
+          .calendar-date-controls {
+            justify-content: stretch;
+          }
+
           .calendar-shell,
           .calendar-empty-state {
             padding: 0.85rem;
           }
 
-          .manual-booking-heading,
           .manual-booking-footer,
           .manual-booking-actions {
             display: grid;
@@ -2465,14 +2752,38 @@ export default function Bookings() {
           }
 
           .calendar-toolbar,
-          .calendar-date-controls,
-          .calendar-date-controls input,
           .calendar-empty-action-grid,
           .calendar-empty-actions,
           .calendar-empty-actions :global(.btn),
           .calendar-empty-actions a {
             display: grid;
             width: 100%;
+          }
+
+          .calendar-date-controls {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            width: 100%;
+          }
+
+          .calendar-week-stepper {
+            grid-column: 1 / -1;
+            width: 100%;
+          }
+
+          .calendar-week-stepper button {
+            flex: 1 1 0;
+          }
+
+          .calendar-date-controls input {
+            width: 100%;
+            max-width: none;
+            min-width: 0;
+          }
+
+          .calendar-add-button {
+            width: auto;
+            justify-content: center;
           }
 
           :global(.week-calendar) {
@@ -2490,6 +2801,11 @@ export default function Bookings() {
           }
 
           :global(.week-calendar-grid) {
+            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
+            min-width: 660px;
+          }
+
+          .calendar-body.has-side-panel :global(.week-calendar-grid) {
             grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
             min-width: 660px;
           }

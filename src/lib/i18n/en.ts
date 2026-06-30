@@ -1762,6 +1762,7 @@ export const en: TranslationTree = {
   "dashboardBookings.calendar.kicker": "Schedule",
   "dashboardBookings.week.previous": "Previous",
   "dashboardBookings.week.next": "Next",
+  "dashboardBookings.week.controls": "Week controls",
   "dashboardBookings.details.kicker": "Selected appointment",
   "dashboardBookings.filters.calendarView": "Calendar view",
   "dashboardBookings.filters.body":
@@ -1806,14 +1807,16 @@ export const en: TranslationTree = {
   "dashboardBookings.actions.accept": "Accept booking",
   "dashboardBookings.actions.decline": "Decline booking",
   "dashboardBookings.actions.markCompleted": "Mark completed",
+  "dashboardBookings.actions.complete": "Complete",
   "dashboardBookings.actions.reschedule": "Reschedule",
   "dashboardBookings.actions.cancel": "Cancel",
-  "dashboardBookings.manual.open": "Add booking",
-  "dashboardBookings.manual.title": "Add booking",
+  "dashboardBookings.manual.open": "Add appointment",
+  "dashboardBookings.manual.title": "Add appointment",
   "dashboardBookings.manual.body":
-    "Create a confirmed appointment for this calendar.",
+    "Choose the customer, service, team member and time.",
+  "dashboardBookings.manual.addAt": "Add appointment",
   "dashboardBookings.manual.setupNeeded":
-    "Add an active service, active staff and a service assignment before adding bookings manually.",
+    "Assign a team member to a service before adding appointments.",
   "dashboardBookings.manual.customerName": "Customer name",
   "dashboardBookings.manual.customerEmail": "Customer email",
   "dashboardBookings.manual.customerPhone": "Phone",
@@ -1824,7 +1827,7 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.durationHint":
     "Duration follows the selected service.",
   "dashboardBookings.manual.saving": "Adding...",
-  "dashboardBookings.manual.create": "Add booking",
+  "dashboardBookings.manual.create": "Add appointment",
   "dashboardBookings.manual.noAssignedStaff":
     "No active staff are assigned to this service.",
   "dashboardBookings.manual.error.customerName": "Add the customer's name.",
@@ -1843,8 +1846,7 @@ export const en: TranslationTree = {
     "That time clashes with another appointment or pending request.",
   "dashboardBookings.manual.error.create":
     "Could not add this booking. Try again.",
-  "dashboardBookings.manual.success":
-    "Booking added to the calendar. Confirmation email delivery will be requested where email is enabled.",
+  "dashboardBookings.manual.success": "Appointment added to the calendar.",
   "dashboardBookings.empty.noBusinessTitle": "No business found",
   "dashboardBookings.empty.noBusinessBody":
     "Create a business profile first, then customer bookings will appear here.",

@@ -724,3 +724,24 @@ Stage 8.29 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.30 Business Calendar Appointment Workspace Implemented
+
+- visually reviewed the business Calendar on mobile before editing and found
+  the schedule was still being pushed down by a stacked form-style toolbar
+- rebuilt the Calendar page into a main schedule column with an appointment
+  side panel on wider screens, keeping the week schedule as the primary surface
+- compressed the week controls into a single stepper, date picker and Add
+  appointment action instead of five stacked full-width controls
+- added clickable empty time slots in the week schedule so owners can start a
+  manual appointment from the calendar time itself
+- reused the existing manual appointment creation path, service/staff checks,
+  clash prevention and transactional email request instead of adding new
+  booking logic
+- changed owner-facing calendar copy from Add booking to Add appointment and
+  shortened the setup-needed guidance
+
+Stage 8.30 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
