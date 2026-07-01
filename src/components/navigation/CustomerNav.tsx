@@ -24,26 +24,9 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
         </Link>
       )}
 
-      <div className="customer-nav-desktop-actions">
-        <LanguageToggle />
-
-        <Link href="/account" className="muted">
-          {t("nav.account")}
-        </Link>
-
-        <button
-          type="button"
-          onClick={onLogout}
-          className="btn btn-ghost"
-          aria-label={t("nav.logout")}
-        >
-          {t("nav.logout")}
-        </button>
-      </div>
-
-      <details className="customer-nav-mobile-account">
+      <details className="customer-nav-account-menu">
         <summary>{t("nav.account")}</summary>
-        <div className="customer-nav-mobile-menu">
+        <div className="customer-nav-account-menu-panel">
           <LanguageToggle />
           <Link href="/account" className="muted">
             {t("nav.account")}
@@ -60,78 +43,64 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
       </details>
 
       <style jsx>{`
-        .customer-nav-desktop-actions {
-          display: contents;
-        }
-
-        .customer-nav-mobile-account {
-          display: none;
+        .customer-nav-account-menu {
+          display: block;
           position: relative;
         }
 
-        @media (max-width: 540px) {
-          .customer-nav-desktop-actions {
-            display: none;
-          }
+        .customer-nav-account-menu summary {
+          min-height: 2.25rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.48rem 0.72rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface-2);
+          color: var(--text);
+          cursor: pointer;
+          font-weight: 800;
+          list-style: none;
+          white-space: nowrap;
+        }
 
-          .customer-nav-mobile-account {
-            display: block;
-          }
+        .customer-nav-account-menu summary::-webkit-details-marker {
+          display: none;
+        }
 
-          .customer-nav-mobile-account summary {
-            min-height: 2.25rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.48rem 0.72rem;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            background: var(--surface-2);
-            color: var(--text);
-            cursor: pointer;
-            font-weight: 800;
-            list-style: none;
-            white-space: nowrap;
-          }
+        .customer-nav-account-menu summary::after {
+          content: "";
+          width: 0.34rem;
+          height: 0.34rem;
+          border-right: 1.5px solid currentColor;
+          border-bottom: 1.5px solid currentColor;
+          transform: rotate(45deg) translateY(-1px);
+          opacity: 0.75;
+        }
 
-          .customer-nav-mobile-account summary::-webkit-details-marker {
-            display: none;
-          }
+        .customer-nav-account-menu[open] summary::after {
+          transform: rotate(225deg) translateY(-1px);
+        }
 
-          .customer-nav-mobile-account summary::after {
-            content: "";
-            width: 0.34rem;
-            height: 0.34rem;
-            border-right: 1.5px solid currentColor;
-            border-bottom: 1.5px solid currentColor;
-            transform: rotate(45deg) translateY(-1px);
-            opacity: 0.75;
-          }
+        .customer-nav-account-menu-panel {
+          position: absolute;
+          right: 0;
+          top: calc(100% + 0.45rem);
+          z-index: 60;
+          width: min(13rem, calc(100vw - 1.5rem));
+          display: grid;
+          gap: 0.25rem;
+          padding: 0.45rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(24, 23, 34, 0.98);
+          box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
+        }
 
-          .customer-nav-mobile-account[open] summary::after {
-            transform: rotate(225deg) translateY(-1px);
-          }
-
-          .customer-nav-mobile-menu {
-            position: absolute;
-            right: 0;
-            top: calc(100% + 0.45rem);
-            z-index: 60;
-            width: min(13rem, calc(100vw - 1.5rem));
-            display: grid;
-            gap: 0.25rem;
-            padding: 0.45rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: rgba(24, 23, 34, 0.98);
-            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
-          }
-
-          .customer-nav-mobile-menu :global(.language-switcher),
-          .customer-nav-mobile-menu :global(a),
-          .customer-nav-mobile-menu button {
-            width: 100%;
-          }
+        .customer-nav-account-menu-panel :global(.language-switcher),
+        .customer-nav-account-menu-panel :global(a),
+        .customer-nav-account-menu-panel button {
+          width: 100%;
         }
       `}</style>
     </>

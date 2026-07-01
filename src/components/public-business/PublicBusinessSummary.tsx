@@ -67,12 +67,14 @@ export default function PublicBusinessSummary({
   return (
     <aside className="card booking-summary-panel">
       <div className="booking-summary-heading">
-        <p className="small muted">
-          {t("publicBusiness.summary.title", "Booking summary")}
-        </p>
+        {!hasAppointmentSelection && (
+          <p className="small muted">
+            {t("publicBusiness.summary.title", "Booking summary")}
+          </p>
+        )}
         <h2 style={{ fontFamily: "var(--font-display)" }}>
           {hasAppointmentSelection
-            ? t("publicBusiness.summary.reviewTitle", "Review and book")
+            ? t("publicBusiness.summary.reviewTitle", "Review appointment")
             : t("publicBusiness.summary.emptyTitle", "Your appointment")}
         </h2>
         {!hasAppointmentSelection && hasSelectedService && (

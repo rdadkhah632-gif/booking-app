@@ -446,7 +446,7 @@ export const sq: TranslationTree = {
   "publicBusiness.summary.title": "Përmbledhja e rezervimit",
   "publicBusiness.summary.nextStep": "Pas dërgimit",
   "publicBusiness.summary.emptyTitle": "Takimi yt",
-  "publicBusiness.summary.reviewTitle": "Rishiko dhe rezervo",
+  "publicBusiness.summary.reviewTitle": "Rishiko takimin",
   "publicBusiness.summary.pickAppointmentTitle": "Zgjidh shërbim dhe orar",
   "publicBusiness.summary.pickAppointmentBody":
     "Zgjidh një orar takimi, pastaj shto të dhënat për të rezervuar.",
@@ -595,6 +595,7 @@ export const sq: TranslationTree = {
   "myBookings.card.cancelledTime": "Orari i takimit të anuluar",
   "myBookings.card.declinedTime": "Orari i kërkesës së refuzuar",
   "myBookings.card.currentConfirmed": "Takimi aktual i konfirmuar",
+  "myBookings.card.appointmentTime": "Orari i takimit",
   "myBookings.card.pendingHint":
     "Ky rezervim nuk konfirmohet derisa biznesi ta pranojë.",
   "myBookings.card.originalHint":
@@ -2555,9 +2556,12 @@ export const sq: TranslationTree = {
   "myBookings.command.viewUpcoming": "Shiko të ardhshmet",
   "myBookings.command.viewHistory": "Shiko historikun",
   "myBookings.command.bookAgain": "Rezervo një shërbim tjetër",
-  "myBookings.sections.historyTitle": "Historia e rezervimeve",
+  "myBookings.sections.historyTitle": "Historia",
   "myBookings.sections.historyBody":
     "Rezervimet e përfunduara, të anuluara dhe të kaluara qëndrojnë këtu që t’i shikosh kur të duash.",
+  "myBookings.sections.requestsTitle": "Kërkesat",
+  "myBookings.sections.changeRequestsTitle": "Kërkesat për ndryshim",
+  "myBookings.sections.upcomingTitle": "Të ardhshme",
   "myBookings.status.requestSent": "Kërkesa u dërgua",
   "myBookings.status.confirmed": "Konfirmuar",
   "myBookings.status.declined": "Refuzuar",

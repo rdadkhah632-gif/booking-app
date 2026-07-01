@@ -36,14 +36,6 @@ export default function PublicBusinessServices({
               : t("explore.card.servicePlural", "services")}
           </span>
         )}
-        {totalServiceCount > bookableServiceCount && (
-          <p className="small muted public-business-section-note">
-            {t(
-              "publicBusiness.services.assignmentHint",
-              "Only bookable services are shown.",
-            )}
-          </p>
-        )}
       </div>
 
       <div className="public-business-service-list">

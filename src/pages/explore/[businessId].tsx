@@ -1636,8 +1636,9 @@ export default function BusinessBookingPage() {
 
         :global(.public-business-staff-list) {
           display: grid;
-          gap: 0.75rem;
-          margin-top: 1rem;
+          grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+          gap: 0.5rem;
+          margin-top: 0;
         }
 
         :global(.public-business-staff-card) {
@@ -1647,8 +1648,8 @@ export default function BusinessBookingPage() {
           text-align: left;
           width: 100%;
           border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 0.85rem;
+          border-radius: 14px;
+          padding: 0.65rem;
           color: var(--text);
           cursor: pointer;
         }

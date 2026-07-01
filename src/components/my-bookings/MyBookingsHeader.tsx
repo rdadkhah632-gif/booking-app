@@ -28,13 +28,6 @@ export default function MyBookingsHeader({
     <div style={{ marginBottom: "1rem" }}>
       <h1 className="page-title">{t("myBookings.title", "My bookings")}</h1>
 
-      <p className="page-sub" style={{ marginTop: "0.35rem" }}>
-        {t(
-          "myBookings.subtitle",
-          "Requests, upcoming appointments and history.",
-        )}
-      </p>
-
       {bookingRequested && (
         <div className="card my-booking-route-banner">
           <strong>
@@ -86,6 +79,7 @@ export default function MyBookingsHeader({
           )}
           {showRefreshAction && (
             <button
+              type="button"
               onClick={onRefresh}
               className="btn btn-ghost"
               disabled={loading}

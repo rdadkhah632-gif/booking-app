@@ -55,6 +55,7 @@ export default function MyBookingCard({
   );
   const tone = cardTone(booking.status, Boolean(pendingRequest), mode);
   const appointmentTime = formatAppointmentDateTime(booking.start_at);
+  const showLifecycleCopy = booking.status !== "confirmed" || hasPendingChange;
 
   function formatAppointmentDateTime(value: string) {
     return new Date(value).toLocaleString(undefined, {
@@ -97,9 +98,11 @@ export default function MyBookingCard({
             </span>
           </div>
 
-          <p className="small muted my-booking-lifecycle-copy">
-            {lifecycleCopy(booking, pendingRequest)}
-          </p>
+          {showLifecycleCopy && (
+            <p className="small muted my-booking-lifecycle-copy">
+              {lifecycleCopy(booking, pendingRequest)}
+            </p>
+          )}
 
           <div className="my-booking-appointment-strip">
             <div>
@@ -130,8 +133,8 @@ export default function MyBookingCard({
                               "Declined requested time",
                             )
                           : t(
-                              "myBookings.card.currentConfirmed",
-                              "Current confirmed appointment",
+                              "myBookings.card.appointmentTime",
+                              "Appointment time",
                             )}
               </p>
               <strong>{appointmentTime}</strong>
@@ -212,6 +215,7 @@ export default function MyBookingCard({
         <div className="my-booking-card-actions">
           {booking.status === "pending" && (
             <button
+              type="button"
               onClick={() => onCancel(booking)}
               className="btn btn-danger"
               disabled={isWorking}
@@ -241,6 +245,7 @@ export default function MyBookingCard({
               )}
 
               <button
+                type="button"
                 onClick={() => onCancel(booking)}
                 className="btn btn-danger"
                 disabled={isWorking}

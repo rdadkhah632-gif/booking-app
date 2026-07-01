@@ -405,7 +405,7 @@ export const en: TranslationTree = {
   "publicBusiness.summary.title": "Booking summary",
   "publicBusiness.summary.nextStep": "After submit",
   "publicBusiness.summary.emptyTitle": "Your appointment",
-  "publicBusiness.summary.reviewTitle": "Review and book",
+  "publicBusiness.summary.reviewTitle": "Review appointment",
   "publicBusiness.summary.pickAppointmentTitle": "Choose service and time",
   "publicBusiness.summary.pickAppointmentBody":
     "Pick an appointment slot, then add your details to book.",
@@ -550,6 +550,7 @@ export const en: TranslationTree = {
   "myBookings.card.cancelledTime": "Cancelled appointment time",
   "myBookings.card.declinedTime": "Declined requested time",
   "myBookings.card.currentConfirmed": "Current confirmed appointment",
+  "myBookings.card.appointmentTime": "Appointment time",
   "myBookings.card.pendingHint":
     "This booking is not confirmed until the business accepts it.",
   "myBookings.card.originalHint":
@@ -2478,9 +2479,12 @@ export const en: TranslationTree = {
   "myBookings.command.viewUpcoming": "View upcoming",
   "myBookings.command.viewHistory": "View history",
   "myBookings.command.bookAgain": "Book another service",
-  "myBookings.sections.historyTitle": "Booking history",
+  "myBookings.sections.historyTitle": "History",
   "myBookings.sections.historyBody":
     "Completed, cancelled and past bookings stay here so you can review them whenever you need.",
+  "myBookings.sections.requestsTitle": "Requests",
+  "myBookings.sections.changeRequestsTitle": "Change requests",
+  "myBookings.sections.upcomingTitle": "Upcoming",
   "myBookings.status.requestSent": "Request sent",
   "myBookings.status.confirmed": "Confirmed",
   "myBookings.status.declined": "Declined",

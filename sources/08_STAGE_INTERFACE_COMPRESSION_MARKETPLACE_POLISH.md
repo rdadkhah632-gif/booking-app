@@ -820,3 +820,24 @@ Stage 8.34 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.35 Customer Flow Compression Follow-Up Implemented
+
+- compressed My Bookings sections to simple Requests, Change requests,
+  Upcoming and History headings instead of repeating status/explainer copy
+- removed the My Bookings header subtitle and tightened customer booking action
+  button semantics
+- removed the extra confirmed-booking lifecycle sentence from active customer
+  booking cards and shortened the confirmed time label to Appointment time
+- made the public business staff chooser a compact step instead of another
+  full card in the booking flow
+- removed the customer-facing "Only bookable services are shown" helper from
+  public service lists where it added setup-language noise
+- simplified the selected booking summary heading to Review appointment
+- consolidated CustomerNav into one account menu so desktop and mobile account
+  controls are not duplicated in the DOM
+
+Stage 8.35 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

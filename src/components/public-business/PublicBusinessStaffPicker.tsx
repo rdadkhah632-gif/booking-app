@@ -17,12 +17,10 @@ export default function PublicBusinessStaffPicker({
 }: Props) {
   const { t } = useI18n();
   return (
-    <div className="card">
-      <div>
-        <h2 style={{ fontFamily: "var(--font-display)" }}>
-          {t("publicBusiness.staff.title", "Choose staff")}
-        </h2>
-      </div>
+    <div className="public-business-staff-step">
+      <p className="small muted public-business-step-label">
+        {t("common.staff", "Staff")}
+      </p>
 
       <div className="public-business-staff-list">
         {availableStaffForSelectedService.length > 0 && (
@@ -109,6 +107,17 @@ export default function PublicBusinessStaffPicker({
           </div>
         )}
       </div>
+      <style jsx>{`
+        .public-business-staff-step {
+          display: grid;
+          gap: 0.45rem;
+          margin-top: 0.9rem;
+        }
+
+        .public-business-step-label {
+          margin: 0;
+        }
+      `}</style>
     </div>
   );
 }

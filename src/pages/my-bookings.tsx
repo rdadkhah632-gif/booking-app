@@ -638,12 +638,7 @@ export default function MyBookings() {
               <MyBookingsSection
                 sectionRef={pendingSectionRef}
                 id="waiting-approval"
-                kicker={t("myBookings.sections.actionStatus", "Action status")}
-                title={t("myBookings.sections.waitingTitle", "Request sent")}
-                body={t(
-                  "myBookings.sections.waitingBody",
-                  "Waiting for the business to confirm. You can cancel the request while it is still waiting.",
-                )}
+                title={t("myBookings.sections.requestsTitle", "Requests")}
               >
                 {pendingBookings.map((booking) =>
                   renderBookingCard(booking, "pending"),
@@ -655,17 +650,9 @@ export default function MyBookings() {
               <MyBookingsSection
                 sectionRef={changeRequestsSectionRef}
                 id="change-requests"
-                kicker={t(
-                  "myBookings.sections.requestedChanges",
-                  "Requested changes",
-                )}
                 title={t(
-                  "dashboardNotifications.sections.pendingRescheduleRequests",
-                  "Pending reschedule requests",
-                )}
-                body={t(
-                  "myBookings.sections.changeRequestsBody",
-                  "These cards are also shown inside your active appointments. Your current appointment remains confirmed until the business approves the requested time.",
+                  "myBookings.sections.changeRequestsTitle",
+                  "Change requests",
                 )}
               >
                 {confirmedUpcomingBookings
@@ -678,15 +665,7 @@ export default function MyBookings() {
               <MyBookingsSection
                 sectionRef={upcomingSectionRef}
                 id="upcoming-bookings"
-                kicker={t("myBookings.sections.schedule", "Schedule")}
-                title={t(
-                  "myBookings.sections.activeTitle",
-                  "Confirmed bookings",
-                )}
-                body={t(
-                  "myBookings.sections.activeBody",
-                  "Your booking is confirmed. You can request a different time or cancel before it is completed.",
-                )}
+                title={t("myBookings.sections.upcomingTitle", "Upcoming")}
                 action={
                   pendingRescheduleCount > 0 ? (
                     <button
@@ -713,12 +692,7 @@ export default function MyBookings() {
               <MyBookingsSection
                 sectionRef={historySectionRef}
                 id="booking-history"
-                kicker={t("dashboardBookings.summary.history", "History")}
-                title={t("myBookings.sections.historyTitle", "Booking history")}
-                body={t(
-                  "myBookings.sections.historyBody",
-                  "Completed, cancelled and past bookings stay here so you can review them whenever you need.",
-                )}
+                title={t("myBookings.sections.historyTitle", "History")}
               >
                 {historyBookings.map((booking) =>
                   renderBookingCard(booking, "history"),
