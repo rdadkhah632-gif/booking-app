@@ -789,3 +789,17 @@ Remaining QA notes after Stage 8.32:
   the visible block matches the selected time
 - re-test same-staff same-time duplicate creation to confirm the clash message
   still appears
+
+## Stage 8.33 Occupied Calendar Cell Cleanup Implemented
+
+- removed add-appointment hit targets from business Calendar hour cells already
+  occupied by pending or confirmed appointments
+- kept appointment blocks as the clickable detail surface for occupied time
+  ranges
+- preserved the top Add appointment action and duplicate clash prevention for
+  manual entry
+
+Stage 8.33 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

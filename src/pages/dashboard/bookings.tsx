@@ -1513,6 +1513,23 @@ export default function Bookings() {
     );
   }
 
+  function slotIsOccupied(
+    dayBookings: Booking[],
+    slotStartMinutes: number,
+    slotEndMinutes: number,
+  ) {
+    return dayBookings.some((booking) => {
+      if (booking.status !== "pending" && booking.status !== "confirmed") {
+        return false;
+      }
+
+      const time = bookingTime(booking);
+      return (
+        slotStartMinutes < time.endMinutes && slotEndMinutes > time.startMinutes
+      );
+    });
+  }
+
   function renderWeekCalendar() {
     const { startHour, endHour } = scheduleWindowFor(weekBookings);
     const hours = Array.from(
@@ -1590,30 +1607,55 @@ export default function Bookings() {
                 className="week-day-lane"
                 style={{ height: `${scheduleHeight}px` }}
               >
-                {hours.slice(0, -1).map((hour) => (
-                  <button
-                    key={hour}
-                    type="button"
-                    tabIndex={-1}
-                    className="calendar-slot-hit"
-                    style={{
-                      top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
-                      height: `${CALENDAR_HOUR_HEIGHT}px`,
-                    }}
-                    onClick={() =>
-                      openManualBookingAt({
-                        date: group.dateKey,
-                        time: timeInputForMinutes(hour * 60),
-                      })
-                    }
-                    aria-label={`${t(
-                      "dashboardBookings.manual.addAt",
-                      "Add appointment",
-                    )} ${group.shortLabel} ${String(hour).padStart(2, "0")}:00`}
-                  >
-                    <span aria-hidden="true">+</span>
-                  </button>
-                ))}
+                {hours.slice(0, -1).map((hour) => {
+                  const slotStartMinutes = hour * 60;
+                  const slotEndMinutes = slotStartMinutes + 60;
+                  const isOccupied = slotIsOccupied(
+                    group.bookings,
+                    slotStartMinutes,
+                    slotEndMinutes,
+                  );
+                  const slotStyle = {
+                    top: `${(hour - startHour) * CALENDAR_HOUR_HEIGHT}px`,
+                    height: `${CALENDAR_HOUR_HEIGHT}px`,
+                  };
+
+                  if (isOccupied) {
+                    return (
+                      <span
+                        key={hour}
+                        className="calendar-slot-occupied"
+                        style={slotStyle}
+                        aria-hidden="true"
+                      />
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={hour}
+                      type="button"
+                      tabIndex={-1}
+                      className="calendar-slot-hit"
+                      style={slotStyle}
+                      onClick={() =>
+                        openManualBookingAt({
+                          date: group.dateKey,
+                          time: timeInputForMinutes(hour * 60),
+                        })
+                      }
+                      aria-label={`${t(
+                        "dashboardBookings.manual.addAt",
+                        "Add appointment",
+                      )} ${group.shortLabel} ${String(hour).padStart(
+                        2,
+                        "0",
+                      )}:00`}
+                    >
+                      <span aria-hidden="true">+</span>
+                    </button>
+                  );
+                })}
 
                 {hours.slice(0, -1).map((hour) => (
                   <span
@@ -2511,6 +2553,14 @@ export default function Bookings() {
           background: transparent;
           color: transparent;
           cursor: copy;
+        }
+
+        :global(.calendar-slot-occupied) {
+          position: absolute;
+          left: 0;
+          right: 0;
+          z-index: 1;
+          pointer-events: none;
         }
 
         :global(.calendar-slot-hit span) {
