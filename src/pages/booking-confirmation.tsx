@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
+import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
 
 type Booking = {
@@ -234,9 +235,16 @@ export default function BookingConfirmation() {
 
   function staffName() {
     const staff = staffRelation();
+    const fallback = t(
+      "bookingConfirmation.fallback.staffMember",
+      "Assigned staff",
+    );
     if (!staff)
       return t("publicBusiness.anyAvailableStaff", "Any available staff");
-    return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
+    const displayName = publicStaffName(staff, fallback);
+    const roleTitle =
+      displayName === fallback ? null : staff.role_title?.trim() || null;
+    return `${displayName}${roleTitle ? ` — ${roleTitle}` : ""}`;
   }
 
   function appointmentDateTime() {
@@ -261,7 +269,10 @@ export default function BookingConfirmation() {
     if (booking?.status === "pending")
       return t("bookingConfirmation.heading.pending", "Request sent");
     if (booking?.status === "confirmed")
-      return t("bookingConfirmation.heading.confirmed", "Confirmed");
+      return t(
+        "bookingConfirmation.heading.confirmed",
+        "Booking confirmed",
+      );
     if (booking?.status === "completed")
       return t("bookingConfirmation.heading.completed", "Completed");
     if (booking?.status === "declined")
@@ -277,7 +288,7 @@ export default function BookingConfirmation() {
     }
 
     if (booking?.status === "confirmed") {
-      return `${t("bookingConfirmation.lead.confirmedStart", "Your booking is confirmed with")} ${businessName()}. ${t("bookingConfirmation.lead.confirmedEnd", "Your booking is confirmed.")}`;
+      return `${t("bookingConfirmation.lead.confirmedStart", "You're booked with")} ${businessName()}.`;
     }
 
     if (booking?.status === "completed") {
@@ -369,13 +380,6 @@ export default function BookingConfirmation() {
                     : "✓"}
               </div>
 
-              <p
-                className="small"
-                style={{ color: statusColor(booking.status) }}
-              >
-                {statusLabel(booking.status)}
-              </p>
-
               <h1
                 style={{
                   fontFamily: "var(--font-display)",
@@ -399,18 +403,6 @@ export default function BookingConfirmation() {
                     "Appointment details",
                   )}
                 </h2>
-
-                <span
-                  className="small"
-                  style={{
-                    background: statusBackground(booking.status),
-                    color: statusColor(booking.status),
-                    padding: "0.2rem 0.65rem",
-                    borderRadius: 999,
-                  }}
-                >
-                  {statusLabel(booking.status)}
-                </span>
               </div>
 
               <div className="booking-confirmation-details-grid">
@@ -505,14 +497,6 @@ export default function BookingConfirmation() {
                   </div>
                 )}
 
-                <div>
-                  <p className="small muted">
-                    {t("bookingConfirmation.details.status", "Status")}
-                  </p>
-                  <strong style={{ color: statusColor(booking.status) }}>
-                    {statusLabel(booking.status)}
-                  </strong>
-                </div>
               </div>
             </div>
 

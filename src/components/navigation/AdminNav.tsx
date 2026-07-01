@@ -35,7 +35,12 @@ export default function AdminNav({
         {t("nav.account", "Account")}
       </Link>
 
-      <button onClick={onLogout} className="btn btn-ghost">
+      <button
+        type="button"
+        onClick={onLogout}
+        className="btn btn-ghost"
+        aria-label={t("auth.logout", "Log out")}
+      >
         {t("auth.logout", "Log out")}
       </button>
     </>

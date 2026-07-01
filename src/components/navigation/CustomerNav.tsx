@@ -31,7 +31,12 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
           {t("nav.account")}
         </Link>
 
-        <button onClick={onLogout} className="btn btn-ghost">
+        <button
+          type="button"
+          onClick={onLogout}
+          className="btn btn-ghost"
+          aria-label={t("nav.logout")}
+        >
           {t("nav.logout")}
         </button>
       </div>
@@ -43,7 +48,12 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
           <Link href="/account" className="muted">
             {t("nav.account")}
           </Link>
-          <button onClick={onLogout} className="btn btn-ghost">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="btn btn-ghost"
+            aria-label={t("nav.logout")}
+          >
             {t("nav.logout")}
           </button>
         </div>

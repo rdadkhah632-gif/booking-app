@@ -11,6 +11,7 @@ import {
   Booking,
   BookingRequest,
 } from "@/components/my-bookings/myBookingsTypes";
+import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
 
@@ -411,16 +412,24 @@ export default function MyBookings() {
 
   function staffName(booking: Booking) {
     const staff = firstRelation(booking.staff_members);
+    const fallback = t("myBookings.fallback.staffMember", "Assigned staff");
     if (!staff)
       return t("dashboardBookings.card.noStaff", "Staff not recorded");
-    return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
+    const displayName = publicStaffName(staff, fallback);
+    const roleTitle =
+      displayName === fallback ? null : staff.role_title?.trim() || null;
+    return `${displayName}${roleTitle ? ` — ${roleTitle}` : ""}`;
   }
 
   function requestedStaffName(request: BookingRequest) {
     const staff = firstRelation(request.requested_staff);
+    const fallback = t("myBookings.fallback.staffMember", "Assigned staff");
     if (!staff)
       return t("dashboardBookings.card.noStaff", "Staff not recorded");
-    return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
+    const displayName = publicStaffName(staff, fallback);
+    const roleTitle =
+      displayName === fallback ? null : staff.role_title?.trim() || null;
+    return `${displayName}${roleTitle ? ` — ${roleTitle}` : ""}`;
   }
 
   function lifecycleCopy(booking: Booking, pendingRequest?: BookingRequest) {

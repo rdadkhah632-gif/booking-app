@@ -803,3 +803,20 @@ Stage 8.33 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.34 Customer Booking QA Polish Implemented
+
+- reduced booking-confirmation status repetition so the result page has one
+  clear heading and appointment details without repeated status rows
+- changed confirmed booking copy to read as a finished customer outcome instead
+  of repeating the same confirmation sentence
+- reused the public staff display helper on booking confirmation and My
+  Bookings so generated-looking staff names such as `live-business-*` are not
+  shown to customers
+- hardened signed-in nav logout buttons with explicit button type and
+  accessible labels across customer, business, staff and admin nav surfaces
+
+Stage 8.34 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
