@@ -205,6 +205,49 @@ Remaining manual admin QA:
 - change a user's role/admin access through `/admin/users`
 - reply from `/admin/support` and update support status
 
+## Broad-Read Audit After SQL 12
+
+Production broad-read QA with fresh anonymous, customer, business owner, staff
+and admin sessions found:
+
+- anonymous reads are blocked across the tested Stage 9 tables
+- `profiles`, `booking_requests`, `notifications`, `support_messages`,
+  `support_replies`, `business_billing` and
+  `notification_email_preferences` behaved as expected for the tested roles
+- admin broad reads behaved as expected for operator surfaces
+- server-only/admin-operated tables remained denied to browser clients:
+  `staff_invite_tokens`, `appointment_reminder_deliveries`,
+  `founding_offer_reviews`, `business_billing_admin_audit`
+
+The same audit also found a blocker:
+
+- normal authenticated non-admin users can still broad-read unrelated rows from
+  `businesses`, `services`, `staff_members`, `staff_services`,
+  `availability`, `staff_availability` and `bookings`
+
+The tested users were not admins. This points to older permissive Supabase
+policies still existing beside the newer Stage 9 policies.
+
+Created:
+
+```text
+sources/sql/13_rls_policy_cleanup_after_broad_read_audit.sql
+```
+
+That SQL drops all policies on the leaking marketplace/schedule/booking tables
+and recreates the intended Stage 9 policies. It does not change schema,
+booking lifecycle logic, staff linking, auth, billing writes or app code.
+
+Required next order:
+
+1. Review and run
+   `sources/sql/13_rls_policy_cleanup_after_broad_read_audit.sql` in Supabase
+   SQL editor.
+2. Rerun broad-read QA as anonymous, customer, business owner, staff and admin.
+3. QA public Explore and public business profile endpoints.
+4. QA customer booking creation, My Bookings, business Calendar, business Setup,
+   staff Calendar and staff Availability.
+
 ## Current RLS Draft
 
 Draft SQL:
@@ -214,10 +257,13 @@ sources/sql/09_rls_bookings_boundary_draft.sql
 sources/sql/10_rls_requests_notifications_support_draft.sql
 sources/sql/11_rls_marketplace_public_data_boundary_draft.sql
 sources/sql/12_rls_profiles_support_tightening_draft.sql
+sources/sql/13_rls_policy_cleanup_after_broad_read_audit.sql
 ```
 
 These drafts are not applied automatically. Stage 9 drafts 09, 10, 11 and 12
-were manually applied in Supabase and QA'd in controlled passes.
+were manually applied in Supabase and QA'd in controlled passes. Draft 13 is
+required because the broad-read audit found legacy policies still allowing
+authenticated non-admin broad reads on several operational tables.
 
 Recommended SQL review order:
 
@@ -251,15 +297,12 @@ Admin-only and server-only tables still need separate review.
 
 ## Safe Next Batch
 
-1. Commit and deploy the registration/login profile creation patch.
-2. Re-test customer registration on production.
-3. Re-test business registration on production, including owner-as-staff.
-4. Sign in with a real admin account and QA `/admin/users` profile edits.
-5. QA admin role/admin-access changes through `/admin/users`.
-6. QA `/admin/support` reply and support-status update.
-7. Repeat broad-read checks as anonymous, customer, staff, business owner and
+1. Commit the SQL 13 policy-cleanup draft and Stage 9 notes.
+2. Run SQL 13 in Supabase SQL editor.
+3. Repeat broad-read checks as anonymous, customer, staff, business owner and
    admin.
-8. Review admin-only/server-only tables for the next hardening batch.
+4. QA public marketplace/profile endpoints and role workspaces.
+5. Review admin-only/server-only tables for the next hardening batch.
 
 Do not harden all tables blindly in one production pass. RLS should move in
 small verified batches so working booking, staff and business flows are not
