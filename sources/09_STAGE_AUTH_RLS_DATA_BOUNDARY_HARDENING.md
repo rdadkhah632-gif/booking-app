@@ -10,6 +10,8 @@ Batch 3 status: implemented and build-validated.
 
 Batch 4 status: implemented and build-validated.
 
+Batch 5 status: implemented and build-validated.
+
 ## Goal
 
 Make Supabase row-level security the real data boundary for Mirëbook before
@@ -122,6 +124,53 @@ This batch requires `SUPABASE_SERVICE_ROLE_KEY` in local/Vercel environments
 because public marketplace/profile data now flows through service-role server
 routes with explicit public-safe response shaping.
 
+## SQL 8 Staff Invite Token QA
+
+After `sources/sql/08_staff_invite_tokens.sql` was run manually in Supabase:
+
+- anonymous direct reads of `staff_invite_tokens` returned permission denied
+- invalid invite-token API checks returned `valid: false` instead of storage
+  missing
+- unauthenticated invite creation returned `401`
+- a throwaway business owner created a staff invite successfully
+- provider-disabled email returned a manual invite URL without claiming delivery
+- the invite URL validated as active
+- the invited staff account accepted the token successfully
+- the staff member row was linked to the invited account
+- the same token validated as inactive after acceptance
+
+QA records created:
+
+- `stage9-invite-owner-1783030441577@test.com`
+- `stage9-invite-staff-1783030441577@test.com`
+- business `161014f4-a6e5-4623-9c6b-2c38084f032a`
+- staff member `f7d48189-1975-4019-8f3b-b3a88185dab8`
+
+## Batch 5 Implemented
+
+- Added `/api/support/reply` so customer/business/staff support-thread replies
+  are verified server-side before creating a reply and reopening the ticket.
+- Updated `/support/messages/[id]` to use the server reply route instead of
+  directly inserting `support_replies` and updating `support_messages`.
+- Added `/api/admin/profile` so admin user profile/access changes happen
+  through a service-role route after an explicit admin check.
+- Updated `/admin/users` to use the admin profile route for profile edits and
+  role/admin access changes.
+- Added `sources/sql/12_rls_profiles_support_tightening_draft.sql`.
+
+The new SQL draft:
+
+- versions the `profiles` RLS boundary
+- limits normal authenticated profile writes to safe self-owned fields
+  (`full_name`, `phone`, `preferred_language`)
+- keeps role/admin mutations behind the admin profile API
+- narrows `support_messages` updates to admins only
+- narrows direct `support_replies` inserts to admins only
+- relies on `/api/support/reply` for user support replies
+
+This batch does not change booking, role routing, staff linking, billing,
+notification generation or support ticket creation behaviour.
+
 ## Current RLS Draft
 
 Draft SQL:
@@ -130,10 +179,12 @@ Draft SQL:
 sources/sql/09_rls_bookings_boundary_draft.sql
 sources/sql/10_rls_requests_notifications_support_draft.sql
 sources/sql/11_rls_marketplace_public_data_boundary_draft.sql
+sources/sql/12_rls_profiles_support_tightening_draft.sql
 ```
 
-This draft is not applied automatically. It should be reviewed and tested in
-Supabase/staging before production.
+These drafts are not applied automatically. Earlier Stage 9 drafts 09, 10 and
+11 were manually applied and QA'd in Supabase. Draft 12 still needs manual
+review, deployment-order confirmation and Supabase SQL editor execution.
 
 Recommended SQL review order:
 
@@ -147,8 +198,13 @@ Recommended SQL review order:
 7. Review and test `11_rls_marketplace_public_data_boundary_draft.sql`.
 8. QA Explore, public business pages, owner preview, business setup, services,
    team, working hours and staff availability.
-9. Repeat broad-read checks as anonymous, customer, staff, business owner and
-   admin.
+9. Deploy the support reply/admin profile server-route batch.
+10. Review and test `12_rls_profiles_support_tightening_draft.sql`.
+11. QA Account save, language preference save, registration/profile creation,
+    admin user profile edits, admin role/admin access changes, user support
+    replies and admin support replies.
+12. Repeat broad-read checks as anonymous, customer, staff, business owner and
+    admin.
 
 ## Remaining High-Risk Tables
 

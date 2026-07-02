@@ -64,7 +64,6 @@ export default function SupportThreadPage() {
   const [ticket, setTicket] = useState<SupportMessage | null>(null);
   const [replies, setReplies] = useState<SupportReply[]>([]);
   const [replyBody, setReplyBody] = useState("");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,8 +86,6 @@ export default function SupportThreadPage() {
       window.location.href = `/login?redirectTo=/support/messages/${ticketId}`;
       return;
     }
-
-    setCurrentUserId(session.user.id);
 
     const { data: ticketData, error: ticketError } = await supabase
       .from("support_messages")
@@ -139,26 +136,38 @@ export default function SupportThreadPage() {
 
     const text = replyBody.trim();
 
-    const { error: replyError } = await supabase
-      .from("support_replies")
-      .insert({
-        support_message_id: ticket.id,
-        sender_id: currentUserId,
-        sender_role: "user",
-        message: text,
-      });
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (replyError) {
+    if (!session?.access_token) {
       setSaving(false);
-      setError(replyError.message);
+      setError(t("support.thread.loginRequired", "Sign in to reply."));
       return;
     }
 
-    await supabase
-      .from("support_messages")
-      .update({ status: "open" })
-      .eq("id", ticket.id)
-      .eq("user_id", currentUserId);
+    const response = await fetch("/api/support/reply", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        supportMessageId: ticket.id,
+        message: text,
+      }),
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setSaving(false);
+      setError(
+        payload?.error ||
+          t("support.thread.replyError", "Could not send support reply."),
+      );
+      return;
+    }
 
     void requestSupportAdminNotification({
       supportMessageId: ticket.id,
