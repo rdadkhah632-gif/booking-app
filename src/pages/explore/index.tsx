@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
 import ExploreHero from "@/components/explore/ExploreHero";
 import ExploreFilters from "@/components/explore/ExploreFilters";
@@ -63,52 +62,19 @@ export default function Explore() {
         setTimeout(() => reject(new Error(t("explore.empty.timeout"))), 8000),
       );
 
-      const query = supabase
-        .from("businesses")
-        .select(
-          `
-          id,
-          name,
-          description,
-          category,
-          city,
-          country,
-          phone,
-          address,
-          image_url,
-          auto_accept_bookings,
-          published,
-          created_at,
-          services (
-            id,
-            active,
-            staff_services (
-              staff_member_id
-            )
-          ),
-          staff_members (
-            id,
-            active
-          ),
-          availability (
-            id,
-            is_closed
-          )
-        `,
-        )
-        .eq("published", true)
-        .order("created_at", { ascending: false });
+      const marketplaceRequest = fetch("/api/public/explore-businesses");
+      const response = await Promise.race([marketplaceRequest, timeout]);
 
-      const { data, error } = await Promise.race([query, timeout]);
-
-      if (error) {
-        setError(error.message);
+      if (!response.ok) {
+        setError(t("explore.empty.genericError"));
         setBusinesses([]);
         setLoading(false);
         return;
       }
 
-      const normalisedBusinesses = (data || [])
+      const payload = (await response.json()) as { businesses?: Business[] };
+
+      const normalisedBusinesses = (payload.businesses || [])
         .map((business: any) => ({
           ...business,
           services: business.services || [],

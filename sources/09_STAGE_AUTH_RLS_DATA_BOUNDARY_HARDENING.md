@@ -8,6 +8,8 @@ Batch 2 status: implemented and build-validated.
 
 Batch 3 status: implemented and build-validated.
 
+Batch 4 status: implemented and build-validated.
+
 ## Goal
 
 Make Supabase row-level security the real data boundary for Mirëbook before
@@ -82,6 +84,44 @@ This means app-side filters are not enough for launch.
 This batch does not change support ticket creation, support reply creation,
 booking request logic, notification read behaviour or admin support behaviour.
 
+## Batch 4 Implemented
+
+- Added a server-side public marketplace endpoint:
+  `/api/public/explore-businesses`
+- Added a server-side public business profile endpoint:
+  `/api/public/business-profile`
+- Moved Explore away from direct browser reads of:
+  - `businesses`
+  - `services`
+  - `staff_members`
+  - `staff_services`
+  - `availability`
+- Moved the public business booking page away from direct browser reads of:
+  - `businesses`
+  - `services`
+  - `staff_members`
+  - `staff_services`
+  - `staff_availability`
+  - `availability`
+- Public pages now receive public-safe, shaped data from server routes.
+- Private setup fields such as staff email/user IDs and business owner IDs are
+  not returned by the public profile endpoints.
+- Public booking submit still performs a fresh service/staff/assignment/profile
+  refresh before insert and still refreshes occupied slots before insert.
+- Customer booking insert logic, booking status lifecycle and slot generation
+  were not rewritten.
+- Added a third SQL draft for:
+  - `businesses`
+  - `services`
+  - `staff_members`
+  - `staff_services`
+  - `availability`
+  - `staff_availability`
+
+This batch requires `SUPABASE_SERVICE_ROLE_KEY` in local/Vercel environments
+because public marketplace/profile data now flows through service-role server
+routes with explicit public-safe response shaping.
+
 ## Current RLS Draft
 
 Draft SQL:
@@ -89,6 +129,7 @@ Draft SQL:
 ```text
 sources/sql/09_rls_bookings_boundary_draft.sql
 sources/sql/10_rls_requests_notifications_support_draft.sql
+sources/sql/11_rls_marketplace_public_data_boundary_draft.sql
 ```
 
 This draft is not applied automatically. It should be reviewed and tested in
@@ -102,50 +143,38 @@ Recommended SQL review order:
 4. Review and test `10_rls_requests_notifications_support_draft.sql`.
 5. QA customer notifications, business Inbox, support ticket creation, support
    replies and admin support inbox.
-6. Repeat broad-read checks as anonymous, customer, staff, business owner and
+6. Confirm the new public marketplace/profile endpoints are deployed.
+7. Review and test `11_rls_marketplace_public_data_boundary_draft.sql`.
+8. QA Explore, public business pages, owner preview, business setup, services,
+   team, working hours and staff availability.
+9. Repeat broad-read checks as anonymous, customer, staff, business owner and
    admin.
 
 ## Remaining High-Risk Tables
 
-After bookings, the next RLS passes should cover:
+`businesses`, `services`, `staff_members`, `staff_services`, `availability`,
+`staff_availability`, `booking_requests`, `notifications`, `support_messages`
+and `support_replies` now have drafts, but they should remain treated as
+high-risk until tested in Supabase.
 
-- `businesses`
-- `services`
-- `staff_members`
-- `staff_services`
-- `availability`
-- `staff_availability`
-- admin-only and server-only tables
-
-`booking_requests`, `notifications`, `support_messages` and `support_replies`
-now have a draft, but they should remain treated as high-risk until tested in
-Supabase.
+Admin-only and server-only tables still need separate review.
 
 ## Safe Next Batch
 
-1. Build and smoke-test the new occupancy endpoint locally.
-2. Verify public business booking still shows correct slots.
-3. Verify booking submit still catches stale/occupied slots.
-4. Review the `bookings` RLS draft against the live schema.
-5. Apply the `bookings` RLS draft only in staging or during a controlled
+1. Deploy the new public marketplace/profile endpoints.
+2. QA Explore and public business booking as anonymous and logged-in customer.
+3. Confirm owner preview still works for unpublished businesses.
+4. Confirm business setup/services/team/working-hours still read and write.
+5. Confirm staff dashboard and staff availability still read and write.
+6. Apply `09_rls_bookings_boundary_draft.sql` only during a controlled
    Supabase QA window.
-6. Repeat live broad-read checks as anon/customer/staff/business/admin.
+7. QA booking flows.
+8. Apply `10_rls_requests_notifications_support_draft.sql`.
+9. QA notifications/support/action-centre flows.
+10. Apply `11_rls_marketplace_public_data_boundary_draft.sql`.
+11. QA marketplace/profile/setup/staff availability flows again.
+12. Repeat broad-read checks as anon/customer/staff/business/admin.
 
-## Safe Next Batch After 2/3
-
-The next large hardening pass should deal with marketplace/public data:
-
-- `businesses`
-- `services`
-- `staff_members`
-- `staff_services`
-- `availability`
-- `staff_availability`
-
-The cleanest launch-safe approach is likely public-safe views or server
-endpoints for marketplace/public profile data, because table-level public RLS on
-`staff_members` can accidentally expose private staff fields if table grants are
-too broad.
-
-Do not harden all tables at once. RLS should move in small verified batches so
-working booking, staff and business flows are not broken blindly.
+Do not harden all tables blindly in one production pass. RLS should move in
+small verified batches so working booking, staff and business flows are not
+broken without an easy rollback point.

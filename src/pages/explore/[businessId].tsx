@@ -79,6 +79,16 @@ type Booking = {
   duration_minutes: number;
 };
 
+type PublicBusinessProfile = {
+  business: Business;
+  services: Service[];
+  staffMembers: StaffMember[];
+  staffServices: StaffService[];
+  staffAvailability: StaffAvailability[];
+  availability: BusinessAvailability[];
+  ownerPreview: boolean;
+};
+
 type UserRole = "customer" | "business" | null;
 
 type StaffFilter = "any" | string;
@@ -164,6 +174,34 @@ export default function BusinessBookingPage() {
     return Array.isArray(payload.bookings) ? payload.bookings : [];
   }
 
+  async function loadPublicBusinessProfile(
+    targetBusinessId: string,
+    session?: { access_token?: string | null } | null,
+  ) {
+    const params = new URLSearchParams({ businessId: targetBusinessId });
+    const response = await fetch(`/api/public/business-profile?${params}`, {
+      headers: session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : undefined,
+    });
+
+    if (!response.ok) {
+      throw new Error("business_profile_unavailable");
+    }
+
+    return (await response.json()) as PublicBusinessProfile;
+  }
+
+  function applyPublicBusinessProfile(profile: PublicBusinessProfile) {
+    setIsOwnerPreview(Boolean(profile.ownerPreview));
+    setBusiness(profile.business);
+    setServices(profile.services || []);
+    setStaffMembers(profile.staffMembers || []);
+    setStaffServices(profile.staffServices || []);
+    setStaffAvailability(profile.staffAvailability || []);
+    setAvailability(profile.availability || []);
+  }
+
   useEffect(() => {
     async function getCustomerSession() {
       const {
@@ -204,20 +242,11 @@ export default function BusinessBookingPage() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const { data: businessData, error: businessError } = await supabase
-      .from("businesses")
-      .select("*")
-      .eq("id", businessId)
-      .single();
+    let profile: PublicBusinessProfile;
 
-    const ownerPreview =
-      !!session?.user?.id && businessData?.user_id === session.user.id;
-
-    if (
-      businessError ||
-      !businessData ||
-      (!businessData.published && !ownerPreview)
-    ) {
+    try {
+      profile = await loadPublicBusinessProfile(businessId, session);
+    } catch {
       setError(
         t(
           "publicBusiness.error.notAvailable",
@@ -228,88 +257,7 @@ export default function BusinessBookingPage() {
       return;
     }
 
-    setIsOwnerPreview(ownerPreview);
-    setBusiness(businessData);
-
-    const { data: servicesData, error: servicesError } = await supabase
-      .from("services")
-      .select("*")
-      .eq("business_id", businessId)
-      .eq("active", true)
-      .order("created_at", { ascending: false });
-
-    if (servicesError) {
-      setError(servicesError.message);
-      setPageLoading(false);
-      return;
-    }
-
-    setServices(servicesData || []);
-
-    const { data: staffData, error: staffError } = await supabase
-      .from("staff_members")
-      .select("id, name, role_title, image_url")
-      .eq("business_id", businessId)
-      .eq("active", true)
-      .order("created_at", { ascending: false });
-
-    if (staffError) {
-      setError(staffError.message);
-      setPageLoading(false);
-      return;
-    }
-
-    setStaffMembers(staffData || []);
-
-    const staffIds = (staffData || []).map((staff) => staff.id);
-
-    if (staffIds.length > 0) {
-      const { data: staffServiceData, error: staffServiceError } =
-        await supabase
-          .from("staff_services")
-          .select("staff_member_id, service_id")
-          .in("staff_member_id", staffIds);
-
-      if (staffServiceError) {
-        setError(staffServiceError.message);
-        setPageLoading(false);
-        return;
-      }
-
-      setStaffServices(staffServiceData || []);
-
-      const { data: staffAvailabilityData, error: staffAvailabilityError } =
-        await supabase
-          .from("staff_availability")
-          .select(
-            "staff_member_id, day_of_week, start_time, end_time, is_closed",
-          )
-          .in("staff_member_id", staffIds);
-
-      if (staffAvailabilityError) {
-        setError(staffAvailabilityError.message);
-        setPageLoading(false);
-        return;
-      }
-
-      setStaffAvailability(staffAvailabilityData || []);
-    } else {
-      setStaffServices([]);
-      setStaffAvailability([]);
-    }
-
-    const { data: availabilityData, error: availabilityError } = await supabase
-      .from("availability")
-      .select("*")
-      .eq("business_id", businessId);
-
-    if (availabilityError) {
-      setError(availabilityError.message);
-      setPageLoading(false);
-      return;
-    }
-
-    setAvailability(availabilityData || []);
+    applyPublicBusinessProfile(profile);
 
     try {
       const bookingsData = await loadBlockingBookings(businessId, session);
@@ -987,15 +935,32 @@ export default function BusinessBookingPage() {
     setLoading(true);
     setError(null);
 
-    const { data: freshService, error: freshServiceError } = await supabase
-      .from("services")
-      .select("id, duration_minutes, active")
-      .eq("id", selectedService.id)
-      .eq("business_id", businessId)
-      .eq("active", true)
-      .maybeSingle();
+    let freshProfile: PublicBusinessProfile;
 
-    if (freshServiceError || !freshService) {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      freshProfile = await loadPublicBusinessProfile(businessId, session);
+      applyPublicBusinessProfile(freshProfile);
+    } catch {
+      setLoading(false);
+      setError(
+        t(
+          "publicBusiness.error.notAvailable",
+          "This business is not currently available for public booking.",
+        ),
+      );
+      await loadBookingPage();
+      return;
+    }
+
+    const freshService =
+      freshProfile.services.find(
+        (service) => service.id === selectedService.id,
+      ) || null;
+
+    if (!freshService) {
       setLoading(false);
       setError(
         t(
@@ -1007,15 +972,12 @@ export default function BusinessBookingPage() {
       return;
     }
 
-    const { data: freshStaff, error: freshStaffError } = await supabase
-      .from("staff_members")
-      .select("id, active")
-      .eq("id", staffMemberIdForBooking)
-      .eq("business_id", businessId)
-      .eq("active", true)
-      .maybeSingle();
+    const freshStaff =
+      freshProfile.staffMembers.find(
+        (staff) => staff.id === staffMemberIdForBooking,
+      ) || null;
 
-    if (freshStaffError || !freshStaff) {
+    if (!freshStaff) {
       setLoading(false);
       setError(
         t(
@@ -1027,15 +989,13 @@ export default function BusinessBookingPage() {
       return;
     }
 
-    const { data: freshStaffService, error: freshStaffServiceError } =
-      await supabase
-        .from("staff_services")
-        .select("staff_member_id")
-        .eq("staff_member_id", staffMemberIdForBooking)
-        .eq("service_id", selectedService.id)
-        .maybeSingle();
+    const freshStaffService = freshProfile.staffServices.find(
+      (link) =>
+        link.staff_member_id === staffMemberIdForBooking &&
+        link.service_id === selectedService.id,
+    );
 
-    if (freshStaffServiceError || !freshStaffService) {
+    if (!freshStaffService) {
       setLoading(false);
       setError(
         t(
@@ -1069,10 +1029,27 @@ export default function BusinessBookingPage() {
 
     const freshSlots = (() => {
       const nextBookings = freshBookingsData;
-      const dayAvailability = getStaffDayAvailabilityForDate(
-        staffMemberIdForBooking,
-        selectedDate,
+      const selectedDay = new Date(`${selectedDate}T12:00:00`).getDay();
+      const staffSpecificAvailability = freshProfile.staffAvailability.find(
+        (row) =>
+          row.staff_member_id === staffMemberIdForBooking &&
+          row.day_of_week === selectedDay,
       );
+      const businessDayAvailability = freshProfile.availability.find(
+        (row) => row.day_of_week === selectedDay,
+      );
+      const dayAvailability =
+        staffSpecificAvailability ||
+        (businessDayAvailability
+          ? {
+              staff_member_id: staffMemberIdForBooking,
+              day_of_week: businessDayAvailability.day_of_week,
+              start_time: businessDayAvailability.start_time,
+              end_time: businessDayAvailability.end_time,
+              is_closed: businessDayAvailability.is_closed,
+            }
+          : null);
+
       if (!dayAvailability || dayAvailability.is_closed) return [];
 
       const slots: string[] = [];
@@ -1140,7 +1117,9 @@ export default function BusinessBookingPage() {
       `${selectedDate}T${selectedTime}:00`,
     ).toISOString();
     const bookingStatus =
-      business?.auto_accept_bookings === false ? "pending" : "confirmed";
+      freshProfile.business.auto_accept_bookings === false
+        ? "pending"
+        : "confirmed";
 
     const { data: createdBooking, error } = await supabase
       .from("bookings")
@@ -1154,7 +1133,7 @@ export default function BusinessBookingPage() {
         customer_phone: customerPhone.trim() || null,
         customer_notes: customerNote.trim() || null,
         start_at: startAt,
-        duration_minutes: selectedService.duration_minutes,
+        duration_minutes: freshService.duration_minutes,
         status: bookingStatus,
       })
       .select("id")
