@@ -171,6 +171,40 @@ The new SQL draft:
 This batch does not change booking, role routing, staff linking, billing,
 notification generation or support ticket creation behaviour.
 
+## SQL 12 Profiles and Support QA
+
+After `sources/sql/12_rls_profiles_support_tightening_draft.sql` was run
+manually in Supabase:
+
+- anonymous direct reads of `profiles`, `support_messages` and
+  `support_replies` returned permission denied
+- new auth signups still created readable self-owned profile rows through the
+  existing database trigger
+- the previous registration `profiles.upsert(...)` pattern failed because SQL
+  12 intentionally blocks browser-side updates to `role` and `is_admin`
+- `/register` and the login profile fallback were updated to use a
+  read-then-insert pattern and only update the safe `preferred_language` field
+- patched customer-style registration passed against live Supabase
+- patched business-style registration passed against live Supabase, including
+  business row creation and owner-as-staff creation
+- account save still updates safe self-owned fields:
+  `full_name`, `phone`, `preferred_language`
+- normal users cannot directly update `profiles.role` or `profiles.is_admin`
+- normal-user broad profile reads are limited to the signed-in user
+- normal users can still create their own support ticket
+- normal-user broad support ticket reads are limited to own tickets
+- direct user inserts into `support_replies` are blocked
+- direct user updates to `support_messages` do not change the ticket row
+- `/api/support/reply` accepts owner replies and rejects non-owner replies
+- non-admin users cannot call `/api/admin/profile`
+
+Remaining manual admin QA:
+
+- sign in with a real admin account
+- edit a user profile from `/admin/users`
+- change a user's role/admin access through `/admin/users`
+- reply from `/admin/support` and update support status
+
 ## Current RLS Draft
 
 Draft SQL:
@@ -182,9 +216,8 @@ sources/sql/11_rls_marketplace_public_data_boundary_draft.sql
 sources/sql/12_rls_profiles_support_tightening_draft.sql
 ```
 
-These drafts are not applied automatically. Earlier Stage 9 drafts 09, 10 and
-11 were manually applied and QA'd in Supabase. Draft 12 still needs manual
-review, deployment-order confirmation and Supabase SQL editor execution.
+These drafts are not applied automatically. Stage 9 drafts 09, 10, 11 and 12
+were manually applied in Supabase and QA'd in controlled passes.
 
 Recommended SQL review order:
 
@@ -210,26 +243,23 @@ Recommended SQL review order:
 
 `businesses`, `services`, `staff_members`, `staff_services`, `availability`,
 `staff_availability`, `booking_requests`, `notifications`, `support_messages`
-and `support_replies` now have drafts, but they should remain treated as
-high-risk until tested in Supabase.
+and `support_replies` now have applied Stage 9 drafts. They should remain
+treated as high-risk until final role-based broad-read QA is complete across
+anonymous, customer, staff, business owner and admin sessions.
 
 Admin-only and server-only tables still need separate review.
 
 ## Safe Next Batch
 
-1. Deploy the new public marketplace/profile endpoints.
-2. QA Explore and public business booking as anonymous and logged-in customer.
-3. Confirm owner preview still works for unpublished businesses.
-4. Confirm business setup/services/team/working-hours still read and write.
-5. Confirm staff dashboard and staff availability still read and write.
-6. Apply `09_rls_bookings_boundary_draft.sql` only during a controlled
-   Supabase QA window.
-7. QA booking flows.
-8. Apply `10_rls_requests_notifications_support_draft.sql`.
-9. QA notifications/support/action-centre flows.
-10. Apply `11_rls_marketplace_public_data_boundary_draft.sql`.
-11. QA marketplace/profile/setup/staff availability flows again.
-12. Repeat broad-read checks as anon/customer/staff/business/admin.
+1. Commit and deploy the registration/login profile creation patch.
+2. Re-test customer registration on production.
+3. Re-test business registration on production, including owner-as-staff.
+4. Sign in with a real admin account and QA `/admin/users` profile edits.
+5. QA admin role/admin-access changes through `/admin/users`.
+6. QA `/admin/support` reply and support-status update.
+7. Repeat broad-read checks as anonymous, customer, staff, business owner and
+   admin.
+8. Review admin-only/server-only tables for the next hardening batch.
 
 Do not harden all tables blindly in one production pass. RLS should move in
 small verified batches so working booking, staff and business flows are not

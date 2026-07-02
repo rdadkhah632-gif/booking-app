@@ -58,16 +58,13 @@ export default function LoginPage() {
 
       const { error: createProfileError } = await supabase
         .from("profiles")
-        .upsert(
-          {
-            id: userId,
-            email: cleanEmail || user?.email || "",
-            role: metadataRole,
-          },
-          { onConflict: "id" },
-        );
+        .insert({
+          id: userId,
+          email: cleanEmail || user?.email || "",
+          role: metadataRole,
+        });
 
-      if (createProfileError) {
+      if (createProfileError && createProfileError.code !== "23505") {
         throw new Error("Could not load or create user profile");
       }
 

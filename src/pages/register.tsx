@@ -239,18 +239,44 @@ export default function RegisterPage() {
     }
 
     if (data.user) {
-      const { error: profileError } = await supabase.from("profiles").upsert(
-        {
-          id: data.user.id,
-          email: cleanEmail,
-          role: role === "staff" ? "customer" : role,
-          preferred_language: preferredLanguage,
-        },
-        { onConflict: "id" },
-      );
+      const profileRole = role === "staff" ? "customer" : role;
+      const { data: existingProfile, error: profileLookupError } =
+        await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", data.user.id)
+          .maybeSingle<{ id: string }>();
 
-      if (profileError) {
-        setError(profileError.message);
+      if (profileLookupError) {
+        setError(profileLookupError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!existingProfile) {
+        const { error: profileInsertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            email: cleanEmail,
+            role: profileRole,
+            preferred_language: preferredLanguage,
+          });
+
+        if (profileInsertError && profileInsertError.code !== "23505") {
+          setError(profileInsertError.message);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const { error: languageError } = await supabase
+        .from("profiles")
+        .update({ preferred_language: preferredLanguage })
+        .eq("id", data.user.id);
+
+      if (languageError) {
+        setError(languageError.message);
         setLoading(false);
         return;
       }
