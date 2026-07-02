@@ -5,6 +5,7 @@ import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
+import { requestSupportAdminNotification } from "@/lib/support/adminNotifications";
 
 type Profile = {
   id: string;
@@ -17,10 +18,6 @@ type Business = {
   name: string;
   published?: boolean | null;
   subscription_status?: string | null;
-};
-
-type AdminProfile = {
-  id: string;
 };
 
 const BUSINESS_SUBJECT_KEYS = [
@@ -115,25 +112,6 @@ export default function BusinessSupportPage() {
     setLoading(false);
   }
 
-  async function notifyAdmins(ticketId: string, title: string, body: string) {
-    const { data: admins } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("is_admin", true);
-
-    if (!admins || admins.length === 0) return;
-
-    await supabase.from("notifications").insert(
-      admins.map((admin: AdminProfile) => ({
-        user_id: admin.id,
-        title,
-        body,
-        type: "support_request_business",
-        action_url: `/admin/support?ticketId=${ticketId}`,
-      })),
-    );
-  }
-
   async function submitSupportMessage(e: React.FormEvent) {
     e.preventDefault();
 
@@ -190,11 +168,11 @@ export default function BusinessSupportPage() {
     setCreatedTicketId(ticketId);
 
     if (ticketId) {
-      await notifyAdmins(
-        ticketId,
-        "New business support request",
-        `${ticketSubject} · ${selectedBusiness?.name || name.trim() || profile.email || "Business owner"}`,
-      );
+      void requestSupportAdminNotification({
+        supportMessageId: ticketId,
+        event: "support_created",
+        summary: `${ticketSubject} · ${selectedBusiness?.name || name.trim() || profile.email || "Business owner"}`,
+      });
       void requestTransactionalEmail({
         event: "support_created",
         supportMessageId: ticketId,

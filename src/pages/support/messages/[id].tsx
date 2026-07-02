@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { requestSupportAdminNotification } from "@/lib/support/adminNotifications";
 
 type SupportMessage = {
   id: string;
@@ -129,28 +130,6 @@ export default function SupportThreadPage() {
 
   const unknownDate = t("support.messages.unknownDate", "Unknown date");
 
-  async function notifyAdmins(ticketId: string, text: string) {
-    const { data: admins } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("is_admin", true);
-
-    if (!admins || admins.length === 0) return;
-
-    await supabase.from("notifications").insert(
-      admins.map((admin: any) => ({
-        user_id: admin.id,
-        title: t(
-          "support.thread.adminReplyNotificationTitle",
-          "User replied to support ticket",
-        ),
-        body: text.length > 120 ? `${text.slice(0, 117)}...` : text,
-        type: "support_reply_user",
-        action_url: `/admin/support?ticketId=${ticketId}`,
-      })),
-    );
-  }
-
   async function sendReply() {
     if (!ticket || !replyBody.trim()) return;
 
@@ -181,7 +160,11 @@ export default function SupportThreadPage() {
       .eq("id", ticket.id)
       .eq("user_id", currentUserId);
 
-    await notifyAdmins(ticket.id, text);
+    void requestSupportAdminNotification({
+      supportMessageId: ticket.id,
+      event: "support_reply",
+      summary: text.length > 120 ? `${text.slice(0, 117)}...` : text,
+    });
 
     setReplyBody("");
     setSaving(false);

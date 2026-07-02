@@ -4,7 +4,9 @@ Status: active.
 
 Batch 1 audit status: complete.
 
-Batch 2 status: started.
+Batch 2 status: implemented and build-validated.
+
+Batch 3 status: implemented and build-validated.
 
 ## Goal
 
@@ -61,25 +63,52 @@ This means app-side filters are not enough for launch.
   stale-slot protection.
 - Customer booking insert logic was not changed.
 
+## Batch 3 Implemented
+
+- Added a server-side support admin notification endpoint:
+  `/api/support/admin-notification`
+- Removed direct client-side admin profile enumeration from normal support
+  ticket creation/reply flows.
+- Customer, business, staff and support-thread pages now ask the server route to
+  notify admins after the ticket/reply is saved.
+- The server route verifies the caller owns the support ticket before inserting
+  admin notifications with service-role access.
+- Added a second SQL draft for:
+  - `booking_requests`
+  - `notifications`
+  - `support_messages`
+  - `support_replies`
+
+This batch does not change support ticket creation, support reply creation,
+booking request logic, notification read behaviour or admin support behaviour.
+
 ## Current RLS Draft
 
 Draft SQL:
 
 ```text
 sources/sql/09_rls_bookings_boundary_draft.sql
+sources/sql/10_rls_requests_notifications_support_draft.sql
 ```
 
 This draft is not applied automatically. It should be reviewed and tested in
 Supabase/staging before production.
 
+Recommended SQL review order:
+
+1. Confirm the new public occupancy endpoint is deployed.
+2. Review and test `09_rls_bookings_boundary_draft.sql`.
+3. QA public booking, My Bookings, business Calendar/Inbox and staff Calendar.
+4. Review and test `10_rls_requests_notifications_support_draft.sql`.
+5. QA customer notifications, business Inbox, support ticket creation, support
+   replies and admin support inbox.
+6. Repeat broad-read checks as anonymous, customer, staff, business owner and
+   admin.
+
 ## Remaining High-Risk Tables
 
 After bookings, the next RLS passes should cover:
 
-- `booking_requests`
-- `notifications`
-- `support_messages`
-- `support_replies`
 - `businesses`
 - `services`
 - `staff_members`
@@ -87,6 +116,10 @@ After bookings, the next RLS passes should cover:
 - `availability`
 - `staff_availability`
 - admin-only and server-only tables
+
+`booking_requests`, `notifications`, `support_messages` and `support_replies`
+now have a draft, but they should remain treated as high-risk until tested in
+Supabase.
 
 ## Safe Next Batch
 
@@ -97,6 +130,22 @@ After bookings, the next RLS passes should cover:
 5. Apply the `bookings` RLS draft only in staging or during a controlled
    Supabase QA window.
 6. Repeat live broad-read checks as anon/customer/staff/business/admin.
+
+## Safe Next Batch After 2/3
+
+The next large hardening pass should deal with marketplace/public data:
+
+- `businesses`
+- `services`
+- `staff_members`
+- `staff_services`
+- `availability`
+- `staff_availability`
+
+The cleanest launch-safe approach is likely public-safe views or server
+endpoints for marketplace/public profile data, because table-level public RLS on
+`staff_members` can accidentally expose private staff fields if table grants are
+too broad.
 
 Do not harden all tables at once. RLS should move in small verified batches so
 working booking, staff and business flows are not broken blindly.
