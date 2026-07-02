@@ -2136,6 +2136,8 @@ export const sq: TranslationTree = {
     "Ky anëtar stafi nuk mund të rezervohet më për shërbimin e zgjedhur. Zgjidh një opsion tjetër.",
   "publicBusiness.error.unableToCreate":
     "Nuk mund të krijohet ky rezervim tani. Provo përsëri.",
+  "publicBusiness.error.availabilityUnavailable":
+    "Disponueshmëria e rezervimeve nuk është e disponueshme tani. Provo përsëri.",
   "publicBusiness.error.slotJustBooked":
     "Ky orar nuk është më i disponueshëm. Zgjidh një orar tjetër.",
   "publicBusiness.error.slotUnavailable":

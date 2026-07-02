@@ -73,12 +73,10 @@ type Business = {
 };
 
 type Booking = {
-  id: string;
   staff_member_id: string;
   start_at: string;
   end_at?: string | null;
   duration_minutes: number;
-  status: string;
 };
 
 type UserRole = "customer" | "business" | null;
@@ -146,6 +144,25 @@ export default function BusinessBookingPage() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  async function loadBlockingBookings(
+    targetBusinessId: string,
+    session?: { access_token?: string | null } | null,
+  ) {
+    const params = new URLSearchParams({ businessId: targetBusinessId });
+    const response = await fetch(`/api/public/booking-occupancy?${params}`, {
+      headers: session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : undefined,
+    });
+
+    if (!response.ok) {
+      throw new Error("booking_occupancy_unavailable");
+    }
+
+    const payload = (await response.json()) as { bookings?: Booking[] };
+    return Array.isArray(payload.bookings) ? payload.bookings : [];
+  }
 
   useEffect(() => {
     async function getCustomerSession() {
@@ -294,13 +311,20 @@ export default function BusinessBookingPage() {
 
     setAvailability(availabilityData || []);
 
-    const { data: bookingsData } = await supabase
-      .from("bookings")
-      .select("id, staff_member_id, start_at, end_at, duration_minutes, status")
-      .eq("business_id", businessId)
-      .in("status", ["pending", "confirmed"]);
+    try {
+      const bookingsData = await loadBlockingBookings(businessId, session);
+      setBookings(bookingsData);
+    } catch {
+      setError(
+        t(
+          "publicBusiness.error.availabilityUnavailable",
+          "Booking availability is unavailable right now. Please try again.",
+        ),
+      );
+      setPageLoading(false);
+      return;
+    }
 
-    setBookings(bookingsData || []);
     setPageLoading(false);
   }
 
@@ -1023,30 +1047,28 @@ export default function BusinessBookingPage() {
       return;
     }
 
-    const { data: freshBookingsData, error: freshBookingsError } =
-      await supabase
-        .from("bookings")
-        .select(
-          "id, staff_member_id, start_at, end_at, duration_minutes, status",
-        )
-        .eq("business_id", businessId)
-        .in("status", ["pending", "confirmed"]);
+    let freshBookingsData: Booking[];
 
-    if (freshBookingsError) {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      freshBookingsData = await loadBlockingBookings(businessId, session);
+    } catch {
       setLoading(false);
       setError(
         t(
-          "publicBusiness.error.unableToCreate",
-          "Unable to create this booking right now. Please try again.",
+          "publicBusiness.error.availabilityUnavailable",
+          "Booking availability is unavailable right now. Please try again.",
         ),
       );
       return;
     }
 
-    setBookings(freshBookingsData || []);
+    setBookings(freshBookingsData);
 
     const freshSlots = (() => {
-      const nextBookings = (freshBookingsData || []) as Booking[];
+      const nextBookings = freshBookingsData;
       const dayAvailability = getStaffDayAvailabilityForDate(
         staffMemberIdForBooking,
         selectedDate,

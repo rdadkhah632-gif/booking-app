@@ -2141,6 +2141,8 @@ export const en: TranslationTree = {
     "This staff member can no longer be booked for the selected service. Please choose another option.",
   "publicBusiness.error.unableToCreate":
     "Unable to create this booking right now. Please try again.",
+  "publicBusiness.error.availabilityUnavailable":
+    "Booking availability is unavailable right now. Please try again.",
   "publicBusiness.error.slotJustBooked":
     "This time is no longer available. Please choose another time.",
   "publicBusiness.error.slotUnavailable":
