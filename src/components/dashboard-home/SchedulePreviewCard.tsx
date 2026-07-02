@@ -39,10 +39,10 @@ export default function SchedulePreviewCard({
             <span className="schedule-day-name">{day.shortLabel}</span>
             <span className="schedule-day-count">
               {day.bookings.length === 1
-                ? t("dashboardHome.schedule.oneBooking", "1 booking")
+                ? t("dashboardHome.schedule.oneBooking", "1 appointment")
                 : t(
                     "dashboardHome.schedule.bookingCount",
-                    "{{count}} bookings",
+                    "{{count}} appointments",
                   ).replace("{{count}}", String(day.bookings.length))}
             </span>
           </Link>

@@ -517,7 +517,7 @@ export default function Bookings() {
         error?.message ||
           t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
+            "This appointment is no longer available for that action. Refresh the calendar to see the latest status.",
           ),
       );
       return;
@@ -586,12 +586,12 @@ export default function Bookings() {
               ? "dashboardBookings.error.declinedStatusUnsupported"
               : "dashboardBookings.error.declineFailed",
             isDeclinedStatusUnsupported(error)
-              ? "The live database does not currently allow the Declined booking status. Update the bookings status constraint, then try again."
+              ? "Declined status is not enabled for this workspace yet. Contact Mirëbook support, then try again."
               : "Could not decline this booking.",
           )} ${t("dashboardBookings.error.databaseDetails", "Database details")}: ${supabaseErrorDetails(error)}`
         : t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
+            "This appointment is no longer available for that action. Refresh the calendar to see the latest status.",
           );
       setError(message);
       setActionError({ bookingId: booking.id, message });
@@ -659,7 +659,7 @@ export default function Bookings() {
         error?.message ||
           t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
+            "This appointment is no longer available for that action. Refresh the calendar to see the latest status.",
           ),
       );
       return;
@@ -726,7 +726,7 @@ export default function Bookings() {
         error?.message ||
           t(
             "dashboardBookings.error.actionNoLongerAvailable",
-            "This booking is no longer available for that action. Refresh bookings to see the latest status.",
+            "This appointment is no longer available for that action. Refresh the calendar to see the latest status.",
           ),
       );
       return;
@@ -1330,11 +1330,11 @@ export default function Bookings() {
       };
     }
 
-    const startMinutes = dayBookings.map((booking) =>
-      bookingTime(booking).startMinutes,
+    const startMinutes = dayBookings.map(
+      (booking) => bookingTime(booking).startMinutes,
     );
-    const endMinutes = dayBookings.map((booking) =>
-      bookingTime(booking).endMinutes,
+    const endMinutes = dayBookings.map(
+      (booking) => bookingTime(booking).endMinutes,
     );
 
     const earliest = Math.min(...startMinutes);
@@ -1725,7 +1725,7 @@ export default function Bookings() {
       {pageLoading && (
         <div className="card">
           <p className="muted">
-            {t("dashboardBookings.loading", "Loading bookings...")}
+            {t("dashboardBookings.loading", "Loading calendar...")}
           </p>
         </div>
       )}

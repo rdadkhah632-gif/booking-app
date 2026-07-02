@@ -25,7 +25,7 @@ export default function DashboardSummaryCards(props: Props) {
         <h3>{todayCount}</h3>
         <strong>{t("dashboardHome.summary.today", "Today")}</strong>
         <p className="muted small">
-          {t("dashboardHome.summary.todayBody", "Confirmed bookings today")}
+          {t("dashboardHome.summary.todayBody", "Confirmed appointments today")}
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function DashboardSummaryCards(props: Props) {
         </strong>
         <p className="muted small">
           {pendingActionCount > 0
-            ? `${pendingBookingsCount} ${t("dashboardHome.summary.bookingApproval", "booking approval")} · ${pendingRescheduleCount} ${t("dashboardHome.summary.rescheduleRequest", "reschedule request")}`
+            ? `${pendingBookingsCount} ${t("dashboardHome.summary.bookingApproval", "appointment request")} · ${pendingRescheduleCount} ${t("dashboardHome.summary.rescheduleRequest", "reschedule request")}`
             : t(
                 "dashboardHome.priority.noActions",
                 "No pending customer actions",
@@ -53,7 +53,10 @@ export default function DashboardSummaryCards(props: Props) {
         <h3>{analytics.recentBookings.length}</h3>
         <strong>{t("dashboardHome.summary.last30Days", "Last 30 days")}</strong>
         <p className="muted small">
-          {t("dashboardHome.summary.totalActivity", "Total booking activity")}
+          {t(
+            "dashboardHome.summary.totalActivity",
+            "Total appointment activity",
+          )}
         </p>
       </div>
 

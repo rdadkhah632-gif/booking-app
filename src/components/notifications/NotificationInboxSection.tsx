@@ -167,7 +167,7 @@ function notificationActionLabel(
   }
 
   if (type.includes("booking")) {
-    return t("notifications.actions.viewBooking", "View booking");
+    return t("notifications.actions.viewBooking", "View details");
   }
 
   return t("notifications.actions.openUpdate", "Open update");

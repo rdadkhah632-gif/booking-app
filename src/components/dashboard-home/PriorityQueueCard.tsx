@@ -37,7 +37,7 @@ export default function PriorityQueueCard({
           <p className="small muted">
             {t(
               "dashboardHome.priority.body",
-              "Pending booking approvals and reschedule requests should be handled quickly so customers know where they stand.",
+              "Appointment requests and reschedule requests should be handled quickly so customers know where they stand.",
             )}
           </p>
         </div>

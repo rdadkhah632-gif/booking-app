@@ -69,7 +69,10 @@ export default function AnalyticsPreviewCard({
         <div className="card" style={{ background: "var(--surface-2)" }}>
           <h3>£{analytics.averageBookingValue.toFixed(2)}</h3>
           <strong>
-            {t("dashboardHome.analytics.averageValue", "Average booking value")}
+            {t(
+              "dashboardHome.analytics.averageValue",
+              "Average appointment value",
+            )}
           </strong>
           <p className="small muted">
             {t(
@@ -89,10 +92,10 @@ export default function AnalyticsPreviewCard({
           </strong>
           <p className="small muted">
             {topService
-              ? `${topService.count} ${topService.count === 1 ? t("dashboardHome.analytics.booking", "booking") : t("dashboardHome.analytics.bookings", "bookings")} ${t("dashboardHome.analytics.inRecentActivity", "in recent activity")}`
+              ? `${topService.count} ${topService.count === 1 ? t("dashboardHome.analytics.booking", "appointment") : t("dashboardHome.analytics.bookings", "appointments")} ${t("dashboardHome.analytics.inRecentActivity", "in recent activity")}`
               : t(
                   "dashboardHome.analytics.addBookings",
-                  "Add bookings to see your most popular service",
+                  "Add appointments to see your most popular service",
                 )}
           </p>
         </div>

@@ -923,3 +923,22 @@ Stage 8.39 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.40 Appointment Language Alignment Implemented
+
+- aligned remaining business-facing Calendar copy away from generic "bookings"
+  language toward appointments/calendar wording
+- changed Today, analytics, schedule preview, Calendar loading, refresh,
+  search and empty-state copy to describe appointments instead of a separate
+  bookings manager
+- kept the existing `/dashboard/bookings` route as the Calendar workspace for
+  route compatibility
+- tightened customer notification card actions to say Review in My bookings or
+  Open My bookings instead of repeating generic View booking buttons
+- added matching EN/SQ translation keys for the touched customer notification
+  and business Calendar wording
+
+Stage 8.40 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
