@@ -52,6 +52,9 @@ type Booking = {
   status: string;
 };
 
+const CONFIRMED_STAFF_BOOKING_STATUS = "confirmed";
+const PENDING_STAFF_BOOKING_STATUS = "pending";
+
 function startOfDay(date: Date) {
   const copy = new Date(date);
   copy.setHours(0, 0, 0, 0);
@@ -230,7 +233,7 @@ export default function StaffDashboardPage() {
     const confirmed = confirm(
       t(
         "staff.ownerSetup.confirm",
-        "Add yourself as bookable staff for this business? You will still manage the business from the business dashboard, but this creates a personal staff profile for your own appointments.",
+        "Add yourself as bookable staff for this business? Business controls stay separate, and this creates your personal staff profile for appointments.",
       ),
     );
 
@@ -322,34 +325,38 @@ export default function StaffDashboardPage() {
 
     return bookings.filter((booking) => {
       const startAt = new Date(booking.start_at);
-      return startAt >= start && startAt <= end;
+      return (
+        booking.status === CONFIRMED_STAFF_BOOKING_STATUS &&
+        startAt >= start &&
+        startAt <= end
+      );
     });
   }, [bookings]);
 
-  const upcomingBookings = useMemo(() => {
+  const confirmedUpcomingBookings = useMemo(() => {
     return bookings.filter(
       (booking) =>
-        ["pending", "confirmed"].includes(booking.status) &&
+        booking.status === CONFIRMED_STAFF_BOOKING_STATUS &&
         new Date(booking.start_at) >= now,
     );
   }, [bookings, now]);
 
   const nextBooking = useMemo(() => {
     return (
-      [...upcomingBookings].sort(
+      [...confirmedUpcomingBookings].sort(
         (a, b) =>
           new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
       )[0] || null
     );
-  }, [upcomingBookings]);
+  }, [confirmedUpcomingBookings]);
 
   const pendingBookings = useMemo(() => {
-    return bookings.filter((booking) => booking.status === "pending");
-  }, [bookings]);
-
-  const confirmedUpcomingBookings = useMemo(() => {
-    return upcomingBookings.filter((booking) => booking.status === "confirmed");
-  }, [upcomingBookings]);
+    return bookings.filter(
+      (booking) =>
+        booking.status === PENDING_STAFF_BOOKING_STATUS &&
+        new Date(booking.start_at) >= now,
+    );
+  }, [bookings, now]);
 
   const staffBusinessLabel =
     (Array.isArray(staffProfile?.businesses)
@@ -368,10 +375,7 @@ export default function StaffDashboardPage() {
         <section className="staff-workspace-page">
           <div className="card">
             <p className="muted">
-              {t(
-                "staff.loadingSchedule",
-                "Loading your Mirëbook staff schedule...",
-              )}
+              {t("staff.loadingSchedule", "Loading your staff schedule...")}
             </p>
           </div>
         </section>
@@ -430,7 +434,7 @@ export default function StaffDashboardPage() {
               <p className="small staff-owner-setup-note">
                 {t(
                   "staff.ownerSetup.compactRule",
-                  "Business access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
+                  "Add a staff profile only when customers should book appointments directly with you.",
                 )}
               </p>
             ) : (
@@ -528,7 +532,7 @@ export default function StaffDashboardPage() {
                     ? `${t("staff.today.nextPrefix", "Next appointment")}: ${nextBooking.customer_name || t("common.customer", "Customer")} · ${new Date(nextBooking.start_at).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" })}`
                     : t(
                         "staff.today.noUpcoming",
-                        "No upcoming assigned appointments are waiting in your schedule.",
+                        "No assigned appointments coming up.",
                       )}
                 </p>
               </div>
@@ -553,12 +557,7 @@ export default function StaffDashboardPage() {
 
             <div className="staff-service-summary">
               <div>
-                <strong>
-                  {t(
-                    "staff.assignedServices.title",
-                    "What you can be booked for",
-                  )}
-                </strong>
+                <strong>{t("staff.assignedServices.title", "Services")}</strong>
                 <p className="small muted">
                   {assignedServices.length > 0
                     ? assignedServices
@@ -566,7 +565,7 @@ export default function StaffDashboardPage() {
                         .join(" · ")
                     : t(
                         "staff.assignedServices.emptyCompact",
-                        "No services are assigned yet. Ask the business to update your Team profile.",
+                        "No services assigned yet. Ask the business to update Team.",
                       )}
                 </p>
               </div>
@@ -574,7 +573,7 @@ export default function StaffDashboardPage() {
                 <span className="staff-owner-context">
                   {t(
                     "staff.home.ownerContext",
-                    "Business admin stays in the business dashboard.",
+                    "Business controls stay in the business workspace.",
                   )}
                 </span>
               )}

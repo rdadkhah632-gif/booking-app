@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
@@ -6,57 +6,12 @@ import { useI18n } from "@/lib/useI18n";
 import NotificationsHeader from "@/components/notifications/NotificationsHeader";
 import NotificationEmptyState from "@/components/notifications/NotificationEmptyState";
 import NotificationInboxSection from "@/components/notifications/NotificationInboxSection";
-import Link from "next/link";
-import {
-  Booking,
-  BookingRequest,
-  NotificationRow,
-  RelatedBusiness,
-  RelatedService,
-  RelatedStaff,
-  RequestBooking,
-} from "@/components/notifications/notificationTypes";
-
-function firstRelation<T>(value: T | T[] | null | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function requestBooking(request: BookingRequest) {
-  return firstRelation(request.bookings);
-}
-
-function bookingBusinessName(booking?: Booking | RequestBooking | null) {
-  if (!booking) return "Business";
-  return firstRelation(booking.businesses)?.name || "Business";
-}
-
-function bookingServiceName(booking?: Booking | RequestBooking | null) {
-  if (!booking) return "Service";
-  return firstRelation(booking.services)?.name || "Service";
-}
-
-function bookingStaffName(booking?: Booking | RequestBooking | null) {
-  if (!booking) return "Staff not recorded";
-
-  const staff = firstRelation(booking.staff_members);
-  if (!staff) return "Staff not recorded";
-
-  return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
-}
-
-function requestedStaffName(request: BookingRequest) {
-  const staff = firstRelation(request.requested_staff);
-  if (!staff) return "Staff not recorded";
-
-  return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
-}
+import { NotificationRow } from "@/components/notifications/notificationTypes";
 
 export default function CustomerNotifications() {
   const router = useRouter();
   const { t } = useI18n();
 
-  const [requests, setRequests] = useState<BookingRequest[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingRead, setMarkingRead] = useState(false);
@@ -90,98 +45,6 @@ export default function CustomerNotifications() {
 
       setNotifications((notificationData || []) as NotificationRow[]);
 
-      const { data: requestData, error: requestError } = await supabase
-        .from("booking_requests")
-        .select(
-          `
-          id,
-          booking_id,
-          status,
-          requested_start_at,
-          requested_duration_minutes,
-          response_message,
-          created_at,
-          updated_at,
-          requested_staff:staff_members!booking_requests_requested_staff_member_id_fkey (
-            name,
-            role_title
-          ),
-          bookings (
-            customer_name,
-            start_at,
-            duration_minutes,
-            status,
-            businesses (
-              name
-            ),
-            services (
-              name,
-              price
-            ),
-            staff_members (
-              name,
-              role_title
-            )
-          )
-        `,
-        )
-        .eq("customer_user_id", session.user.id)
-        .order("created_at", { ascending: false });
-
-      if (requestError) throw requestError;
-
-      const normalisedRequests = (requestData || []).map((request: any) => ({
-        ...request,
-        requested_staff: Array.isArray(request.requested_staff)
-          ? request.requested_staff[0] || null
-          : request.requested_staff,
-        bookings: Array.isArray(request.bookings)
-          ? request.bookings[0] || null
-          : request.bookings,
-      }));
-
-      setRequests(normalisedRequests as BookingRequest[]);
-
-      const { data: bookingData, error: bookingError } = await supabase
-        .from("bookings")
-        .select(
-          `
-          id,
-          start_at,
-          duration_minutes,
-          status,
-          businesses (
-            name
-          ),
-          services (
-            name,
-            price
-          ),
-          staff_members (
-            name,
-            role_title
-          )
-        `,
-        )
-        .eq("customer_user_id", session.user.id)
-        .order("start_at", { ascending: false });
-
-      if (bookingError) throw bookingError;
-
-      const normalisedBookings = (bookingData || []).map((booking: any) => ({
-        ...booking,
-        businesses: Array.isArray(booking.businesses)
-          ? booking.businesses[0] || null
-          : booking.businesses,
-        services: Array.isArray(booking.services)
-          ? booking.services[0] || null
-          : booking.services,
-        staff_members: Array.isArray(booking.staff_members)
-          ? booking.staff_members[0] || null
-          : booking.staff_members,
-      }));
-
-      setBookings(normalisedBookings as Booking[]);
       setLoading(false);
     } catch (err: any) {
       setError(
@@ -215,56 +78,6 @@ export default function CustomerNotifications() {
       document.removeEventListener("visibilitychange", refreshWhenActive);
     };
   }, []);
-
-  function statusLabel(status: string, type?: "booking" | "reschedule") {
-    if (status === "pending") {
-      return type === "booking"
-        ? t("notifications.status.requestSent", "Request sent")
-        : t(
-            "notifications.status.waitingApproval",
-            "Waiting for the business to confirm",
-          );
-    }
-    if (status === "accepted")
-      return t(
-        "notifications.status.rescheduleAccepted",
-        "Reschedule accepted",
-      );
-    if (status === "declined")
-      return type === "booking"
-        ? t("notifications.status.declined", "Declined")
-        : t("notifications.status.rescheduleDeclined", "Reschedule declined");
-    if (status === "cancelled") {
-      return type === "booking"
-        ? t("notifications.status.cancelled", "Cancelled")
-        : t("notifications.status.superseded", "Superseded / replaced");
-    }
-    if (status === "completed")
-      return t("notifications.status.completed", "Completed");
-    if (status === "confirmed")
-      return t("notifications.status.confirmed", "Confirmed");
-    return status;
-  }
-
-  function statusColor(status: string) {
-    if (status === "pending") return "var(--accent)";
-    if (status === "accepted") return "var(--success)";
-    if (status === "confirmed") return "var(--success)";
-    if (status === "declined") return "var(--warning)";
-    if (status === "cancelled") return "var(--warning)";
-    if (status === "completed") return "var(--accent)";
-    return "var(--text-muted)";
-  }
-
-  function statusBackground(status: string) {
-    if (status === "pending") return "rgba(255,107,53,0.12)";
-    if (status === "accepted") return "rgba(45,212,191,0.12)";
-    if (status === "confirmed") return "rgba(45,212,191,0.12)";
-    if (status === "declined") return "rgba(255,190,11,0.12)";
-    if (status === "cancelled") return "rgba(255,190,11,0.12)";
-    if (status === "completed") return "rgba(255,107,53,0.12)";
-    return "var(--surface-2)";
-  }
 
   async function markAllNotificationsRead() {
     const unreadNotificationRows = notifications.filter(
@@ -353,51 +166,6 @@ export default function CustomerNotifications() {
     return "var(--surface)";
   }
 
-  const latestRequestsByBooking = useMemo(() => {
-    const map: Record<string, BookingRequest> = {};
-
-    requests
-      .slice()
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
-      .forEach((request) => {
-        if (!map[request.booking_id]) {
-          map[request.booking_id] = request;
-        }
-      });
-
-    return Object.values(map);
-  }, [requests]);
-
-  const pendingBookingRequests = useMemo(() => {
-    return bookings.filter((booking) => booking.status === "pending");
-  }, [bookings]);
-
-  const resolvedBookingUpdates = useMemo(() => {
-    return bookings
-      .filter(
-        (booking) =>
-          booking.status === "confirmed" ||
-          booking.status === "completed" ||
-          booking.status === "declined" ||
-          booking.status === "cancelled",
-      )
-      .slice(0, 12);
-  }, [bookings]);
-
-  const pendingRescheduleRequests = latestRequestsByBooking.filter(
-    (request) => request.status === "pending",
-  );
-  const resolvedRescheduleRequests = latestRequestsByBooking.filter(
-    (request) => request.status !== "pending",
-  );
-
-  const actionCount =
-    pendingBookingRequests.length + pendingRescheduleRequests.length;
-  const historyCount =
-    resolvedBookingUpdates.length + resolvedRescheduleRequests.length;
   const unreadCount = notifications.filter(
     (notification) => !notification.read_at,
   ).length;
@@ -412,11 +180,7 @@ export default function CustomerNotifications() {
           loading={loading}
           markingRead={markingRead}
           unreadCount={unreadCount}
-          showActions={
-            actionCount > 0 ||
-            historyCount > 0 ||
-            recentNotifications.length > 0
-          }
+          showActions={recentNotifications.length > 0}
           onRefresh={() => loadNotifications()}
           onMarkAllRead={markAllNotificationsRead}
         />
@@ -441,10 +205,9 @@ export default function CustomerNotifications() {
           </div>
         )}
 
-        {!loading &&
-          actionCount === 0 &&
-          historyCount === 0 &&
-          recentNotifications.length === 0 && <NotificationEmptyState />}
+        {!loading && recentNotifications.length === 0 && (
+          <NotificationEmptyState />
+        )}
 
         {!loading && recentNotifications.length > 0 && (
           <NotificationInboxSection
@@ -454,104 +217,7 @@ export default function CustomerNotifications() {
             notificationBackground={notificationBackground}
           />
         )}
-
-        {!loading && (actionCount > 0 || historyCount > 0) && (
-          <div className="customer-booking-handoff">
-            <div>
-              <strong>
-                {t(
-                  "notifications.bookingHandoff.title",
-                  "Booking details and actions stay in My bookings",
-                )}
-              </strong>
-              <p className="small muted">
-                {t(
-                  "notifications.bookingHandoff.body",
-                  "Open My bookings to review requests, confirmed appointments, changes and history.",
-                )}
-              </p>
-            </div>
-            <Link href="/my-bookings">
-              {t("nav.myBookings", "My bookings")}
-            </Link>
-          </div>
-        )}
       </section>
-
-      <style jsx>{`
-        .customer-notification-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          margin-top: 1rem;
-        }
-
-        .customer-notification-section {
-          display: grid;
-          gap: 1rem;
-          margin-bottom: 2rem;
-        }
-
-        :global(.notifications-refresh-link) {
-          margin-top: 0.75rem;
-          padding: 0;
-          border: 0;
-          background: transparent;
-          color: var(--text-muted);
-          cursor: pointer;
-          font-size: 0.82rem;
-          text-decoration: underline;
-        }
-
-        .customer-booking-handoff {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          padding-top: 1rem;
-          border-top: 1px solid var(--border);
-        }
-
-        .customer-booking-handoff p {
-          margin: 0.3rem 0 0;
-        }
-
-        .customer-booking-handoff a {
-          color: var(--accent);
-          font-weight: 800;
-          white-space: nowrap;
-        }
-
-        .customer-notification-card-row {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .customer-notification-card-actions {
-          display: flex;
-          gap: 0.75rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
-        }
-
-        @media (max-width: 640px) {
-          .customer-booking-handoff {
-            display: grid;
-          }
-
-          .customer-notification-actions :global(.btn),
-          .customer-notification-actions button,
-          .customer-notification-actions a,
-          .customer-notification-card-actions :global(.btn),
-          .customer-notification-card-actions button,
-          .customer-notification-card-actions a {
-            width: 100%;
-            justify-content: center;
-          }
-        }
-      `}</style>
     </main>
   );
 }

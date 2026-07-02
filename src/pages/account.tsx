@@ -463,7 +463,7 @@ export default function AccountPage() {
                 <p className="page-sub account-header-subtitle">
                   {t(
                     "account.pageSubtitle",
-                    "Manage your login, language and security.",
+                    "Personal details, language and security.",
                   )}
                 </p>
               </div>
@@ -491,9 +491,6 @@ export default function AccountPage() {
               }`}
             >
               <div className="account-card-heading">
-                <p className="small muted">
-                  {t("account.verification.kicker", "Email verification")}
-                </p>
                 <h2>
                   {emailIsVerified
                     ? t("account.verification.verified", "Email verified")
@@ -545,15 +542,12 @@ export default function AccountPage() {
               <summary>
                 <span>
                   <strong>
-                    {t(
-                      "account.emailPreferences.title",
-                      "Choose your transactional email updates",
-                    )}
+                    {t("account.emailPreferences.title", "Email updates")}
                   </strong>
                   <small>
                     {t(
                       "account.emailPreferences.body",
-                      "Choose which email updates you want. In-app notifications stay on.",
+                      "Choose which email updates you want.",
                     )}
                   </small>
                 </span>
@@ -727,7 +721,7 @@ export default function AccountPage() {
                           <span className="small muted">
                             {t(
                               "account.emailPreferences.billingBody",
-                              "Future subscription and payment-attention email updates.",
+                              "Membership and payment updates.",
                             )}
                           </span>
                         </span>
@@ -798,7 +792,7 @@ export default function AccountPage() {
                           <span className="small muted">
                             {t(
                               "account.emailPreferences.staffRemindersBody",
-                              "Reserved for a future staff reminder batch.",
+                              "Reminder emails for assigned appointments.",
                             )}
                           </span>
                         </span>
@@ -834,7 +828,7 @@ export default function AccountPage() {
                         <span className="small muted">
                           {t(
                             "account.emailPreferences.supportBody",
-                            "Future email copies of support replies and ticket updates.",
+                            "Replies from Mirëbook support.",
                           )}
                         </span>
                       </span>
@@ -952,9 +946,6 @@ export default function AccountPage() {
             <div className="grid-2 account-settings-grid">
               <div className="card account-security-card">
                 <div className="account-card-heading">
-                  <p className="small muted">
-                    {t("account.security.kicker", "Security")}
-                  </p>
                   <h3>{t("account.security.title", "Password and login")}</h3>
                   <p className="small muted">
                     {t(
@@ -980,16 +971,8 @@ export default function AccountPage() {
 
               <div className="card account-region-card">
                 <div className="account-card-heading">
-                  <p className="small muted">
-                    {t("account.region.kicker", "Detected region")}
-                  </p>
-                  <h3>{regionInfo.country}</h3>
-                  <p className="small muted">
-                    {t(
-                      "account.region.body",
-                      "Used as a default for timezone, currency and localisation.",
-                    )}
-                  </p>
+                  <h3>{t("account.region.kicker", "Region")}</h3>
+                  <p className="small muted">{regionInfo.country}</p>
                 </div>
                 <div className="account-region-grid">
                   <span>{regionInfo.timezone}</span>
@@ -1207,6 +1190,19 @@ export default function AccountPage() {
           gap: 1rem;
           align-items: center;
           flex-wrap: wrap;
+          padding: 0.8rem 1rem;
+        }
+
+        .account-verification-card .account-card-heading {
+          gap: 0.16rem;
+        }
+
+        .account-verification-card h2 {
+          font-size: 1.05rem;
+        }
+
+        .account-verification-card p {
+          margin: 0;
         }
 
         .account-verification-card-verified {

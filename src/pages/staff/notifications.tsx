@@ -261,9 +261,9 @@ export default function StaffNotificationsPage() {
   function notificationActionLabel(type?: string | null) {
     const value = String(type || "");
     if (value.includes("booking"))
-      return t("staffNotifications.actions.viewSchedule", "View schedule");
+      return t("staffNotifications.actions.viewSchedule", "View calendar");
     if (value.includes("availability") || value.includes("schedule"))
-      return t("staffNotifications.actions.openSchedule", "Open schedule");
+      return t("staffNotifications.actions.openSchedule", "Open calendar");
     if (value.includes("support"))
       return t("staffNotifications.actions.openSupport", "Open support");
     return t("staffNotifications.actions.openUpdate", "Open update");
@@ -273,11 +273,14 @@ export default function StaffNotificationsPage() {
     <DashboardLayout
       workspace="staff"
       title={t("staffNotifications.title", "Inbox")}
-      subtitle={t("staffNotifications.body", "Schedule and booking updates.")}
+      subtitle={t(
+        "staffNotifications.body",
+        "Appointments, schedule changes and support replies.",
+      )}
     >
       <section className="staff-workspace-page">
         {!loading && !error && (
-          <div className="staff-notification-toolbar card">
+          <div className="staff-notification-utility">
             <div>
               <strong>
                 {unreadCount > 0
@@ -311,7 +314,7 @@ export default function StaffNotificationsPage() {
                   onClick={markAllRead}
                   className="btn btn-ghost"
                 >
-                  {`${t("staffNotifications.mark", "Mark")} ${unreadCount} ${t("staffNotifications.read", "read")}`}
+                  {t("staffNotifications.markAllRead", "Mark all read")}
                 </button>
               )}
             </div>
@@ -321,10 +324,7 @@ export default function StaffNotificationsPage() {
         {loading && (
           <div className="card">
             <p className="muted">
-              {t(
-                "staffNotifications.loading",
-                "Loading staff notifications...",
-              )}
+              {t("staffNotifications.loading", "Loading staff inbox...")}
             </p>
           </div>
         )}
@@ -349,19 +349,16 @@ export default function StaffNotificationsPage() {
               {filter === "unread"
                 ? t(
                     "staffNotifications.empty.unreadBody",
-                    "Everything in your staff inbox has been read.",
+                    "You have read every update.",
                   )
                 : t(
                     "staffNotifications.empty.body",
-                    "Booking and schedule updates will appear here.",
+                    "Appointment, schedule and support updates will appear here.",
                   )}
             </p>
             <div className="staff-notification-empty-actions">
-              <Link href="/staff/calendar" className="btn btn-ghost">
-                {t("staffNotifications.actions.viewSchedule", "View schedule")}
-              </Link>
-              <Link href="/support/staff" className="btn btn-ghost">
-                {t("staffNotifications.actions.openSupport", "Open support")}
+              <Link href="/staff/calendar" className="btn btn-accent">
+                {t("staffNotifications.actions.viewSchedule", "View calendar")}
               </Link>
             </div>
           </div>
@@ -425,12 +422,19 @@ export default function StaffNotificationsPage() {
           min-width: 0;
         }
 
-        .staff-notification-toolbar {
+        .staff-notification-utility {
           display: flex;
           justify-content: space-between;
-          gap: 1rem;
-          align-items: flex-start;
-          border-color: rgba(255, 107, 53, 0.22);
+          gap: 0.75rem;
+          align-items: center;
+          margin-bottom: 0.85rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid var(--border);
+          color: var(--text-muted);
+        }
+
+        .staff-notification-utility strong {
+          color: var(--text);
         }
 
         .staff-notification-filters {
@@ -447,13 +451,14 @@ export default function StaffNotificationsPage() {
 
         .staff-notification-list {
           display: grid;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         .staff-notification-empty {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.65rem;
           justify-items: start;
+          max-width: 36rem;
         }
 
         .staff-notification-empty h3,
@@ -467,21 +472,16 @@ export default function StaffNotificationsPage() {
           flex-wrap: wrap;
         }
 
-        .staff-notification-toolbar,
-        .staff-notification-card {
-          gap: 0.75rem;
-        }
-
-        .staff-notification-toolbar p,
         .staff-notification-card p {
-          margin-top: 0;
+          margin: 0.25rem 0 0;
         }
 
         .staff-notification-card {
           display: flex;
           justify-content: space-between;
-          gap: 1rem;
+          gap: 0.85rem;
           align-items: flex-start;
+          padding: 0.9rem;
         }
 
         .staff-notification-title-row {
@@ -500,7 +500,7 @@ export default function StaffNotificationsPage() {
         }
 
         @media (max-width: 700px) {
-          .staff-notification-toolbar,
+          .staff-notification-utility,
           .staff-notification-card {
             display: grid;
           }

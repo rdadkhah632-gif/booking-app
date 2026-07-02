@@ -28,8 +28,8 @@ export const sq: TranslationTree = {
   "staffNotifications.title": "Inbox",
   "staffAvailability.title": "Orari i punës",
   "staffAvailability.staffOnly": "Orari yt i punës",
-  "staffAvailability.actions.saveAvailability": "Ruaj disponueshmërinë",
-  "staffAvailability.actions.saveWeekly": "Ruaj disponueshmërinë javore",
+  "staffAvailability.actions.saveAvailability": "Ruaj orarin e punës",
+  "staffAvailability.actions.saveWeekly": "Ruaj orarin e punës",
   "staffAvailability.note.title":
     "Këto orare kontrollojnë vetëm disponueshmërinë tënde për rezervime.",
   "staffAvailability.note.body":
@@ -630,12 +630,13 @@ export const sq: TranslationTree = {
     "Ky rezervim nuk mund të ndryshohet ose anulohet më.",
   "notifications.kicker": "Përditësime rezervimesh",
   "notifications.title": "Përditësime",
-  "notifications.subtitle": "Përditësime rezervimesh dhe ndryshime takimesh.",
+  "notifications.subtitle": "Përditësime takimesh dhe suporti.",
   "notifications.refreshing": "Duke rifreskuar...",
   "notifications.refresh": "Rifresko njoftimet",
   "notifications.markingRead": "Duke shënuar si të lexuara...",
   "notifications.mark": "Shëno",
   "notifications.read": "si të lexuara",
+  "notifications.markAllRead": "Shëno të gjitha si të lexuara",
   "notifications.allRead": "Të gjitha të lexuara",
   "notifications.refreshHint":
     "Mirëbook e rifreskon këtë faqe kur kthehesh në këtë tab. Përdor rifreskimin nëse një përditësim i fundit nuk shfaqet menjëherë.",
@@ -647,12 +648,13 @@ export const sq: TranslationTree = {
     "Kërkesa të zgjidhura dhe përditësime rezervimesh",
   "notifications.stats.unread": "Të palexuara",
   "notifications.stats.unreadBody": "Përditësime të palexuara nga Mirëbook",
-  "notifications.empty.title": "Nuk ka ende njoftime",
-  "notifications.empty.body": "Përditësimet e rezervimeve do të shfaqen këtu.",
-  "notifications.inbox.kicker": "Inbox i njoftimeve",
-  "notifications.inbox.title": "Përditësimet e fundit nga Mirëbook",
+  "notifications.empty.title": "Nuk ka ende përditësime",
+  "notifications.empty.body":
+    "Përditësimet e takimeve dhe suportit do të shfaqen këtu.",
+  "notifications.inbox.kicker": "Përditësime",
+  "notifications.inbox.title": "Të fundit",
   "notifications.inbox.body":
-    "Përditësimet e fundit për rezervimet, orarin dhe ndihmën shfaqen këtu.",
+    "Përditësimet e fundit për takimet dhe suportin shfaqen këtu.",
   "notifications.readStatus.read": "Lexuar",
   "notifications.readStatus.unread": "Pa lexuar",
   "notifications.recently": "Së fundmi",
@@ -1531,8 +1533,8 @@ export const sq: TranslationTree = {
   "dashboardLayout.noActionsBody":
     "Nuk ka veprime klientësh për shqyrtim tani. Përdor Shiko faqen e biznesit për të parë si e shohin klientët biznesin tënd.",
   "dashboardLayout.noActions": "Nuk ka veprime",
-  "account.pageTitle": "Cilësimet e llogarisë",
-  "account.pageSubtitle": "Menaxho hyrjen, gjuhën dhe sigurinë.",
+  "account.pageTitle": "Llogaria ime",
+  "account.pageSubtitle": "Detajet personale, gjuha dhe siguria.",
   "account.kicker": "Llogaria",
   "account.businessSettingsKicker": "Cilësimet e biznesit janë të ndara",
   "account.businessSettingsTitle":
@@ -1560,17 +1562,16 @@ export const sq: TranslationTree = {
   "account.verification.unverifiedBody":
     "Ky email nuk është konfirmuar ende. Kontrollo inbox-in ose dërgo një email tjetër verifikimi.",
   "account.verification.unknownBody":
-    "Mirëbook nuk mundi ta përcaktojë statusin e verifikimit nga sesioni aktual i Supabase. Kjo nuk bllokon llogarinë ose rezervimet.",
+    "Mirëbook nuk mundi ta konfirmojë statusin aktual të email-it. Kjo nuk bllokon llogarinë.",
   "account.verification.resent":
-    "Kërkesa e verifikimit u pranua. Nëse konfirmimi me email është aktiv në Supabase, kontrollo inbox-in dhe dosjen spam.",
+    "Email-i i verifikimit u dërgua. Kontrollo inbox-in dhe dosjen spam.",
   "account.emailPreferences.kicker": "Preferencat e email-it",
-  "account.emailPreferences.title":
-    "Zgjidh përditësimet transaksionale me email",
-  "account.emailPreferences.body":
-    "Zgjidh cilat përditësime me email do. Njoftimet brenda aplikacionit mbeten aktive.",
-  "account.emailPreferences.setupRequired": "Kërkohet konfigurim në Supabase",
+  "account.emailPreferences.title": "Përditësime me email",
+  "account.emailPreferences.body": "Zgjidh cilat përditësime me email do.",
+  "account.emailPreferences.setupRequired":
+    "Përditësimet me email nuk janë të disponueshme",
   "account.emailPreferences.setupRequiredBody":
-    "SQL-ja e preferencave nuk është instaluar ende. Parazgjedhjet e sigurta transaksionale mbeten aktive, por ndryshimet nuk mund të ruhen.",
+    "Këto cilësime nuk janë ende të disponueshme. Email-et e rëndësishme të rezervimeve mbeten aktive.",
   "account.emailPreferences.customerTitle":
     "Email-et e rezervimeve të klientit",
   "account.emailPreferences.bookingUpdates": "Përditësimet e rezervimeve",
@@ -1586,7 +1587,7 @@ export const sq: TranslationTree = {
     "Kërkesa të reja, konfirmime të menjëhershme, anulime dhe riplanifikime.",
   "account.emailPreferences.billing": "Përditësimet e faturimit",
   "account.emailPreferences.billingBody":
-    "Përditësime të ardhshme me email për abonimin dhe pagesat që kërkojnë vëmendje.",
+    "Përditësime për anëtarësimin dhe pagesat.",
   "account.emailPreferences.staffTitle": "Email-et e stafit",
   "account.emailPreferences.staffBookings":
     "Përditësimet e rezervimeve të caktuara",
@@ -1594,11 +1595,10 @@ export const sq: TranslationTree = {
     "Caktime, konfirmime, anulime dhe ndryshime të orarit.",
   "account.emailPreferences.staffReminders": "Kujtesat e stafit",
   "account.emailPreferences.staffRemindersBody":
-    "Rezervuar për një fazë të ardhshme të kujtesave për stafin.",
+    "Email-e kujtese për takimet e caktuara.",
   "account.emailPreferences.supportTitle": "Email-et e suportit",
   "account.emailPreferences.support": "Përditësimet e suportit",
-  "account.emailPreferences.supportBody":
-    "Kopje të ardhshme me email të përgjigjeve dhe përditësimeve të ticket-it.",
+  "account.emailPreferences.supportBody": "Përgjigje nga suporti Mirëbook.",
   "account.emailPreferences.save": "Ruaj preferencat e email-it",
   "account.emailPreferences.saving": "Duke ruajtur preferencat e email-it...",
   "account.emailPreferences.saved":
@@ -1608,16 +1608,15 @@ export const sq: TranslationTree = {
   "account.emailPreferences.saveError":
     "Nuk mund të ruheshin preferencat e email-it.",
   "account.emailPreferences.schemaMissingError":
-    "Preferencat e email-it nuk mund të ruhen derisa SQL-ja e Stage 6 të instalohet në Supabase.",
+    "Preferencat e email-it nuk janë ende të disponueshme.",
   "account.security.kicker": "Siguria",
   "account.security.title": "Fjalëkalimi dhe hyrja",
   "account.security.body":
     "Dërgo një link të sigurt rivendosjeje te email-i i hyrjes.",
   "account.security.sending": "Po dërgohet rivendosja...",
   "account.security.resetPassword": "Dërgo rivendosje fjalëkalimi",
-  "account.region.kicker": "Rajoni i zbuluar",
-  "account.region.body":
-    "Përdoret si parazgjedhje për zonën kohore, monedhën dhe lokalizimin.",
+  "account.region.kicker": "Rajoni",
+  "account.region.body": "Parazgjedhjet e zonës kohore, monedhës dhe gjuhës.",
   "account.emailBody":
     "Përdoret për hyrje, konfirmime rezervimi, lidhje stafi dhe njoftime email në të ardhmen.",
   "account.emailChangeBody": "Kontakto suportin nëse ky email është gabim.",
@@ -2369,6 +2368,7 @@ export const sq: TranslationTree = {
   "staff.booking.markComplete": "Shëno si përfunduar",
   "staff.booking.pendingHint":
     "Në pritje të miratimit nga biznesi. Nuk nevojitet veprim nga stafi ende.",
+  "staff.booking.noStaffAction": "Nuk nevojitet veprim nga stafi.",
   "staff.notification.completedTitle": "Takimi u përfundua",
   "staff.notification.completedStart": "Takimi yt për",
   "staff.notification.completedMiddle": "më",
@@ -2386,9 +2386,10 @@ export const sq: TranslationTree = {
   "staff.workspace.title": "Sot",
   "staff.workspace.staffOnly": "Hapësira e stafit",
   "staff.actions.backToDashboard": "Kthehu te paneli i stafit",
+  "staff.actions.backToToday": "Kthehu te Sot",
   "staff.actions.dashboard": "Paneli i stafit",
   "staff.assignedServices.kicker": "Shërbimet e caktuara",
-  "staff.assignedServices.title": "Për çfarë mund të rezervohesh",
+  "staff.assignedServices.title": "Shërbimet",
   "staff.assignedServices.body":
     "Këto shërbime caktohen nga biznesi. Orari yt ndikon kur klientët mund të të rezervojnë.",
   "staff.assignedServices.empty":
@@ -2444,8 +2445,7 @@ export const sq: TranslationTree = {
   "staff.today.titleWithBookings": "Ke takime sot",
   "staff.today.titleEmpty": "Nuk ke takime sot",
   "staff.today.nextPrefix": "Takimi i radhës",
-  "staff.today.noUpcoming":
-    "Nuk ka takime të ardhshme të caktuara në orarin tënd.",
+  "staff.today.noUpcoming": "Nuk ka takime të caktuara së shpejti.",
   "staff.today.viewToday": "Shiko sot",
   "staff.booking.upcomingHint": "Takim i ardhshëm",
   "staff.filter.activeSingle": "rezervim aktiv",
@@ -2459,8 +2459,7 @@ export const sq: TranslationTree = {
   "staffNotifications.filter.all": "Të gjitha",
   "staffNotifications.filter.unread": "Të palexuara",
   "staffNotifications.empty.unreadTitle": "Nuk ka përditësime të palexuara",
-  "staffNotifications.empty.unreadBody":
-    "Çdo gjë në kutinë e stafit është lexuar.",
+  "staffNotifications.empty.unreadBody": "Ke lexuar çdo përditësim.",
   "staffNotifications.type.general": "Të përgjithshme",
   "staffNotifications.type.booking": "Rezervim",
   "staffNotifications.type.schedule": "Orar",
@@ -2481,6 +2480,10 @@ export const sq: TranslationTree = {
   "staffCalendar.emptyWeekTitle": "Nuk ka takime këtë javë",
   "staffCalendar.emptyWeekBody":
     "Takimet e caktuara do të shfaqen në këtë orar javor.",
+  "staffCalendar.pendingCountLabel": "në pritje miratimi",
+  "staffCalendar.noProfile.title": "Kalendari nuk është ende i disponueshëm",
+  "staffCalendar.noProfile.body":
+    "Kërkoji biznesit të shtojë email-in tënd te Ekipi. Pasi të lidhet, takimet e caktuara do të shfaqen këtu.",
   "staff.summary.confirmedShort": "të konfirmuara",
   "staff.summary.pendingShort": "në pritje",
   "staff.pending.kicker": "Rezervime në pritje",
@@ -2489,16 +2492,13 @@ export const sq: TranslationTree = {
   "staff.schedule.chooseDate": "Zgjidh datën e orarit",
   "staffAvailability.error.invalidTime":
     "Çdo ditë e hapur ka nevojë për orë fillimi dhe mbarimi të vlefshme. Ora e mbarimit duhet të jetë pas orës së fillimit.",
-  "staffAvailability.error.load":
-    "Nuk mundëm të ngarkojmë disponueshmërinë e stafit.",
-  "staffAvailability.loading":
-    "Duke ngarkuar disponueshmërinë tënde në Mirëbook...",
+  "staffAvailability.error.load": "Orari i punës nuk u ngarkua.",
+  "staffAvailability.loading": "Duke ngarkuar orarin e punës...",
   "staffAvailability.noProfile.title":
     "Orari i punës nuk është ende i disponueshëm",
   "staffAvailability.noProfile.body":
     "Kërkoji biznesit të shtojë email-in tënd te Ekipi, pastaj hyr përsëri. Pasi të lidhet, mund të menaxhosh orarin tënd të punës.",
-  "staffAvailability.success.saved":
-    "Disponueshmëria u ruajt. Mirëbook do t'i përdorë këto orare kur klientët të rezervojnë me ty.",
+  "staffAvailability.success.saved": "Orari i punës u ruajt.",
   "staffAvailability.upcoming.title":
     "Kontrollo takimet ekzistuese para se të ndryshosh orarin",
   "staffAvailability.upcoming.body":
@@ -2507,15 +2507,17 @@ export const sq: TranslationTree = {
     "Nuk ka rezervime të ardhshme të caktuara. Takimet e reja do të shfaqen këtu pasi të të caktohen.",
   "staffAvailability.upcoming.pendingBody":
     "Rezervimet në pritje shfaqen për dijeni. Pronarët ose menaxherët i miratojnë nga paneli i biznesit.",
-  "staffNotifications.body": "Përditësime orari dhe rezervimesh.",
-  "staffNotifications.loading": "Duke ngarkuar njoftimet e stafit...",
+  "staffNotifications.body":
+    "Takime, ndryshime orari dhe përgjigje nga suporti.",
+  "staffNotifications.loading": "Duke ngarkuar inbox-in e stafit...",
   "staffNotifications.mark": "Shëno",
   "staffNotifications.read": "si të lexuara",
+  "staffNotifications.markAllRead": "Shëno të gjitha si të lexuara",
   "staffNotifications.allRead": "Të gjitha të lexuara",
   "staffNotifications.markRead": "Shëno si të lexuar",
   "staffNotifications.empty.title": "Ende nuk ka përditësime",
   "staffNotifications.empty.body":
-    "Përditësimet e rezervimeve dhe orarit do të shfaqen këtu.",
+    "Përditësimet për takime, orar dhe suport do të shfaqen këtu.",
   "staffNotifications.fallback.title": "Përditësim për stafin",
   "staffNotifications.fallback.message": "Ke një përditësim të ri për stafin.",
   "dashboardHome.ownerCommand.kicker": "Qendra e komandës së pronarit",
@@ -3086,11 +3088,11 @@ export const sq: TranslationTree = {
   "staff.onboarding.support": "Kontakto suportin",
   "dashboardLayout.myWork.title": "Puna ime",
   "dashboardLayout.myWork.schedule": "Orari im",
-  "dashboardLayout.myWork.availability": "Disponueshmëria ime",
+  "dashboardLayout.myWork.availability": "Orari im i punës",
   "dashboardLayout.myWork.notifications": "Njoftimet e mia",
   "dashboardLayout.staffNav.home": "Kreu",
   "dashboardLayout.staffNav.calendar": "Kalendari",
-  "dashboardLayout.staffNav.availability": "Disponueshmëria",
+  "dashboardLayout.staffNav.availability": "Orari i punës",
   "dashboardLayout.staffNav.notifications": "Njoftimet",
   "dashboardLayout.staffNav.manageBusiness": "Paneli i biznesit",
 
@@ -3104,13 +3106,13 @@ export const sq: TranslationTree = {
   "staff.home.notificationsBody":
     "Shiko përditësimet e rezervimeve, orarit dhe profilit.",
   "staff.home.ownerContext":
-    "Administrimi i biznesit mbetet te paneli i biznesit.",
+    "Kontrollet e biznesit qëndrojnë në hapësirën e biznesit.",
   "staff.assignedServices.emptyCompact":
-    "Ende nuk të është caktuar asnjë shërbim. Kërkoji biznesit të përditësojë profilin tënd te Ekipi.",
+    "Ende nuk të është caktuar asnjë shërbim. Kërkoji biznesit të përditësojë Ekipin.",
 
   "staff.ownerSetup.noBusiness": "Nuk u gjet profil biznesi për këtë llogari.",
   "staff.ownerSetup.confirm":
-    "Ta shtosh veten si staf të rezervueshëm për këtë biznes? Do ta menaxhosh ende biznesin nga paneli i biznesit, por kjo krijon një profil personal stafi për takimet e tua.",
+    "Ta shtosh veten si staf të rezervueshëm për këtë biznes? Kontrollet e biznesit mbeten të ndara dhe kjo krijon profilin tënd personal për takime.",
   "staff.ownerSetup.alreadyLinked":
     "Ti je tashmë i/e lidhur si staf për këtë biznes.",
   "staff.ownerSetup.defaultName": "Pronar",
@@ -3129,13 +3131,13 @@ export const sq: TranslationTree = {
   "staff.ownerSetup.stepBookableBody":
     "Shtoje veten këtu vetëm nëse klientët duhet të mund të rezervojnë takime drejtpërdrejt me ty.",
   "staff.ownerSetup.compactRule":
-    "Aksesi i biznesit mbetet i pandryshuar. Shto një profil stafi vetëm kur klientët duhet të rezervojnë takime drejtpërdrejt me ty.",
+    "Shto një profil stafi vetëm kur klientët duhet të rezervojnë takime drejtpërdrejt me ty.",
   "staff.ownerSetup.addSelf": "Më shto si staf të rezervueshëm",
   "staffAvailability.note.compactBody":
     "Këto orare kontrollojnë kur klientët mund të të rezervojnë. Takimet ekzistuese nuk zhvendosen kur ndryshon orarin.",
   "staffAvailability.summary.hoursShort": "orë në javë",
   "staffAvailability.upcoming.count":
-    "takime të ardhshme mbeten të pandryshuara kur ndryshon orarin.",
+    "takime të ardhshme mbeten siç janë rezervuar.",
   "staffAvailability.upcoming.emptyCompact":
     "Asnjë takim i ardhshëm nuk ndikohet.",
   "staffAvailability.upcoming.openCalendar": "Hap kalendarin",
@@ -3250,8 +3252,8 @@ export const sq: TranslationTree = {
     "Ky rezervim u anulua dhe nuk është më punë aktive.",
   "staffNotifications.booking.completedBody":
     "Ky takim i caktuar është përfunduar.",
-  "staffNotifications.actions.viewSchedule": "Shiko orarin",
-  "staffNotifications.actions.openSchedule": "Hap orarin",
+  "staffNotifications.actions.viewSchedule": "Shiko kalendarin",
+  "staffNotifications.actions.openSchedule": "Hap kalendarin",
   "staffNotifications.actions.openSupport": "Hap mbështetjen",
   "staffNotifications.actions.openUpdate": "Hap përditësimin",
   "dashboardBusinesses.overview.profileTitle": "Detajet e profilit",

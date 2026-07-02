@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
@@ -130,7 +131,6 @@ export default function StaffCalendarPage() {
     if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
       setStaffProfile(null);
       setBookings([]);
-      setError(t("staff.noProfile.kicker", "No staff profile linked"));
       setLoading(false);
       return;
     }
@@ -152,10 +152,12 @@ export default function StaffCalendarPage() {
       .maybeSingle();
 
     if (staffError || !staffData) {
-      setError(
-        staffError?.message ||
-          t("staff.noProfile.kicker", "No staff profile linked"),
-      );
+      if (staffError) {
+        setError(staffError.message);
+      } else {
+        setStaffProfile(null);
+        setBookings([]);
+      }
       setLoading(false);
       return;
     }
@@ -457,7 +459,7 @@ export default function StaffCalendarPage() {
           {weekPendingCount > 0 && (
             <span className="staff-week-pending">
               {weekPendingCount}{" "}
-              {t("dashboardBookings.needsApproval", "need approval")}
+              {t("staffCalendar.pendingCountLabel", "awaiting approval")}
             </span>
           )}
         </div>
@@ -541,6 +543,7 @@ export default function StaffCalendarPage() {
 
     const time = bookingTime(selectedBooking);
     const start = time.start;
+    const isConfirmedAppointment = selectedBooking.status === "confirmed";
 
     return (
       <section className="staff-selected-appointment">
@@ -594,37 +597,43 @@ export default function StaffCalendarPage() {
             )}
           </div>
 
-          <div className="staff-calendar-booking-actions">
-            {selectedBooking.customer_email && (
-              <a
-                href={`mailto:${selectedBooking.customer_email}`}
-                className="btn btn-ghost"
-              >
-                {t("staff.booking.emailCustomer", "Email customer")}
-              </a>
-            )}
-            {!selectedBooking.customer_email &&
-              selectedBooking.customer_phone && (
+          {isConfirmedAppointment ? (
+            <div className="staff-calendar-booking-actions">
+              {selectedBooking.customer_email && (
                 <a
-                  href={`tel:${selectedBooking.customer_phone}`}
+                  href={`mailto:${selectedBooking.customer_email}`}
                   className="btn btn-ghost"
                 >
-                  {t("staff.booking.callCustomer", "Call customer")}
+                  {t("staff.booking.emailCustomer", "Email customer")}
                 </a>
               )}
-            {selectedBooking.status === "confirmed" && start <= new Date() && (
-              <button
-                type="button"
-                className="btn btn-accent"
-                disabled={actionLoadingId === selectedBooking.id}
-                onClick={() => markBookingComplete(selectedBooking)}
-              >
-                {actionLoadingId === selectedBooking.id
-                  ? t("common.saving", "Saving...")
-                  : t("staff.booking.markComplete", "Mark complete")}
-              </button>
-            )}
-          </div>
+              {!selectedBooking.customer_email &&
+                selectedBooking.customer_phone && (
+                  <a
+                    href={`tel:${selectedBooking.customer_phone}`}
+                    className="btn btn-ghost"
+                  >
+                    {t("staff.booking.callCustomer", "Call customer")}
+                  </a>
+                )}
+              {start <= new Date() && (
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  disabled={actionLoadingId === selectedBooking.id}
+                  onClick={() => markBookingComplete(selectedBooking)}
+                >
+                  {actionLoadingId === selectedBooking.id
+                    ? t("common.saving", "Saving...")
+                    : t("staff.booking.markComplete", "Mark complete")}
+                </button>
+              )}
+            </div>
+          ) : (
+            <p className="staff-selected-no-action small muted">
+              {t("staff.booking.noStaffAction", "No staff action needed.")}
+            </p>
+          )}
         </div>
       </section>
     );
@@ -661,13 +670,33 @@ export default function StaffCalendarPage() {
           </div>
         )}
 
+        {!loading && !error && !staffProfile && (
+          <div className="card staff-no-profile-card">
+            <h2>
+              {t(
+                "staffCalendar.noProfile.title",
+                "Calendar is not available yet",
+              )}
+            </h2>
+            <p className="muted">
+              {t(
+                "staffCalendar.noProfile.body",
+                "Ask the business to add your email to Team. Once linked, assigned appointments will appear here.",
+              )}
+            </p>
+            <Link href="/staff" className="btn btn-accent">
+              {t("staff.actions.backToToday", "Back to Today")}
+            </Link>
+          </div>
+        )}
+
         {success && (
           <div className="staff-calendar-success">
             <p>{success}</p>
           </div>
         )}
 
-        {!loading && !error && (
+        {!loading && !error && staffProfile && (
           <>
             <section className="staff-calendar-toolbar">
               <button
@@ -710,9 +739,9 @@ export default function StaffCalendarPage() {
               </button>
             </section>
 
-            {renderWeekCalendar()}
-
-            {weekBookings.length === 0 && (
+            {weekBookings.length > 0 ? (
+              renderWeekCalendar()
+            ) : (
               <div className="staff-calendar-empty">
                 <h3>
                   {t(
@@ -723,7 +752,7 @@ export default function StaffCalendarPage() {
                 <p className="muted">
                   {t(
                     "staffCalendar.emptyWeekBody",
-                    "Assigned appointments will appear in this weekly schedule.",
+                    "Assigned appointments will appear on this week's schedule.",
                   )}
                 </p>
               </div>
@@ -738,6 +767,18 @@ export default function StaffCalendarPage() {
         .staff-workspace-page {
           width: 100%;
           min-width: 0;
+        }
+
+        .staff-no-profile-card {
+          display: grid;
+          gap: 0.75rem;
+          justify-items: start;
+          max-width: 42rem;
+        }
+
+        .staff-no-profile-card h2,
+        .staff-no-profile-card p {
+          margin: 0;
         }
 
         .staff-calendar-toolbar {
@@ -1372,6 +1413,15 @@ export default function StaffCalendarPage() {
           gap: 0.6rem;
           flex-wrap: wrap;
           justify-content: flex-end;
+        }
+
+        .staff-selected-no-action {
+          margin: 0;
+          align-self: center;
+          padding: 0.55rem 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: calc(var(--radius) - 4px);
+          background: rgba(255, 255, 255, 0.03);
         }
 
         @media (max-width: 760px) {

@@ -584,12 +584,13 @@ export const en: TranslationTree = {
     "This booking can no longer be rescheduled or cancelled.",
   "notifications.kicker": "Booking updates",
   "notifications.title": "Updates",
-  "notifications.subtitle": "Booking updates and appointment changes.",
+  "notifications.subtitle": "Appointments and support updates.",
   "notifications.refreshing": "Refreshing...",
   "notifications.refresh": "Refresh notifications",
   "notifications.markingRead": "Marking read...",
   "notifications.mark": "Mark",
   "notifications.read": "read",
+  "notifications.markAllRead": "Mark all read",
   "notifications.allRead": "All read",
   "notifications.refreshHint":
     "Mirëbook refreshes this page when you return to the tab. Use refresh if a recent booking update does not appear straight away.",
@@ -600,12 +601,13 @@ export const en: TranslationTree = {
   "notifications.stats.historyBody": "Resolved requests and booking updates",
   "notifications.stats.unread": "Unread",
   "notifications.stats.unreadBody": "Unread Mirëbook notification updates",
-  "notifications.empty.title": "No notifications yet",
-  "notifications.empty.body": "Booking updates will appear here.",
-  "notifications.inbox.kicker": "Notification inbox",
-  "notifications.inbox.title": "Recent Mirëbook updates",
+  "notifications.empty.title": "No updates yet",
+  "notifications.empty.body":
+    "Appointment and support updates will appear here.",
+  "notifications.inbox.kicker": "Updates",
+  "notifications.inbox.title": "Latest",
   "notifications.inbox.body":
-    "Your latest booking, schedule and support updates appear here.",
+    "Your latest appointment and support updates appear here.",
   "notifications.readStatus.read": "Read",
   "notifications.readStatus.unread": "Unread",
   "notifications.recently": "Recently",
@@ -1560,8 +1562,8 @@ export const en: TranslationTree = {
   "dashboardLayout.noActionsBody":
     "No customer actions need review right now. Use Preview business page to check how customers see your business.",
   "dashboardLayout.noActions": "No actions",
-  "account.pageTitle": "Account settings",
-  "account.pageSubtitle": "Manage your login, language and security.",
+  "account.pageTitle": "My account",
+  "account.pageSubtitle": "Personal details, language and security.",
   "account.kicker": "Account",
   "account.businessSettingsKicker": "Business settings are separate",
   "account.businessSettingsTitle": "Need to change your business setup?",
@@ -1587,16 +1589,15 @@ export const en: TranslationTree = {
   "account.verification.unverifiedBody":
     "This email has not been confirmed yet. Check your inbox or send another verification email.",
   "account.verification.unknownBody":
-    "Mirëbook could not determine verification state from the current Supabase session. This does not block account or booking access.",
+    "Mirëbook could not confirm the current email status. This does not block account access.",
   "account.verification.resent":
-    "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+    "Verification email sent. Check your inbox and spam folder.",
   "account.emailPreferences.kicker": "Email preferences",
-  "account.emailPreferences.title": "Choose your transactional email updates",
-  "account.emailPreferences.body":
-    "Choose which email updates you want. In-app notifications stay on.",
-  "account.emailPreferences.setupRequired": "Supabase setup required",
+  "account.emailPreferences.title": "Email updates",
+  "account.emailPreferences.body": "Choose which email updates you want.",
+  "account.emailPreferences.setupRequired": "Email updates unavailable",
   "account.emailPreferences.setupRequiredBody":
-    "The preferences SQL has not been installed yet. Safe transactional defaults remain enabled, but changes cannot be saved.",
+    "These settings are not available yet. Important booking emails remain on.",
   "account.emailPreferences.customerTitle": "Customer booking emails",
   "account.emailPreferences.bookingUpdates": "Booking updates",
   "account.emailPreferences.bookingUpdatesBody":
@@ -1609,19 +1610,17 @@ export const en: TranslationTree = {
   "account.emailPreferences.businessBookingsBody":
     "New requests, instant confirmations, cancellations and reschedules.",
   "account.emailPreferences.billing": "Billing updates",
-  "account.emailPreferences.billingBody":
-    "Future subscription and payment-attention email updates.",
+  "account.emailPreferences.billingBody": "Membership and payment updates.",
   "account.emailPreferences.staffTitle": "Staff emails",
   "account.emailPreferences.staffBookings": "Assigned booking updates",
   "account.emailPreferences.staffBookingsBody":
     "Assignments, confirmations, cancellations and schedule changes.",
   "account.emailPreferences.staffReminders": "Staff reminders",
   "account.emailPreferences.staffRemindersBody":
-    "Reserved for a future staff reminder batch.",
+    "Reminder emails for assigned appointments.",
   "account.emailPreferences.supportTitle": "Support emails",
   "account.emailPreferences.support": "Support updates",
-  "account.emailPreferences.supportBody":
-    "Future email copies of support replies and ticket updates.",
+  "account.emailPreferences.supportBody": "Replies from Mirëbook support.",
   "account.emailPreferences.save": "Save email preferences",
   "account.emailPreferences.saving": "Saving email preferences...",
   "account.emailPreferences.saved":
@@ -1630,15 +1629,14 @@ export const en: TranslationTree = {
     "Could not load saved email preferences. Safe defaults are shown.",
   "account.emailPreferences.saveError": "Could not save email preferences.",
   "account.emailPreferences.schemaMissingError":
-    "Email preferences cannot be saved until the Stage 6 preferences SQL is installed in Supabase.",
+    "Email preferences are not available yet.",
   "account.security.kicker": "Security",
   "account.security.title": "Password and login",
   "account.security.body": "Send a secure reset link to your login email.",
   "account.security.sending": "Sending reset...",
   "account.security.resetPassword": "Send password reset",
-  "account.region.kicker": "Detected region",
-  "account.region.body":
-    "Used as a default for timezone, currency and localisation.",
+  "account.region.kicker": "Region",
+  "account.region.body": "Timezone, currency and language defaults.",
   "account.emailBody":
     "Used for login, booking confirmations, staff linking and future email notifications.",
   "account.emailChangeBody": "Contact support if this email is wrong.",
@@ -2270,6 +2268,7 @@ export const en: TranslationTree = {
   "staff.booking.markComplete": "Mark complete",
   "staff.booking.pendingHint":
     "Awaiting business approval. No staff action is needed yet.",
+  "staff.booking.noStaffAction": "No staff action needed.",
   "staff.notification.completedTitle": "Appointment completed",
   "staff.notification.completedStart": "Your appointment for",
   "staff.notification.completedMiddle": "on",
@@ -2288,9 +2287,10 @@ export const en: TranslationTree = {
   "staff.workspace.staffOnly": "Staff workspace",
   "staff.actions.updateAvailability": "Update availability",
   "staff.actions.backToDashboard": "Back to staff dashboard",
+  "staff.actions.backToToday": "Back to Today",
   "staff.actions.dashboard": "Staff dashboard",
   "staff.assignedServices.kicker": "Assigned services",
-  "staff.assignedServices.title": "What you can be booked for",
+  "staff.assignedServices.title": "Services",
   "staff.assignedServices.body":
     "These services are assigned by the business. Your working hours affect when customers can book you.",
   "staff.assignedServices.empty":
@@ -2345,8 +2345,7 @@ export const en: TranslationTree = {
   "staff.today.titleWithBookings": "You have appointments today",
   "staff.today.titleEmpty": "No appointments today",
   "staff.today.nextPrefix": "Next appointment",
-  "staff.today.noUpcoming":
-    "No upcoming assigned appointments are waiting in your schedule.",
+  "staff.today.noUpcoming": "No assigned appointments coming up.",
   "staff.today.viewToday": "View today",
   "staff.booking.upcomingHint": "Upcoming appointment",
   "staff.filter.activeSingle": "active booking",
@@ -2359,8 +2358,7 @@ export const en: TranslationTree = {
   "staffNotifications.filter.all": "All",
   "staffNotifications.filter.unread": "Unread",
   "staffNotifications.empty.unreadTitle": "No unread updates",
-  "staffNotifications.empty.unreadBody":
-    "Everything in your staff inbox has been read.",
+  "staffNotifications.empty.unreadBody": "You have read every update.",
   "staffNotifications.type.general": "General",
   "staffNotifications.type.booking": "Booking",
   "staffNotifications.type.schedule": "Schedule",
@@ -2381,7 +2379,11 @@ export const en: TranslationTree = {
     "Choose another day to review your schedule. New appointments will appear here once they are assigned to you.",
   "staffCalendar.emptyWeekTitle": "No appointments this week",
   "staffCalendar.emptyWeekBody":
-    "Assigned appointments will appear in this weekly schedule.",
+    "Assigned appointments will appear on this week's schedule.",
+  "staffCalendar.pendingCountLabel": "awaiting approval",
+  "staffCalendar.noProfile.title": "Calendar is not available yet",
+  "staffCalendar.noProfile.body":
+    "Ask the business to add your email to Team. Once linked, assigned appointments will appear here.",
   "staff.summary.confirmedShort": "confirmed",
   "staff.summary.pendingShort": "pending",
   "staff.pending.kicker": "Pending bookings",
@@ -2390,8 +2392,8 @@ export const en: TranslationTree = {
   "staff.schedule.chooseDate": "Choose schedule date",
   "staffAvailability.title": "Working hours",
   "staffAvailability.staffOnly": "Your working hours",
-  "staffAvailability.actions.saveAvailability": "Save availability",
-  "staffAvailability.actions.saveWeekly": "Save weekly availability",
+  "staffAvailability.actions.saveAvailability": "Save working hours",
+  "staffAvailability.actions.saveWeekly": "Save working hours",
   "staffAvailability.note.title":
     "These hours only control your own bookable staff availability.",
   "staffAvailability.note.body":
@@ -2415,13 +2417,12 @@ export const en: TranslationTree = {
   "staffAvailability.day.closedBody": "Closed to customers.",
   "staffAvailability.error.invalidTime":
     "Each open day needs a valid start and end time. End time must be after start time.",
-  "staffAvailability.error.load": "Could not load staff availability.",
-  "staffAvailability.loading": "Loading your Mirëbook availability...",
+  "staffAvailability.error.load": "Could not load working hours.",
+  "staffAvailability.loading": "Loading working hours...",
   "staffAvailability.noProfile.title": "Working hours are not available yet",
   "staffAvailability.noProfile.body":
     "Ask the business to add your email to Team, then log in again. Once linked, you can manage your own working hours.",
-  "staffAvailability.success.saved":
-    "Availability saved. Mirëbook will use these staff hours when customers book with you.",
+  "staffAvailability.success.saved": "Working hours saved.",
   "staffAvailability.upcoming.title":
     "Check existing appointments before changing hours",
   "staffAvailability.upcoming.body":
@@ -2431,15 +2432,17 @@ export const en: TranslationTree = {
   "staffAvailability.upcoming.pendingBody":
     "Pending bookings are shown for awareness. Business owners or managers approve them from the business dashboard.",
   "staffNotifications.title": "Inbox",
-  "staffNotifications.body": "Schedule and booking updates.",
-  "staffNotifications.loading": "Loading staff notifications...",
+  "staffNotifications.body":
+    "Appointments, schedule changes and support replies.",
+  "staffNotifications.loading": "Loading staff inbox...",
   "staffNotifications.mark": "Mark",
   "staffNotifications.read": "read",
+  "staffNotifications.markAllRead": "Mark all read",
   "staffNotifications.allRead": "All read",
   "staffNotifications.markRead": "Mark read",
   "staffNotifications.empty.title": "No updates yet",
   "staffNotifications.empty.body":
-    "Booking and schedule updates will appear here.",
+    "Appointment, schedule and support updates will appear here.",
   "staffNotifications.fallback.title": "Staff update",
   "staffNotifications.fallback.message": "You have a new staff update.",
   "dashboardHome.ownerCommand.kicker": "Owner command centre",
@@ -3032,11 +3035,11 @@ export const en: TranslationTree = {
   "staff.onboarding.support": "Contact support",
   "dashboardLayout.myWork.title": "My work",
   "dashboardLayout.myWork.schedule": "My schedule",
-  "dashboardLayout.myWork.availability": "My availability",
+  "dashboardLayout.myWork.availability": "My working hours",
   "dashboardLayout.myWork.notifications": "My notifications",
   "dashboardLayout.staffNav.home": "Home",
   "dashboardLayout.staffNav.calendar": "Calendar",
-  "dashboardLayout.staffNav.availability": "Availability",
+  "dashboardLayout.staffNav.availability": "Working hours",
   "dashboardLayout.staffNav.notifications": "Notifications",
   "dashboardLayout.staffNav.manageBusiness": "Business dashboard",
 
@@ -3048,14 +3051,15 @@ export const en: TranslationTree = {
   "staff.home.availabilityBody":
     "Set the days and hours customers can book you.",
   "staff.home.notificationsBody": "See booking, schedule and profile updates.",
-  "staff.home.ownerContext": "Business admin stays in the business dashboard.",
+  "staff.home.ownerContext":
+    "Business controls stay in the business workspace.",
   "staff.assignedServices.emptyCompact":
-    "No services are assigned yet. Ask the business to update your Team profile.",
+    "No services assigned yet. Ask the business to update Team.",
 
   "staff.ownerSetup.noBusiness":
     "No business profile was found for this account.",
   "staff.ownerSetup.confirm":
-    "Add yourself as bookable staff for this business? You will still manage the business from the business dashboard, but this creates a personal staff profile for your own appointments.",
+    "Add yourself as bookable staff for this business? Business controls stay separate, and this creates your personal staff profile for appointments.",
   "staff.ownerSetup.alreadyLinked":
     "You are already linked as staff for this business.",
   "staff.ownerSetup.defaultName": "Owner",
@@ -3074,13 +3078,12 @@ export const en: TranslationTree = {
   "staff.ownerSetup.stepBookableBody":
     "Only add yourself here if customers should be able to book appointments directly with you.",
   "staff.ownerSetup.compactRule":
-    "Business access stays unchanged. Add a staff profile only when customers should book appointments directly with you.",
+    "Add a staff profile only when customers should book appointments directly with you.",
   "staff.ownerSetup.addSelf": "Add myself as bookable staff",
   "staffAvailability.note.compactBody":
     "These hours control when customers can book you. Existing appointments are not moved when your hours change.",
   "staffAvailability.summary.hoursShort": "hours per week",
-  "staffAvailability.upcoming.count":
-    "upcoming appointments remain unchanged when you edit hours.",
+  "staffAvailability.upcoming.count": "upcoming appointments stay as booked.",
   "staffAvailability.upcoming.emptyCompact":
     "No upcoming appointments are affected.",
   "staffAvailability.upcoming.openCalendar": "Open calendar",
@@ -3193,8 +3196,8 @@ export const en: TranslationTree = {
     "This booking was cancelled and is no longer active work.",
   "staffNotifications.booking.completedBody":
     "This assigned appointment has been completed.",
-  "staffNotifications.actions.viewSchedule": "View schedule",
-  "staffNotifications.actions.openSchedule": "Open schedule",
+  "staffNotifications.actions.viewSchedule": "View calendar",
+  "staffNotifications.actions.openSchedule": "Open calendar",
   "staffNotifications.actions.openSupport": "Open support",
   "staffNotifications.actions.openUpdate": "Open update",
   "dashboardBusinesses.overview.profileTitle": "Profile details",

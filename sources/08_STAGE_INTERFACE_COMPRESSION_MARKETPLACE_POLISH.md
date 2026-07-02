@@ -841,3 +841,85 @@ Stage 8.35 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.36 Customer Notifications And Account Compression Implemented
+
+- simplified customer Notifications into a true updates feed instead of a
+  secondary bookings handoff surface
+- removed the duplicate My Bookings CTA and explanatory booking handoff copy
+  from Notifications
+- removed unused booking/request lookups from the Notifications page so the
+  page only loads notification rows and read state
+- shortened Notifications headings to Updates / Latest and kept notification
+  actions on each update card
+- tightened Account copy from account settings language to My account language
+  focused on personal details, language and security
+- removed user-facing Supabase, SQL and future-batch wording from touched
+  account email preference and verification strings
+- shortened Account secondary cards by removing repeated kicker labels and
+  keeping Region/Security compact
+
+Stage 8.36 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
+
+## Stage 8.37 Staff Workspace Compression Sweep Implemented
+
+- compressed staff Inbox into a slimmer action feed with All / Unread filters,
+  one mark-all-read action and a single Calendar empty-state action
+- removed duplicate staff support and schedule wording from Inbox empty states
+  while keeping notification read behavior unchanged
+- tightened staff Today copy so owner-as-staff and assigned-service guidance
+  uses plainer workspace language
+- renamed staff availability navigation/action copy toward Working hours and
+  shortened loading/success/error text
+- removed the Working hours footer note when no upcoming appointments exist;
+  upcoming appointments are only called out when there is something to know
+- made staff Calendar pending counts use staff-facing awaiting-approval wording
+- replaced the unlinked staff Calendar error banner with a normal empty state
+  and removed duplicate Staff support CTAs from unlinked Working hours
+- cleaned the business/staff sidebar identity fallback so missing profile names
+  use the email prefix instead of repeating Account
+
+Stage 8.37 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
+
+## Stage 8.38 Linked Staff Workspace Follow-Up Implemented
+
+- tightened linked staff Today metrics so only active assigned work
+  (`pending` and `confirmed`) counts as today/upcoming work
+- kept completed, declined and cancelled bookings out of active staff summary
+  counts so they do not look actionable
+- simplified empty linked staff Calendar weeks by showing the week controls and
+  one compact empty state instead of a full blank schedule grid plus a second
+  empty message
+
+Stage 8.38 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.
+
+## Stage 8.39 Linked Staff QA Follow-Up Implemented
+
+- created a disposable owner-as-staff QA account with linked staff profile,
+  assigned service and pending, confirmed, completed and cancelled bookings for
+  staff/customer/business surface checks
+- confirmed the local routes for Login, Staff, Dashboard and My Bookings serve
+  successfully with the current build
+- tightened Staff Calendar selected-booking actions so only confirmed
+  appointments expose staff contact/complete actions
+- non-active staff booking states now show a compact no-action note instead of
+  looking like staff should contact the customer
+- tightened linked staff Today again so pending requests do not appear as the
+  next confirmed appointment; pending remains isolated as awaiting approval
+- in-app Browser and Computer Use visual inspection were attempted but timed
+  out on local page navigation/window state; visual verification still needs a
+  manual browser pass against the seeded QA account
+
+Stage 8.39 did not change booking creation, booking status transitions,
+availability calculation/save behavior, auth, RLS, route protection, staff
+invite/linking, owner-as-staff data logic, billing writes, notification
+generation/read behavior or database schema.

@@ -188,10 +188,7 @@ export default function StaffAvailabilityPage() {
     } catch (err: any) {
       setError(
         err.message ||
-          t(
-            "staffAvailability.error.load",
-            "Could not load staff availability.",
-          ),
+          t("staffAvailability.error.load", "Could not load working hours."),
       );
       setLoading(false);
     }
@@ -328,12 +325,7 @@ export default function StaffAvailabilityPage() {
       return;
     }
 
-    setSuccess(
-      t(
-        "staffAvailability.success.saved",
-        "Availability saved. Mirëbook will use these staff hours when customers book with you.",
-      ),
-    );
+    setSuccess(t("staffAvailability.success.saved", "Working hours saved."));
     await loadPage();
   }
 
@@ -343,10 +335,7 @@ export default function StaffAvailabilityPage() {
         <section className="staff-workspace-page">
           <div className="card">
             <p className="muted">
-              {t(
-                "staffAvailability.loading",
-                "Loading your Mirëbook availability...",
-              )}
+              {t("staffAvailability.loading", "Loading working hours...")}
             </p>
           </div>
         </section>
@@ -393,10 +382,7 @@ export default function StaffAvailabilityPage() {
               }}
             >
               <Link href="/staff" className="btn btn-accent">
-                {t("staff.actions.backToDashboard", "Back to staff dashboard")}
-              </Link>
-              <Link href="/support/staff" className="btn btn-ghost">
-                {t("nav.staffSupport", "Staff support")}
+                {t("staff.actions.backToToday", "Back to Today")}
               </Link>
             </div>
           </div>
@@ -475,7 +461,7 @@ export default function StaffAvailabilityPage() {
                       ? t("common.saving", "Saving...")
                       : t(
                           "staffAvailability.actions.saveWeekly",
-                          "Save weekly availability",
+                          "Save working hours",
                         )}
                   </button>
                 </div>
@@ -577,19 +563,23 @@ export default function StaffAvailabilityPage() {
               })}
             </div>
 
-            <div className="staff-calendar-note">
-              <span>
-                {upcomingBookings.length > 0
-                  ? `${upcomingBookings.length} ${t("staffAvailability.upcoming.count", "upcoming appointments remain unchanged when you edit hours.")}`
-                  : t(
-                      "staffAvailability.upcoming.emptyCompact",
-                      "No upcoming appointments are affected.",
-                    )}
-              </span>
-              <Link href="/staff/calendar">
-                {t("staffAvailability.upcoming.openCalendar", "Open calendar")}
-              </Link>
-            </div>
+            {upcomingBookings.length > 0 && (
+              <div className="staff-calendar-note">
+                <span>
+                  {upcomingBookings.length}{" "}
+                  {t(
+                    "staffAvailability.upcoming.count",
+                    "upcoming appointments stay as booked.",
+                  )}
+                </span>
+                <Link href="/staff/calendar">
+                  {t(
+                    "staffAvailability.upcoming.openCalendar",
+                    "Open calendar",
+                  )}
+                </Link>
+              </div>
+            )}
           </>
         )}
       </section>

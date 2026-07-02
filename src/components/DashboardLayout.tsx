@@ -51,6 +51,7 @@ export default function DashboardLayout({
       setHasBusinessWorkspace(capabilities.canUseBusiness);
       setAccountLabel(
         session.user.user_metadata?.full_name ||
+          session.user.email?.split("@")[0] ||
           t("dashboardLayout.account.fallback", "Account"),
       );
       setWorkspaceLabel(

@@ -186,18 +186,9 @@ export default function NotificationInboxSection({
   return (
     <div className="customer-notification-section">
       <div>
-        <p className="small muted">
-          {t("notifications.inbox.kicker", "Notification inbox")}
-        </p>
         <h2 style={{ fontFamily: "var(--font-display)" }}>
-          {t("notifications.inbox.title", "Recent Mirëbook updates")}
+          {t("notifications.inbox.title", "Latest")}
         </h2>
-        <p className="muted small" style={{ marginTop: "0.35rem" }}>
-          {t(
-            "notifications.inbox.body",
-            "Your latest booking, schedule and support updates appear here.",
-          )}
-        </p>
       </div>
 
       {notifications.map((notification) => {
@@ -274,8 +265,13 @@ export default function NotificationInboxSection({
       })}
 
       <style jsx>{`
+        .customer-notification-section {
+          display: grid;
+          gap: 0.75rem;
+        }
+
         .customer-notification-card {
-          padding: 0.95rem;
+          padding: 0.85rem;
         }
 
         .customer-notification-card-row {
@@ -289,7 +285,7 @@ export default function NotificationInboxSection({
           flex: 1;
           min-width: 0;
           display: grid;
-          gap: 0.4rem;
+          gap: 0.32rem;
         }
 
         .customer-notification-title-row {
@@ -312,7 +308,7 @@ export default function NotificationInboxSection({
 
         .customer-notification-card-actions {
           display: flex;
-          gap: 0.65rem;
+          gap: 0.5rem;
           flex-wrap: wrap;
           justify-content: flex-end;
         }
