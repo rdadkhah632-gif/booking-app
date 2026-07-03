@@ -1641,6 +1641,10 @@ export const en: TranslationTree = {
   "account.security.body": "Send a secure reset link to your login email.",
   "account.security.sending": "Sending reset...",
   "account.security.resetPassword": "Send password reset",
+  "account.security.logoutTitle": "Sign out",
+  "account.security.logoutBody": "End this session on this device.",
+  "account.security.signingOut": "Signing out...",
+  "account.security.logout": "Log out",
   "account.region.kicker": "Region",
   "account.region.body": "Timezone, currency and language defaults.",
   "account.emailBody":

@@ -123,6 +123,7 @@ export default function AccountPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [resettingPassword, setResettingPassword] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [emailVerificationState, setEmailVerificationState] =
     useState<EmailVerificationState>("unknown");
   const [resendingVerification, setResendingVerification] = useState(false);
@@ -312,6 +313,32 @@ export default function AccountPage() {
         "Password reset request accepted. Check your inbox and spam folder to continue.",
       ),
     );
+  }
+
+  async function logout() {
+    setSigningOut(true);
+
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      clearSupabaseBrowserSession();
+      router.replace("/");
+    }
+  }
+
+  function clearSupabaseBrowserSession() {
+    if (typeof window === "undefined") return;
+
+    [window.localStorage, window.sessionStorage].forEach((storage) => {
+      Object.keys(storage)
+        .filter(
+          (key) =>
+            key.startsWith("sb-") ||
+            key.includes("supabase.auth.token") ||
+            key.includes("supabase.auth.refreshToken"),
+        )
+        .forEach((key) => storage.removeItem(key));
+    });
   }
 
   async function resendVerification() {
@@ -967,6 +994,31 @@ export default function AccountPage() {
                         "Send password reset",
                       )}
                 </button>
+
+                <div className="account-signout-row">
+                  <div>
+                    <strong>
+                      {t("account.security.logoutTitle", "Sign out")}
+                    </strong>
+                    <p className="small muted">
+                      {t(
+                        "account.security.logoutBody",
+                        "End this session on this device.",
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={logout}
+                    disabled={signingOut}
+                    aria-label={t("nav.logout", "Log out")}
+                  >
+                    {signingOut
+                      ? t("account.security.signingOut", "Signing out...")
+                      : t("account.security.logout", "Log out")}
+                  </button>
+                </div>
               </div>
 
               <div className="card account-region-card">
@@ -1142,6 +1194,19 @@ export default function AccountPage() {
         .account-region-card {
           display: grid;
           gap: 0.55rem;
+        }
+
+        .account-signout-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          padding-top: 0.75rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .account-signout-row p {
+          margin: 0.15rem 0 0;
         }
 
         .account-settings-grid :global(.card) {
@@ -1327,9 +1392,15 @@ export default function AccountPage() {
           .operator-account-actions,
           .operator-account-actions :global(.btn),
           .operator-account-actions a,
-          .account-security-card button {
+          .account-security-card button,
+          .account-signout-row {
             width: 100%;
             justify-content: center;
+          }
+
+          .account-signout-row {
+            align-items: stretch;
+            display: grid;
           }
 
           .account-verification-card,

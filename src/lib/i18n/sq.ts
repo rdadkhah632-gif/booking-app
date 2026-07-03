@@ -1621,6 +1621,10 @@ export const sq: TranslationTree = {
     "Dërgo një link të sigurt rivendosjeje te email-i i hyrjes.",
   "account.security.sending": "Po dërgohet rivendosja...",
   "account.security.resetPassword": "Dërgo rivendosje fjalëkalimi",
+  "account.security.logoutTitle": "Dil nga llogaria",
+  "account.security.logoutBody": "Mbyll këtë sesion në këtë pajisje.",
+  "account.security.signingOut": "Po dilet...",
+  "account.security.logout": "Dil",
   "account.region.kicker": "Rajoni",
   "account.region.body": "Parazgjedhjet e zonës kohore, monedhës dhe gjuhës.",
   "account.emailBody":
