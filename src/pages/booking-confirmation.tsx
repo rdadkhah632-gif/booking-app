@@ -84,71 +84,46 @@ export default function BookingConfirmation() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(
-          `
-          *,
-          businesses (
-            id,
-            name,
-            user_id,
-            address,
-            city,
-            country,
-            phone
-          ),
-          services (
-            name,
-            price
-          ),
-          staff_members (
-            name,
-            role_title
-          )
-        `,
-        )
-        .eq("id", id)
-        .single();
+      const bookingId = typeof id === "string" ? id : "";
 
-      if (error) {
-        setError(error.message);
-        setLoading(false);
-        return;
-      }
-
-      const normalisedBooking = {
-        ...data,
-        businesses: Array.isArray(data.businesses)
-          ? data.businesses[0] || null
-          : data.businesses,
-        services: Array.isArray(data.services)
-          ? data.services[0] || null
-          : data.services,
-        staff_members: Array.isArray(data.staff_members)
-          ? data.staff_members[0] || null
-          : data.staff_members,
-      };
-
-      const isCustomerOwner =
-        normalisedBooking.customer_user_id === session.user.id;
-      const isBusinessOwner =
-        businessRelation(normalisedBooking)?.user_id === session.user.id;
-
-      setRole(isBusinessOwner && !isCustomerOwner ? "business" : "customer");
-
-      if (!isCustomerOwner && !isBusinessOwner) {
+      if (!bookingId) {
         setError(
-          t(
-            "bookingConfirmation.error.noPermission",
-            "You do not have permission to view this booking.",
-          ),
+          t("reschedule.error.missingReference", "Missing booking reference."),
         );
         setLoading(false);
         return;
       }
 
-      setBooking(normalisedBooking as Booking);
+      const response = await fetch(
+        `/api/customer/bookings?id=${encodeURIComponent(bookingId)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        },
+      );
+      const payload = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!response.ok || !payload.booking) {
+        setError(
+          typeof payload.error === "string"
+            ? payload.error
+            : t(
+                "bookingConfirmation.error.noPermission",
+                "You do not have permission to view this booking.",
+              ),
+        );
+        setLoading(false);
+        return;
+      }
+
+      setRole(payload.viewerRole === "business" ? "business" : "customer");
+      setBooking(payload.booking as Booking);
       setLoading(false);
     }
 
@@ -269,10 +244,7 @@ export default function BookingConfirmation() {
     if (booking?.status === "pending")
       return t("bookingConfirmation.heading.pending", "Request sent");
     if (booking?.status === "confirmed")
-      return t(
-        "bookingConfirmation.heading.confirmed",
-        "Booking confirmed",
-      );
+      return t("bookingConfirmation.heading.confirmed", "Booking confirmed");
     if (booking?.status === "completed")
       return t("bookingConfirmation.heading.completed", "Completed");
     if (booking?.status === "declined")
@@ -496,7 +468,6 @@ export default function BookingConfirmation() {
                     <strong>{businessRelation()?.phone}</strong>
                   </div>
                 )}
-
               </div>
             </div>
 

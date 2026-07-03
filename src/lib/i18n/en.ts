@@ -650,6 +650,7 @@ export const en: TranslationTree = {
   "bookingConfirmation.error.noPermission":
     "You do not have permission to view this booking.",
   "bookingConfirmation.error.title": "Could not load booking",
+  "myBookings.error.load": "Could not load your bookings.",
   "bookingConfirmation.fallback.business": "this business",
   "bookingConfirmation.fallback.staffMember": "Assigned staff",
   "bookingConfirmation.priceNotSet": "Price not shown",

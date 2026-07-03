@@ -697,6 +697,7 @@ export const sq: TranslationTree = {
   "bookingConfirmation.error.noPermission":
     "Nuk ke leje ta shohësh këtë rezervim.",
   "bookingConfirmation.error.title": "Rezervimi nuk u ngarkua",
+  "myBookings.error.load": "Rezervimet e tua nuk u ngarkuan.",
   "bookingConfirmation.fallback.business": "ky biznes",
   "bookingConfirmation.fallback.staffMember": "Stafi i caktuar",
   "bookingConfirmation.priceNotSet": "Çmimi nuk shfaqet",

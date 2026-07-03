@@ -48,74 +48,30 @@ export default function MyBookings() {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("bookings")
-      .select(
-        `
-        *,
-        businesses ( name ),
-        services ( name, price ),
-        staff_members ( name, role_title )
-      `,
-      )
-      .eq("customer_user_id", session.user.id)
-      .order("start_at", { ascending: true });
+    const response = await fetch("/api/customer/bookings", {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+    const payload = await response.json().catch(() => ({}));
 
-    if (error) {
-      setError(error.message);
+    if (response.status === 401) {
+      router.replace("/login?redirectTo=/my-bookings");
+      return;
+    }
+
+    if (!response.ok) {
+      setError(
+        typeof payload.error === "string"
+          ? payload.error
+          : t("myBookings.error.load", "Could not load your bookings."),
+      );
       setLoading(false);
       return;
     }
 
-    const normalisedBookings = (data || []).map((booking: any) => ({
-      ...booking,
-      businesses: Array.isArray(booking.businesses)
-        ? booking.businesses[0] || null
-        : booking.businesses,
-      services: Array.isArray(booking.services)
-        ? booking.services[0] || null
-        : booking.services,
-      staff_members: Array.isArray(booking.staff_members)
-        ? booking.staff_members[0] || null
-        : booking.staff_members,
-    }));
-
-    setBookings(normalisedBookings as Booking[]);
-
-    const { data: requestData, error: requestError } = await supabase
-      .from("booking_requests")
-      .select(
-        `
-        id,
-        booking_id,
-        status,
-        requested_start_at,
-        requested_duration_minutes,
-        response_message,
-        created_at,
-        requested_staff:staff_members!booking_requests_requested_staff_member_id_fkey (
-          name,
-          role_title
-        )
-      `,
-      )
-      .eq("customer_user_id", session.user.id)
-      .order("created_at", { ascending: false });
-
-    if (requestError) {
-      setError(requestError.message);
-      setLoading(false);
-      return;
-    }
-
-    const normalisedRequests = (requestData || []).map((request: any) => ({
-      ...request,
-      requested_staff: Array.isArray(request.requested_staff)
-        ? request.requested_staff[0] || null
-        : request.requested_staff,
-    }));
-
-    setRequests(normalisedRequests as BookingRequest[]);
+    setBookings((payload.bookings || []) as Booking[]);
+    setRequests((payload.requests || []) as BookingRequest[]);
     setLoading(false);
   }
 

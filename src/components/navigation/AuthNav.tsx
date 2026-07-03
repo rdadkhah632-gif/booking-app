@@ -248,10 +248,26 @@ export default function AuthNav() {
 
   async function logout() {
     await supabase.auth.signOut();
+    clearSupabaseBrowserSession();
     setRole(null);
     setNotificationCount(0);
     setPrimaryBusinessId(null);
     router.replace("/");
+  }
+
+  function clearSupabaseBrowserSession() {
+    if (typeof window === "undefined") return;
+
+    [window.localStorage, window.sessionStorage].forEach((storage) => {
+      Object.keys(storage)
+        .filter(
+          (key) =>
+            key.startsWith("sb-") ||
+            key.includes("supabase.auth.token") ||
+            key.includes("supabase.auth.refreshToken"),
+        )
+        .forEach((key) => storage.removeItem(key));
+    });
   }
 
   const logoHref = useMemo(() => {

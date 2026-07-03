@@ -148,77 +148,35 @@ export default function RescheduleBooking() {
       return;
     }
 
-    const { data: bookingData, error: bookingError } = await supabase
-      .from("bookings")
-      .select(
-        `
-        *,
-        businesses (
-          id,
-          name,
-          user_id
-        ),
-        services (
-          id,
-          name,
-          duration_minutes,
-          price
-        ),
-        staff_members (
-          id,
-          name,
-          role_title
-        )
-      `,
-      )
-      .eq("id", id)
-      .single();
+    const response = await fetch(
+      `/api/customer/bookings?id=${encodeURIComponent(id)}&include=reschedule`,
+      {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      },
+    );
+    const payload = await response.json().catch(() => ({}));
 
-    if (bookingError || !bookingData) {
+    if (response.status === 401) {
+      router.replace("/login");
+      return;
+    }
+
+    if (!response.ok || !payload.booking) {
       setError(
-        bookingError?.message ||
+        (typeof payload.error === "string" && payload.error) ||
           t("reschedule.error.notFound", "Booking not found."),
       );
       setLoading(false);
       return;
     }
 
-    const linkedBusiness = Array.isArray(bookingData.businesses)
-      ? bookingData.businesses[0]
-      : bookingData.businesses;
+    const normalisedBooking = payload.booking as Booking;
+    const viewerRole: Role =
+      payload.viewerRole === "business" ? "business" : "customer";
 
-    const linkedService = Array.isArray(bookingData.services)
-      ? bookingData.services[0]
-      : bookingData.services;
-
-    const linkedStaff = Array.isArray(bookingData.staff_members)
-      ? bookingData.staff_members[0]
-      : bookingData.staff_members;
-
-    const normalisedBooking: Booking = {
-      ...bookingData,
-      businesses: linkedBusiness,
-      services: linkedService,
-      staff_members: linkedStaff,
-    };
-
-    const isCustomerOwner =
-      normalisedBooking.customer_user_id === session.user.id;
-    const isBusinessOwner =
-      normalisedBooking.businesses?.user_id === session.user.id;
-
-    setRole(isBusinessOwner && !isCustomerOwner ? "business" : "customer");
-
-    if (!isCustomerOwner && !isBusinessOwner) {
-      setError(
-        t(
-          "reschedule.error.noPermission",
-          "You do not have permission to reschedule this booking.",
-        ),
-      );
-      setLoading(false);
-      return;
-    }
+    setRole(viewerRole);
 
     if (normalisedBooking.status === "cancelled") {
       setError(
@@ -268,72 +226,12 @@ export default function RescheduleBooking() {
     setSelectedStaffChoice("any");
     setSelectedTime("");
 
-    const { data: staffData, error: staffError } = await supabase
-      .from("staff_members")
-      .select("id, name, role_title")
-      .eq("business_id", normalisedBooking.business_id)
-      .eq("active", true)
-      .order("created_at", { ascending: false });
-
-    if (staffError) {
-      setError(staffError.message);
-      setLoading(false);
-      return;
-    }
-
-    setStaffMembers(staffData || []);
-
-    const staffIds = (staffData || []).map((staff) => staff.id);
-
-    if (staffIds.length > 0) {
-      const { data: staffServiceData, error: staffServiceError } =
-        await supabase
-          .from("staff_services")
-          .select("staff_member_id, service_id")
-          .in("staff_member_id", staffIds);
-
-      if (staffServiceError) {
-        setError(staffServiceError.message);
-        setLoading(false);
-        return;
-      }
-
-      setStaffServices(staffServiceData || []);
-
-      const { data: staffAvailabilityData, error: staffAvailabilityError } =
-        await supabase
-          .from("staff_availability")
-          .select(
-            "staff_member_id, day_of_week, start_time, end_time, is_closed",
-          )
-          .in("staff_member_id", staffIds);
-
-      if (staffAvailabilityError) {
-        setError(staffAvailabilityError.message);
-        setLoading(false);
-        return;
-      }
-
-      setStaffAvailability(staffAvailabilityData || []);
-    } else {
-      setStaffServices([]);
-      setStaffAvailability([]);
-    }
-
-    const { data: availabilityData } = await supabase
-      .from("availability")
-      .select("day_of_week, start_time, end_time, is_closed")
-      .eq("business_id", normalisedBooking.business_id);
-
-    setAvailability(availabilityData || []);
-
-    const { data: bookingsData } = await supabase
-      .from("bookings")
-      .select("id, staff_member_id, start_at, end_at, duration_minutes, status")
-      .eq("business_id", normalisedBooking.business_id)
-      .in("status", ["pending", "confirmed"]);
-
-    setExistingBookings(bookingsData || []);
+    const rescheduleContext = payload.rescheduleContext || {};
+    setStaffMembers(rescheduleContext.staffMembers || []);
+    setStaffServices(rescheduleContext.staffServices || []);
+    setStaffAvailability(rescheduleContext.staffAvailability || []);
+    setAvailability(rescheduleContext.availability || []);
+    setExistingBookings(rescheduleContext.existingBookings || []);
     setLoading(false);
   }
 
@@ -897,10 +795,7 @@ export default function RescheduleBooking() {
 
     setSuccess(
       role === "business"
-        ? t(
-            "reschedule.success.business",
-            "Booking rescheduled successfully.",
-          )
+        ? t("reschedule.success.business", "Booking rescheduled successfully.")
         : t(
             "reschedule.success.customer",
             "Reschedule request sent to the business for approval.",
@@ -1100,17 +995,11 @@ export default function RescheduleBooking() {
 
                 <div>
                   <p className="small muted">
-                    {t(
-                      "reschedule.current.staff",
-                      "Current staff member",
-                    )}
+                    {t("reschedule.current.staff", "Current staff member")}
                   </p>
                   <strong>
                     {booking.staff_members?.name ||
-                      t(
-                        "dashboardBookings.card.noStaff",
-                        "Staff not recorded",
-                      )}
+                      t("dashboardBookings.card.noStaff", "Staff not recorded")}
                     {booking.staff_members?.role_title
                       ? ` — ${booking.staff_members.role_title}`
                       : ""}
@@ -1125,9 +1014,7 @@ export default function RescheduleBooking() {
                 </div>
 
                 <div>
-                  <p className="small muted">
-                    {t("common.status", "Status")}
-                  </p>
+                  <p className="small muted">{t("common.status", "Status")}</p>
                   <strong style={{ textTransform: "capitalize" }}>
                     {booking.status}
                   </strong>
@@ -1145,10 +1032,7 @@ export default function RescheduleBooking() {
 
             <div className="card" style={{ background: "var(--surface-2)" }}>
               <p className="small muted">
-                {t(
-                  "reschedule.requested.title",
-                  "New requested appointment",
-                )}
+                {t("reschedule.requested.title", "New requested appointment")}
               </p>
               <h3 style={{ marginTop: "0.25rem" }}>
                 {requestedStart
@@ -1363,17 +1247,15 @@ export default function RescheduleBooking() {
                         t("calendar.weekdays.thu", "Thu"),
                         t("calendar.weekdays.fri", "Fri"),
                         t("calendar.weekdays.sat", "Sat"),
-                      ].map(
-                        (day) => (
-                          <p
-                            key={day}
-                            className="small muted"
-                            style={{ textAlign: "center", fontWeight: 700 }}
-                          >
-                            {day}
-                          </p>
-                        ),
-                      )}
+                      ].map((day) => (
+                        <p
+                          key={day}
+                          className="small muted"
+                          style={{ textAlign: "center", fontWeight: 700 }}
+                        >
+                          {day}
+                        </p>
+                      ))}
                     </div>
 
                     <div
