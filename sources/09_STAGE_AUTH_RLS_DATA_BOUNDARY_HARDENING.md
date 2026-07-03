@@ -452,6 +452,55 @@ No SQL was added for this fix. It intentionally keeps the SQL 13-17 RLS
 hardening intact and moves only the required customer-owned display context
 behind a verified server boundary.
 
+## Stage 9 Closure QA Follow-Up
+
+Closure QA found one UI-only staff workspace issue after the RLS matrix passed:
+
+- `/staff/calendar?date=...` loaded the correct staff account but ignored the
+  date query on first render
+- the visible week could stay on the current week while the URL pointed at a
+  later appointment week
+
+Fix implemented:
+
+- staff Calendar now reads a valid `date` query before loading schedule data
+- previous, next, today, date input and appointment click all use the same
+  date-change path
+- unauthenticated staff calendar redirects include the selected date in the
+  login redirect target
+
+This did not change booking reads, booking status transitions, staff linking,
+role routing, RLS policies or availability calculations.
+
+## Stage 9 Closure QA Status
+
+Status: pass with one tracked auth-redirect follow-up.
+
+Confirmed:
+
+- direct anonymous reads remain blocked or empty across the tested Stage 9
+  tables
+- customer reads are scoped to customer-owned bookings, requests and support
+  tickets
+- unrelated authenticated users cannot read another customer's booking or
+  request rows
+- business owners can read their own business, bookings and booking requests
+- staff can read their linked staff row, own availability and assigned bookings
+- staff cannot read business-owned booking request rows
+- public Explore and public business profile endpoints return shaped public data
+- customer booking detail API returns safe labels for the owning customer
+- outsider access to customer booking detail API is denied
+- non-admin access to the admin profile API is denied
+- staff Calendar now honors dated links such as
+  `/staff/calendar?date=2026-07-11` on first render
+
+Tracked follow-up:
+
+- login currently sends staff users to the default staff workspace after sign-in
+  rather than preserving every safe staff deep link; this does not weaken RLS or
+  data boundaries, but it should be considered for a later auth-routing polish
+  pass.
+
 ## Current RLS Draft
 
 Draft SQL:

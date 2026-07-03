@@ -1,5 +1,6 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
@@ -31,6 +32,21 @@ function formatDateInputValue(date: Date) {
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const dd = String(date.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
+}
+
+function dateQueryValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function isDateInputValue(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const parsed = new Date(`${value}T12:00:00`);
+  return (
+    !Number.isNaN(parsed.getTime()) && formatDateInputValue(parsed) === value
+  );
 }
 
 function addDays(date: Date, days: number) {
@@ -91,6 +107,7 @@ const DEFAULT_CALENDAR_START_HOUR = 8;
 const DEFAULT_CALENDAR_END_HOUR = 18;
 
 export default function StaffCalendarPage() {
+  const router = useRouter();
   const { locale, t } = useI18n();
   const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
 
@@ -106,10 +123,23 @@ export default function StaffCalendarPage() {
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [calendarReady, setCalendarReady] = useState(false);
 
   useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryDate = dateQueryValue(router.query.date);
+    if (isDateInputValue(queryDate) && queryDate !== selectedDate) {
+      setSelectedDate(queryDate);
+    }
+
+    setCalendarReady(true);
+  }, [router.isReady, router.query.date, selectedDate]);
+
+  useEffect(() => {
+    if (!calendarReady) return;
     loadCalendar();
-  }, [selectedDate]);
+  }, [calendarReady, selectedDate]);
 
   async function loadCalendar() {
     setLoading(true);
@@ -120,7 +150,10 @@ export default function StaffCalendarPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      window.location.href = "/login?redirectTo=/staff/calendar";
+      const redirectTo = encodeURIComponent(
+        `/staff/calendar?date=${selectedDate}`,
+      );
+      window.location.href = `/login?redirectTo=${redirectTo}`;
       return;
     }
     const capabilities = await getAccountCapabilities(
@@ -335,8 +368,21 @@ export default function StaffCalendarPage() {
   }
 
   function changeCalendarDate(value: string) {
+    if (!isDateInputValue(value)) return;
+
     setSelectedDate(value);
     setSelectedBookingId(null);
+
+    if (router.isReady && dateQueryValue(router.query.date) !== value) {
+      void router.replace(
+        {
+          pathname: "/staff/calendar",
+          query: { date: value },
+        },
+        undefined,
+        { shallow: true },
+      );
+    }
   }
 
   function moveWeek(direction: -1 | 1) {
@@ -419,7 +465,7 @@ export default function StaffCalendarPage() {
           height: `${blockHeight}px`,
         }}
         onClick={() => {
-          setSelectedDate(formatDateInputValue(time.start));
+          changeCalendarDate(formatDateInputValue(time.start));
           setSelectedBookingId(booking.id);
         }}
         aria-label={`${time.label} ${
