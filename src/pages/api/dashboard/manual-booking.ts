@@ -12,6 +12,7 @@ type ManualBookingRequest = {
   customerNotes?: string;
   date?: string;
   time?: string;
+  startAt?: string;
 };
 
 type BookingOverlapRow = {
@@ -84,6 +85,20 @@ function errorResponse(
   return res.status(status).json({ code, error });
 }
 
+function manualStartFromRequest(params: {
+  date: string;
+  time: string;
+  timeZone?: string | null;
+  startAt?: string;
+}) {
+  if (params.startAt) {
+    const parsedStart = new Date(params.startAt);
+    if (!Number.isNaN(parsedStart.getTime())) return parsedStart;
+  }
+
+  return zonedDateTimeToUtc(params.date, params.time, params.timeZone);
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -108,6 +123,7 @@ export default async function handler(
   const customerNotes = cleanText(request.customerNotes);
   const date = cleanText(request.date);
   const time = cleanText(request.time);
+  const startAt = cleanText(request.startAt);
 
   if (
     !businessId ||
@@ -119,11 +135,6 @@ export default async function handler(
     !time
   ) {
     return errorResponse(res, 400, "invalid_request", "Invalid appointment");
-  }
-
-  const requestedStart = zonedDateTimeToUtc(date, time, DEFAULT_TIME_ZONE);
-  if (Number.isNaN(requestedStart.getTime())) {
-    return errorResponse(res, 400, "invalid_time", "Invalid appointment time");
   }
 
   let supabaseAdmin: ReturnType<typeof createSupabaseAdminClient>;
@@ -166,11 +177,12 @@ export default async function handler(
     return errorResponse(res, 403, "forbidden", "Appointment not permitted");
   }
 
-  const start = zonedDateTimeToUtc(
+  const start = manualStartFromRequest({
     date,
     time,
-    business.timezone || DEFAULT_TIME_ZONE,
-  );
+    timeZone: business.timezone || DEFAULT_TIME_ZONE,
+    startAt,
+  });
   if (Number.isNaN(start.getTime())) {
     return errorResponse(res, 400, "invalid_time", "Invalid appointment time");
   }

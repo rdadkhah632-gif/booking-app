@@ -999,3 +999,25 @@ without requiring a separate sync table or app-only workaround.
 Stage 8.43 did not change booking status transitions, public slot generation,
 staff invite/linking data, auth/session rules, billing writes, notification
 generation or database schema.
+
+## Stage 8.44 Cross-Role Retest Fixes Implemented
+
+- hardened business Calendar manual appointment creation by sending the exact
+  selected appointment start time to the owner-authorized API and removing the
+  duplicate client-side future-time blocker that rejected valid future dates in
+  live QA
+- kept the manual appointment API authoritative for past-time, conflict,
+  service and staff checks while allowing it to use the submitted ISO start time
+  for the selected calendar slot
+- changed Team availability links to open the staff-specific Working hours
+  editor instead of the generic business working-hours page
+- filtered the staff-specific Working hours editor to that staff member's
+  business availability rows and kept the save confirmation visible after the
+  post-save refresh
+- aligned the customer Notifications badge with the customer Notifications page
+  by counting unread customer notification rows only, rather than adding pending
+  reschedule records that are shown in My bookings instead
+
+Stage 8.44 did not change booking status transitions, public slot generation,
+staff invite/linking data, auth/session rules, billing writes, notification
+generation or database schema.

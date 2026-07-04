@@ -319,7 +319,7 @@ export default function StaffProfileCard({
                   </button>
 
                   <Link
-                    href={`/dashboard/availability?businessId=${staff.business_id}&staffId=${staff.id}`}
+                    href={`/dashboard/staff-availability?staffId=${staff.id}`}
                     className="btn btn-ghost"
                   >
                     {t(

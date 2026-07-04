@@ -64,10 +64,10 @@ export default function StaffAvailabilityPage() {
     }));
   }
 
-  async function loadPage() {
+  async function loadPage(options?: { keepSuccess?: boolean }) {
     setLoading(true);
     setError(null);
-    setSuccess(null);
+    if (!options?.keepSuccess) setSuccess(null);
 
     const {
       data: { session },
@@ -127,6 +127,7 @@ export default function StaffAvailabilityPage() {
     const { data: existing, error: availabilityError } = await supabase
       .from("staff_availability")
       .select("*")
+      .eq("business_id", staffData.business_id)
       .eq("staff_member_id", staffId)
       .order("day_of_week");
 
@@ -296,10 +297,13 @@ export default function StaffAvailabilityPage() {
       return;
     }
 
-    setSuccess(
-      "Staff working hours saved. Customer booking slots will use these hours straight away.",
+    const savedMessage = t(
+      "staffAvailability.success.saved",
+      "Working hours saved.",
     );
-    await loadPage();
+    setSuccess(savedMessage);
+    await loadPage({ keepSuccess: true });
+    setSuccess(savedMessage);
   }
 
   return (

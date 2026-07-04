@@ -217,18 +217,6 @@ export default function AuthNav() {
       return;
     }
 
-    const { count: pendingBookingsCount } = await supabase
-      .from("bookings")
-      .select("id", { count: "exact", head: true })
-      .eq("customer_user_id", params.userId)
-      .eq("status", "pending");
-
-    const { data: pendingRequests } = await supabase
-      .from("booking_requests")
-      .select("booking_id")
-      .eq("customer_user_id", params.userId)
-      .eq("status", "pending");
-
     const { count: unreadCustomerNotifications } = await supabase
       .from("notifications")
       .select("id", { count: "exact", head: true })
@@ -236,14 +224,7 @@ export default function AuthNav() {
       .in("audience", ["general", "customer"])
       .is("read_at", null);
 
-    const uniquePendingReschedules = new Set(
-      (pendingRequests || []).map((request) => request.booking_id),
-    ).size;
-    setNotificationCount(
-      (pendingBookingsCount || 0) +
-        uniquePendingReschedules +
-        (unreadCustomerNotifications || 0),
-    );
+    setNotificationCount(unreadCustomerNotifications || 0);
   }
 
   async function logout() {

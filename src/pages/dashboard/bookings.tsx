@@ -1060,13 +1060,6 @@ export default function Bookings() {
       );
     }
 
-    if (start <= new Date()) {
-      return t(
-        "dashboardBookings.manual.error.future",
-        "Choose a future appointment time.",
-      );
-    }
-
     return null;
   }
 
@@ -1283,6 +1276,7 @@ export default function Bookings() {
           customerNotes: manualBooking.customerNotes,
           date: manualBooking.date,
           time: manualBooking.time,
+          startAt: start.toISOString(),
         }),
       });
       const result = await response.json().catch(() => ({}));
