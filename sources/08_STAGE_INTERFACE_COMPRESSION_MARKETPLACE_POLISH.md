@@ -1039,3 +1039,17 @@ generation or database schema.
 Stage 8.45 did not change public customer booking, public slot generation,
 booking status transitions, staff invite/linking data, auth/session rules,
 billing writes, notification generation or database schema.
+
+## Stage 8.46 Staff Working Hours Submit Fix Implemented
+
+- changed the owner staff Working hours page to submit the visible form values
+  directly, matching the manual Calendar appointment reliability fix
+- saved the exact displayed closed/start/end controls instead of relying on
+  potentially stale React state when the owner edits a time and immediately
+  saves
+- kept the owner-authorized staff-hours API, business-scoped refresh and
+  friendly save feedback from Stage 8.45
+
+Stage 8.46 did not change public customer booking, public slot generation,
+booking status transitions, staff invite/linking data, auth/session rules,
+billing writes, notification generation or database schema.

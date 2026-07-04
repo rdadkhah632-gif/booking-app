@@ -38,6 +38,27 @@ type StaffAvailabilityRow = {
   is_closed: boolean;
 };
 
+function formTextValue(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value : "";
+}
+
+function rowsFromAvailabilityForm(
+  formData: FormData,
+  currentRows: StaffAvailabilityRow[],
+) {
+  return currentRows.map((row) => {
+    const day = row.day_of_week;
+
+    return {
+      ...row,
+      is_closed: formData.get(`closed-${day}`) === "on",
+      start_time: formTextValue(formData, `start-${day}`) || row.start_time,
+      end_time: formTextValue(formData, `end-${day}`) || row.end_time,
+    };
+  });
+}
+
 export default function StaffAvailabilityPage() {
   const router = useRouter();
   const { t } = useI18n();
@@ -241,10 +262,11 @@ export default function StaffAvailabilityPage() {
     setRows((prev) => prev.map((row) => ({ ...row, is_closed: true })));
   }
 
-  async function saveAvailability() {
+  async function saveAvailability(rowsToSave = rows) {
     if (!staff || !staffId || Array.isArray(staffId)) return;
 
-    const invalidRow = rows.find(
+    const openRowsToSave = rowsToSave.filter((row) => !row.is_closed);
+    const invalidRow = rowsToSave.find(
       (row) => !row.is_closed && row.start_time >= row.end_time,
     );
 
@@ -255,7 +277,7 @@ export default function StaffAvailabilityPage() {
       return;
     }
 
-    if (availabilityStats.openDays === 0) {
+    if (openRowsToSave.length === 0) {
       const confirmed = confirm(
         "This staff member has no open days. They will not appear as available for bookings. Save anyway?",
       );
@@ -266,7 +288,7 @@ export default function StaffAvailabilityPage() {
     setError(null);
     setSuccess(null);
 
-    const cleanRows = rows.map((row) => ({
+    const cleanRows = rowsToSave.map((row) => ({
       business_id: staff.business_id,
       staff_member_id: staffId,
       day_of_week: row.day_of_week,
@@ -305,6 +327,7 @@ export default function StaffAvailabilityPage() {
       return;
     }
 
+    setRows(cleanRows);
     const savedMessage = t(
       "staffAvailability.success.saved",
       "Working hours saved.",
@@ -592,112 +615,128 @@ export default function StaffAvailabilityPage() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gap: "0.75rem" }}>
-            {rows.map((row, index) => {
-              const invalid = !row.is_closed && row.start_time >= row.end_time;
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const nextRows = rowsFromAvailabilityForm(
+                new FormData(event.currentTarget),
+                rows,
+              );
+              setRows(nextRows);
+              void saveAvailability(nextRows);
+            }}
+          >
+            <div style={{ display: "grid", gap: "0.75rem" }}>
+              {rows.map((row, index) => {
+                const invalid =
+                  !row.is_closed && row.start_time >= row.end_time;
 
-              return (
-                <div
-                  key={row.day_of_week}
-                  className="card staff-availability-row"
-                  style={{
-                    borderColor: invalid
-                      ? "rgba(255,77,109,0.35)"
-                      : row.is_closed
-                        ? "rgba(255,190,11,0.20)"
-                        : "var(--border)",
-                    opacity: row.is_closed ? 0.76 : 1,
-                  }}
-                >
-                  <div>
-                    <strong>{days[row.day_of_week]}</strong>
-                    <p
-                      className="small"
-                      style={{
-                        color: invalid
-                          ? "var(--danger)"
-                          : row.is_closed
-                            ? "var(--warning)"
-                            : "var(--success)",
-                        marginTop: "0.25rem",
-                      }}
-                    >
-                      {invalid
-                        ? "Invalid time range"
-                        : row.is_closed
-                          ? "Closed / day off"
-                          : "Open for bookings"}
-                    </p>
-                  </div>
-
-                  <label
-                    className="small muted"
+                return (
+                  <div
+                    key={row.day_of_week}
+                    className="card staff-availability-row"
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
+                      borderColor: invalid
+                        ? "rgba(255,77,109,0.35)"
+                        : row.is_closed
+                          ? "rgba(255,190,11,0.20)"
+                          : "var(--border)",
+                      opacity: row.is_closed ? 0.76 : 1,
                     }}
                   >
-                    <input
-                      type="checkbox"
-                      checked={row.is_closed}
-                      onChange={(e) =>
-                        updateRow(index, "is_closed", e.target.checked)
-                      }
-                    />
-                    Closed
-                  </label>
+                    <div>
+                      <strong>{days[row.day_of_week]}</strong>
+                      <p
+                        className="small"
+                        style={{
+                          color: invalid
+                            ? "var(--danger)"
+                            : row.is_closed
+                              ? "var(--warning)"
+                              : "var(--success)",
+                          marginTop: "0.25rem",
+                        }}
+                      >
+                        {invalid
+                          ? "Invalid time range"
+                          : row.is_closed
+                            ? "Closed / day off"
+                            : "Open for bookings"}
+                      </p>
+                    </div>
 
-                  <label className="small muted">
-                    Start
-                    <input
-                      type="time"
-                      value={row.start_time}
-                      disabled={row.is_closed}
-                      onChange={(e) =>
-                        updateRow(index, "start_time", e.target.value)
-                      }
-                      style={{ marginTop: "0.25rem" }}
-                    />
-                  </label>
+                    <label
+                      className="small muted"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <input
+                        name={`closed-${row.day_of_week}`}
+                        type="checkbox"
+                        checked={row.is_closed}
+                        onChange={(e) =>
+                          updateRow(index, "is_closed", e.target.checked)
+                        }
+                      />
+                      Closed
+                    </label>
 
-                  <label className="small muted">
-                    End
-                    <input
-                      type="time"
-                      value={row.end_time}
-                      disabled={row.is_closed}
-                      onChange={(e) =>
-                        updateRow(index, "end_time", e.target.value)
-                      }
-                      style={{ marginTop: "0.25rem" }}
-                    />
-                  </label>
-                </div>
-              );
-            })}
-          </div>
+                    <label className="small muted">
+                      Start
+                      <input
+                        name={`start-${row.day_of_week}`}
+                        type="time"
+                        value={row.start_time}
+                        disabled={row.is_closed}
+                        onChange={(e) =>
+                          updateRow(index, "start_time", e.target.value)
+                        }
+                        style={{ marginTop: "0.25rem" }}
+                      />
+                    </label>
 
-          <div className="staff-availability-save-row">
-            <button
-              onClick={saveAvailability}
-              disabled={saving}
-              className="btn btn-accent"
-            >
-              {saving ? "Saving..." : "Save staff working hours"}
-            </button>
+                    <label className="small muted">
+                      End
+                      <input
+                        name={`end-${row.day_of_week}`}
+                        type="time"
+                        value={row.end_time}
+                        disabled={row.is_closed}
+                        onChange={(e) =>
+                          updateRow(index, "end_time", e.target.value)
+                        }
+                        style={{ marginTop: "0.25rem" }}
+                      />
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
 
-            <Link
-              href={`/dashboard/staff?businessId=${staff.business_id}`}
-              className="btn btn-ghost"
-            >
-              Back to staff
-            </Link>
+            <div className="staff-availability-save-row">
+              <button
+                type="submit"
+                disabled={saving}
+                className="btn btn-accent"
+              >
+                {saving ? "Saving..." : "Save staff working hours"}
+              </button>
 
-            <Link href="/support/business" className="btn btn-ghost">
-              Business support
-            </Link>
-          </div>
+              <Link
+                href={`/dashboard/staff?businessId=${staff.business_id}`}
+                className="btn btn-ghost"
+              >
+                Back to staff
+              </Link>
+
+              <Link href="/support/business" className="btn btn-ghost">
+                Business support
+              </Link>
+            </div>
+          </form>
         </>
       )}
 
