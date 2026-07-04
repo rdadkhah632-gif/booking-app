@@ -1832,6 +1832,8 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.error.service": "Zgjidh një shërbim.",
   "dashboardBookings.manual.error.staff": "Zgjidh stafin.",
   "dashboardBookings.manual.error.time": "Zgjidh datën dhe orën.",
+  "dashboardBookings.manual.error.invalidTime":
+    "Zgjidh një datë dhe orë të vlefshme për takimin.",
   "dashboardBookings.manual.error.future":
     "Zgjidh një orar takimi në të ardhmen.",
   "dashboardBookings.manual.error.serviceUnavailable":
@@ -2507,6 +2509,8 @@ export const sq: TranslationTree = {
   "staffAvailability.error.invalidTime":
     "Çdo ditë e hapur ka nevojë për orë fillimi dhe mbarimi të vlefshme. Ora e mbarimit duhet të jetë pas orës së fillimit.",
   "staffAvailability.error.load": "Orari i punës nuk u ngarkua.",
+  "staffAvailability.error.save":
+    "Orari i punës nuk u ruajt. Rifresko faqen dhe provo përsëri, ose kontrollo që ky staf ende i përket biznesit tënd.",
   "staffAvailability.loading": "Duke ngarkuar orarin e punës...",
   "staffAvailability.noProfile.title":
     "Orari i punës nuk është ende i disponueshëm",

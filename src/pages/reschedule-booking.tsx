@@ -561,7 +561,13 @@ export default function RescheduleBooking() {
   }
 
   function appointmentDateTime(value: string) {
-    return new Date(value).toLocaleString();
+    return new Date(value).toLocaleString(undefined, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   async function createCustomerNotification(params: {
@@ -1010,7 +1016,7 @@ export default function RescheduleBooking() {
                   <p className="small muted">
                     {t("reschedule.current.time", "Current time")}
                   </p>
-                  <strong>{new Date(booking.start_at).toLocaleString()}</strong>
+                  <strong>{appointmentDateTime(booking.start_at)}</strong>
                 </div>
 
                 <div>
@@ -1036,7 +1042,7 @@ export default function RescheduleBooking() {
               </p>
               <h3 style={{ marginTop: "0.25rem" }}>
                 {requestedStart
-                  ? `${requestedStart.toLocaleString()}${requestedEnd ? ` - ${requestedEnd.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`
+                  ? `${appointmentDateTime(requestedStart.toISOString())}${requestedEnd ? ` - ${requestedEnd.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`
                   : t(
                       "reschedule.requested.chooseDateTime",
                       "Choose a new date and time",
@@ -1313,17 +1319,6 @@ export default function RescheduleBooking() {
                             }}
                           >
                             <span>{day.shortLabel}</span>
-                            {day.isBookable && (
-                              <span
-                                style={{
-                                  display: "block",
-                                  fontSize: "0.62rem",
-                                  opacity: 0.78,
-                                }}
-                              >
-                                {day.availableSlotCount}
-                              </span>
-                            )}
                           </button>
                         );
                       })}

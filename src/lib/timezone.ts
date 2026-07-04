@@ -49,7 +49,7 @@ function partsInTimeZone(date: Date, timeZone?: string | null): DateTimeParts {
 
 function parseDateAndTime(dateValue: string, timeValue: string): DateTimeParts {
   const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateValue);
-  const timeMatch = /^(\d{2}):(\d{2})$/.exec(timeValue);
+  const timeMatch = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(timeValue);
   const invalid = {
     year: Number.NaN,
     month: Number.NaN,
@@ -69,7 +69,7 @@ function parseDateAndTime(dateValue: string, timeValue: string): DateTimeParts {
     day: Number(dateMatch[3]),
     hour: Number(timeMatch[1]),
     minute: Number(timeMatch[2]),
-    second: 0,
+    second: timeMatch[3] ? Number(timeMatch[3]) : 0,
   };
 
   if (
@@ -80,7 +80,9 @@ function parseDateAndTime(dateValue: string, timeValue: string): DateTimeParts {
     parts.hour < 0 ||
     parts.hour > 23 ||
     parts.minute < 0 ||
-    parts.minute > 59
+    parts.minute > 59 ||
+    parts.second < 0 ||
+    parts.second > 59
   ) {
     return invalid;
   }
@@ -136,9 +138,10 @@ export function zonedDateTimeToUtc(
 export function dateKeyInTimeZone(date: Date, timeZone?: string | null) {
   const parts = partsInTimeZone(date, timeZone);
 
-  return `${String(parts.year).padStart(4, "0")}-${String(
-    parts.month,
-  ).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
+  return `${String(parts.year).padStart(4, "0")}-${String(parts.month).padStart(
+    2,
+    "0",
+  )}-${String(parts.day).padStart(2, "0")}`;
 }
 
 export function minutesSinceMidnightInTimeZone(

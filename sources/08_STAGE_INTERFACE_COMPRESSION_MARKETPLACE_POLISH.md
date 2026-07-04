@@ -978,3 +978,24 @@ billing writes, notification behavior or database schema.
 Stage 8.42 makes the current web flow closer to the intended app behavior:
 owner-created appointments can appear in a customer's existing My Bookings
 without requiring a separate sync table or app-only workaround.
+
+## Stage 8.43 Cross-Role Live QA Fixes Implemented
+
+- fixed the owner Staff working hours editor so saved `staff_availability`
+  rows include `business_id`, satisfying the live Stage 9 RLS policy that
+  checks staff availability belongs to the same business as the staff member
+- replaced raw row-level-security save failures on owner staff-hours saves with
+  friendly working-hours copy
+- hardened shared timezone parsing so appointment time inputs with optional
+  seconds, such as `10:00:00`, are accepted instead of being treated as invalid
+- separated invalid manual appointment time copy from past-time copy so valid
+  future appointments are not confused with parsing errors
+- preserved selected public booking intent through Login/Create account links
+  by carrying service/date/time/staff query values back to the public business
+  page and restoring them after auth
+- cleaned the reschedule page date/time display to remove seconds and removed
+  unexplained slot-count numbers from calendar cells
+
+Stage 8.43 did not change booking status transitions, public slot generation,
+staff invite/linking data, auth/session rules, billing writes, notification
+generation or database schema.

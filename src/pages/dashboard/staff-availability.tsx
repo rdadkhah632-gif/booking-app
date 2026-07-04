@@ -30,6 +30,7 @@ type StaffMember = {
 
 type StaffAvailabilityRow = {
   id?: string;
+  business_id: string;
   staff_member_id: string;
   day_of_week: number;
   start_time: string;
@@ -49,9 +50,13 @@ export default function StaffAvailabilityPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  function defaultRows(currentStaffId: string): StaffAvailabilityRow[] {
+  function defaultRows(
+    currentStaffId: string,
+    currentBusinessId: string,
+  ): StaffAvailabilityRow[] {
     return days.map((_, i) => ({
       staff_member_id: currentStaffId,
+      business_id: currentBusinessId,
       day_of_week: i,
       start_time: "09:00",
       end_time: "17:00",
@@ -142,6 +147,7 @@ export default function StaffAvailabilityPage() {
           (_, i) =>
             existingByDay.get(i) || {
               staff_member_id: staffId,
+              business_id: staffData.business_id,
               day_of_week: i,
               start_time: "09:00",
               end_time: "17:00",
@@ -150,7 +156,7 @@ export default function StaffAvailabilityPage() {
         ),
       );
     } else {
-      setRows(defaultRows(staffId));
+      setRows(defaultRows(staffId, staffData.business_id));
     }
 
     setLoading(false);
@@ -183,6 +189,17 @@ export default function StaffAvailabilityPage() {
   ) {
     setRows((prev) =>
       prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)),
+    );
+  }
+
+  function saveErrorMessage(message?: string | null) {
+    if (message && process.env.NODE_ENV !== "production") {
+      console.warn("[staff-availability] Save failed", message);
+    }
+
+    return t(
+      "staffAvailability.error.save",
+      "Working hours could not be saved. Refresh and try again, or check this staff member still belongs to your business.",
     );
   }
 
@@ -254,12 +271,13 @@ export default function StaffAvailabilityPage() {
       .eq("staff_member_id", staffId);
 
     if (deleteError) {
-      setError(deleteError.message);
+      setError(saveErrorMessage(deleteError.message));
       setSaving(false);
       return;
     }
 
     const cleanRows = rows.map((row) => ({
+      business_id: staff.business_id,
       staff_member_id: staffId,
       day_of_week: row.day_of_week,
       start_time: row.start_time,
@@ -274,7 +292,7 @@ export default function StaffAvailabilityPage() {
     setSaving(false);
 
     if (error) {
-      setError(error.message);
+      setError(saveErrorMessage(error.message));
       return;
     }
 

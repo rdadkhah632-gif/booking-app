@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
@@ -153,6 +153,7 @@ export default function BusinessBookingPage() {
   const [customerNote, setCustomerNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const restoredBookingIntentRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   async function loadBlockingBookings(
@@ -279,6 +280,58 @@ export default function BusinessBookingPage() {
   useEffect(() => {
     loadBookingPage();
   }, [businessId]);
+
+  function queryStringValue(value: string | string[] | undefined) {
+    return typeof value === "string" ? value.trim() : "";
+  }
+
+  function cleanTimeValue(value: string) {
+    const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(value);
+    return match ? `${match[1]}:${match[2]}` : "";
+  }
+
+  useEffect(() => {
+    if (!router.isReady || restoredBookingIntentRef.current) return;
+    if (services.length === 0 && staffMembers.length === 0) return;
+
+    const serviceId = queryStringValue(router.query.serviceId);
+    const dateValue = queryStringValue(router.query.date);
+    const timeValue = cleanTimeValue(queryStringValue(router.query.time));
+    const staffValue = queryStringValue(router.query.staff);
+
+    if (!serviceId && !dateValue && !timeValue && !staffValue) {
+      restoredBookingIntentRef.current = true;
+      return;
+    }
+
+    const nextService =
+      services.find((service) => service.id === serviceId) || null;
+    const nextStaff =
+      staffValue && staffValue !== "any"
+        ? staffMembers.find((staff) => staff.id === staffValue)
+        : null;
+
+    if (serviceId && !nextService) {
+      restoredBookingIntentRef.current = true;
+      return;
+    }
+
+    if (nextService) setSelectedService(nextService);
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      setSelectedDate(dateValue);
+      setCalendarMonth(new Date(`${dateValue}T12:00:00`));
+    }
+
+    if (staffValue === "any" || nextStaff) {
+      setStaffFilter(staffValue === "any" ? "any" : staffValue);
+      setSelectedStaffChoice(staffValue === "any" ? "any" : staffValue);
+    }
+
+    if (timeValue) setSelectedTime(timeValue);
+
+    restoredBookingIntentRef.current = true;
+  }, [router.isReady, router.query, services, staffMembers]);
 
   useEffect(() => {
     function refreshOnFocus() {
@@ -1296,6 +1349,28 @@ export default function BusinessBookingPage() {
         ? publicStaffDisplayName(selectedFilterStaff)
         : null;
 
+  function bookingIntentReturnPath() {
+    const targetBusinessId =
+      business.id || (typeof businessId === "string" ? businessId : "");
+    const params = new URLSearchParams();
+
+    if (selectedService?.id) params.set("serviceId", selectedService.id);
+    if (selectedDate) params.set("date", selectedDate);
+    if (selectedTime) params.set("time", selectedTime);
+    if (selectedStaffChoice) params.set("staff", selectedStaffChoice);
+
+    const query = params.toString();
+    return `/explore/${targetBusinessId}${query ? `?${query}` : ""}`;
+  }
+
+  const bookingAuthReturnPath = bookingIntentReturnPath();
+  const bookingLoginHref = `/login?redirectTo=${encodeURIComponent(
+    bookingAuthReturnPath,
+  )}`;
+  const bookingRegisterHref = `/register?redirectTo=${encodeURIComponent(
+    bookingAuthReturnPath,
+  )}`;
+
   return (
     <main>
       <AuthNav />
@@ -1354,11 +1429,11 @@ export default function BusinessBookingPage() {
 
             {(!customerUserId || userRole !== "customer") && (
               <div className="booking-action-row">
-                <Link href="/login" className="btn btn-accent">
+                <Link href={bookingLoginHref} className="btn btn-accent">
                   {t("publicBusiness.auth.loginToBook", "Login to book")}
                 </Link>
 
-                <Link href="/register" className="btn btn-ghost">
+                <Link href={bookingRegisterHref} className="btn btn-ghost">
                   {t(
                     "publicBusiness.auth.createCustomerAccount",
                     "Create customer account",
@@ -1505,7 +1580,8 @@ export default function BusinessBookingPage() {
             customerUserId={customerUserId}
             userRole={userRole}
             isOwnerPreview={isOwnerPreview}
-            loginHref={`/login?redirectTo=${encodeURIComponent(`/explore/${business.id}`)}`}
+            loginHref={bookingLoginHref}
+            registerHref={bookingRegisterHref}
             onCustomerNameChange={setCustomerName}
             onCustomerEmailChange={setCustomerEmail}
             onCustomerPhoneChange={setCustomerPhone}

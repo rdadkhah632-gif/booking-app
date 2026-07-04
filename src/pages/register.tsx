@@ -49,14 +49,32 @@ export default function RegisterPage() {
         ? getBusinessAppUrl("/login?product=business")
         : getCustomerAppUrl("/login");
 
+  function registrationRedirectForRole(
+    value: string | null,
+    accountRole: "customer" | "business" | "staff",
+  ) {
+    if (!value) return null;
+    if (value.startsWith("/staff/invite?token=")) return value;
+    if (
+      accountRole === "customer" &&
+      (value.startsWith("/explore/") ||
+        value.startsWith("/book/") ||
+        value.startsWith("/my-bookings") ||
+        value.startsWith("/booking-confirmation"))
+    ) {
+      return value;
+    }
+
+    return null;
+  }
+
   async function redirectByRole(userId: string, fallbackEmail?: string) {
     const capabilities = await getAccountCapabilities(userId, fallbackEmail);
-    const redirectTo = safeInternalRedirect(router.query.redirectTo);
-    router.replace(
-      redirectTo?.startsWith("/staff/invite?token=")
-        ? redirectTo
-        : capabilities.defaultRoute,
+    const redirectTo = registrationRedirectForRole(
+      safeInternalRedirect(router.query.redirectTo),
+      role,
     );
+    router.replace(redirectTo || capabilities.defaultRoute);
   }
 
   useEffect(() => {
@@ -163,10 +181,10 @@ export default function RegisterPage() {
       }
     }
 
-    const safeRedirectTo = safeInternalRedirect(router.query.redirectTo);
-    const redirectTo = safeRedirectTo?.startsWith("/staff/invite?token=")
-      ? safeRedirectTo
-      : null;
+    const redirectTo = registrationRedirectForRole(
+      safeInternalRedirect(router.query.redirectTo),
+      role,
+    );
     const authProduct =
       role === "business" || role === "staff" ? "business" : "customer";
     const verificationPath = redirectTo
@@ -371,7 +389,10 @@ export default function RegisterPage() {
     setResendingVerification(true);
     setError(null);
 
-    const safeRedirectTo = safeInternalRedirect(router.query.redirectTo);
+    const safeRedirectTo = registrationRedirectForRole(
+      safeInternalRedirect(router.query.redirectTo),
+      role,
+    );
     const authProduct =
       role === "business" || role === "staff" ? "business" : "customer";
     const verificationRedirect = new URL(
@@ -383,7 +404,7 @@ export default function RegisterPage() {
         window.location.origin,
       ),
     );
-    if (safeRedirectTo?.startsWith("/staff/invite?token=")) {
+    if (safeRedirectTo) {
       verificationRedirect.searchParams.set("redirectTo", safeRedirectTo);
     }
 

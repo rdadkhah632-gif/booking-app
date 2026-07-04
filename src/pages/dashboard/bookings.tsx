@@ -1120,7 +1120,14 @@ export default function Bookings() {
       );
     }
 
-    if (code === "past_time" || code === "invalid_time") {
+    if (code === "invalid_time") {
+      return t(
+        "dashboardBookings.manual.error.invalidTime",
+        "Choose a valid appointment date and time.",
+      );
+    }
+
+    if (code === "past_time") {
       return t(
         "dashboardBookings.manual.error.future",
         "Choose a future appointment time.",

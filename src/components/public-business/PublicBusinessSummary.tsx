@@ -19,6 +19,7 @@ type Props = {
   userRole: string | null;
   isOwnerPreview: boolean;
   loginHref: string;
+  registerHref: string;
   onCustomerNameChange: (value: string) => void;
   onCustomerEmailChange: (value: string) => void;
   onCustomerPhoneChange: (value: string) => void;
@@ -47,6 +48,7 @@ export default function PublicBusinessSummary({
   userRole,
   isOwnerPreview,
   loginHref,
+  registerHref,
   onCustomerNameChange,
   onCustomerEmailChange,
   onCustomerPhoneChange,
@@ -164,7 +166,7 @@ export default function PublicBusinessSummary({
             <Link href={loginHref} className="btn btn-accent">
               {t("nav.login", "Login")}
             </Link>
-            <Link href="/register" className="btn btn-ghost">
+            <Link href={registerHref} className="btn btn-ghost">
               {t("publicBusiness.summary.createAccount", "Create account")}
             </Link>
           </div>

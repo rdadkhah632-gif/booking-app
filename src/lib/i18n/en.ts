@@ -1848,6 +1848,8 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.error.service": "Choose a service.",
   "dashboardBookings.manual.error.staff": "Choose staff.",
   "dashboardBookings.manual.error.time": "Choose a date and time.",
+  "dashboardBookings.manual.error.invalidTime":
+    "Choose a valid appointment date and time.",
   "dashboardBookings.manual.error.future": "Choose a future appointment time.",
   "dashboardBookings.manual.error.serviceUnavailable":
     "This service is no longer active.",
@@ -2435,6 +2437,8 @@ export const en: TranslationTree = {
   "staffAvailability.error.invalidTime":
     "Each open day needs a valid start and end time. End time must be after start time.",
   "staffAvailability.error.load": "Could not load working hours.",
+  "staffAvailability.error.save":
+    "Working hours could not be saved. Refresh and try again, or check this staff member still belongs to your business.",
   "staffAvailability.loading": "Loading working hours...",
   "staffAvailability.noProfile.title": "Working hours are not available yet",
   "staffAvailability.noProfile.body":
