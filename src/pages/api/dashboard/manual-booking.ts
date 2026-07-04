@@ -1,9 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
-import {
-  DEFAULT_TIME_ZONE,
-  zonedDateTimeToUtc,
-} from "@/lib/timezone";
+import { DEFAULT_TIME_ZONE, zonedDateTimeToUtc } from "@/lib/timezone";
 
 type ManualBookingRequest = {
   businessId?: string;
@@ -23,6 +20,10 @@ type BookingOverlapRow = {
   start_at: string;
   end_at?: string | null;
   duration_minutes: number;
+};
+
+type CustomerProfileRow = {
+  id: string;
 };
 
 function bearerToken(req: NextApiRequest) {
@@ -272,13 +273,29 @@ export default async function handler(
     return errorResponse(res, 409, "conflict", "Appointment time unavailable");
   }
 
+  const { data: existingCustomerProfile, error: customerProfileError } =
+    await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .ilike("email", customerEmail)
+      .maybeSingle<CustomerProfileRow>();
+
+  if (customerProfileError) {
+    return errorResponse(
+      res,
+      500,
+      "customer_lookup_failed",
+      customerProfileError.message,
+    );
+  }
+
   const { data: createdBooking, error: createError } = await supabaseAdmin
     .from("bookings")
     .insert({
       business_id: businessId,
       service_id: serviceId,
       staff_member_id: staffMemberId,
-      customer_user_id: null,
+      customer_user_id: existingCustomerProfile?.id || null,
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone || null,

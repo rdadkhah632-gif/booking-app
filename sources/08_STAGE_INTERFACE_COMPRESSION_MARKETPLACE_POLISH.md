@@ -962,3 +962,19 @@ generation/read behavior or database schema.
 Stage 8.41 did not change booking creation, booking lifecycle transitions,
 availability calculations, staff linking data, auth/session behavior, RLS,
 billing writes, notification behavior or database schema.
+
+## Stage 8.42 Manual Appointment Account Sync Implemented
+
+- tightened the existing business Calendar manual appointment flow so manually
+  added appointments attach to an existing Mirëbook customer account when the
+  entered customer email already exists in `profiles`
+- kept guest/manual customer appointments supported by leaving
+  `customer_user_id` empty when no matching account exists
+- preserved the existing owner-only API guard, active service/staff validation,
+  service-to-staff assignment check and clash prevention
+- kept customer booking flow, public availability generation, booking status
+  lifecycle, RLS, billing and database schema unchanged
+
+Stage 8.42 makes the current web flow closer to the intended app behavior:
+owner-created appointments can appear in a customer's existing My Bookings
+without requiring a separate sync table or app-only workaround.
