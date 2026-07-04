@@ -38,6 +38,13 @@ type StaffAvailabilityRow = {
   is_closed: boolean;
 };
 
+function normaliseTimeValue(value?: string | null) {
+  if (!value) return "";
+  const [hour = "", minute = ""] = value.split(":");
+  if (!hour || !minute) return "";
+  return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+}
+
 function formTextValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
@@ -53,8 +60,14 @@ function rowsFromAvailabilityForm(
     return {
       ...row,
       is_closed: formData.get(`closed-${day}`) === "on",
-      start_time: formTextValue(formData, `start-${day}`) || row.start_time,
-      end_time: formTextValue(formData, `end-${day}`) || row.end_time,
+      start_time:
+        normaliseTimeValue(formTextValue(formData, `start-${day}`)) ||
+        normaliseTimeValue(row.start_time) ||
+        "09:00",
+      end_time:
+        normaliseTimeValue(formTextValue(formData, `end-${day}`)) ||
+        normaliseTimeValue(row.end_time) ||
+        "17:00",
     };
   });
 }
@@ -165,17 +178,24 @@ export default function StaffAvailabilityPage() {
       );
 
       setRows(
-        days.map(
-          (_, i) =>
-            existingByDay.get(i) || {
-              staff_member_id: staffId,
-              business_id: staffData.business_id,
-              day_of_week: i,
-              start_time: "09:00",
-              end_time: "17:00",
-              is_closed: i === 0,
-            },
-        ),
+        days.map((_, i) => {
+          const existingRow = existingByDay.get(i);
+          return existingRow
+            ? {
+                ...existingRow,
+                start_time:
+                  normaliseTimeValue(existingRow.start_time) || "09:00",
+                end_time: normaliseTimeValue(existingRow.end_time) || "17:00",
+              }
+            : {
+                staff_member_id: staffId,
+                business_id: staffData.business_id,
+                day_of_week: i,
+                start_time: "09:00",
+                end_time: "17:00",
+                is_closed: i === 0,
+              };
+        }),
       );
     } else {
       setRows(defaultRows(staffId, staffData.business_id));
@@ -292,8 +312,8 @@ export default function StaffAvailabilityPage() {
       business_id: staff.business_id,
       staff_member_id: staffId,
       day_of_week: row.day_of_week,
-      start_time: row.start_time,
-      end_time: row.end_time,
+      start_time: normaliseTimeValue(row.start_time) || "09:00",
+      end_time: normaliseTimeValue(row.end_time) || "17:00",
       is_closed: row.is_closed,
     }));
 
@@ -327,7 +347,20 @@ export default function StaffAvailabilityPage() {
       return;
     }
 
-    setRows(cleanRows);
+    const savedRows = Array.isArray(result?.rows)
+      ? (result.rows as StaffAvailabilityRow[])
+      : cleanRows;
+
+    const savedRowsByDay = new Map<number, StaffAvailabilityRow>();
+    savedRows.forEach((row) => {
+      savedRowsByDay.set(row.day_of_week, {
+        ...row,
+        start_time: normaliseTimeValue(row.start_time) || "09:00",
+        end_time: normaliseTimeValue(row.end_time) || "17:00",
+      });
+    });
+
+    setRows(cleanRows.map((row) => savedRowsByDay.get(row.day_of_week) || row));
     const savedMessage = t(
       "staffAvailability.success.saved",
       "Working hours saved.",

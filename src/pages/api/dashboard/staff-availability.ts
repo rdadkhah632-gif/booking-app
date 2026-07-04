@@ -13,6 +13,16 @@ type StaffAvailabilityInput = {
   is_closed?: boolean;
 };
 
+type StaffAvailabilityRow = {
+  id: string;
+  business_id: string;
+  staff_member_id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_closed: boolean;
+};
+
 type StaffMemberRow = {
   id: string;
   business_id: string;
@@ -176,31 +186,53 @@ export default async function handler(
     );
   }
 
-  const { error: deleteError } = await supabaseAdmin
-    .from("staff_availability")
-    .delete()
-    .eq("staff_member_id", staffId);
+  for (const row of rows) {
+    const rowUpdate = {
+      business_id: staff.business_id,
+      start_time: row.start_time,
+      end_time: row.end_time,
+      is_closed: row.is_closed,
+    };
 
-  if (deleteError) {
-    return errorResponse(res, 500, "delete_failed", deleteError.message);
+    const { data: updatedRows, error: updateError } = await supabaseAdmin
+      .from("staff_availability")
+      .update(rowUpdate)
+      .eq("staff_member_id", staffId)
+      .eq("day_of_week", row.day_of_week)
+      .select("id");
+
+    if (updateError) {
+      return errorResponse(res, 500, "update_failed", updateError.message);
+    }
+
+    if (!updatedRows || updatedRows.length === 0) {
+      const { error: insertError } = await supabaseAdmin
+        .from("staff_availability")
+        .insert({
+          ...rowUpdate,
+          staff_member_id: staffId,
+          day_of_week: row.day_of_week,
+        });
+
+      if (insertError) {
+        return errorResponse(res, 500, "insert_failed", insertError.message);
+      }
+    }
   }
 
-  const rowsToInsert = rows.map((row) => ({
-    business_id: staff.business_id,
-    staff_member_id: staffId,
-    day_of_week: row.day_of_week,
-    start_time: row.start_time,
-    end_time: row.end_time,
-    is_closed: row.is_closed,
-  }));
-
-  const { error: insertError } = await supabaseAdmin
+  const { data: savedRows, error: readBackError } = await supabaseAdmin
     .from("staff_availability")
-    .insert(rowsToInsert);
+    .select(
+      "id, business_id, staff_member_id, day_of_week, start_time, end_time, is_closed",
+    )
+    .eq("business_id", staff.business_id)
+    .eq("staff_member_id", staffId)
+    .order("day_of_week")
+    .returns<StaffAvailabilityRow[]>();
 
-  if (insertError) {
-    return errorResponse(res, 500, "insert_failed", insertError.message);
+  if (readBackError) {
+    return errorResponse(res, 500, "read_back_failed", readBackError.message);
   }
 
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({ ok: true, rows: savedRows || [] });
 }

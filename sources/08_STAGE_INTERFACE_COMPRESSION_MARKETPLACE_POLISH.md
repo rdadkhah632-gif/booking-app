@@ -1053,3 +1053,17 @@ billing writes, notification generation or database schema.
 Stage 8.46 did not change public customer booking, public slot generation,
 booking status transitions, staff invite/linking data, auth/session rules,
 billing writes, notification generation or database schema.
+
+## Stage 8.47 Staff Working Hours Duplicate-Row Hardening Implemented
+
+- hardened the owner staff Working hours API against legacy duplicate
+  `staff_availability` rows by updating every row for each staff/day instead of
+  relying on delete/insert replacement
+- inserted missing day rows only when no row exists for that staff/day
+- returned the server read-back rows to the UI and normalised time values from
+  database `HH:mm:ss` format to form-friendly `HH:mm`
+- kept the visible save confirmation and business-scoped staff-hours refresh
+
+Stage 8.47 did not change public customer booking, public slot generation,
+booking status transitions, staff invite/linking data, auth/session rules,
+billing writes, notification generation or database schema.
