@@ -187,10 +187,6 @@ export default async function handler(
     return errorResponse(res, 400, "invalid_time", "Invalid appointment time");
   }
 
-  if (start <= new Date()) {
-    return errorResponse(res, 400, "past_time", "Appointment must be future");
-  }
-
   const [
     { data: service, error: serviceError },
     { data: staff, error: staffError },

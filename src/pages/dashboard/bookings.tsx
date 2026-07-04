@@ -109,6 +109,24 @@ const emptyManualBookingDraft: ManualBookingDraft = {
   time: "09:00",
 };
 
+function formValue(formData: FormData, key: keyof ManualBookingDraft) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value : "";
+}
+
+function manualBookingDraftFromForm(formData: FormData): ManualBookingDraft {
+  return {
+    customerName: formValue(formData, "customerName"),
+    customerEmail: formValue(formData, "customerEmail"),
+    customerPhone: formValue(formData, "customerPhone"),
+    customerNotes: formValue(formData, "customerNotes"),
+    serviceId: formValue(formData, "serviceId"),
+    staffMemberId: formValue(formData, "staffMemberId"),
+    date: formValue(formData, "date"),
+    time: formValue(formData, "time"),
+  };
+}
+
 function dateKeyForDate(date: Date) {
   return toDateInputValue(date);
 }
@@ -1015,9 +1033,12 @@ export default function Bookings() {
     return nextStart < bookingEnd && nextEnd > bookingStart;
   }
 
-  function validateManualBookingDraft() {
-    const customerName = manualBooking.customerName.trim();
-    const customerEmail = manualBooking.customerEmail.trim().toLowerCase();
+  function validateManualBookingDraft(
+    draft: ManualBookingDraft,
+    selectedService: ManualBookingService | undefined,
+  ) {
+    const customerName = draft.customerName.trim();
+    const customerEmail = draft.customerEmail.trim().toLowerCase();
 
     if (!customerName) {
       return t(
@@ -1033,26 +1054,22 @@ export default function Bookings() {
       );
     }
 
-    if (!selectedManualService) {
+    if (!selectedService) {
       return t("dashboardBookings.manual.error.service", "Choose a service.");
     }
 
-    if (!manualBooking.staffMemberId) {
+    if (!draft.staffMemberId) {
       return t("dashboardBookings.manual.error.staff", "Choose staff.");
     }
 
-    if (!manualBooking.date || !manualBooking.time) {
+    if (!draft.date || !draft.time) {
       return t(
         "dashboardBookings.manual.error.time",
         "Choose a date and time.",
       );
     }
 
-    const start = zonedDateTimeToUtc(
-      manualBooking.date,
-      manualBooking.time,
-      calendarTimeZone,
-    );
+    const start = zonedDateTimeToUtc(draft.date, draft.time, calendarTimeZone);
     if (Number.isNaN(start.getTime())) {
       return t(
         "dashboardBookings.manual.error.time",
@@ -1133,11 +1150,16 @@ export default function Bookings() {
     );
   }
 
-  async function createManualBooking() {
+  async function createManualBooking(draft: ManualBookingDraft) {
     if (!business || manualBookingSaving) return;
 
-    const validationError = validateManualBookingDraft();
-    if (validationError || !selectedManualService) {
+    const selectedService = manualServices.find(
+      (service) => service.id === draft.serviceId,
+    );
+    const validationError = validateManualBookingDraft(draft, selectedService);
+    setManualBooking(draft);
+
+    if (validationError || !selectedService) {
       setManualBookingError(validationError);
       return;
     }
@@ -1147,13 +1169,9 @@ export default function Bookings() {
     setError(null);
     setSuccess(null);
 
-    const start = zonedDateTimeToUtc(
-      manualBooking.date,
-      manualBooking.time,
-      calendarTimeZone,
-    );
-    const customerName = manualBooking.customerName.trim();
-    const customerEmail = manualBooking.customerEmail.trim().toLowerCase();
+    const start = zonedDateTimeToUtc(draft.date, draft.time, calendarTimeZone);
+    const customerName = draft.customerName.trim();
+    const customerEmail = draft.customerEmail.trim().toLowerCase();
 
     try {
       const [
@@ -1165,22 +1183,22 @@ export default function Bookings() {
         supabase
           .from("services")
           .select("id, duration_minutes, active")
-          .eq("id", selectedManualService.id)
+          .eq("id", selectedService.id)
           .eq("business_id", business.id)
           .eq("active", true)
           .maybeSingle(),
         supabase
           .from("staff_members")
           .select("id, active")
-          .eq("id", manualBooking.staffMemberId)
+          .eq("id", draft.staffMemberId)
           .eq("business_id", business.id)
           .eq("active", true)
           .maybeSingle(),
         supabase
           .from("staff_services")
           .select("staff_member_id")
-          .eq("staff_member_id", manualBooking.staffMemberId)
-          .eq("service_id", selectedManualService.id)
+          .eq("staff_member_id", draft.staffMemberId)
+          .eq("service_id", selectedService.id)
           .maybeSingle(),
         supabase
           .from("bookings")
@@ -1188,7 +1206,7 @@ export default function Bookings() {
             "id, staff_member_id, start_at, end_at, duration_minutes, status",
           )
           .eq("business_id", business.id)
-          .eq("staff_member_id", manualBooking.staffMemberId)
+          .eq("staff_member_id", draft.staffMemberId)
           .in("status", ["pending", "confirmed"])
           .gte("start_at", addDays(startOfDay(start), -1).toISOString())
           .lte("start_at", addDays(endOfDay(start), 1).toISOString()),
@@ -1230,15 +1248,10 @@ export default function Bookings() {
       }
 
       const durationMinutes =
-        freshService.duration_minutes || selectedManualService.duration_minutes;
+        freshService.duration_minutes || selectedService.duration_minutes;
       const appointmentEnd = addMinutes(start, durationMinutes);
       const hasConflict = ((freshBookings || []) as Booking[]).some((booking) =>
-        bookingOverlaps(
-          booking,
-          manualBooking.staffMemberId,
-          start,
-          appointmentEnd,
-        ),
+        bookingOverlaps(booking, draft.staffMemberId, start, appointmentEnd),
       );
 
       if (hasConflict) {
@@ -1268,14 +1281,14 @@ export default function Bookings() {
         },
         body: JSON.stringify({
           businessId: business.id,
-          serviceId: selectedManualService.id,
-          staffMemberId: manualBooking.staffMemberId,
+          serviceId: selectedService.id,
+          staffMemberId: draft.staffMemberId,
           customerName,
           customerEmail,
-          customerPhone: manualBooking.customerPhone,
-          customerNotes: manualBooking.customerNotes,
-          date: manualBooking.date,
-          time: manualBooking.time,
+          customerPhone: draft.customerPhone,
+          customerNotes: draft.customerNotes,
+          date: draft.date,
+          time: draft.time,
           startAt: start.toISOString(),
         }),
       });
@@ -1295,13 +1308,13 @@ export default function Bookings() {
 
       setManualBooking({
         ...emptyManualBookingDraft,
-        date: manualBooking.date,
-        time: manualBooking.time,
+        date: draft.date,
+        time: draft.time,
       });
       setManualBookingOpen(false);
-      setSelectedDate(manualBooking.date);
+      setSelectedDate(draft.date);
       replaceBookingsQuery({
-        nextDate: manualBooking.date,
+        nextDate: draft.date,
       });
       setSuccess(
         t(
@@ -1973,7 +1986,11 @@ export default function Bookings() {
                         className="manual-booking-form"
                         onSubmit={(event) => {
                           event.preventDefault();
-                          void createManualBooking();
+                          void createManualBooking(
+                            manualBookingDraftFromForm(
+                              new FormData(event.currentTarget),
+                            ),
+                          );
                         }}
                       >
                         <label>
@@ -1984,6 +2001,7 @@ export default function Bookings() {
                             )}
                           </span>
                           <input
+                            name="customerName"
                             value={manualBooking.customerName}
                             onChange={(event) =>
                               updateManualBookingField(
@@ -2003,6 +2021,7 @@ export default function Bookings() {
                             )}
                           </span>
                           <input
+                            name="customerEmail"
                             type="email"
                             value={manualBooking.customerEmail}
                             onChange={(event) =>
@@ -2023,6 +2042,7 @@ export default function Bookings() {
                             )}
                           </span>
                           <input
+                            name="customerPhone"
                             value={manualBooking.customerPhone}
                             onChange={(event) =>
                               updateManualBookingField(
@@ -2039,6 +2059,7 @@ export default function Bookings() {
                             {t("dashboardBookings.manual.service", "Service")}
                           </span>
                           <select
+                            name="serviceId"
                             value={manualBooking.serviceId}
                             onChange={(event) =>
                               updateManualBookingField(
@@ -2065,6 +2086,7 @@ export default function Bookings() {
                         <label>
                           <span>{t("support.business.staff", "Staff")}</span>
                           <select
+                            name="staffMemberId"
                             value={manualBooking.staffMemberId}
                             onChange={(event) =>
                               updateManualBookingField(
@@ -2091,6 +2113,7 @@ export default function Bookings() {
                         <label>
                           <span>{t("common.date", "Date")}</span>
                           <input
+                            name="date"
                             type="date"
                             value={manualBooking.date}
                             onChange={(event) =>
@@ -2105,6 +2128,7 @@ export default function Bookings() {
                         <label>
                           <span>{t("common.time", "Time")}</span>
                           <input
+                            name="time"
                             type="time"
                             value={manualBooking.time}
                             onChange={(event) =>
@@ -2121,6 +2145,7 @@ export default function Bookings() {
                             {t("dashboardBookings.manual.notes", "Notes")}
                           </span>
                           <textarea
+                            name="customerNotes"
                             value={manualBooking.customerNotes}
                             onChange={(event) =>
                               updateManualBookingField(

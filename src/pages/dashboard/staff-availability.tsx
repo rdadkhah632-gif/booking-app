@@ -266,17 +266,6 @@ export default function StaffAvailabilityPage() {
     setError(null);
     setSuccess(null);
 
-    const { error: deleteError } = await supabase
-      .from("staff_availability")
-      .delete()
-      .eq("staff_member_id", staffId);
-
-    if (deleteError) {
-      setError(saveErrorMessage(deleteError.message));
-      setSaving(false);
-      return;
-    }
-
     const cleanRows = rows.map((row) => ({
       business_id: staff.business_id,
       staff_member_id: staffId,
@@ -286,14 +275,33 @@ export default function StaffAvailabilityPage() {
       is_closed: row.is_closed,
     }));
 
-    const { error } = await supabase
-      .from("staff_availability")
-      .insert(cleanRows);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setError(saveErrorMessage("auth_required"));
+      setSaving(false);
+      return;
+    }
+
+    const response = await fetch("/api/dashboard/staff-availability", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        staffId,
+        rows: cleanRows,
+      }),
+    });
+    const result = await response.json().catch(() => ({}));
 
     setSaving(false);
 
-    if (error) {
-      setError(saveErrorMessage(error.message));
+    if (!response.ok) {
+      setError(saveErrorMessage(result?.error || result?.code));
       return;
     }
 

@@ -1021,3 +1021,21 @@ generation or database schema.
 Stage 8.44 did not change booking status transitions, public slot generation,
 staff invite/linking data, auth/session rules, billing writes, notification
 generation or database schema.
+
+## Stage 8.45 Business Retest Reliability Fixes Implemented
+
+- moved owner staff Working hours saves to an owner-authorized server route so
+  saving replaces all rows for the selected staff member through the service
+  role after verifying the owner owns that staff member's business
+- kept the staff Working hours page business-scoped on refresh so saved rows are
+  re-read from the same business context shown to the owner
+- made manual Calendar appointment submission read the actual submitted form
+  values before validation and API payload construction, avoiding stale
+  React-state fallbacks to today's date and `09:00`
+- removed the hard server-side future-time blocker from manual owner-created
+  appointments; the route still verifies owner, active service, active staff,
+  staff-service assignment and appointment overlap before insert
+
+Stage 8.45 did not change public customer booking, public slot generation,
+booking status transitions, staff invite/linking data, auth/session rules,
+billing writes, notification generation or database schema.
