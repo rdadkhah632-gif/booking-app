@@ -942,3 +942,23 @@ Stage 8.40 did not change booking creation, booking status transitions,
 availability calculation/save behavior, auth, RLS, route protection, staff
 invite/linking, owner-as-staff data logic, billing writes, notification
 generation/read behavior or database schema.
+
+## Stage 8.41 Web Mobile Calendar And Small Polish Implemented
+
+- kept desktop business and staff calendars as week schedule views
+- added mobile agenda views for business and staff calendars so phone users see
+  readable day-by-day appointment rows instead of a squeezed desktop grid
+- preserved the existing business manual appointment entry and selected
+  appointment details without changing booking creation or status logic
+- improved Explore card fallback media so businesses without uploaded images
+  look intentional rather than like missing-image placeholders
+- tightened the signed-in customer mobile nav so Account remains reachable
+  without clipping
+- changed staff account role badging to Staff instead of Business on staff
+  pages
+- shortened Team staff status pills from account/linkage phrasing to product
+  labels such as Linked account, Bookable and Hidden from bookings
+
+Stage 8.41 did not change booking creation, booking lifecycle transitions,
+availability calculations, staff linking data, auth/session behavior, RLS,
+billing writes, notification behavior or database schema.

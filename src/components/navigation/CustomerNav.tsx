@@ -102,6 +102,16 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
         .customer-nav-account-menu-panel button {
           width: 100%;
         }
+
+        @media (max-width: 540px) {
+          .customer-nav-account-menu-panel {
+            position: fixed;
+            top: 4.75rem;
+            right: 0.75rem;
+            left: 0.75rem;
+            width: auto;
+          }
+        }
       `}</style>
     </>
   );

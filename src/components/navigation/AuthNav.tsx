@@ -281,8 +281,9 @@ export default function AuthNav() {
 
   const roleBadge = useMemo(() => {
     if (role === "admin") return t("nav.role.operator", "Operator");
-    if (role === "business" || role === "staff" || isPublicBusinessEntry)
+    if (role === "business" || isPublicBusinessEntry)
       return t("product.business.suffix", "Business");
+    if (role === "staff") return t("nav.role.staff", "Staff");
     return null;
   }, [isPublicBusinessEntry, role, t]);
 
@@ -453,6 +454,11 @@ export default function AuthNav() {
             overflow-y: visible;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
+          }
+
+          :global(.nav-role-customer .auth-nav-links) {
+            flex-wrap: wrap;
+            overflow: visible;
           }
 
           .auth-nav-links::-webkit-scrollbar {

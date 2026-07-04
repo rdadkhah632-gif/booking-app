@@ -34,7 +34,7 @@ export default function StaffNav({
 
       <div className="staff-nav-account">
         <Link href="/support/staff" className="muted nav-wide-only">
-          {t("nav.staffSupport", "Staff support")}
+          {t("dashboardLayout.nav.help", "Help")}
         </Link>
 
         <LanguageToggle />

@@ -161,7 +161,9 @@ export default function Explore() {
   }
 
   function imageBackground(business: Business) {
-    if (!business.image_url) return "var(--accent-dim)";
+    if (!business.image_url) {
+      return "radial-gradient(circle at 25% 20%, rgba(255,107,53,0.24), transparent 36%), linear-gradient(135deg, rgba(255,107,53,0.16), rgba(45,212,191,0.08)), rgba(24,23,34,0.9)";
+    }
 
     return `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.68)), url("${business.image_url}")`;
   }

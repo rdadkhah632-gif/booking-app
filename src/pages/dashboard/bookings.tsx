@@ -1558,6 +1558,83 @@ export default function Bookings() {
           )}
         </div>
 
+        <div
+          className="mobile-week-agenda"
+          aria-label={t("dashboardBookings.mobileAgenda.label", "Week agenda")}
+        >
+          {weekGroups.map((group) => (
+            <section
+              key={group.dateKey}
+              className={
+                group.dateKey === selectedDate
+                  ? "mobile-agenda-day active"
+                  : "mobile-agenda-day"
+              }
+            >
+              <button
+                type="button"
+                className="mobile-agenda-day-heading"
+                onClick={() => changeCalendarDate(group.dateKey)}
+              >
+                <span>{group.shortLabel}</span>
+                <strong>
+                  {group.bookings.length}{" "}
+                  {group.bookings.length === 1
+                    ? t("dashboardBookings.appointmentCount", "appointment")
+                    : t("dashboardBookings.appointments", "appointments")}
+                </strong>
+              </button>
+
+              {group.bookings.length > 0 ? (
+                <div className="mobile-agenda-list">
+                  {group.bookings.map((booking) => {
+                    const time = bookingTime(booking);
+
+                    return (
+                      <button
+                        key={booking.id}
+                        type="button"
+                        className={`mobile-agenda-booking ${booking.status}`}
+                        onClick={() => {
+                          setManualBookingOpen(false);
+                          changeCalendarDate(group.dateKey);
+                          setSelectedCalendarBookingId(booking.id);
+                        }}
+                      >
+                        <span>{time.label}</span>
+                        <strong>
+                          {booking.customer_name ||
+                            t(
+                              "dashboardBookings.card.customerFallback",
+                              "Customer",
+                            )}
+                        </strong>
+                        <small>
+                          {booking.services?.name ||
+                            t(
+                              "dashboardBookings.card.noService",
+                              "No service recorded",
+                            )}
+                          {" · "}
+                          {bookingStaffLabel(booking)}
+                        </small>
+                        <em>{statusLabel(booking.status)}</em>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="small muted mobile-agenda-empty">
+                  {t(
+                    "dashboardBookings.calendar.emptySlotTitle",
+                    "No appointments on this day",
+                  )}
+                </p>
+              )}
+            </section>
+          ))}
+        </div>
+
         <div className="week-calendar-scroll">
           <div className="week-calendar-grid">
             <div className="week-calendar-corner" />
@@ -2415,6 +2492,10 @@ export default function Bookings() {
           -webkit-overflow-scrolling: touch;
         }
 
+        :global(.mobile-week-agenda) {
+          display: none;
+        }
+
         :global(.week-calendar-summary) {
           display: flex;
           justify-content: space-between;
@@ -2934,6 +3015,109 @@ export default function Bookings() {
 
           :global(.week-calendar) {
             padding: 0.65rem;
+          }
+
+          :global(.week-calendar-scroll) {
+            display: none;
+          }
+
+          :global(.mobile-week-agenda) {
+            display: grid;
+            gap: 0.65rem;
+          }
+
+          :global(.mobile-agenda-day) {
+            display: grid;
+            gap: 0.5rem;
+            padding: 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background: rgba(15, 23, 42, 0.3);
+          }
+
+          :global(.mobile-agenda-day.active) {
+            border-color: rgba(255, 107, 53, 0.32);
+            background: rgba(255, 107, 53, 0.06);
+          }
+
+          :global(.mobile-agenda-day-heading) {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: center;
+            border: 0;
+            background: transparent;
+            color: var(--text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+          }
+
+          :global(.mobile-agenda-day-heading span) {
+            font-weight: 900;
+          }
+
+          :global(.mobile-agenda-day-heading strong) {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            white-space: nowrap;
+          }
+
+          :global(.mobile-agenda-list) {
+            display: grid;
+            gap: 0.45rem;
+          }
+
+          :global(.mobile-agenda-booking) {
+            display: grid;
+            gap: 0.12rem;
+            padding: 0.65rem;
+            border: 1px solid rgba(45, 212, 191, 0.24);
+            border-left: 4px solid var(--success);
+            border-radius: calc(var(--radius) - 4px);
+            background: rgba(15, 23, 42, 0.72);
+            color: var(--text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+          }
+
+          :global(.mobile-agenda-booking.pending) {
+            border-color: rgba(255, 107, 53, 0.28);
+            border-left-color: var(--accent);
+          }
+
+          :global(.mobile-agenda-booking.cancelled),
+          :global(.mobile-agenda-booking.declined) {
+            border-left-color: var(--warning);
+            opacity: 0.82;
+          }
+
+          :global(.mobile-agenda-booking span),
+          :global(.mobile-agenda-booking small) {
+            color: var(--text-muted);
+            font-size: 0.76rem;
+          }
+
+          :global(.mobile-agenda-booking strong) {
+            font-size: 0.9rem;
+          }
+
+          :global(.mobile-agenda-booking em) {
+            width: fit-content;
+            margin-top: 0.18rem;
+            padding: 0.16rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-style: normal;
+            font-weight: 800;
+          }
+
+          :global(.mobile-agenda-empty) {
+            margin: 0;
           }
 
           .calendar-selected-heading {

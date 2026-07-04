@@ -1758,6 +1758,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.week.previous": "Mbrapa",
   "dashboardBookings.week.next": "Para",
   "dashboardBookings.week.controls": "Kontrollet e javës",
+  "dashboardBookings.mobileAgenda.label": "Agjenda e javës",
   "dashboardBookings.details.kicker": "Takimi i zgjedhur",
   "dashboardBookings.filters.calendarView": "Pamja e kalendarit",
   "dashboardBookings.filters.body":
@@ -2491,6 +2492,8 @@ export const sq: TranslationTree = {
   "staffCalendar.emptyWeekTitle": "Nuk ka takime këtë javë",
   "staffCalendar.emptyWeekBody":
     "Takimet e caktuara do të shfaqen në këtë orar javor.",
+  "staffCalendar.mobileAgenda.label": "Agjenda e javës",
+  "staffCalendar.emptyDayShort": "Nuk ka takime të caktuara",
   "staffCalendar.pendingCountLabel": "në pritje miratimi",
   "staffCalendar.noProfile.title": "Kalendari nuk është ende i disponueshëm",
   "staffCalendar.noProfile.body":
@@ -3152,10 +3155,10 @@ export const sq: TranslationTree = {
   "staffAvailability.upcoming.emptyCompact":
     "Asnjë takim i ardhshëm nuk ndikohet.",
   "staffAvailability.upcoming.openCalendar": "Hap kalendarin",
-  "dashboardStaff.card.accountLink": "Lidhja e llogarisë",
-  "dashboardStaff.card.bookableStatus": "Statusi i rezervimit",
-  "dashboardStaff.card.bookableActive": "I rezervueshëm: aktiv",
-  "dashboardStaff.card.bookableDisabled": "I rezervueshëm: i çaktivizuar",
+  "dashboardStaff.card.accountLink": "Llogaria",
+  "dashboardStaff.card.bookableStatus": "Dukshmëria për rezervime",
+  "dashboardStaff.card.bookableActive": "I rezervueshëm",
+  "dashboardStaff.card.bookableDisabled": "I fshehur nga rezervimet",
   "dashboardStaff.card.bookableActiveBody":
     "Ky profil stafi mund të përdoret për rezervime të reja të klientëve pasi të caktohen shërbimet dhe disponueshmëria.",
   "dashboardStaff.card.bookableDisabledBody":

@@ -127,11 +127,9 @@ export default function StaffProfileCard({
 
             <span
               className={`small staff-status-pill staff-status-${inviteStatusTone}`}
-              title={t("dashboardStaff.card.accountLink", "Account link")}
+              title={t("dashboardStaff.card.accountLink", "Account")}
             >
-              {isCurrentUser
-                ? inviteStatusLabel
-                : `${t("dashboardStaff.card.accountLink", "Account link")}: ${inviteStatusLabel}`}
+              {inviteStatusLabel}
             </span>
 
             <span

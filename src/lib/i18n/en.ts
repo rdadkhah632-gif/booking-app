@@ -1462,7 +1462,7 @@ export const en: TranslationTree = {
   "dashboardStaff.card.untitled": "Untitled staff member",
   "dashboardStaff.card.active": "Active",
   "dashboardStaff.card.inactive": "Inactive",
-  "dashboardStaff.card.accountLinked": "Account linked",
+  "dashboardStaff.card.accountLinked": "Linked account",
   "dashboardStaff.card.notLinked": "Not linked",
   "dashboardStaff.card.servicesAssigned": "services assigned",
   "dashboardStaff.card.openDays": "open days",
@@ -1775,6 +1775,7 @@ export const en: TranslationTree = {
   "dashboardBookings.week.previous": "Previous",
   "dashboardBookings.week.next": "Next",
   "dashboardBookings.week.controls": "Week controls",
+  "dashboardBookings.mobileAgenda.label": "Week agenda",
   "dashboardBookings.details.kicker": "Selected appointment",
   "dashboardBookings.filters.calendarView": "Calendar view",
   "dashboardBookings.filters.body":
@@ -2394,6 +2395,8 @@ export const en: TranslationTree = {
   "staffCalendar.emptyWeekTitle": "No appointments this week",
   "staffCalendar.emptyWeekBody":
     "Assigned appointments will appear on this week's schedule.",
+  "staffCalendar.mobileAgenda.label": "Week agenda",
+  "staffCalendar.emptyDayShort": "No assigned appointments",
   "staffCalendar.pendingCountLabel": "awaiting approval",
   "staffCalendar.noProfile.title": "Calendar is not available yet",
   "staffCalendar.noProfile.body":
@@ -3101,10 +3104,10 @@ export const en: TranslationTree = {
   "staffAvailability.upcoming.emptyCompact":
     "No upcoming appointments are affected.",
   "staffAvailability.upcoming.openCalendar": "Open calendar",
-  "dashboardStaff.card.accountLink": "Account link",
-  "dashboardStaff.card.bookableStatus": "Bookable status",
-  "dashboardStaff.card.bookableActive": "Bookable: active",
-  "dashboardStaff.card.bookableDisabled": "Bookable: disabled",
+  "dashboardStaff.card.accountLink": "Account",
+  "dashboardStaff.card.bookableStatus": "Booking visibility",
+  "dashboardStaff.card.bookableActive": "Bookable",
+  "dashboardStaff.card.bookableDisabled": "Hidden from bookings",
   "dashboardStaff.card.bookableActiveBody":
     "This staff profile can be used for new customer bookings once services and availability are set.",
   "dashboardStaff.card.bookableDisabledBody":

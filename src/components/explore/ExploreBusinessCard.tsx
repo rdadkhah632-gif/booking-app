@@ -18,6 +18,7 @@ export default function ExploreBusinessCard({
   imageBackground,
 }: Props) {
   const { t } = useI18n();
+  const hasImage = Boolean(business.image_url);
   const serviceText = `${stats.assignedServices} ${
     stats.assignedServices === 1
       ? t("explore.card.serviceSingle", "service")
@@ -32,7 +33,7 @@ export default function ExploreBusinessCard({
   return (
     <div className="card explore-business-card">
       <div
-        className="explore-business-image"
+        className={`explore-business-image ${hasImage ? "has-image" : "no-image"}`}
         style={{
           minHeight: 150,
           background: imageBackground(business),
@@ -45,7 +46,11 @@ export default function ExploreBusinessCard({
           fontSize: "2rem",
         }}
       >
-        {!business.image_url && businessIcon(business)}
+        {!hasImage && (
+          <span className="explore-business-fallback-mark" aria-hidden="true">
+            {businessIcon(business)}
+          </span>
+        )}
       </div>
 
       <div className="explore-business-content">
@@ -133,6 +138,25 @@ export default function ExploreBusinessCard({
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+
+        .explore-business-fallback-mark {
+          width: 3.4rem;
+          height: 3.4rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(255, 107, 53, 0.26);
+          border-radius: 50%;
+          background:
+            radial-gradient(
+              circle at 35% 25%,
+              rgba(255, 255, 255, 0.18),
+              transparent 34%
+            ),
+            rgba(255, 107, 53, 0.12);
+          box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
+          font-size: 1.75rem;
         }
       `}</style>
     </div>

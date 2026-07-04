@@ -510,6 +510,70 @@ export default function StaffCalendarPage() {
           )}
         </div>
 
+        <div
+          className="staff-mobile-week-agenda"
+          aria-label={t("staffCalendar.mobileAgenda.label", "Week agenda")}
+        >
+          {weekGroups.map((group) => (
+            <section
+              key={group.dateString}
+              className={
+                group.dateString === selectedDate
+                  ? "staff-mobile-agenda-day active"
+                  : "staff-mobile-agenda-day"
+              }
+            >
+              <button
+                type="button"
+                className="staff-mobile-agenda-day-heading"
+                onClick={() => changeCalendarDate(group.dateString)}
+              >
+                <span>{group.shortLabel}</span>
+                <strong>
+                  {group.bookings.length}{" "}
+                  {group.bookings.length === 1
+                    ? t("dashboardBookings.appointmentCount", "appointment")
+                    : t("dashboardBookings.appointments", "appointments")}
+                </strong>
+              </button>
+
+              {group.bookings.length > 0 ? (
+                <div className="staff-mobile-agenda-list">
+                  {group.bookings.map((booking) => {
+                    const time = bookingTime(booking);
+
+                    return (
+                      <button
+                        key={booking.id}
+                        type="button"
+                        className={`staff-mobile-agenda-booking ${booking.status}`}
+                        onClick={() => {
+                          changeCalendarDate(group.dateString);
+                          setSelectedBookingId(booking.id);
+                        }}
+                      >
+                        <span>{time.label}</span>
+                        <strong>
+                          {booking.customer_name ||
+                            t("common.customer", "Customer")}
+                        </strong>
+                        <small>
+                          {serviceName(booking, t("common.service", "Service"))}
+                        </small>
+                        <em>{statusLabel(booking.status)}</em>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="small muted staff-mobile-agenda-empty">
+                  {t("staffCalendar.emptyDayShort", "No assigned appointments")}
+                </p>
+              )}
+            </section>
+          ))}
+        </div>
+
         <div className="staff-week-scroll">
           <div className="staff-week-grid">
             <div className="staff-week-corner" />
@@ -922,6 +986,14 @@ export default function StaffCalendarPage() {
           scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
           scrollbar-width: thin;
           -webkit-overflow-scrolling: touch;
+        }
+
+        .staff-mobile-week-agenda {
+          display: none;
+        }
+
+        :global(.staff-mobile-week-agenda) {
+          display: none;
         }
 
         .staff-week-summary {
@@ -1494,6 +1566,171 @@ export default function StaffCalendarPage() {
 
           :global(.staff-week-calendar) {
             padding: 0.65rem;
+          }
+
+          .staff-week-scroll {
+            display: none;
+          }
+
+          :global(.staff-week-scroll) {
+            display: none;
+          }
+
+          .staff-mobile-week-agenda {
+            display: grid;
+            gap: 0.65rem;
+          }
+
+          :global(.staff-mobile-week-agenda) {
+            display: grid;
+            gap: 0.65rem;
+          }
+
+          .staff-mobile-agenda-day {
+            display: grid;
+            gap: 0.5rem;
+            padding: 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background: rgba(15, 23, 42, 0.3);
+          }
+
+          :global(.staff-mobile-agenda-day) {
+            display: grid;
+            gap: 0.5rem;
+            padding: 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background: rgba(15, 23, 42, 0.3);
+          }
+
+          .staff-mobile-agenda-day.active {
+            border-color: rgba(255, 107, 53, 0.32);
+            background: rgba(255, 107, 53, 0.06);
+          }
+
+          :global(.staff-mobile-agenda-day.active) {
+            border-color: rgba(255, 107, 53, 0.32);
+            background: rgba(255, 107, 53, 0.06);
+          }
+
+          .staff-mobile-agenda-day-heading {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: center;
+            border: 0;
+            background: transparent;
+            color: var(--text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+          }
+
+          :global(.staff-mobile-agenda-day-heading) {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: center;
+            border: 0;
+            background: transparent;
+            color: var(--text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+          }
+
+          .staff-mobile-agenda-day-heading span,
+          :global(.staff-mobile-agenda-day-heading span) {
+            font-weight: 900;
+          }
+
+          .staff-mobile-agenda-day-heading strong,
+          :global(.staff-mobile-agenda-day-heading strong) {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            white-space: nowrap;
+          }
+
+          .staff-mobile-agenda-list,
+          :global(.staff-mobile-agenda-list) {
+            display: grid;
+            gap: 0.45rem;
+          }
+
+          .staff-mobile-agenda-booking {
+            display: grid;
+            gap: 0.12rem;
+            padding: 0.65rem;
+            border: 1px solid rgba(45, 212, 191, 0.24);
+            border-left: 4px solid var(--success);
+            border-radius: calc(var(--radius) - 4px);
+            background: rgba(15, 23, 42, 0.72);
+            color: var(--text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+          }
+
+          :global(.staff-mobile-agenda-booking) {
+            display: grid;
+            gap: 0.12rem;
+            padding: 0.65rem;
+            border: 1px solid rgba(45, 212, 191, 0.24);
+            border-left: 4px solid var(--success);
+            border-radius: calc(var(--radius) - 4px);
+            background: rgba(15, 23, 42, 0.72);
+            color: var(--text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+          }
+
+          .staff-mobile-agenda-booking.pending,
+          :global(.staff-mobile-agenda-booking.pending) {
+            border-color: rgba(255, 107, 53, 0.28);
+            border-left-color: var(--accent);
+          }
+
+          .staff-mobile-agenda-booking.cancelled,
+          .staff-mobile-agenda-booking.declined,
+          :global(.staff-mobile-agenda-booking.cancelled),
+          :global(.staff-mobile-agenda-booking.declined) {
+            border-left-color: var(--warning);
+            opacity: 0.82;
+          }
+
+          .staff-mobile-agenda-booking span,
+          .staff-mobile-agenda-booking small,
+          :global(.staff-mobile-agenda-booking span),
+          :global(.staff-mobile-agenda-booking small) {
+            color: var(--text-muted);
+            font-size: 0.76rem;
+          }
+
+          .staff-mobile-agenda-booking strong,
+          :global(.staff-mobile-agenda-booking strong) {
+            font-size: 0.9rem;
+          }
+
+          .staff-mobile-agenda-booking em,
+          :global(.staff-mobile-agenda-booking em) {
+            width: fit-content;
+            margin-top: 0.18rem;
+            padding: 0.16rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-style: normal;
+            font-weight: 800;
+          }
+
+          .staff-mobile-agenda-empty,
+          :global(.staff-mobile-agenda-empty) {
+            margin: 0;
           }
 
           .staff-week-summary {
