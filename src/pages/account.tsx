@@ -16,6 +16,7 @@ import {
   getEmailVerificationState,
 } from "@/lib/email/verification";
 import { getAuthAppUrl, isBusinessAppHostname } from "@/lib/appUrls";
+import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
 
 type Role = "customer" | "business" | "staff";
 
@@ -317,28 +318,7 @@ export default function AccountPage() {
 
   async function logout() {
     setSigningOut(true);
-
-    try {
-      await supabase.auth.signOut();
-    } finally {
-      clearSupabaseBrowserSession();
-      router.replace("/");
-    }
-  }
-
-  function clearSupabaseBrowserSession() {
-    if (typeof window === "undefined") return;
-
-    [window.localStorage, window.sessionStorage].forEach((storage) => {
-      Object.keys(storage)
-        .filter(
-          (key) =>
-            key.startsWith("sb-") ||
-            key.includes("supabase.auth.token") ||
-            key.includes("supabase.auth.refreshToken"),
-        )
-        .forEach((key) => storage.removeItem(key));
-    });
+    await signOutCurrentSession("/");
   }
 
   async function resendVerification() {

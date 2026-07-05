@@ -354,6 +354,27 @@ export default function BusinessNotifications() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [decliningRequestId, setDecliningRequestId] = useState<string | null>(
+    null,
+  );
+  const [declineMessages, setDeclineMessages] = useState<
+    Record<string, string>
+  >({});
+
+  function defaultDeclineMessage() {
+    return t(
+      "dashboardNotifications.prompt.defaultDeclineMessage",
+      "Sorry, that time is not available.",
+    );
+  }
+
+  function openDeclineComposer(request: BookingRequest) {
+    setDecliningRequestId(request.id);
+    setDeclineMessages((current) => ({
+      ...current,
+      [request.id]: current[request.id] ?? defaultDeclineMessage(),
+    }));
+  }
 
   async function loadNotifications(options?: {
     keepSuccess?: boolean;
@@ -974,18 +995,12 @@ export default function BusinessNotifications() {
     await loadNotifications({ keepSuccess: true });
   }
 
-  async function declineRequest(request: BookingRequest) {
-    const responseMessage = prompt(
-      t(
-        "dashboardNotifications.prompt.optionalMessage",
-        "Optional message to customer:",
-      ),
-      t(
-        "dashboardNotifications.prompt.defaultDeclineMessage",
-        "Sorry, that time is not available.",
-      ),
-    );
-    if (responseMessage === null) return;
+  async function declineRequest(
+    request: BookingRequest,
+    responseMessage: string,
+  ) {
+    const finalResponseMessage =
+      responseMessage.trim() || defaultDeclineMessage();
 
     setActionLoadingId(`request-${request.id}`);
     setError(null);
@@ -995,7 +1010,7 @@ export default function BusinessNotifications() {
       .from("booking_requests")
       .update({
         status: "declined",
-        response_message: responseMessage,
+        response_message: finalResponseMessage,
         updated_at: new Date().toISOString(),
       })
       .eq("id", request.id)
@@ -1014,7 +1029,7 @@ export default function BusinessNotifications() {
           ? {
               ...item,
               status: "declined",
-              response_message: responseMessage,
+              response_message: finalResponseMessage,
               updated_at: new Date().toISOString(),
             }
           : item,
@@ -1032,13 +1047,14 @@ export default function BusinessNotifications() {
         "Reschedule declined",
       ),
       message:
-        responseMessage ||
+        finalResponseMessage ||
         t(
           "dashboardNotifications.notification.rescheduleDeclinedMessage",
           "Your reschedule request was declined. The original booking remains unchanged.",
         ),
       actionUrl: "/my-bookings",
     });
+    setDecliningRequestId(null);
 
     setSuccess(
       t(
@@ -1477,6 +1493,9 @@ export default function BusinessNotifications() {
 
           {pendingRequests.map((request) => {
             const isWorking = actionLoadingId === `request-${request.id}`;
+            const isDeclining = decliningRequestId === request.id;
+            const declineMessage =
+              declineMessages[request.id] ?? defaultDeclineMessage();
             const linkedBooking = requestBooking(request);
 
             return (
@@ -1604,29 +1623,90 @@ export default function BusinessNotifications() {
                   </div>
 
                   <div className="business-notification-card-actions">
-                    <button
-                      onClick={() => acceptRequest(request)}
-                      disabled={isWorking}
-                      className="btn btn-accent"
-                    >
-                      {isWorking
-                        ? t("dashboardBookings.actions.working", "Working...")
-                        : t(
-                            "dashboardNotifications.actions.acceptNewTime",
-                            "Accept new time",
+                    {isDeclining ? (
+                      <div className="business-decline-composer">
+                        <label
+                          className="small muted"
+                          htmlFor={`decline-message-${request.id}`}
+                        >
+                          {t(
+                            "dashboardNotifications.prompt.optionalMessage",
+                            "Optional message to customer:",
                           )}
-                    </button>
+                        </label>
+                        <textarea
+                          id={`decline-message-${request.id}`}
+                          rows={3}
+                          value={declineMessage}
+                          onChange={(event) =>
+                            setDeclineMessages((current) => ({
+                              ...current,
+                              [request.id]: event.target.value,
+                            }))
+                          }
+                        />
+                        <div className="business-notification-card-actions compact">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              declineRequest(request, declineMessage)
+                            }
+                            disabled={isWorking}
+                            className="btn btn-danger"
+                          >
+                            {isWorking
+                              ? t(
+                                  "dashboardBookings.actions.working",
+                                  "Working...",
+                                )
+                              : t(
+                                  "dashboardNotifications.actions.confirmDecline",
+                                  "Confirm decline",
+                                )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDecliningRequestId(null)}
+                            disabled={isWorking}
+                            className="btn btn-ghost"
+                          >
+                            {t(
+                              "dashboardNotifications.actions.keepRequest",
+                              "Keep request",
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => acceptRequest(request)}
+                          disabled={isWorking}
+                          className="btn btn-accent"
+                        >
+                          {isWorking
+                            ? t(
+                                "dashboardBookings.actions.working",
+                                "Working...",
+                              )
+                            : t(
+                                "dashboardNotifications.actions.acceptNewTime",
+                                "Accept new time",
+                              )}
+                        </button>
 
-                    <button
-                      onClick={() => declineRequest(request)}
-                      disabled={isWorking}
-                      className="btn btn-danger"
-                    >
-                      {t(
-                        "dashboardNotifications.actions.declineRequest",
-                        "Decline request",
-                      )}
-                    </button>
+                        <button
+                          onClick={() => openDeclineComposer(request)}
+                          disabled={isWorking}
+                          className="btn btn-danger"
+                        >
+                          {t(
+                            "dashboardNotifications.actions.declineRequest",
+                            "Decline request",
+                          )}
+                        </button>
+                      </>
+                    )}
 
                     <Link
                       href={`/dashboard/bookings?businessId=${request.business_id}`}
@@ -1915,6 +1995,31 @@ export default function BusinessNotifications() {
           flex-wrap: wrap;
           align-items: flex-start;
           justify-content: flex-end;
+        }
+
+        .business-notification-card-actions.compact {
+          justify-content: flex-start;
+        }
+
+        .business-decline-composer {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          display: grid;
+          gap: 0.65rem;
+          min-width: min(100%, 22rem);
+          padding: 0.75rem;
+        }
+
+        .business-decline-composer textarea {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          color: var(--text);
+          min-height: 5rem;
+          padding: 0.7rem 0.8rem;
+          resize: vertical;
+          width: 100%;
         }
 
         .business-action-card,

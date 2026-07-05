@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
 
 type Props = {
   children: React.ReactNode;
@@ -216,8 +217,7 @@ export default function DashboardLayout({
   }
 
   async function logout() {
-    await supabase.auth.signOut();
-    router.replace("/");
+    await signOutCurrentSession("/");
   }
 
   if (checkingAccess) {

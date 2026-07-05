@@ -1067,3 +1067,29 @@ billing writes, notification generation or database schema.
 Stage 8.47 did not change public customer booking, public slot generation,
 booking status transitions, staff invite/linking data, auth/session rules,
 billing writes, notification generation or database schema.
+
+## Stage 8.48 Customer Session And Booking Reachability Fixes Implemented
+
+- made logout local-first and shared across customer navigation, account and
+  authenticated workspace shells so a stalled Supabase sign-out request cannot
+  leave the user visually logged in
+- cleared Supabase browser storage and auth cookies before and after the local
+  sign-out call, then redirected with a full page navigation
+- restored normal vertical overscroll behavior on the app body
+- gave the public business booking summary a contained scroll area on desktop
+  so customer/auth/submit controls remain reachable at normal laptop-height
+  viewports
+- added extra bottom room to public booking and reschedule pages so date, time
+  and submit controls are reachable during customer QA
+- replaced the business Inbox reschedule decline native prompt with an inline
+  decline composer, keeping the same decline status update while making the
+  action easier to verify and less browser-dialog dependent
+
+Stage 8.48 did not change booking creation, slot generation, booking status
+transitions, staff invite/linking data, role/RLS rules, billing writes,
+notification generation or database schema.
+
+Remaining QA note:
+
+- retest customer logout, public booking reachability, reschedule reachability
+  and business Inbox reschedule decline on the deployed site.

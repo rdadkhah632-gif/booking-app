@@ -1597,7 +1597,7 @@ export default function BusinessBookingPage() {
 
       <style jsx>{`
         .booking-public-container {
-          padding: 24px 24px 64px;
+          padding: 24px 24px 112px;
         }
 
         :global(.booking-action-row) {
@@ -1778,6 +1778,10 @@ export default function BusinessBookingPage() {
           display: grid;
           gap: 0.75rem;
           min-width: 0;
+          max-height: calc(100dvh - 120px);
+          overflow-y: auto;
+          padding-bottom: 0.5rem;
+          overscroll-behavior: contain;
         }
 
         :global(.booking-summary-heading h2) {
@@ -1861,6 +1865,8 @@ export default function BusinessBookingPage() {
 
           :global(.booking-summary-panel) {
             position: static;
+            max-height: none;
+            overflow: visible;
           }
 
           .booking-page-grid > section,
@@ -1872,7 +1878,7 @@ export default function BusinessBookingPage() {
 
         @media (max-width: 520px) {
           .booking-public-container {
-            padding: 20px 14px 56px;
+            padding: 20px 14px 104px;
           }
 
           :global(.public-business-hero) {

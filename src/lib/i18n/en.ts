@@ -1996,6 +1996,8 @@ export const en: TranslationTree = {
   "dashboardNotifications.actions.markRead": "Mark read",
   "dashboardNotifications.actions.acceptNewTime": "Accept new time",
   "dashboardNotifications.actions.declineRequest": "Decline request",
+  "dashboardNotifications.actions.confirmDecline": "Confirm decline",
+  "dashboardNotifications.actions.keepRequest": "Keep request",
   "dashboardNotifications.sections.actionRequired": "Needs action",
   "dashboardNotifications.sections.needsActionTitle":
     "Review customer requests",

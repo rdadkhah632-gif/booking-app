@@ -828,7 +828,7 @@ export default function RescheduleBooking() {
     <main>
       <AuthNav />
 
-      <section className="container" style={{ padding: "42px 24px 80px" }}>
+      <section className="container" style={{ padding: "42px 24px 128px" }}>
         {loading && (
           <div className="card">
             <p className="muted">
@@ -1591,6 +1591,7 @@ export default function RescheduleBooking() {
         .reschedule-form-card {
           display: grid;
           gap: 1rem;
+          margin-bottom: 2rem;
         }
 
         .reschedule-time-grid {

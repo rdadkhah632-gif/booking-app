@@ -1985,6 +1985,8 @@ export const sq: TranslationTree = {
   "dashboardNotifications.actions.markRead": "Shëno si lexuar",
   "dashboardNotifications.actions.acceptNewTime": "Prano orarin e ri",
   "dashboardNotifications.actions.declineRequest": "Refuzo kërkesën",
+  "dashboardNotifications.actions.confirmDecline": "Konfirmo refuzimin",
+  "dashboardNotifications.actions.keepRequest": "Mbaje kërkesën",
   "dashboardNotifications.sections.actionRequired": "Kërkon veprim",
   "dashboardNotifications.sections.needsActionTitle":
     "Shqyrto kërkesat e klientëve",
