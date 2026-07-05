@@ -3,7 +3,7 @@ import LanguageToggle from "./LanguageToggle";
 import { useI18n } from "@/lib/useI18n";
 import { NavProps, notificationLabel } from "./navTypes";
 
-export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
+export default function CustomerNav({ notificationCount }: NavProps) {
   const { t } = useI18n();
   return (
     <>
@@ -31,14 +31,9 @@ export default function CustomerNav({ notificationCount, onLogout }: NavProps) {
           <Link href="/account" className="muted">
             {t("nav.account")}
           </Link>
-          <button
-            type="button"
-            onClick={onLogout}
-            className="btn btn-ghost"
-            aria-label={t("nav.logout")}
-          >
+          <Link href="/logout" className="btn btn-ghost">
             {t("nav.logout")}
-          </button>
+          </Link>
         </div>
       </details>
 

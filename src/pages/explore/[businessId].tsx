@@ -1773,15 +1773,11 @@ export default function BusinessBookingPage() {
         }
 
         :global(.booking-summary-panel) {
-          position: sticky;
-          top: 96px;
+          position: static;
           display: grid;
           gap: 0.75rem;
           min-width: 0;
-          max-height: calc(100dvh - 120px);
-          overflow-y: auto;
-          padding-bottom: 0.5rem;
-          overscroll-behavior: contain;
+          padding-bottom: 1rem;
         }
 
         :global(.booking-summary-heading h2) {
@@ -1861,12 +1857,6 @@ export default function BusinessBookingPage() {
         @media (max-width: 980px) {
           .booking-page-grid {
             grid-template-columns: 1fr;
-          }
-
-          :global(.booking-summary-panel) {
-            position: static;
-            max-height: none;
-            overflow: visible;
           }
 
           .booking-page-grid > section,

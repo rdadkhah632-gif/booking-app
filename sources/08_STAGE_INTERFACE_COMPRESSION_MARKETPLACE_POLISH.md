@@ -1093,3 +1093,23 @@ Remaining QA note:
 
 - retest customer logout, public booking reachability, reschedule reachability
   and business Inbox reschedule decline on the deployed site.
+
+## Stage 8.49 Customer Nav Logout And Booking Submit Reachability Implemented
+
+- added a dedicated `/logout` route that clears the browser session through the
+  shared local-first sign-out helper
+- changed the customer nav account-menu logout control to use the `/logout`
+  route so clicking the visible nav item cannot be blocked by the details-menu
+  interaction surface
+- removed the sticky/nested-scroll behavior from the public booking summary so
+  the full customer form and Confirm booking button move with normal page
+  scrolling at laptop-height viewports
+
+Stage 8.49 did not change booking creation, slot generation, booking status
+transitions, staff invite/linking data, role/RLS rules, billing writes,
+notification generation or database schema.
+
+Remaining QA note:
+
+- retest customer nav logout and public booking submit reachability on the
+  deployed site at 1280x720.
