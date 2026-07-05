@@ -1113,3 +1113,19 @@ Remaining QA note:
 
 - retest customer nav logout and public booking submit reachability on the
   deployed site at 1280x720.
+
+## Stage 8.50 Customer Nav Hard-Logout Link Implemented
+
+- changed the customer account-menu Logout item from a client-routed Next link
+  to a plain hard-navigation anchor
+- the visible nav Logout item now forces `/logout` through
+  `window.location.assign("/logout")` on pointer/click interaction, matching
+  the direct `/logout` route that already passed QA
+
+Stage 8.50 did not change booking creation, slot generation, booking status
+transitions, staff invite/linking data, role/RLS rules, billing writes,
+notification generation or database schema.
+
+Remaining QA note:
+
+- retest the visible customer nav Logout item on the deployed site.

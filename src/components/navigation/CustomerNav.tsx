@@ -31,9 +31,22 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           <Link href="/account" className="muted">
             {t("nav.account")}
           </Link>
-          <Link href="/logout" className="btn btn-ghost">
+          <a
+            href="/logout"
+            className="btn btn-ghost"
+            onPointerDown={(event) => {
+              if (event.button !== 0 || typeof window === "undefined") return;
+              event.preventDefault();
+              window.location.assign("/logout");
+            }}
+            onClick={(event) => {
+              if (typeof window === "undefined") return;
+              event.preventDefault();
+              window.location.assign("/logout");
+            }}
+          >
             {t("nav.logout")}
-          </Link>
+          </a>
         </div>
       </details>
 
