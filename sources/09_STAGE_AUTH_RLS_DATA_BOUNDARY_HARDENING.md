@@ -824,3 +824,23 @@ Remaining Batch 11C QA:
 - retest plain `https://business.mirebook.com/register`
 - create a new staff member with an email and verify a manual `/staff/invite`
   link is available when email delivery is skipped
+
+## Batch 11C Password Reset No-Enumeration Follow-Up
+
+Customer forgot-password QA still saw provider-side invalid-email copy for a
+registered `@test.com` QA account.
+
+Fix applied:
+
+- forgot-password now shows the generic accepted message immediately and treats
+  Supabase recovery email delivery as a background best-effort request
+- provider/client validation or delivery errors are logged only in development
+  and are never rendered to the user
+- this keeps the recovery request UI aligned with the no-account-enumeration
+  pattern while email confirmation/recovery delivery is still being staged
+
+Remaining QA:
+
+- retest customer forgot-password with the registered QA email and confirm only
+  generic success appears
+- business forgot-password should continue to show generic success

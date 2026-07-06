@@ -18,7 +18,6 @@ export default function ForgotPasswordPage() {
   const [isBusinessHostname, setIsBusinessHostname] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const product: AuthProduct =
@@ -37,36 +36,41 @@ export default function ForgotPasswordPage() {
   async function requestPasswordReset(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
-    setError(null);
-    setMessage(null);
 
     const cleanEmail = email.trim().toLowerCase();
-    const resetRedirect = getAuthAppUrl(
-      product,
-      `/reset-password?product=${product}`,
-      window.location.origin,
-    );
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      cleanEmail,
-      { redirectTo: resetRedirect },
-    );
-
-    setLoading(false);
-
-    if (resetError) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("[forgot-password] Reset request was not accepted", {
-          message: resetError.message,
-        });
-      }
-    }
-
     setMessage(
       t(
         "forgotPassword.success",
         "Password reset request accepted. Check your inbox and spam folder for the secure link.",
       ),
     );
+
+    const resetRedirect = getAuthAppUrl(
+      product,
+      `/reset-password?product=${product}`,
+      window.location.origin,
+    );
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        cleanEmail,
+        { redirectTo: resetRedirect },
+      );
+      if (resetError && process.env.NODE_ENV !== "production") {
+        console.warn("[forgot-password] Reset request was not accepted", {
+          message: resetError.message,
+        });
+      }
+    } catch (resetError) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[forgot-password] Reset request was not accepted", {
+          message:
+            resetError instanceof Error ? resetError.message : "Unknown error",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -115,7 +119,6 @@ export default function ForgotPasswordPage() {
             </button>
           </form>
 
-          {error && <p className="password-auth-error">{error}</p>}
           {message && <p className="password-auth-success">{message}</p>}
 
           <Link href={loginUrl} className="password-auth-back">
@@ -145,10 +148,6 @@ export default function ForgotPasswordPage() {
 
         .password-auth-field input {
           font-weight: 400;
-        }
-
-        .password-auth-error {
-          color: var(--danger);
         }
 
         .password-auth-success {
