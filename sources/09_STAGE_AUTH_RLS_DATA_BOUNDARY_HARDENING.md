@@ -638,3 +638,151 @@ Remaining Batch 11A follow-up QA:
 - retest assigning multiple services to one staff member without the panel
   collapsing
 - run a focused same-business multi-staff QA pass if time allows
+
+## Batch 11A Retest Status
+
+Status: pass.
+
+Business/staff retest confirmed:
+
+- Add appointment defaults to an active assigned service
+- unassigned services are disabled and labelled as having no staff assigned
+- manual appointment creation still works for assigned/bookable services
+- overlap prevention still blocks duplicate same-staff/time appointments
+- assigning multiple services keeps the staff detail panel open
+- staff workspace remains scoped to assigned business/services/appointments
+
+Customer retest confirmed:
+
+- same-time reschedule submit is disabled and shows the no-change message
+- choosing a genuinely different time still submits a reschedule request
+- mobile public business service cards are more compact
+- cross-customer booking and notification isolation still holds
+
+No P0/P1 findings remained. The retry fallback was not triggered during normal
+QA because the tested public profile loaded successfully.
+
+## Batch 11B Production Auth, Environment And Email Readiness Audit
+
+Status: repo-level audit complete. Live Vercel and Supabase dashboard values
+still need manual verification; secret values were not read or exposed.
+
+### Vercel Environment Requirements
+
+Required for the core deployed app:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_CUSTOMER_APP_URL`
+- `NEXT_PUBLIC_BUSINESS_APP_URL`
+
+`SUPABASE_SERVICE_ROLE_KEY` is server-only and required by the Stage 9 server
+boundaries, including public Explore/profile/occupancy APIs, customer booking
+detail APIs, support/admin routes, reminders and Stripe billing sync. It must
+never be exposed as `NEXT_PUBLIC_*`.
+
+Production URL expectations:
+
+- `NEXT_PUBLIC_APP_URL` should be a valid HTTPS production customer origin,
+  normally `https://mirebook.com`
+- `NEXT_PUBLIC_CUSTOMER_APP_URL` should be `https://mirebook.com`
+- `NEXT_PUBLIC_BUSINESS_APP_URL` should be `https://business.mirebook.com`
+
+Stripe test billing variables required while test Checkout/webhook remain
+enabled:
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_ID_LAUNCH`
+
+`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is listed in `.env.example` for Stripe
+client readiness, but current Checkout creation is server-driven. Do not put
+secret Stripe keys in any `NEXT_PUBLIC_*` variable.
+
+### Application Email Mode
+
+Safe launch-testing default:
+
+- `EMAIL_PROVIDER=disabled`
+
+In disabled mode, application transactional email is skipped and the in-app
+booking/support/notification surfaces remain authoritative.
+
+Required before enabling provider delivery:
+
+- `EMAIL_PROVIDER=resend`
+- `RESEND_API_KEY`
+- `EMAIL_FROM_ADDRESS`
+
+Recommended before operator alerts are considered live:
+
+- `EMAIL_REPLY_TO`
+- `SUPPORT_ADMIN_EMAIL`
+
+Provider delivery should not be enabled until the sender domain is verified,
+the from/reply-to inboxes are monitored, and test booking/support/staff-invite
+emails are confirmed from the deployed app.
+
+### Reminder/Cron Readiness
+
+The reminder API requires:
+
+- `REMINDER_CRON_SECRET`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- a valid production `NEXT_PUBLIC_APP_URL`
+- installed reminder SQL from
+  `sources/sql/06_notification_email_preferences_and_reminders.sql`
+- email provider delivery if reminders should actually send
+
+No `vercel.json` is present in the repo, so no Vercel Cron schedule is currently
+versioned here. Reminders must not be marketed as active until a protected
+scheduler is added/configured and real provider delivery is QA'd.
+
+### Supabase Auth Dashboard Requirements
+
+Before enabling stricter email confirmation:
+
+1. Set Supabase Auth Site URL to `https://mirebook.com`.
+2. Add allowed redirect URLs for:
+   - `https://mirebook.com/**`
+   - `https://www.mirebook.com/**`
+   - `https://business.mirebook.com/**`
+   - active Vercel production/preview origins while they remain in use
+   - `http://localhost:3000/**` for local QA
+3. Confirm these callback families are allowed:
+   - `/login?verified=1`
+   - `/reset-password`
+   - customer and business `product` query variants
+   - `/staff/invite` return paths for secure staff invite acceptance
+4. Review confirmation and recovery email templates without changing Supabase
+   token/link variables.
+5. Keep email confirmation disabled until staged customer, business and invited
+   staff registration QA passes with real inboxes.
+
+### Batch 11B Pass Standard
+
+Batch 11B should be considered ready to move into staged auth activation only
+when:
+
+- required Vercel production variables are present in the Vercel dashboard
+- Supabase Auth redirect URLs match both customer and business domains
+- password recovery works on both domains
+- staff invite return paths still work
+- `EMAIL_PROVIDER=disabled` no-send behaviour is confirmed, or Resend delivery
+  is fully configured and QA'd
+- reminder cron remains disabled or is configured with `REMINDER_CRON_SECRET`
+  and tested deliberately
+
+### Recommended Next Batch
+
+Stage 9 Batch 11C - Staged Auth And Email Confirmation QA:
+
+- keep app code unchanged unless QA finds a direct blocker
+- configure Supabase Auth redirects/templates in the dashboard
+- test password recovery on customer and business domains
+- test optional email confirmation in a controlled/staging-like window before
+  enforcing it for production users
+- retest customer registration, business registration and secure staff invite
+  acceptance with real confirmation/recovery links
