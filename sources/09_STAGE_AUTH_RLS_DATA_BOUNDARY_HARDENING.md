@@ -839,8 +839,8 @@ Fix applied:
 - this keeps the recovery request UI aligned with the no-account-enumeration
   pattern while email confirmation/recovery delivery is still being staged
 
-Remaining QA:
+Retest result:
 
-- retest customer forgot-password with the registered QA email and confirm only
-  generic success appears
-- business forgot-password should continue to show generic success
+- customer forgot-password: PASS
+- business forgot-password: PASS
+- both flows showed generic accepted recovery copy without raw provider errors
