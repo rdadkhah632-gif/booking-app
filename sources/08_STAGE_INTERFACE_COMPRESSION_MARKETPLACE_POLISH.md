@@ -1206,3 +1206,27 @@ Remaining QA note:
 
 - retest the open state of customer, business and staff mobile Account menus on
   the deployed site.
+
+## Stage 8.54 Retest Passed
+
+Customer, business and staff mobile account menus passed deployed-site retest.
+
+Confirmed:
+
+- customer mobile Account menu hides contents when closed
+- customer mobile Account menu opens without covering Logout
+- customer mobile Logout remains visible and signs out successfully
+- business mobile Account trigger is visible and tappable on Today, Calendar,
+  Setup and Inbox
+- business mobile Account menu hides and reveals Account, Membership, Help and
+  Log out correctly
+- staff mobile Account trigger is visible and tappable on Staff Today, Calendar,
+  Availability and Inbox
+- staff mobile Account menu hides and reveals Account, Help and Log out
+  correctly
+- no horizontal scroll was reported on the tested mobile workspace routes
+
+Stage 8 is closure-ready from the latest customer, business and staff QA passes.
+
+Do not reopen Stage 8 unless a direct regression appears. Future polish should
+move into the next stage or a targeted follow-up batch.
