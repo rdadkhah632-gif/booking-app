@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { BookingRequest, RequestBooking } from "./notificationTypes";
+import { formatCustomerDateTime } from "./dateFormat";
 
 type Props = {
   requests: BookingRequest[];
@@ -109,7 +110,7 @@ export default function PendingRescheduleRequestsSection({
                     </p>
                     <strong>
                       {linkedBooking?.start_at
-                        ? new Date(linkedBooking.start_at).toLocaleString()
+                        ? formatCustomerDateTime(linkedBooking.start_at)
                         : t("notifications.notRecorded", "Not recorded")}
                     </strong>
                   </div>
@@ -129,7 +130,7 @@ export default function PendingRescheduleRequestsSection({
                       )}
                     </p>
                     <strong>
-                      {new Date(request.requested_start_at).toLocaleString()}
+                      {formatCustomerDateTime(request.requested_start_at)}
                     </strong>
                   </div>
                 </div>

@@ -91,9 +91,9 @@ export default function Availability() {
     return null;
   }
 
-  async function init() {
+  async function init(options?: { keepSuccess?: boolean }) {
     setError(null);
-    setSuccess(null);
+    if (!options?.keepSuccess) setSuccess(null);
     setPageLoading(true);
 
     try {
@@ -295,13 +295,13 @@ export default function Availability() {
       return;
     }
 
-    setSuccess(
-      t(
-        "dashboardAvailability.success.saved",
-        "Working hours saved. These hours guide customer booking when staff hours are not set.",
-      ),
+    const savedMessage = t(
+      "dashboardAvailability.success.saved",
+      "Working hours saved.",
     );
-    await init();
+    setSuccess(savedMessage);
+    await init({ keepSuccess: true });
+    setSuccess(savedMessage);
   }
 
   return (

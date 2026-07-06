@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { NotificationRow } from "./notificationTypes";
+import {
+  formatCustomerDateTime,
+  formatCustomerNotificationText,
+} from "./dateFormat";
 
 type Props = {
   notifications: NotificationRow[];
@@ -19,7 +23,7 @@ function notificationText(
     return {
       title: t("notifications.types.bookingRequested.title", "Request sent"),
       message:
-        notification.message ||
+        formatCustomerNotificationText(notification.message) ||
         t(
           "notifications.types.bookingRequested.message",
           "Your booking request has been sent to the business for review.",
@@ -106,7 +110,7 @@ function notificationText(
         "Booking rescheduled",
       ),
       message:
-        notification.message ||
+        formatCustomerNotificationText(notification.message) ||
         t(
           "notifications.types.bookingRescheduledByBusiness.message",
           "Your booking was moved to a new appointment time by the business.",
@@ -121,7 +125,7 @@ function notificationText(
         "Mirëbook support replied",
       ),
       message:
-        notification.message ||
+        formatCustomerNotificationText(notification.message) ||
         t(
           "notifications.types.supportReplyAdmin.message",
           "Open your support conversation to read the latest reply.",
@@ -136,7 +140,7 @@ function notificationText(
         "Support ticket resolved",
       ),
       message:
-        notification.message ||
+        formatCustomerNotificationText(notification.message) ||
         t(
           "notifications.types.supportResolved.message",
           "Your support conversation has been marked as resolved.",
@@ -148,7 +152,7 @@ function notificationText(
     title:
       notification.title ||
       t("notifications.types.generic.title", "Mirëbook update"),
-    message: notification.message || "",
+    message: formatCustomerNotificationText(notification.message),
   };
 }
 
@@ -233,7 +237,7 @@ export default function NotificationInboxSection({
 
                 <p className="small muted customer-notification-time">
                   {notification.created_at
-                    ? new Date(notification.created_at).toLocaleString()
+                    ? formatCustomerDateTime(notification.created_at)
                     : t("notifications.recently", "Recently")}
                 </p>
               </div>

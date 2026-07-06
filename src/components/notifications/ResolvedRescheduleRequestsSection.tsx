@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { BookingRequest, RequestBooking } from "./notificationTypes";
+import { formatCustomerDateTime } from "./dateFormat";
 
 type Props = {
   requests: BookingRequest[];
@@ -89,7 +90,7 @@ export default function ResolvedRescheduleRequestsSection({
 
                 <p className="small muted">
                   {t("notifications.requestedTime", "Requested time")}:{" "}
-                  {new Date(request.requested_start_at).toLocaleString()}
+                  {formatCustomerDateTime(request.requested_start_at)}
                 </p>
 
                 <p className="small muted">
@@ -107,8 +108,8 @@ export default function ResolvedRescheduleRequestsSection({
                 <p className="small muted" style={{ marginTop: "0.5rem" }}>
                   {t("notifications.updated", "Updated")}:{" "}
                   {request.updated_at
-                    ? new Date(request.updated_at).toLocaleString()
-                    : new Date(request.created_at).toLocaleString()}
+                    ? formatCustomerDateTime(request.updated_at)
+                    : formatCustomerDateTime(request.created_at)}
                 </p>
               </div>
 

@@ -117,6 +117,30 @@ export default function CustomerNav({ notificationCount }: NavProps) {
         }
 
         @media (max-width: 540px) {
+          :global(.nav-role-customer .auth-nav-links) {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.45rem;
+            width: 100%;
+          }
+
+          .customer-nav-primary,
+          .customer-nav-account-menu,
+          .customer-nav-logout,
+          .customer-nav-account-menu summary {
+            width: 100%;
+            min-width: 0;
+            justify-content: center;
+            text-align: center;
+          }
+
+          .customer-nav-primary,
+          .customer-nav-logout,
+          .customer-nav-account-menu summary {
+            min-height: 2rem;
+            padding-inline: 0.55rem;
+          }
+
           .customer-nav-account-menu-panel {
             position: fixed;
             top: 4.75rem;

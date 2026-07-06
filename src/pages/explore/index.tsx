@@ -449,12 +449,12 @@ export default function Explore() {
           }
 
           :global(.explore-filter-panel) {
-            order: 2;
+            order: 1;
             margin-top: 0.85rem;
           }
 
           .explore-results-section {
-            order: 1;
+            order: 2;
           }
 
           :global(.explore-business-actions .btn) {

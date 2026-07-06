@@ -705,8 +705,7 @@ export default function DashboardLayout({
             display: none;
           }
 
-          .sidebar-main-links,
-          .sidebar-account-actions-desktop {
+          .sidebar-main-links {
             display: flex;
             gap: 0.35rem;
             overflow-x: auto;
@@ -716,14 +715,13 @@ export default function DashboardLayout({
             -webkit-overflow-scrolling: touch;
           }
 
-          .sidebar-main-links::-webkit-scrollbar,
-          .sidebar-account-actions-desktop::-webkit-scrollbar {
+          .sidebar-main-links::-webkit-scrollbar {
             display: none;
           }
 
           .sidebar-account {
-            display: grid;
-            gap: 0.35rem;
+            position: relative;
+            display: block;
             margin-top: 0;
             padding: 0;
             border-top: 0;
@@ -731,6 +729,75 @@ export default function DashboardLayout({
 
           .sidebar-account-main {
             display: none !important;
+          }
+
+          .sidebar-account-actions-desktop {
+            display: none;
+          }
+
+          .sidebar-mobile-account {
+            display: block;
+          }
+
+          .sidebar-mobile-account summary {
+            min-height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.36rem 0.58rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface-2);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 800;
+            list-style: none;
+            white-space: nowrap;
+          }
+
+          .sidebar-mobile-account summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .sidebar-mobile-account summary::after {
+            content: "";
+            width: 0.35rem;
+            height: 0.35rem;
+            border-right: 1.5px solid currentColor;
+            border-bottom: 1.5px solid currentColor;
+            transform: rotate(45deg) translateY(-1px);
+            opacity: 0.75;
+          }
+
+          .sidebar-mobile-account[open] summary::after {
+            transform: rotate(225deg) translateY(-1px);
+          }
+
+          .sidebar-mobile-account-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+          }
+
+          .sidebar-mobile-account .sidebar-account-avatar {
+            width: 1.35rem;
+            height: 1.35rem;
+            font-size: 0.72rem;
+          }
+
+          .sidebar-account-actions-menu {
+            position: absolute;
+            top: calc(100% + 0.4rem);
+            right: 0;
+            z-index: 45;
+            width: min(13rem, calc(100vw - 1.3rem));
+            display: grid;
+            gap: 0.2rem;
+            padding: 0.4rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: rgba(24, 23, 34, 0.98);
+            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
           }
 
           .sidebar-account-actions a,

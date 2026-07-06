@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { Booking } from "./notificationTypes";
+import { formatCustomerDateTime } from "./dateFormat";
 
 type Props = {
   bookings: Booking[];
@@ -91,8 +92,7 @@ export default function BookingUpdatesSection({
               </p>
 
               <p className="small muted">
-                {t("common.time")}:{" "}
-                {new Date(booking.start_at).toLocaleString()}
+                {t("common.time")}: {formatCustomerDateTime(booking.start_at)}
               </p>
             </div>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { Booking } from "./notificationTypes";
+import { formatCustomerDateTime } from "./dateFormat";
 
 type Props = {
   bookings: Booking[];
@@ -103,7 +104,7 @@ export default function PendingBookingRequestsSection({
                     "Requested appointment time",
                   )}
                 </p>
-                <strong>{new Date(booking.start_at).toLocaleString()}</strong>
+                <strong>{formatCustomerDateTime(booking.start_at)}</strong>
                 <p className="small muted" style={{ marginTop: "0.3rem" }}>
                   {t(
                     "notifications.reservedWhileWaiting",

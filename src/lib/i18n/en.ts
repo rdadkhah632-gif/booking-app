@@ -1494,8 +1494,7 @@ export const en: TranslationTree = {
     "Close every day for this business? Customers may not see any available booking days unless staff-specific hours still allow bookings.",
   "dashboardAvailability.confirm.noOpenDays":
     "This business has no open days. Customers may not be able to book unless staff-specific availability is configured. Save anyway?",
-  "dashboardAvailability.success.saved":
-    "Working hours saved. These hours guide customer booking when staff hours are not set.",
+  "dashboardAvailability.success.saved": "Working hours saved.",
   "dashboardAvailability.noBusiness.title": "No business found",
   "dashboardAvailability.noBusiness.body":
     "Create a business profile first, then set Mirëbook working hours.",

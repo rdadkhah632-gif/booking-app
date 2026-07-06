@@ -489,75 +489,6 @@ export default function StaffAvailabilityPage() {
                 >
                   {t("dashboardBookings.businessPicker.cta", "Open calendar")}
                 </Link>
-
-                <Link
-                  href={`/dashboard/services?businessId=${staff.business_id}`}
-                  className="btn btn-ghost"
-                >
-                  Services
-                </Link>
-
-                <Link href="/support/business" className="btn btn-ghost">
-                  Business support
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="card"
-            style={{
-              marginBottom: "1.25rem",
-              borderColor:
-                staff.active === false || !availabilityStats.ready
-                  ? "rgba(255,190,11,0.32)"
-                  : "rgba(45,212,191,0.24)",
-              background:
-                staff.active === false || !availabilityStats.ready
-                  ? "rgba(255,190,11,0.06)"
-                  : "rgba(45,212,191,0.05)",
-            }}
-          >
-            <div className="staff-availability-card-row">
-              <div>
-                <p
-                  className="small"
-                  style={{
-                    color:
-                      staff.active === false || !availabilityStats.ready
-                        ? "var(--warning)"
-                        : "var(--success)",
-                  }}
-                >
-                  Booking readiness
-                </p>
-                <h3 style={{ marginTop: "0.25rem" }}>
-                  {staff.active === false
-                    ? "This staff member is hidden from public booking"
-                    : availabilityStats.ready
-                      ? "This staff member has valid public booking hours"
-                      : "This staff member needs valid working hours"}
-                </h3>
-                <p className="small muted" style={{ marginTop: "0.45rem" }}>
-                  Staff working hours are used to generate public booking slots.
-                  The staff member must also be active and assigned to services
-                  from the Staff page before customers can book them.
-                </p>
-              </div>
-
-              <div className="staff-availability-action-row">
-                <Link
-                  href={`/dashboard/staff?businessId=${staff.business_id}`}
-                  className="btn btn-ghost"
-                >
-                  Check staff setup
-                </Link>
-                <Link
-                  href={`/dashboard/businesses?businessId=${staff.business_id}`}
-                  className="btn btn-ghost"
-                >
-                  Setup hub
-                </Link>
               </div>
             </div>
           </div>
@@ -614,10 +545,6 @@ export default function StaffAvailabilityPage() {
               <div>
                 <p className="small muted">Quick presets</p>
                 <h3>Set common working patterns</h3>
-                <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                  These buttons update the table below. You still need to click
-                  Save staff working hours.
-                </p>
               </div>
 
               <div className="staff-availability-action-row">

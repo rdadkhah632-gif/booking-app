@@ -1144,3 +1144,29 @@ notification generation or database schema.
 Remaining QA note:
 
 - retest the standalone customer nav Logout action on the deployed site.
+
+## Stage 8.52 Closure QA Polish Fixes Implemented
+
+- fixed mobile Explore ordering so filters appear before results instead of
+  after the full results list
+- tightened signed-in customer mobile nav into a compact two-column action grid
+  while keeping Logout as a top-level action
+- kept business and staff mobile account actions inside the compact account
+  menu across tablet/mobile widths instead of expanding Account, Help and Log
+  out as competing top-level actions
+- removed seconds from customer notification date/time displays and sanitized
+  stored notification messages that include `HH:mm:ss`
+- kept business Working hours success feedback visible after save/refresh,
+  including no-change saves
+- compressed the owner staff Working hours page by removing the heavy booking
+  readiness block, trimming secondary links and simplifying quick-preset copy
+
+Stage 8.52 did not change booking creation, slot generation, booking status
+transitions, staff invite/linking data, role/RLS rules, billing writes,
+notification generation or database schema.
+
+Remaining QA note:
+
+- retest mobile Explore, mobile authenticated business/staff nav, customer
+  notification timestamps and business Working hours save feedback on the
+  deployed site.

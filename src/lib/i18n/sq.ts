@@ -1464,8 +1464,7 @@ export const sq: TranslationTree = {
     "Ta mbyllësh çdo ditë për këtë biznes? Klientët mund të mos shohin ditë të disponueshme për rezervim nëse nuk ka orare specifike stafi.",
   "dashboardAvailability.confirm.noOpenDays":
     "Ky biznes nuk ka ditë të hapura. Klientët mund të mos mund të rezervojnë nëse nuk është konfiguruar disponueshmëria e stafit. Ta ruash gjithsesi?",
-  "dashboardAvailability.success.saved":
-    "Orari i punës u ruajt. Këto orare udhëzojnë rezervimet kur oraret e stafit nuk janë vendosur.",
+  "dashboardAvailability.success.saved": "Orari i punës u ruajt.",
   "dashboardAvailability.noBusiness.title": "Nuk u gjet biznes",
   "dashboardAvailability.noBusiness.body":
     "Krijo fillimisht një profil biznesi, pastaj vendos oraret e punës në Mirëbook.",
