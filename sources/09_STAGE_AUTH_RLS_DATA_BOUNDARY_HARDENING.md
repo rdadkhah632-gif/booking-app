@@ -978,16 +978,22 @@ Supabase checks completed:
 - Email Templates: confirm the recovery/reset template still includes the
   Supabase recovery link variable and was not edited into a dead/static link
 
-Remaining QA:
+Final password-change QA:
 
-- submit the final business password change from the verified recovery page
-- confirm old password fails
-- confirm new password logs the business user into `/dashboard`
+- submitted the final business password change from the verified recovery page
+- old password failed with `Invalid login credentials`
+- new password logged the business user into
+  `https://business.mirebook.com/dashboard`
+- no raw Supabase/provider error appeared
+
+Operational note:
+
 - consider disposable inboxes unreliable for final auth delivery QA
 
 Launch decision:
 
 - business recovery link delivery and reset-page routing are no longer blocking
   when tested with a normal inbox
+- business password recovery completion is PASS
 - stricter email-confirmation staging should still use normal inboxes, not
   disposable test inboxes
