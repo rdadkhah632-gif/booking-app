@@ -673,7 +673,23 @@ export default function StaffPage() {
             "Service assigned to staff member.",
           ),
     );
-    await loadPage();
+    setStaffServices((current) =>
+      exists
+        ? current.filter(
+            (link) =>
+              !(
+                link.staff_member_id === staffId &&
+                link.service_id === serviceId
+              ),
+          )
+        : [
+            ...current,
+            {
+              staff_member_id: staffId,
+              service_id: serviceId,
+            },
+          ],
+    );
   }
 
   function readinessBadge(member: StaffMember) {

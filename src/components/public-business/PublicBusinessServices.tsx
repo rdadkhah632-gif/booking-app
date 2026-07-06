@@ -70,16 +70,16 @@ export default function PublicBusinessServices({
                 />
               )}
 
-              <div style={{ flex: 1 }}>
+              <div className="public-business-service-copy">
                 <strong>{service.name}</strong>
 
                 {service.description && (
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                  <p className="small muted public-business-service-description">
                     {service.description}
                   </p>
                 )}
 
-                <p className="small muted" style={{ marginTop: "0.45rem" }}>
+                <p className="small muted public-business-service-meta">
                   {service.duration_minutes} {t("common.minutes", "minutes")}
                   {Number(service.price || 0) > 0
                     ? ` · ${formatServicePrice(service.price)}`
@@ -87,7 +87,13 @@ export default function PublicBusinessServices({
                 </p>
               </div>
 
-              <span className={selected ? "btn btn-accent" : "btn btn-ghost"}>
+              <span
+                className={
+                  selected
+                    ? "btn btn-accent public-business-service-action"
+                    : "btn btn-ghost public-business-service-action"
+                }
+              >
                 {selected ? t("common.selected") : t("common.choose")}
               </span>
             </button>

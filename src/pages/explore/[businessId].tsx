@@ -153,6 +153,7 @@ export default function BusinessBookingPage() {
   const [customerNote, setCustomerNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [loadingTakingLong, setLoadingTakingLong] = useState(false);
   const restoredBookingIntentRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -280,6 +281,19 @@ export default function BusinessBookingPage() {
   useEffect(() => {
     loadBookingPage();
   }, [businessId]);
+
+  useEffect(() => {
+    if (!pageLoading) {
+      setLoadingTakingLong(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setLoadingTakingLong(true);
+    }, 6500);
+
+    return () => window.clearTimeout(timer);
+  }, [pageLoading, businessId]);
 
   function queryStringValue(value: string | string[] | undefined) {
     return typeof value === "string" ? value.trim() : "";
@@ -1244,6 +1258,27 @@ export default function BusinessBookingPage() {
             <p className="muted">
               {t("publicBusiness.loading", "Loading Mirëbook booking page...")}
             </p>
+            {loadingTakingLong && (
+              <div style={{ marginTop: "0.85rem" }}>
+                <p className="small muted">
+                  {t(
+                    "publicBusiness.loading.slow",
+                    "This is taking longer than expected.",
+                  )}
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  style={{ marginTop: "0.65rem" }}
+                  onClick={() => {
+                    setLoadingTakingLong(false);
+                    loadBookingPage();
+                  }}
+                >
+                  {t("common.retry", "Retry")}
+                </button>
+              </div>
+            )}
           </div>
         </section>
       </main>
@@ -1702,6 +1737,19 @@ export default function BusinessBookingPage() {
           cursor: pointer;
         }
 
+        :global(.public-business-service-copy) {
+          flex: 1;
+          min-width: 0;
+        }
+
+        :global(.public-business-service-description) {
+          margin-top: 0.35rem;
+        }
+
+        :global(.public-business-service-meta) {
+          margin-top: 0.45rem;
+        }
+
         :global(.public-business-service-image) {
           width: 130px;
           min-height: 100px;
@@ -1921,11 +1969,32 @@ export default function BusinessBookingPage() {
 
           :global(.public-business-service-card) {
             display: grid;
+            gap: 0.55rem;
+            padding: 0.6rem !important;
           }
 
           :global(.public-business-service-image) {
             width: 100%;
-            min-height: 150px;
+            min-height: 86px;
+            border-radius: 10px;
+          }
+
+          :global(.public-business-service-description) {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-top: 0.25rem;
+          }
+
+          :global(.public-business-service-meta) {
+            margin-top: 0.3rem;
+          }
+
+          :global(.public-business-service-action) {
+            width: fit-content;
+            min-height: 2rem;
+            padding: 0.45rem 0.7rem;
           }
 
           :global(.public-business-staff-card) {

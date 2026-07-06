@@ -1842,6 +1842,7 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.create": "Add appointment",
   "dashboardBookings.manual.noAssignedStaff":
     "No active staff are assigned to this service.",
+  "dashboardBookings.manual.noStaffShort": "No staff assigned",
   "dashboardBookings.manual.error.customerName": "Add the customer's name.",
   "dashboardBookings.manual.error.customerEmail": "Add a valid customer email.",
   "dashboardBookings.manual.error.service": "Choose a service.",
@@ -2103,6 +2104,7 @@ export const en: TranslationTree = {
   "publicBusiness.customerFallback": "A customer",
   "publicBusiness.thisBusiness": "this business",
   "publicBusiness.loading": "Loading Mirëbook booking page...",
+  "publicBusiness.loading.slow": "This is taking longer than expected.",
   "publicBusiness.backToResults": "Back to results",
   "publicBusiness.timesShownIn": "Times shown in",
   "publicBusiness.minuteSlotGrid": "minute appointment intervals",

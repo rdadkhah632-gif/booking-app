@@ -593,3 +593,48 @@ Recommended Batch 11 - Production Auth, Environment And Email Readiness:
 Do not harden all tables blindly in one production pass. From here, Stage 9
 changes should be small, audited and tied to a specific launch-readiness
 finding.
+
+## Batch 11A Volume QA Follow-Up Implemented
+
+Multi-account volume QA before auth tightening created multiple customer,
+owner, staff, business, service and booking records across the deployed
+customer and business domains.
+
+Confirmed:
+
+- no P0 cross-customer, cross-business or cross-staff data leaks were found
+- customer Explore, booking, My Bookings, Notifications, cancellation and
+  account/logout held under the tested volume
+- business owner setup, manual appointment creation, overlap prevention,
+  Calendar, Inbox, staff linking and staff workspace isolation held for sampled
+  businesses
+- request-mode and instant-confirmation customer bookings both worked
+- no raw database/RLS errors were reported
+
+Follow-up fixes applied:
+
+- reschedule now blocks submitting the same appointment time with the same or
+  ambiguous staff choice, preventing meaningless change requests
+- business manual Add appointment now defaults to the first service with active
+  assigned staff and clearly disables services that have no staff assigned
+- Team service assignment updates no longer trigger a full page reload, keeping
+  the staff details panel open for multi-service assignment
+- public business profile loading now offers a retry affordance if loading takes
+  longer than expected
+- mobile public business service cards are more compact so customers can compare
+  services faster
+
+Protected systems unchanged:
+
+- no SQL, RLS, booking lifecycle, availability calculation, staff invite/linking,
+  billing write or auth/session behaviour was changed
+
+Remaining Batch 11A follow-up QA:
+
+- retest customer reschedule on confirmed bookings and verify same-time submit
+  is disabled or blocked
+- retest business manual appointment with a mix of assigned and unassigned
+  services
+- retest assigning multiple services to one staff member without the panel
+  collapsing
+- run a focused same-business multi-staff QA pass if time allows

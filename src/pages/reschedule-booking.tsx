@@ -570,6 +570,19 @@ export default function RescheduleBooking() {
     });
   }
 
+  function isSameStartAsCurrentBooking(value: string) {
+    if (!booking) return false;
+
+    const currentStart = new Date(booking.start_at).getTime();
+    const requestedStart = new Date(value).getTime();
+
+    return (
+      Number.isFinite(currentStart) &&
+      Number.isFinite(requestedStart) &&
+      currentStart === requestedStart
+    );
+  }
+
   async function createCustomerNotification(params: {
     type: string;
     title: string;
@@ -658,10 +671,12 @@ export default function RescheduleBooking() {
       return;
     }
 
-    if (
-      newStartAt === booking.start_at &&
-      staffMemberIdForReschedule === booking.staff_member_id
-    ) {
+    const noChangeRequested =
+      isSameStartAsCurrentBooking(newStartAt) &&
+      (selectedStaffChoice === "any" ||
+        staffMemberIdForReschedule === booking.staff_member_id);
+
+    if (noChangeRequested) {
       setSaving(false);
       setError(
         t(
@@ -824,6 +839,14 @@ export default function RescheduleBooking() {
   const requestedEnd = requestedStart
     ? new Date(requestedStart.getTime() + newDuration * 60000)
     : null;
+  const requestedStartIso = requestedStart?.toISOString() || "";
+  const requestedStaffMemberId =
+    selectedDate && selectedTime ? resolveStaffForReschedule() : "";
+  const noChangeSelected =
+    Boolean(requestedStartIso && booking) &&
+    isSameStartAsCurrentBooking(requestedStartIso) &&
+    (selectedStaffChoice === "any" ||
+      requestedStaffMemberId === booking?.staff_member_id);
   return (
     <main>
       <AuthNav />
@@ -1539,7 +1562,8 @@ export default function RescheduleBooking() {
                   saving ||
                   !selectedDate ||
                   !selectedTime ||
-                  !selectedStaffChoice
+                  !selectedStaffChoice ||
+                  noChangeSelected
                 }
                 className="btn btn-accent"
               >
@@ -1557,6 +1581,14 @@ export default function RescheduleBooking() {
                         "Save new appointment time",
                       )}
               </button>
+              {noChangeSelected && (
+                <p className="small" style={{ color: "var(--warning)" }}>
+                  {t(
+                    "reschedule.error.noChange",
+                    "Choose a different date, time or staff member before submitting a reschedule.",
+                  )}
+                </p>
+              )}
             </form>
 
             <div

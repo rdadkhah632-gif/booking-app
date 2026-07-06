@@ -1825,6 +1825,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.create": "Shto takim",
   "dashboardBookings.manual.noAssignedStaff":
     "Nuk ka staf aktiv të lidhur me këtë shërbim.",
+  "dashboardBookings.manual.noStaffShort": "Nuk ka staf të caktuar",
   "dashboardBookings.manual.error.customerName": "Shto emrin e klientit.",
   "dashboardBookings.manual.error.customerEmail":
     "Shto një email të vlefshëm të klientit.",
@@ -2095,6 +2096,7 @@ export const sq: TranslationTree = {
   "publicBusiness.customerFallback": "Një klient",
   "publicBusiness.thisBusiness": "këtë biznes",
   "publicBusiness.loading": "Duke ngarkuar faqen e rezervimit Mirëbook...",
+  "publicBusiness.loading.slow": "Kjo po zgjat më shumë se zakonisht.",
   "publicBusiness.backToResults": "Kthehu te rezultatet",
   "publicBusiness.timesShownIn": "Orët shfaqen në",
   "publicBusiness.minuteSlotGrid": "minuta intervale takimesh",

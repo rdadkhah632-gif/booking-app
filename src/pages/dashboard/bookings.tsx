@@ -807,6 +807,29 @@ export default function Bookings() {
     [manualServices, manualBooking.serviceId],
   );
 
+  const manualServiceStaffCounts = useMemo(() => {
+    const activeStaffIds = new Set(manualStaff.map((staff) => staff.id));
+    const counts = new Map<string, number>();
+
+    manualStaffServices.forEach((link) => {
+      if (!activeStaffIds.has(link.staff_member_id)) return;
+
+      counts.set(link.service_id, (counts.get(link.service_id) || 0) + 1);
+    });
+
+    return counts;
+  }, [manualStaff, manualStaffServices]);
+
+  function manualServiceStaffCount(serviceId: string) {
+    return manualServiceStaffCounts.get(serviceId) || 0;
+  }
+
+  const bookableManualServices = useMemo(
+    () =>
+      manualServices.filter((service) => manualServiceStaffCount(service.id)),
+    [manualServices, manualServiceStaffCounts],
+  );
+
   const manualStaffOptions = useMemo(() => {
     if (!manualBooking.serviceId) return manualStaff;
     const assignedStaffIds = new Set(
@@ -821,7 +844,7 @@ export default function Bookings() {
   const manualBookingSetupReady =
     manualServices.length > 0 &&
     manualStaff.length > 0 &&
-    manualStaffServices.length > 0;
+    bookableManualServices.length > 0;
   const calendarTimeZone = business?.timezone || DEFAULT_TIME_ZONE;
 
   function staffOptionsForService(serviceId: string) {
@@ -987,18 +1010,22 @@ export default function Bookings() {
       replaceBookingsQuery({ nextDate: next.date });
     }
 
-    setManualBooking((current) => ({
-      ...current,
-      serviceId: current.serviceId || manualServices[0]?.id || "",
-      staffMemberId:
-        current.staffMemberId ||
-        staffOptionsForService(
-          current.serviceId || manualServices[0]?.id || "",
-        )[0]?.id ||
-        "",
-      date: next?.date || selectedDate || toDateInputValue(new Date()),
-      time: next?.time || current.time || "09:00",
-    }));
+    setManualBooking((current) => {
+      const currentServiceIsBookable =
+        current.serviceId && manualServiceStaffCount(current.serviceId) > 0;
+      const serviceId = currentServiceIsBookable
+        ? current.serviceId
+        : bookableManualServices[0]?.id || "";
+
+      return {
+        ...current,
+        serviceId,
+        staffMemberId:
+          (serviceId && staffOptionsForService(serviceId)[0]?.id) || "",
+        date: next?.date || selectedDate || toDateInputValue(new Date()),
+        time: next?.time || current.time || "09:00",
+      };
+    });
     setManualBookingError(null);
     setSelectedCalendarBookingId(null);
     setManualBookingOpen(true);
@@ -2074,12 +2101,28 @@ export default function Bookings() {
                                 "Choose service",
                               )}
                             </option>
-                            {manualServices.map((service) => (
-                              <option key={service.id} value={service.id}>
-                                {service.name} · {service.duration_minutes}{" "}
-                                {t("common.minutes", "minutes")}
-                              </option>
-                            ))}
+                            {manualServices.map((service) => {
+                              const staffCount = manualServiceStaffCount(
+                                service.id,
+                              );
+
+                              return (
+                                <option
+                                  key={service.id}
+                                  value={service.id}
+                                  disabled={staffCount === 0}
+                                >
+                                  {service.name} · {service.duration_minutes}{" "}
+                                  {t("common.minutes", "minutes")}
+                                  {staffCount === 0
+                                    ? ` · ${t(
+                                        "dashboardBookings.manual.noStaffShort",
+                                        "No staff assigned",
+                                      )}`
+                                    : ""}
+                                </option>
+                              );
+                            })}
                           </select>
                         </label>
 
