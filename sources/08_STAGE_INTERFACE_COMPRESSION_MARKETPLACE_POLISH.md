@@ -1129,3 +1129,18 @@ notification generation or database schema.
 Remaining QA note:
 
 - retest the visible customer nav Logout item on the deployed site.
+
+## Stage 8.51 Customer Logout Demoted Out Of Dropdown Implemented
+
+- removed Logout from the customer account dropdown entirely
+- added Logout as its own top-level customer nav action beside Account, using
+  the same hard-navigation `/logout` behavior
+- kept the Account dropdown focused on language and account settings only
+
+Stage 8.51 did not change booking creation, slot generation, booking status
+transitions, staff invite/linking data, role/RLS rules, billing writes,
+notification generation or database schema.
+
+Remaining QA note:
+
+- retest the standalone customer nav Logout action on the deployed site.
