@@ -150,11 +150,13 @@ export default function CustomerNav({ notificationCount }: NavProps) {
             padding-inline: 0.55rem;
           }
 
+          .customer-nav-account-menu[open] {
+            grid-column: 1 / -1;
+          }
+
           .customer-nav-account-menu-panel {
-            position: fixed;
-            top: 4.75rem;
-            right: 0.75rem;
-            left: 0.75rem;
+            position: static;
+            margin-top: 0.45rem;
             width: auto;
           }
         }

@@ -1188,3 +1188,21 @@ Remaining QA note:
 
 - retest closed mobile customer/business/staff Account menus on the deployed
   site to confirm their contents stay hidden until tapped.
+
+## Stage 8.54 Mobile Account Menu Open-State Fix Implemented
+
+- made the business/staff mobile Account trigger occupy a real nav grid column
+  instead of relying on absolute positioning that could collapse the tappable
+  target
+- changed the customer mobile Account dropdown from a fixed overlay to normal
+  in-flow content so opening Account cannot cover the standalone Logout action
+- preserved the closed-state hiding from Stage 8.53
+
+Stage 8.54 did not change booking creation, slot generation, booking status
+transitions, staff invite/linking data, role/RLS rules, billing writes,
+notification generation or database schema.
+
+Remaining QA note:
+
+- retest the open state of customer, business and staff mobile Account menus on
+  the deployed site.

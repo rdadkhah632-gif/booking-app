@@ -860,12 +860,12 @@ export default function DashboardLayout({
           }
 
           .sidebar-nav {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr) auto;
             align-items: start;
           }
 
           .sidebar-logo {
-            padding-right: 7.75rem;
+            padding-right: 0.2rem;
           }
 
           .sidebar-main-links {
@@ -873,9 +873,7 @@ export default function DashboardLayout({
           }
 
           .sidebar-account {
-            position: absolute;
-            top: 0.65rem;
-            right: 0.65rem;
+            position: relative;
             display: block;
           }
 
