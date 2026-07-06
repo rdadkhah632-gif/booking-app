@@ -1074,3 +1074,30 @@ QA required after Vercel env update:
   receipt plus operator alert when `SUPPORT_ADMIN_EMAIL` is configured
 - call `/api/email/reminders` with the configured secret and confirm delivery
   only for due confirmed bookings
+
+## Batch 11F Professional Email Template Polish
+
+Goal:
+
+- make Mirëbook transactional emails feel production-ready while keeping the
+  same Resend adapter, recipient rules, preferences and in-app authoritative
+  record behaviour
+
+Implemented:
+
+- added branded HTML email bodies with a dark Mirëbook header, concise title,
+  clear action button, structured detail rows and small footer copy
+- kept plain-text fallbacks for every transactional email
+- covered booking lifecycle emails for customer, business and staff recipients
+- covered appointment reminder emails
+- covered secure staff invite emails
+- covered support requester/admin/reply emails
+- escaped dynamic values before injecting them into HTML
+
+Notes:
+
+- no React Email dependency was added; the current implementation uses safe
+  inline HTML strings and the existing Resend HTTPS adapter
+- Supabase Auth emails remain configured in Supabase, not in this repo
+- templates are English-only for launch and should be localized later if email
+  language preference becomes launch-critical
