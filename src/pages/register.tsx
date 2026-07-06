@@ -11,6 +11,7 @@ import {
   getAuthAppUrl,
   getBusinessAppUrl,
   getCustomerAppUrl,
+  isBusinessAppHostname,
 } from "@/lib/appUrls";
 
 export default function RegisterPage() {
@@ -40,6 +41,7 @@ export default function RegisterPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [isBusinessHostname, setIsBusinessHostname] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendingVerification, setResendingVerification] = useState(false);
   const loginUrl =
@@ -79,9 +81,18 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!router.isReady) return;
-    if (router.query.accountType === "staff") setRole("staff");
-    if (router.query.accountType === "business") setRole("business");
-  }, [router.isReady, router.query.accountType]);
+    if (router.query.accountType === "staff") {
+      setRole("staff");
+      return;
+    }
+    if (router.query.accountType === "business" || isBusinessHostname) {
+      setRole("business");
+    }
+  }, [router.isReady, router.query.accountType, isBusinessHostname]);
+
+  useEffect(() => {
+    setIsBusinessHostname(isBusinessAppHostname(window.location.hostname));
+  }, []);
 
   useEffect(() => {
     async function checkExistingSession() {

@@ -221,17 +221,21 @@ export default function StaffPage() {
 
     const cleanStaffEmail = email.trim().toLowerCase();
 
-    const { error } = await supabase.from("staff_members").insert({
-      business_id: business.id,
-      name: name.trim(),
-      role_title: roleTitle.trim() || null,
-      email: cleanStaffEmail || null,
-      phone: phone.trim() || null,
-      image_url: finalImageUrl,
-      invite_status: cleanStaffEmail ? "invited" : "not_invited",
-      permission_role: permissionRole,
-      active: true,
-    });
+    const { data: createdStaff, error } = await supabase
+      .from("staff_members")
+      .insert({
+        business_id: business.id,
+        name: name.trim(),
+        role_title: roleTitle.trim() || null,
+        email: cleanStaffEmail || null,
+        phone: phone.trim() || null,
+        image_url: finalImageUrl,
+        invite_status: cleanStaffEmail ? "invited" : "not_invited",
+        permission_role: permissionRole,
+        active: true,
+      })
+      .select("id, name")
+      .single();
 
     setSaving(false);
 
@@ -240,14 +244,53 @@ export default function StaffPage() {
       return;
     }
 
+    let successMessage = t(
+      "dashboardStaff.create.success",
+      "Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.",
+    );
+
+    if (cleanStaffEmail && createdStaff?.id) {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const response = await fetch("/api/staff/invite", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session?.access_token || ""}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ staffMemberId: createdStaff.id }),
+        });
+        const payload = await response.json();
+
+        if (response.ok && payload.delivery?.status === "sent") {
+          successMessage = `${successMessage} ${t(
+            "dashboardStaff.invite.emailSent",
+            "Invite saved and the invitation email was sent.",
+          )}`;
+        } else if (response.ok && payload.manualInviteUrl) {
+          successMessage = `${successMessage} ${t(
+            "dashboardStaff.invite.savedManualLink",
+            "Invite saved. Email was skipped safely. Manual invite link:",
+          )} ${payload.manualInviteUrl}`;
+        } else if (
+          response.ok &&
+          payload.delivery?.reason === "config_missing"
+        ) {
+          successMessage = `${successMessage} ${t(
+            "dashboardStaff.invite.appUrlMissing",
+            "Invite saved, but the invite email could not be sent. Share the secure invite link instead.",
+          )}`;
+        }
+      } catch {
+        // Staff creation is authoritative; invite email/link generation is best-effort.
+      }
+    }
+
     resetForm();
     setFormExpanded(false);
-    setSuccess(
-      t(
-        "dashboardStaff.create.success",
-        "Staff member added. Assign services and working hours so Mirëbook can show real bookable times for them.",
-      ),
-    );
+    setSuccess(successMessage);
 
     await loadPage();
   }

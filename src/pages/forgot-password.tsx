@@ -40,21 +40,25 @@ export default function ForgotPasswordPage() {
     setError(null);
     setMessage(null);
 
+    const cleanEmail = email.trim().toLowerCase();
     const resetRedirect = getAuthAppUrl(
       product,
       `/reset-password?product=${product}`,
       window.location.origin,
     );
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      email.trim().toLowerCase(),
+      cleanEmail,
       { redirectTo: resetRedirect },
     );
 
     setLoading(false);
 
     if (resetError) {
-      setError(resetError.message);
-      return;
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[forgot-password] Reset request was not accepted", {
+          message: resetError.message,
+        });
+      }
     }
 
     setMessage(
@@ -92,7 +96,9 @@ export default function ForgotPasswordPage() {
             <label className="password-auth-field">
               <span>{t("forgotPassword.emailLabel", "Email address")}</span>
               <input
-                type="email"
+                type="text"
+                inputMode="email"
+                autoComplete="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder={t(

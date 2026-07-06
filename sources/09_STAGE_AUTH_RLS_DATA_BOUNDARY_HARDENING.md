@@ -786,3 +786,41 @@ Stage 9 Batch 11C - Staged Auth And Email Confirmation QA:
   enforcing it for production users
 - retest customer registration, business registration and secure staff invite
   acceptance with real confirmation/recovery links
+
+## Batch 11C Auth/Redirect QA Follow-Up Implemented
+
+QA found the core domain and auth routing healthy, with three launch-readiness
+follow-ups:
+
+- password reset surfaced a Supabase reset-provider error for registered QA
+  emails even though registration/login accepted those emails
+- plain `/register` on `business.mirebook.com` defaulted to Customer instead of
+  Business
+- staff exact-email linking worked, but the secure `/staff/invite` token link
+  was not exposed for QA when creating staff from Team
+
+Fixes applied:
+
+- forgot-password requests now use generic recovery-request success copy even if
+  the provider rejects or rate-limits the request, avoiding raw provider errors
+  and keeping the no-account-enumeration pattern
+- the forgot-password email field uses text input with email keyboard hints so
+  browser email validation cannot reject addresses that registration accepts
+- business-domain `/register` now defaults to Business unless an explicit
+  account type is provided
+- creating a staff member with an email now attempts secure invite-link
+  generation immediately and surfaces the manual invite link when email delivery
+  is skipped/disabled
+
+Protected systems unchanged:
+
+- no SQL, RLS, booking lifecycle, staff linking rules, auth session handling,
+  billing writes or email provider configuration was changed
+
+Remaining Batch 11C QA:
+
+- retest customer and business password reset request UI with the registered QA
+  emails from the failed run
+- retest plain `https://business.mirebook.com/register`
+- create a new staff member with an email and verify a manual `/staff/invite`
+  link is available when email delivery is skipped
