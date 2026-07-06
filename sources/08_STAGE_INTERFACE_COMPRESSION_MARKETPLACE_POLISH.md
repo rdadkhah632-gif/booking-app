@@ -1,9 +1,10 @@
 # Stage 8 - Interface Compression And Marketplace Polish
 
-Status: active.
+Status: complete and closure-ready.
 
-Wave 1 status: implemented and build-validated. Authenticated QA remains open
-for signed-in customer and business workspaces.
+Wave 1 status: implemented and build-validated.
+
+Closure status: pass after customer, business and staff deployed-site QA.
 
 ## Goal
 

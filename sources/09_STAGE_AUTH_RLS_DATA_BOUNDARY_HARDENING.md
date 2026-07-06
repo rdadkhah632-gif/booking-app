@@ -1,6 +1,18 @@
 # Stage 9 - Auth, RLS and Data Boundary Hardening
 
-Status: active.
+Status: active after Stage 8 closure.
+
+RLS/data-boundary closure status: pass with one tracked auth-routing polish
+follow-up.
+
+Current Stage 9 focus:
+
+- keep the SQL 09-17 RLS boundaries stable unless a fresh leak appears
+- verify production Supabase Auth settings before enabling stricter auth flows
+- verify Vercel environment configuration for server-only routes, Stripe test
+  sync, app domains, support email and reminders
+- run final role-by-role launch QA without reopening UI polish unless a direct
+  regression appears
 
 Batch 1 audit status: complete.
 
@@ -11,6 +23,12 @@ Batch 3 status: implemented and build-validated.
 Batch 4 status: implemented and build-validated.
 
 Batch 5 status: implemented and build-validated.
+
+Batches 6-10 status: SQL policy cleanup and validators created, applied
+manually in Supabase and QA'd through the Stage 9 closure matrix.
+
+Stage 8 closure note: interface compression and mobile account-menu QA passed
+after Stage 8.54. Do not reopen Stage 8 unless a direct regression appears.
 
 ## Goal
 
@@ -501,9 +519,9 @@ Tracked follow-up:
   data boundaries, but it should be considered for a later auth-routing polish
   pass.
 
-## Current RLS Draft
+## Current RLS Source Files
 
-Draft SQL:
+Versioned SQL:
 
 ```text
 sources/sql/09_rls_bookings_boundary_draft.sql
@@ -517,58 +535,61 @@ sources/sql/16_rls_notifications_policy_cleanup.sql
 sources/sql/17_rls_booking_requests_policy_cleanup.sql
 ```
 
-These drafts are not applied automatically. Stage 9 drafts 09, 10, 11 and 12
-were manually applied in Supabase and QA'd in controlled passes. Draft 13 is
-required because the broad-read audit found legacy policies still allowing
-authenticated non-admin broad reads on several operational tables. Draft 14 is
-required after SQL 13 because public booking creation needs a security-definer
-validator now that customers cannot directly read raw setup tables. Draft 15 is
-required after SQL 14 because related booking/request notification inserts need
-a security-definer validator for the same reason. Draft 16 is required after
-SQL 15 because helper RPC checks passed but notification inserts were still
-blocked by an older restrictive notification policy. Draft 17 is required after
-SQL 16 because staff could still read booking request rows through an older
-booking request policy.
+These files are the versioned record of the Stage 9 hardening pass. They are
+not automatically applied by the app. The project history records SQL 09-17 as
+manually run in Supabase and QA'd through the Stage 9 matrix.
 
-Recommended SQL review order:
+Do not rerun or rewrite these policies casually. Treat them as production data
+boundaries and only change them after a targeted leak, broken workflow or
+schema change is identified.
 
-1. Confirm the new public occupancy endpoint is deployed.
-2. Review and test `09_rls_bookings_boundary_draft.sql`.
-3. QA public booking, My Bookings, business Calendar/Inbox and staff Calendar.
-4. Review and test `10_rls_requests_notifications_support_draft.sql`.
-5. QA customer notifications, business Inbox, support ticket creation, support
-   replies and admin support inbox.
-6. Confirm the new public marketplace/profile endpoints are deployed.
-7. Review and test `11_rls_marketplace_public_data_boundary_draft.sql`.
-8. QA Explore, public business pages, owner preview, business setup, services,
-   team, working hours and staff availability.
-9. Deploy the support reply/admin profile server-route batch.
-10. Review and test `12_rls_profiles_support_tightening_draft.sql`.
-11. QA Account save, language preference save, registration/profile creation,
-    admin user profile edits, admin role/admin access changes, user support
-    replies and admin support replies.
-12. Repeat broad-read checks as anonymous, customer, staff, business owner and
-    admin.
-
-## Remaining High-Risk Tables
+## Current High-Risk Tables
 
 `businesses`, `services`, `staff_members`, `staff_services`, `availability`,
-`staff_availability`, `booking_requests`, `notifications`, `support_messages`
-and `support_replies` now have applied Stage 9 drafts. They should remain
-treated as high-risk until final role-based broad-read QA is complete across
-anonymous, customer, staff, business owner and admin sessions.
+`staff_availability`, `bookings`, `booking_requests`, `notifications`,
+`support_messages`, `support_replies`, `profiles`,
+`notification_email_preferences` and `business_billing` are launch-sensitive
+because they define cross-role visibility.
 
-Admin-only and server-only tables still need separate review.
+Latest QA status: pass for the tested anonymous, customer, staff, business
+owner and admin boundaries. Future changes to these tables require focused RLS
+QA before launch.
+
+Admin-only and server-only tables should remain denied to browser clients:
+
+- `staff_invite_tokens`
+- `appointment_reminder_deliveries`
+- `founding_offer_reviews`
+- `business_billing_admin_audit`
 
 ## Safe Next Batch
 
-1. Commit the SQL 13 policy-cleanup draft and Stage 9 notes.
-2. Run SQL 13 in Supabase SQL editor.
-3. Repeat broad-read checks as anonymous, customer, staff, business owner and
-   admin.
-4. QA public marketplace/profile endpoints and role workspaces.
-5. Review admin-only/server-only tables for the next hardening batch.
+Stage 9 should now move from broad SQL cleanup into final production readiness.
 
-Do not harden all tables blindly in one production pass. RLS should move in
-small verified batches so working booking, staff and business flows are not
-broken without an easy rollback point.
+Recommended Batch 11 - Production Auth, Environment And Email Readiness:
+
+1. Verify Vercel environment configuration exists for the production and
+   business domains without exposing secret values.
+2. Verify Supabase Auth dashboard settings:
+   - Site URL
+   - Redirect URLs
+   - confirmation/recovery templates
+   - whether email confirmation is intentionally disabled or ready for a staged
+     activation test
+3. Verify application email mode:
+   - `EMAIL_PROVIDER=disabled` remains safe for no-send launch testing
+   - `EMAIL_PROVIDER=resend` is only used after sender-domain and inbox QA
+   - `SUPPORT_ADMIN_EMAIL` is monitored before operator alerts are called live
+4. Verify reminders:
+   - `REMINDER_CRON_SECRET` exists before any scheduler is enabled
+   - reminder cron is not marketed as active until real provider delivery is QA'd
+5. Run final role-by-role launch QA:
+   - anonymous marketplace/public booking
+   - customer registration, booking, reschedule, cancellation and support
+   - business owner setup, calendar, manual appointment, inbox and support
+   - staff login, calendar, availability and notifications
+   - admin user/support/billing visibility
+
+Do not harden all tables blindly in one production pass. From here, Stage 9
+changes should be small, audited and tied to a specific launch-readiness
+finding.
