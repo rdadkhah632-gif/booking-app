@@ -3514,9 +3514,9 @@ export const sq: TranslationTree = {
   "dashboardStaff.invite.emailSent":
     "Ftesa u ruajt dhe email-i i ftesës u dërgua.",
   "dashboardStaff.invite.savedManualLink":
-    "Ftesa u ruajt. Email-i u anashkalua në mënyrë të sigurt. Linku manual i ftesës:",
+    "Ftesa u ruajt. Linku manual i ftesës:",
   "dashboardStaff.invite.appUrlMissing":
-    "Ftesa u ruajt, por email-i i ftesës nuk mund të dërgohej. Ndaj linkun e sigurt në vend të tij.",
+    "Ftesa u ruajt, por email-i i ftesës nuk mund të dërgohej. Linku manual i ftesës:",
   "myBookings.error.cancellationStatusChanged":
     "Ky rezervim nuk mund të anulohet më sepse statusi i tij ka ndryshuar.",
   "staffInvite.kicker": "Ftesë për staf",

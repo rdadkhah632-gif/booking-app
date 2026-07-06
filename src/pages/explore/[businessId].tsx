@@ -1236,7 +1236,7 @@ export default function BusinessBookingPage() {
     );
 
     if (createdBooking?.id) {
-      void requestTransactionalEmail({
+      await requestTransactionalEmail({
         event: "booking_created",
         bookingId: createdBooking.id,
       });

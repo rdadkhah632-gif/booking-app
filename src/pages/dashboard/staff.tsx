@@ -269,19 +269,24 @@ export default function StaffPage() {
             "dashboardStaff.invite.emailSent",
             "Invite saved and the invitation email was sent.",
           )}`;
-        } else if (response.ok && payload.manualInviteUrl) {
-          successMessage = `${successMessage} ${t(
-            "dashboardStaff.invite.savedManualLink",
-            "Invite saved. Email was skipped safely. Manual invite link:",
-          )} ${payload.manualInviteUrl}`;
         } else if (
           response.ok &&
-          payload.delivery?.reason === "config_missing"
+          payload.manualInviteUrl &&
+          [
+            "config_missing",
+            "provider_disabled",
+            "unsupported_provider",
+          ].includes(payload.delivery?.reason)
         ) {
           successMessage = `${successMessage} ${t(
             "dashboardStaff.invite.appUrlMissing",
-            "Invite saved, but the invite email could not be sent. Share the secure invite link instead.",
-          )}`;
+            "Invite saved, but the invite email could not be sent. Manual invite link:",
+          )} ${payload.manualInviteUrl}`;
+        } else if (response.ok && payload.manualInviteUrl) {
+          successMessage = `${successMessage} ${t(
+            "dashboardStaff.invite.savedManualLink",
+            "Invite saved. Manual invite link:",
+          )} ${payload.manualInviteUrl}`;
         }
       } catch {
         // Staff creation is authoritative; invite email/link generation is best-effort.
@@ -537,16 +542,24 @@ export default function StaffPage() {
           "dashboardStaff.invite.emailSent",
           "Invite saved and the invitation email was sent.",
         );
+      } else if (
+        response.ok &&
+        payload.manualInviteUrl &&
+        [
+          "config_missing",
+          "provider_disabled",
+          "unsupported_provider",
+        ].includes(payload.delivery?.reason)
+      ) {
+        deliveryMessage = `${t(
+          "dashboardStaff.invite.appUrlMissing",
+          "Invite saved, but the invite email could not be sent. Manual invite link:",
+        )} ${payload.manualInviteUrl}`;
       } else if (response.ok && payload.manualInviteUrl) {
         deliveryMessage = `${t(
           "dashboardStaff.invite.savedManualLink",
-          "Invite saved. Email was skipped safely. Manual invite link:",
+          "Invite saved. Manual invite link:",
         )} ${payload.manualInviteUrl}`;
-      } else if (response.ok && payload.delivery?.reason === "config_missing") {
-        deliveryMessage = t(
-          "dashboardStaff.invite.appUrlMissing",
-          "Invite saved, but the invite email could not be sent. Share the secure invite link instead.",
-        );
       }
     } catch {
       // The staff record is already saved; email delivery is best-effort only.

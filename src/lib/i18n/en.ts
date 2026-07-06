@@ -3445,10 +3445,9 @@ export const en: TranslationTree = {
     "Invite saved. Share the secure invite link or ask them to sign in with the invited email.",
   "dashboardStaff.invite.emailSent":
     "Invite saved and the invitation email was sent.",
-  "dashboardStaff.invite.savedManualLink":
-    "Invite saved. Email was skipped safely. Manual invite link:",
+  "dashboardStaff.invite.savedManualLink": "Invite saved. Manual invite link:",
   "dashboardStaff.invite.appUrlMissing":
-    "Invite saved, but the invite email could not be sent. Share the secure invite link instead.",
+    "Invite saved, but the invite email could not be sent. Manual invite link:",
   "myBookings.error.cancellationStatusChanged":
     "This booking can no longer be cancelled because its status has changed.",
   "staffInvite.kicker": "Staff invitation",

@@ -74,6 +74,89 @@ function absoluteAppUrl(
   return new URL(configuredUrl, fallbackOrigin).toString();
 }
 
+function staffNotificationForStatus(status: BookingEmailStatus) {
+  if (status === "confirmed") {
+    return {
+      type: "booking_accepted",
+      title: "Confirmed",
+      statusText: "confirmed",
+    };
+  }
+  if (status === "cancelled") {
+    return {
+      type: "booking_cancelled",
+      title: "Cancelled",
+      statusText: "cancelled",
+    };
+  }
+  if (status === "declined") {
+    return {
+      type: "booking_declined",
+      title: "Declined",
+      statusText: "declined",
+    };
+  }
+  if (status === "completed") {
+    return {
+      type: "booking_completed",
+      title: "Completed",
+      statusText: "completed",
+    };
+  }
+
+  return null;
+}
+
+async function ensureStaffBookingNotification(params: {
+  supabaseAdmin: ReturnType<typeof createSupabaseAdminClient>;
+  staffUserId?: string | null;
+  businessId: string;
+  bookingId: string;
+  status: BookingEmailStatus;
+  serviceName: string;
+  customerName: string;
+  startAt: string;
+}) {
+  if (!params.staffUserId) return;
+
+  const notification = staffNotificationForStatus(params.status);
+  if (!notification) return;
+
+  const { data: existing } = await params.supabaseAdmin
+    .from("notifications")
+    .select("id")
+    .eq("user_id", params.staffUserId)
+    .eq("booking_id", params.bookingId)
+    .eq("type", notification.type)
+    .maybeSingle<{ id: string }>();
+
+  if (existing) return;
+
+  const appointmentTime = new Date(params.startAt).toLocaleString("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  const { error } = await params.supabaseAdmin.from("notifications").insert({
+    user_id: params.staffUserId,
+    business_id: params.businessId,
+    booking_id: params.bookingId,
+    audience: "staff",
+    type: notification.type,
+    title: notification.title,
+    message: `${params.customerName}'s ${params.serviceName} appointment is ${notification.statusText} for ${appointmentTime}.`,
+    action_url: "/staff/calendar",
+  });
+
+  if (error) {
+    console.warn("[email] Could not create staff booking notification", {
+      bookingId: params.bookingId,
+      status: params.status,
+      error: error.message,
+    });
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -389,6 +472,17 @@ export default async function handler(
         }),
       );
     }
+
+    await ensureStaffBookingNotification({
+      supabaseAdmin,
+      staffUserId: staff?.user_id,
+      businessId: booking.business_id,
+      bookingId: booking.id,
+      status: booking.status,
+      serviceName: service?.name || "Appointment",
+      customerName: booking.customer_name || "Customer",
+      startAt: booking.start_at,
+    });
 
     const results: TransactionalEmailResult[] = [];
     for (const message of messages) {

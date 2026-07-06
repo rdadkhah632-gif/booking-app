@@ -1101,3 +1101,41 @@ Notes:
 - Supabase Auth emails remain configured in Supabase, not in this repo
 - templates are English-only for launch and should be localized later if email
   language preference becomes launch-critical
+
+## Batch 11G Transactional Email Production QA Follow-Up
+
+Production QA after Resend setup found:
+
+- staff invite email did not arrive, and the UI showed the manual invite-link
+  fallback
+- customer instant-booking confirmation email did not arrive
+- assigned staff booking email did not arrive
+- owner booking email did not arrive in the checked owner inbox
+- in-app booking state still worked across customer, business calendar, business
+  inbox and staff calendar
+
+Follow-up applied:
+
+- public booking creation now waits for the transactional-email API request
+  before redirecting to booking confirmation, reducing the chance that the
+  browser cancels the request during navigation
+- staff invite fallback copy now distinguishes "email could not be sent" from a
+  successful email send and still provides the secure manual invite link
+- assigned staff booking notifications are now created server-side from the
+  transactional email route, using the private staff user id already loaded on
+  the server instead of exposing staff account ids to public booking pages
+
+Still required in Vercel/Resend before this is considered pass:
+
+- confirm `EMAIL_PROVIDER=resend` is set in Production
+- confirm `RESEND_API_KEY` is set in Production
+- confirm `EMAIL_FROM_ADDRESS` uses a Resend-verified sender domain
+- redeploy Production after environment changes
+- check Vercel runtime logs for email configuration warnings or Resend provider
+  errors
+- check the Resend Emails dashboard for accepted, failed or rejected deliveries
+
+Real inbox QA with Gmail aliases confirmed staff invite, customer booking,
+business owner booking and staff assignment emails arrived. Resend showed Gmail
+delivery while disposable `web-library.net` recipients stayed at sent/delayed,
+so that domain should not be used as the final launch email-delivery signal.
