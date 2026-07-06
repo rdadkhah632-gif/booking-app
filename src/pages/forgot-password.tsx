@@ -6,11 +6,11 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import {
   AuthProduct,
-  getAuthAppUrl,
   getBusinessAppUrl,
   getCustomerAppUrl,
   isBusinessAppHostname,
 } from "@/lib/appUrls";
+import { requestPasswordResetEmail } from "@/lib/auth/passwordReset";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -45,20 +45,20 @@ export default function ForgotPasswordPage() {
       ),
     );
 
-    const resetRedirect = getAuthAppUrl(
-      product,
-      `/reset-password?product=${product}`,
-      window.location.origin,
-    );
-
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      const { primaryError, fallbackError } = await requestPasswordResetEmail(
+        supabase,
         cleanEmail,
-        { redirectTo: resetRedirect },
+        product,
+        window.location.origin,
       );
-      if (resetError && process.env.NODE_ENV !== "production") {
+      if (
+        (primaryError || fallbackError) &&
+        process.env.NODE_ENV !== "production"
+      ) {
         console.warn("[forgot-password] Reset request was not accepted", {
-          message: resetError.message,
+          primaryMessage: primaryError?.message,
+          fallbackMessage: fallbackError?.message,
         });
       }
     } catch (resetError) {

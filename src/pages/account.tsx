@@ -16,6 +16,7 @@ import {
   getEmailVerificationState,
 } from "@/lib/email/verification";
 import { getAuthAppUrl, isBusinessAppHostname } from "@/lib/appUrls";
+import { requestPasswordResetEmail } from "@/lib/auth/passwordReset";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
 
 type Role = "customer" | "business" | "staff";
@@ -293,22 +294,21 @@ export default function AccountPage() {
       isBusinessAppHostname(window.location.hostname)
         ? "business"
         : "customer";
-    const resetRedirect = getAuthAppUrl(
-      authProduct,
-      `/reset-password?product=${authProduct}`,
-      window.location.origin,
-    );
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      const { primaryError, fallbackError } = await requestPasswordResetEmail(
+        supabase,
         profile.email,
-        {
-          redirectTo: resetRedirect,
-        },
+        authProduct,
+        window.location.origin,
       );
-      if (resetError && process.env.NODE_ENV !== "production") {
+      if (
+        (primaryError || fallbackError) &&
+        process.env.NODE_ENV !== "production"
+      ) {
         console.warn("[account] Password reset request was not accepted", {
-          message: resetError.message,
+          primaryMessage: primaryError?.message,
+          fallbackMessage: fallbackError?.message,
         });
       }
     } catch (resetError) {

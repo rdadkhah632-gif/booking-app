@@ -33,7 +33,9 @@ function normaliseHostname(hostname: string): string {
 }
 
 export function getCustomerAppUrl(path = "/"): string {
-  const origin = configuredOrigin(process.env.NEXT_PUBLIC_CUSTOMER_APP_URL);
+  const origin =
+    configuredOrigin(process.env.NEXT_PUBLIC_CUSTOMER_APP_URL) ||
+    configuredOrigin(process.env.NEXT_PUBLIC_APP_URL);
   return origin ? appendPath(origin, path) : path;
 }
 
@@ -51,9 +53,7 @@ export function getAuthAppUrl(
   fallbackOrigin: string,
 ): string {
   const configuredUrl =
-    product === "business"
-      ? getBusinessAppUrl(path)
-      : getCustomerAppUrl(path);
+    product === "business" ? getBusinessAppUrl(path) : getCustomerAppUrl(path);
 
   return new URL(configuredUrl, fallbackOrigin).toString();
 }
@@ -67,7 +67,9 @@ export function isBusinessAppHostname(hostname: string): boolean {
   );
 
   if (businessOrigin) {
-    return normalisedHostname === new URL(businessOrigin).hostname.toLowerCase();
+    return (
+      normalisedHostname === new URL(businessOrigin).hostname.toLowerCase()
+    );
   }
 
   return (
