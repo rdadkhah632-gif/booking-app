@@ -110,6 +110,15 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
         }
 
+        .customer-nav-account-menu:not([open])
+          .customer-nav-account-menu-panel {
+          display: none;
+        }
+
+        .customer-nav-account-menu[open] .customer-nav-account-menu-panel {
+          display: grid;
+        }
+
         .customer-nav-account-menu-panel :global(.language-switcher),
         .customer-nav-account-menu-panel :global(a),
         .customer-nav-account-menu-panel button {

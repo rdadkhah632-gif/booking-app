@@ -1170,3 +1170,21 @@ Remaining QA note:
 - retest mobile Explore, mobile authenticated business/staff nav, customer
   notification timestamps and business Working hours save feedback on the
   deployed site.
+
+## Stage 8.53 Mobile Details Menu Visibility Fix Implemented
+
+- explicitly hide customer Account dropdown contents unless the Account details
+  menu is open
+- explicitly hide business/staff mobile Account menu contents unless the mobile
+  Account details menu is open
+- preserved the compact account-menu structure introduced in Stage 8.52 while
+  fixing the leaked Account/Help/Log out controls seen in QA
+
+Stage 8.53 did not change booking creation, slot generation, booking status
+transitions, staff invite/linking data, role/RLS rules, billing writes,
+notification generation or database schema.
+
+Remaining QA note:
+
+- retest closed mobile customer/business/staff Account menus on the deployed
+  site to confirm their contents stay hidden until tapped.

@@ -844,6 +844,14 @@ export default function DashboardLayout({
           .sidebar-link:hover {
             transform: none;
           }
+
+          .sidebar-mobile-account:not([open]) .sidebar-account-actions-menu {
+            display: none;
+          }
+
+          .sidebar-mobile-account[open] .sidebar-account-actions-menu {
+            display: grid;
+          }
         }
 
         @media (max-width: 720px) {
