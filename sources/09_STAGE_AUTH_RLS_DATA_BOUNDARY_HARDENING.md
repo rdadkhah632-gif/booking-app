@@ -1,18 +1,22 @@
 # Stage 9 - Auth, RLS and Data Boundary Hardening
 
-Status: active after Stage 8 closure.
+Status: COMPLETE.
 
-RLS/data-boundary closure status: pass with one tracked auth-routing polish
-follow-up.
+Closure QA: PASS.
 
-Current Stage 9 focus:
+Reminder cron status: deferred/not active until Vercel Cron is deliberately
+configured and QA'd.
 
-- keep the SQL 09-17 RLS boundaries stable unless a fresh leak appears
-- verify production Supabase Auth settings before enabling stricter auth flows
-- verify Vercel environment configuration for server-only routes, Stripe test
-  sync, app domains, support email and reminders
-- run final role-by-role launch QA without reopening UI polish unless a direct
-  regression appears
+Stage 9 completed:
+
+- SQL 09-17 RLS boundaries applied and QA'd
+- production Supabase Auth recovery and role routing QA passed
+- production Vercel env/email configuration QA passed
+- Resend transactional email delivery passed with real Gmail inboxes
+- final role-by-role launch smoke QA passed
+
+Do not reopen Stage 9 unless a fresh auth, data-boundary or production
+configuration regression appears.
 
 Batch 1 audit status: complete.
 
@@ -1139,3 +1143,115 @@ Real inbox QA with Gmail aliases confirmed staff invite, customer booking,
 business owner booking and staff assignment emails arrived. Resend showed Gmail
 delivery while disposable `web-library.net` recipients stayed at sent/delayed,
 so that domain should not be used as the final launch email-delivery signal.
+
+## Batch 11H Stage 9 Closure Sweep
+
+Status: PASS.
+
+### Confirmed By Recent QA
+
+- anonymous Explore/public profile access and protected-route redirects passed
+- customer booking, My Bookings, Notifications, support ticket and logout passed
+- business Today, Calendar, Setup, Team, Inbox, Membership, Account and support
+  ticket passed
+- staff Today, Calendar, Working hours, Inbox and role-boundary checks passed
+- non-admin accounts were denied from `/admin`
+- customer password recovery works with a normal inbox
+- business password recovery works with a normal inbox and returns to Mirëbook
+  Business after password change
+- staff invite email sends through Resend and arrives in a real Gmail inbox
+- customer instant booking confirmation email sends through Resend and arrives
+  in a real Gmail inbox
+- business owner booking notification email sends through Resend and arrives in
+  a real Gmail inbox
+- assigned staff booking email sends through Resend and arrives in a real Gmail
+  inbox
+- Staff Inbox now mirrors the assigned booking update after the transactional
+  email route creates the staff notification server-side
+- support requester/admin emails were confirmed by inbox owner after production
+  smoke QA
+- disposable inboxes such as `web-library.net` should not be used as final
+  launch deliverability proof
+
+### Production Environment Checklist
+
+Required in Vercel Production:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_APP_URL=https://mirebook.com`
+- `NEXT_PUBLIC_CUSTOMER_APP_URL=https://mirebook.com`
+- `NEXT_PUBLIC_BUSINESS_APP_URL=https://business.mirebook.com`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_ID_LAUNCH`
+- `EMAIL_PROVIDER=resend`
+- `RESEND_API_KEY`
+- `EMAIL_FROM_ADDRESS` using a Resend-verified sender, for example
+  `Mirëbook <bookings@mail.mirebook.com>`
+- `EMAIL_REPLY_TO` pointing to a monitored inbox
+- `SUPPORT_ADMIN_EMAIL` pointing to a monitored operator inbox
+
+Reminder-only variables:
+
+- `REMINDER_CRON_SECRET`
+- `CRON_SECRET`, if Vercel Cron is used
+
+### Support Email Closure Status
+
+Support email status: PASS.
+
+- customer/business/staff support forms call the transactional email route with
+  `support_created`
+- the transactional email route sends requester support email when preferences
+  allow it
+- the route sends an operator alert to `SUPPORT_ADMIN_EMAIL` when configured
+- admin support replies call the same route with `support_replied`
+- production smoke created customer and business support conversations
+- support email arrival was confirmed by the inbox owner
+
+### Reminder/Cron Launch Decision
+
+Appointment reminder infrastructure is ready but should remain a tracked
+optional launch follow-up unless a scheduler is deliberately configured.
+
+Current status:
+
+- `/api/email/reminders` is protected by `REMINDER_CRON_SECRET` or
+  `CRON_SECRET`
+- it requires `appointment_reminder_deliveries` SQL from
+  `sources/sql/06_notification_email_preferences_and_reminders.sql`
+- it sends only due confirmed bookings about 24 hours before appointment time
+- no `vercel.json` cron schedule is currently versioned in the repo
+
+Recommended launch decision:
+
+- do not market reminders as active until Vercel Cron is configured and QA'd
+- if reminders are desired for launch, add a deliberate cron schedule, set
+  `CRON_SECRET`, call the endpoint once manually with the secret and confirm
+  Resend delivery for a due confirmed booking
+
+### Final Stage 9 Closure QA Matrix
+
+Production smoke result: PASS.
+
+- anonymous: Explore/public business profile load; protected routes redirect
+- customer: login, book instant service, My Bookings, Notifications, Account
+  logout/reset request and one support ticket
+- business owner: Today, Calendar, Setup, Team invite, Inbox, Membership,
+  Account logout/reset request and support/admin-alert email
+- staff: invited/exact-email login, Today, Calendar, Working hours, Inbox and
+  no owner-only actions
+- admin: admin user/support access works only for admin accounts; non-admins are
+  denied
+
+### Closure Recommendation
+
+Stage 9 is complete.
+
+Remaining tracked follow-up:
+
+- appointment reminders remain deferred/not active until Vercel Cron is
+  deliberately configured, protected with `CRON_SECRET`/`REMINDER_CRON_SECRET`
+  and tested against a due confirmed booking
