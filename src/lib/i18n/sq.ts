@@ -3573,6 +3573,8 @@ export const sq: TranslationTree = {
   "resetPassword.error.length":
     "Përdor të paktën 8 karaktere për fjalëkalimin e ri.",
   "resetPassword.error.match": "Konfirmimi i fjalëkalimit nuk përputhet.",
+  "resetPassword.error.update":
+    "Fjalëkalimi nuk u përditësua. Kërko një link të ri rivendosjeje dhe provo përsëri.",
   "resetPassword.invalidTitle": "Ky link rivendosjeje nuk është aktiv",
   "resetPassword.invalidBody":
     "Linku mund të ketë skaduar ose të jetë përdorur. Kërko një email të ri për rivendosjen e fjalëkalimit.",

@@ -17,8 +17,7 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [isBusinessHostname, setIsBusinessHostname] = useState(false);
-  const [recoveryState, setRecoveryState] =
-    useState<RecoveryState>("checking");
+  const [recoveryState, setRecoveryState] = useState<RecoveryState>("checking");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -51,12 +50,16 @@ export default function ResetPasswordPage() {
         typeof router.query.error_description === "string"
           ? router.query.error_description
           : null;
-      const recoveryError =
-        queryError || hashParams.get("error_description");
+      const recoveryError = queryError || hashParams.get("error_description");
 
       if (recoveryError) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[reset-password] Recovery link was rejected", {
+            message: recoveryError.replace(/\+/g, " "),
+          });
+        }
         if (active) {
-          setError(recoveryError.replace(/\+/g, " "));
+          setError(null);
           setRecoveryState("invalid");
         }
         return;
@@ -75,8 +78,13 @@ export default function ResetPasswordPage() {
         const { error: exchangeError } =
           await supabase.auth.exchangeCodeForSession(router.query.code);
         if (exchangeError) {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("[reset-password] Recovery code exchange failed", {
+              message: exchangeError.message,
+            });
+          }
           if (active) {
-            setError(exchangeError.message);
+            setError(null);
             setRecoveryState("invalid");
           }
           return;
@@ -137,8 +145,18 @@ export default function ResetPasswordPage() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
 
     if (updateError) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[reset-password] Password update failed", {
+          message: updateError.message,
+        });
+      }
       setSaving(false);
-      setError(updateError.message);
+      setError(
+        t(
+          "resetPassword.error.update",
+          "Could not update your password. Request a new reset link and try again.",
+        ),
+      );
       return;
     }
 
@@ -202,9 +220,7 @@ export default function ResetPasswordPage() {
                   <input
                     type="password"
                     value={confirmPassword}
-                    onChange={(event) =>
-                      setConfirmPassword(event.target.value)
-                    }
+                    onChange={(event) => setConfirmPassword(event.target.value)}
                     autoComplete="new-password"
                     required
                   />

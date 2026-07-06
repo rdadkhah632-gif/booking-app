@@ -3505,6 +3505,8 @@ export const en: TranslationTree = {
   "resetPassword.error.length":
     "Use at least 8 characters for your new password.",
   "resetPassword.error.match": "The password confirmation does not match.",
+  "resetPassword.error.update":
+    "Could not update your password. Request a new reset link and try again.",
   "resetPassword.invalidTitle": "This reset link is not active",
   "resetPassword.invalidBody":
     "The link may have expired or already been used. Request a new password reset email.",

@@ -844,3 +844,54 @@ Retest result:
 - customer forgot-password: PASS
 - business forgot-password: PASS
 - both flows showed generic accepted recovery copy without raw provider errors
+
+## Batch 11D Final Auth Hardening Prep
+
+Goal:
+
+- prepare password reset completion, email-confirmation staging and final
+  role-boundary QA without changing protected booking, role, RLS, staff-linking
+  or billing systems
+
+App-side hardening applied:
+
+- `/reset-password` no longer renders raw Supabase recovery-link or
+  code-exchange errors to users
+- expired, invalid or already-used reset links now show the existing inactive
+  reset-link state with a safe "request another reset link" action
+- failed password updates show generic recovery guidance while provider details
+  are logged only in development
+- Account-page password reset requests now follow the same no-enumeration
+  pattern as `/forgot-password`: the generic accepted message is shown without
+  rendering provider rejection text
+
+External checks still required:
+
+- use a real inbox to open a customer recovery email and confirm the link lands
+  on `/reset-password`, accepts a new password and allows login with the new
+  password
+- repeat the recovery-link completion on the business domain using a business
+  account
+- decide whether Supabase email confirmation remains disabled for launch or is
+  staged in a controlled test window before enforcement
+- current recommendation: keep Supabase email confirmation disabled for launch
+  until customer, business and invited-staff confirmation links have passed
+  real-inbox QA on the deployed domains
+- if email confirmation is staged, verify customer signup, business signup and
+  invited-staff signup all return to the correct product area after confirming
+  the email
+- rerun a final role/data-boundary smoke after any Supabase Auth dashboard
+  setting change
+
+Recommended final smoke matrix:
+
+- anonymous: Explore and public business profiles load, protected pages redirect
+  to login, no private dashboard data is visible
+- customer: register/login/logout, booking, My Bookings, reschedule,
+  cancellation, Notifications, Account reset request and support
+- business owner: login, Today, Calendar manual appointment, Setup, Team staff
+  invite/manual link, Inbox actions, Membership and Account reset request
+- staff: invited/exact-email login, Today, Calendar, Availability, Inbox, no
+  owner-only actions
+- admin: admin dashboard/user/support access works only for admin accounts, and
+  non-admin accounts are denied

@@ -280,7 +280,12 @@ export default function AccountPage() {
 
     setResettingPassword(true);
     setError(null);
-    setMessage(null);
+    setMessage(
+      t(
+        "account.passwordResetSent",
+        "Password reset request accepted. Check your inbox and spam folder to continue.",
+      ),
+    );
 
     const authProduct =
       ownsBusiness ||
@@ -294,26 +299,28 @@ export default function AccountPage() {
       window.location.origin,
     );
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      profile.email,
-      {
-        redirectTo: resetRedirect,
-      },
-    );
-
-    setResettingPassword(false);
-
-    if (resetError) {
-      setError(resetError.message);
-      return;
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        profile.email,
+        {
+          redirectTo: resetRedirect,
+        },
+      );
+      if (resetError && process.env.NODE_ENV !== "production") {
+        console.warn("[account] Password reset request was not accepted", {
+          message: resetError.message,
+        });
+      }
+    } catch (resetError) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[account] Password reset request was not accepted", {
+          message:
+            resetError instanceof Error ? resetError.message : "Unknown error",
+        });
+      }
+    } finally {
+      setResettingPassword(false);
     }
-
-    setMessage(
-      t(
-        "account.passwordResetSent",
-        "Password reset request accepted. Check your inbox and spam folder to continue.",
-      ),
-    );
   }
 
   async function logout() {
