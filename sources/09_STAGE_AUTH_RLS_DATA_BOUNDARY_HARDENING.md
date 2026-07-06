@@ -945,3 +945,43 @@ Required retest:
   logs the business user into `/dashboard`
 - if the email still does not arrive, recheck Supabase Auth allowed redirects
   for both `https://business.mirebook.com/**` and `https://mirebook.com/**`
+
+Retest after stable callback:
+
+- business password recovery still did not deliver a recovery email
+- the business Auth user exists and normal login with the existing password
+  succeeds
+- the app showed generic accepted copy and no raw provider error
+- reset-link completion could not be tested because no recovery email arrived
+
+Conclusion:
+
+- this no longer looks like app redirect construction
+- do not add an app-level password reset bypass
+- treat this as an external Supabase Auth delivery/configuration blocker until
+  dashboard logs prove otherwise
+
+Supabase checks required next:
+
+- Authentication logs: filter by the business email and the failed recovery
+  request time; look for recovery email suppression, rate-limit, SMTP/provider
+  rejection or redirect-url rejection
+- Auth user record: confirm the email identity is present, not banned, not
+  deleted/soft-deleted and has the expected email provider identity
+- URL Configuration: confirm Site URL is `https://mirebook.com` and Redirect
+  URLs include `https://mirebook.com/**` and
+  `https://business.mirebook.com/**`
+- Email Templates: confirm the recovery/reset template still includes the
+  Supabase recovery link variable and was not edited into a dead/static link
+- Email provider/suppression: check whether `web-library.net` or the exact
+  business test inbox is bounced, suppressed or rate-limited
+- Rate limits: wait out any recovery-email cooldown, then retry with a fresh
+  business account and a fresh real inbox
+
+Launch decision:
+
+- do not enable stricter email-confirmation requirements until business
+  recovery email delivery passes
+- if this remains blocked by Supabase delivery, launch can still proceed only
+  with a documented operator support process for business password recovery and
+  with Supabase Auth delivery marked as a known external dependency
