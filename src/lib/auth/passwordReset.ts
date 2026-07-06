@@ -17,7 +17,17 @@ export async function requestPasswordResetEmail(
   fallbackOrigin: string,
 ): Promise<PasswordResetResult> {
   const resetPath = `/reset-password?product=${product}`;
-  const primaryRedirect = getAuthAppUrl(product, resetPath, fallbackOrigin);
+  const customerResetRedirect = new URL(
+    getCustomerAppUrl(resetPath),
+    fallbackOrigin,
+  ).toString();
+  const productResetRedirect = getAuthAppUrl(
+    product,
+    resetPath,
+    fallbackOrigin,
+  );
+  const primaryRedirect =
+    product === "business" ? customerResetRedirect : productResetRedirect;
   let primaryError: Error | null = null;
   let fallbackError: Error | null = null;
 
@@ -35,10 +45,7 @@ export async function requestPasswordResetEmail(
     return { primaryError, fallbackError };
   }
 
-  const fallbackRedirect = new URL(
-    getCustomerAppUrl(resetPath),
-    fallbackOrigin,
-  ).toString();
+  const fallbackRedirect = productResetRedirect;
   if (fallbackRedirect === primaryRedirect) {
     return { primaryError, fallbackError };
   }

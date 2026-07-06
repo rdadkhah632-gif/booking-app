@@ -917,18 +917,22 @@ Fix applied:
 
 - password reset requests now share a small helper for `/forgot-password` and
   Account reset requests
-- business reset requests first try the business-domain recovery redirect
-- if the provider rejects the business redirect, Mirëbook retries with the
-  customer-domain reset page while preserving `product=business`
+- business reset requests now use the customer-domain reset page while
+  preserving `product=business`, because customer-domain recovery delivery has
+  passed real-inbox QA and Supabase can return generic success even when a
+  business-domain recovery email is not delivered
+- if the customer-domain reset redirect is rejected, Mirëbook can still retry
+  the business-domain reset page as a fallback
 - `getCustomerAppUrl` now falls back to the required `NEXT_PUBLIC_APP_URL` when
   `NEXT_PUBLIC_CUSTOMER_APP_URL` is not present
 
 Expected behaviour after fix:
 
 - preferred path: business recovery email links to
+  `https://mirebook.com/reset-password?product=business`
+- fallback path: if the customer-domain reset redirect is rejected, the recovery
+  email may link to
   `https://business.mirebook.com/reset-password?product=business`
-- fallback path: if the business redirect is rejected, the recovery email may
-  link to `https://mirebook.com/reset-password?product=business`
 - either path should still update the password and route the business user back
   toward Mirëbook Business login/dashboard
 
