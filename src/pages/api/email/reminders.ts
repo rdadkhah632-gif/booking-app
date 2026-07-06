@@ -26,13 +26,21 @@ function requestSecret(req: NextApiRequest) {
   return Array.isArray(header) ? header[0] || "" : header || "";
 }
 
+function configuredReminderSecrets() {
+  return [
+    process.env.REMINDER_CRON_SECRET?.trim(),
+    process.env.CRON_SECRET?.trim(),
+  ].filter((value): value is string => Boolean(value));
+}
+
 function isReminderSchemaMissing(error: unknown) {
   const candidate = error as {
     code?: string;
     message?: string;
     details?: string;
   };
-  const text = `${candidate?.message || ""} ${candidate?.details || ""}`.toLowerCase();
+  const text =
+    `${candidate?.message || ""} ${candidate?.details || ""}`.toLowerCase();
 
   return (
     candidate?.code === "42P01" ||
@@ -51,15 +59,15 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const configuredSecret = process.env.REMINDER_CRON_SECRET;
-  if (!configuredSecret) {
+  const configuredSecrets = configuredReminderSecrets();
+  if (configuredSecrets.length === 0) {
     return res.status(503).json({
       error: "Reminder processing is not configured",
       sent: 0,
     });
   }
 
-  if (requestSecret(req) !== configuredSecret) {
+  if (!configuredSecrets.includes(requestSecret(req))) {
     return res.status(401).json({ error: "Invalid reminder secret" });
   }
 
@@ -252,10 +260,7 @@ export default async function handler(
       continue;
     }
 
-    if (
-      result.status === "skipped" &&
-      result.reason === "recipient_missing"
-    ) {
+    if (result.status === "skipped" && result.reason === "recipient_missing") {
       summary.missingRecipient += 1;
     } else {
       summary.failed += 1;

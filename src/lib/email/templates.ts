@@ -37,6 +37,13 @@ function statusCopy(
       };
     }
 
+    if (status === "completed") {
+      return {
+        subject: "Appointment completed",
+        intro: "An appointment has been marked as completed.",
+      };
+    }
+
     return {
       subject: "New booking confirmed",
       intro: "A new booking has been confirmed.",
@@ -48,6 +55,13 @@ function statusCopy(
       return {
         subject: "Assigned booking cancelled",
         intro: "An assigned booking is no longer active.",
+      };
+    }
+
+    if (status === "completed") {
+      return {
+        subject: "Assigned appointment completed",
+        intro: "An assigned appointment has been marked as completed.",
       };
     }
 
@@ -97,9 +111,7 @@ export function bookingEmailTemplate(
     timeStyle: "short",
     timeZone: "UTC",
   });
-  const staffLine = input.staffName
-    ? `\nStaff: ${input.staffName}`
-    : "";
+  const staffLine = input.staffName ? `\nStaff: ${input.staffName}` : "";
 
   const text = `${copy.intro}
 

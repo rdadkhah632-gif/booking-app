@@ -4,6 +4,7 @@ import { staffInviteEmailTemplate } from "@/lib/email/templates";
 import { sendTransactionalEmail } from "@/lib/email/sendTransactionalEmail";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
+import { getBusinessAppUrl } from "@/lib/appUrls";
 
 function bearerToken(req: NextApiRequest) {
   const authorization = req.headers.authorization || "";
@@ -40,7 +41,8 @@ export default async function handler(
 
     if (req.method === "GET") {
       const token = typeof req.query.token === "string" ? req.query.token : "";
-      if (!token) return res.status(400).json({ error: "Invite token required" });
+      if (!token)
+        return res.status(400).json({ error: "Invite token required" });
 
       const { data: invite, error } = await supabaseAdmin
         .from("staff_invite_tokens")
@@ -64,16 +66,15 @@ export default async function handler(
         return res.status(500).json({ error: "Could not verify invite" });
       }
 
-      const valid = Boolean(
-        invite &&
-          !invite.accepted_at &&
+      const inviteStillOpen = invite
+        ? !invite.accepted_at &&
           !invite.revoked_at &&
-          new Date(invite.expires_at).getTime() > Date.now(),
-      );
+          new Date(invite.expires_at).getTime() > Date.now()
+        : false;
 
       return res.status(200).json({
-        valid,
-        invitedEmailHint: valid
+        valid: inviteStillOpen,
+        invitedEmailHint: inviteStillOpen
           ? invite!.invited_email.replace(/^(.{2}).*(@.*)$/, "$1***$2")
           : null,
       });
@@ -190,7 +191,12 @@ export default async function handler(
         return res.status(500).json({ error: "Could not create invite link" });
       }
 
-      const inviteUrl = `${appUrl}/staff/invite?token=${encodeURIComponent(rawToken)}`;
+      const inviteUrl = new URL(
+        getBusinessAppUrl(
+          `/staff/invite?token=${encodeURIComponent(rawToken)}`,
+        ),
+        appUrl,
+      ).toString();
       const delivery = await sendTransactionalEmail(
         staffInviteEmailTemplate({
           recipientEmail: staff.email,
@@ -268,7 +274,9 @@ export default async function handler(
           .maybeSingle<{ id: string; user_id?: string | null }>();
 
     if (linkError || !linkedStaff || linkedStaff.user_id !== user.id) {
-      return res.status(409).json({ error: "Staff profile could not be linked" });
+      return res
+        .status(409)
+        .json({ error: "Staff profile could not be linked" });
     }
 
     const { data: acceptedInvite, error: acceptError } = await supabaseAdmin

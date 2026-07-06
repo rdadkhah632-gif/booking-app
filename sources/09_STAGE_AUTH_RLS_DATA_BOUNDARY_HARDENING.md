@@ -997,3 +997,80 @@ Launch decision:
 - business password recovery completion is PASS
 - stricter email-confirmation staging should still use normal inboxes, not
   disposable test inboxes
+
+## Batch 11E Transactional Email Activation Prep
+
+Goal:
+
+- make Mirëbook application emails production-ready before launch while keeping
+  Supabase Auth emails, booking logic, staff linking, RLS and billing writes
+  unchanged
+
+App-side changes:
+
+- booking emails now use role-appropriate app links:
+  - customers open `mirebook.com`
+  - business owners open `business.mirebook.com`
+  - staff open the staff workspace on the business app
+- staff invite emails now use the business app invite route when
+  `NEXT_PUBLIC_BUSINESS_APP_URL` is configured
+- customer-cancelled bookings now also request a customer receipt email instead
+  of only notifying the business
+- assigned staff now receive lifecycle change emails for completed bookings as
+  well as confirmed, cancelled and declined bookings
+- completed booking email copy now uses completed-appointment wording for
+  staff/business recipients instead of confirmed-booking copy
+- the reminder endpoint accepts both `REMINDER_CRON_SECRET` and Vercel's
+  standard `CRON_SECRET`
+- `.env.example` documents `CRON_SECRET` as the Vercel Cron-compatible reminder
+  secret
+
+Production environment switch:
+
+- set `EMAIL_PROVIDER=resend`
+- set `RESEND_API_KEY`
+- set `EMAIL_FROM_ADDRESS` to a verified Resend sender, preferably a
+  Mirëbook-owned domain sender
+- set `EMAIL_REPLY_TO` to a monitored inbox
+- set `SUPPORT_ADMIN_EMAIL` to the operator/support inbox
+- keep `NEXT_PUBLIC_APP_URL=https://mirebook.com`
+- keep `NEXT_PUBLIC_CUSTOMER_APP_URL=https://mirebook.com`
+- keep `NEXT_PUBLIC_BUSINESS_APP_URL=https://business.mirebook.com`
+- set `REMINDER_CRON_SECRET`
+- if scheduling reminders through Vercel Cron, also set `CRON_SECRET` to the
+  same value
+
+Current email coverage:
+
+- Supabase Auth owns signup confirmation, recovery and verification emails
+- Mirëbook/Resend owns staff invites, booking created/status emails,
+  customer-cancel receipts, support receipts/admin alerts and appointment
+  reminder delivery
+- booking and support actions remain successful even if email delivery fails;
+  in-app notifications/support remain authoritative
+
+Reminder scheduler note:
+
+- `/api/email/reminders` is ready for protected scheduled invocation
+- no `vercel.json` cron schedule was added in this batch because reminder
+  frequency depends on the Vercel plan
+- professional reminder coverage should run hourly with `CRON_SECRET`; if the
+  project is on a Vercel plan limited to daily cron, schedule design should be
+  adjusted deliberately rather than silently missing most appointment times
+
+QA required after Vercel env update:
+
+- create a request-mode booking and confirm customer + business emails
+- create an instant booking and confirm customer + business + assigned staff
+  emails
+- accept, decline, cancel and complete bookings and confirm role-specific
+  lifecycle emails
+- create a manual business appointment and confirm customer + staff emails
+- create a customer-cancelled booking and confirm customer receipt + business +
+  staff cancellation emails where recipients exist
+- create a staff invite and confirm the staff receives an invite email whose
+  link opens the secure token acceptance flow
+- create support tickets as customer/business/staff and confirm requester
+  receipt plus operator alert when `SUPPORT_ADMIN_EMAIL` is configured
+- call `/api/email/reminders` with the configured secret and confirm delivery
+  only for due confirmed bookings

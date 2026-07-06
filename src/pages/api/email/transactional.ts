@@ -15,6 +15,7 @@ import {
   loadServerEmailPreferences,
 } from "@/lib/email/preferences";
 import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
+import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 
 type BookingRow = {
   id: string;
@@ -61,6 +62,16 @@ function customerPreference(
     return preferences.email_booking_confirmations;
   }
   return preferences.email_booking_cancellations;
+}
+
+function absoluteAppUrl(
+  path: string,
+  fallbackOrigin: string,
+  product: "customer" | "business",
+) {
+  const configuredUrl =
+    product === "business" ? getBusinessAppUrl(path) : getCustomerAppUrl(path);
+  return new URL(configuredUrl, fallbackOrigin).toString();
 }
 
 export default async function handler(
@@ -128,8 +139,7 @@ export default async function handler(
       const isAdmin = Boolean(actorProfile?.is_admin);
 
       if (
-        (request.event === "support_created" &&
-          ticket.user_id !== user.id) ||
+        (request.event === "support_created" && ticket.user_id !== user.id) ||
         (request.event === "support_replied" && !isAdmin)
       ) {
         return res.status(403).json({ error: "Email event not permitted" });
@@ -266,27 +276,31 @@ export default async function handler(
       customerPreferenceResult,
       ownerPreferenceResult,
       staffPreferenceResult,
-    ] =
-      await Promise.all([
-        emailForUser(supabaseAdmin, booking.customer_user_id),
-        emailForUser(supabaseAdmin, business.user_id),
-        emailForUser(supabaseAdmin, staff?.user_id),
-        loadServerEmailPreferences(
-          supabaseAdmin,
-          booking.customer_user_id,
-        ),
-        loadServerEmailPreferences(supabaseAdmin, business.user_id),
-        loadServerEmailPreferences(supabaseAdmin, staff?.user_id),
-      ]);
+    ] = await Promise.all([
+      emailForUser(supabaseAdmin, booking.customer_user_id),
+      emailForUser(supabaseAdmin, business.user_id),
+      emailForUser(supabaseAdmin, staff?.user_id),
+      loadServerEmailPreferences(supabaseAdmin, booking.customer_user_id),
+      loadServerEmailPreferences(supabaseAdmin, business.user_id),
+      loadServerEmailPreferences(supabaseAdmin, staff?.user_id),
+    ]);
 
     const customerEmail = booking.customer_email || customerProfileEmail;
     const staffEmail = staff?.email || staffProfileEmail;
-    const bookingUrl = `${appUrl}/booking-confirmation?id=${booking.id}`;
-    const businessUrl = `${appUrl}/dashboard/bookings?businessId=${booking.business_id}`;
-    const staffUrl = `${appUrl}/staff/calendar`;
+    const bookingUrl = absoluteAppUrl(
+      `/booking-confirmation?id=${booking.id}`,
+      appUrl,
+      "customer",
+    );
+    const businessUrl = absoluteAppUrl(
+      `/dashboard/bookings?businessId=${booking.business_id}`,
+      appUrl,
+      "business",
+    );
+    const staffUrl = absoluteAppUrl("/staff/calendar", appUrl, "business");
     const messages = [];
 
-    if (customerEmail && request.event !== "booking_customer_cancelled") {
+    if (customerEmail) {
       messages.push(
         bookingEmailTemplate({
           event: request.event,
@@ -349,9 +363,10 @@ export default async function handler(
     }
 
     if (
-      request.event !== "booking_customer_cancelled" &&
       staffEmail &&
-      ["confirmed", "cancelled", "declined"].includes(booking.status)
+      ["confirmed", "cancelled", "declined", "completed"].includes(
+        booking.status,
+      )
     ) {
       messages.push(
         bookingEmailTemplate({
