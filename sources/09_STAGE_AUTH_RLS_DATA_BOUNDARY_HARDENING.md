@@ -948,24 +948,28 @@ Required retest:
 
 Retest after stable callback:
 
-- business password recovery still did not deliver a recovery email
-- the business Auth user exists and normal login with the existing password
-  succeeds
-- the app showed generic accepted copy and no raw provider error
-- reset-link completion could not be tested because no recovery email arrived
+- Supabase Auth logs showed `mail.send` success for the `web-library.net`
+  business recovery attempt
+- the disposable `web-library.net` inbox did not surface the delivered recovery
+  email
+- a normal real inbox received the business recovery email
+- the recovery link opened successfully at
+  `https://mirebook.com/reset-password?product=business`
+- the reset page showed business-aware copy, including "Mirëbook Business
+  security"
+- new-password and confirm-password fields were visible
+- no raw Supabase/provider error appeared
 
 Conclusion:
 
-- this no longer looks like app redirect construction
+- this is no longer an app redirect construction issue
+- this is no longer a Supabase Auth send issue for normal inboxes
+- the failed `web-library.net` run was a disposable-inbox deliverability issue
 - do not add an app-level password reset bypass
-- treat this as an external Supabase Auth delivery/configuration blocker until
-  dashboard logs prove otherwise
 
-Supabase checks required next:
+Supabase checks completed:
 
-- Authentication logs: filter by the business email and the failed recovery
-  request time; look for recovery email suppression, rate-limit, SMTP/provider
-  rejection or redirect-url rejection
+- Authentication logs showed recovery request success and `mail.send` success
 - Auth user record: confirm the email identity is present, not banned, not
   deleted/soft-deleted and has the expected email provider identity
 - URL Configuration: confirm Site URL is `https://mirebook.com` and Redirect
@@ -973,15 +977,17 @@ Supabase checks required next:
   `https://business.mirebook.com/**`
 - Email Templates: confirm the recovery/reset template still includes the
   Supabase recovery link variable and was not edited into a dead/static link
-- Email provider/suppression: check whether `web-library.net` or the exact
-  business test inbox is bounced, suppressed or rate-limited
-- Rate limits: wait out any recovery-email cooldown, then retry with a fresh
-  business account and a fresh real inbox
+
+Remaining QA:
+
+- submit the final business password change from the verified recovery page
+- confirm old password fails
+- confirm new password logs the business user into `/dashboard`
+- consider disposable inboxes unreliable for final auth delivery QA
 
 Launch decision:
 
-- do not enable stricter email-confirmation requirements until business
-  recovery email delivery passes
-- if this remains blocked by Supabase delivery, launch can still proceed only
-  with a documented operator support process for business password recovery and
-  with Supabase Auth delivery marked as a known external dependency
+- business recovery link delivery and reset-page routing are no longer blocking
+  when tested with a normal inbox
+- stricter email-confirmation staging should still use normal inboxes, not
+  disposable test inboxes
