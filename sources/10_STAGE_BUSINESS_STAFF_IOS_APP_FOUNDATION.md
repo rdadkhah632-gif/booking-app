@@ -10,6 +10,8 @@ Web account/contact readiness note:
   detected region where possible
 - Account shows a compact region summary and remains the source for editing
   personal profile details
+- Resend transactional emails now render English or Albanian based on the
+  recipient profile language where an account profile exists
 - Supabase Auth still owns recovery-email delivery; the recovery email template
   must be branded in Supabase dashboard, while `/reset-password` remains the
   Mirëbook reset completion page

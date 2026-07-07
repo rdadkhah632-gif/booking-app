@@ -16,6 +16,7 @@ import {
 } from "@/lib/email/preferences";
 import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
+import { Locale } from "@/lib/i18n";
 
 type BookingRow = {
   id: string;
@@ -29,6 +30,11 @@ type BookingRow = {
   status: BookingEmailStatus;
 };
 
+type EmailProfile = {
+  email?: string | null;
+  preferred_language?: string | null;
+};
+
 function bearerToken(req: NextApiRequest) {
   const authorization = req.headers.authorization || "";
   return authorization.startsWith("Bearer ")
@@ -36,7 +42,11 @@ function bearerToken(req: NextApiRequest) {
     : "";
 }
 
-async function emailForUser(
+function localeFromProfile(profile?: EmailProfile | null): Locale {
+  return profile?.preferred_language === "sq" ? "sq" : "en";
+}
+
+async function profileForUser(
   supabaseAdmin: ReturnType<typeof createSupabaseAdminClient>,
   userId?: string | null,
 ) {
@@ -44,11 +54,11 @@ async function emailForUser(
 
   const { data } = await supabaseAdmin
     .from("profiles")
-    .select("email")
+    .select("email, preferred_language")
     .eq("id", userId)
-    .maybeSingle<{ email?: string | null }>();
+    .maybeSingle<EmailProfile>();
 
-  return data?.email || null;
+  return data || null;
 }
 
 function customerPreference(
@@ -228,8 +238,11 @@ export default async function handler(
         return res.status(403).json({ error: "Email event not permitted" });
       }
 
-      const requesterEmail =
-        ticket.email || (await emailForUser(supabaseAdmin, ticket.user_id));
+      const requesterProfile = await profileForUser(
+        supabaseAdmin,
+        ticket.user_id,
+      );
+      const requesterEmail = ticket.email || requesterProfile?.email || null;
       const requesterPreferences = await loadServerEmailPreferences(
         supabaseAdmin,
         ticket.user_id,
@@ -253,6 +266,7 @@ export default async function handler(
             recipientEmail: requesterEmail,
             subject: ticket.subject || "Support request",
             actionUrl: supportUrl,
+            locale: localeFromProfile(requesterProfile),
             preferenceEnabled:
               requesterPreferences.preferences.email_support_updates,
           }),
@@ -268,6 +282,7 @@ export default async function handler(
             subject: ticket.subject || "New support request",
             actionUrl: `${appUrl}/admin/support?ticketId=${ticket.id}`,
             isAdminNotification: true,
+            locale: "en",
           }),
         );
       }
@@ -353,23 +368,24 @@ export default async function handler(
     }
 
     const [
-      customerProfileEmail,
-      ownerEmail,
-      staffProfileEmail,
+      customerProfile,
+      ownerProfile,
+      staffProfile,
       customerPreferenceResult,
       ownerPreferenceResult,
       staffPreferenceResult,
     ] = await Promise.all([
-      emailForUser(supabaseAdmin, booking.customer_user_id),
-      emailForUser(supabaseAdmin, business.user_id),
-      emailForUser(supabaseAdmin, staff?.user_id),
+      profileForUser(supabaseAdmin, booking.customer_user_id),
+      profileForUser(supabaseAdmin, business.user_id),
+      profileForUser(supabaseAdmin, staff?.user_id),
       loadServerEmailPreferences(supabaseAdmin, booking.customer_user_id),
       loadServerEmailPreferences(supabaseAdmin, business.user_id),
       loadServerEmailPreferences(supabaseAdmin, staff?.user_id),
     ]);
 
-    const customerEmail = booking.customer_email || customerProfileEmail;
-    const staffEmail = staff?.email || staffProfileEmail;
+    const customerEmail = booking.customer_email || customerProfile?.email;
+    const ownerEmail = ownerProfile?.email;
+    const staffEmail = staff?.email || staffProfile?.email;
     const bookingUrl = absoluteAppUrl(
       `/booking-confirmation?id=${booking.id}`,
       appUrl,
@@ -391,11 +407,12 @@ export default async function handler(
           recipientRole: "customer",
           bookingStatus: booking.status,
           businessName: business.name,
-          customerName: booking.customer_name || "Customer",
-          serviceName: service?.name || "Appointment",
+          customerName: booking.customer_name,
+          serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
           actionUrl: bookingUrl,
+          locale: localeFromProfile(customerProfile),
           preferenceEnabled: customerPreference(
             customerPreferenceResult.preferences,
             booking.status,
@@ -412,11 +429,12 @@ export default async function handler(
           recipientRole: "business",
           bookingStatus: booking.status,
           businessName: business.name,
-          customerName: booking.customer_name || "Customer",
-          serviceName: service?.name || "Appointment",
+          customerName: booking.customer_name,
+          serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
           actionUrl: businessUrl,
+          locale: localeFromProfile(ownerProfile),
           preferenceEnabled:
             booking.status === "pending"
               ? ownerPreferenceResult.preferences.email_new_booking_requests
@@ -434,11 +452,12 @@ export default async function handler(
           recipientRole: "business",
           bookingStatus: "cancelled",
           businessName: business.name,
-          customerName: booking.customer_name || "Customer",
-          serviceName: service?.name || "Appointment",
+          customerName: booking.customer_name,
+          serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
           actionUrl: businessUrl,
+          locale: localeFromProfile(ownerProfile),
           preferenceEnabled:
             ownerPreferenceResult.preferences.email_customer_cancellations,
         }),
@@ -458,11 +477,12 @@ export default async function handler(
           recipientRole: "staff",
           bookingStatus: booking.status,
           businessName: business.name,
-          customerName: booking.customer_name || "Customer",
-          serviceName: service?.name || "Appointment",
+          customerName: booking.customer_name,
+          serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
           actionUrl: staffUrl,
+          locale: localeFromProfile(staffProfile),
           preferenceEnabled:
             request.event === "booking_created" &&
             booking.status === "confirmed"

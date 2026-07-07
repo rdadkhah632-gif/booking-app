@@ -5,6 +5,11 @@ import { sendTransactionalEmail } from "@/lib/email/sendTransactionalEmail";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
 import { getBusinessAppUrl } from "@/lib/appUrls";
+import { Locale } from "@/lib/i18n";
+
+type InviteLocaleProfile = {
+  preferred_language?: string | null;
+};
 
 function bearerToken(req: NextApiRequest) {
   const authorization = req.headers.authorization || "";
@@ -25,6 +30,11 @@ function inviteStorageMissing(error: unknown) {
     candidate?.code === "PGRST205" ||
     text.includes("staff_invite_tokens")
   );
+}
+
+function profileLocale(profile?: InviteLocaleProfile | null): Locale | null {
+  if (!profile?.preferred_language) return null;
+  return profile.preferred_language === "sq" ? "sq" : "en";
 }
 
 export default async function handler(
@@ -197,11 +207,27 @@ export default async function handler(
         ),
         appUrl,
       ).toString();
+      const [{ data: staffProfile }, { data: ownerProfile }] =
+        await Promise.all([
+          supabaseAdmin
+            .from("profiles")
+            .select("preferred_language")
+            .eq("email", staff.email.trim().toLowerCase())
+            .maybeSingle<InviteLocaleProfile>(),
+          supabaseAdmin
+            .from("profiles")
+            .select("preferred_language")
+            .eq("id", user.id)
+            .maybeSingle<InviteLocaleProfile>(),
+        ]);
+      const inviteLocale =
+        profileLocale(staffProfile) || profileLocale(ownerProfile) || "en";
       const delivery = await sendTransactionalEmail(
         staffInviteEmailTemplate({
           recipientEmail: staff.email,
           businessName: business.name,
           inviteUrl,
+          locale: inviteLocale,
         }),
       );
 

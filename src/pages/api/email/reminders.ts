@@ -4,6 +4,7 @@ import { loadServerEmailPreferences } from "@/lib/email/preferences";
 import { sendTransactionalEmail } from "@/lib/email/sendTransactionalEmail";
 import { appointmentReminderEmailTemplate } from "@/lib/email/templates";
 import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
+import { Locale } from "@/lib/i18n";
 
 type ReminderBooking = {
   id: string;
@@ -14,6 +15,11 @@ type ReminderBooking = {
   customer_email?: string | null;
   start_at: string;
   status: string;
+};
+
+type ReminderCustomerProfile = {
+  email?: string | null;
+  preferred_language?: string | null;
 };
 
 function requestSecret(req: NextApiRequest) {
@@ -31,6 +37,10 @@ function configuredReminderSecrets() {
     process.env.REMINDER_CRON_SECRET?.trim(),
     process.env.CRON_SECRET?.trim(),
   ].filter((value): value is string => Boolean(value));
+}
+
+function localeFromProfile(profile?: ReminderCustomerProfile | null): Locale {
+  return profile?.preferred_language === "sq" ? "sq" : "en";
 }
 
 function isReminderSchemaMissing(error: unknown) {
@@ -215,9 +225,9 @@ export default async function handler(
         : Promise.resolve({ data: null }),
       supabaseAdmin
         .from("profiles")
-        .select("email")
+        .select("email, preferred_language")
         .eq("id", booking.customer_user_id)
-        .maybeSingle<{ email?: string | null }>(),
+        .maybeSingle<ReminderCustomerProfile>(),
     ]);
 
     const recipientEmail =
@@ -226,11 +236,12 @@ export default async function handler(
     const result = await sendTransactionalEmail(
       appointmentReminderEmailTemplate({
         recipientEmail,
-        businessName: business?.name || "Business",
-        serviceName: service?.name || "Appointment",
+        businessName: business?.name,
+        serviceName: service?.name,
         staffName: staff?.name,
         startAt: booking.start_at,
         actionUrl: `${appUrl}/booking-confirmation?id=${booking.id}`,
+        locale: localeFromProfile(customerProfile),
         preferenceEnabled: preferences.email_booking_reminders,
       }),
     );
