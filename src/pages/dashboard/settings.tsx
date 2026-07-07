@@ -246,7 +246,12 @@ export default function DashboardSettingsPage() {
           </div>
 
           <details className="settings-advanced-panel">
-            <summary>
+            <summary
+              aria-label={t(
+                "dashboardSettings.advanced.summary",
+                "Advanced booking rules",
+              )}
+            >
               <span>
                 {t(
                   "dashboardSettings.advanced.summary",

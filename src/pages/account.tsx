@@ -303,7 +303,12 @@ export default function AccountPage() {
     setResendingVerification(false);
 
     if (resendError) {
-      setError(resendError.message);
+      setError(
+        t(
+          "verification.resendError",
+          "Could not send the verification email. Try again in a moment.",
+        ),
+      );
       return;
     }
 

@@ -95,14 +95,18 @@ export const sq: TranslationTree = {
   "login.noAccount": "Nuk ke ende llogari?",
   "login.createAccount": "Krijo një llogari Mirëbook",
   "login.verification.title": "Verifiko email-in për të vazhduar",
+  "login.verification.error":
+    "Verifiko email-in para se të hysh. Mund ta ridërgosh email-in e verifikimit më poshtë.",
   "login.verification.body":
-    "Supabase nuk e ka konfirmuar ende këtë email. Verifikimi mbron pronësinë e llogarisë dhe aktivitetin e ardhshëm të lançimit.",
+    "Ky email nuk është verifikuar ende. Verifikimi mbron llogarinë tënde dhe i mban të sigurta njoftimet e ardhshme.",
   "login.verification.resent":
-    "Kërkesa e verifikimit u pranua. Nëse konfirmimi me email është aktiv në Supabase, kontrollo inbox-in dhe dosjen spam.",
+    "Kërkesa e verifikimit u pranua. Kontrollo inbox-in dhe dosjen spam.",
   "login.verification.returned":
     "Verifikimi i email-it përfundoi. Hyr për të vazhduar konfigurimin në Mirëbook.",
   "verification.resend": "Ridërgo email-in e verifikimit",
   "verification.resending": "Duke dërguar email-in e verifikimit...",
+  "verification.resendError":
+    "Email-i i verifikimit nuk mund të dërgohej. Provo përsëri pas pak.",
 
   "common.loadingAccount": "Po kontrollohet llogaria...",
   "common.marketplace": "Tregu",
@@ -244,7 +248,10 @@ export const sq: TranslationTree = {
     "Shiko si i trajton Mirëbook përdorimin e platformës dhe informacionet personale.",
   "home.businessEntry.title":
     "Menaxho rezervimet dhe operacionet ditore me Mirëbook Biznes.",
+  "home.businessEntry.body":
+    "Pronarët dhe stafi përdorin një hapësirë të veçantë për konfigurim, kalendar dhe inbox.",
   "home.businessEntry.cta": "Vizito Mirëbook Biznes",
+  "home.businessEntry.setupCta": "Regjistro biznesin",
 
   "businessHome.metaTitle":
     "Mirëbook Biznes | Rezervime, staf dhe disponueshmëri",
@@ -331,6 +338,64 @@ export const sq: TranslationTree = {
   "businessHome.preview.inbox": "Inbox",
   "businessHome.preview.action": "Veprim",
   "businessHome.preview.alert": "Shqyrto një kërkesë ndryshimi orari",
+  "businessHome.tabs.title":
+    "Mirëbook Biznes, i ndarë në pjesët që u duhen vërtet pronarëve.",
+  "businessHome.tabs.body":
+    "Kupto shpejt produktin, pastaj fillo konfigurimin kur të jetë momenti.",
+  "businessHome.tabs.how.label": "Si funksionon",
+  "businessHome.tabs.how.title":
+    "Një mënyrë më e thjeshtë për të menaxhuar rezervimet që ditën e parë.",
+  "businessHome.tabs.how.body":
+    "Mirëbook lidh faqen ku rezervojnë klientët me kalendarin, inbox-in dhe hapësirën e stafit të biznesit.",
+  "businessHome.tabs.how.pointOne": "Klientët gjejnë profilin tënd",
+  "businessHome.tabs.how.pointTwo":
+    "Ata zgjedhin shërbimin, ofruesin dhe orarin",
+  "businessHome.tabs.how.pointThree":
+    "Ti sheh kërkesat dhe takimet e konfirmuara në një vend",
+  "businessHome.tabs.how.panelTitle": "Rrjedha kryesore",
+  "businessHome.tabs.how.panelOne": "Profili publik",
+  "businessHome.tabs.how.panelTwo": "Kalendari",
+  "businessHome.tabs.how.panelThree": "Inbox",
+  "businessHome.tabs.setup.label": "Konfigurimi",
+  "businessHome.tabs.setup.title": "Bëhu i rezervueshëm pa hapur çdo cilësim.",
+  "businessHome.tabs.setup.body":
+    "Fillo me gjërat që u duhen klientëve: bazat e profilit, një shërbim, një ofrues ose anëtar ekipi, orari i punës dhe mënyra e rezervimit.",
+  "businessHome.tabs.setup.pointOne": "Profili dhe vendndodhja e biznesit",
+  "businessHome.tabs.setup.pointTwo": "Shërbimi i parë me kohëzgjatje dhe çmim",
+  "businessHome.tabs.setup.pointThree":
+    "Orari i punës dhe pamja paraprake para publikimit",
+  "businessHome.tabs.setup.panelTitle": "Rruga e konfigurimit",
+  "businessHome.tabs.setup.panelOne": "Profili",
+  "businessHome.tabs.setup.panelTwo": "Shërbimi",
+  "businessHome.tabs.setup.panelThree": "Pamja",
+  "businessHome.tabs.pricing.label": "Çmimi",
+  "businessHome.tabs.pricing.title":
+    "Akses për partnerë të hershëm ndërsa Mirëbook rritet.",
+  "businessHome.tabs.pricing.body":
+    "Mirëbook Biznes është aktualisht i hapur për partnerë të hershëm. Pagesat e rezervimeve të klientëve qëndrojnë të ndara nga anëtarësimi i biznesit.",
+  "businessHome.tabs.pricing.pointOne":
+    "Pa komision për rezervimet e klientëve gjatë periudhës së partnerëve të hershëm",
+  "businessHome.tabs.pricing.pointTwo":
+    "Detajet e anëtarësimit menaxhohen drejtpërdrejt me Mirëbook",
+  "businessHome.tabs.pricing.pointThree":
+    "Menaxhimi online i abonimit mund të aktivizohet më vonë",
+  "businessHome.tabs.pricing.panelTitle": "Përfshirë tani",
+  "businessHome.tabs.pricing.panelOne": "Rezervime",
+  "businessHome.tabs.pricing.panelTwo": "Staf dhe shërbime",
+  "businessHome.tabs.pricing.panelThree": "Profil publik",
+  "businessHome.tabs.staff.label": "Stafi",
+  "businessHome.tabs.staff.title":
+    "Stafi merr pamjen e punës, jo panelin e pronarit.",
+  "businessHome.tabs.staff.body":
+    "Stafi i lidhur mund të shohë takimet e caktuara, kalendarin, oraret e punës dhe përditësimet e inbox-it pa kontrolle konfigurimi të biznesit.",
+  "businessHome.tabs.staff.pointOne": "Vetëm takimet e caktuara",
+  "businessHome.tabs.staff.pointTwo": "Orari i punës për kalendarin e tyre",
+  "businessHome.tabs.staff.pointThree":
+    "Kontrollet e pronarit qëndrojnë me pronarin e biznesit",
+  "businessHome.tabs.staff.panelTitle": "Hapësira e stafit",
+  "businessHome.tabs.staff.panelOne": "Sot",
+  "businessHome.tabs.staff.panelTwo": "Kalendari",
+  "businessHome.tabs.staff.panelThree": "Inbox",
 
   "explore.hero.kicker": "Tregu Mirëbook",
   "explore.hero.title": "Gjej dhe rezervo shërbime lokale",
@@ -1286,6 +1351,9 @@ export const sq: TranslationTree = {
   "dashboardServices.image.uploading": "Duke ngarkuar...",
   "dashboardServices.image.uploadingImage": "Duke ngarkuar imazhin...",
   "dashboardServices.image.uploadButton": "Ngarko imazh",
+  "dashboardServices.image.chooseCreate": "Zgjidh imazhin e shërbimit",
+  "dashboardServices.image.chooseEdit":
+    "Zgjidh imazh zëvendësues për shërbimin",
   "dashboardServices.image.replaceButton": "Zëvendëso imazhin",
   "dashboardServices.image.remove": "Hiq imazhin",
   "dashboardServices.image.chooseFirst": "Zgjidh një skedar imazhi fillimisht.",
@@ -2384,11 +2452,11 @@ export const sq: TranslationTree = {
   "register.verification.required":
     "Llogaria u krijua. Kontrollo email-in dhe verifiko adresën para se të hysh. Konfigurimi i zgjedhur i llogarisë do të vazhdojë pas verifikimit.",
   "register.verification.resent":
-    "Kërkesa e verifikimit u pranua. Nëse konfirmimi me email është aktiv në Supabase, kontrollo inbox-in dhe dosjen spam.",
+    "Kërkesa e verifikimit u pranua. Kontrollo inbox-in dhe dosjen spam.",
   "register.verification.softPolicy":
     "Hap email-in e verifikimit në këtë pajisje, pastaj kthehu për të hyrë. Kontrollo dosjen spam nëse nuk mbërrin.",
   "register.verification.guidance":
-    "Nëse konfirmimi me email është aktiv, kontrollo inbox-in pasi të krijosh llogarinë. Konfigurimi i zgjedhur vazhdon pasi ta verifikosh email-in dhe të hysh.",
+    "Nëse Mirëbook kërkon verifikim me email, kontrollo inbox-in pasi të krijosh llogarinë. Konfigurimi i zgjedhur vazhdon pasi ta verifikosh email-in dhe të hysh.",
   "register.business.nameRequired": "Emri i biznesit është i detyrueshëm.",
   "register.business.phoneRequired": "Telefoni i biznesit është i detyrueshëm.",
   "register.business.categoryRequired":

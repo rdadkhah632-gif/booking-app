@@ -65,6 +65,11 @@ export default function CreateServiceCard({
           type="button"
           onClick={() => setFormExpanded((prev) => !prev)}
           className="btn btn-ghost"
+          aria-label={
+            formExpanded
+              ? t("dashboardServices.create.collapse", "Collapse form")
+              : t("dashboardServices.create.addService", "Add service")
+          }
         >
           {formExpanded
             ? t("dashboardServices.create.collapse", "Collapse form")
@@ -201,6 +206,10 @@ export default function CreateServiceCard({
           gap: 1rem;
         }
 
+        .services-create-form {
+          gap: 1.35rem;
+        }
+
         .services-create-fields {
           gap: 0.75rem;
         }
@@ -224,21 +233,46 @@ export default function CreateServiceCard({
         }
 
         .services-more-details {
-          border-top: 1px solid var(--border);
-          padding-top: 0.75rem;
+          margin-top: 0.15rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.025);
         }
 
         .services-more-details summary {
-          width: fit-content;
-          color: var(--text-muted);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          color: var(--text);
           cursor: pointer;
           font-size: 0.88rem;
           font-weight: 800;
+          list-style: none;
+          padding: 0.8rem 0.9rem;
+        }
+
+        .services-more-details summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .services-more-details summary::after {
+          content: "+";
+          color: var(--accent);
+          font-weight: 900;
         }
 
         .services-more-details[open] summary {
-          margin-bottom: 0.75rem;
+          border-bottom: 1px solid var(--border);
           color: var(--text);
+        }
+
+        .services-more-details[open] summary::after {
+          content: "-";
+        }
+
+        .services-more-details .services-create-grid {
+          padding: 0.9rem;
         }
 
         .services-create-actions {
@@ -246,6 +280,9 @@ export default function CreateServiceCard({
           gap: 0.75rem;
           flex-wrap: wrap;
           align-items: center;
+          justify-content: flex-end;
+          padding-top: 0.95rem;
+          border-top: 1px solid var(--border);
         }
 
         @media (max-width: 860px) {

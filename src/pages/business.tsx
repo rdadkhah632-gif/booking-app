@@ -3,79 +3,149 @@ import Link from "next/link";
 import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
+import { useState } from "react";
+
+type BusinessTabId = "how" | "setup" | "pricing" | "staff";
 
 export default function BusinessHomePage() {
   const { t } = useI18n();
+  const [activeTabId, setActiveTabId] = useState<BusinessTabId>("how");
   const customerHomeUrl = getCustomerAppUrl();
   const businessRegisterUrl = getBusinessAppUrl(
     "/register?accountType=business",
   );
   const businessLoginUrl = getBusinessAppUrl("/login?product=business");
-  const featureCards = [
+  const businessTabs: Array<{
+    id: BusinessTabId;
+    label: string;
+    title: string;
+    body: string;
+    points: string[];
+    panelTitle: string;
+    panelItems: string[];
+  }> = [
     {
-      number: "01",
+      id: "how",
+      label: t("businessHome.tabs.how.label", "How it works"),
       title: t(
-        "businessHome.features.calendar.title",
-        "Calendar and booking management",
+        "businessHome.tabs.how.title",
+        "A simpler way to run bookings from the first day.",
       ),
       body: t(
-        "businessHome.features.calendar.body",
-        "Review the working day and keep pending, confirmed, cancelled and completed appointments easy to scan.",
+        "businessHome.tabs.how.body",
+        "Mirëbook connects a customer-facing booking page with the business calendar, inbox and staff workspace behind it.",
       ),
+      points: [
+        t("businessHome.tabs.how.pointOne", "Customers find your profile"),
+        t(
+          "businessHome.tabs.how.pointTwo",
+          "They choose a service, provider and time",
+        ),
+        t(
+          "businessHome.tabs.how.pointThree",
+          "You see requests and confirmed work in one place",
+        ),
+      ],
+      panelTitle: t("businessHome.tabs.how.panelTitle", "Core flow"),
+      panelItems: [
+        t("businessHome.tabs.how.panelOne", "Public profile"),
+        t("businessHome.tabs.how.panelTwo", "Calendar"),
+        t("businessHome.tabs.how.panelThree", "Inbox"),
+      ],
     },
     {
-      number: "02",
-      title: t("businessHome.features.staff.title", "Staff and availability"),
-      body: t(
-        "businessHome.features.staff.body",
-        "Assign services and set working hours for the business or each person.",
+      id: "setup",
+      label: t("businessHome.tabs.setup.label", "Setup"),
+      title: t(
+        "businessHome.tabs.setup.title",
+        "Get bookable without opening every setting.",
       ),
+      body: t(
+        "businessHome.tabs.setup.body",
+        "Start with the few things customers need: profile basics, one service, one provider or team member, working hours and booking mode.",
+      ),
+      points: [
+        t("businessHome.tabs.setup.pointOne", "Business profile and location"),
+        t(
+          "businessHome.tabs.setup.pointTwo",
+          "First service with duration and price",
+        ),
+        t(
+          "businessHome.tabs.setup.pointThree",
+          "Working hours and preview before publish",
+        ),
+      ],
+      panelTitle: t("businessHome.tabs.setup.panelTitle", "Setup path"),
+      panelItems: [
+        t("businessHome.tabs.setup.panelOne", "Profile"),
+        t("businessHome.tabs.setup.panelTwo", "Service"),
+        t("businessHome.tabs.setup.panelThree", "Preview"),
+      ],
     },
     {
-      number: "03",
+      id: "pricing",
+      label: t("businessHome.tabs.pricing.label", "Pricing"),
       title: t(
-        "businessHome.features.bookingModes.title",
-        "Requests or instant confirmation",
+        "businessHome.tabs.pricing.title",
+        "Early partner access while Mirëbook grows.",
       ),
       body: t(
-        "businessHome.features.bookingModes.body",
-        "Choose whether new bookings confirm immediately or wait for business approval.",
+        "businessHome.tabs.pricing.body",
+        "Mirëbook Business is currently available for early partners. Customer booking payments stay separate from business membership.",
       ),
+      points: [
+        t(
+          "businessHome.tabs.pricing.pointOne",
+          "No customer booking commission during the early partner period",
+        ),
+        t(
+          "businessHome.tabs.pricing.pointTwo",
+          "Membership details are handled directly with Mirëbook",
+        ),
+        t(
+          "businessHome.tabs.pricing.pointThree",
+          "Online subscription management can be enabled later",
+        ),
+      ],
+      panelTitle: t("businessHome.tabs.pricing.panelTitle", "Included now"),
+      panelItems: [
+        t("businessHome.tabs.pricing.panelOne", "Bookings"),
+        t("businessHome.tabs.pricing.panelTwo", "Staff and services"),
+        t("businessHome.tabs.pricing.panelThree", "Public profile"),
+      ],
     },
     {
-      number: "04",
+      id: "staff",
+      label: t("businessHome.tabs.staff.label", "Staff"),
       title: t(
-        "businessHome.features.profile.title",
-        "Your online business profile",
+        "businessHome.tabs.staff.title",
+        "Staff get the work view, not the owner dashboard.",
       ),
       body: t(
-        "businessHome.features.profile.body",
-        "Publish services, staff and availability on a customer-facing Mirëbook page.",
+        "businessHome.tabs.staff.body",
+        "Linked staff can see assigned appointments, their calendar, working hours and inbox updates without business setup controls.",
       ),
-    },
-    {
-      number: "05",
-      title: t(
-        "businessHome.features.notifications.title",
-        "Clear operational notifications",
-      ),
-      body: t(
-        "businessHome.features.notifications.body",
-        "See booking requests, reschedule activity and updates that need attention.",
-      ),
-    },
-    {
-      number: "06",
-      title: t(
-        "businessHome.features.operations.title",
-        "Owner and staff workspaces",
-      ),
-      body: t(
-        "businessHome.features.operations.body",
-        "Owners manage the business while staff sees only assigned work, availability and updates.",
-      ),
+      points: [
+        t("businessHome.tabs.staff.pointOne", "Assigned appointments only"),
+        t(
+          "businessHome.tabs.staff.pointTwo",
+          "Working hours for their schedule",
+        ),
+        t(
+          "businessHome.tabs.staff.pointThree",
+          "Owner controls stay with the business owner",
+        ),
+      ],
+      panelTitle: t("businessHome.tabs.staff.panelTitle", "Staff workspace"),
+      panelItems: [
+        t("businessHome.tabs.staff.panelOne", "Today"),
+        t("businessHome.tabs.staff.panelTwo", "Calendar"),
+        t("businessHome.tabs.staff.panelThree", "Inbox"),
+      ],
     },
   ];
+  const activeTab =
+    businessTabs.find((tab) => tab.id === activeTabId) || businessTabs[0];
 
   return (
     <main className="business-site">
@@ -167,60 +237,69 @@ export default function BusinessHomePage() {
         </div>
       </section>
 
-      <section className="business-audience-band">
-        <div className="container business-audience-grid">
-          <div>
-            <p className="business-section-kicker">
-              {t("businessHome.audience.kicker", "Built for the working day")}
-            </p>
+      <section className="business-tabs-section">
+        <div className="container">
+          <div className="business-tabs-heading">
             <h2>
               {t(
-                "businessHome.audience.title",
-                "For owners, staff and owners who also take appointments.",
+                "businessHome.tabs.title",
+                "Mirëbook Business, split into the parts owners actually need.",
               )}
             </h2>
-          </div>
-          <div>
             <p>
               {t(
-                "businessHome.audience.body",
-                "Owners manage services, staff, availability and booking decisions. Staff sees assigned work and personal availability. Owner-as-staff businesses can keep management and their own schedule connected.",
+                "businessHome.tabs.body",
+                "Understand the product quickly, then start setup when it makes sense.",
               )}
             </p>
-            <Link href={businessLoginUrl} className="btn btn-ghost">
-              {t("businessHome.cta.dashboard", "Open business workspace")}
-            </Link>
           </div>
-        </div>
-      </section>
 
-      <section className="business-section">
-        <div className="container">
-          <div className="business-section-heading">
-            <p>{t("businessHome.features.kicker", "Daily operations")}</p>
-            <h2>
-              {t(
-                "businessHome.features.title",
-                "The tools a service business needs to stay organised.",
-              )}
-            </h2>
-            <span>
-              {t(
-                "businessHome.features.body",
-                "Start with one location and keep customer bookings, team availability and next actions connected.",
-              )}
-            </span>
-          </div>
-          <div className="business-feature-grid">
-            {featureCards.map((feature) => (
-              <article className="business-feature" key={feature.number}>
-                <span className="business-feature-number">
-                  {feature.number}
-                </span>
-                <h3>{feature.title}</h3>
-                <p>{feature.body}</p>
-              </article>
+          <div
+            className="business-tabs"
+            role="tablist"
+            aria-label="Mirëbook Business sections"
+          >
+            {businessTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={activeTabId === tab.id}
+                className={activeTabId === tab.id ? "active" : ""}
+                onClick={() => setActiveTabId(tab.id)}
+              >
+                {tab.label}
+              </button>
             ))}
+          </div>
+
+          <div className="business-tab-panel" role="tabpanel">
+            <div className="business-tab-copy">
+              <h3>{activeTab.title}</h3>
+              <p>{activeTab.body}</p>
+              <ul>
+                {activeTab.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+              <div className="business-tab-actions">
+                <Link href={businessRegisterUrl} className="btn btn-accent">
+                  {t("businessHome.cta.start", "Start business setup")}
+                </Link>
+                <Link href={businessLoginUrl} className="btn btn-ghost">
+                  {t("businessHome.cta.login", "Log in to Mirëbook Business")}
+                </Link>
+              </div>
+            </div>
+            <aside className="business-tab-card">
+              <strong>{activeTab.panelTitle}</strong>
+              {activeTab.panelItems.map((item, index) => (
+                <span key={item}>
+                  <em>{index + 1}</em>
+                  {item}
+                </span>
+              ))}
+            </aside>
           </div>
         </div>
       </section>
@@ -506,20 +585,21 @@ export default function BusinessHomePage() {
           padding: 88px 0;
         }
 
-        .business-audience-band {
-          padding: 68px 0;
+        .business-tabs-section {
+          padding: 76px 0;
           border-bottom: 1px solid var(--border);
           background: #111822;
         }
 
-        .business-audience-grid {
+        .business-tabs-heading {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
-          gap: 4rem;
-          align-items: start;
+          grid-template-columns: minmax(0, 0.9fr) minmax(280px, 0.6fr);
+          gap: 2rem;
+          align-items: end;
+          margin-bottom: 1.5rem;
         }
 
-        .business-audience-grid h2 {
+        .business-tabs-heading h2 {
           margin: 0;
           font-family: var(--font-display);
           font-size: clamp(2rem, 4vw, 3.2rem);
@@ -527,19 +607,134 @@ export default function BusinessHomePage() {
           letter-spacing: 0;
         }
 
-        .business-audience-grid > div:last-child {
-          display: grid;
-          gap: 1.25rem;
-        }
-
-        .business-audience-grid > div:last-child p {
+        .business-tabs-heading p {
           margin: 0;
           color: var(--text-muted);
           line-height: 1.7;
         }
 
-        .business-audience-grid :global(.btn) {
-          justify-self: start;
+        .business-tabs {
+          display: flex;
+          gap: 0.55rem;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+        }
+
+        .business-tabs button {
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--text-muted);
+          cursor: pointer;
+          font: inherit;
+          font-size: 0.88rem;
+          font-weight: 800;
+          padding: 0.55rem 0.85rem;
+        }
+
+        .business-tabs button.active {
+          border-color: rgba(255, 107, 53, 0.5);
+          background: var(--accent-dim);
+          color: var(--accent);
+        }
+
+        .business-tab-panel {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(280px, 0.45fr);
+          gap: 1.25rem;
+          align-items: stretch;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.035);
+          padding: 1.25rem;
+        }
+
+        .business-tab-copy {
+          display: grid;
+          gap: 1rem;
+          align-content: start;
+        }
+
+        .business-tab-copy h3 {
+          margin: 0;
+          font-family: var(--font-display);
+          font-size: clamp(1.8rem, 3vw, 2.7rem);
+          line-height: 1.08;
+        }
+
+        .business-tab-copy p {
+          max-width: 760px;
+          margin: 0;
+          color: var(--text-muted);
+          line-height: 1.7;
+        }
+
+        .business-tab-copy ul {
+          display: grid;
+          gap: 0.5rem;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .business-tab-copy li {
+          display: flex;
+          gap: 0.5rem;
+          align-items: baseline;
+          color: var(--text-muted);
+        }
+
+        .business-tab-copy li::before {
+          content: "";
+          width: 0.42rem;
+          height: 0.42rem;
+          flex: 0 0 auto;
+          border-radius: 50%;
+          background: var(--accent);
+        }
+
+        .business-tab-actions {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 0.2rem;
+        }
+
+        .business-tab-card {
+          display: grid;
+          gap: 0.65rem;
+          align-content: start;
+          padding: 1rem;
+          border: 1px solid rgba(255, 107, 53, 0.22);
+          border-radius: 8px;
+          background: rgba(7, 11, 19, 0.42);
+        }
+
+        .business-tab-card strong {
+          margin-bottom: 0.25rem;
+        }
+
+        .business-tab-card span {
+          display: flex;
+          gap: 0.55rem;
+          align-items: center;
+          color: var(--text-muted);
+          font-size: 0.9rem;
+        }
+
+        .business-tab-card em {
+          display: inline-flex;
+          width: 1.55rem;
+          height: 1.55rem;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          border-radius: 50%;
+          background: var(--accent-dim);
+          color: var(--accent);
+          font-size: 0.78rem;
+          font-style: normal;
+          font-weight: 900;
         }
 
         .business-section-heading {
@@ -565,39 +760,6 @@ export default function BusinessHomePage() {
           margin-top: 1rem;
           color: var(--text-muted);
           line-height: 1.7;
-        }
-
-        .business-feature-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          border-top: 1px solid var(--border);
-          border-left: 1px solid var(--border);
-        }
-
-        .business-feature {
-          min-width: 0;
-          padding: 1.5rem;
-          border-right: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-          background: var(--surface);
-        }
-
-        .business-feature-number {
-          color: var(--accent);
-          font-size: 0.78rem;
-          font-weight: 800;
-        }
-
-        .business-feature h3 {
-          margin: 1.1rem 0 0.55rem;
-          font-size: 1.05rem;
-        }
-
-        .business-feature p {
-          margin: 0;
-          color: var(--text-muted);
-          font-size: 0.9rem;
-          line-height: 1.65;
         }
 
         .business-team-band {
@@ -775,8 +937,7 @@ export default function BusinessHomePage() {
             padding-bottom: 56px;
           }
 
-          .business-proof-grid,
-          .business-feature-grid {
+          .business-proof-grid {
             grid-template-columns: 1fr 1fr;
           }
 
@@ -787,7 +948,8 @@ export default function BusinessHomePage() {
 
           .business-team-layout,
           .business-membership,
-          .business-audience-grid,
+          .business-tabs-heading,
+          .business-tab-panel,
           .business-preview-layout {
             grid-template-columns: 1fr;
             gap: 2rem;
@@ -828,7 +990,7 @@ export default function BusinessHomePage() {
           }
 
           .business-proof-grid,
-          .business-feature-grid {
+          .business-tab-panel {
             grid-template-columns: 1fr;
           }
 
@@ -847,12 +1009,13 @@ export default function BusinessHomePage() {
             padding: 62px 0;
           }
 
-          .business-feature-grid {
-            border-left: 0;
+          .business-tab-actions {
+            display: grid;
           }
 
-          .business-feature {
-            border-left: 1px solid var(--border);
+          .business-tab-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
 
           .business-preview-band {

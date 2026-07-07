@@ -767,6 +767,10 @@ export default function Businesses() {
                 <button
                   type="button"
                   className="btn btn-accent"
+                  aria-label={t(
+                    "dashboardBusinesses.publish",
+                    "Publish to Mirëbook",
+                  )}
                   onClick={() => togglePublished(primaryBusiness)}
                   disabled={publishingBusinessId === primaryBusiness.id}
                 >
@@ -778,6 +782,10 @@ export default function Businesses() {
                 <a
                   href={nextSetupStep.href}
                   className="btn btn-accent"
+                  aria-label={`${t(
+                    "dashboardBusinesses.setup.nextInline",
+                    "Next",
+                  )}: ${nextSetupStep.action}`}
                   onClick={
                     shouldOpenProfileDetails(nextSetupStep.href)
                       ? openProfileDetails
@@ -808,6 +816,11 @@ export default function Businesses() {
                   ]
                     .filter(Boolean)
                     .join(" ")}
+                  aria-label={`${item.label}: ${
+                    item.complete
+                      ? t("dashboardBusinesses.setup.done", "Done")
+                      : item.action
+                  }`}
                   onClick={
                     shouldOpenProfileDetails(item.href)
                       ? openProfileDetails
@@ -894,6 +907,10 @@ export default function Businesses() {
               <Link
                 href={`/explore/${primaryBusiness.id}`}
                 className="btn btn-ghost"
+                aria-label={t(
+                  "dashboardBusinesses.profileTools.preview",
+                  "Preview public page",
+                )}
               >
                 {t(
                   "dashboardBusinesses.profileTools.preview",
@@ -905,20 +922,37 @@ export default function Businesses() {
 
           <div className="setup-secondary">
             <details className="setup-advanced">
-              <summary>
+              <summary
+                aria-label={t(
+                  "dashboardBusinesses.setup.advancedTitle",
+                  "Advanced",
+                )}
+              >
                 {t("dashboardBusinesses.setup.advancedTitle", "Advanced")}
               </summary>
               <div>
-                <Link href="/dashboard/settings">
+                <Link
+                  href="/dashboard/settings"
+                  aria-label={t(
+                    "dashboardBusinesses.myBusiness.bookingRules",
+                    "Booking rules",
+                  )}
+                >
                   {t(
                     "dashboardBusinesses.myBusiness.bookingRules",
                     "Booking rules",
                   )}
                 </Link>
-                <Link href="/dashboard/billing">
+                <Link
+                  href="/dashboard/billing"
+                  aria-label={t("dashboardLayout.nav.membership", "Membership")}
+                >
                   {t("dashboardLayout.nav.membership", "Membership")}
                 </Link>
-                <Link href="/support/business">
+                <Link
+                  href="/support/business"
+                  aria-label={t("dashboardLayout.nav.help", "Help")}
+                >
                   {t("dashboardLayout.nav.help", "Help")}
                 </Link>
               </div>
@@ -934,6 +968,10 @@ export default function Businesses() {
                 <button
                   type="button"
                   className="btn btn-ghost"
+                  aria-label={t(
+                    "staff.ownerSetup.addSelf",
+                    "Add myself as bookable staff",
+                  )}
                   onClick={() => addOwnerAsStaff(primaryBusiness)}
                   disabled={creatingOwnerStaffId === primaryBusiness.id}
                 >
@@ -1005,7 +1043,12 @@ export default function Businesses() {
           open={profileDetailsOpen}
           onToggle={(event) => setProfileDetailsOpen(event.currentTarget.open)}
         >
-          <summary>
+          <summary
+            aria-label={t(
+              "dashboardBusinesses.setup.detailsTitle",
+              "Business profile details",
+            )}
+          >
             <span>
               <strong>
                 {t(

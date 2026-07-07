@@ -48,14 +48,18 @@ export const en: TranslationTree = {
   "login.noAccount": "No account yet?",
   "login.createAccount": "Create a Mirëbook account",
   "login.verification.title": "Verify your email to continue",
+  "login.verification.error":
+    "Verify your email before signing in. You can resend the verification email below.",
   "login.verification.body":
-    "Supabase has not confirmed this email yet. Verification protects account ownership and future launch activity.",
+    "This email has not been verified yet. Verification protects your account and keeps future account updates secure.",
   "login.verification.resent":
-    "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+    "Verification request accepted. Check your inbox and spam folder.",
   "login.verification.returned":
     "Email verification completed. Sign in to continue your Mirëbook setup.",
   "verification.resend": "Resend verification email",
   "verification.resending": "Sending verification email...",
+  "verification.resendError":
+    "Could not send the verification email. Try again in a moment.",
 
   "common.loadingAccount": "Checking account...",
   "common.marketplace": "Marketplace",
@@ -195,7 +199,10 @@ export const en: TranslationTree = {
     "Review how Mirëbook handles platform use and personal information.",
   "home.businessEntry.title":
     "Run bookings and daily operations with Mirëbook Business.",
+  "home.businessEntry.body":
+    "Owners and staff use a separate workspace for setup, calendar and inbox.",
   "home.businessEntry.cta": "Visit Mirëbook Business",
+  "home.businessEntry.setupCta": "List your business",
 
   "businessHome.metaTitle":
     "Mirëbook Business | Bookings, staff and availability",
@@ -282,6 +289,64 @@ export const en: TranslationTree = {
   "businessHome.preview.inbox": "Inbox",
   "businessHome.preview.action": "Action",
   "businessHome.preview.alert": "Review one reschedule request",
+  "businessHome.tabs.title":
+    "Mirëbook Business, split into the parts owners actually need.",
+  "businessHome.tabs.body":
+    "Understand the product quickly, then start setup when it makes sense.",
+  "businessHome.tabs.how.label": "How it works",
+  "businessHome.tabs.how.title":
+    "A simpler way to run bookings from the first day.",
+  "businessHome.tabs.how.body":
+    "Mirëbook connects a customer-facing booking page with the business calendar, inbox and staff workspace behind it.",
+  "businessHome.tabs.how.pointOne": "Customers find your profile",
+  "businessHome.tabs.how.pointTwo": "They choose a service, provider and time",
+  "businessHome.tabs.how.pointThree":
+    "You see requests and confirmed work in one place",
+  "businessHome.tabs.how.panelTitle": "Core flow",
+  "businessHome.tabs.how.panelOne": "Public profile",
+  "businessHome.tabs.how.panelTwo": "Calendar",
+  "businessHome.tabs.how.panelThree": "Inbox",
+  "businessHome.tabs.setup.label": "Setup",
+  "businessHome.tabs.setup.title":
+    "Get bookable without opening every setting.",
+  "businessHome.tabs.setup.body":
+    "Start with the few things customers need: profile basics, one service, one provider or team member, working hours and booking mode.",
+  "businessHome.tabs.setup.pointOne": "Business profile and location",
+  "businessHome.tabs.setup.pointTwo": "First service with duration and price",
+  "businessHome.tabs.setup.pointThree":
+    "Working hours and preview before publish",
+  "businessHome.tabs.setup.panelTitle": "Setup path",
+  "businessHome.tabs.setup.panelOne": "Profile",
+  "businessHome.tabs.setup.panelTwo": "Service",
+  "businessHome.tabs.setup.panelThree": "Preview",
+  "businessHome.tabs.pricing.label": "Pricing",
+  "businessHome.tabs.pricing.title":
+    "Early partner access while Mirëbook grows.",
+  "businessHome.tabs.pricing.body":
+    "Mirëbook Business is currently available for early partners. Customer booking payments stay separate from business membership.",
+  "businessHome.tabs.pricing.pointOne":
+    "No customer booking commission during the early partner period",
+  "businessHome.tabs.pricing.pointTwo":
+    "Membership details are handled directly with Mirëbook",
+  "businessHome.tabs.pricing.pointThree":
+    "Online subscription management can be enabled later",
+  "businessHome.tabs.pricing.panelTitle": "Included now",
+  "businessHome.tabs.pricing.panelOne": "Bookings",
+  "businessHome.tabs.pricing.panelTwo": "Staff and services",
+  "businessHome.tabs.pricing.panelThree": "Public profile",
+  "businessHome.tabs.staff.label": "Staff",
+  "businessHome.tabs.staff.title":
+    "Staff get the work view, not the owner dashboard.",
+  "businessHome.tabs.staff.body":
+    "Linked staff can see assigned appointments, their calendar, working hours and inbox updates without business setup controls.",
+  "businessHome.tabs.staff.pointOne": "Assigned appointments only",
+  "businessHome.tabs.staff.pointTwo": "Working hours for their schedule",
+  "businessHome.tabs.staff.pointThree":
+    "Owner controls stay with the business owner",
+  "businessHome.tabs.staff.panelTitle": "Staff workspace",
+  "businessHome.tabs.staff.panelOne": "Today",
+  "businessHome.tabs.staff.panelTwo": "Calendar",
+  "businessHome.tabs.staff.panelThree": "Inbox",
 
   "explore.hero.kicker": "Mirëbook marketplace",
   "explore.hero.title": "Find and book local services",
@@ -1309,6 +1374,8 @@ export const en: TranslationTree = {
   "dashboardServices.image.uploading": "Uploading...",
   "dashboardServices.image.uploadingImage": "Uploading image...",
   "dashboardServices.image.uploadButton": "Upload image",
+  "dashboardServices.image.chooseCreate": "Choose service image",
+  "dashboardServices.image.chooseEdit": "Choose replacement service image",
   "dashboardServices.image.replaceButton": "Replace image",
   "dashboardServices.image.remove": "Remove image",
   "dashboardServices.image.chooseFirst": "Choose an image file first.",
@@ -2286,11 +2353,11 @@ export const en: TranslationTree = {
   "register.verification.required":
     "Account created. Check your email and verify your address before signing in. Your selected account setup will continue after verification.",
   "register.verification.resent":
-    "Verification request accepted. If Supabase email confirmation is enabled, check your inbox and spam folder.",
+    "Verification request accepted. Check your inbox and spam folder.",
   "register.verification.softPolicy":
     "Open the verification email on this device, then return to sign in. Check your spam folder if it does not arrive.",
   "register.verification.guidance":
-    "If email confirmation is enabled, check your inbox after creating the account. Your selected setup will continue after you verify and sign in.",
+    "If Mirëbook asks you to verify your email, check your inbox after creating the account. Your selected setup will continue after you verify and sign in.",
   "register.business.nameRequired": "Business name is required.",
   "register.business.phoneRequired": "Business phone is required.",
   "register.business.categoryRequired": "Business category is required.",

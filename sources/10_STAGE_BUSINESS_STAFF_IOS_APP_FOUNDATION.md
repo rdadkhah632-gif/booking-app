@@ -15,6 +15,18 @@ Web account/contact readiness note:
 - Supabase Auth still owns recovery-email delivery; the recovery email template
   must be branded in Supabase dashboard, while `/reset-password` remains the
   Mirëbook reset completion page
+- App-side email verification readiness is in place for staged activation:
+  registration shows a verification-required state when Supabase does not
+  return a session, login catches unverified-account sign-in attempts with
+  friendly copy, and Login/Register/Account can resend verification emails with
+  product-aware customer or business redirects.
+- Supabase dashboard still needs the branded Auth templates before enforcing
+  confirmation broadly: Confirm signup, Magic Link if used later, and Reset
+  password should use Mirëbook wording and keep Supabase token/link variables
+  unchanged.
+- Marketing/promotional email consent should remain a separate future batch.
+  Account verification and booking/support/reminder emails are transactional;
+  promotional campaigns need explicit preference/consent handling before use.
 - Web registration is now split by product surface: customer signup stays on
   the customer site, while business-owner and staff account creation are
   directed through Mirëbook Business. This supports the future split app model
@@ -27,6 +39,11 @@ Web account/contact readiness note:
   customer-visible basics, first service, provider/team, working hours, booking
   mode, preview and publish. The web Setup page now follows this broader
   non-salon-specific sequence and keeps advanced settings secondary.
+- Customer and business entry points are now clearer: the customer homepage
+  keeps booking/search as the primary action, while the Business homepage uses a
+  compact tabbed product explanation for how it works, setup, pricing and staff.
+  This supports the future split-app direction without turning the customer
+  homepage into a business sales page.
 
 This stage is for the first Mirëbook mobile app. The first app should be a
 business/staff operations app, similar in purpose to Booksy Biz or Fresha's

@@ -20,6 +20,7 @@ export default function BusinessSettingsActions({
         className="btn btn-accent"
         onClick={onSave}
         disabled={saving || !selectedBusiness}
+        aria-label={t("dashboardSettings.saveMirebookSettings", "Save rules")}
       >
         {saving
           ? t("account.saving", "Saving...")

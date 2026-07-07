@@ -1,60 +1,77 @@
-import { useI18n } from '@/lib/useI18n'
-import { Service } from './dashboardServicesTypes'
+import { useI18n } from "@/lib/useI18n";
+import { Service } from "./dashboardServicesTypes";
 
 type Props = {
-  mode: 'create' | 'edit'
-  service?: Service
-  imageUrl?: string
-  imagePreviewUrl?: string
-  imageFile?: File | null
-  uploading: boolean
-  onCreateImageChange?: (file: File | null) => void
-  onUploadCreate?: () => void
-  onClearCreate?: () => void
-  onUploadService?: (service: Service, file: File | null) => void
-  onRemoveService?: (service: Service) => void
-}
+  mode: "create" | "edit";
+  service?: Service;
+  imageUrl?: string;
+  imagePreviewUrl?: string;
+  imageFile?: File | null;
+  uploading: boolean;
+  onCreateImageChange?: (file: File | null) => void;
+  onUploadCreate?: () => void;
+  onClearCreate?: () => void;
+  onUploadService?: (service: Service, file: File | null) => void;
+  onRemoveService?: (service: Service) => void;
+};
 
 export default function ServiceImageUpload({
   mode,
   service,
-  imageUrl = '',
-  imagePreviewUrl = '',
+  imageUrl = "",
+  imagePreviewUrl = "",
   uploading,
   onCreateImageChange,
   onUploadCreate,
   onClearCreate,
   onUploadService,
-  onRemoveService
+  onRemoveService,
 }: Props) {
-  const { t } = useI18n()
-  const displayUrl = mode === 'create' ? imagePreviewUrl || imageUrl : service?.image_url || ''
+  const { t } = useI18n();
+  const displayUrl =
+    mode === "create" ? imagePreviewUrl || imageUrl : service?.image_url || "";
 
   return (
     <div className="image-upload-box">
       <div>
-        <p className="small muted">{t('dashboardServices.image.kicker', 'Service image')}</p>
+        <p className="small muted">
+          {t("dashboardServices.image.kicker", "Service image")}
+        </p>
 
         <strong>
-          {mode === 'create'
-            ? t('dashboardServices.image.uploadFromDevice', 'Upload from your device')
+          {mode === "create"
+            ? t(
+                "dashboardServices.image.uploadFromDevice",
+                "Upload from your device",
+              )
             : service?.image_url
-              ? t('dashboardServices.image.replace', 'Replace uploaded image')
-              : t('dashboardServices.image.upload', 'Upload image')}
+              ? t("dashboardServices.image.replace", "Replace uploaded image")
+              : t("dashboardServices.image.upload", "Upload image")}
         </strong>
 
-        <p className="small muted" style={{ marginTop: '0.25rem' }}>
-          {t('dashboardServices.image.body', 'JPG, PNG, WEBP or GIF up to 5MB.')}
+        <p className="small muted" style={{ marginTop: "0.25rem" }}>
+          {t(
+            "dashboardServices.image.body",
+            "JPG, PNG, WEBP or GIF up to 5MB.",
+          )}
         </p>
       </div>
 
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
+        aria-label={
+          mode === "create"
+            ? t("dashboardServices.image.chooseCreate", "Choose service image")
+            : t(
+                "dashboardServices.image.chooseEdit",
+                "Choose replacement service image",
+              )
+        }
         onChange={(e) => {
-          const file = e.target.files?.[0] || null
-          if (mode === 'create') onCreateImageChange?.(file)
-          if (mode === 'edit' && service) onUploadService?.(service, file)
+          const file = e.target.files?.[0] || null;
+          if (mode === "create") onCreateImageChange?.(file);
+          if (mode === "edit" && service) onUploadService?.(service, file);
         }}
         disabled={uploading}
       />
@@ -67,7 +84,7 @@ export default function ServiceImageUpload({
       )}
 
       <div className="image-upload-actions">
-        {mode === 'create' && (
+        {mode === "create" && (
           <button
             type="button"
             className="btn btn-ghost"
@@ -75,15 +92,17 @@ export default function ServiceImageUpload({
             disabled={uploading}
           >
             {uploading
-              ? t('dashboardServices.image.uploading', 'Uploading...')
+              ? t("dashboardServices.image.uploading", "Uploading...")
               : imageUrl
-                ? t('dashboardServices.image.replaceButton', 'Replace image')
-                : t('dashboardServices.image.uploadButton', 'Upload image')}
+                ? t("dashboardServices.image.replaceButton", "Replace image")
+                : t("dashboardServices.image.uploadButton", "Upload image")}
           </button>
         )}
 
-        {mode === 'edit' && uploading && (
-          <p className="small muted">{t('dashboardServices.image.uploadingImage', 'Uploading image...')}</p>
+        {mode === "edit" && uploading && (
+          <p className="small muted">
+            {t("dashboardServices.image.uploadingImage", "Uploading image...")}
+          </p>
         )}
 
         {displayUrl && (
@@ -91,11 +110,11 @@ export default function ServiceImageUpload({
             type="button"
             className="btn btn-ghost"
             onClick={() => {
-              if (mode === 'create') onClearCreate?.()
-              if (mode === 'edit' && service) onRemoveService?.(service)
+              if (mode === "create") onClearCreate?.();
+              if (mode === "edit" && service) onRemoveService?.(service);
             }}
           >
-            {t('dashboardServices.image.remove', 'Remove image')}
+            {t("dashboardServices.image.remove", "Remove image")}
           </button>
         )}
       </div>
@@ -135,5 +154,5 @@ export default function ServiceImageUpload({
         }
       `}</style>
     </div>
-  )
+  );
 }

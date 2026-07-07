@@ -131,12 +131,20 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message);
-      if (
+      const emailNotConfirmed =
         (error as { code?: string }).code === "email_not_confirmed" ||
-        error.message.toLowerCase().includes("email not confirmed")
-      ) {
+        error.message.toLowerCase().includes("email not confirmed");
+
+      if (emailNotConfirmed) {
         setVerificationEmail(cleanEmail);
+        setError(
+          t(
+            "login.verification.error",
+            "Verify your email before signing in. You can resend the verification email below.",
+          ),
+        );
+      } else {
+        setError(error.message);
       }
       setLoading(false);
       return;
@@ -197,7 +205,12 @@ export default function LoginPage() {
     setResendingVerification(false);
 
     if (resendError) {
-      setError(resendError.message);
+      setError(
+        t(
+          "verification.resendError",
+          "Could not send the verification email. Try again in a moment.",
+        ),
+      );
       return;
     }
 

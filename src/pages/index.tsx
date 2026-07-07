@@ -19,6 +19,9 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
   const businessHomeUrl = getBusinessAppUrl();
+  const businessRegisterUrl = getBusinessAppUrl(
+    "/register?accountType=business",
+  );
 
   function searchBusinesses(e: React.FormEvent) {
     e.preventDefault();
@@ -42,7 +45,9 @@ export default function Home() {
 
         <div className="container home-hero-grid">
           <div className="home-copy">
-            <div className="home-eyebrow">{t("home.eyebrow", "Book local services")}</div>
+            <div className="home-eyebrow">
+              {t("home.eyebrow", "Book local services")}
+            </div>
             <h1 className="home-title">{t("home.title")}</h1>
             <p className="home-subtitle">
               {t(
@@ -89,7 +94,6 @@ export default function Home() {
                 {t("home.cta.myBookings", "My bookings")}
               </Link>
             </div>
-
           </div>
         </div>
       </section>
@@ -104,10 +108,21 @@ export default function Home() {
                 "Run bookings and daily operations with Mirëbook Business.",
               )}
             </h2>
+            <span>
+              {t(
+                "home.businessEntry.body",
+                "Owners and staff use a separate workspace for setup, calendar and inbox.",
+              )}
+            </span>
           </div>
-          <Link href={businessHomeUrl} className="btn btn-ghost">
-            {t("home.businessEntry.cta", "Visit Mirëbook Business")}
-          </Link>
+          <div className="home-business-actions">
+            <Link href={businessHomeUrl} className="btn btn-ghost">
+              {t("home.businessEntry.cta", "Visit Mirëbook Business")}
+            </Link>
+            <Link href={businessRegisterUrl} className="btn btn-ghost">
+              {t("home.businessEntry.setupCta", "List your business")}
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -143,6 +158,14 @@ export default function Home() {
           letter-spacing: 0;
         }
 
+        .home-business-entry span {
+          display: block;
+          max-width: 620px;
+          margin-top: 0.65rem;
+          color: var(--text-muted);
+          line-height: 1.55;
+        }
+
         .home-category-row {
           display: flex;
           gap: 0.6rem;
@@ -154,7 +177,7 @@ export default function Home() {
           padding: 0.45rem 0.75rem;
           border: 1px solid var(--border);
           border-radius: 999px;
-          background: rgba(255,255,255,0.04);
+          background: rgba(255, 255, 255, 0.04);
           color: var(--text);
           text-decoration: none;
           font-size: 0.9rem;
@@ -191,16 +214,25 @@ export default function Home() {
           flex: 0 0 auto;
         }
 
-        @media (max-width: 860px) {
+        .home-business-actions {
+          display: flex;
+          gap: 0.7rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        @media (max-width: 620px) {
           .customer-home-hero {
             min-height: auto;
           }
 
-        }
-
-        @media (max-width: 620px) {
           .home-business-entry-inner {
             display: grid;
+          }
+
+          .home-business-actions {
+            display: grid;
+            justify-content: stretch;
           }
 
           .home-business-entry :global(.btn) {
