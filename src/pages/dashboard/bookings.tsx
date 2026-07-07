@@ -109,24 +109,6 @@ const emptyManualBookingDraft: ManualBookingDraft = {
   time: "09:00",
 };
 
-function formValue(formData: FormData, key: keyof ManualBookingDraft) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value : "";
-}
-
-function manualBookingDraftFromForm(formData: FormData): ManualBookingDraft {
-  return {
-    customerName: formValue(formData, "customerName"),
-    customerEmail: formValue(formData, "customerEmail"),
-    customerPhone: formValue(formData, "customerPhone"),
-    customerNotes: formValue(formData, "customerNotes"),
-    serviceId: formValue(formData, "serviceId"),
-    staffMemberId: formValue(formData, "staffMemberId"),
-    date: formValue(formData, "date"),
-    time: formValue(formData, "time"),
-  };
-}
-
 function dateKeyForDate(date: Date) {
   return toDateInputValue(date);
 }
@@ -2013,11 +1995,7 @@ export default function Bookings() {
                         className="manual-booking-form"
                         onSubmit={(event) => {
                           event.preventDefault();
-                          void createManualBooking(
-                            manualBookingDraftFromForm(
-                              new FormData(event.currentTarget),
-                            ),
-                          );
+                          void createManualBooking(manualBooking);
                         }}
                       >
                         <label>

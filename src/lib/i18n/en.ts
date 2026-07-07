@@ -86,6 +86,103 @@ export const en: TranslationTree = {
   "common.working": "Working...",
   "common.loading": "Loading...",
   "common.needHelp": "Need help?",
+  "legal.kicker": "Legal",
+  "legal.lastUpdated": "Last updated: 7 July 2026",
+  "legal.important": "Important",
+  "terms.title": "Terms of Service",
+  "terms.subtitle":
+    "The rules for using Mirëbook as a customer, business owner or staff member.",
+  "terms.importantBody":
+    "These terms are written for launch readiness and should be reviewed before wider commercial rollout.",
+  "terms.section1.title": "1. About Mirëbook",
+  "terms.section1.body":
+    "Mirëbook helps customers discover businesses and book appointments. Businesses use Mirëbook to manage services, staff, availability, booking requests, confirmations and customer updates.",
+  "terms.section2.title": "2. Your account",
+  "terms.section2.body":
+    "You are responsible for keeping your login details secure and for using accurate account information. Business owners are responsible for the information, staff, services and availability they publish.",
+  "terms.section3.title": "3. Customer bookings",
+  "terms.section3.body1":
+    "Customers can request or instantly confirm appointments depending on the business settings. A booking is only confirmed when Mirëbook shows it as confirmed.",
+  "terms.section3.body2":
+    "Customers should attend appointments on time and use cancellation or reschedule options responsibly.",
+  "terms.section4.title": "4. Business responsibilities",
+  "terms.section4.body1":
+    "Businesses are responsible for keeping services, prices, staff, opening hours and booking rules accurate.",
+  "terms.section4.body2":
+    "Businesses are responsible for delivering the services they offer and for handling customer communication professionally.",
+  "terms.section5.title": "5. Staff access",
+  "terms.section5.body":
+    "Staff accounts can view assigned work and relevant updates. Business owners control staff invitations, service assignments and business settings.",
+  "terms.section6.title": "6. Payments and membership",
+  "terms.section6.body1":
+    "Customer appointment payments are handled outside the current Mirëbook booking flow unless a business separately arranges payment with the customer.",
+  "terms.section6.body2":
+    "Business membership or subscription features are separate from customer bookings and may change as Mirëbook develops.",
+  "terms.section7.title": "7. Cancellations and changes",
+  "terms.section7.body1":
+    "Customers and businesses may cancel or request changes where the product allows it. Some changes may require business approval.",
+  "terms.section7.body2":
+    "Mirëbook may keep booking history so customers, businesses and staff can understand what happened.",
+  "terms.section8.title": "8. Acceptable use",
+  "terms.section8.body":
+    "Do not misuse Mirëbook, attempt to access another user's data, send harmful content, interfere with the service or use the platform for unlawful activity.",
+  "terms.section9.title": "9. Availability of the service",
+  "terms.section9.body":
+    "Mirëbook aims to provide a reliable service, but we cannot guarantee uninterrupted access. Maintenance, third-party services or network issues may affect availability.",
+  "terms.section10.title": "10. Content and accuracy",
+  "terms.section10.body":
+    "Business profile content, service descriptions, prices and availability are provided by the business. Customers should check appointment details before booking.",
+  "terms.section11.title": "11. Limitation of responsibility",
+  "terms.section11.body":
+    "Mirëbook provides booking software. Businesses remain responsible for their services, customer interactions and legal obligations.",
+  "terms.section12.title": "12. Changes to these terms",
+  "terms.section12.body":
+    "We may update these terms as Mirëbook grows. Continued use of the platform after updates means you accept the updated terms.",
+  "terms.section13.title": "13. Contact",
+  "terms.section13.body":
+    "If you have questions about these terms, contact Mirëbook support through the support page.",
+  "privacy.title": "Privacy Policy",
+  "privacy.subtitle":
+    "How Mirëbook handles account, booking, business and support information.",
+  "privacy.importantBody":
+    "This privacy policy is written for launch readiness and should be reviewed before wider commercial rollout.",
+  "privacy.section1.title": "1. Information we collect",
+  "privacy.section1.body":
+    "We collect the information needed to run Mirëbook, including account details, contact details, booking details, business profile information, staff records, support messages and notification preferences.",
+  "privacy.section2.title": "2. How we use information",
+  "privacy.section2.body1":
+    "We use information to create accounts, process bookings, show schedules, send transactional emails, support businesses and customers, and keep the platform secure.",
+  "privacy.section2.body2":
+    "We do not need customer payment details for the current appointment booking flow.",
+  "privacy.section3.title": "3. Booking and business visibility",
+  "privacy.section3.body1":
+    "Customers can see public business information such as name, category, city, services, staff choices and available appointment times.",
+  "privacy.section3.body2":
+    "Business owners and assigned staff can see booking details needed to manage appointments.",
+  "privacy.section4.title": "4. Emails and notifications",
+  "privacy.section4.body":
+    "Mirëbook sends transactional emails such as verification, password reset, booking updates, staff invites, support replies and reminders where configured.",
+  "privacy.section5.title": "5. Service providers",
+  "privacy.section5.body":
+    "Mirëbook uses trusted providers such as Supabase for authentication and database services, Vercel for hosting, Stripe for business billing where enabled, and Resend for transactional email where configured.",
+  "privacy.section6.title": "6. Security",
+  "privacy.section6.body":
+    "We use account authentication, role-based access and database access rules to protect customer, business and staff data.",
+  "privacy.section7.title": "7. Data retention",
+  "privacy.section7.body":
+    "We keep account, booking, business and support information for as long as needed to operate Mirëbook, meet support needs and preserve booking history.",
+  "privacy.section8.title": "8. Your choices",
+  "privacy.section8.body":
+    "You can update account details, language preference and email preferences from your account page where available.",
+  "privacy.section9.title": "9. International use",
+  "privacy.section9.body":
+    "Mirëbook may be used by customers, businesses and staff in different countries. Platform providers may process information in locations needed to deliver the service.",
+  "privacy.section10.title": "10. Changes to this policy",
+  "privacy.section10.body":
+    "We may update this policy as the product, providers or legal requirements change.",
+  "privacy.section11.title": "11. Contact",
+  "privacy.section11.body":
+    "For privacy questions, contact Mirëbook support through the support page.",
   "currency.all": "Lek (ALL)",
   "currency.eur": "Euro (EUR)",
   "currency.gbp": "Pound (GBP)",

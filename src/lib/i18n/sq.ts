@@ -133,6 +133,103 @@ export const sq: TranslationTree = {
   "common.working": "Duke punuar...",
   "common.loading": "Duke u ngarkuar...",
   "common.needHelp": "Keni nevojë për ndihmë?",
+  "legal.kicker": "Ligjore",
+  "legal.lastUpdated": "Përditësuar së fundmi: 7 korrik 2026",
+  "legal.important": "E rëndësishme",
+  "terms.title": "Kushtet e Shërbimit",
+  "terms.subtitle":
+    "Rregullat për përdorimin e Mirëbook si klient, pronar biznesi ose staf.",
+  "terms.importantBody":
+    "Këto kushte janë shkruar për gatishmëri lançimi dhe duhet të rishikohen para zgjerimit më të gjerë komercial.",
+  "terms.section1.title": "1. Rreth Mirëbook",
+  "terms.section1.body":
+    "Mirëbook ndihmon klientët të gjejnë biznese dhe të rezervojnë takime. Bizneset përdorin Mirëbook për të menaxhuar shërbime, staf, disponueshmëri, kërkesa rezervimi, konfirmime dhe përditësime për klientët.",
+  "terms.section2.title": "2. Llogaria jote",
+  "terms.section2.body":
+    "Ti je përgjegjës për sigurinë e të dhënave të hyrjes dhe për përdorimin e informacionit të saktë të llogarisë. Pronarët e bizneseve janë përgjegjës për informacionin, stafin, shërbimet dhe disponueshmërinë që publikojnë.",
+  "terms.section3.title": "3. Rezervimet e klientëve",
+  "terms.section3.body1":
+    "Klientët mund të kërkojnë ose të konfirmojnë menjëherë takime, sipas cilësimeve të biznesit. Një rezervim është i konfirmuar vetëm kur Mirëbook e shfaq si të konfirmuar.",
+  "terms.section3.body2":
+    "Klientët duhet të paraqiten në kohë dhe të përdorin anulimin ose ndryshimin e orarit në mënyrë të përgjegjshme.",
+  "terms.section4.title": "4. Përgjegjësitë e biznesit",
+  "terms.section4.body1":
+    "Bizneset janë përgjegjëse për saktësinë e shërbimeve, çmimeve, stafit, orareve të punës dhe rregullave të rezervimit.",
+  "terms.section4.body2":
+    "Bizneset janë përgjegjëse për ofrimin e shërbimeve të tyre dhe për komunikim profesional me klientët.",
+  "terms.section5.title": "5. Aksesi i stafit",
+  "terms.section5.body":
+    "Llogaritë e stafit mund të shohin punën e caktuar dhe përditësimet përkatëse. Pronarët e biznesit kontrollojnë ftesat e stafit, caktimet e shërbimeve dhe cilësimet e biznesit.",
+  "terms.section6.title": "6. Pagesat dhe anëtarësimi",
+  "terms.section6.body1":
+    "Pagesat e takimeve nga klientët trajtohen jashtë rrjedhës aktuale të rezervimit në Mirëbook, përveç rasteve kur biznesi bie dakord veçmas me klientin.",
+  "terms.section6.body2":
+    "Anëtarësimi ose abonimi i biznesit është i ndarë nga rezervimet e klientëve dhe mund të ndryshojë ndërsa Mirëbook zhvillohet.",
+  "terms.section7.title": "7. Anulimet dhe ndryshimet",
+  "terms.section7.body1":
+    "Klientët dhe bizneset mund të anulojnë ose kërkojnë ndryshime kur produkti e lejon. Disa ndryshime mund të kërkojnë miratim nga biznesi.",
+  "terms.section7.body2":
+    "Mirëbook mund të ruajë historikun e rezervimeve që klientët, bizneset dhe stafi të kuptojnë çfarë ka ndodhur.",
+  "terms.section8.title": "8. Përdorimi i pranueshëm",
+  "terms.section8.body":
+    "Mos e keqpërdor Mirëbook, mos tento të hysh në të dhënat e përdoruesve të tjerë, mos dërgo përmbajtje të dëmshme, mos ndërhy në shërbim dhe mos e përdor platformën për veprimtari të paligjshme.",
+  "terms.section9.title": "9. Disponueshmëria e shërbimit",
+  "terms.section9.body":
+    "Mirëbook synon të ofrojë shërbim të besueshëm, por nuk mund të garantojë akses të pandërprerë. Mirëmbajtja, shërbimet e palëve të treta ose problemet e rrjetit mund të ndikojnë te disponueshmëria.",
+  "terms.section10.title": "10. Përmbajtja dhe saktësia",
+  "terms.section10.body":
+    "Përmbajtja e profilit të biznesit, përshkrimet e shërbimeve, çmimet dhe disponueshmëria jepen nga biznesi. Klientët duhet të kontrollojnë detajet e takimit para rezervimit.",
+  "terms.section11.title": "11. Kufizimi i përgjegjësisë",
+  "terms.section11.body":
+    "Mirëbook ofron softuer rezervimesh. Bizneset mbeten përgjegjëse për shërbimet, komunikimin me klientët dhe detyrimet e tyre ligjore.",
+  "terms.section12.title": "12. Ndryshimet në këto kushte",
+  "terms.section12.body":
+    "Ne mund t'i përditësojmë këto kushte ndërsa Mirëbook rritet. Përdorimi i vazhdueshëm i platformës pas përditësimeve do të thotë që pranon kushtet e përditësuara.",
+  "terms.section13.title": "13. Kontakt",
+  "terms.section13.body":
+    "Nëse ke pyetje për këto kushte, kontakto mbështetjen e Mirëbook përmes faqes së ndihmës.",
+  "privacy.title": "Politika e Privatësisë",
+  "privacy.subtitle":
+    "Si i trajton Mirëbook informacionet e llogarisë, rezervimeve, biznesit dhe mbështetjes.",
+  "privacy.importantBody":
+    "Kjo politikë privatësie është shkruar për gatishmëri lançimi dhe duhet të rishikohet para zgjerimit më të gjerë komercial.",
+  "privacy.section1.title": "1. Informacionet që mbledhim",
+  "privacy.section1.body":
+    "Ne mbledhim informacionin e nevojshëm për të operuar Mirëbook, duke përfshirë detaje llogarie, kontakte, detaje rezervimi, informacion profili biznesi, të dhëna stafi, mesazhe mbështetjeje dhe preferenca njoftimesh.",
+  "privacy.section2.title": "2. Si i përdorim informacionet",
+  "privacy.section2.body1":
+    "Ne përdorim informacionet për të krijuar llogari, për të përpunuar rezervime, për të shfaqur kalendarë, për të dërguar email-e transaksionale, për të mbështetur biznese dhe klientë dhe për ta mbajtur platformën të sigurt.",
+  "privacy.section2.body2":
+    "Nuk na duhen të dhënat e pagesës së klientit për rrjedhën aktuale të rezervimit të takimeve.",
+  "privacy.section3.title": "3. Dukshmëria e rezervimeve dhe biznesit",
+  "privacy.section3.body1":
+    "Klientët mund të shohin informacion publik të biznesit si emri, kategoria, qyteti, shërbimet, zgjedhjet e stafit dhe oraret e disponueshme.",
+  "privacy.section3.body2":
+    "Pronarët e biznesit dhe stafi i caktuar mund të shohin detajet e rezervimit që duhen për menaxhimin e takimeve.",
+  "privacy.section4.title": "4. Email-et dhe njoftimet",
+  "privacy.section4.body":
+    "Mirëbook dërgon email-e transaksionale si verifikime, rivendosje fjalëkalimi, përditësime rezervimi, ftesa stafi, përgjigje mbështetjeje dhe rikujtime kur janë të konfiguruara.",
+  "privacy.section5.title": "5. Ofruesit e shërbimeve",
+  "privacy.section5.body":
+    "Mirëbook përdor ofrues të besuar si Supabase për autentikim dhe bazën e të dhënave, Vercel për hostim, Stripe për faturim biznesi kur aktivizohet dhe Resend për email-e transaksionale kur konfigurohet.",
+  "privacy.section6.title": "6. Siguria",
+  "privacy.section6.body":
+    "Ne përdorim autentikim llogarie, akses sipas rolit dhe rregulla të aksesit në bazën e të dhënave për të mbrojtur të dhënat e klientëve, bizneseve dhe stafit.",
+  "privacy.section7.title": "7. Ruajtja e të dhënave",
+  "privacy.section7.body":
+    "Ne i mbajmë informacionet e llogarisë, rezervimeve, biznesit dhe mbështetjes për aq kohë sa nevojitet për të operuar Mirëbook, për mbështetje dhe për historikun e rezervimeve.",
+  "privacy.section8.title": "8. Zgjedhjet e tua",
+  "privacy.section8.body":
+    "Mund të përditësosh detajet e llogarisë, preferencën e gjuhës dhe preferencat e email-it nga faqja e llogarisë kur janë të disponueshme.",
+  "privacy.section9.title": "9. Përdorimi ndërkombëtar",
+  "privacy.section9.body":
+    "Mirëbook mund të përdoret nga klientë, biznese dhe staf në vende të ndryshme. Ofruesit e platformës mund të përpunojnë informacion në vendndodhjet e nevojshme për ofrimin e shërbimit.",
+  "privacy.section10.title": "10. Ndryshimet në këtë politikë",
+  "privacy.section10.body":
+    "Ne mund ta përditësojmë këtë politikë ndërsa produkti, ofruesit ose kërkesat ligjore ndryshojnë.",
+  "privacy.section11.title": "11. Kontakt",
+  "privacy.section11.body":
+    "Për pyetje privatësie, kontakto mbështetjen e Mirëbook përmes faqes së ndihmës.",
   "currency.all": "Lek (ALL)",
   "currency.eur": "Euro (EUR)",
   "currency.gbp": "Paund (GBP)",

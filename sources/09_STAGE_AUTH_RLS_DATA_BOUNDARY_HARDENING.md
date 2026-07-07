@@ -1173,6 +1173,42 @@ Status: PASS.
 - disposable inboxes such as `web-library.net` should not be used as final
   launch deliverability proof
 
+## Post Email-Confirmation QA Follow-Up
+
+After Supabase email confirmation was enabled and branded templates were added,
+customer/business QA found several follow-ups:
+
+- customer registration verification and pre-verification login blocking passed
+- instant and request-mode customer booking passed after verified login
+- customer cancellation and reschedule flows passed
+- business/staff pages remained role-scoped after verified login
+- customer legal pages showed raw translation keys
+- logged-out `/notifications` and `/account` did not preserve the intended
+  route on redirect to login
+- business manual appointment creation could submit the default calendar slot
+  instead of the entered future date/time
+- customer password reset request showed accepted copy, but the reset email did
+  not arrive in the tested inbox; this needs Supabase Auth log/template/delivery
+  investigation because Supabase verification email did reach the same inbox
+
+Fixes applied in this follow-up:
+
+- added launch-readable Terms and Privacy translation content in English and
+  Albanian
+- preserved customer intent for logged-out `/notifications` and `/account`
+  redirects
+- changed manual appointment submission to use the controlled React draft state
+  instead of rebuilding the appointment from `FormData`, avoiding stale/default
+  date and time submission
+
+Still required:
+
+- inspect Supabase Auth logs for the failed customer password reset attempt
+- confirm whether `mail.send` appears for recovery, whether the reset template
+  contains the required link variable, and whether the recipient/provider
+  accepted or suppressed delivery
+- rerun customer password reset once Supabase delivery is confirmed
+
 ### Production Environment Checklist
 
 Required in Vercel Production:

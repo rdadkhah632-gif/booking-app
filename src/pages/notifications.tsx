@@ -27,7 +27,9 @@ export default function CustomerNotifications() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login");
+        router.replace(
+          `/login?redirectTo=${encodeURIComponent(router.asPath)}`,
+        );
         return;
       }
 

@@ -103,7 +103,11 @@ export default function AccountPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login");
+      const redirectTo = encodeURIComponent(router.asPath);
+      const loginPath = isBusinessAppHostname(window.location.hostname)
+        ? `/login?product=business&redirectTo=${redirectTo}`
+        : `/login?redirectTo=${redirectTo}`;
+      router.replace(loginPath);
       return;
     }
 
