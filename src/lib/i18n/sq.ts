@@ -316,6 +316,21 @@ export const sq: TranslationTree = {
   "businessHome.final.kicker": "Gati për t'u organizuar?",
   "businessHome.final.title":
     "Konfiguro biznesin që klientët mund të gjejnë dhe ekipi mund të menaxhojë.",
+  "businessHome.preview.kicker": "Pamje e hapësirës",
+  "businessHome.preview.title": "Menaxho ditën nga Sot, Kalendari dhe Inbox.",
+  "businessHome.preview.body":
+    "Produkti web tashmë ndjek drejtimin e aplikacionit të parë për biznes/staf: veprimet ditore së pari, konfigurimi më pas.",
+  "businessHome.preview.today": "Sot",
+  "businessHome.preview.ready": "Gati",
+  "businessHome.preview.next": "Takimi i radhës",
+  "businessHome.preview.requests": "Kërkesa",
+  "businessHome.preview.calendar": "Kalendari",
+  "businessHome.preview.week": "Java",
+  "businessHome.preview.serviceOne": "Prerje",
+  "businessHome.preview.serviceTwo": "Ngjyrosje",
+  "businessHome.preview.inbox": "Inbox",
+  "businessHome.preview.action": "Veprim",
+  "businessHome.preview.alert": "Shqyrto një kërkesë ndryshimi orari",
 
   "explore.hero.kicker": "Tregu Mirëbook",
   "explore.hero.title": "Gjej dhe rezervo shërbime lokale",
@@ -2294,6 +2309,19 @@ export const sq: TranslationTree = {
   "register.businessAccountTitle": "Fillo me Mirëbook Biznes",
   "register.businessAccountSubtitle":
     "Krijo llogarinë dhe profilin fillestar të biznesit.",
+  "register.staffAccountTitle": "Krijo llogarinë tënde të stafit",
+  "register.staffAccountSubtitle":
+    "Krijo një llogari stafi për hapësirën Mirëbook Biznes.",
+  "register.customerAccountSubtitle":
+    "Krijo një llogari për të rezervuar dhe menaxhuar takime.",
+  "register.businessChoiceTitle": "Zgjidh si po i bashkohesh Mirëbook Biznes.",
+  "register.businessSplit.title": "Po regjistron një biznes?",
+  "register.businessSplit.body":
+    "Mirëbook Biznes ka një rrjedhë të veçantë për pronarë dhe staf të ftuar.",
+  "register.businessSplit.businessCta": "Regjistro biznesin",
+  "register.businessSplit.staffCta": "Po bashkohesh si staf?",
+  "register.customerReturn.body": "Po kërkon të rezervosh shërbime?",
+  "register.customerReturn.link": "Krijo llogari klienti",
   "register.role.customer": "Klient",
   "register.role.customerBody": "Rezervo dhe menaxho takimet.",
   "register.role.business": "Biznes",

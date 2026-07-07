@@ -15,6 +15,13 @@ Web account/contact readiness note:
 - Supabase Auth still owns recovery-email delivery; the recovery email template
   must be branded in Supabase dashboard, while `/reset-password` remains the
   Mirëbook reset completion page
+- Web registration is now split by product surface: customer signup stays on
+  the customer site, while business-owner and staff account creation are
+  directed through Mirëbook Business. This supports the future split app model
+  where the first native app is business/staff operations only.
+- The Mirëbook Business landing page now presents the owner/staff product more
+  clearly with setup, calendar, inbox, staff workspace and early-partner
+  membership context before signup.
 
 This stage is for the first Mirëbook mobile app. The first app should be a
 business/staff operations app, similar in purpose to Booksy Biz or Fresha's

@@ -72,6 +72,13 @@ export default function RegisterPage() {
       : role === "staff"
         ? getBusinessAppUrl("/login?product=business")
         : getCustomerAppUrl("/login");
+  const businessRegisterUrl = getBusinessAppUrl(
+    "/register?accountType=business",
+  );
+  const staffRegisterUrl = getBusinessAppUrl("/register?accountType=staff");
+  const customerRegisterUrl = getCustomerAppUrl("/register");
+  const isBusinessRegistrationSurface =
+    isBusinessHostname || role === "business" || role === "staff";
 
   function registrationRedirectForRole(
     value: string | null,
@@ -103,6 +110,26 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!router.isReady) return;
+    if (
+      !isBusinessHostname &&
+      (router.query.accountType === "business" ||
+        router.query.accountType === "staff")
+    ) {
+      const accountType = router.query.accountType;
+      const targetParams = new URLSearchParams({ accountType });
+      const safeRedirectTo = safeInternalRedirect(router.query.redirectTo);
+      if (safeRedirectTo) {
+        targetParams.set("redirectTo", safeRedirectTo);
+      }
+
+      const target = getBusinessAppUrl(`/register?${targetParams.toString()}`);
+      const targetUrl = new URL(target, window.location.origin);
+      if (targetUrl.href !== window.location.href) {
+        window.location.assign(targetUrl.toString());
+        return;
+      }
+    }
+
     if (router.query.accountType === "staff") {
       setRole("staff");
       return;
@@ -530,7 +557,9 @@ export default function RegisterPage() {
                   "register.businessAccountTitle",
                   "Start with Mirëbook Business",
                 )
-              : t("register.title", "Create your Mirëbook account")}
+              : role === "staff"
+                ? t("register.staffAccountTitle", "Create your staff account")
+                : t("register.title", "Create your Mirëbook account")}
           </h1>
 
           <p className="muted register-subtitle">
@@ -539,113 +568,130 @@ export default function RegisterPage() {
                   "register.businessAccountSubtitle",
                   "Create your account and starter business profile.",
                 )
-              : t(
-                  "register.subtitle",
-                  "Choose an account type and enter your details.",
-                )}
+              : role === "staff"
+                ? t(
+                    "register.staffAccountSubtitle",
+                    "Create a staff account for your Mirëbook Business workspace.",
+                  )
+                : t(
+                    "register.customerAccountSubtitle",
+                    "Create an account to book and manage appointments.",
+                  )}
           </p>
 
-          <div className="register-role-grid register-role-grid-top">
-            <button
-              type="button"
-              className="register-role-option"
-              onClick={() => setRole("customer")}
-              aria-pressed={role === "customer"}
-              style={{
-                background:
-                  role === "customer"
-                    ? "var(--accent-dim)"
-                    : "var(--surface-2)",
-                border:
-                  role === "customer"
-                    ? "1px solid rgba(255,107,53,0.45)"
-                    : "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                color: "var(--text)",
-                padding: "1rem",
-                textAlign: "left",
-              }}
-            >
-              {role === "customer" && (
-                <span className="register-role-selected">
-                  {t("register.role.selected", "Selected")}
-                </span>
-              )}
-              <strong>{t("register.role.customer", "Customer")}</strong>
-              <p className="small muted">
+          {isBusinessRegistrationSurface ? (
+            <>
+              <p className="small muted register-business-choice-title">
                 {t(
-                  "register.role.customerBody",
-                  "Book services and manage your own appointments.",
+                  "register.businessChoiceTitle",
+                  "Choose how you are joining Mirëbook Business.",
                 )}
               </p>
-            </button>
+              <div className="register-role-grid register-role-grid-top register-role-grid-business">
+                <button
+                  type="button"
+                  className="register-role-option"
+                  onClick={() => setRole("business")}
+                  aria-pressed={role === "business"}
+                  style={{
+                    background:
+                      role === "business"
+                        ? "var(--accent-dim)"
+                        : "var(--surface-2)",
+                    border:
+                      role === "business"
+                        ? "1px solid rgba(255,107,53,0.45)"
+                        : "1px solid var(--border)",
+                    borderRadius: "var(--radius)",
+                    color: "var(--text)",
+                    padding: "1rem",
+                    textAlign: "left",
+                  }}
+                >
+                  {role === "business" && (
+                    <span className="register-role-selected">
+                      {t("register.role.selected", "Selected")}
+                    </span>
+                  )}
+                  <strong>{t("register.role.business", "Business")}</strong>
+                  <p className="small muted">
+                    {t(
+                      "register.role.businessBody",
+                      "Create your business profile, services, staff and booking setup.",
+                    )}
+                  </p>
+                </button>
 
-            <button
-              type="button"
-              className="register-role-option"
-              onClick={() => setRole("business")}
-              aria-pressed={role === "business"}
-              style={{
-                background:
-                  role === "business"
-                    ? "var(--accent-dim)"
-                    : "var(--surface-2)",
-                border:
-                  role === "business"
-                    ? "1px solid rgba(255,107,53,0.45)"
-                    : "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                color: "var(--text)",
-                padding: "1rem",
-                textAlign: "left",
-              }}
-            >
-              {role === "business" && (
-                <span className="register-role-selected">
-                  {t("register.role.selected", "Selected")}
-                </span>
-              )}
-              <strong>{t("register.role.business", "Business")}</strong>
-              <p className="small muted">
-                {t(
-                  "register.role.businessBody",
-                  "Create your business profile, services, staff and booking setup.",
-                )}
+                <button
+                  type="button"
+                  className="register-role-option"
+                  onClick={() => setRole("staff")}
+                  aria-pressed={role === "staff"}
+                  style={{
+                    background:
+                      role === "staff"
+                        ? "var(--accent-dim)"
+                        : "var(--surface-2)",
+                    border:
+                      role === "staff"
+                        ? "1px solid rgba(255,107,53,0.45)"
+                        : "1px solid var(--border)",
+                    borderRadius: "var(--radius)",
+                    color: "var(--text)",
+                    padding: "1rem",
+                    textAlign: "left",
+                  }}
+                >
+                  {role === "staff" && (
+                    <span className="register-role-selected">
+                      {t("register.role.selected", "Selected")}
+                    </span>
+                  )}
+                  <strong>{t("register.role.staff", "Staff")}</strong>
+                  <p className="small muted">
+                    {t(
+                      "register.role.staffBody",
+                      "Create a staff account. If a business has already invited this email, Mirëbook will link it automatically; otherwise you can wait for an invite.",
+                    )}
+                  </p>
+                </button>
+              </div>
+              <p className="small muted register-customer-return">
+                {t("register.customerReturn.body", "Looking to book services?")}{" "}
+                <Link href={customerRegisterUrl}>
+                  {t(
+                    "register.customerReturn.link",
+                    "Create a customer account",
+                  )}
+                </Link>
               </p>
-            </button>
-
-            <button
-              type="button"
-              className="register-role-option"
-              onClick={() => setRole("staff")}
-              aria-pressed={role === "staff"}
-              style={{
-                background:
-                  role === "staff" ? "var(--accent-dim)" : "var(--surface-2)",
-                border:
-                  role === "staff"
-                    ? "1px solid rgba(255,107,53,0.45)"
-                    : "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                color: "var(--text)",
-                padding: "1rem",
-                textAlign: "left",
-              }}
-            >
-              {role === "staff" && (
-                <span className="register-role-selected">
-                  {t("register.role.selected", "Selected")}
-                </span>
-              )}
-              <strong>{t("register.role.staff", "Staff")}</strong>
-              <p className="small muted">
-                {t(
-                  "register.role.staffBody",
-                  "Create a staff account. If a business has already invited this email, Mirëbook will link it automatically; otherwise you can wait for an invite.",
-                )}
-              </p>
-            </button>
-          </div>
+            </>
+          ) : (
+            <div className="register-business-split-card">
+              <div>
+                <strong>
+                  {t("register.businessSplit.title", "Registering a business?")}
+                </strong>
+                <p className="small muted">
+                  {t(
+                    "register.businessSplit.body",
+                    "Mirëbook Business has a separate setup flow for owners and invited staff.",
+                  )}
+                </p>
+              </div>
+              <div className="register-business-split-actions">
+                <Link href={businessRegisterUrl} className="btn btn-ghost">
+                  {t(
+                    "register.businessSplit.businessCta",
+                    "List your business",
+                  )}
+                </Link>
+                <Link href={staffRegisterUrl} className="btn btn-ghost">
+                  {t("register.businessSplit.staffCta", "Joining as staff?")}
+                </Link>
+              </div>
+            </div>
+          )}
 
           {role === "staff" && (
             <div className="card register-staff-notice">
@@ -722,30 +768,31 @@ export default function RegisterPage() {
               </label>
             </div>
 
-            <div className="register-role-mobile">
-              <label
-                className="small muted"
-                style={{ display: "grid", gap: "0.4rem" }}
-              >
-                {t("register.accountType", "Account type")}
-                <select
-                  value={role}
-                  onChange={(e) =>
-                    setRole(e.target.value as "customer" | "business" | "staff")
-                  }
+            {isBusinessRegistrationSurface && (
+              <div className="register-role-mobile">
+                <label
+                  className="small muted"
+                  style={{ display: "grid", gap: "0.4rem" }}
                 >
-                  <option value="customer">
-                    {t("register.role.customer", "Customer")}
-                  </option>
-                  <option value="business">
-                    {t("register.role.business", "Business")}
-                  </option>
-                  <option value="staff">
-                    {t("register.role.staff", "Staff")}
-                  </option>
-                </select>
-              </label>
-            </div>
+                  {t("register.accountType", "Account type")}
+                  <select
+                    value={role}
+                    onChange={(e) =>
+                      setRole(
+                        e.target.value as "customer" | "business" | "staff",
+                      )
+                    }
+                  >
+                    <option value="business">
+                      {t("register.role.business", "Business")}
+                    </option>
+                    <option value="staff">
+                      {t("register.role.staff", "Staff")}
+                    </option>
+                  </select>
+                </label>
+              </div>
+            )}
 
             <label
               className="small muted"
@@ -1031,8 +1078,50 @@ export default function RegisterPage() {
           margin-bottom: 1.5rem;
         }
 
+        .register-role-grid-business {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          margin-bottom: 0.75rem;
+        }
+
         .register-role-mobile {
           display: none;
+        }
+
+        .register-business-choice-title {
+          margin: 0 0 0.65rem;
+        }
+
+        .register-business-split-card {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 1rem;
+          align-items: center;
+          margin-bottom: 1.25rem;
+          padding: 0.95rem;
+          border: 1px solid rgba(255, 107, 53, 0.2);
+          border-radius: var(--radius);
+          background: rgba(255, 107, 53, 0.06);
+        }
+
+        .register-business-split-card p,
+        .register-customer-return {
+          margin: 0.35rem 0 0;
+        }
+
+        .register-business-split-actions {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .register-customer-return {
+          margin-bottom: 1.15rem;
+        }
+
+        .register-customer-return :global(a) {
+          color: var(--accent);
+          font-weight: 800;
         }
 
         .register-role-option {
@@ -1196,6 +1285,19 @@ export default function RegisterPage() {
 
           .register-role-mobile {
             display: block;
+          }
+
+          .register-business-split-card {
+            grid-template-columns: 1fr;
+          }
+
+          .register-business-split-actions {
+            justify-content: stretch;
+          }
+
+          .register-business-split-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
 
           .register-role-explainer,

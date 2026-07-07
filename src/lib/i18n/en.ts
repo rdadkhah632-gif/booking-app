@@ -267,6 +267,21 @@ export const en: TranslationTree = {
   "businessHome.final.kicker": "Ready to get organised?",
   "businessHome.final.title":
     "Set up the business customers can find and your team can run.",
+  "businessHome.preview.kicker": "Workspace preview",
+  "businessHome.preview.title": "Run the day from Today, Calendar and Inbox.",
+  "businessHome.preview.body":
+    "The web product already mirrors the first business/staff app direction: daily actions first, setup second.",
+  "businessHome.preview.today": "Today",
+  "businessHome.preview.ready": "Ready",
+  "businessHome.preview.next": "Next appointment",
+  "businessHome.preview.requests": "Requests",
+  "businessHome.preview.calendar": "Calendar",
+  "businessHome.preview.week": "Week",
+  "businessHome.preview.serviceOne": "Cut",
+  "businessHome.preview.serviceTwo": "Colour",
+  "businessHome.preview.inbox": "Inbox",
+  "businessHome.preview.action": "Action",
+  "businessHome.preview.alert": "Review one reschedule request",
 
   "explore.hero.kicker": "Mirëbook marketplace",
   "explore.hero.title": "Find and book local services",
@@ -2194,6 +2209,20 @@ export const en: TranslationTree = {
   "register.businessAccountTitle": "Start with Mirëbook Business",
   "register.businessAccountSubtitle":
     "Create your account and starter business profile.",
+  "register.staffAccountTitle": "Create your staff account",
+  "register.staffAccountSubtitle":
+    "Create a staff account for your Mirëbook Business workspace.",
+  "register.customerAccountSubtitle":
+    "Create an account to book and manage appointments.",
+  "register.businessChoiceTitle":
+    "Choose how you are joining Mirëbook Business.",
+  "register.businessSplit.title": "Registering a business?",
+  "register.businessSplit.body":
+    "Mirëbook Business has a separate setup flow for owners and invited staff.",
+  "register.businessSplit.businessCta": "List your business",
+  "register.businessSplit.staffCta": "Joining as staff?",
+  "register.customerReturn.body": "Looking to book services?",
+  "register.customerReturn.link": "Create a customer account",
   "register.role.customer": "Customer",
   "register.role.customerBody": "Book and manage appointments.",
   "register.role.business": "Business",
