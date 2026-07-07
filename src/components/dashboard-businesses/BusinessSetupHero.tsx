@@ -1,8 +1,13 @@
-import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 
 export default function BusinessSetupHero() {
   const { t } = useI18n();
+  const steps = [
+    t("dashboardBusinesses.hero.stepProfile", "Create profile"),
+    t("dashboardBusinesses.hero.stepService", "Add service"),
+    t("dashboardBusinesses.hero.stepHours", "Set hours"),
+    t("dashboardBusinesses.hero.stepPreview", "Preview and publish"),
+  ];
 
   return (
     <div
@@ -25,42 +30,25 @@ export default function BusinessSetupHero() {
           >
             {t(
               "dashboardBusinesses.hero.title",
-              "Set up your business before customers book.",
+              "Create the business customers can book.",
             )}
           </h2>
 
           <p className="muted" style={{ marginTop: "0.6rem" }}>
             {t(
               "dashboardBusinesses.hero.body",
-              "Most businesses only need one profile. Add services, team and hours, then publish when you are ready.",
+              "Start with the basics, add one service and set working hours. You can refine the rest later.",
             )}
           </p>
         </div>
 
-        <div className="business-setup-hero-actions">
-          <Link href="/dashboard/services" className="btn btn-ghost">
-            {t("support.business.services", "Services")}
-          </Link>
-
-          <Link href="/dashboard/staff" className="btn btn-ghost">
-            {t("support.business.staff", "Staff")}
-          </Link>
-
-          <Link href="/dashboard/availability" className="btn btn-ghost">
-            {t("dashboardBusinesses.workingHours", "Working hours")}
-          </Link>
-
-          <Link href="/dashboard/settings" className="btn btn-ghost">
-            {t("nav.settings", "Settings")}
-          </Link>
-
-          <Link href="/support/business" className="btn btn-ghost">
-            {t("nav.businessSupport", "Business support")}
-          </Link>
-
-          <Link href="/dashboard/billing" className="btn btn-ghost">
-            {t("home.trust.billing", "Billing")}
-          </Link>
+        <div className="business-setup-hero-steps">
+          {steps.map((step, index) => (
+            <span key={step}>
+              <strong>{index + 1}</strong>
+              {step}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -68,23 +56,48 @@ export default function BusinessSetupHero() {
         .business-setup-hero-row {
           display: flex;
           justify-content: space-between;
-          gap: 1rem;
+          gap: 1.25rem;
           flex-wrap: wrap;
-          align-items: flex-start;
+          align-items: center;
         }
 
-        .business-setup-hero-actions {
+        .business-setup-hero-steps {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.55rem;
+          min-width: min(100%, 360px);
+        }
+
+        .business-setup-hero-steps span {
           display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.55rem;
+          min-width: 0;
+          padding: 0.55rem 0.65rem;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 8px;
+          background: rgba(7, 11, 19, 0.28);
+          color: var(--text);
+          font-size: 0.84rem;
+          font-weight: 800;
+        }
+
+        .business-setup-hero-steps strong {
+          display: inline-flex;
+          width: 1.45rem;
+          height: 1.45rem;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          border-radius: 50%;
+          background: var(--accent-dim);
+          color: var(--accent);
+          font-size: 0.78rem;
         }
 
         @media (max-width: 640px) {
-          .business-setup-hero-actions,
-          .business-setup-hero-actions :global(.btn),
-          .business-setup-hero-actions a {
-            width: 100%;
-            justify-content: center;
+          .business-setup-hero-steps {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>

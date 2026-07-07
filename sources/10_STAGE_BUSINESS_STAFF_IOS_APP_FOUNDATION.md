@@ -22,6 +22,11 @@ Web account/contact readiness note:
 - The Mirëbook Business landing page now presents the owner/staff product more
   clearly with setup, calendar, inbox, staff workspace and early-partner
   membership context before signup.
+- Public Booksy/Fresha onboarding research was used only as product-flow
+  inspiration. Mirëbook setup should borrow the rhythm, not the design:
+  customer-visible basics, first service, provider/team, working hours, booking
+  mode, preview and publish. The web Setup page now follows this broader
+  non-salon-specific sequence and keeps advanced settings secondary.
 
 This stage is for the first Mirëbook mobile app. The first app should be a
 business/staff operations app, similar in purpose to Booksy Biz or Fresha's

@@ -1007,10 +1007,13 @@ export const en: TranslationTree = {
   "dashboardBusinesses.myBusiness.viewLive": "View live",
   "dashboardBusinesses.myBusiness.preview": "Preview",
   "dashboardBusinesses.hero.kicker": "Mirëbook setup",
-  "dashboardBusinesses.hero.title":
-    "Set up your business before customers book.",
+  "dashboardBusinesses.hero.title": "Create the business customers can book.",
   "dashboardBusinesses.hero.body":
-    "Most businesses only need one profile. Add services, team and hours, then publish when you are ready.",
+    "Start with the basics, add one service and set working hours. You can refine the rest later.",
+  "dashboardBusinesses.hero.stepProfile": "Create profile",
+  "dashboardBusinesses.hero.stepService": "Add service",
+  "dashboardBusinesses.hero.stepHours": "Set hours",
+  "dashboardBusinesses.hero.stepPreview": "Preview and publish",
   "dashboardBusinesses.workingHours": "Working hours",
   "dashboardBusinesses.stats.businesses": "Businesses",
   "dashboardBusinesses.stats.totalProfiles": "Total business profiles",
@@ -1069,13 +1072,20 @@ export const en: TranslationTree = {
   "dashboardBusinesses.setup.servicesBody":
     "Create at least one active service customers can choose.",
   "dashboardBusinesses.setup.servicesAction": "Add service",
-  "dashboardBusinesses.setup.team": "Team",
-  "dashboardBusinesses.setup.teamBody": "Add the people customers can book.",
+  "dashboardBusinesses.setup.team": "Provider or team",
+  "dashboardBusinesses.setup.teamBody":
+    "Add yourself or a team member customers can book.",
   "dashboardBusinesses.setup.teamAction": "Manage team",
   "dashboardBusinesses.setup.hours": "Working hours",
   "dashboardBusinesses.setup.hoursBody":
     "Set the days and times customers can book.",
   "dashboardBusinesses.setup.hoursAction": "Set hours",
+  "dashboardBusinesses.setup.mode": "Booking mode",
+  "dashboardBusinesses.setup.modeInstant":
+    "Bookings confirm instantly unless you change this.",
+  "dashboardBusinesses.setup.modeRequest":
+    "New bookings wait for your approval.",
+  "dashboardBusinesses.setup.modeAction": "Review booking rules",
   "dashboardBusinesses.setup.preview": "Preview and publish",
   "dashboardBusinesses.setup.previewBody":
     "Check the customer page when setup is ready.",
@@ -1084,9 +1094,14 @@ export const en: TranslationTree = {
   "dashboardBusinesses.setup.of": "of",
   "dashboardBusinesses.setup.nextTitle": "Next step",
   "dashboardBusinesses.setup.nextInline": "Next",
+  "dashboardBusinesses.setup.outcome": "Get ready to accept bookings",
+  "dashboardBusinesses.setup.liveTitle": "Your business is live",
   "dashboardBusinesses.setup.completeBody": "Your booking setup is ready.",
   "dashboardBusinesses.setup.done": "Done",
   "dashboardBusinesses.setup.previewLabel": "Customer preview",
+  "dashboardBusinesses.setup.previewServices": "active services",
+  "dashboardBusinesses.setup.previewTeam": "bookable people",
+  "dashboardBusinesses.setup.previewDays": "open days",
   "dashboardBusinesses.setup.advancedTitle": "Advanced",
   "dashboardBusinesses.setup.detailsTitle": "Business profile details",
   "dashboardBusinesses.setup.detailsBody":

@@ -1048,9 +1048,13 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.myBusiness.preview": "Parashiko",
   "dashboardBusinesses.hero.kicker": "Konfigurimi Mirëbook",
   "dashboardBusinesses.hero.title":
-    "Konfiguro biznesin para se klientët të rezervojnë.",
+    "Krijo biznesin që klientët mund të rezervojnë.",
   "dashboardBusinesses.hero.body":
-    "Shumica e bizneseve kanë nevojë vetëm për një profil. Shto shërbimet, ekipin dhe oraret, pastaj publiko kur të jesh gati.",
+    "Fillo me bazat, shto një shërbim dhe vendos orarin e punës. Pjesën tjetër mund ta përmirësosh më vonë.",
+  "dashboardBusinesses.hero.stepProfile": "Krijo profilin",
+  "dashboardBusinesses.hero.stepService": "Shto shërbim",
+  "dashboardBusinesses.hero.stepHours": "Vendos oraret",
+  "dashboardBusinesses.hero.stepPreview": "Shiko dhe publiko",
   "dashboardBusinesses.workingHours": "Orari i punës",
   "dashboardBusinesses.stats.businesses": "Biznese",
   "dashboardBusinesses.stats.totalProfiles": "Profile biznesi gjithsej",
@@ -2245,14 +2249,20 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setup.servicesBody":
     "Krijo të paktën një shërbim aktiv që klientët mund të zgjedhin.",
   "dashboardBusinesses.setup.servicesAction": "Shto shërbim",
-  "dashboardBusinesses.setup.team": "Ekipi",
+  "dashboardBusinesses.setup.team": "Ofruesi ose ekipi",
   "dashboardBusinesses.setup.teamBody":
-    "Shto personat që klientët mund të rezervojnë.",
+    "Shto veten ose një anëtar ekipi që klientët mund të rezervojnë.",
   "dashboardBusinesses.setup.teamAction": "Menaxho ekipin",
   "dashboardBusinesses.setup.hours": "Orari i punës",
   "dashboardBusinesses.setup.hoursBody":
     "Vendos ditët dhe oraret kur klientët mund të rezervojnë.",
   "dashboardBusinesses.setup.hoursAction": "Vendos oraret",
+  "dashboardBusinesses.setup.mode": "Mënyra e rezervimit",
+  "dashboardBusinesses.setup.modeInstant":
+    "Rezervimet konfirmohen menjëherë nëse nuk e ndryshon këtë.",
+  "dashboardBusinesses.setup.modeRequest":
+    "Rezervimet e reja presin miratimin tënd.",
+  "dashboardBusinesses.setup.modeAction": "Shqyrto rregullat e rezervimit",
   "dashboardBusinesses.setup.preview": "Shiko dhe publiko",
   "dashboardBusinesses.setup.previewBody":
     "Kontrollo faqen e klientit kur konfigurimi të jetë gati.",
@@ -2261,10 +2271,15 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setup.of": "nga",
   "dashboardBusinesses.setup.nextTitle": "Hapi tjetër",
   "dashboardBusinesses.setup.nextInline": "Hapi tjetër",
+  "dashboardBusinesses.setup.outcome": "Bëhu gati të pranosh rezervime",
+  "dashboardBusinesses.setup.liveTitle": "Biznesi yt është live",
   "dashboardBusinesses.setup.completeBody":
     "Konfigurimi i rezervimeve është gati.",
   "dashboardBusinesses.setup.done": "Përfunduar",
   "dashboardBusinesses.setup.previewLabel": "Pamja për klientin",
+  "dashboardBusinesses.setup.previewServices": "shërbime aktive",
+  "dashboardBusinesses.setup.previewTeam": "persona të rezervueshëm",
+  "dashboardBusinesses.setup.previewDays": "ditë të hapura",
   "dashboardBusinesses.setup.advancedTitle": "Të avancuara",
   "dashboardBusinesses.setup.detailsTitle": "Detajet e profilit të biznesit",
   "dashboardBusinesses.setup.detailsBody":
