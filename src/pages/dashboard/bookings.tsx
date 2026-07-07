@@ -2279,8 +2279,7 @@ export default function Bookings() {
         }
 
         .calendar-body.has-side-panel {
-          grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-          align-items: start;
+          grid-template-columns: minmax(0, 1fr);
         }
 
         .calendar-main-column,
@@ -2291,8 +2290,15 @@ export default function Bookings() {
         }
 
         .calendar-side-panel {
-          position: sticky;
-          top: 1rem;
+          position: fixed;
+          top: 6.25rem;
+          right: 1.25rem;
+          z-index: 40;
+          width: min(24rem, calc(100vw - 2rem));
+          max-height: calc(100vh - 7.5rem);
+          overflow-y: auto;
+          border-radius: var(--radius);
+          box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
         }
 
         .calendar-shell,
@@ -2564,15 +2570,10 @@ export default function Bookings() {
 
         :global(.week-calendar-grid) {
           display: grid;
-          grid-template-columns: 4.25rem repeat(7, minmax(5.75rem, 1fr));
-          min-width: 760px;
+          grid-template-columns: 4.75rem repeat(7, minmax(7rem, 1fr));
+          min-width: 980px;
           overflow: hidden;
           background: rgba(11, 18, 32, 0.18);
-        }
-
-        .calendar-body.has-side-panel :global(.week-calendar-grid) {
-          grid-template-columns: 3.75rem repeat(7, minmax(4.15rem, 1fr));
-          min-width: 0;
         }
 
         :global(.week-calendar-corner) {
@@ -2977,13 +2978,13 @@ export default function Bookings() {
         }
 
         @media (max-width: 980px) {
-          .calendar-body.has-side-panel {
-            grid-template-columns: 1fr;
-          }
-
           .calendar-side-panel {
-            position: static;
-            order: -1;
+            top: auto;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            left: 0.75rem;
+            width: auto;
+            max-height: min(70vh, 36rem);
           }
         }
 
@@ -3065,12 +3066,11 @@ export default function Bookings() {
           }
 
           :global(.week-calendar-scroll) {
-            display: none;
+            display: block;
           }
 
           :global(.mobile-week-agenda) {
-            display: grid;
-            gap: 0.65rem;
+            display: none;
           }
 
           :global(.mobile-agenda-day) {
@@ -3178,13 +3178,8 @@ export default function Bookings() {
           }
 
           :global(.week-calendar-grid) {
-            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
-            min-width: 660px;
-          }
-
-          .calendar-body.has-side-panel :global(.week-calendar-grid) {
-            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
-            min-width: 660px;
+            grid-template-columns: 3.65rem repeat(7, minmax(5.2rem, 1fr));
+            min-width: 700px;
           }
 
           :global(.week-calendar-corner),

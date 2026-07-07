@@ -1048,16 +1048,16 @@ export default function StaffCalendarPage() {
 
         .staff-week-grid {
           display: grid;
-          grid-template-columns: 4.25rem repeat(7, minmax(5.75rem, 1fr));
-          min-width: 760px;
+          grid-template-columns: 4.75rem repeat(7, minmax(7rem, 1fr));
+          min-width: 980px;
           overflow: hidden;
           background: rgba(11, 18, 32, 0.18);
         }
 
         :global(.staff-week-grid) {
           display: grid;
-          grid-template-columns: 4.25rem repeat(7, minmax(5.75rem, 1fr));
-          min-width: 760px;
+          grid-template-columns: 4.75rem repeat(7, minmax(7rem, 1fr));
+          min-width: 980px;
           overflow: hidden;
           background: rgba(11, 18, 32, 0.18);
         }
@@ -1569,21 +1569,19 @@ export default function StaffCalendarPage() {
           }
 
           .staff-week-scroll {
-            display: none;
+            display: block;
           }
 
           :global(.staff-week-scroll) {
-            display: none;
+            display: block;
           }
 
           .staff-mobile-week-agenda {
-            display: grid;
-            gap: 0.65rem;
+            display: none;
           }
 
           :global(.staff-mobile-week-agenda) {
-            display: grid;
-            gap: 0.65rem;
+            display: none;
           }
 
           .staff-mobile-agenda-day {
@@ -1744,13 +1742,13 @@ export default function StaffCalendarPage() {
           }
 
           .staff-week-grid {
-            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
-            min-width: 660px;
+            grid-template-columns: 3.65rem repeat(7, minmax(5.2rem, 1fr));
+            min-width: 700px;
           }
 
           :global(.staff-week-grid) {
-            grid-template-columns: 3.55rem repeat(7, minmax(4.8rem, 1fr));
-            min-width: 660px;
+            grid-template-columns: 3.65rem repeat(7, minmax(5.2rem, 1fr));
+            min-width: 700px;
           }
 
           .staff-week-corner,

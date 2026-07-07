@@ -1,6 +1,352 @@
 # Stage 10 - Business and Staff iOS App Foundation
 
-Status: Batch 10A.2 app API contracts implemented.
+Status: Batch 10E.4 calendar-first schedule grid implemented.
+
+Batch 10E.4 calendar-first schedule grid status:
+
+- Revisited the business/staff calendar because the previous calendar still felt
+  too much like a list of days rather than an operating calendar.
+- Updated the web business Calendar route to keep the week grid visible as the
+  primary surface on desktop and mobile instead of falling back to a stacked
+  agenda list.
+- Updated the web staff Calendar route to match the same week-grid-first model.
+- Reworked the native business/staff app Calendar screen into a horizontally
+  scrollable week schedule with:
+  - seven day columns
+  - a time rail
+  - appointment blocks sized by duration
+  - day selection and appointment detail opening
+- This is intentionally closer to a Teams-style calendar model while preserving
+  Mirëbook's own dark operations UI.
+- No booking creation logic, booking lifecycle logic, availability calculation,
+  staff linking, auth/RLS, billing or notification generation logic was changed.
+
+Manual appointment email-claim QA from the prior web batch remains parked for a
+dedicated follow-up. This batch only addresses calendar presentation.
+
+Batch 10E.3 business entry UX status:
+
+- Left calendar interpretation unchanged for now; calendar redesign will be
+  addressed on the web product before revisiting native calendar.
+- Reworked the native business app entry screen so it feels closer to the
+  Mirëbook Business site entry point instead of a bare system form.
+- Native sign-in remains the primary action.
+- Added business web-account actions:
+  - create business account via `/register?accountType=business`
+  - open web login via `/login?product=business`
+  - reset password via `/forgot-password?product=business`
+- Added business/staff-only helper copy for invited staff.
+- Added English and Albanian localization keys for the new entry UI.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed.
+
+Batch 10E.3 validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- XcodeBuildMCP build/run passed on iPhone 17 Pro, iOS 26.5, with
+  `CODE_SIGNING_ALLOWED=NO`.
+- Simulator UI snapshot confirmed the entry screen exposes:
+  - native Sign in
+  - Create business account
+  - Open web login
+  - Reset password
+- Entry UX screenshot captured at `/tmp/mirebook-ios-qa/business-entry-ux.jpg`.
+
+Batch 10E.2 real backend sign-in QA status:
+
+- Started the local Next.js backend on `http://localhost:3000`.
+- Verified the configured local iOS backend target uses:
+  - local Mirëbook API origin
+  - public Supabase URL
+  - public Supabase anon key
+- Used a safe QA business-owner account to verify the same auth path as the
+  native app:
+  - Supabase password token grant returned 200
+  - `/api/app/session-context` returned 200 with business app mode
+  - `/api/app/calendar` returned 200 with real appointments
+  - `/api/app/inbox` returned 200 with real recent updates
+- Native simulator sign-in passed and landed on the owner Today tab.
+- Today loaded the real business workspace, summary counts and next appointment.
+- Appointment detail opened with real customer, service, staff, date, time,
+  duration and status data.
+- Calendar loaded real appointments for the selected day.
+- Inbox loaded real recent update rows.
+- Inbox detail opened for a real update row.
+- Account showed the signed-in owner profile.
+- Simulator session was logged out after QA so the test account is not left
+  signed in.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed.
+
+Batch 10E.2 session-restore fix:
+
+- Initial native sign-in worked, but relaunch returned to the login screen.
+- Added a Debug-only `UserDefaults` fallback when an unsigned simulator build
+  cannot persist the token through Keychain.
+- Keychain remains the preferred token store; the fallback is only compiled for
+  Debug builds.
+- Relaunch after sign-in now restores into Today with real business data.
+
+Batch 10E.2 validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- XcodeBuildMCP build/run passed on iPhone 17 Pro, iOS 26.5, with
+  `CODE_SIGNING_ALLOWED=NO`.
+- Simulator UI automation verified:
+  - login form
+  - Today tab
+  - appointment detail sheet
+  - Calendar tab
+  - Inbox tab
+  - Inbox detail sheet
+  - Account tab
+  - session restore after relaunch
+  - logout
+- Restore screenshot captured at
+  `/tmp/mirebook-ios-qa/real-login-restored-after-fallback.png`.
+
+Batch 10E.1 native Inbox detail shell status:
+
+- Expanded the native `InboxItem` model to decode the existing `/api/app/inbox`
+  action context returned by the server:
+  - booking/request identifiers
+  - customer contact fields
+  - service/staff labels
+  - current and requested appointment times
+  - duration, status and available action names
+- Inbox rows are now tappable and open a native read-only detail sheet.
+- Inbox detail shows summary, customer, appointment timing and available actions
+  when returned by the existing API contract.
+- Action buttons remain disabled and review-only. No native booking lifecycle
+  mutation is wired in this batch.
+- Unknown future inbox action names decode safely and fall back to a generic
+  review label.
+- Added English and Albanian labels for Inbox detail/action placeholders.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed.
+
+Batch 10E.1 validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- Full simulator build passed on iPhone 17 Pro, iOS 26.5, with:
+  `xcodebuild -project ios/MirebookBusiness/MirebookBusiness.xcodeproj -scheme MirebookBusiness -configuration Debug -destination 'id=EAD57442-2FB7-4B5D-A987-BEF507980482' CODE_SIGNING_ALLOWED=NO build`
+- Simulator install and launch passed for bundle `com.mirebook.business`.
+- Login shell screenshot after this batch captured at
+  `/tmp/mirebook-ios-qa/inbox-detail-shell-login.png`.
+- Full Inbox interaction QA still needs a safe business-owner or staff test
+  account for the configured backend target.
+
+Batch 10D.4 native auth boundary status:
+
+- Confirmed existing app API routes use `Authorization: Bearer <access token>`
+  through `src/lib/server/app-api/context.ts`.
+- Added a native session guard so only business-owner or staff-capable accounts
+  can persist a signed-in session in the Mirëbook Business app.
+- Customer-only or unsupported accounts now receive a localized native error
+  after `/api/app/session-context` instead of falling into owner tabs.
+- Restore clears unsupported saved sessions instead of keeping them locally.
+- Added English and Albanian unsupported-account copy.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed.
+
+Batch 10D.4 validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- Full simulator build passed on iPhone 17 Pro, iOS 26.5, with:
+  `xcodebuild -project ios/MirebookBusiness/MirebookBusiness.xcodeproj -scheme MirebookBusiness -configuration Debug -destination 'id=EAD57442-2FB7-4B5D-A987-BEF507980482' CODE_SIGNING_ALLOWED=NO build`
+- Simulator install and launch passed for bundle `com.mirebook.business`.
+- Login screen screenshot captured at
+  `/tmp/mirebook-ios-qa/unsupported-guard-login.png`.
+
+Batch 10D.4 remaining authenticated QA need:
+
+- A safe business-owner or staff test account for the configured backend target.
+- Once available, validate native sign-in, `/api/app/session-context`,
+  `/api/app/calendar` and `/api/app/inbox` in the simulator.
+
+Batch 10D.3 local backend configuration status:
+
+- Added tracked iOS config defaults at `ios/MirebookBusiness/Config`.
+- Added ignored local override support through
+  `ios/MirebookBusiness/Config/Local.xcconfig`.
+- Added `scripts/ios-config-from-env.sh` to generate the ignored local iOS
+  config from `.env.local`.
+- Moved iOS app configuration into an explicit `Info.plist` with:
+  - `MIREBOOK_API_BASE_URL`
+  - `MIREBOOK_SUPABASE_URL`
+  - `MIREBOOK_SUPABASE_ANON_KEY`
+- Added runtime normalization for Xcode-safe URL escaping in `AppConfig`.
+- Added local networking allowance for localhost simulator development.
+- Generated the local iOS config from the existing `.env.local` without
+  committing local values.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed.
+
+Batch 10D.3 validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- Full simulator build passed on iPhone 17 Pro, iOS 26.5, with:
+  `xcodebuild -project ios/MirebookBusiness/MirebookBusiness.xcodeproj -scheme MirebookBusiness -configuration Debug -destination 'id=EAD57442-2FB7-4B5D-A987-BEF507980482' CODE_SIGNING_ALLOWED=NO build`
+- Built app bundle contains runtime-parseable API base URL, Supabase URL and
+  Supabase anon key values.
+- Simulator install and launch passed for bundle `com.mirebook.business`.
+- Configured login screen screenshot captured at
+  `/tmp/mirebook-ios-qa/configured-login.png`.
+
+Batch 10D.3 remaining authenticated QA need:
+
+- A safe business-owner or staff test account for the configured backend target.
+- Once available, validate native sign-in, `/api/app/session-context`,
+  `/api/app/calendar` and `/api/app/inbox` in the simulator.
+
+Batch 10D.2 mobile UX pass status:
+
+- Added reusable native UI components for operational headers, summary strips,
+  empty states, disclosure appointment rows and setup checklist rows.
+- Today now opens with a clearer workspace header, role badge and compact
+  summary strip before the next appointment.
+- Calendar now has a workspace header and previous/next day controls around the
+  date picker.
+- Inbox now has a compact header and clearer empty states for needs-action and
+  recent updates.
+- Setup now feels like a compact checklist and explicitly keeps heavy editing
+  web-first for now.
+- Availability now has a staff-context header and read-only note.
+- Account now has a clearer profile header, real owner/staff workspace switch
+  only when the session supports both, and API contracts tucked under
+  diagnostics instead of being front-and-center.
+- No customer app, marketplace, booking lifecycle, schema, RLS, billing or web
+  production logic was changed.
+
+Batch 10D.2 validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- Full simulator build passed on iPhone 17 Pro, iOS 26.5, with:
+  `xcodebuild -project ios/MirebookBusiness/MirebookBusiness.xcodeproj -scheme MirebookBusiness -configuration Debug -destination 'id=EAD57442-2FB7-4B5D-A987-BEF507980482' CODE_SIGNING_ALLOWED=NO build`
+- Simulator install and launch passed for bundle `com.mirebook.business`.
+- Login screen screenshot captured at `/tmp/mirebook-ios-qa/login-after-wait.png`.
+
+Batch 10D.1 read-only appointment detail status:
+
+- Today and Calendar appointments now open a native read-only appointment detail
+  sheet.
+- The detail sheet shows customer name/contact fields where returned by the
+  existing calendar endpoint, service, staff, date, time, duration and status.
+- Available booking actions are shown as disabled placeholders only.
+- No booking lifecycle action is callable from native yet.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed in this batch.
+
+Batch 10D.1 validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+
+Batch 10D read-only operations status:
+
+- Today now loads signed-in app data from existing app API contracts:
+  - `/api/app/calendar` for today's appointments
+  - `/api/app/inbox` for needs-action counts
+- Calendar now loads read-only appointments for the selected day from
+  `/api/app/calendar`.
+- Inbox now loads read-only needs-action and recent update items from
+  `/api/app/inbox`.
+- Screens include loading, empty, error and pull-to-refresh states.
+- Owner/staff scope is still taken from the signed-in app mode resolved by
+  `/api/app/session-context`.
+- Manual appointment creation remains disabled.
+- Booking lifecycle actions are not wired.
+- Staff availability updates are not wired.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed in this batch.
+
+Batch 10D validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- Full simulator build/launch later passed during Batch 10D.2 validation on
+  iPhone 17 Pro, iOS 26.5.
+
+Batch 10C auth shell status:
+
+- Added native login, logout, session restore and session-state routing.
+- Native login uses Supabase Auth's public password-token endpoint with
+  app-side `MIREBOOK_SUPABASE_URL` and `MIREBOOK_SUPABASE_ANON_KEY`
+  placeholders. No Supabase service-role key is used in the iOS app.
+- Supabase access and refresh tokens are stored in the iOS Keychain.
+- On successful login or restore, the app calls the existing
+  `/api/app/session-context` route with the bearer access token.
+- Owner/staff mode is decided from the server session-context response, not
+  duplicated locally.
+- `/api/app/calendar` and `/api/app/inbox` client methods now build authenticated
+  requests and decode the existing response shapes.
+- The app still does not call booking lifecycle actions, manual booking
+  creation, or staff availability updates.
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed in this batch.
+
+Batch 10C validation:
+
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- Full simulator build/launch was later unblocked after installing the iOS 26.5
+  Simulator runtime and passed during Batch 10D.2 validation.
+
+Batch 10B scaffold status:
+
+- Added a native SwiftUI project at `ios/MirebookBusiness`.
+- App name: Mirëbook Business.
+- Initial scaffold was fixture-backed; later batches added the native auth
+  shell, Keychain session storage and read-only API loading placeholders.
+- Owner tabs are scaffolded as:
+  - Today
+  - Calendar
+  - Inbox
+  - Setup
+  - Account
+- Staff tabs are scaffolded as:
+  - Today
+  - Calendar
+  - Availability
+  - Inbox
+  - Account
+- Native screens exist for Today, Calendar, Inbox, owner Setup, staff
+  Availability and Account.
+- The Account screen includes an owner/staff workspace switch only when the
+  signed-in session context supports both modes.
+- API client contract placeholders exist for:
+  - `/api/app/session-context`
+  - `/api/app/calendar`
+  - `/api/app/inbox`
+  - `/api/app/today`
+  - `/api/app/appointments/actions`
+  - `/api/app/staff-availability`
+- Existing web app routes already cover session context, calendar and inbox.
+- Missing app contracts still needed before live native data:
+  - owner/staff Today summary
+  - appointment action endpoint for accept, decline, cancel and complete
+  - staff working-hours read/update endpoint
+  - native login/session persistence contract
+- No web production logic, database schema, RLS, auth, billing, staff linking or
+  booking lifecycle logic was changed in this scaffold batch.
+
+Tooling/build check:
+
+- Xcode is available locally: Xcode 26.6.
+- iOS and iOS Simulator SDK 26.5 are available.
+- iOS 26.5 Simulator runtime is installed and an iPhone 17 Pro simulator is
+  available.
+- SDK-only simulator build passed with:
+  `xcodebuild -project ios/MirebookBusiness/MirebookBusiness.xcodeproj -scheme MirebookBusiness -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build`
+- Destination simulator build passed with:
+  `xcodebuild -project ios/MirebookBusiness/MirebookBusiness.xcodeproj -scheme MirebookBusiness -configuration Debug -destination 'id=EAD57442-2FB7-4B5D-A987-BEF507980482' CODE_SIGNING_ALLOWED=NO build`
+- Simulator install and launch passed for bundle `com.mirebook.business`.
 
 Web account/contact readiness note:
 
