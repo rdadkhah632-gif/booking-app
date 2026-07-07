@@ -152,14 +152,6 @@ struct CalendarView: View {
                     .padding()
                     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 case .loaded(let appointments):
-                    CalendarWeekStrip(
-                        days: weekDays,
-                        selectedDate: selectedDate,
-                        appointments: appointments
-                    ) { day in
-                        selectedDate = day
-                    }
-
                     let dayAppointments = appointmentsForSelectedDay(appointments)
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
@@ -259,52 +251,6 @@ struct CalendarView: View {
     }
 }
 
-private struct CalendarWeekStrip: View {
-    let days: [Date]
-    let selectedDate: Date
-    let appointments: [Appointment]
-    let onSelect: (Date) -> Void
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                ForEach(days, id: \.self) { day in
-                    let isSelected = Calendar.current.isDate(day, inSameDayAs: selectedDate)
-                    let dayAppointments = appointments.filter { Calendar.current.isDate($0.startAt, inSameDayAs: day) }
-
-                    Button {
-                        onSelect(day)
-                    } label: {
-                        VStack(spacing: 6) {
-                            Text(day.formatted(.dateTime.weekday(.abbreviated)))
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(isSelected ? .white : .secondary)
-                            Text(day.formatted(.dateTime.day()))
-                                .font(.headline.weight(.bold))
-                                .foregroundStyle(isSelected ? .white : .primary)
-                            Text("\(dayAppointments.count)")
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(isSelected ? .white.opacity(0.85) : .secondary)
-                        }
-                        .frame(width: 58, height: 76)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(isSelected ? Color.orange : Color(.secondarySystemGroupedBackground))
-                        )
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(isSelected ? Color.orange : Color.secondary.opacity(0.16), lineWidth: 1)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.vertical, 2)
-        }
-        .accessibilityLabel(Text("calendar.week"))
-    }
-}
-
 private struct CalendarWeekSchedule: View {
     let days: [Date]
     let selectedDate: Date
@@ -312,10 +258,10 @@ private struct CalendarWeekSchedule: View {
     let onSelectDate: (Date) -> Void
     let onSelectAppointment: (Appointment) -> Void
 
-    private let dayWidth: CGFloat = 124
-    private let hourHeight: CGFloat = 68
-    private let timeRailWidth: CGFloat = 54
-    private let headerHeight: CGFloat = 58
+    private let dayWidth: CGFloat = 142
+    private let hourHeight: CGFloat = 74
+    private let timeRailWidth: CGFloat = 58
+    private let headerHeight: CGFloat = 66
 
     private var window: ClosedRange<Int> {
         guard !appointments.isEmpty else { return 8...18 }
@@ -372,9 +318,24 @@ private struct CalendarWeekSchedule: View {
                     )
                 }
             }
-            .padding(.bottom, 4)
+            .padding(1)
+            .padding(.bottom, 6)
         }
-        .background(Color(.secondarySystemGroupedBackground).opacity(0.4), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(.secondarySystemGroupedBackground).opacity(0.72),
+                    Color(.systemGroupedBackground).opacity(0.58)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            ),
+            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.secondary.opacity(0.16), lineWidth: 1)
+        }
         .accessibilityLabel(Text("calendar.week"))
     }
 }
@@ -409,7 +370,19 @@ private struct CalendarDayColumn: View {
                 }
                 .foregroundStyle(isSelected ? .white : .primary)
                 .frame(width: width, height: headerHeight)
-                .background(isSelected ? Color.orange : Color.clear)
+                .background(
+                    Group {
+                        if isSelected {
+                            LinearGradient(
+                                colors: [Color.orange.opacity(0.95), Color.orange.opacity(0.55)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        } else {
+                            Color(.secondarySystemGroupedBackground).opacity(0.34)
+                        }
+                    }
+                )
             }
             .buttonStyle(.plain)
 
@@ -433,7 +406,16 @@ private struct CalendarDayColumn: View {
                 }
             }
             .frame(width: width, height: scheduleHeight, alignment: .topLeading)
-            .background(Color(.systemGroupedBackground).opacity(isSelected ? 0.72 : 0.36))
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(.systemGroupedBackground).opacity(isSelected ? 0.82 : 0.48),
+                        Color(.secondarySystemGroupedBackground).opacity(isSelected ? 0.62 : 0.34)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
         }
         .overlay(alignment: .trailing) {
             Rectangle()
@@ -531,8 +513,16 @@ private struct CalendarAppointmentBlock: View {
         .padding(10)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(appointment.status == .pending ? Color.orange.opacity(0.16) : Color.green.opacity(0.14))
+            RoundedRectangle(cornerRadius: 15, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: appointment.status == .pending
+                            ? [Color.orange.opacity(0.22), Color.orange.opacity(0.09)]
+                            : [Color.green.opacity(0.2), Color.green.opacity(0.08)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         )
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
@@ -541,9 +531,10 @@ private struct CalendarAppointmentBlock: View {
                 .padding(.vertical, 8)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 15, style: .continuous)
                 .stroke(appointment.status == .pending ? Color.orange.opacity(0.28) : Color.green.opacity(0.26), lineWidth: 1)
         }
+        .shadow(color: .black.opacity(0.14), radius: 12, x: 0, y: 8)
     }
 }
 

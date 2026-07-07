@@ -1,6 +1,24 @@
 # Stage 10 - Business and Staff iOS App Foundation
 
-Status: Batch 10E.4 calendar-first schedule grid implemented.
+Status: Batch 10E.5 calendar visual polish implemented.
+
+Batch 10E.5 calendar visual polish status:
+
+- Used the approved Teams-style calendar concept as the target direction.
+- Polished the web business Calendar surface with:
+  - darker calendar canvas
+  - sticky time rail
+  - clearer selected-day headers
+  - stronger hour grid separation
+  - richer duration-sized appointment blocks
+  - less list-like mobile behavior
+- Polished the web staff Calendar to match the same schedule-board language.
+- Tightened the native iOS Calendar screen by removing the duplicated day strip
+  and making the week grid itself the primary navigation and schedule surface.
+- Native appointment blocks now use stronger calendar-event styling and shadow,
+  while preserving the existing read-only detail interaction.
+- No booking creation logic, booking lifecycle logic, availability calculation,
+  staff linking, auth/RLS, billing or notification generation logic was changed.
 
 Batch 10E.4 calendar-first schedule grid status:
 

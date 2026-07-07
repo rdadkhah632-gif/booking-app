@@ -940,49 +940,89 @@ export default function StaffCalendarPage() {
 
         .staff-week-calendar {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.85rem;
           min-width: 0;
           max-width: 100%;
           padding: 1rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: var(--surface);
+          border: 1px solid rgba(148, 163, 184, 0.18);
+          border-radius: calc(var(--radius) + 2px);
+          background:
+            radial-gradient(
+              circle at 18% 0%,
+              rgba(255, 107, 53, 0.12),
+              transparent 32%
+            ),
+            linear-gradient(
+              180deg,
+              rgba(15, 23, 42, 0.98),
+              rgba(2, 6, 23, 0.96)
+            );
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 24px 70px rgba(0, 0, 0, 0.24);
           overflow: hidden;
         }
 
         :global(.staff-week-calendar) {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.85rem;
           min-width: 0;
           max-width: 100%;
           padding: 1rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: var(--surface);
+          border: 1px solid rgba(148, 163, 184, 0.18);
+          border-radius: calc(var(--radius) + 2px);
+          background:
+            radial-gradient(
+              circle at 18% 0%,
+              rgba(255, 107, 53, 0.12),
+              transparent 32%
+            ),
+            linear-gradient(
+              180deg,
+              rgba(15, 23, 42, 0.98),
+              rgba(2, 6, 23, 0.96)
+            );
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 24px 70px rgba(0, 0, 0, 0.24);
           overflow: hidden;
         }
 
         .staff-week-scroll {
+          position: relative;
           width: 100%;
           max-width: 100%;
           overflow-x: auto;
           overflow-y: hidden;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: rgba(11, 18, 32, 0.28);
+          border: 1px solid rgba(148, 163, 184, 0.16);
+          border-radius: calc(var(--radius) + 2px);
+          background:
+            linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+            rgba(2, 6, 23, 0.5);
+          background-size: 100% 72px;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            inset 0 0 0 1px rgba(2, 6, 23, 0.3);
           scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
           scrollbar-width: thin;
           -webkit-overflow-scrolling: touch;
         }
 
         :global(.staff-week-scroll) {
+          position: relative;
           width: 100%;
           max-width: 100%;
           overflow-x: auto;
           overflow-y: hidden;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: rgba(11, 18, 32, 0.28);
+          border: 1px solid rgba(148, 163, 184, 0.16);
+          border-radius: calc(var(--radius) + 2px);
+          background:
+            linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+            rgba(2, 6, 23, 0.5);
+          background-size: 100% 72px;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            inset 0 0 0 1px rgba(2, 6, 23, 0.3);
           scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
           scrollbar-width: thin;
           -webkit-overflow-scrolling: touch;
@@ -1001,6 +1041,7 @@ export default function StaffCalendarPage() {
           justify-content: space-between;
           gap: 1rem;
           align-items: center;
+          padding: 0.1rem 0.1rem 0;
         }
 
         :global(.staff-week-summary) {
@@ -1008,6 +1049,7 @@ export default function StaffCalendarPage() {
           justify-content: space-between;
           gap: 1rem;
           align-items: center;
+          padding: 0.1rem 0.1rem 0;
         }
 
         .staff-week-summary div {
@@ -1048,32 +1090,38 @@ export default function StaffCalendarPage() {
 
         .staff-week-grid {
           display: grid;
-          grid-template-columns: 4.75rem repeat(7, minmax(7rem, 1fr));
-          min-width: 980px;
+          grid-template-columns: 4.9rem repeat(7, minmax(7.6rem, 1fr));
+          min-width: 1040px;
           overflow: hidden;
-          background: rgba(11, 18, 32, 0.18);
+          background: rgba(2, 6, 23, 0.22);
         }
 
         :global(.staff-week-grid) {
           display: grid;
-          grid-template-columns: 4.75rem repeat(7, minmax(7rem, 1fr));
-          min-width: 980px;
+          grid-template-columns: 4.9rem repeat(7, minmax(7.6rem, 1fr));
+          min-width: 1040px;
           overflow: hidden;
-          background: rgba(11, 18, 32, 0.18);
+          background: rgba(2, 6, 23, 0.22);
         }
 
         .staff-week-corner {
+          position: sticky;
+          left: 0;
+          z-index: 5;
           min-height: 3.6rem;
-          border-right: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.02);
+          border-right: 1px solid rgba(148, 163, 184, 0.18);
+          border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+          background: rgba(2, 6, 23, 0.96);
         }
 
         :global(.staff-week-corner) {
+          position: sticky;
+          left: 0;
+          z-index: 5;
           min-height: 3.6rem;
-          border-right: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.02);
+          border-right: 1px solid rgba(148, 163, 184, 0.18);
+          border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+          background: rgba(2, 6, 23, 0.96);
         }
 
         .staff-week-day-header {
@@ -1088,14 +1136,17 @@ export default function StaffCalendarPage() {
           min-width: 0;
           padding: 0.4rem 0.25rem;
           border: 0;
-          border-right: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
+          border-right: 1px solid rgba(148, 163, 184, 0.14);
+          border-bottom: 1px solid rgba(148, 163, 184, 0.18);
           border-radius: 0;
-          background: rgba(255, 255, 255, 0.02);
+          background: rgba(15, 23, 42, 0.62);
           color: var(--text);
           font: inherit;
           text-align: center;
           cursor: pointer;
+          transition:
+            background 0.16s ease,
+            color 0.16s ease;
         }
 
         :global(.staff-week-day-header) {
@@ -1110,24 +1161,41 @@ export default function StaffCalendarPage() {
           min-width: 0;
           padding: 0.4rem 0.25rem;
           border: 0;
-          border-right: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
+          border-right: 1px solid rgba(148, 163, 184, 0.14);
+          border-bottom: 1px solid rgba(148, 163, 184, 0.18);
           border-radius: 0;
-          background: rgba(255, 255, 255, 0.02);
+          background: rgba(15, 23, 42, 0.62);
           color: var(--text);
           font: inherit;
           text-align: center;
           cursor: pointer;
+          transition:
+            background 0.16s ease,
+            color 0.16s ease;
         }
 
         .staff-week-day-header.active {
-          background: rgba(255, 107, 53, 0.08);
-          color: var(--accent);
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 107, 53, 0.26),
+              rgba(255, 107, 53, 0.1)
+            ),
+            rgba(15, 23, 42, 0.9);
+          color: #fff7ed;
+          box-shadow: inset 0 -2px 0 rgba(255, 107, 53, 0.75);
         }
 
         :global(.staff-week-day-header.active) {
-          background: rgba(255, 107, 53, 0.08);
-          color: var(--accent);
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 107, 53, 0.26),
+              rgba(255, 107, 53, 0.1)
+            ),
+            rgba(15, 23, 42, 0.9);
+          color: #fff7ed;
+          box-shadow: inset 0 -2px 0 rgba(255, 107, 53, 0.75);
         }
 
         .staff-week-day-header span,
@@ -1179,13 +1247,21 @@ export default function StaffCalendarPage() {
         }
 
         .staff-week-time-rail {
-          border-right: 1px solid var(--border);
-          background: rgba(15, 23, 42, 0.42);
+          position: sticky;
+          left: 0;
+          z-index: 4;
+          border-right: 1px solid rgba(148, 163, 184, 0.18);
+          background: rgba(2, 6, 23, 0.92);
+          box-shadow: 10px 0 28px rgba(0, 0, 0, 0.18);
         }
 
         :global(.staff-week-time-rail) {
-          border-right: 1px solid var(--border);
-          background: rgba(15, 23, 42, 0.42);
+          position: sticky;
+          left: 0;
+          z-index: 4;
+          border-right: 1px solid rgba(148, 163, 184, 0.18);
+          background: rgba(2, 6, 23, 0.92);
+          box-shadow: 10px 0 28px rgba(0, 0, 0, 0.18);
         }
 
         .staff-week-time-rail span {
@@ -1211,13 +1287,25 @@ export default function StaffCalendarPage() {
         .staff-week-lane {
           border-right: 1px solid rgba(148, 163, 184, 0.12);
           overflow: hidden;
-          background: rgba(15, 23, 42, 0.16);
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.025),
+              rgba(255, 255, 255, 0.005)
+            ),
+            rgba(15, 23, 42, 0.12);
         }
 
         :global(.staff-week-lane) {
           border-right: 1px solid rgba(148, 163, 184, 0.12);
           overflow: hidden;
-          background: rgba(15, 23, 42, 0.16);
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.025),
+              rgba(255, 255, 255, 0.005)
+            ),
+            rgba(15, 23, 42, 0.12);
         }
 
         .staff-week-lane:last-child,
@@ -1235,7 +1323,7 @@ export default function StaffCalendarPage() {
           left: 0;
           right: 0;
           height: 1px;
-          background: var(--border);
+          background: rgba(148, 163, 184, 0.1);
         }
 
         :global(.staff-hour-line) {
@@ -1243,75 +1331,100 @@ export default function StaffCalendarPage() {
           left: 0;
           right: 0;
           height: 1px;
-          background: var(--border);
+          background: rgba(148, 163, 184, 0.1);
         }
 
         .staff-week-empty {
           position: absolute;
-          inset: 0.35rem;
-          border: 1px dashed rgba(148, 163, 184, 0.1);
+          inset: 0.45rem;
+          border: 1px dashed rgba(148, 163, 184, 0.12);
           border-radius: calc(var(--radius) - 4px);
+          background: rgba(15, 23, 42, 0.12);
           pointer-events: none;
         }
 
         :global(.staff-week-empty) {
           position: absolute;
-          inset: 0.35rem;
-          border: 1px dashed rgba(148, 163, 184, 0.1);
+          inset: 0.45rem;
+          border: 1px dashed rgba(148, 163, 184, 0.12);
           border-radius: calc(var(--radius) - 4px);
+          background: rgba(15, 23, 42, 0.12);
           pointer-events: none;
         }
 
         .staff-schedule-block {
           position: absolute;
-          left: 0.35rem;
-          right: 0.35rem;
+          left: 0.42rem;
+          right: 0.42rem;
           display: grid;
           align-content: start;
-          gap: 0.14rem;
+          gap: 0.16rem;
           overflow: hidden;
-          padding: 0.48rem 0.5rem;
-          border: 1px solid rgba(45, 212, 191, 0.28);
-          border-left: 4px solid var(--success);
-          border-radius: calc(var(--radius) - 2px);
+          padding: 0.55rem 0.6rem;
+          border: 1px solid rgba(45, 212, 191, 0.32);
+          border-left: 4px solid rgba(45, 212, 191, 0.92);
+          border-radius: 0.82rem;
           background:
             linear-gradient(
               135deg,
-              rgba(45, 212, 191, 0.14),
-              rgba(45, 212, 191, 0.06)
+              rgba(45, 212, 191, 0.18),
+              rgba(45, 212, 191, 0.07)
             ),
-            rgba(15, 23, 42, 0.92);
+            rgba(15, 23, 42, 0.96);
           color: var(--text);
           font: inherit;
           text-align: left;
           cursor: pointer;
-          box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+          box-shadow:
+            0 18px 34px rgba(0, 0, 0, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease,
+            transform 0.15s ease;
         }
 
         :global(.staff-schedule-block) {
           position: absolute;
-          left: 0.35rem;
-          right: 0.35rem;
+          left: 0.42rem;
+          right: 0.42rem;
           display: grid;
           align-content: start;
-          gap: 0.14rem;
+          gap: 0.16rem;
           overflow: hidden;
-          padding: 0.48rem 0.5rem;
-          border: 1px solid rgba(45, 212, 191, 0.28);
-          border-left: 4px solid var(--success);
-          border-radius: calc(var(--radius) - 2px);
+          padding: 0.55rem 0.6rem;
+          border: 1px solid rgba(45, 212, 191, 0.32);
+          border-left: 4px solid rgba(45, 212, 191, 0.92);
+          border-radius: 0.82rem;
           background:
             linear-gradient(
               135deg,
-              rgba(45, 212, 191, 0.14),
-              rgba(45, 212, 191, 0.06)
+              rgba(45, 212, 191, 0.18),
+              rgba(45, 212, 191, 0.07)
             ),
-            rgba(15, 23, 42, 0.92);
+            rgba(15, 23, 42, 0.96);
           color: var(--text);
           font: inherit;
           text-align: left;
           cursor: pointer;
-          box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+          box-shadow:
+            0 18px 34px rgba(0, 0, 0, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease,
+            transform 0.15s ease;
+        }
+
+        .staff-schedule-block:hover,
+        .staff-schedule-block:focus-visible,
+        :global(.staff-schedule-block:hover),
+        :global(.staff-schedule-block:focus-visible) {
+          border-color: rgba(45, 212, 191, 0.5);
+          box-shadow:
+            0 20px 42px rgba(0, 0, 0, 0.28),
+            0 0 0 1px rgba(45, 212, 191, 0.16);
+          transform: translateY(-1px);
         }
 
         .staff-schedule-block.selected {
@@ -1372,7 +1485,8 @@ export default function StaffCalendarPage() {
         .staff-schedule-block small {
           overflow: hidden;
           color: var(--text-muted);
-          font-size: 0.76rem;
+          font-size: 0.74rem;
+          font-weight: 750;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
@@ -1381,21 +1495,24 @@ export default function StaffCalendarPage() {
         :global(.staff-schedule-block small) {
           overflow: hidden;
           color: var(--text-muted);
-          font-size: 0.76rem;
+          font-size: 0.74rem;
+          font-weight: 750;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
         .staff-schedule-block strong {
           overflow: hidden;
-          font-size: 0.84rem;
+          font-size: 0.88rem;
+          line-height: 1.12;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
         :global(.staff-schedule-block strong) {
           overflow: hidden;
-          font-size: 0.84rem;
+          font-size: 0.88rem;
+          line-height: 1.12;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
@@ -1436,14 +1553,12 @@ export default function StaffCalendarPage() {
 
         .staff-schedule-block.confirmed em,
         .staff-schedule-block.completed em {
-          background: rgba(45, 212, 191, 0.12);
-          color: var(--success);
+          display: none;
         }
 
         :global(.staff-schedule-block.confirmed em),
         :global(.staff-schedule-block.completed em) {
-          background: rgba(45, 212, 191, 0.12);
-          color: var(--success);
+          display: none;
         }
 
         .staff-calendar-empty {
