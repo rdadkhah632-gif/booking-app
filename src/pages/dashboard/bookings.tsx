@@ -2450,12 +2450,16 @@ export default function Bookings() {
         .calendar-workspace {
           display: grid;
           gap: 1rem;
+          grid-template-rows: auto minmax(0, 1fr);
+          height: calc(100dvh - 9.75rem);
+          min-height: 34rem;
           min-width: 0;
         }
 
         .calendar-body {
           display: grid;
           gap: 1rem;
+          min-height: 0;
           min-width: 0;
         }
 
@@ -2467,6 +2471,7 @@ export default function Bookings() {
         .calendar-side-panel {
           display: grid;
           gap: 1rem;
+          min-height: 0;
           min-width: 0;
         }
 
@@ -2486,7 +2491,7 @@ export default function Bookings() {
         .calendar-empty-state {
           display: grid;
           gap: 0.75rem;
-          padding: 0.85rem;
+          padding: 0.75rem 0.85rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface);
@@ -2496,7 +2501,7 @@ export default function Bookings() {
         .manual-booking-panel {
           display: grid;
           gap: 0.85rem;
-          padding: 0.85rem;
+          padding: 0.95rem;
           border: 1px solid rgba(255, 107, 53, 0.24);
           border-radius: var(--radius);
           background: var(--surface);
@@ -2524,7 +2529,7 @@ export default function Bookings() {
 
         .manual-booking-form {
           display: grid;
-          gap: 0.65rem;
+          gap: 0.75rem;
         }
 
         .manual-booking-form label {
@@ -2540,7 +2545,7 @@ export default function Bookings() {
         .manual-booking-form select,
         .manual-booking-form textarea {
           width: 100%;
-          min-height: 2.55rem;
+          min-height: 2.75rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
@@ -2587,18 +2592,20 @@ export default function Bookings() {
         .calendar-toolbar,
         .calendar-date-controls {
           display: flex;
-          gap: 0.55rem;
+          gap: 0.65rem;
           align-items: center;
           flex-wrap: wrap;
         }
 
         .calendar-toolbar {
           justify-content: space-between;
+          min-width: 0;
         }
 
         .calendar-date-controls {
           flex: 1 1 auto;
           justify-content: flex-end;
+          min-width: 0;
         }
 
         .calendar-week-stepper {
@@ -2612,7 +2619,7 @@ export default function Bookings() {
 
         .calendar-step-button,
         .calendar-today-button {
-          min-height: 2.35rem;
+          min-height: 2.55rem;
           border: 0;
           background: transparent;
           color: var(--text);
@@ -2622,7 +2629,7 @@ export default function Bookings() {
         }
 
         .calendar-step-button {
-          width: 2.35rem;
+          width: 2.55rem;
           padding: 0;
           font-size: 1.35rem;
           line-height: 1;
@@ -2650,7 +2657,7 @@ export default function Bookings() {
         }
 
         .calendar-date-controls input {
-          min-height: 2.35rem;
+          min-height: 2.55rem;
           max-width: 9.5rem;
           border: 1px solid var(--border);
           background: var(--surface-2);
@@ -2665,7 +2672,7 @@ export default function Bookings() {
 
         .calendar-staff-filter {
           display: inline-flex;
-          min-height: 2.35rem;
+          min-height: 2.55rem;
           align-items: center;
           gap: 0.45rem;
           padding: 0.18rem 0.28rem 0.18rem 0.7rem;
@@ -2691,7 +2698,7 @@ export default function Bookings() {
         }
 
         .calendar-add-button {
-          min-height: 2.35rem;
+          min-height: 2.55rem;
           padding: 0.55rem 0.95rem;
           white-space: nowrap;
         }
@@ -2705,7 +2712,7 @@ export default function Bookings() {
         .calendar-selected-details {
           display: grid;
           gap: 0.75rem;
-          padding: 1rem;
+          padding: 0.95rem;
           border: 1px solid rgba(255, 107, 53, 0.22);
           border-radius: var(--radius);
           background: rgba(255, 107, 53, 0.05);
@@ -2740,7 +2747,7 @@ export default function Bookings() {
         :global(.calendar-detail-list > div) {
           display: grid;
           gap: 0.2rem;
-          padding: 0.65rem;
+          padding: 0.72rem;
           border: 1px solid rgba(148, 163, 184, 0.14);
           border-radius: calc(var(--radius) - 3px);
           background: rgba(15, 23, 42, 0.38);
@@ -2795,9 +2802,11 @@ export default function Bookings() {
         :global(.week-calendar) {
           display: grid;
           gap: 0.85rem;
+          grid-template-rows: auto minmax(0, 1fr);
+          height: 100%;
           min-width: 0;
           max-width: 100%;
-          padding: 1rem;
+          padding: 0.85rem;
           border: 1px solid rgba(148, 163, 184, 0.18);
           border-radius: calc(var(--radius) + 2px);
           background:
@@ -2820,9 +2829,9 @@ export default function Bookings() {
         :global(.week-calendar-scroll) {
           position: relative;
           width: 100%;
+          min-height: 0;
           max-width: 100%;
-          overflow-x: auto;
-          overflow-y: hidden;
+          overflow: auto;
           border: 1px solid rgba(148, 163, 184, 0.16);
           border-radius: calc(var(--radius) + 2px);
           background:
@@ -2865,14 +2874,15 @@ export default function Bookings() {
           display: grid;
           grid-template-columns: 4.9rem repeat(7, minmax(7.6rem, 1fr));
           min-width: 1040px;
-          overflow: hidden;
+          overflow: visible;
           background: rgba(2, 6, 23, 0.22);
         }
 
         :global(.week-calendar-corner) {
           position: sticky;
           left: 0;
-          z-index: 5;
+          top: 0;
+          z-index: 8;
           min-height: 3.6rem;
           border-right: 1px solid rgba(148, 163, 184, 0.18);
           border-bottom: 1px solid rgba(148, 163, 184, 0.18);
@@ -2880,6 +2890,9 @@ export default function Bookings() {
         }
 
         :global(.week-day-header) {
+          position: sticky;
+          top: 0;
+          z-index: 7;
           min-height: 3.6rem;
           margin: 0;
           appearance: none;
@@ -2943,7 +2956,7 @@ export default function Bookings() {
         :global(.week-time-rail) {
           position: sticky;
           left: 0;
-          z-index: 4;
+          z-index: 5;
           border-right: 1px solid rgba(148, 163, 184, 0.18);
           background: rgba(2, 6, 23, 0.92);
           box-shadow: 10px 0 28px rgba(0, 0, 0, 0.18);
@@ -2991,9 +3004,9 @@ export default function Bookings() {
           right: 0;
           z-index: 1;
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           justify-content: center;
-          padding-top: 0.28rem;
+          padding: 0;
           border: 0;
           border-radius: 0;
           background: transparent;
@@ -3088,13 +3101,13 @@ export default function Bookings() {
 
         :global(.calendar-schedule-block) {
           position: absolute;
-          left: 0.42rem;
-          right: 0.42rem;
+          left: 0.5rem;
+          right: 0.5rem;
           display: grid;
           align-content: start;
           gap: 0.16rem;
           overflow: hidden;
-          padding: 0.55rem 0.6rem;
+          padding: 0.58rem 0.65rem;
           border: 1px solid rgba(45, 212, 191, 0.32);
           border-left: 4px solid rgba(45, 212, 191, 0.92);
           border-radius: 0.82rem;
@@ -3356,6 +3369,11 @@ export default function Bookings() {
         }
 
         @media (max-width: 980px) {
+          .calendar-workspace {
+            height: calc(100dvh - 11rem);
+            min-height: 32rem;
+          }
+
           .calendar-side-panel {
             top: auto;
             right: 0.75rem;
@@ -3367,13 +3385,18 @@ export default function Bookings() {
         }
 
         @media (max-width: 700px) {
+          .calendar-workspace {
+            height: calc(100dvh - 12.5rem);
+            min-height: 30rem;
+          }
+
           .calendar-date-controls {
             justify-content: stretch;
           }
 
           .calendar-shell,
           .calendar-empty-state {
-            padding: 0.85rem;
+            padding: 0.7rem;
           }
 
           .manual-booking-footer,
@@ -3446,16 +3469,18 @@ export default function Bookings() {
           }
 
           .calendar-add-button {
-            width: auto;
+            width: 100%;
+            grid-column: 1 / -1;
             justify-content: center;
           }
 
           :global(.week-calendar) {
-            padding: 0.65rem;
+            padding: 0.6rem;
           }
 
           :global(.week-calendar-scroll) {
             display: block;
+            max-height: 100%;
           }
 
           :global(.mobile-week-agenda) {

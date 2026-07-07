@@ -1,6 +1,31 @@
 # Stage 10 - Business and Staff iOS App Foundation
 
-Status: Batch 10E.6 calendar staff-scope polish implemented.
+Status: Batch 10E.7 calendar viewport polish implemented.
+
+Batch 10E.7 calendar viewport polish status:
+
+- Tightened the web business Calendar and staff Calendar spacing after the
+  calendar-first visual rebuild.
+- Changed the schedule grids so the calendar workspace fits the viewport and
+  the schedule itself owns vertical scrolling instead of making the page scroll
+  through the whole time range.
+- Made week headers sticky inside the calendar scroll area so the day columns
+  stay readable while moving through the time rail.
+- Improved calendar toolbar hit areas and control spacing so date, staff scope,
+  week navigation and add-appointment controls feel like deliberate controls
+  instead of squeezed text.
+- Improved manual appointment and selected-appointment drawer spacing.
+- Staff appointment details now open as a fixed drawer/bottom sheet instead of
+  pushing the calendar down the page.
+- No booking creation logic, booking lifecycle logic, availability calculation,
+  staff linking, auth/RLS, billing or notification generation logic was changed.
+
+Remaining calendar follow-ups:
+
+- Run a live browser QA pass on desktop and mobile to confirm the internal
+  scroll behavior feels right with real long operating hours and multiple staff.
+- Continue small spacing sweeps on other menus only where visual QA finds
+  obvious loose/tight controls.
 
 Batch 10E.6 calendar staff-scope polish status:
 

@@ -906,6 +906,11 @@ export default function StaffCalendarPage() {
 
       <style jsx>{`
         .staff-workspace-page {
+          display: grid;
+          grid-template-rows: auto minmax(0, 1fr);
+          gap: 1rem;
+          height: calc(100dvh - 9.75rem);
+          min-height: 34rem;
           width: 100%;
           min-width: 0;
         }
@@ -925,13 +930,14 @@ export default function StaffCalendarPage() {
         .staff-calendar-toolbar {
           display: flex;
           justify-content: space-between;
-          gap: 1rem;
+          gap: 0.65rem;
           align-items: center;
-          padding: 1rem;
+          padding: 0.75rem 0.85rem;
           border: 1px solid rgba(255, 107, 53, 0.18);
           border-radius: var(--radius);
           background: var(--surface);
-          margin-bottom: 1rem;
+          margin-bottom: 0;
+          min-width: 0;
         }
 
         .staff-calendar-toolbar h2 {
@@ -944,6 +950,7 @@ export default function StaffCalendarPage() {
           gap: 0.65rem;
           align-items: center;
           flex-wrap: wrap;
+          min-width: 0;
         }
 
         .staff-calendar-actions input {
@@ -972,9 +979,11 @@ export default function StaffCalendarPage() {
         .staff-week-calendar {
           display: grid;
           gap: 0.85rem;
+          grid-template-rows: auto minmax(0, 1fr);
+          height: 100%;
           min-width: 0;
           max-width: 100%;
-          padding: 1rem;
+          padding: 0.85rem;
           border: 1px solid rgba(148, 163, 184, 0.18);
           border-radius: calc(var(--radius) + 2px);
           background:
@@ -997,9 +1006,11 @@ export default function StaffCalendarPage() {
         :global(.staff-week-calendar) {
           display: grid;
           gap: 0.85rem;
+          grid-template-rows: auto minmax(0, 1fr);
+          height: 100%;
           min-width: 0;
           max-width: 100%;
-          padding: 1rem;
+          padding: 0.85rem;
           border: 1px solid rgba(148, 163, 184, 0.18);
           border-radius: calc(var(--radius) + 2px);
           background:
@@ -1022,9 +1033,9 @@ export default function StaffCalendarPage() {
         .staff-week-scroll {
           position: relative;
           width: 100%;
+          min-height: 0;
           max-width: 100%;
-          overflow-x: auto;
-          overflow-y: hidden;
+          overflow: auto;
           border: 1px solid rgba(148, 163, 184, 0.16);
           border-radius: calc(var(--radius) + 2px);
           background:
@@ -1042,9 +1053,9 @@ export default function StaffCalendarPage() {
         :global(.staff-week-scroll) {
           position: relative;
           width: 100%;
+          min-height: 0;
           max-width: 100%;
-          overflow-x: auto;
-          overflow-y: hidden;
+          overflow: auto;
           border: 1px solid rgba(148, 163, 184, 0.16);
           border-radius: calc(var(--radius) + 2px);
           background:
@@ -1123,7 +1134,7 @@ export default function StaffCalendarPage() {
           display: grid;
           grid-template-columns: 4.9rem repeat(7, minmax(7.6rem, 1fr));
           min-width: 1040px;
-          overflow: hidden;
+          overflow: visible;
           background: rgba(2, 6, 23, 0.22);
         }
 
@@ -1131,14 +1142,15 @@ export default function StaffCalendarPage() {
           display: grid;
           grid-template-columns: 4.9rem repeat(7, minmax(7.6rem, 1fr));
           min-width: 1040px;
-          overflow: hidden;
+          overflow: visible;
           background: rgba(2, 6, 23, 0.22);
         }
 
         .staff-week-corner {
           position: sticky;
           left: 0;
-          z-index: 5;
+          top: 0;
+          z-index: 8;
           min-height: 3.6rem;
           border-right: 1px solid rgba(148, 163, 184, 0.18);
           border-bottom: 1px solid rgba(148, 163, 184, 0.18);
@@ -1148,7 +1160,8 @@ export default function StaffCalendarPage() {
         :global(.staff-week-corner) {
           position: sticky;
           left: 0;
-          z-index: 5;
+          top: 0;
+          z-index: 8;
           min-height: 3.6rem;
           border-right: 1px solid rgba(148, 163, 184, 0.18);
           border-bottom: 1px solid rgba(148, 163, 184, 0.18);
@@ -1156,6 +1169,9 @@ export default function StaffCalendarPage() {
         }
 
         .staff-week-day-header {
+          position: sticky;
+          top: 0;
+          z-index: 7;
           min-height: 3.6rem;
           margin: 0;
           appearance: none;
@@ -1181,6 +1197,9 @@ export default function StaffCalendarPage() {
         }
 
         :global(.staff-week-day-header) {
+          position: sticky;
+          top: 0;
+          z-index: 7;
           min-height: 3.6rem;
           margin: 0;
           appearance: none;
@@ -1280,7 +1299,7 @@ export default function StaffCalendarPage() {
         .staff-week-time-rail {
           position: sticky;
           left: 0;
-          z-index: 4;
+          z-index: 5;
           border-right: 1px solid rgba(148, 163, 184, 0.18);
           background: rgba(2, 6, 23, 0.92);
           box-shadow: 10px 0 28px rgba(0, 0, 0, 0.18);
@@ -1289,7 +1308,7 @@ export default function StaffCalendarPage() {
         :global(.staff-week-time-rail) {
           position: sticky;
           left: 0;
-          z-index: 4;
+          z-index: 5;
           border-right: 1px solid rgba(148, 163, 184, 0.18);
           background: rgba(2, 6, 23, 0.92);
           box-shadow: 10px 0 28px rgba(0, 0, 0, 0.18);
@@ -1427,13 +1446,13 @@ export default function StaffCalendarPage() {
 
         .staff-schedule-block {
           position: absolute;
-          left: 0.42rem;
-          right: 0.42rem;
+          left: 0.5rem;
+          right: 0.5rem;
           display: grid;
           align-content: start;
           gap: 0.16rem;
           overflow: hidden;
-          padding: 0.55rem 0.6rem;
+          padding: 0.58rem 0.65rem;
           border: 1px solid rgba(45, 212, 191, 0.32);
           border-left: 4px solid rgba(45, 212, 191, 0.92);
           border-radius: 0.82rem;
@@ -1459,13 +1478,13 @@ export default function StaffCalendarPage() {
 
         :global(.staff-schedule-block) {
           position: absolute;
-          left: 0.42rem;
-          right: 0.42rem;
+          left: 0.5rem;
+          right: 0.5rem;
           display: grid;
           align-content: start;
           gap: 0.16rem;
           overflow: hidden;
-          padding: 0.55rem 0.6rem;
+          padding: 0.58rem 0.65rem;
           border: 1px solid rgba(45, 212, 191, 0.32);
           border-left: 4px solid rgba(45, 212, 191, 0.92);
           border-radius: 0.82rem;
@@ -1653,12 +1672,20 @@ export default function StaffCalendarPage() {
         }
 
         .staff-selected-appointment {
+          position: fixed;
+          top: 6.25rem;
+          right: 1.25rem;
+          z-index: 40;
+          width: min(24rem, calc(100vw - 2rem));
+          max-height: calc(100vh - 7.5rem);
+          overflow-y: auto;
           display: grid;
           gap: 0.75rem;
-          padding: 1rem;
+          padding: 0.95rem;
           border: 1px solid rgba(255, 107, 53, 0.22);
           border-radius: var(--radius);
           background: rgba(255, 107, 53, 0.05);
+          box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
         }
 
         .staff-selected-heading,
@@ -1731,12 +1758,26 @@ export default function StaffCalendarPage() {
         }
 
         @media (max-width: 760px) {
+          .staff-workspace-page {
+            height: calc(100dvh - 12.5rem);
+            min-height: 30rem;
+          }
+
           .staff-calendar-toolbar,
           .staff-calendar-actions,
           .staff-selected-heading,
           .staff-selected-card {
             display: grid;
             align-items: stretch;
+          }
+
+          .staff-selected-appointment {
+            top: auto;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            left: 0.75rem;
+            width: auto;
+            max-height: min(70vh, 36rem);
           }
 
           .staff-calendar-actions,
@@ -1749,19 +1790,21 @@ export default function StaffCalendarPage() {
           }
 
           .staff-week-calendar {
-            padding: 0.65rem;
+            padding: 0.6rem;
           }
 
           :global(.staff-week-calendar) {
-            padding: 0.65rem;
+            padding: 0.6rem;
           }
 
           .staff-week-scroll {
             display: block;
+            max-height: 100%;
           }
 
           :global(.staff-week-scroll) {
             display: block;
+            max-height: 100%;
           }
 
           .staff-mobile-week-agenda {
