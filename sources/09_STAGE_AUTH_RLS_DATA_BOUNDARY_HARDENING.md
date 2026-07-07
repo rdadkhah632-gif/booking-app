@@ -1294,6 +1294,28 @@ Recommended launch decision:
   `CRON_SECRET`, call the endpoint once manually with the secret and confirm
   Resend delivery for a due confirmed booking
 
+### Manual Appointment Customer Claim Follow-Up
+
+Status: implemented, build pending in this batch.
+
+Manual appointments created by the business calendar can now be claimed by a
+customer account using the same email address:
+
+- customer booking email links route through the customer auth surface when the
+  booking is not yet linked to a customer user
+- the login page preserves the booking confirmation `redirectTo` when the
+  recipient chooses to create an account
+- the customer registration page hides business/staff signup prompts for this
+  appointment-return path
+- `/api/customer/bookings` links unclaimed bookings to the authenticated
+  customer when `bookings.customer_email` matches the verified auth email
+- business/admin/staff accounts are not used for this claim path
+- the manual booking API also allows a linked staff user to add an appointment
+  only to their own staff calendar, preserving business/staff data boundaries
+- assigned staff can request the same transactional status email for their own
+  manually added confirmed booking
+- no schema, RLS, booking lifecycle or slot calculation changes were made
+
 ### Final Stage 9 Closure QA Matrix
 
 Production smoke result: PASS.

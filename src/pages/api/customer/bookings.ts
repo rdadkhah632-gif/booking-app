@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
+import { claimUnlinkedCustomerBookings } from "@/lib/server/claimCustomerBookings";
 
 type ViewerRole = "customer" | "business";
 
@@ -417,6 +418,17 @@ export default async function handler(
       response.status(401).json({ error: "Invalid session." });
       return;
     }
+
+    await claimUnlinkedCustomerBookings(supabaseAdmin, {
+      userId: user.id,
+      email: user.email,
+      accountMode:
+        typeof user.user_metadata?.account_mode === "string"
+          ? user.user_metadata.account_mode
+          : typeof user.user_metadata?.role === "string"
+            ? user.user_metadata.role
+            : null,
+    });
 
     const bookingId = readStringParam(request.query.id);
 

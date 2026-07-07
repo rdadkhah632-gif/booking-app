@@ -20,9 +20,15 @@ export default function LoginPage() {
   const [isBusinessHostname, setIsBusinessHostname] = useState(false);
   const isBusinessEntry =
     router.query.product === "business" || isBusinessHostname;
+  const safeRedirectTo = router.isReady
+    ? safeInternalRedirect(router.query.redirectTo)
+    : null;
+  const customerRegistrationPath = safeRedirectTo
+    ? `/register?redirectTo=${encodeURIComponent(safeRedirectTo)}`
+    : "/register";
   const registrationUrl = isBusinessEntry
     ? getBusinessAppUrl("/register?accountType=business")
-    : getCustomerAppUrl("/register");
+    : getCustomerAppUrl(customerRegistrationPath);
   const forgotPasswordUrl = isBusinessEntry
     ? getBusinessAppUrl("/forgot-password?product=business")
     : getCustomerAppUrl("/forgot-password");
@@ -74,14 +80,13 @@ export default function LoginPage() {
       );
     }
 
-    const redirectTo = safeInternalRedirect(router.query.redirectTo);
-    if (redirectTo?.startsWith("/staff/invite?token=")) {
-      router.replace(redirectTo);
+    if (safeRedirectTo?.startsWith("/staff/invite?token=")) {
+      router.replace(safeRedirectTo);
       return;
     }
 
     if (capabilities.defaultRoute === "/my-bookings") {
-      router.replace(redirectTo || "/my-bookings");
+      router.replace(safeRedirectTo || "/my-bookings");
       return;
     }
 

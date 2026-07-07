@@ -66,6 +66,9 @@ export default function RegisterPage() {
   const [isBusinessHostname, setIsBusinessHostname] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendingVerification, setResendingVerification] = useState(false);
+  const safeRedirectTo = router.isReady
+    ? safeInternalRedirect(router.query.redirectTo)
+    : null;
   const loginUrl =
     role === "business"
       ? getBusinessAppUrl("/login?product=business")
@@ -79,6 +82,9 @@ export default function RegisterPage() {
   const customerRegisterUrl = getCustomerAppUrl("/register");
   const isBusinessRegistrationSurface =
     isBusinessHostname || role === "business" || role === "staff";
+  const isCustomerAppointmentReturn =
+    !isBusinessRegistrationSurface &&
+    Boolean(safeRedirectTo?.startsWith("/booking-confirmation"));
 
   function registrationRedirectForRole(
     value: string | null,
@@ -117,7 +123,6 @@ export default function RegisterPage() {
     ) {
       const accountType = router.query.accountType;
       const targetParams = new URLSearchParams({ accountType });
-      const safeRedirectTo = safeInternalRedirect(router.query.redirectTo);
       if (safeRedirectTo) {
         targetParams.set("redirectTo", safeRedirectTo);
       }
@@ -672,30 +677,38 @@ export default function RegisterPage() {
               </p>
             </>
           ) : (
-            <div className="register-business-split-card">
-              <div>
-                <strong>
-                  {t("register.businessSplit.title", "Registering a business?")}
-                </strong>
-                <p className="small muted">
-                  {t(
-                    "register.businessSplit.body",
-                    "Mirëbook Business has a separate setup flow for owners and invited staff.",
-                  )}
-                </p>
-              </div>
-              <div className="register-business-split-actions">
-                <Link href={businessRegisterUrl} className="btn btn-ghost">
-                  {t(
-                    "register.businessSplit.businessCta",
-                    "List your business",
-                  )}
-                </Link>
-                <Link href={staffRegisterUrl} className="btn btn-ghost">
-                  {t("register.businessSplit.staffCta", "Joining as staff?")}
-                </Link>
-              </div>
-            </div>
+              !isCustomerAppointmentReturn && (
+                <div className="register-business-split-card">
+                  <div>
+                    <strong>
+                      {t(
+                        "register.businessSplit.title",
+                        "Registering a business?",
+                      )}
+                    </strong>
+                    <p className="small muted">
+                      {t(
+                        "register.businessSplit.body",
+                        "Mirëbook Business has a separate setup flow for owners and invited staff.",
+                      )}
+                    </p>
+                  </div>
+                  <div className="register-business-split-actions">
+                    <Link href={businessRegisterUrl} className="btn btn-ghost">
+                      {t(
+                        "register.businessSplit.businessCta",
+                        "List your business",
+                      )}
+                    </Link>
+                    <Link href={staffRegisterUrl} className="btn btn-ghost">
+                      {t(
+                        "register.businessSplit.staffCta",
+                        "Joining as staff?",
+                      )}
+                    </Link>
+                  </div>
+                </div>
+              )
           )}
 
           {role === "staff" && (

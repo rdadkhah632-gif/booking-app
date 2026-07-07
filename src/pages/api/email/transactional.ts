@@ -348,10 +348,13 @@ export default async function handler(
 
     const isCustomer = booking.customer_user_id === user.id;
     const isBusinessOwner = business.user_id === user.id;
+    const isAssignedStaff = staff?.user_id === user.id;
 
     if (
       (request.event === "booking_created" && !isCustomer) ||
-      (request.event === "booking_status_changed" && !isBusinessOwner) ||
+      (request.event === "booking_status_changed" &&
+        !isBusinessOwner &&
+        !isAssignedStaff) ||
       (request.event === "booking_customer_cancelled" &&
         (!isCustomer || booking.status !== "cancelled"))
     ) {
@@ -386,8 +389,11 @@ export default async function handler(
     const customerEmail = booking.customer_email || customerProfile?.email;
     const ownerEmail = ownerProfile?.email;
     const staffEmail = staff?.email || staffProfile?.email;
+    const customerBookingPath = `/booking-confirmation?id=${booking.id}`;
     const bookingUrl = absoluteAppUrl(
-      `/booking-confirmation?id=${booking.id}`,
+      booking.customer_user_id
+        ? customerBookingPath
+        : `/login?redirectTo=${encodeURIComponent(customerBookingPath)}`,
       appUrl,
       "customer",
     );
@@ -413,6 +419,7 @@ export default async function handler(
           startAt: booking.start_at,
           actionUrl: bookingUrl,
           locale: localeFromProfile(customerProfile),
+          customerAccountHint: !booking.customer_user_id,
           preferenceEnabled: customerPreference(
             customerPreferenceResult.preferences,
             booking.status,

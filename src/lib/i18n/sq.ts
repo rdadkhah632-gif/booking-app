@@ -877,7 +877,7 @@ export const sq: TranslationTree = {
   "bookingConfirmation.status.completed": "Përfunduar",
   "bookingConfirmation.status.cancelled": "Anuluar",
   "bookingConfirmation.error.noPermission":
-    "Nuk ke leje ta shohësh këtë rezervim.",
+    "Hyr me adresën e email-it të klientit ku u dërgua ky takim, ose krijo një llogari klienti me atë email.",
   "bookingConfirmation.error.title": "Rezervimi nuk u ngarkua",
   "myBookings.error.load": "Rezervimet e tua nuk u ngarkuan.",
   "bookingConfirmation.fallback.business": "ky biznes",
@@ -2043,8 +2043,9 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.error.config":
     "Ruajtja manuale e takimeve nuk është konfiguruar ende.",
   "dashboardBookings.manual.error.forbidden":
-    "Mund të shtosh takime vetëm për një biznes që zotëron.",
-  "dashboardBookings.manual.success": "Takimi u shtua në kalendar.",
+    "Mund të shtosh takime vetëm për një biznes që zotëron ose për kalendarin tënd të stafit.",
+  "dashboardBookings.manual.success":
+    "Takimi u shtua. Klienti mund të hapë linkun në email ose të krijojë një llogari klienti me të njëjtin email për ta parë.",
   "dashboardBookings.empty.noBusinessTitle": "Nuk u gjet biznes",
   "dashboardBookings.empty.noBusinessBody":
     "Krijo fillimisht një profil biznesi, pastaj takimet e klientëve do të shfaqen këtu.",

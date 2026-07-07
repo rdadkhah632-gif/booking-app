@@ -68,6 +68,13 @@ export default function BookingConfirmation() {
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<"customer" | "business" | null>(null);
 
+  function bookingReturnPath() {
+    const bookingId = typeof id === "string" ? id : "";
+    return bookingId
+      ? `/booking-confirmation?id=${encodeURIComponent(bookingId)}`
+      : "/my-bookings";
+  }
+
   useEffect(() => {
     if (!router.isReady) return;
 
@@ -80,7 +87,9 @@ export default function BookingConfirmation() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login");
+        router.replace(
+          `/login?redirectTo=${encodeURIComponent(bookingReturnPath())}`,
+        );
         return;
       }
 
@@ -105,7 +114,9 @@ export default function BookingConfirmation() {
       const payload = await response.json().catch(() => ({}));
 
       if (response.status === 401) {
-        router.replace("/login");
+        router.replace(
+          `/login?redirectTo=${encodeURIComponent(bookingReturnPath())}`,
+        );
         return;
       }
 

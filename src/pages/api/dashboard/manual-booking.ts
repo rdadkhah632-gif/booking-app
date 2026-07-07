@@ -173,7 +173,36 @@ export default async function handler(
     );
   }
 
-  if (!business || business.user_id !== user.id) {
+  if (!business) {
+    return errorResponse(res, 403, "forbidden", "Appointment not permitted");
+  }
+
+  const isBusinessOwner = business.user_id === user.id;
+  let isAssignedStaffMember = false;
+
+  if (!isBusinessOwner) {
+    const { data: staffAccess, error: staffAccessError } = await supabaseAdmin
+      .from("staff_members")
+      .select("id")
+      .eq("id", staffMemberId)
+      .eq("business_id", businessId)
+      .eq("user_id", user.id)
+      .eq("active", true)
+      .maybeSingle<{ id: string }>();
+
+    if (staffAccessError) {
+      return errorResponse(
+        res,
+        500,
+        "staff_lookup_failed",
+        staffAccessError.message,
+      );
+    }
+
+    isAssignedStaffMember = Boolean(staffAccess);
+  }
+
+  if (!isBusinessOwner && !isAssignedStaffMember) {
     return errorResponse(res, 403, "forbidden", "Appointment not permitted");
   }
 

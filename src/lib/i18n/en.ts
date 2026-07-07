@@ -829,7 +829,7 @@ export const en: TranslationTree = {
   "bookingConfirmation.status.completed": "Completed",
   "bookingConfirmation.status.cancelled": "Cancelled",
   "bookingConfirmation.error.noPermission":
-    "You do not have permission to view this booking.",
+    "Sign in with the customer email address this appointment was sent to, or create a customer account with that email.",
   "bookingConfirmation.error.title": "Could not load booking",
   "myBookings.error.load": "Could not load your bookings.",
   "bookingConfirmation.fallback.business": "this business",
@@ -2067,8 +2067,9 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.error.config":
     "Manual appointment saving is not configured yet.",
   "dashboardBookings.manual.error.forbidden":
-    "You can only add appointments for a business you own.",
-  "dashboardBookings.manual.success": "Appointment added to the calendar.",
+    "You can only add appointments for a business you own or your own staff calendar.",
+  "dashboardBookings.manual.success":
+    "Appointment added. The customer can open the email link or create a customer account with the same email to see it.",
   "dashboardBookings.empty.noBusinessTitle": "No business found",
   "dashboardBookings.empty.noBusinessBody":
     "Create a business profile first, then customer appointments will appear here.",

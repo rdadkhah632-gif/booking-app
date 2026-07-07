@@ -20,6 +20,7 @@ type BookingTemplateInput = {
   actionUrl: string;
   locale?: EmailLocale;
   preferenceEnabled?: boolean;
+  customerAccountHint?: boolean;
 };
 
 type EmailDetail = {
@@ -50,6 +51,7 @@ type EmailCopy = {
   bookingEyebrows: Record<BookingTemplateInput["recipientRole"], string>;
   bookingActions: Record<BookingTemplateInput["recipientRole"], string>;
   bookingNote: string;
+  customerAccountNote: string;
   status: Record<
     BookingTemplateInput["recipientRole"],
     Record<BookingEmailStatus | "default", BookingStatusCopy>
@@ -123,6 +125,8 @@ const EMAIL_COPY: Record<EmailLocale, EmailCopy> = {
     },
     bookingNote:
       "Open Mirëbook for the latest booking status and any available actions.",
+    customerAccountNote:
+      "Use this customer email address to sign in or create a customer account. Once verified, this appointment will appear in My bookings.",
     status: {
       business: {
         pending: {
@@ -286,6 +290,8 @@ The in-app support conversation remains the authoritative record.`,
     },
     bookingNote:
       "Hap Mirëbook për statusin më të fundit të rezervimit dhe veprimet e disponueshme.",
+    customerAccountNote:
+      "Përdor këtë adresë email-i klienti për të hyrë ose për të krijuar një llogari klienti. Pas verifikimit, ky takim do të shfaqet te Rezervimet e mia.",
     status: {
       business: {
         pending: {
@@ -535,6 +541,10 @@ export function bookingEmailTemplate(
   const customerName = input.customerName || copy.customerFallback;
   const serviceName = input.serviceName || copy.appointmentFallback;
   const appointmentTime = formatDateTime(input.startAt, copy);
+  const bookingNote =
+    input.recipientRole === "customer" && input.customerAccountHint
+      ? copy.customerAccountNote
+      : copy.bookingNote;
   const staffLine = input.staffName
     ? `\n${copy.staffLabel}: ${input.staffName}`
     : "";
@@ -547,6 +557,8 @@ ${copy.serviceLabel}: ${serviceName}${staffLine}
 ${copy.dateTimeLabel}: ${appointmentTime}
 
 ${copy.openMirebook}: ${input.actionUrl}
+
+${bookingNote}
 
 ${copy.sourceOfTruthBookings}`;
 
@@ -569,7 +581,7 @@ ${copy.sourceOfTruthBookings}`;
       ],
       actionLabel: copy.bookingActions[input.recipientRole],
       actionUrl: input.actionUrl,
-      note: copy.bookingNote,
+      note: bookingNote,
       footer: copy.footer,
     }),
     preferenceEnabled: input.preferenceEnabled,
