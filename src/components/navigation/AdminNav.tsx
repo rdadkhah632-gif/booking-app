@@ -27,7 +27,7 @@ export default function AdminNav({
         {notificationLabel("admin", notificationCount, t)}
       </Link>
 
-      <Link href="/support" className="muted nav-wide-only">
+      <Link href="/admin/support" className="muted nav-wide-only">
         {t("nav.support", "Support")}
       </Link>
 

@@ -1966,6 +1966,11 @@ export default function AdminBusinessesPage() {
           align-content: start;
         }
 
+        .admin-editor-card {
+          position: sticky;
+          top: 1rem;
+        }
+
         .admin-filter-grid {
           display: grid;
           gap: 0.75rem;
@@ -2256,6 +2261,10 @@ export default function AdminBusinessesPage() {
 
           .admin-business-list {
             max-height: none;
+          }
+
+          .admin-editor-card {
+            position: static;
           }
         }
 

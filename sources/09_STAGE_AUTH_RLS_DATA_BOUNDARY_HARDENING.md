@@ -1209,6 +1209,32 @@ Still required:
   accepted or suppressed delivery
 - rerun customer password reset once Supabase delivery is confirmed
 
+## Admin Operations QA Follow-Up
+
+Admin QA found the operator area useful but needing safer operational controls
+before broader production use.
+
+Implemented first admin renovation batch:
+
+- admin Support navigation now opens `/admin/support` directly instead of the
+  general `/support` hub
+- admin user rows now distinguish auth role from operational role with clearer
+  badges such as Admin, Business owner and Staff-linked
+- selected account and selected business detail panels are sticky on desktop so
+  operators do not lose the editing context below long result lists
+- platform notification sending now has an in-page "Review send" step
+- bulk/admin-wide notification targets require typing `SEND` before insertion
+  into notification records
+
+Deferred admin work:
+
+- true audit logging for admin changes should be implemented as a backend/table
+  batch rather than a UI-only patch
+- publish, booking-rule and billing-state admin changes should get reason notes
+  and last-changed metadata once the audit table exists
+- promotional/bulk email campaigns remain out of scope until consent,
+  unsubscribe and segmentation rules are explicit
+
 ### Production Environment Checklist
 
 Required in Vercel Production:

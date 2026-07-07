@@ -113,6 +113,8 @@ export default function AdminNotificationsPage() {
 
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [reviewingSend, setReviewingSend] = useState(false)
+  const [sendConfirmText, setSendConfirmText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -183,6 +185,14 @@ export default function AdminNotificationsPage() {
   }, [targetMode, selectedUserId, selectedBusinessId, selectedBusiness, businessOwners.length, profiles.length, admins.length])
 
   const canSend = title.trim().length > 0 && message.trim().length > 0 && targetCount > 0
+  const isBulkTarget =
+    targetMode === 'all_users' ||
+    targetMode === 'all_business_owners' ||
+    targetMode === 'admins_only'
+  const selectedTargetLabel =
+    TARGET_OPTIONS.find((option) => option.value === targetMode)?.label || 'Selected target'
+  const cleanActionUrl = actionUrl.trim() || defaultActionForTarget(targetMode, selectedBusinessId)
+  const canConfirmSend = canSend && (!isBulkTarget || sendConfirmText.trim() === 'SEND')
 
   async function loadAdminNotifications() {
     setLoading(true)
@@ -304,6 +314,8 @@ export default function AdminNotificationsPage() {
 
   function setTargetModeSafely(nextMode: string) {
     setTargetMode(nextMode)
+    setReviewingSend(false)
+    setSendConfirmText('')
 
     if (nextMode === 'single_business' || nextMode === 'all_business_owners') {
       setAudience('business')
@@ -319,6 +331,18 @@ export default function AdminNotificationsPage() {
 
     setAudience('general')
     setActionUrl(defaultActionForTarget(nextMode))
+  }
+
+  function openSendReview() {
+    if (!canSend) {
+      setError('Choose a target and add a title and message before sending.')
+      return
+    }
+
+    setError(null)
+    setSuccess(null)
+    setSendConfirmText('')
+    setReviewingSend(true)
   }
 
   function buildNotificationRows() {
@@ -398,8 +422,10 @@ export default function AdminNotificationsPage() {
       return
     }
 
-    const confirmed = confirm(`Send this notification to ${targetCount} recipient${targetCount === 1 ? '' : 's'}?`)
-    if (!confirmed) return
+    if (!canConfirmSend) {
+      setError('Review the send details and type SEND before sending this bulk notification.')
+      return
+    }
 
     setSending(true)
     setError(null)
@@ -419,6 +445,8 @@ export default function AdminNotificationsPage() {
     }
 
     setSuccess(`Notification sent to ${rows.length} recipient${rows.length === 1 ? '' : 's'}.`)
+    setReviewingSend(false)
+    setSendConfirmText('')
     setTitle('')
     setMessage('')
     setActionUrl(defaultActionForTarget(targetMode, selectedBusinessId))
@@ -666,7 +694,7 @@ export default function AdminNotificationsPage() {
                   {message.trim() || 'Notification message preview will appear here.'}
                 </p>
                 <p className="small muted" style={{ marginTop: '0.45rem' }}>
-                  Target: {TARGET_OPTIONS.find((option) => option.value === targetMode)?.label} · {targetCount} recipient{targetCount === 1 ? '' : 's'}
+                  Target: {selectedTargetLabel} · {targetCount} recipient{targetCount === 1 ? '' : 's'}
                 </p>
               </div>
 
@@ -691,8 +719,77 @@ export default function AdminNotificationsPage() {
                   <p className="small muted">Bulk send confirmation</p>
                   <strong>{targetCount} recipients will receive this notification.</strong>
                   <p className="small muted" style={{ marginTop: '0.35rem' }}>
-                    Bulk messages should be used for platform notices, trial reminders, promotions or operational updates only.
+                    Bulk messages require a review step and typed confirmation before sending. Use them only for platform notices, trial reminders, promotions or operational updates.
                   </p>
+                </div>
+              )}
+
+              {reviewingSend && (
+                <div className="admin-review-box">
+                  <div className="admin-section-header">
+                    <div>
+                      <p className="small muted">Review send</p>
+                      <h3>Confirm platform notification</h3>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        setReviewingSend(false)
+                        setSendConfirmText('')
+                      }}
+                      disabled={sending}
+                    >
+                      Edit message
+                    </button>
+                  </div>
+
+                  <dl className="admin-review-grid">
+                    <div>
+                      <dt>Audience</dt>
+                      <dd>{selectedTargetLabel}</dd>
+                    </div>
+                    <div>
+                      <dt>Recipients</dt>
+                      <dd>{targetCount}</dd>
+                    </div>
+                    <div>
+                      <dt>Type</dt>
+                      <dd>{TYPE_OPTIONS.find((option) => option.value === notificationType)?.label || notificationType}</dd>
+                    </div>
+                    <div>
+                      <dt>Action URL</dt>
+                      <dd>{cleanActionUrl}</dd>
+                    </div>
+                    <div className="admin-review-message">
+                      <dt>Title</dt>
+                      <dd>{title.trim()}</dd>
+                    </div>
+                    <div className="admin-review-message">
+                      <dt>Message</dt>
+                      <dd>{message.trim()}</dd>
+                    </div>
+                  </dl>
+
+                  {isBulkTarget && (
+                    <label className="admin-confirm-field">
+                      <span className="small muted">Type SEND to confirm this bulk notification</span>
+                      <input
+                        value={sendConfirmText}
+                        onChange={(event) => setSendConfirmText(event.target.value)}
+                        placeholder="SEND"
+                      />
+                    </label>
+                  )}
+
+                  <button
+                    type="button"
+                    className={isBulkTarget ? 'btn btn-danger' : 'btn btn-accent'}
+                    onClick={sendNotification}
+                    disabled={sending || !canConfirmSend}
+                  >
+                    {sending ? 'Sending...' : `Send to ${targetCount} recipient${targetCount === 1 ? '' : 's'}`}
+                  </button>
                 </div>
               )}
 
@@ -700,10 +797,13 @@ export default function AdminNotificationsPage() {
                 <div>
                   <p className="small muted">Ready to send?</p>
                   <strong>{targetCount} recipient{targetCount === 1 ? '' : 's'} selected</strong>
+                  <p className="small muted" style={{ marginTop: '0.25rem' }}>
+                    Review details before anything is inserted into notification records.
+                  </p>
                 </div>
 
-                <button type="button" className="btn btn-accent" onClick={sendNotification} disabled={sending || !canSend}>
-                  {sending ? 'Sending...' : 'Send notification'}
+                <button type="button" className="btn btn-accent" onClick={openSendReview} disabled={sending || !canSend}>
+                  Review send
                 </button>
               </div>
             </div>
@@ -826,6 +926,7 @@ export default function AdminNotificationsPage() {
 
         .admin-preview-box,
         .admin-target-box,
+        .admin-review-box,
         .admin-bulk-warning,
         .admin-empty {
           background: var(--surface-2);
@@ -837,6 +938,49 @@ export default function AdminNotificationsPage() {
         .admin-bulk-warning {
           border-color: rgba(255,190,11,0.28);
           background: rgba(255,190,11,0.06);
+        }
+
+        .admin-review-box {
+          display: grid;
+          gap: 1rem;
+          border-color: rgba(255,107,53,0.32);
+          background: rgba(255,107,53,0.07);
+        }
+
+        .admin-review-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 0.75rem;
+          margin: 0;
+        }
+
+        .admin-review-grid div {
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          background: var(--surface);
+          padding: 0.75rem;
+          min-width: 0;
+        }
+
+        .admin-review-grid dt {
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          font-weight: 700;
+          margin-bottom: 0.28rem;
+        }
+
+        .admin-review-grid dd {
+          margin: 0;
+          overflow-wrap: anywhere;
+        }
+
+        .admin-review-message {
+          grid-column: 1 / -1;
+        }
+
+        .admin-confirm-field {
+          display: grid;
+          gap: 0.45rem;
         }
 
         .admin-send-footer {

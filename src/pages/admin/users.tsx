@@ -83,6 +83,21 @@ function roleLabel(role?: string | null) {
   return role.charAt(0).toUpperCase() + role.slice(1);
 }
 
+function operationalRoleLabel(profile: ProfileRow, counts: UserCounts) {
+  const labels: string[] = [];
+
+  if (profile.is_admin) labels.push("Admin");
+  if (counts.businesses > 0) labels.push("Business owner");
+  if (counts.staffProfiles > 0) labels.push("Staff-linked");
+  if (counts.bookings > 0) labels.push("Customer");
+
+  if (labels.length === 0) {
+    labels.push(roleLabel(profile.role));
+  }
+
+  return labels.join(" · ");
+}
+
 function profileDisplayName(profile?: ProfileRow | null) {
   if (!profile) return "No user selected";
   return profile.full_name || profile.email || profile.id;
@@ -946,7 +961,7 @@ export default function AdminUsersPage() {
                           <strong>{profile.email || "No email"}</strong>
                           <span className="small muted">
                             {profile.full_name || "No name"} ·{" "}
-                            {roleLabel(profile.role)}
+                            {operationalRoleLabel(profile, counts)}
                           </span>
                           <span className="small muted">
                             Joined {formatDate(profile.created_at)}
@@ -957,6 +972,19 @@ export default function AdminUsersPage() {
                           {profile.is_admin && (
                             <span className="admin-pill admin-pill-accent">
                               Admin
+                            </span>
+                          )}
+                          <span className="admin-pill admin-pill-muted">
+                            Auth: {roleLabel(profile.role)}
+                          </span>
+                          {counts.businesses > 0 && (
+                            <span className="admin-pill admin-pill-success">
+                              Business owner
+                            </span>
+                          )}
+                          {counts.staffProfiles > 0 && (
+                            <span className="admin-pill admin-pill-success">
+                              Staff-linked
                             </span>
                           )}
                           <span
@@ -1023,6 +1051,12 @@ export default function AdminUsersPage() {
                         className="admin-row-meta"
                         style={{ marginTop: "0.55rem" }}
                       >
+                        <span className="admin-pill admin-pill-accent">
+                          {operationalRoleLabel(selectedUser, selectedCounts)}
+                        </span>
+                        <span className="admin-pill admin-pill-muted">
+                          Auth: {roleLabel(selectedUser.role)}
+                        </span>
                         <span
                           className={`admin-pill ${
                             emailVerification.verified
@@ -1463,6 +1497,11 @@ export default function AdminUsersPage() {
           align-content: start;
         }
 
+        .admin-editor-card {
+          position: sticky;
+          top: 1rem;
+        }
+
         .admin-filter-grid {
           display: grid;
           gap: 0.75rem;
@@ -1615,6 +1654,10 @@ export default function AdminUsersPage() {
 
           .admin-user-list {
             max-height: none;
+          }
+
+          .admin-editor-card {
+            position: static;
           }
         }
 
