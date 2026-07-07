@@ -1,6 +1,6 @@
 # Stage 10 - Business and Staff iOS App Foundation
 
-Status: Batch 10A contract audit started.
+Status: Batch 10A.2 app API contracts implemented.
 
 This stage is for the first Mirëbook mobile app. The first app should be a
 business/staff operations app, similar in purpose to Booksy Biz or Fresha's
@@ -446,3 +446,87 @@ Batch 10A.2 should add API contract documentation or TypeScript route stubs for:
 
 Those three unlock the native app shell without touching booking creation or
 dangerous write flows first.
+
+## Batch 10A.2 - Read-Only App API Contracts
+
+Status: implemented.
+
+Created read-only app-facing API contracts:
+
+- `src/pages/api/app/session-context.ts`
+- `src/pages/api/app/calendar.ts`
+- `src/pages/api/app/inbox.ts`
+
+Shared server context:
+
+- `src/lib/server/app-api/context.ts`
+
+### Auth Pattern
+
+Each app route expects a Supabase access token in:
+
+```text
+Authorization: Bearer <access_token>
+```
+
+The route validates the token server-side with Supabase Auth, then loads only
+the signed-in user's owned businesses and linked staff profiles. Native clients
+should not call core tables directly for these first app screens.
+
+### `/api/app/session-context`
+
+Purpose:
+
+- identify whether the signed-in account should land in business or staff mode
+- return compact user, primary business and primary staff context
+- return app tab names for the first business/staff app
+
+This route does not create accounts, link staff or change role logic.
+
+### `/api/app/calendar`
+
+Purpose:
+
+- return role-scoped calendar appointments for a date range
+- business scope returns appointments for an owned business
+- staff scope returns appointments assigned to the signed-in staff profile
+- includes display-ready service, staff, customer, status and action hints
+
+This route is read-only. It does not accept, decline, cancel, complete or create
+bookings.
+
+### `/api/app/inbox`
+
+Purpose:
+
+- business scope returns pending booking requests, pending reschedule requests
+  and recent business notifications
+- staff scope returns staff/general notifications for the signed-in staff user
+- response is shaped as `needsAction` plus `updates` for a future native Inbox
+
+This route is read-only. It does not mark notifications read or perform booking
+actions.
+
+### Protected Systems Unchanged
+
+Batch 10A.2 does not change:
+
+- booking creation
+- booking status transitions
+- availability/slot generation
+- stale-slot prevention
+- staff invite/linking
+- auth/session/RLS
+- billing writes
+- notification generation behaviour
+- database schema
+
+### Next Recommended Batch
+
+Batch 10A.3 should add either:
+
+1. read-only app API QA with live bearer tokens from existing business/staff
+   accounts, or
+2. minimal SwiftUI scaffold now that Xcode Simulator devices are available.
+
+Recommended order: QA the read-only API contracts first, then scaffold SwiftUI.
