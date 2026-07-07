@@ -2,6 +2,18 @@
 
 Status: Batch 10A.2 app API contracts implemented.
 
+Web account/contact readiness note:
+
+- registration now collects profile name and phone for all account types
+- business registration requires owner name and owner phone
+- business registration seeds country, timezone and currency defaults from the
+  detected region where possible
+- Account shows a compact region summary and remains the source for editing
+  personal profile details
+- Supabase Auth still owns recovery-email delivery; the recovery email template
+  must be branded in Supabase dashboard, while `/reset-password` remains the
+  Mirëbook reset completion page
+
 This stage is for the first Mirëbook mobile app. The first app should be a
 business/staff operations app, similar in purpose to Booksy Biz or Fresha's
 provider tools, without copying their interface, assets or branding.

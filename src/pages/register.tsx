@@ -13,21 +13,35 @@ import {
   getCustomerAppUrl,
   isBusinessAppHostname,
 } from "@/lib/appUrls";
+import { detectRegionDefaults } from "@/lib/regionDefaults";
+
+const CURRENCY_OPTIONS = [
+  { value: "ALL", labelKey: "currency.all", fallback: "ALL - Albanian lek" },
+  { value: "EUR", labelKey: "currency.eur", fallback: "EUR - Euro" },
+  { value: "GBP", labelKey: "currency.gbp", fallback: "GBP - British pound" },
+  { value: "USD", labelKey: "currency.usd", fallback: "USD - US dollar" },
+];
+
+const TIMEZONE_OPTIONS = [
+  "Europe/Tirane",
+  "Europe/London",
+  "Europe/Rome",
+  "Europe/Paris",
+  "Europe/Berlin",
+];
 
 export default function RegisterPage() {
   const router = useRouter();
   const { locale, setLocale, t } = useI18n();
+  const detectedRegion = detectRegionDefaults();
 
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [preferredLanguage, setPreferredLanguage] = useState<Locale>(() => {
-    if (
-      typeof navigator !== "undefined" &&
-      navigator.language.toLowerCase().startsWith("sq")
-    )
-      return "sq";
-    return "en";
-  });
+  const [preferredLanguage, setPreferredLanguage] = useState<Locale>(
+    detectedRegion.locale,
+  );
   const [role, setRole] = useState<"customer" | "business" | "staff">(
     "customer",
   );
@@ -35,7 +49,15 @@ export default function RegisterPage() {
   const [businessPhone, setBusinessPhone] = useState("");
   const [businessCategory, setBusinessCategory] = useState("");
   const [businessCity, setBusinessCity] = useState("");
-  const [businessCountry, setBusinessCountry] = useState("Albania");
+  const [businessCountry, setBusinessCountry] = useState(
+    detectedRegion.country,
+  );
+  const [businessTimezone, setBusinessTimezone] = useState(
+    detectedRegion.timezone,
+  );
+  const [businessCurrency, setBusinessCurrency] = useState(
+    detectedRegion.currency,
+  );
   const [ownerTakesBookings, setOwnerTakesBookings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -132,6 +154,8 @@ export default function RegisterPage() {
     setMessage(null);
 
     const cleanEmail = email.trim().toLowerCase();
+    const cleanFullName = fullName.trim();
+    const cleanPhone = phone.trim();
 
     if (password.length < 6) {
       setError(
@@ -145,6 +169,23 @@ export default function RegisterPage() {
     }
 
     if (role === "business") {
+      if (!cleanFullName) {
+        setError(t("register.fullNameRequired", "Full name is required."));
+        setLoading(false);
+        return;
+      }
+
+      if (!cleanPhone) {
+        setError(
+          t(
+            "register.phoneRequired.business",
+            "Your phone number is required for business accounts.",
+          ),
+        );
+        setLoading(false);
+        return;
+      }
+
       if (!businessName.trim()) {
         setError(
           t("register.business.nameRequired", "Business name is required."),
@@ -221,6 +262,8 @@ export default function RegisterPage() {
           // Staff intent is stored as account_mode='staff' and resolved by getAccountCapabilities.
           role: role === "staff" ? "customer" : role,
           account_mode: role,
+          full_name: cleanFullName || null,
+          phone: cleanPhone || null,
           preferred_language: preferredLanguage,
           pending_registration: true,
           pending_business:
@@ -231,6 +274,8 @@ export default function RegisterPage() {
                   category: businessCategory.trim(),
                   city: businessCity.trim(),
                   country: businessCountry.trim(),
+                  timezone: businessTimezone,
+                  currency: businessCurrency,
                   ownerTakesBookings,
                 }
               : null,
@@ -289,6 +334,8 @@ export default function RegisterPage() {
             id: data.user.id,
             email: cleanEmail,
             role: profileRole,
+            full_name: cleanFullName || null,
+            phone: cleanPhone || null,
             preferred_language: preferredLanguage,
           });
 
@@ -301,7 +348,11 @@ export default function RegisterPage() {
 
       const { error: languageError } = await supabase
         .from("profiles")
-        .update({ preferred_language: preferredLanguage })
+        .update({
+          full_name: cleanFullName || null,
+          phone: cleanPhone || null,
+          preferred_language: preferredLanguage,
+        })
         .eq("id", data.user.id);
 
       if (languageError) {
@@ -322,6 +373,8 @@ export default function RegisterPage() {
             category: businessCategory.trim(),
             city: businessCity.trim(),
             country: businessCountry.trim(),
+            timezone: businessTimezone,
+            currency: businessCurrency,
             published: false,
           })
           .select("id")
@@ -341,6 +394,7 @@ export default function RegisterPage() {
 
         if (ownerTakesBookings) {
           const ownerName =
+            cleanFullName ||
             cleanEmail.split("@")[0] ||
             t("staff.ownerSetup.defaultName", "Owner");
           const { error: ownerStaffError } = await supabase
@@ -350,6 +404,7 @@ export default function RegisterPage() {
               user_id: data.user.id,
               name: ownerName,
               email: cleanEmail,
+              phone: cleanPhone || businessPhone.trim() || null,
               role_title: t("staff.ownerSetup.defaultRole", "Owner"),
               permission_role: "staff",
               invite_status: "linked",
@@ -632,6 +687,41 @@ export default function RegisterPage() {
               />
             </label>
 
+            <div className="register-profile-grid">
+              <label className="auth-field">
+                <span>
+                  {t("register.fullNameLabel", "Full name")}
+                  {role !== "business" && (
+                    <em>{t("register.optional", "Optional")}</em>
+                  )}
+                </span>
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder={t(
+                    "register.fullNamePlaceholder",
+                    "Your full name",
+                  )}
+                  required={role === "business"}
+                />
+              </label>
+
+              <label className="auth-field">
+                <span>
+                  {t("register.phoneLabel", "Phone number")}
+                  {role !== "business" && (
+                    <em>{t("register.optional", "Optional")}</em>
+                  )}
+                </span>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={t("register.phonePlaceholder", "Phone number")}
+                  required={role === "business"}
+                />
+              </label>
+            </div>
+
             <div className="register-role-mobile">
               <label
                 className="small muted"
@@ -778,22 +868,55 @@ export default function RegisterPage() {
                       required={role === "business"}
                     />
                   </label>
+                </div>
+
+                <div className="register-business-location-grid">
+                  <label className="auth-field">
+                    <span>
+                      {t("register.business.timezoneLabel", "Timezone")}
+                    </span>
+                    <select
+                      value={businessTimezone}
+                      onChange={(e) => setBusinessTimezone(e.target.value)}
+                    >
+                      {TIMEZONE_OPTIONS.map((timezone) => (
+                        <option key={timezone} value={timezone}>
+                          {timezone}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
                   <label className="auth-field">
                     <span>
-                      {t("register.business.countryLabel", "Country")}
+                      {t("register.business.currencyLabel", "Currency")}
                     </span>
-                    <input
-                      value={businessCountry}
-                      onChange={(e) => setBusinessCountry(e.target.value)}
-                      placeholder={t(
-                        "register.business.countryPlaceholder",
-                        "Example: Albania",
-                      )}
-                      required={role === "business"}
-                    />
+                    <select
+                      value={businessCurrency}
+                      onChange={(e) => setBusinessCurrency(e.target.value)}
+                    >
+                      {CURRENCY_OPTIONS.map((currency) => (
+                        <option key={currency.value} value={currency.value}>
+                          {t(currency.labelKey, currency.fallback)}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                 </div>
+
+                <label className="auth-field">
+                  <span>{t("register.business.countryLabel", "Country")}</span>
+                  <input
+                    value={businessCountry}
+                    onChange={(e) => setBusinessCountry(e.target.value)}
+                    placeholder={t(
+                      "register.business.countryPlaceholder",
+                      "Example: Albania",
+                    )}
+                    required={role === "business"}
+                  />
+                </label>
+
                 <label className="register-owner-staff-option">
                   <input
                     type="checkbox"
@@ -974,6 +1097,26 @@ export default function RegisterPage() {
           gap: 0.75rem;
         }
 
+        .register-profile-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .auth-field span {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+        }
+
+        .auth-field em {
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-style: normal;
+          font-weight: 700;
+        }
+
         .register-owner-staff-option {
           display: grid;
           grid-template-columns: auto 1fr;
@@ -1062,6 +1205,10 @@ export default function RegisterPage() {
           }
 
           .register-business-location-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .register-profile-grid {
             grid-template-columns: 1fr;
           }
 

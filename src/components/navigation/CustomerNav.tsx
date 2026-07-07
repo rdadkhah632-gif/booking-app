@@ -100,7 +100,9 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           right: 0;
           top: calc(100% + 0.45rem);
           z-index: 60;
-          width: min(13rem, calc(100vw - 1.5rem));
+          min-width: 9.5rem;
+          width: max-content;
+          max-width: min(11rem, calc(100vw - 1.5rem));
           display: grid;
           gap: 0.25rem;
           padding: 0.45rem;
@@ -157,7 +159,8 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           .customer-nav-account-menu-panel {
             position: static;
             margin-top: 0.45rem;
-            width: auto;
+            width: 100%;
+            max-width: none;
           }
         }
       `}</style>

@@ -70,6 +70,22 @@ function navRoleForCapabilities(params: {
   return "customer";
 }
 
+function fallbackLogoHref(pathname: string) {
+  if (isAdminRoute(pathname)) return "/admin";
+  if (isBusinessRoute(pathname)) return "/dashboard";
+  if (isStaffRoute(pathname)) return "/staff";
+  if (
+    pathname.startsWith("/my-bookings") ||
+    pathname.startsWith("/notifications") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/support/customer")
+  ) {
+    return "/explore";
+  }
+
+  return "/";
+}
+
 export default function AuthNav() {
   const router = useRouter();
   const { t } = useI18n();
@@ -88,51 +104,57 @@ export default function AuthNav() {
     async function loadUser() {
       setLoading(true);
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if (!session) {
-        setRole(null);
-        setNotificationCount(0);
-        setPrimaryBusinessId(null);
-        setLoading(false);
-        return;
+        if (!session) {
+          setRole(null);
+          setNotificationCount(0);
+          setPrimaryBusinessId(null);
+          setLoading(false);
+          return;
+        }
+
+        const capabilities = await getAccountCapabilities(
+          session.user.id,
+          session.user.email,
+        );
+
+        if (cancelled) return;
+
+        const nextRole = navRoleForCapabilities({
+          activePath: router.pathname,
+          isAdmin: capabilities.isAdmin,
+          ownsBusiness: capabilities.ownsBusiness,
+          hasStaffAccess: capabilities.hasStaffAccess,
+        });
+
+        setPrimaryBusinessId(capabilities.primaryBusinessId);
+        setRole(nextRole);
+
+        await loadNotificationCounts({
+          userId: session.user.id,
+          activePath: router.pathname,
+          navRole: nextRole,
+          adminUser: capabilities.isAdmin,
+          ownsBusiness: capabilities.ownsBusiness,
+          hasStaffProfile: capabilities.hasStaffAccess,
+          staffId: capabilities.primaryStaffId,
+          businessIds: capabilities.ownedBusinesses.map(
+            (business) => business.id,
+          ),
+        });
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[AuthNav] Could not load navigation state", error);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      const capabilities = await getAccountCapabilities(
-        session.user.id,
-        session.user.email,
-      );
-
-      if (cancelled) return;
-
-      const nextRole = navRoleForCapabilities({
-        activePath: router.pathname,
-        isAdmin: capabilities.isAdmin,
-        ownsBusiness: capabilities.ownsBusiness,
-        hasStaffAccess: capabilities.hasStaffAccess,
-      });
-
-      setPrimaryBusinessId(capabilities.primaryBusinessId);
-      setRole(nextRole);
-
-      await loadNotificationCounts({
-        userId: session.user.id,
-        activePath: router.pathname,
-        navRole: nextRole,
-        adminUser: capabilities.isAdmin,
-        ownsBusiness: capabilities.ownsBusiness,
-        hasStaffProfile: capabilities.hasStaffAccess,
-        staffId: capabilities.primaryStaffId,
-        businessIds: capabilities.ownedBusinesses.map(
-          (business) => business.id,
-        ),
-      });
-
-      if (!cancelled) setLoading(false);
     }
 
     loadUser();
@@ -241,8 +263,8 @@ export default function AuthNav() {
     if (role === "staff") return "/staff";
     if (role === "customer") return "/explore";
     if (isPublicBusinessEntry) return getBusinessAppUrl();
-    return "/";
-  }, [isPublicBusinessEntry, role]);
+    return fallbackLogoHref(router.pathname);
+  }, [isPublicBusinessEntry, role, router.pathname]);
 
   const roleBadge = useMemo(() => {
     if (role === "admin") return t("nav.role.operator", "Operator");

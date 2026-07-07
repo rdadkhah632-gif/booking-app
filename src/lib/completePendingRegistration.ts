@@ -7,6 +7,8 @@ type PendingBusiness = {
   category?: string;
   city?: string;
   country?: string;
+  timezone?: string;
+  currency?: string;
   ownerTakesBookings?: boolean;
 };
 
@@ -21,6 +23,14 @@ export async function completePendingRegistration(user: User) {
         : "customer";
   const profileRole = accountMode === "business" ? "business" : "customer";
   const email = user.email?.trim().toLowerCase() || "";
+  const fullName =
+    typeof user.user_metadata.full_name === "string"
+      ? user.user_metadata.full_name.trim()
+      : "";
+  const phone =
+    typeof user.user_metadata.phone === "string"
+      ? user.user_metadata.phone.trim()
+      : "";
 
   const { data: existingProfile, error: profileLookupError } = await supabase
     .from("profiles")
@@ -35,11 +45,25 @@ export async function completePendingRegistration(user: User) {
       id: user.id,
       email,
       role: profileRole,
+      full_name: fullName || null,
+      phone: phone || null,
       preferred_language:
         user.user_metadata.preferred_language === "sq" ? "sq" : "en",
     });
 
     if (profileError) throw profileError;
+  } else {
+    const { error: profileUpdateError } = await supabase
+      .from("profiles")
+      .update({
+        full_name: fullName || null,
+        phone: phone || null,
+        preferred_language:
+          user.user_metadata.preferred_language === "sq" ? "sq" : "en",
+      })
+      .eq("id", user.id);
+
+    if (profileUpdateError) throw profileUpdateError;
   }
 
   if (accountMode !== "business") {
@@ -82,6 +106,8 @@ export async function completePendingRegistration(user: User) {
         category: pendingBusiness.category,
         city: pendingBusiness.city,
         country: pendingBusiness.country,
+        timezone: pendingBusiness.timezone || "Europe/London",
+        currency: pendingBusiness.currency || "GBP",
         published: false,
       })
       .select("id")
@@ -116,8 +142,9 @@ export async function completePendingRegistration(user: User) {
     .insert({
       business_id: businessId,
       user_id: user.id,
-      name: email.split("@")[0] || "Owner",
+      name: fullName || email.split("@")[0] || "Owner",
       email,
+      phone: phone || pendingBusiness.phone || null,
       role_title:
         user.user_metadata.preferred_language === "sq" ? "Pronar" : "Owner",
       permission_role: "staff",

@@ -18,6 +18,11 @@ import {
 import { getAuthAppUrl, isBusinessAppHostname } from "@/lib/appUrls";
 import { requestPasswordResetEmail } from "@/lib/auth/passwordReset";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
+import {
+  DEFAULT_REGION,
+  RegionDefaults,
+  detectRegionDefaults,
+} from "@/lib/regionDefaults";
 
 type Role = "customer" | "business" | "staff";
 
@@ -51,63 +56,6 @@ type StaffProfile = {
   business_name?: string | null;
 };
 
-type RegionInfo = {
-  timezone: string;
-  country: string;
-  currency: string;
-  locale: string;
-};
-
-function detectRegion(): RegionInfo {
-  const timezone =
-    Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
-  const browserLocale =
-    typeof navigator !== "undefined" ? navigator.language : "en-GB";
-
-  if (
-    timezone === "Europe/London" ||
-    browserLocale.toLowerCase().includes("gb")
-  ) {
-    return {
-      timezone,
-      country: "United Kingdom",
-      currency: "GBP",
-      locale: browserLocale,
-    };
-  }
-
-  if (
-    timezone === "Europe/Tirane" ||
-    browserLocale.toLowerCase().includes("sq")
-  ) {
-    return {
-      timezone,
-      country: "Albania",
-      currency: "ALL",
-      locale: browserLocale,
-    };
-  }
-
-  if (
-    timezone === "Europe/Rome" ||
-    browserLocale.toLowerCase().includes("it")
-  ) {
-    return {
-      timezone,
-      country: "Italy",
-      currency: "EUR",
-      locale: browserLocale,
-    };
-  }
-
-  return {
-    timezone,
-    country: "Auto-detected",
-    currency: "Auto",
-    locale: browserLocale,
-  };
-}
-
 export default function AccountPage() {
   const router = useRouter();
   const { locale, setLocale, t } = useI18n();
@@ -136,12 +84,7 @@ export default function AccountPage() {
     "loading" | "available" | "schema_missing"
   >("loading");
   const [savingPreferences, setSavingPreferences] = useState(false);
-  const [regionInfo, setRegionInfo] = useState<RegionInfo>({
-    timezone: "Unknown",
-    country: "Auto-detected",
-    currency: "Auto",
-    locale: "en-GB",
-  });
+  const [regionInfo, setRegionInfo] = useState<RegionDefaults>(DEFAULT_REGION);
 
   const ownsBusiness = ownedBusinesses.length > 0;
   const hasStaffAccess = hasLinkedStaffProfile || isStaffIntentAccount;
@@ -153,7 +96,7 @@ export default function AccountPage() {
     setLoading(true);
     setError(null);
     setMessage(null);
-    setRegionInfo(detectRegion());
+    setRegionInfo(detectRegionDefaults());
 
     const {
       data: { session },
@@ -1011,12 +954,26 @@ export default function AccountPage() {
               <div className="card account-region-card">
                 <div className="account-card-heading">
                   <h3>{t("account.region.kicker", "Region")}</h3>
-                  <p className="small muted">{regionInfo.country}</p>
+                  <p className="small muted">
+                    {t(
+                      "account.region.body",
+                      "Timezone, currency and language defaults.",
+                    )}
+                  </p>
                 </div>
                 <div className="account-region-grid">
-                  <span>{regionInfo.timezone}</span>
-                  <span>{regionInfo.currency}</span>
-                  <span>{regionInfo.locale}</span>
+                  <span>
+                    <small>{t("account.region.country", "Country")}</small>
+                    {regionInfo.country}
+                  </span>
+                  <span>
+                    <small>{t("account.region.timezone", "Timezone")}</small>
+                    {regionInfo.timezone}
+                  </span>
+                  <span>
+                    <small>{t("account.region.currency", "Currency")}</small>
+                    {regionInfo.currency}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1207,19 +1164,29 @@ export default function AccountPage() {
         }
 
         .account-region-grid {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.45rem;
         }
 
         .account-region-grid span {
           border: 1px solid var(--border);
-          border-radius: 999px;
+          border-radius: 10px;
           background: var(--surface-2);
-          color: var(--text-muted);
-          padding: 0.25rem 0.65rem;
+          color: var(--text);
+          display: grid;
+          gap: 0.12rem;
+          min-width: 0;
+          padding: 0.48rem 0.58rem;
           font-size: 0.8rem;
           font-weight: 700;
+        }
+
+        .account-region-grid small {
+          color: var(--text-muted);
+          font-size: 0.68rem;
+          font-weight: 800;
+          text-transform: uppercase;
         }
 
         .operator-account-card {
@@ -1400,6 +1367,10 @@ export default function AccountPage() {
           }
 
           .account-form-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .account-region-grid {
             grid-template-columns: 1fr;
           }
 
