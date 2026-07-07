@@ -1951,6 +1951,11 @@ export const sq: TranslationTree = {
   "dashboardBookings.week.controls": "Kontrollet e javës",
   "dashboardBookings.mobileAgenda.label": "Agjenda e javës",
   "dashboardBookings.details.kicker": "Takimi i zgjedhur",
+  "dashboardBookings.details.when": "Kur",
+  "dashboardBookings.details.service": "Shërbimi",
+  "dashboardBookings.details.staff": "Stafi",
+  "dashboardBookings.details.contact": "Kontakti",
+  "dashboardBookings.details.notes": "Shënime",
   "dashboardBookings.filters.calendarView": "Pamja e kalendarit",
   "dashboardBookings.filters.body":
     "Fillo me sot, shko te një datë specifike, ose hap një pamje Mirëbook të filtruar nga kalendari i dashboard-it.",
@@ -1958,6 +1963,7 @@ export const sq: TranslationTree = {
   "dashboardBookings.filters.status": "Statusi",
   "dashboardBookings.filters.searchLabel": "Kërko klient/shërbim/staf",
   "dashboardBookings.filters.searchPlaceholder": "Kërko takime",
+  "dashboardBookings.filters.staff": "Stafi",
   "dashboardBookings.filters.allStaff": "I gjithë stafi",
   "dashboardBookings.filters.activeView": "Pamja aktive",
   "dashboardBookings.filters.reset": "Rivendos filtrat",
@@ -2008,9 +2014,16 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.customerEmail": "Email-i i klientit",
   "dashboardBookings.manual.customerPhone": "Telefoni",
   "dashboardBookings.manual.service": "Shërbimi",
+  "dashboardBookings.manual.bookFor": "Rezervo për",
   "dashboardBookings.manual.chooseService": "Zgjidh shërbimin",
   "dashboardBookings.manual.chooseStaff": "Zgjidh stafin",
   "dashboardBookings.manual.notes": "Shënime",
+  "dashboardBookings.manual.staffBusy": "I zënë",
+  "dashboardBookings.manual.staffAvailable": "I lirë",
+  "dashboardBookings.manual.staffAvailabilityHint":
+    "Stafi i lirë shënohet për orarin e zgjedhur.",
+  "dashboardBookings.manual.noStaffAvailableAtTime":
+    "Asnjë staf i caktuar nuk është i lirë në këtë orar.",
   "dashboardBookings.manual.durationHint":
     "Kohëzgjatja merret nga shërbimi i zgjedhur.",
   "dashboardBookings.manual.saving": "Duke shtuar...",

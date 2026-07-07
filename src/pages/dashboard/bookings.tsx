@@ -122,7 +122,7 @@ function labelForDateKey(dateKey: string) {
 }
 
 function timeInputForMinutes(totalMinutes: number) {
-  const safeMinutes = Math.max(0, Math.min(23 * 60 + 45, totalMinutes));
+  const safeMinutes = Math.max(0, Math.min(23 * 60 + 59, totalMinutes));
   const hours = Math.floor(safeMinutes / 60);
   const minutes = safeMinutes % 60;
 
@@ -170,6 +170,7 @@ export default function Bookings() {
   const [manualBookingError, setManualBookingError] = useState<string | null>(
     null,
   );
+  const [calendarStaffFilter, setCalendarStaffFilter] = useState("all");
   const [manualBooking, setManualBooking] = useState<ManualBookingDraft>(
     () => ({
       ...emptyManualBookingDraft,
@@ -829,6 +830,16 @@ export default function Bookings() {
     bookableManualServices.length > 0;
   const calendarTimeZone = business?.timezone || DEFAULT_TIME_ZONE;
 
+  function preferredStaffIdForService(serviceId: string) {
+    const options = staffOptionsForService(serviceId);
+    const filteredStaff =
+      calendarStaffFilter !== "all"
+        ? options.find((staff) => staff.id === calendarStaffFilter)
+        : null;
+
+    return filteredStaff?.id || options[0]?.id || "";
+  }
+
   function staffOptionsForService(serviceId: string) {
     if (!serviceId) return manualStaff;
 
@@ -882,7 +893,7 @@ export default function Bookings() {
       Array.from({ length: 7 }, (_, index) => addDays(weekStartDate, index)),
     [weekStartDate],
   );
-  const weekBookings = useMemo(() => {
+  const allWeekBookings = useMemo(() => {
     const weekDateKeys = new Set(weekDays.map((day) => dateKeyForDate(day)));
 
     return bookings
@@ -896,6 +907,13 @@ export default function Bookings() {
           new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
       );
   }, [bookings, weekDays, calendarTimeZone]);
+  const weekBookings = useMemo(() => {
+    if (calendarStaffFilter === "all") return allWeekBookings;
+
+    return allWeekBookings.filter(
+      (booking) => booking.staff_member_id === calendarStaffFilter,
+    );
+  }, [allWeekBookings, calendarStaffFilter]);
   const weekGroups = useMemo(() => {
     return weekDays.map((day) => {
       const dateKey = dateKeyForDate(day);
@@ -977,7 +995,7 @@ export default function Bookings() {
         return {
           ...current,
           serviceId: value,
-          staffMemberId: staffOptionsForService(value)[0]?.id || "",
+          staffMemberId: preferredStaffIdForService(value),
         };
       }
 
@@ -1002,8 +1020,7 @@ export default function Bookings() {
       return {
         ...current,
         serviceId,
-        staffMemberId:
-          (serviceId && staffOptionsForService(serviceId)[0]?.id) || "",
+        staffMemberId: serviceId ? preferredStaffIdForService(serviceId) : "",
         date: next?.date || selectedDate || toDateInputValue(new Date()),
         time: next?.time || current.time || "09:00",
       };
@@ -1040,6 +1057,55 @@ export default function Bookings() {
       : addMinutes(bookingStart, booking.duration_minutes);
 
     return nextStart < bookingEnd && nextEnd > bookingStart;
+  }
+
+  const manualStaffBusyIds = useMemo(() => {
+    const busyStaffIds = new Set<string>();
+
+    if (!selectedManualService || !manualBooking.date || !manualBooking.time) {
+      return busyStaffIds;
+    }
+
+    const start = zonedDateTimeToUtc(
+      manualBooking.date,
+      manualBooking.time,
+      calendarTimeZone,
+    );
+
+    if (Number.isNaN(start.getTime())) return busyStaffIds;
+
+    const end = addMinutes(start, selectedManualService.duration_minutes);
+
+    bookings.forEach((booking) => {
+      if (booking.status !== "pending" && booking.status !== "confirmed") {
+        return;
+      }
+
+      if (
+        booking.staff_member_id &&
+        bookingOverlaps(booking, booking.staff_member_id, start, end)
+      ) {
+        busyStaffIds.add(booking.staff_member_id);
+      }
+    });
+
+    return busyStaffIds;
+  }, [
+    bookings,
+    calendarTimeZone,
+    manualBooking.date,
+    manualBooking.time,
+    selectedManualService,
+  ]);
+
+  function manualStaffAvailabilityLabel(staff: ManualBookingStaff) {
+    if (!selectedManualService || !manualBooking.date || !manualBooking.time) {
+      return "";
+    }
+
+    return manualStaffBusyIds.has(staff.id)
+      ? t("dashboardBookings.manual.staffBusy", "Busy")
+      : t("dashboardBookings.manual.staffAvailable", "Available");
   }
 
   function validateManualBookingDraft(
@@ -1384,45 +1450,72 @@ export default function Bookings() {
       booking.status === "cancelled" ||
       booking.status === "declined" ||
       booking.status === "completed";
+    const contactDetails = [
+      booking.customer_email,
+      booking.customer_phone,
+    ].filter(Boolean);
 
     return (
       <article
         key={booking.id}
-        className={`calendar-appointment ${booking.status}`}
+        className={`calendar-detail-card ${booking.status}`}
       >
-        <div className="calendar-time">
-          <strong>{time.label}</strong>
-          <span>
-            {booking.duration_minutes} {t("common.minutes", "minutes")}
+        <div className="calendar-detail-status-row">
+          <span className={`calendar-status status-${booking.status}`}>
+            {statusLabel(booking.status)}
           </span>
         </div>
 
-        <div className="calendar-appointment-main">
-          <div className="calendar-appointment-heading">
-            <Link href={customerHistoryLink(booking)}>
-              {booking.customer_name ||
-                t("dashboardBookings.card.customerFallback", "Customer")}
-            </Link>
-            <span className={`calendar-status status-${booking.status}`}>
-              {statusLabel(booking.status)}
-            </span>
+        <dl className="calendar-detail-list">
+          <div>
+            <dt>{t("dashboardBookings.details.when", "When")}</dt>
+            <dd>
+              <strong>{time.label}</strong>
+              <span>
+                {booking.duration_minutes} {t("common.minutes", "minutes")}
+              </span>
+            </dd>
           </div>
 
-          <p className="small muted">
-            {booking.services?.name ||
-              t("dashboardBookings.card.noService", "No service recorded")}
-            {" · "}
-            {bookingStaffLabel(booking)}
-          </p>
+          <div>
+            <dt>{t("dashboardBookings.details.service", "Service")}</dt>
+            <dd>
+              <strong>
+                {booking.services?.name ||
+                  t("dashboardBookings.card.noService", "No service recorded")}
+              </strong>
+            </dd>
+          </div>
+
+          <div>
+            <dt>{t("dashboardBookings.details.staff", "Staff")}</dt>
+            <dd>
+              <strong>{bookingStaffLabel(booking)}</strong>
+            </dd>
+          </div>
+
+          {contactDetails.length > 0 && (
+            <div>
+              <dt>{t("dashboardBookings.details.contact", "Contact")}</dt>
+              <dd className="calendar-contact-stack">
+                {contactDetails.map((detail) => (
+                  <span key={detail}>{detail}</span>
+                ))}
+              </dd>
+            </div>
+          )}
 
           {(booking.customer_notes || booking.internal_notes) && (
-            <p className="small muted calendar-note">
-              {booking.customer_notes || booking.internal_notes}
-            </p>
+            <div>
+              <dt>{t("dashboardBookings.details.notes", "Notes")}</dt>
+              <dd>
+                <span>{booking.customer_notes || booking.internal_notes}</span>
+              </dd>
+            </div>
           )}
-        </div>
+        </dl>
 
-        <div className="calendar-actions">
+        <div className="calendar-actions calendar-detail-actions">
           {booking.status === "pending" && (
             <>
               <button
@@ -1468,7 +1561,7 @@ export default function Bookings() {
           )}
 
           <Link href={customerHistoryLink(booking)} className="btn btn-ghost">
-            {t("dashboardBookings.card.customerDetails", "Details")}
+            {t("dashboardBookings.card.customerDetails", "Customer details")}
           </Link>
         </div>
 
@@ -1560,6 +1653,14 @@ export default function Bookings() {
       (_, index) => startHour + index,
     );
     const scheduleHeight = (endHour - startHour) * CALENDAR_HOUR_HEIGHT;
+    const now = new Date();
+    const todayKey = dateKeyInTimeZone(now, calendarTimeZone);
+    const currentMinutes = minutesSinceMidnightInTimeZone(
+      now,
+      calendarTimeZone,
+    );
+    const showCurrentTime =
+      currentMinutes >= startHour * 60 && currentMinutes <= endHour * 60;
 
     return (
       <section className="week-calendar">
@@ -1767,6 +1868,21 @@ export default function Bookings() {
                   />
                 ))}
 
+                {showCurrentTime && group.dateKey === todayKey && (
+                  <span
+                    className="calendar-current-time-line"
+                    style={{
+                      top: `${
+                        ((currentMinutes - startHour * 60) / 60) *
+                        CALENDAR_HOUR_HEIGHT
+                      }px`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <span>{timeInputForMinutes(currentMinutes)}</span>
+                  </span>
+                )}
+
                 {group.bookings.length === 0 ? (
                   <span className="week-day-empty" aria-hidden="true" />
                 ) : (
@@ -1909,6 +2025,42 @@ export default function Bookings() {
                     "Jump to date",
                   )}
                 />
+                <label className="calendar-staff-filter">
+                  <span>{t("dashboardBookings.filters.staff", "Staff")}</span>
+                  <select
+                    value={calendarStaffFilter}
+                    onChange={(event) => {
+                      const nextStaffId = event.target.value;
+
+                      setCalendarStaffFilter(nextStaffId);
+                      setSelectedCalendarBookingId(null);
+
+                      if (
+                        manualBookingOpen &&
+                        nextStaffId !== "all" &&
+                        manualBooking.serviceId &&
+                        staffOptionsForService(manualBooking.serviceId).some(
+                          (staff) => staff.id === nextStaffId,
+                        )
+                      ) {
+                        setManualBooking((current) => ({
+                          ...current,
+                          staffMemberId: nextStaffId,
+                        }));
+                      }
+                    }}
+                    aria-label={t("dashboardBookings.filters.staff", "Staff")}
+                  >
+                    <option value="all">
+                      {t("dashboardBookings.filters.allStaff", "All staff")}
+                    </option>
+                    {manualStaff.map((staff) => (
+                      <option key={staff.id} value={staff.id}>
+                        {manualStaffLabel(staff)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <button
                   type="button"
                   className="btn btn-accent calendar-add-button"
@@ -2105,7 +2257,9 @@ export default function Bookings() {
                         </label>
 
                         <label>
-                          <span>{t("support.business.staff", "Staff")}</span>
+                          <span>
+                            {t("dashboardBookings.manual.bookFor", "Book for")}
+                          </span>
                           <select
                             name="staffMemberId"
                             value={manualBooking.staffMemberId}
@@ -2123,11 +2277,19 @@ export default function Bookings() {
                                 "Choose staff",
                               )}
                             </option>
-                            {manualStaffOptions.map((staff) => (
-                              <option key={staff.id} value={staff.id}>
-                                {manualStaffLabel(staff)}
-                              </option>
-                            ))}
+                            {manualStaffOptions.map((staff) => {
+                              const availabilityLabel =
+                                manualStaffAvailabilityLabel(staff);
+
+                              return (
+                                <option key={staff.id} value={staff.id}>
+                                  {manualStaffLabel(staff)}
+                                  {availabilityLabel
+                                    ? ` · ${availabilityLabel}`
+                                    : ""}
+                                </option>
+                              );
+                            })}
                           </select>
                         </label>
 
@@ -2214,6 +2376,25 @@ export default function Bookings() {
                                 "dashboardBookings.manual.noAssignedStaff",
                                 "No active staff are assigned to this service.",
                               )}
+                            </p>
+                          )}
+
+                        {manualBooking.serviceId &&
+                          manualBooking.date &&
+                          manualBooking.time &&
+                          manualStaffOptions.length > 0 && (
+                            <p className="small manual-booking-staff-hint">
+                              {manualStaffOptions.some(
+                                (staff) => !manualStaffBusyIds.has(staff.id),
+                              )
+                                ? t(
+                                    "dashboardBookings.manual.staffAvailabilityHint",
+                                    "Available staff are labelled for the selected time.",
+                                  )
+                                : t(
+                                    "dashboardBookings.manual.noStaffAvailableAtTime",
+                                    "No assigned staff are free at this time.",
+                                  )}
                             </p>
                           )}
 
@@ -2375,12 +2556,14 @@ export default function Bookings() {
         .manual-booking-notes,
         .manual-booking-footer,
         .manual-booking-error,
-        .manual-booking-warning {
+        .manual-booking-warning,
+        .manual-booking-staff-hint {
           grid-column: auto;
         }
 
         .manual-booking-error,
-        .manual-booking-warning {
+        .manual-booking-warning,
+        .manual-booking-staff-hint {
           margin: 0;
         }
 
@@ -2390,6 +2573,10 @@ export default function Bookings() {
 
         .manual-booking-warning {
           color: var(--warning);
+        }
+
+        .manual-booking-staff-hint {
+          color: var(--text-muted);
         }
 
         .manual-booking-setup {
@@ -2476,6 +2663,33 @@ export default function Bookings() {
           padding: 0.55rem 0.7rem;
         }
 
+        .calendar-staff-filter {
+          display: inline-flex;
+          min-height: 2.35rem;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.18rem 0.28rem 0.18rem 0.7rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          font-weight: 900;
+        }
+
+        .calendar-staff-filter select {
+          max-width: 13.5rem;
+          min-height: 1.9rem;
+          border: 0;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--text);
+          color-scheme: dark;
+          padding: 0.35rem 0.55rem;
+          font: inherit;
+          font-size: 0.8rem;
+        }
+
         .calendar-add-button {
           min-height: 2.35rem;
           padding: 0.55rem 0.95rem;
@@ -2505,6 +2719,64 @@ export default function Bookings() {
 
         .calendar-side-panel :global(.calendar-actions) {
           justify-content: flex-start;
+        }
+
+        :global(.calendar-detail-card) {
+          display: grid;
+          gap: 0.85rem;
+        }
+
+        :global(.calendar-detail-status-row) {
+          display: flex;
+          justify-content: flex-start;
+        }
+
+        :global(.calendar-detail-list) {
+          display: grid;
+          gap: 0.65rem;
+          margin: 0;
+        }
+
+        :global(.calendar-detail-list > div) {
+          display: grid;
+          gap: 0.2rem;
+          padding: 0.65rem;
+          border: 1px solid rgba(148, 163, 184, 0.14);
+          border-radius: calc(var(--radius) - 3px);
+          background: rgba(15, 23, 42, 0.38);
+        }
+
+        :global(.calendar-detail-list dt) {
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        :global(.calendar-detail-list dd) {
+          display: grid;
+          gap: 0.12rem;
+          margin: 0;
+          min-width: 0;
+        }
+
+        :global(.calendar-detail-list dd span) {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        :global(.calendar-contact-stack) {
+          overflow-wrap: anywhere;
+        }
+
+        :global(.calendar-detail-actions) {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          align-items: stretch;
+        }
+
+        :global(.calendar-detail-actions .btn) {
+          justify-content: center;
         }
 
         .calendar-selected-heading {
@@ -2773,6 +3045,45 @@ export default function Bookings() {
           height: 1px;
           background: rgba(148, 163, 184, 0.1);
           pointer-events: none;
+        }
+
+        :global(.calendar-current-time-line) {
+          position: absolute;
+          left: 0;
+          right: 0;
+          z-index: 4;
+          height: 2px;
+          background: var(--accent);
+          box-shadow:
+            0 0 0 1px rgba(255, 107, 53, 0.18),
+            0 0 22px rgba(255, 107, 53, 0.34);
+          pointer-events: none;
+        }
+
+        :global(.calendar-current-time-line)::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: -0.32rem;
+          width: 0.58rem;
+          height: 0.58rem;
+          border-radius: 999px;
+          background: var(--accent);
+          transform: translateY(-50%);
+          box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.14);
+        }
+
+        :global(.calendar-current-time-line span) {
+          position: absolute;
+          top: 50%;
+          right: 0.35rem;
+          transform: translateY(-50%);
+          padding: 0.12rem 0.36rem;
+          border-radius: 999px;
+          background: rgba(255, 107, 53, 0.18);
+          color: #fff7ed;
+          font-size: 0.68rem;
+          font-weight: 900;
         }
 
         :global(.calendar-schedule-block) {
@@ -3079,7 +3390,8 @@ export default function Bookings() {
           .manual-booking-notes,
           .manual-booking-footer,
           .manual-booking-error,
-          .manual-booking-warning {
+          .manual-booking-warning,
+          .manual-booking-staff-hint {
             grid-column: auto;
           }
 
@@ -3121,6 +3433,16 @@ export default function Bookings() {
             width: 100%;
             max-width: none;
             min-width: 0;
+          }
+
+          .calendar-staff-filter {
+            grid-column: 1 / -1;
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .calendar-staff-filter select {
+            max-width: min(65vw, 18rem);
           }
 
           .calendar-add-button {

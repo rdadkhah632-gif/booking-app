@@ -78,6 +78,17 @@ function minutesSinceMidnight(date: Date) {
   return date.getHours() * 60 + date.getMinutes();
 }
 
+function timeInputForMinutes(totalMinutes: number) {
+  const safeMinutes = Math.max(0, Math.min(23 * 60 + 59, totalMinutes));
+  const hours = Math.floor(safeMinutes / 60);
+  const minutes = safeMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0",
+  )}`;
+}
+
 function serviceName(booking: Booking, fallback: string) {
   if (!booking.services) return fallback;
   return Array.isArray(booking.services)
@@ -489,6 +500,11 @@ export default function StaffCalendarPage() {
       (_, index) => startHour + index,
     );
     const scheduleHeight = (endHour - startHour) * CALENDAR_HOUR_HEIGHT;
+    const now = new Date();
+    const todayKey = formatDateInputValue(now);
+    const currentMinutes = minutesSinceMidnight(now);
+    const showCurrentTime =
+      currentMinutes >= startHour * 60 && currentMinutes <= endHour * 60;
 
     return (
       <section className="staff-week-calendar">
@@ -632,6 +648,21 @@ export default function StaffCalendarPage() {
                     }}
                   />
                 ))}
+
+                {showCurrentTime && group.dateString === todayKey && (
+                  <span
+                    className="staff-current-time-line"
+                    style={{
+                      top: `${
+                        ((currentMinutes - startHour * 60) / 60) *
+                        CALENDAR_HOUR_HEIGHT
+                      }px`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <span>{timeInputForMinutes(currentMinutes)}</span>
+                  </span>
+                )}
 
                 {group.bookings.length === 0 ? (
                   <span className="staff-week-empty" aria-hidden="true" />
@@ -1332,6 +1363,48 @@ export default function StaffCalendarPage() {
           right: 0;
           height: 1px;
           background: rgba(148, 163, 184, 0.1);
+        }
+
+        .staff-current-time-line,
+        :global(.staff-current-time-line) {
+          position: absolute;
+          left: 0;
+          right: 0;
+          z-index: 4;
+          height: 2px;
+          background: var(--accent);
+          box-shadow:
+            0 0 0 1px rgba(255, 107, 53, 0.18),
+            0 0 22px rgba(255, 107, 53, 0.34);
+          pointer-events: none;
+        }
+
+        .staff-current-time-line::before,
+        :global(.staff-current-time-line)::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: -0.32rem;
+          width: 0.58rem;
+          height: 0.58rem;
+          border-radius: 999px;
+          background: var(--accent);
+          transform: translateY(-50%);
+          box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.14);
+        }
+
+        .staff-current-time-line span,
+        :global(.staff-current-time-line span) {
+          position: absolute;
+          top: 50%;
+          right: 0.35rem;
+          transform: translateY(-50%);
+          padding: 0.12rem 0.36rem;
+          border-radius: 999px;
+          background: rgba(255, 107, 53, 0.18);
+          color: #fff7ed;
+          font-size: 0.68rem;
+          font-weight: 900;
         }
 
         .staff-week-empty {

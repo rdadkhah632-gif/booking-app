@@ -1977,6 +1977,11 @@ export const en: TranslationTree = {
   "dashboardBookings.week.controls": "Week controls",
   "dashboardBookings.mobileAgenda.label": "Week agenda",
   "dashboardBookings.details.kicker": "Selected appointment",
+  "dashboardBookings.details.when": "When",
+  "dashboardBookings.details.service": "Service",
+  "dashboardBookings.details.staff": "Staff",
+  "dashboardBookings.details.contact": "Contact",
+  "dashboardBookings.details.notes": "Notes",
   "dashboardBookings.filters.calendarView": "Calendar view",
   "dashboardBookings.filters.body":
     "Start with today, jump to a specific date, or open a filtered Mirëbook view from the dashboard calendar.",
@@ -1984,6 +1989,7 @@ export const en: TranslationTree = {
   "dashboardBookings.filters.status": "Status",
   "dashboardBookings.filters.searchLabel": "Search customer/service/staff",
   "dashboardBookings.filters.searchPlaceholder": "Search appointments",
+  "dashboardBookings.filters.staff": "Staff",
   "dashboardBookings.filters.allStaff": "All staff",
   "dashboardBookings.filters.activeView": "Active view",
   "dashboardBookings.filters.reset": "Reset filters",
@@ -2034,9 +2040,16 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.customerEmail": "Customer email",
   "dashboardBookings.manual.customerPhone": "Phone",
   "dashboardBookings.manual.service": "Service",
+  "dashboardBookings.manual.bookFor": "Book for",
   "dashboardBookings.manual.chooseService": "Choose service",
   "dashboardBookings.manual.chooseStaff": "Choose staff",
   "dashboardBookings.manual.notes": "Notes",
+  "dashboardBookings.manual.staffBusy": "Busy",
+  "dashboardBookings.manual.staffAvailable": "Available",
+  "dashboardBookings.manual.staffAvailabilityHint":
+    "Available staff are labelled for the selected time.",
+  "dashboardBookings.manual.noStaffAvailableAtTime":
+    "No assigned staff are free at this time.",
   "dashboardBookings.manual.durationHint":
     "Duration follows the selected service.",
   "dashboardBookings.manual.saving": "Adding...",

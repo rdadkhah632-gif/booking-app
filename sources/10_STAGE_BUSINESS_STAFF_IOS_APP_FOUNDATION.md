@@ -1,6 +1,32 @@
 # Stage 10 - Business and Staff iOS App Foundation
 
-Status: Batch 10E.5 calendar visual polish implemented.
+Status: Batch 10E.6 calendar staff-scope polish implemented.
+
+Batch 10E.6 calendar staff-scope polish status:
+
+- Used the approved Teams-style calendar concept as the target direction.
+- Added a compact staff scope selector to the web business Calendar so owners
+  can quickly compare all staff or a single staff member without returning to a
+  bookings list.
+- The selected staff scope now also preselects that staff member when adding a
+  manual appointment for a service they can perform.
+- Added a current-time marker to the web business Calendar and staff Calendar
+  week grids.
+- Improved the manual appointment drawer so the staff picker says who the
+  booking is for and labels assigned staff as available/busy for the selected
+  time.
+- Reworked the selected appointment side panel into a cleaner appointment
+  detail sheet with status, when, service, staff, contact and customer actions.
+- Added the same current-time marker to the native iOS week calendar grid.
+- No booking creation logic, booking lifecycle logic, availability calculation,
+  staff linking, auth/RLS, billing or notification generation logic was changed.
+
+Remaining calendar follow-ups:
+
+- Full browser QA should confirm the staff selector, now-line, detail drawer and
+  manual appointment staff labels on a live business with multiple staff.
+- Native app calendar remains read-only; adding appointments natively is still a
+  later app batch.
 
 Batch 10E.5 calendar visual polish status:
 

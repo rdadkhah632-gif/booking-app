@@ -278,6 +278,9 @@ private struct CalendarWeekSchedule: View {
         let endHour = window.upperBound
         let hours = Array(startHour...endHour)
         let scheduleHeight = CGFloat(endHour - startHour) * hourHeight
+        let now = Date()
+        let currentMinute = now.minutesSinceStartOfDay
+        let showsCurrentTime = currentMinute >= startHour * 60 && currentMinute <= endHour * 60
 
         ScrollView(.horizontal, showsIndicators: true) {
             HStack(alignment: .top, spacing: 0) {
@@ -313,6 +316,8 @@ private struct CalendarWeekSchedule: View {
                         headerHeight: headerHeight,
                         scheduleHeight: scheduleHeight,
                         width: dayWidth,
+                        currentMinute: currentMinute,
+                        showsCurrentTime: showsCurrentTime && Calendar.current.isDate(day, inSameDayAs: now),
                         onSelectDate: onSelectDate,
                         onSelectAppointment: onSelectAppointment
                     )
@@ -350,6 +355,8 @@ private struct CalendarDayColumn: View {
     let headerHeight: CGFloat
     let scheduleHeight: CGFloat
     let width: CGFloat
+    let currentMinute: Int
+    let showsCurrentTime: Bool
     let onSelectDate: (Date) -> Void
     let onSelectAppointment: (Appointment) -> Void
 
@@ -404,6 +411,11 @@ private struct CalendarDayColumn: View {
                     .frame(width: max(78, width - 10), height: appointment.blockHeight(hourHeight: hourHeight))
                     .offset(x: 5, y: appointment.blockOffset(fromHour: startHour, hourHeight: hourHeight))
                 }
+
+                if showsCurrentTime {
+                    CalendarCurrentTimeLine(minute: currentMinute)
+                        .offset(y: CGFloat(currentMinute - startHour * 60) / 60 * hourHeight)
+                }
             }
             .frame(width: width, height: scheduleHeight, alignment: .topLeading)
             .background(
@@ -422,6 +434,40 @@ private struct CalendarDayColumn: View {
                 .fill(Color.secondary.opacity(0.14))
                 .frame(width: 1)
         }
+    }
+}
+
+private struct CalendarCurrentTimeLine: View {
+    let minute: Int
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Circle()
+                .fill(Color.orange)
+                .frame(width: 7, height: 7)
+                .shadow(color: Color.orange.opacity(0.45), radius: 7)
+
+            Rectangle()
+                .fill(Color.orange)
+                .frame(height: 2)
+                .overlay(alignment: .trailing) {
+                    Text(timeLabel)
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Color.orange.opacity(0.32), in: Capsule())
+                        .offset(x: -4)
+                }
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityHidden(true)
+    }
+
+    private var timeLabel: String {
+        let hours = max(0, min(23, minute / 60))
+        let minutes = max(0, min(59, minute % 60))
+        return String(format: "%02d:%02d", hours, minutes)
     }
 }
 
@@ -827,6 +873,11 @@ private extension Date {
         let weekday = calendar.component(.weekday, from: startOfDay)
         let daysSinceMonday = (weekday + 5) % 7
         return calendar.date(byAdding: .day, value: -daysSinceMonday, to: startOfDay) ?? startOfDay
+    }
+
+    var minutesSinceStartOfDay: Int {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: self)
+        return (components.hour ?? 0) * 60 + (components.minute ?? 0)
     }
 }
 
