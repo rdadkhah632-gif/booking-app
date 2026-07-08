@@ -130,8 +130,8 @@ export default function CustomerNav({ notificationCount }: NavProps) {
         @media (max-width: 540px) {
           :global(.nav-role-customer .auth-nav-links) {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.45rem;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.38rem;
             width: 100%;
           }
 
@@ -148,8 +148,10 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           .customer-nav-primary,
           .customer-nav-logout,
           .customer-nav-account-menu summary {
-            min-height: 2rem;
-            padding-inline: 0.55rem;
+            min-height: 1.9rem;
+            padding: 0.38rem 0.42rem;
+            font-size: 0.78rem;
+            line-height: 1.1;
           }
 
           .customer-nav-account-menu[open] {

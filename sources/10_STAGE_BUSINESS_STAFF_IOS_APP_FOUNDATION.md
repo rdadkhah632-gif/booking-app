@@ -1,6 +1,33 @@
 # Stage 10 - Business and Staff iOS App Foundation
 
-Status: Batch 10E.7 calendar viewport polish implemented.
+Status: Batch 10E.8 visual UX QA polish implemented.
+
+Batch 10E.8 visual UX QA polish status:
+
+- Addressed the visual imperfection QA pass across high-friction web surfaces.
+- Business Calendar and staff Calendar now use a wider desktop week grid so
+  appointment cards and right-side day columns have more usable space.
+- On mobile, business and staff Calendar now switch to the existing agenda
+  layout instead of forcing a cramped seven-column week grid.
+- Compressed customer/business/staff support pages so the useful form and
+  actions appear sooner, and separated quick-link titles from helper copy to
+  avoid concatenated text.
+- Tightened the customer signed-in mobile nav so it takes less vertical space.
+- Made account email preference controls more compact and clearer as
+  expandable settings rather than a huge full-width block.
+- Completed business setup on mobile hides the finished checklist so the live
+  state and next actions are easier to reach.
+- No booking creation logic, booking lifecycle logic, availability calculation,
+  staff linking, auth/RLS, billing or notification generation logic was changed.
+
+Remaining visual UX follow-ups:
+
+- Run browser QA on the deployed site for the updated mobile agenda calendars,
+  support pages, account preferences and customer mobile nav.
+- Public booking service/staff/date compression and long QA/test business-name
+  handling remain separate polish follow-ups.
+
+Batch 10E.7 calendar viewport polish implemented.
 
 Batch 10E.7 calendar viewport polish status:
 

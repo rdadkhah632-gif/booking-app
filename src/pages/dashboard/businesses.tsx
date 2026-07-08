@@ -713,7 +713,11 @@ export default function Businesses() {
       )}
 
       {businesses.length > 0 && primaryBusiness && primaryReadiness && (
-        <section className="setup-workspace">
+        <section
+          className={`setup-workspace ${
+            primaryReadiness.publicListingReady ? "is-live" : ""
+          }`.trim()}
+        >
           <div className="setup-summary-panel">
             <div className="setup-progress-main">
               <span className="setup-progress-count">
@@ -1378,6 +1382,10 @@ export default function Businesses() {
         }
 
         @media (max-width: 700px) {
+          .setup-workspace.is-live .setup-checklist {
+            display: none;
+          }
+
           .setup-summary-panel,
           .setup-progress-main,
           .setup-summary-actions,

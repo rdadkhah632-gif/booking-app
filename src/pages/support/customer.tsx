@@ -154,7 +154,7 @@ export default function CustomerSupportPage() {
 
       <section
         className="container"
-        style={{ paddingTop: 32, paddingBottom: 64 }}
+        style={{ paddingTop: 24, paddingBottom: 56 }}
       >
         <div className="support-shell">
           <div className="card support-hero">
@@ -274,7 +274,7 @@ export default function CustomerSupportPage() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder={t("support.customer.messagePlaceholder")}
-                      rows={7}
+                      rows={5}
                       style={{ marginTop: "0.4rem" }}
                     />
                   </div>
@@ -347,11 +347,11 @@ export default function CustomerSupportPage() {
           max-width: 980px;
           margin: 0 auto;
           display: grid;
-          gap: 0.85rem;
+          gap: 0.75rem;
         }
 
         .support-hero {
-          padding: 1.25rem;
+          padding: 0.95rem 1rem;
           background: rgba(255, 107, 53, 0.08);
           border-color: rgba(255, 107, 53, 0.25);
         }
@@ -361,7 +361,7 @@ export default function CustomerSupportPage() {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
-          margin-top: 1rem;
+          margin-top: 0.75rem;
         }
 
         .support-success-card {
@@ -372,20 +372,20 @@ export default function CustomerSupportPage() {
         .support-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
-          gap: 1rem;
+          gap: 0.8rem;
           align-items: start;
         }
 
         .support-form-card,
         .support-side-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.78rem;
         }
 
         .support-form-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 1rem;
+          gap: 0.72rem 0.85rem;
         }
 
         .full-span {
@@ -398,7 +398,7 @@ export default function CustomerSupportPage() {
 
         .support-link-list {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .support-link-row {
@@ -409,14 +409,19 @@ export default function CustomerSupportPage() {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 0.9rem;
+          padding: 0.72rem 0.78rem;
+        }
+
+        .support-link-row > span:first-child {
+          display: grid;
+          gap: 0.18rem;
+          min-width: 0;
         }
 
         .support-link-row small {
           display: block;
-          margin-top: 0.2rem;
           color: var(--text-muted);
-          line-height: 1.5;
+          line-height: 1.35;
         }
 
         @media (max-width: 860px) {

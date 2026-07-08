@@ -1132,16 +1132,16 @@ export default function StaffCalendarPage() {
 
         .staff-week-grid {
           display: grid;
-          grid-template-columns: 4.9rem repeat(7, minmax(7.6rem, 1fr));
-          min-width: 1040px;
+          grid-template-columns: 4.75rem repeat(7, minmax(9.2rem, 1fr));
+          min-width: 1180px;
           overflow: visible;
           background: rgba(2, 6, 23, 0.22);
         }
 
         :global(.staff-week-grid) {
           display: grid;
-          grid-template-columns: 4.9rem repeat(7, minmax(7.6rem, 1fr));
-          min-width: 1040px;
+          grid-template-columns: 4.75rem repeat(7, minmax(9.2rem, 1fr));
+          min-width: 1180px;
           overflow: visible;
           background: rgba(2, 6, 23, 0.22);
         }
@@ -1798,21 +1798,31 @@ export default function StaffCalendarPage() {
           }
 
           .staff-week-scroll {
-            display: block;
-            max-height: 100%;
+            display: none;
           }
 
           :global(.staff-week-scroll) {
-            display: block;
-            max-height: 100%;
+            display: none;
           }
 
           .staff-mobile-week-agenda {
-            display: none;
+            display: grid;
+            gap: 0.55rem;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 0.12rem;
+            scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
+            scrollbar-width: thin;
           }
 
           :global(.staff-mobile-week-agenda) {
-            display: none;
+            display: grid;
+            gap: 0.55rem;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 0.12rem;
+            scrollbar-color: rgba(255, 107, 53, 0.45) transparent;
+            scrollbar-width: thin;
           }
 
           .staff-mobile-agenda-day {

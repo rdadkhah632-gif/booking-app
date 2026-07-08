@@ -190,13 +190,10 @@ export default function BusinessSupportPage() {
 
       <section
         className="container"
-        style={{ paddingTop: 42, paddingBottom: 72 }}
+        style={{ paddingTop: 24, paddingBottom: 56 }}
       >
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: "var(--accent)" }}>
-              {t("nav.businessSupport")}
-            </p>
             <h1 className="page-title">{t("support.business.heroTitle")}</h1>
             <p className="page-sub" style={{ marginTop: "0.6rem" }}>
               {t(
@@ -267,16 +264,7 @@ export default function BusinessSupportPage() {
                 className="card support-form-card"
               >
                 <div>
-                  <p className="small muted">
-                    {t("support.business.formKicker")}
-                  </p>
                   <h2>{t("support.business.formTitle")}</h2>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                    {t(
-                      "support.business.formBody",
-                      "This creates a business-owner support conversation. Replies from Mirëbook support will appear in your support messages.",
-                    )}
-                  </p>
                 </div>
 
                 <div className="support-form-grid">
@@ -353,19 +341,13 @@ export default function BusinessSupportPage() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder={t("support.business.messagePlaceholder")}
-                      rows={7}
+                      rows={5}
                       style={{ marginTop: "0.4rem" }}
                     />
                   </div>
                 </div>
 
                 <div className="support-submit-note">
-                  <p className="small muted">
-                    {t(
-                      "support.business.beforeSending.kicker",
-                      "Before sending",
-                    )}
-                  </p>
                   <p className="small muted">
                     {t(
                       "support.business.beforeSending.body",
@@ -386,9 +368,6 @@ export default function BusinessSupportPage() {
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">
-                  {t("support.business.linksKicker")}
-                </p>
                 <h2>{t("support.business.quickActions")}</h2>
 
                 <div className="support-link-list">
@@ -446,13 +425,13 @@ export default function BusinessSupportPage() {
                   </Link>
                 </div>
 
-                <div className="support-business-guide">
-                  <p className="small muted">
+                <details className="support-business-guide">
+                  <summary>
                     {t(
                       "support.business.guide.kicker",
                       "Business support guide",
                     )}
-                  </p>
+                  </summary>
                   <div className="support-guide-list">
                     <div>
                       <strong>
@@ -497,7 +476,7 @@ export default function BusinessSupportPage() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </details>
               </div>
             </div>
           )}
@@ -509,10 +488,11 @@ export default function BusinessSupportPage() {
           max-width: 1080px;
           margin: 0 auto;
           display: grid;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         .support-hero {
+          padding: 0.95rem 1rem;
           background: linear-gradient(
             135deg,
             rgba(255, 107, 53, 0.12),
@@ -526,7 +506,7 @@ export default function BusinessSupportPage() {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
-          margin-top: 1rem;
+          margin-top: 0.75rem;
         }
 
         .support-success-card {
@@ -537,20 +517,20 @@ export default function BusinessSupportPage() {
         .support-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
-          gap: 1rem;
+          gap: 0.85rem;
           align-items: start;
         }
 
         .support-form-card,
         .support-side-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.78rem;
         }
 
         .support-form-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 1rem;
+          gap: 0.72rem 0.85rem;
         }
 
         .full-span {
@@ -560,13 +540,13 @@ export default function BusinessSupportPage() {
         .support-submit-note {
           border: 1px solid rgba(45, 212, 191, 0.2);
           border-radius: var(--radius);
-          padding: 0.85rem;
+          padding: 0.65rem 0.75rem;
           background: rgba(45, 212, 191, 0.06);
         }
 
         .support-link-list {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .support-link-row {
@@ -577,33 +557,58 @@ export default function BusinessSupportPage() {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 0.9rem;
+          padding: 0.72rem 0.78rem;
+        }
+
+        .support-link-row > span:first-child {
+          display: grid;
+          gap: 0.18rem;
+          min-width: 0;
         }
 
         .support-link-row small {
           display: block;
-          margin-top: 0.2rem;
           color: var(--text-muted);
-          line-height: 1.5;
+          line-height: 1.35;
         }
 
         .support-business-guide {
           border-top: 1px solid var(--border);
-          padding-top: 1rem;
+          padding-top: 0.75rem;
           display: grid;
-          gap: 0.75rem;
+          gap: 0.6rem;
+        }
+
+        .support-business-guide summary {
+          cursor: pointer;
+          color: var(--text);
+          font-weight: 800;
+          list-style: none;
+        }
+
+        .support-business-guide summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .support-business-guide summary::after {
+          content: " +";
+          color: var(--accent);
+        }
+
+        .support-business-guide[open] summary::after {
+          content: " -";
         }
 
         .support-guide-list {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .support-guide-list div {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 0.85rem;
+          padding: 0.68rem;
         }
 
         @media (max-width: 860px) {

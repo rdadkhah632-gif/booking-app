@@ -1102,9 +1102,11 @@ export default function AccountPage() {
           align-items: center;
           justify-content: space-between;
           gap: 0.75rem;
-          padding: 0.9rem 1rem;
+          min-height: 3.25rem;
+          padding: 0.68rem 0.85rem;
           cursor: pointer;
           list-style: none;
+          background: var(--surface-2);
         }
 
         .account-details-panel summary::-webkit-details-marker {
@@ -1123,20 +1125,23 @@ export default function AccountPage() {
         }
 
         .account-details-panel summary::after {
-          content: "+";
+          content: "";
+          width: 0.42rem;
+          height: 0.42rem;
+          border-right: 2px solid currentColor;
+          border-bottom: 2px solid currentColor;
           color: var(--accent);
-          font-size: 1.2rem;
-          font-weight: 800;
+          transform: rotate(45deg) translateY(-1px);
         }
 
         .account-details-panel[open] summary::after {
-          content: "−";
+          transform: rotate(225deg) translateY(-1px);
         }
 
         .account-details-body {
           display: grid;
-          gap: 0.8rem;
-          padding: 0 1rem 1rem;
+          gap: 0.68rem;
+          padding: 0.78rem 0.85rem 0.85rem;
         }
 
         .account-settings-grid {
@@ -1250,6 +1255,7 @@ export default function AccountPage() {
 
         .account-email-preferences {
           display: block;
+          background: var(--surface);
         }
 
         .account-preferences-notice {
@@ -1263,14 +1269,14 @@ export default function AccountPage() {
 
         .account-preference-groups {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.65rem;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 0.55rem;
         }
 
         .account-preference-group {
           display: grid;
-          gap: 0.55rem;
-          padding: 0.75rem;
+          gap: 0.48rem;
+          padding: 0.65rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
@@ -1280,9 +1286,10 @@ export default function AccountPage() {
         .account-preference-toggle {
           display: grid;
           grid-template-columns: auto 1fr;
-          gap: 0.55rem;
+          gap: 0.5rem;
           align-items: flex-start;
           color: var(--text);
+          padding: 0.12rem 0;
         }
 
         .account-preference-toggle input {
@@ -1301,6 +1308,7 @@ export default function AccountPage() {
 
         .account-preferences-save {
           justify-self: flex-start;
+          min-height: 2.25rem;
         }
 
         .account-primary-card {

@@ -231,13 +231,10 @@ export default function StaffSupportPage() {
 
       <section
         className="container"
-        style={{ paddingTop: 42, paddingBottom: 72 }}
+        style={{ paddingTop: 24, paddingBottom: 56 }}
       >
         <div className="support-shell">
           <div className="card support-hero">
-            <p className="small" style={{ color: "var(--accent)" }}>
-              {t("support.staff.title", "Staff support")}
-            </p>
             <h1 className="page-title">
               {t("support.staff.heroTitle", "Get help with your staff account")}
             </h1>
@@ -312,18 +309,9 @@ export default function StaffSupportPage() {
                 className="card support-form-card"
               >
                 <div>
-                  <p className="small muted">
-                    {t("support.staff.formKicker", "Support request")}
-                  </p>
                   <h2>
                     {t("support.staff.formTitle", "Send a message to support")}
                   </h2>
-                  <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                    {t(
-                      "support.staff.formBody",
-                      "This creates a staff support conversation. Replies from Mirëbook support will appear in your support messages.",
-                    )}
-                  </p>
                 </div>
 
                 {staffProfile && (
@@ -455,16 +443,13 @@ export default function StaffSupportPage() {
                         "support.staff.messagePlaceholder",
                         "Tell us what you need help with...",
                       )}
-                      rows={7}
+                      rows={5}
                       style={{ marginTop: "0.4rem" }}
                     />
                   </div>
                 </div>
 
                 <div className="support-submit-note">
-                  <p className="small muted">
-                    {t("support.staff.beforeSending.kicker", "Before sending")}
-                  </p>
                   <p className="small muted">
                     {staffProfile
                       ? t(
@@ -489,9 +474,6 @@ export default function StaffSupportPage() {
               </form>
 
               <div className="card support-side-card">
-                <p className="small muted">
-                  {t("support.staff.linksKicker", "Quick links")}
-                </p>
                 <h2>{t("support.staff.quickActions", "Staff actions")}</h2>
 
                 <div className="support-link-list">
@@ -598,13 +580,13 @@ export default function StaffSupportPage() {
                   </Link>
                 </div>
 
-                <div className="support-troubleshooting-card">
-                  <p className="small muted">
+                <details className="support-troubleshooting-card">
+                  <summary>
                     {t(
                       "support.staff.troubleshooting.kicker",
                       "Quick troubleshooting",
                     )}
-                  </p>
+                  </summary>
                   <h3>
                     {t(
                       "support.staff.troubleshooting.title",
@@ -655,7 +637,7 @@ export default function StaffSupportPage() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </details>
               </div>
             </div>
           )}
@@ -667,10 +649,11 @@ export default function StaffSupportPage() {
           max-width: 1080px;
           margin: 0 auto;
           display: grid;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         .support-hero {
+          padding: 0.95rem 1rem;
           background: linear-gradient(
             135deg,
             rgba(255, 107, 53, 0.12),
@@ -683,14 +666,14 @@ export default function StaffSupportPage() {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
-          margin-top: 1rem;
+          margin-top: 0.75rem;
         }
 
         .support-success-actions {
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
-          margin-top: 1rem;
+          margin-top: 0.75rem;
         }
 
         .support-success-card {
@@ -701,20 +684,20 @@ export default function StaffSupportPage() {
         .support-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
-          gap: 1rem;
+          gap: 0.85rem;
           align-items: start;
         }
 
         .support-form-card,
         .support-side-card {
           display: grid;
-          gap: 1rem;
+          gap: 0.78rem;
         }
 
         .support-form-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 1rem;
+          gap: 0.72rem 0.85rem;
         }
 
         .full-span {
@@ -725,7 +708,7 @@ export default function StaffSupportPage() {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 1rem;
+          padding: 0.72rem 0.78rem;
         }
 
         .staff-context-box.warning {
@@ -744,13 +727,13 @@ export default function StaffSupportPage() {
         .support-submit-note {
           border: 1px solid rgba(45, 212, 191, 0.2);
           border-radius: var(--radius);
-          padding: 0.85rem;
+          padding: 0.65rem 0.75rem;
           background: rgba(45, 212, 191, 0.06);
         }
 
         .support-link-list {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .support-link-row {
@@ -761,33 +744,58 @@ export default function StaffSupportPage() {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 0.9rem;
+          padding: 0.72rem 0.78rem;
+        }
+
+        .support-link-row > span:first-child {
+          display: grid;
+          gap: 0.18rem;
+          min-width: 0;
         }
 
         .support-link-row small {
           display: block;
-          margin-top: 0.2rem;
           color: var(--text-muted);
-          line-height: 1.5;
+          line-height: 1.35;
         }
 
         .support-troubleshooting-card {
           border-top: 1px solid var(--border);
-          padding-top: 1rem;
+          padding-top: 0.75rem;
           display: grid;
-          gap: 0.75rem;
+          gap: 0.6rem;
+        }
+
+        .support-troubleshooting-card summary {
+          cursor: pointer;
+          color: var(--text);
+          font-weight: 800;
+          list-style: none;
+        }
+
+        .support-troubleshooting-card summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .support-troubleshooting-card summary::after {
+          content: " +";
+          color: var(--accent);
+        }
+
+        .support-troubleshooting-card[open] summary::after {
+          content: " -";
         }
 
         .support-check-list {
           display: grid;
-          gap: 0.75rem;
+          gap: 0.55rem;
         }
 
         .support-check-list div {
           background: var(--surface-2);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 0.85rem;
+          padding: 0.68rem;
         }
 
         @media (max-width: 860px) {
