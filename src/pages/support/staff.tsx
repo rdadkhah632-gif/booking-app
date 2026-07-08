@@ -314,80 +314,6 @@ export default function StaffSupportPage() {
                   </h2>
                 </div>
 
-                {staffProfile && (
-                  <div className="staff-context-box">
-                    <p className="small muted">
-                      {t("support.staff.linkedProfile", "Linked staff profile")}
-                    </p>
-                    <strong>
-                      {staffProfile.name ||
-                        name ||
-                        t("support.staff.memberFallback", "Staff member")}
-                    </strong>
-                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                      {staffProfile.role_title ||
-                        staffProfile.permission_role ||
-                        t("support.staff.roleFallback", "Staff role")}{" "}
-                      ·{" "}
-                      {staffProfile.business_name ||
-                        t(
-                          "support.staff.businessFallback",
-                          "Business not shown",
-                        )}{" "}
-                      ·{" "}
-                      {staffProfile.active
-                        ? t("support.staff.status.active", "Active")
-                        : t("support.staff.status.hidden", "Hidden")}
-                    </p>
-                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                      {t(
-                        "support.staff.profileHelpText",
-                        "If services, bookings or availability look wrong, ask the business owner to check your staff setup and assigned services.",
-                      )}
-                    </p>
-                  </div>
-                )}
-
-                {!staffProfile && (
-                  <div className="staff-context-box warning">
-                    <p className="small muted">
-                      {t("support.staff.noProfile", "No linked staff profile")}
-                    </p>
-                    <strong>
-                      {t(
-                        "support.staff.noProfileTitle",
-                        "Your account is not linked to a staff profile yet",
-                      )}
-                    </strong>
-                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                      {t(
-                        "support.staff.noProfileBody",
-                        "Ask the business owner to add your exact email address to their staff list, then log in again.",
-                      )}
-                    </p>
-                    <ol className="support-step-list">
-                      <li>
-                        {t(
-                          "support.staff.noProfileStep1",
-                          "Check you registered with the same email the business added.",
-                        )}
-                      </li>
-                      <li>
-                        {t(
-                          "support.staff.noProfileStep2",
-                          "Ask the business owner to open Staff setup and confirm your email is listed.",
-                        )}
-                      </li>
-                      <li>
-                        {t(
-                          "support.staff.noProfileStep3",
-                          "Log out and log back in after the owner updates your staff profile.",
-                        )}
-                      </li>
-                    </ol>
-                  </div>
-                )}
-
                 <div className="support-form-grid">
                   <div>
                     <label className="small muted">{t("common.name")}</label>
@@ -448,6 +374,83 @@ export default function StaffSupportPage() {
                     />
                   </div>
                 </div>
+
+                {staffProfile && (
+                  <details className="staff-context-box support-secondary-context">
+                    <summary>
+                      {t("support.staff.linkedProfile", "Linked staff profile")}
+                    </summary>
+                    <strong>
+                      {staffProfile.name ||
+                        name ||
+                        t("support.staff.memberFallback", "Staff member")}
+                    </strong>
+                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                      {staffProfile.role_title ||
+                        staffProfile.permission_role ||
+                        t("support.staff.roleFallback", "Staff role")}{" "}
+                      ·{" "}
+                      {staffProfile.business_name ||
+                        t(
+                          "support.staff.businessFallback",
+                          "Business not shown",
+                        )}{" "}
+                      ·{" "}
+                      {staffProfile.active
+                        ? t("support.staff.status.active", "Active")
+                        : t("support.staff.status.hidden", "Hidden")}
+                    </p>
+                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                      {t(
+                        "support.staff.profileHelpText",
+                        "If services, bookings or availability look wrong, ask the business owner to check your staff setup and assigned services.",
+                      )}
+                    </p>
+                  </details>
+                )}
+
+                {!staffProfile && (
+                  <details
+                    className="staff-context-box warning support-secondary-context"
+                    open
+                  >
+                    <summary>
+                      {t("support.staff.noProfile", "No linked staff profile")}
+                    </summary>
+                    <strong>
+                      {t(
+                        "support.staff.noProfileTitle",
+                        "Your account is not linked to a staff profile yet",
+                      )}
+                    </strong>
+                    <p className="small muted" style={{ marginTop: "0.35rem" }}>
+                      {t(
+                        "support.staff.noProfileBody",
+                        "Ask the business owner to add your exact email address to their staff list, then log in again.",
+                      )}
+                    </p>
+                    <ol className="support-step-list">
+                      <li>
+                        {t(
+                          "support.staff.noProfileStep1",
+                          "Check you registered with the same email the business added.",
+                        )}
+                      </li>
+                      <li>
+                        {t(
+                          "support.staff.noProfileStep2",
+                          "Ask the business owner to open Staff setup and confirm your email is listed.",
+                        )}
+                      </li>
+                      <li>
+                        {t(
+                          "support.staff.noProfileStep3",
+                          "Log out and log back in after the owner updates your staff profile.",
+                        )}
+                      </li>
+                    </ol>
+                  </details>
+                )}
 
                 <div className="support-submit-note">
                   <p className="small muted">
@@ -711,6 +714,29 @@ export default function StaffSupportPage() {
           padding: 0.72rem 0.78rem;
         }
 
+        .staff-context-box summary {
+          cursor: pointer;
+          font-weight: 800;
+          list-style: none;
+        }
+
+        .staff-context-box summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .staff-context-box summary::after {
+          content: " +";
+          color: var(--accent);
+        }
+
+        .staff-context-box[open] summary::after {
+          content: " -";
+        }
+
+        .support-secondary-context {
+          font-size: 0.9rem;
+        }
+
         .staff-context-box.warning {
           border-color: rgba(255, 190, 11, 0.28);
           background: rgba(255, 190, 11, 0.06);
@@ -749,8 +775,15 @@ export default function StaffSupportPage() {
 
         .support-link-row > span:first-child {
           display: grid;
-          gap: 0.18rem;
+          gap: 0.28rem;
+          flex: 1;
           min-width: 0;
+          text-align: left;
+        }
+
+        .support-link-row strong {
+          display: block;
+          line-height: 1.2;
         }
 
         .support-link-row small {
@@ -815,6 +848,7 @@ export default function StaffSupportPage() {
 
           .support-link-row {
             width: 100%;
+            justify-content: space-between;
           }
         }
       `}</style>

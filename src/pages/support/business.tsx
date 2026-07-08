@@ -562,8 +562,15 @@ export default function BusinessSupportPage() {
 
         .support-link-row > span:first-child {
           display: grid;
-          gap: 0.18rem;
+          gap: 0.28rem;
+          flex: 1;
           min-width: 0;
+          text-align: left;
+        }
+
+        .support-link-row strong {
+          display: block;
+          line-height: 1.2;
         }
 
         .support-link-row small {
@@ -624,7 +631,7 @@ export default function BusinessSupportPage() {
           .support-form-card button,
           .support-link-row {
             width: 100%;
-            justify-content: center;
+            justify-content: space-between;
           }
         }
       `}</style>

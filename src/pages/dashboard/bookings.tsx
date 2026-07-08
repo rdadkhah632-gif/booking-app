@@ -2872,8 +2872,8 @@ export default function Bookings() {
 
         :global(.week-calendar-grid) {
           display: grid;
-          grid-template-columns: 4.75rem repeat(7, minmax(9.2rem, 1fr));
-          min-width: 1180px;
+          grid-template-columns: 4.4rem repeat(7, minmax(7.1rem, 1fr));
+          min-width: 100%;
           overflow: visible;
           background: rgba(2, 6, 23, 0.22);
         }

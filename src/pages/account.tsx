@@ -1075,15 +1075,15 @@ export default function AccountPage() {
         }
 
         .account-form-card {
-          order: 3;
-        }
-
-        .account-settings-grid {
           order: 4;
         }
 
-        .account-email-preferences {
+        .account-settings-grid {
           order: 5;
+        }
+
+        .account-email-preferences {
+          order: 3;
         }
 
         .operator-account-card {
@@ -1140,8 +1140,8 @@ export default function AccountPage() {
 
         .account-details-body {
           display: grid;
-          gap: 0.68rem;
-          padding: 0.78rem 0.85rem 0.85rem;
+          gap: 0.58rem;
+          padding: 0.68rem 0.75rem 0.75rem;
         }
 
         .account-settings-grid {
@@ -1269,14 +1269,14 @@ export default function AccountPage() {
 
         .account-preference-groups {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 0.55rem;
+          grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+          gap: 0.48rem;
         }
 
         .account-preference-group {
           display: grid;
-          gap: 0.48rem;
-          padding: 0.65rem;
+          gap: 0.42rem;
+          padding: 0.58rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
@@ -1286,10 +1286,10 @@ export default function AccountPage() {
         .account-preference-toggle {
           display: grid;
           grid-template-columns: auto 1fr;
-          gap: 0.5rem;
+          gap: 0.45rem;
           align-items: flex-start;
           color: var(--text);
-          padding: 0.12rem 0;
+          padding: 0.08rem 0;
         }
 
         .account-preference-toggle input {
