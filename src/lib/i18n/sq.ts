@@ -1608,6 +1608,8 @@ export const sq: TranslationTree = {
   "dashboardStaff.invite.resend": "Ridërgo ftesën",
   "dashboardStaff.invite.copy": "Kopjo linkun e ftesës",
   "dashboardStaff.invite.revoke": "Anulo ftesën",
+  "dashboardStaff.invite.confirmRevoke": "Konfirmo anulimin",
+  "dashboardStaff.invite.secureLink": "Linku i sigurt i ftesës",
   "dashboardStaff.toggle.confirmIncomplete":
     "Ky anëtar stafi nuk ka shërbime të caktuara ose orare pune. Mund të mos shfaqet si i rezervueshëm derisa të plotësohen të dyja. Ta shfaqësh gjithsesi?",
   "dashboardStaff.toggle.activeSuccess": "tani është aktiv për rezervime.",

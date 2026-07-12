@@ -13,6 +13,10 @@ import { getBusinessAppUrl } from "@/lib/appUrls";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
 import { Role } from "./navTypes";
 
+type AuthNavProps = {
+  contextRole?: Exclude<Role, null>;
+};
+
 function isAdminRoute(pathname: string) {
   return pathname.startsWith("/admin");
 }
@@ -86,7 +90,7 @@ function fallbackLogoHref(pathname: string) {
   return "/";
 }
 
-export default function AuthNav() {
+export default function AuthNav({ contextRole }: AuthNavProps = {}) {
   const router = useRouter();
   const { t } = useI18n();
   const isPublicBusinessEntry = router.pathname === "/business";
@@ -126,12 +130,14 @@ export default function AuthNav() {
 
         if (cancelled) return;
 
-        const nextRole = navRoleForCapabilities({
-          activePath: router.pathname,
-          isAdmin: capabilities.isAdmin,
-          ownsBusiness: capabilities.ownsBusiness,
-          hasStaffAccess: capabilities.hasStaffAccess,
-        });
+        const nextRole =
+          contextRole ||
+          navRoleForCapabilities({
+            activePath: router.pathname,
+            isAdmin: capabilities.isAdmin,
+            ownsBusiness: capabilities.ownsBusiness,
+            hasStaffAccess: capabilities.hasStaffAccess,
+          });
 
         setPrimaryBusinessId(capabilities.primaryBusinessId);
         setRole(nextRole);
@@ -162,7 +168,7 @@ export default function AuthNav() {
     return () => {
       cancelled = true;
     };
-  }, [router.pathname]);
+  }, [contextRole, router.pathname]);
 
   async function loadNotificationCounts(params: {
     userId: string;

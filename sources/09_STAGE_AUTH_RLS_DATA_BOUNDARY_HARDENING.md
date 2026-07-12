@@ -1395,3 +1395,21 @@ Status: implemented; build and targeted QA required.
 No schema, RLS, role separation, staff-account linking, availability save,
 booking lifecycle, slot generation or billing behavior changed in this polish
 batch.
+
+### Operational Polish QA Follow-Up — 13 July 2026
+
+Status: implemented; deployed retest required.
+
+- Team no longer relies on an overlaid ellipsis popover for staff actions;
+  labelled actions open in a visible in-card panel on desktop and mobile
+- secure invite URLs remain visible after generation even when browser
+  clipboard permission is unavailable
+- pending invite revocation uses a visible two-step confirmation and leaves the
+  staff profile saved while invalidating unused invite tokens
+- Booking rules stores its success confirmation for the next full reload in
+  the current browser tab, then clears the one-time message
+- Staff Support explicitly keeps staff workspace navigation and no longer
+  promotes the business-support route
+
+No schema, RLS, role separation, staff linking, booking, availability or
+billing behavior changed in this follow-up.

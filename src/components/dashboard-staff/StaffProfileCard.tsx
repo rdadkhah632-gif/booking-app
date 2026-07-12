@@ -57,6 +57,8 @@ export default function StaffProfileCard({
 }: Props) {
   const { t } = useI18n();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [confirmingRevoke, setConfirmingRevoke] = useState(false);
   const activeAssignedCount = services.filter(
     (service) => service.active && assignedServiceIds.includes(service.id),
   ).length;
@@ -303,80 +305,121 @@ export default function StaffProfileCard({
                   : t("dashboardStaff.card.viewDetails", "View details")}
               </button>
 
-              <details className="staff-more-actions">
-                <summary
-                  aria-label={t("dashboardStaff.card.actions", "Staff actions")}
-                  title={t("dashboardStaff.card.actions", "Staff actions")}
-                >
-                  <span aria-hidden="true">•••</span>
-                </summary>
-                <div className="staff-actions-menu">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDetailsOpen(true);
-                      setEditingStaffId(staff.id);
-                    }}
-                  >
-                    {t("common.edit", "Edit")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleStaffActive(staff)}
-                  >
-                    {staff.active
-                      ? t("dashboardStaff.card.deactivate", "Deactivate")
-                      : t("dashboardStaff.card.activate", "Activate")}
-                  </button>
-
-                  <Link
-                    href={`/dashboard/staff-availability?staffId=${staff.id}`}
-                  >
-                    {t(
-                      "dashboardStaff.availability.openCta",
-                      "Open availability",
-                    )}
-                  </Link>
-
-                  {!isLinked && hasInviteEmail && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => resendStaffInvite(staff)}
-                        disabled={actionLoadingKey === `invite-${staff.id}`}
-                      >
-                        {t("dashboardStaff.invite.resend", "Resend invite")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => copyStaffInviteLink(staff)}
-                        disabled={
-                          actionLoadingKey === `copy-invite-${staff.id}`
-                        }
-                      >
-                        {t("dashboardStaff.invite.copy", "Copy invite link")}
-                      </button>
-                      {(normalisedInviteStatus === "invited" ||
-                        normalisedInviteStatus === "pending") && (
-                        <button
-                          type="button"
-                          className="danger"
-                          onClick={() => revokeStaffInvite(staff)}
-                          disabled={
-                            actionLoadingKey === `revoke-invite-${staff.id}`
-                          }
-                        >
-                          {t("dashboardStaff.invite.revoke", "Revoke invite")}
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </details>
+              <button
+                type="button"
+                className="btn btn-ghost staff-actions-trigger"
+                aria-expanded={actionsOpen}
+                aria-controls={`staff-actions-${staff.id}`}
+                onClick={() => {
+                  setActionsOpen((open) => !open);
+                  setConfirmingRevoke(false);
+                }}
+              >
+                {t("dashboardStaff.card.actions", "Actions")}
+                <span aria-hidden="true">•••</span>
+              </button>
             </>
           )}
         </div>
       </div>
+
+      {actionsOpen && !isEditing && (
+        <div
+          id={`staff-actions-${staff.id}`}
+          className="staff-actions-panel"
+          role="group"
+          aria-label={t("dashboardStaff.card.actions", "Staff actions")}
+        >
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => {
+              setDetailsOpen(true);
+              setEditingStaffId(staff.id);
+              setActionsOpen(false);
+            }}
+          >
+            {t("common.edit", "Edit")}
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => {
+              toggleStaffActive(staff);
+              setActionsOpen(false);
+            }}
+          >
+            {staff.active
+              ? t("dashboardStaff.card.deactivate", "Deactivate")
+              : t("dashboardStaff.card.activate", "Activate")}
+          </button>
+
+          <Link
+            href={`/dashboard/staff-availability?staffId=${staff.id}`}
+            className="btn btn-ghost"
+          >
+            {t("dashboardStaff.availability.openCta", "Open availability")}
+          </Link>
+
+          {!isLinked && hasInviteEmail && (
+            <>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => resendStaffInvite(staff)}
+                disabled={actionLoadingKey === `invite-${staff.id}`}
+              >
+                {t("dashboardStaff.invite.resend", "Resend invite")}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => copyStaffInviteLink(staff)}
+                disabled={actionLoadingKey === `copy-invite-${staff.id}`}
+              >
+                {t("dashboardStaff.invite.copy", "Copy invite link")}
+              </button>
+              {(normalisedInviteStatus === "invited" ||
+                normalisedInviteStatus === "pending") && (
+                <>
+                  <button
+                    type="button"
+                    className={
+                      confirmingRevoke ? "btn btn-danger" : "btn btn-ghost"
+                    }
+                    onClick={() => {
+                      if (!confirmingRevoke) {
+                        setConfirmingRevoke(true);
+                        return;
+                      }
+                      revokeStaffInvite(staff);
+                      setConfirmingRevoke(false);
+                      setActionsOpen(false);
+                    }}
+                    disabled={actionLoadingKey === `revoke-invite-${staff.id}`}
+                  >
+                    {confirmingRevoke
+                      ? t(
+                          "dashboardStaff.invite.confirmRevoke",
+                          "Confirm revoke",
+                        )
+                      : t("dashboardStaff.invite.revoke", "Revoke invite")}
+                  </button>
+                  {confirmingRevoke && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setConfirmingRevoke(false)}
+                    >
+                      {t("common.cancel", "Cancel")}
+                    </button>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {(detailsOpen || isEditing) && (
         <div className="grid-2 staff-card-grid">
@@ -435,65 +478,23 @@ export default function StaffProfileCard({
           align-items: center;
         }
 
-        .staff-more-actions {
-          position: relative;
+        .staff-actions-trigger {
+          gap: 0.45rem;
         }
 
-        .staff-more-actions summary {
-          display: grid;
-          width: 2.55rem;
-          height: 2.55rem;
-          place-items: center;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          background: var(--surface-2);
-          color: var(--text);
-          cursor: pointer;
-          list-style: none;
+        .staff-actions-trigger span {
+          color: var(--text-muted);
           letter-spacing: 0;
         }
 
-        .staff-more-actions summary::-webkit-details-marker {
-          display: none;
-        }
-
-        .staff-actions-menu {
-          position: absolute;
-          top: calc(100% + 0.4rem);
-          right: 0;
-          z-index: 20;
-          display: grid;
-          min-width: 12rem;
-          padding: 0.35rem;
+        .staff-actions-panel {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          padding: 0.65rem;
           border: 1px solid var(--border);
           border-radius: 8px;
-          background: var(--surface);
-          box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.3);
-        }
-
-        .staff-actions-menu button,
-        .staff-actions-menu a {
-          width: 100%;
-          padding: 0.55rem 0.65rem;
-          border: 0;
-          border-radius: 6px;
-          background: transparent;
-          color: var(--text);
-          font: inherit;
-          text-align: left;
-          text-decoration: none;
-          cursor: pointer;
-        }
-
-        .staff-actions-menu button:hover,
-        .staff-actions-menu button:focus-visible,
-        .staff-actions-menu a:hover,
-        .staff-actions-menu a:focus-visible {
           background: var(--surface-2);
-        }
-
-        .staff-actions-menu .danger {
-          color: var(--danger);
         }
 
         .staff-status-pill {
@@ -577,7 +578,7 @@ export default function StaffProfileCard({
 
           .staff-card-actions {
             display: grid;
-            grid-template-columns: auto 2.55rem;
+            grid-template-columns: auto auto;
             justify-content: end;
             align-items: start;
           }
@@ -588,9 +589,14 @@ export default function StaffProfileCard({
             padding-inline: 0.65rem;
           }
 
-          .staff-actions-menu {
-            right: 0;
-            min-width: min(13rem, calc(100vw - 2rem));
+          .staff-actions-panel {
+            display: grid;
+            grid-template-columns: 1fr;
+          }
+
+          .staff-actions-panel :global(.btn) {
+            width: 100%;
+            justify-content: flex-start;
           }
         }
       `}</style>

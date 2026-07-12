@@ -227,7 +227,7 @@ export default function StaffSupportPage() {
 
   return (
     <main>
-      <AuthNav />
+      <AuthNav contextRole="staff" />
 
       <section
         className="container"
@@ -563,19 +563,6 @@ export default function StaffSupportPage() {
                         {t(
                           "support.staff.accountBody",
                           "Update your personal account details.",
-                        )}
-                      </small>
-                    </span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-
-                  <Link href="/support/business" className="support-link-row">
-                    <span className="support-link-copy">
-                      <strong>{t("nav.businessSupport")}</strong>
-                      <small>
-                        {t(
-                          "support.staff.businessSupportBody",
-                          "Contact the business support route if you manage the business account.",
                         )}
                       </small>
                     </span>

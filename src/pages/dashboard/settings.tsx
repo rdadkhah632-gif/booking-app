@@ -11,6 +11,8 @@ import { defaultSettings } from "@/components/dashboard-settings/settingsOptions
 import { useI18n } from "@/lib/useI18n";
 import { supabase } from "@/lib/supabaseClient";
 
+const SETTINGS_SAVED_FEEDBACK_KEY = "mirebook:booking-rules-saved";
+
 export default function DashboardSettingsPage() {
   const router = useRouter();
   const { t } = useI18n();
@@ -89,6 +91,16 @@ export default function DashboardSettingsPage() {
         setSettings(null);
       }
 
+      if (!options?.keepSuccess && typeof window !== "undefined") {
+        const savedFeedback = window.sessionStorage.getItem(
+          SETTINGS_SAVED_FEEDBACK_KEY,
+        );
+        if (savedFeedback) {
+          setSuccess(savedFeedback);
+          window.sessionStorage.removeItem(SETTINGS_SAVED_FEEDBACK_KEY);
+        }
+      }
+
       setLoading(false);
     } catch (err: any) {
       setError(
@@ -160,6 +172,9 @@ export default function DashboardSettingsPage() {
             "New bookings will go to Needs action for approval.",
           )
     }`;
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(SETTINGS_SAVED_FEEDBACK_KEY, savedMessage);
+    }
     await loadSettings({ keepSuccess: true });
     setSuccess(savedMessage);
   }

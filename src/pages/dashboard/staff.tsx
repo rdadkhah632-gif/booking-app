@@ -55,6 +55,9 @@ export default function StaffPage() {
   const [actionLoadingKey, setActionLoadingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [generatedInviteUrl, setGeneratedInviteUrl] = useState<string | null>(
+    null,
+  );
 
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
@@ -506,6 +509,7 @@ export default function StaffPage() {
     setActionLoadingKey(`invite-${member.id}`);
     setError(null);
     setSuccess(null);
+    setGeneratedInviteUrl(null);
 
     const { error } = await supabase
       .from("staff_members")
@@ -576,6 +580,7 @@ export default function StaffPage() {
     setActionLoadingKey(`copy-invite-${member.id}`);
     setError(null);
     setSuccess(null);
+    setGeneratedInviteUrl(null);
 
     try {
       const {
@@ -604,19 +609,28 @@ export default function StaffPage() {
         );
       }
 
+      let copiedToClipboard = false;
       try {
         await navigator.clipboard.writeText(payload.manualInviteUrl);
-        setSuccess(
-          t(
-            "dashboardStaff.invite.copied",
-            "Secure invite link copied. The previous unused link is no longer valid.",
-          ),
-        );
+        copiedToClipboard = true;
       } catch {
-        setSuccess(
-          `${t("dashboardStaff.invite.copyFallback", "Copy this secure invite link:")} ${payload.manualInviteUrl}`,
-        );
+        // The secure link remains visible below when clipboard access is blocked.
       }
+
+      setSuccess(
+        `${
+          copiedToClipboard
+            ? t(
+                "dashboardStaff.invite.copied",
+                "Secure invite link copied. The previous unused link is no longer valid.",
+              )
+            : t(
+                "dashboardStaff.invite.copyFallback",
+                "Copy this secure invite link:",
+              )
+        } ${payload.manualInviteUrl}`,
+      );
+      setGeneratedInviteUrl(payload.manualInviteUrl);
 
       await loadPage();
     } catch (inviteError: any) {
@@ -635,17 +649,10 @@ export default function StaffPage() {
   async function revokeStaffInvite(member: StaffMember) {
     if (member.user_id) return;
 
-    const confirmed = confirm(
-      t(
-        "dashboardStaff.invite.revokeConfirm",
-        "Revoke this pending invite? Its secure link will stop working.",
-      ),
-    );
-    if (!confirmed) return;
-
     setActionLoadingKey(`revoke-invite-${member.id}`);
     setError(null);
     setSuccess(null);
+    setGeneratedInviteUrl(null);
 
     try {
       const {
@@ -917,6 +924,24 @@ export default function StaffPage() {
           }}
         >
           <p style={{ color: "var(--success)" }}>{success}</p>
+          {generatedInviteUrl && (
+            <label
+              className="small muted"
+              style={{ display: "grid", gap: "0.35rem", marginTop: "0.7rem" }}
+            >
+              {t("dashboardStaff.invite.secureLink", "Secure invite link")}
+              <input
+                type="text"
+                value={generatedInviteUrl}
+                readOnly
+                onFocus={(event) => event.currentTarget.select()}
+                aria-label={t(
+                  "dashboardStaff.invite.secureLink",
+                  "Secure invite link",
+                )}
+              />
+            </label>
+          )}
         </div>
       )}
 

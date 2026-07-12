@@ -1645,6 +1645,8 @@ export const en: TranslationTree = {
   "dashboardStaff.invite.resend": "Resend invite",
   "dashboardStaff.invite.copy": "Copy invite link",
   "dashboardStaff.invite.revoke": "Revoke invite",
+  "dashboardStaff.invite.confirmRevoke": "Confirm revoke",
+  "dashboardStaff.invite.secureLink": "Secure invite link",
   "dashboardStaff.toggle.confirmIncomplete":
     "This staff member is missing assigned services or working hours. They may still not appear as bookable until both are complete. Show them anyway?",
   "dashboardStaff.toggle.activeSuccess": "is now active for booking.",
