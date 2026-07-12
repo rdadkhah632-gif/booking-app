@@ -63,12 +63,19 @@ export default function PublicBusinessServices({
                   : "var(--surface-2)",
               }}
             >
-              {service.image_url && (
-                <div
-                  className="public-business-service-image"
-                  style={{ backgroundImage: serviceImageBackground(service) }}
-                />
-              )}
+              <div
+                className={
+                  service.image_url
+                    ? "public-business-service-image has-image"
+                    : "public-business-service-image no-image"
+                }
+                style={{ backgroundImage: serviceImageBackground(service) }}
+                aria-hidden="true"
+              >
+                {!service.image_url && (
+                  <span>{service.name[0]?.toUpperCase() || "M"}</span>
+                )}
+              </div>
 
               <div className="public-business-service-copy">
                 <strong>{service.name}</strong>

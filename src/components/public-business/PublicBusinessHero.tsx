@@ -6,27 +6,41 @@ type Props = {
   heroBackgroundImage: () => string | undefined;
   locationLabel: () => string;
   bookingModeText: () => string;
-  bookingModeDescription: () => string;
 };
+
+function businessInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
 
 export default function PublicBusinessHero({
   business,
   heroBackgroundImage,
   locationLabel,
   bookingModeText,
-  bookingModeDescription,
 }: Props) {
   const { t } = useI18n();
+  const backgroundImage = heroBackgroundImage();
 
   return (
     <div className="card public-business-hero">
       <div
         className="public-business-hero-image"
         style={{
-          backgroundImage: heroBackgroundImage(),
+          backgroundImage,
           backgroundColor: "var(--accent-dim)",
         }}
-      />
+      >
+        {!backgroundImage && (
+          <span className="public-business-hero-fallback" aria-hidden="true">
+            {businessInitials(business.name) || "M"}
+          </span>
+        )}
+      </div>
 
       <div className="public-business-hero-content">
         <div className="public-business-hero-tags">
@@ -48,12 +62,9 @@ export default function PublicBusinessHero({
           </p>
         )}
 
-        <div className="public-business-meta-grid">
-          <p className="small muted">{locationLabel()}</p>
-
-          {business.phone && <p className="small muted">{business.phone}</p>}
-
-          <p className="small muted">{bookingModeDescription()}</p>
+        <div className="public-business-contact-row">
+          <span>{locationLabel()}</span>
+          {business.phone && <span>{business.phone}</span>}
         </div>
       </div>
     </div>

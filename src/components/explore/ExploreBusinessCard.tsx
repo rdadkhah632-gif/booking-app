@@ -5,15 +5,22 @@ import { Business, BusinessCardStats } from "./exploreTypes";
 type Props = {
   business: Business;
   stats: BusinessCardStats;
-  businessIcon: (business: Business) => string;
   locationLabel: (business: Business) => string;
   imageBackground: (business: Business) => string;
 };
 
+function businessInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
 export default function ExploreBusinessCard({
   business,
   stats,
-  businessIcon,
   locationLabel,
   imageBackground,
 }: Props) {
@@ -31,67 +38,37 @@ export default function ExploreBusinessCard({
   }`;
 
   return (
-    <div className="card explore-business-card">
+    <Link
+      href={`/explore/${business.id}`}
+      className="card explore-business-card"
+      aria-label={`${business.name}. ${t("explore.card.viewTimes")}`}
+    >
       <div
         className={`explore-business-image ${hasImage ? "has-image" : "no-image"}`}
         style={{
-          minHeight: 150,
           background: imageBackground(business),
           backgroundSize: "cover",
           backgroundPosition: "center",
-          borderRight: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "2rem",
         }}
       >
         {!hasImage && (
           <span className="explore-business-fallback-mark" aria-hidden="true">
-            {businessIcon(business)}
+            {businessInitials(business.name) || "M"}
           </span>
         )}
       </div>
 
       <div className="explore-business-content">
-        <div
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <h3 style={{ marginBottom: "0.25rem" }}>{business.name}</h3>
-
-          {business.category && (
-            <span
-              className="small"
-              style={{
-                background: "var(--accent-dim)",
-                color: "var(--accent)",
-                padding: "0.2rem 0.55rem",
-                borderRadius: 999,
-              }}
-            >
-              {business.category}
-            </span>
-          )}
-
+        <div className="explore-card-topline">
+          <span className="explore-card-category">
+            {business.category || t("common.business", "Business")}
+          </span>
           <span
-            className="small"
-            style={{
-              background:
-                business.auto_accept_bookings === false
-                  ? "rgba(255,107,53,0.12)"
-                  : "rgba(45,212,191,0.12)",
-              color:
-                business.auto_accept_bookings === false
-                  ? "var(--accent)"
-                  : "var(--success)",
-              padding: "0.2rem 0.55rem",
-              borderRadius: 999,
-            }}
+            className={
+              business.auto_accept_bookings === false
+                ? "explore-booking-mode request"
+                : "explore-booking-mode instant"
+            }
           >
             {business.auto_accept_bookings === false
               ? t("explore.card.requestAppointment", "Request appointment")
@@ -99,66 +76,135 @@ export default function ExploreBusinessCard({
           </span>
         </div>
 
+        <h3>{business.name}</h3>
+
         {business.description && (
-          <p
-            className="muted small explore-card-description"
-            style={{
-              marginBottom: "0.65rem",
-              marginTop: "0.35rem",
-              maxWidth: 680,
-            }}
-          >
-            {business.description}
-          </p>
+          <p className="explore-card-description">{business.description}</p>
         )}
 
-        <div
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            flexWrap: "wrap",
-            marginBottom: "0.65rem",
-          }}
-        >
-          <span className="small explore-muted-pill">{serviceText}</span>
-          <span className="small explore-muted-pill">{staffText}</span>
+        <div className="explore-card-facts">
+          <span>{locationLabel(business)}</span>
+          <span>
+            {serviceText} · {staffText}
+          </span>
         </div>
 
-        <p className="small muted">{locationLabel(business)}</p>
+        <span className="explore-card-cta">
+          {t("explore.card.viewTimes")}
+          <span aria-hidden="true">›</span>
+        </span>
       </div>
 
-      <div className="explore-business-actions">
-        <Link href={`/explore/${business.id}`} className="btn btn-accent">
-          {t("explore.card.viewTimes")}
-        </Link>
-      </div>
       <style jsx>{`
-        .explore-card-description {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
+        .explore-business-image {
+          min-height: 100%;
+          border-right: 1px solid var(--border);
+          display: grid;
+          place-items: center;
           overflow: hidden;
         }
 
         .explore-business-fallback-mark {
-          width: 3.4rem;
-          height: 3.4rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid rgba(255, 107, 53, 0.26);
+          display: grid;
+          width: 3.6rem;
+          height: 3.6rem;
+          place-items: center;
+          border: 1px solid rgba(255, 255, 255, 0.16);
           border-radius: 50%;
-          background:
-            radial-gradient(
-              circle at 35% 25%,
-              rgba(255, 255, 255, 0.18),
-              transparent 34%
-            ),
-            rgba(255, 107, 53, 0.12);
-          box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
-          font-size: 1.75rem;
+          background: rgba(15, 14, 23, 0.62);
+          color: #fff7ed;
+          box-shadow: 0 0.85rem 2rem rgba(0, 0, 0, 0.24);
+          font-size: 1rem;
+          font-weight: 900;
+        }
+
+        .explore-card-topline {
+          display: flex;
+          gap: 0.45rem;
+          align-items: center;
+          justify-content: space-between;
+          min-width: 0;
+        }
+
+        .explore-card-category {
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-weight: 800;
+          text-overflow: ellipsis;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+
+        .explore-booking-mode {
+          flex: 0 0 auto;
+          padding: 0.2rem 0.5rem;
+          border-radius: 999px;
+          font-size: 0.7rem;
+          font-weight: 800;
+        }
+
+        .explore-booking-mode.instant {
+          background: rgba(45, 212, 191, 0.1);
+          color: var(--success);
+        }
+
+        .explore-booking-mode.request {
+          background: var(--accent-dim);
+          color: var(--accent);
+        }
+
+        .explore-business-content h3 {
+          display: -webkit-box;
+          overflow: hidden;
+          margin: 0;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          font-size: 1.05rem;
+          line-height: 1.2;
+        }
+
+        .explore-card-description {
+          display: -webkit-box;
+          overflow: hidden;
+          margin: 0;
+          color: var(--text-muted);
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          font-size: 0.78rem;
+          line-height: 1.35;
+        }
+
+        .explore-card-facts {
+          display: grid;
+          gap: 0.1rem;
+          min-width: 0;
+          color: var(--text-muted);
+          font-size: 0.74rem;
+        }
+
+        .explore-card-facts span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .explore-card-cta {
+          display: inline-flex;
+          width: fit-content;
+          gap: 0.35rem;
+          align-items: center;
+          margin-top: auto;
+          color: var(--accent);
+          font-size: 0.78rem;
+          font-weight: 900;
+        }
+
+        .explore-card-cta span {
+          font-size: 1.1rem;
+          line-height: 1;
         }
       `}</style>
-    </div>
+    </Link>
   );
 }

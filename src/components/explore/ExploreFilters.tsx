@@ -33,6 +33,7 @@ export default function ExploreFilters({
   onClearFilters,
 }: Props) {
   const { t } = useI18n();
+  const hasFilters = Boolean(search || city || category || sortBy !== "newest");
   return (
     <aside className="explore-filter-panel">
       <h3 className="explore-filter-title">{t("explore.filters.title")}</h3>
@@ -116,9 +117,11 @@ export default function ExploreFilters({
           {t("explore.filters.searchButton", "Search")}
         </button>
 
-        <button className="btn btn-ghost" onClick={onClearFilters}>
-          {t("explore.filters.clearButton", "Clear filters")}
-        </button>
+        {hasFilters && (
+          <button className="btn btn-ghost" onClick={onClearFilters}>
+            {t("explore.filters.clearButton", "Clear filters")}
+          </button>
+        )}
       </div>
       <style jsx>{`
         .explore-filter-panel {
@@ -137,7 +140,7 @@ export default function ExploreFilters({
         .explore-filter-grid {
           display: grid;
           grid-template-columns:
-            minmax(220px, 1.4fr) repeat(2, minmax(150px, 0.8fr))
+            minmax(220px, 1.4fr) repeat(3, minmax(140px, 0.8fr))
             auto auto;
           gap: 0.75rem;
           align-items: end;
@@ -155,15 +158,36 @@ export default function ExploreFilters({
           }
 
           .explore-filter-title {
-            margin-bottom: 0.55rem;
+            display: none;
           }
 
-          .explore-filter-grid,
+          .explore-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.55rem;
+          }
+
+          .explore-filter-grid > div:first-child {
+            grid-column: 1 / -1;
+          }
+
           .explore-filter-grid :global(.btn),
           .explore-filter-grid button {
-            grid-template-columns: 1fr;
             width: 100%;
             justify-content: center;
+          }
+
+          .explore-filter-grid :global(.btn-ghost) {
+            grid-column: 1 / -1;
+          }
+
+          .explore-filter-grid label {
+            font-size: 0.72rem;
+          }
+
+          .explore-filter-grid input,
+          .explore-filter-grid select {
+            padding-inline: 0.7rem;
+            font-size: 0.82rem;
           }
         }
       `}</style>

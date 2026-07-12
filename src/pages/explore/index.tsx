@@ -136,22 +136,6 @@ export default function Explore() {
     };
   }
 
-  function businessIcon(business: Business) {
-    const categoryText = business.category?.toLowerCase() || "";
-
-    if (categoryText.includes("dent")) return "🦷";
-    if (categoryText.includes("barber")) return "💈";
-    if (categoryText.includes("salon")) return "✂️";
-    if (categoryText.includes("restaurant")) return "🍽️";
-    if (categoryText.includes("clinic")) return "🏥";
-    if (categoryText.includes("spa")) return "🧖";
-    if (categoryText.includes("nail")) return "💅";
-    if (categoryText.includes("tattoo")) return "🖊️";
-    if (categoryText.includes("pet")) return "🐾";
-    if (categoryText.includes("beauty")) return "✨";
-    return "✨";
-  }
-
   function locationLabel(business: Business) {
     return (
       [business.address, business.city, business.country]
@@ -328,7 +312,6 @@ export default function Explore() {
                     key={business.id}
                     business={business}
                     stats={getBusinessStats(business)}
-                    businessIcon={businessIcon}
                     locationLabel={locationLabel}
                     imageBackground={imageBackground}
                   />
@@ -362,48 +345,36 @@ export default function Explore() {
 
         .explore-results-grid {
           display: grid;
-          gap: 0.75rem;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.85rem;
         }
 
         :global(.explore-business-card) {
           display: grid;
-          grid-template-columns: 112px 1fr auto;
-          gap: 0.9rem;
+          grid-template-columns: 116px minmax(0, 1fr);
+          gap: 0;
           align-items: stretch;
           overflow: hidden;
           padding: 0;
-          min-height: 118px;
+          min-height: 164px;
+          color: var(--text);
+          text-decoration: none;
+          transition:
+            border-color 0.16s ease,
+            transform 0.16s ease;
         }
 
-        :global(.explore-business-image) {
-          border-right: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2rem;
+        :global(.explore-business-card:hover),
+        :global(.explore-business-card:focus-visible) {
+          border-color: rgba(255, 107, 53, 0.32);
+          transform: translateY(-1px);
         }
 
         :global(.explore-business-content) {
-          padding: 0.85rem 0;
+          display: grid;
+          gap: 0.45rem;
           min-width: 0;
-        }
-
-        :global(.explore-business-actions) {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          align-items: flex-end;
-          justify-content: center;
-          padding: 0.85rem;
-          min-width: 150px;
-        }
-
-        :global(.explore-muted-pill) {
-          background: var(--surface-2);
-          color: var(--text-muted);
-          padding: 0.2rem 0.55rem;
-          border-radius: 999px;
-          border: 1px solid var(--border);
+          padding: 0.8rem;
         }
 
         :global(.explore-empty-actions),
@@ -414,7 +385,10 @@ export default function Explore() {
           margin-top: 1rem;
         }
 
-        @media (max-width: 980px) {
+        @media (max-width: 900px) {
+          .explore-results-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         @media (max-width: 760px) {
@@ -428,24 +402,18 @@ export default function Explore() {
           }
 
           :global(.explore-business-card) {
-            grid-template-columns: 1fr;
+            grid-template-columns: 92px minmax(0, 1fr);
+            min-height: 146px;
           }
 
           :global(.explore-business-image) {
-            min-height: 92px !important;
-            border-right: 0;
-            border-bottom: 1px solid var(--border);
+            min-height: 100% !important;
+            border-right: 1px solid var(--border);
+            border-bottom: 0;
           }
 
           :global(.explore-business-content) {
-            padding: 0.85rem;
-          }
-
-          :global(.explore-business-actions) {
-            align-items: stretch;
-            padding: 0 0.85rem 0.85rem;
-            min-width: 0;
-            width: 100%;
+            padding: 0.7rem;
           }
 
           :global(.explore-filter-panel) {
@@ -455,11 +423,6 @@ export default function Explore() {
 
           .explore-results-section {
             order: 2;
-          }
-
-          :global(.explore-business-actions .btn) {
-            width: 100%;
-            justify-content: center;
           }
 
           :global(.explore-empty-actions),

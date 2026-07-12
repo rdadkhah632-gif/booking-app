@@ -1485,7 +1485,6 @@ export default function BusinessBookingPage() {
             heroBackgroundImage={heroBackgroundImage}
             locationLabel={locationLabel}
             bookingModeText={bookingModeText}
-            bookingModeDescription={bookingModeDescription}
           />
 
           <p className="small muted" style={{ marginTop: "0.55rem" }}>
@@ -1649,19 +1648,35 @@ export default function BusinessBookingPage() {
 
         :global(.public-business-hero) {
           display: grid;
-          grid-template-columns: 118px minmax(0, 1fr);
-          gap: 1rem;
+          grid-template-columns: 164px minmax(0, 1fr);
+          gap: 1.15rem;
           overflow: hidden;
-          padding: 0.9rem;
+          padding: 1rem;
           align-items: center;
         }
 
         :global(.public-business-hero-image) {
-          width: 118px;
-          min-height: 118px;
-          border-radius: 18px;
+          width: 164px;
+          min-height: 148px;
+          display: grid;
+          place-items: center;
+          overflow: hidden;
+          border-radius: 12px;
           background-size: cover;
           background-position: center;
+        }
+
+        :global(.public-business-hero-fallback) {
+          display: grid;
+          width: 4rem;
+          height: 4rem;
+          place-items: center;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          border-radius: 50%;
+          background: rgba(15, 14, 23, 0.58);
+          color: #fff7ed;
+          font-size: 1.1rem;
+          font-weight: 900;
         }
 
         :global(.public-business-hero-content) {
@@ -1684,6 +1699,13 @@ export default function BusinessBookingPage() {
           overflow: hidden;
         }
 
+        :global(.public-business-hero .page-title) {
+          font-family: var(--font-body);
+          font-size: clamp(1.8rem, 4vw, 2.55rem);
+          font-weight: 800;
+          letter-spacing: 0;
+        }
+
         :global(.public-business-pill-accent) {
           background: var(--accent-dim);
           color: var(--accent);
@@ -1699,10 +1721,18 @@ export default function BusinessBookingPage() {
           border: 1px solid var(--border);
         }
 
-        :global(.public-business-meta-grid) {
-          display: grid;
-          gap: 0.25rem;
+        :global(.public-business-contact-row) {
+          display: flex;
+          gap: 0.45rem 0.9rem;
+          flex-wrap: wrap;
           margin-top: 0.55rem;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        :global(.public-business-contact-row span + span::before) {
+          content: "·";
+          margin-right: 0.9rem;
         }
 
         :global(.public-business-section-head) {
@@ -1725,9 +1755,10 @@ export default function BusinessBookingPage() {
         }
 
         :global(.public-business-service-card) {
-          display: flex;
-          gap: 1rem;
-          align-items: stretch;
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          gap: 0.8rem;
+          align-items: center;
           text-align: left;
           width: 100%;
           border: 1px solid var(--border);
@@ -1751,12 +1782,27 @@ export default function BusinessBookingPage() {
         }
 
         :global(.public-business-service-image) {
-          width: 130px;
-          min-height: 100px;
-          border-radius: 14px;
+          width: 88px;
+          min-height: 72px;
+          display: grid;
+          place-items: center;
+          border-radius: 10px;
+          background-color: var(--accent-dim);
           background-size: cover;
           background-position: center;
           flex-shrink: 0;
+        }
+
+        :global(.public-business-service-image span) {
+          display: grid;
+          width: 2.25rem;
+          height: 2.25rem;
+          place-items: center;
+          border-radius: 50%;
+          background: rgba(15, 14, 23, 0.52);
+          color: #fff7ed;
+          font-size: 0.85rem;
+          font-weight: 900;
         }
 
         :global(.public-business-staff-list) {
@@ -1920,24 +1966,30 @@ export default function BusinessBookingPage() {
           }
 
           :global(.public-business-hero) {
-            grid-template-columns: 74px minmax(0, 1fr);
+            grid-template-columns: 82px minmax(0, 1fr);
             gap: 0.75rem;
             padding: 0.75rem;
-            border-radius: 16px;
+            border-radius: 8px;
           }
 
           :global(.public-business-hero-image) {
-            width: 74px;
-            min-height: 74px;
-            border-radius: 14px;
+            width: 82px;
+            min-height: 92px;
+            border-radius: 8px;
           }
 
           :global(.public-business-hero .page-title) {
-            font-size: clamp(1.65rem, 9vw, 2.1rem);
+            font-size: clamp(1.4rem, 7vw, 1.8rem);
           }
 
-          :global(.public-business-meta-grid p:nth-child(2)) {
-            display: none;
+          :global(.public-business-contact-row) {
+            display: grid;
+            gap: 0.15rem;
+            font-size: 0.74rem;
+          }
+
+          :global(.public-business-contact-row span + span::before) {
+            content: none;
           }
 
           .booking-page-grid {
@@ -1968,15 +2020,15 @@ export default function BusinessBookingPage() {
           }
 
           :global(.public-business-service-card) {
-            display: grid;
+            grid-template-columns: 64px minmax(0, 1fr) auto;
             gap: 0.55rem;
             padding: 0.6rem !important;
           }
 
           :global(.public-business-service-image) {
-            width: 100%;
-            min-height: 86px;
-            border-radius: 10px;
+            width: 64px;
+            min-height: 64px;
+            border-radius: 8px;
           }
 
           :global(.public-business-service-description) {
