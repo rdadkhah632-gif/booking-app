@@ -114,18 +114,18 @@ export default function SupportPage() {
 
               <div className="card support-operator-note">
                 <p className="small muted">
-                  {t('support.operator.flowKicker', 'Operational flow')}
+                  {t("support.operator.flowKicker", "Operational flow")}
                 </p>
                 <h2>
                   {t(
-                    'support.operator.flowTitle',
-                    'Support requests are connected to the operator inbox',
+                    "support.operator.flowTitle",
+                    "Support requests are connected to the operator inbox",
                   )}
                 </h2>
                 <p className="muted" style={{ marginTop: "0.5rem" }}>
                   {t(
-                    'support.operator.flowBody',
-                    'Customer, staff and business support forms create saved conversations and notify operators with a direct link to the ticket.',
+                    "support.operator.flowBody",
+                    "Customer, staff and business support forms create saved conversations and notify operators with a direct link to the ticket.",
                   )}
                 </p>
               </div>
@@ -205,7 +205,7 @@ export default function SupportPage() {
 
                   <div className="support-link-list">
                     <Link href="/my-bookings" className="support-link-row">
-                      <span>
+                      <span className="support-link-copy">
                         <strong>{t("nav.myBookings")}</strong>
                         <small>
                           {t(
@@ -221,7 +221,7 @@ export default function SupportPage() {
                       href="/dashboard/businesses"
                       className="support-link-row"
                     >
-                      <span>
+                      <span className="support-link-copy">
                         <strong>
                           {t(
                             "support.quickLinks.businessSetup",
@@ -239,7 +239,7 @@ export default function SupportPage() {
                     </Link>
 
                     <Link href="/staff" className="support-link-row">
-                      <span>
+                      <span className="support-link-copy">
                         <strong>
                           {t(
                             "support.quickLinks.staffWorkspace",
@@ -257,7 +257,7 @@ export default function SupportPage() {
                     </Link>
 
                     <Link href="/account" className="support-link-row">
-                      <span>
+                      <span className="support-link-copy">
                         <strong>{t("nav.account")}</strong>
                         <small>
                           {t(
@@ -518,9 +518,22 @@ export default function SupportPage() {
           padding: 0.9rem;
         }
 
-        .support-link-row small {
+        .support-link-copy {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          gap: 0.28rem;
+          min-width: 0;
+          text-align: left;
+        }
+
+        .support-link-copy strong {
           display: block;
-          margin-top: 0.2rem;
+          line-height: 1.2;
+        }
+
+        .support-link-copy small {
+          display: block;
           color: var(--text-muted);
           line-height: 1.5;
         }

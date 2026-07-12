@@ -481,7 +481,7 @@ export default function StaffSupportPage() {
 
                 <div className="support-link-list">
                   <Link href="/staff" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("support.staff.schedule", "Schedule")}</strong>
                       <small>
                         {t(
@@ -494,7 +494,7 @@ export default function StaffSupportPage() {
                   </Link>
 
                   <Link href="/staff/calendar" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>
                         {t("staffCalendar.title", "Calendar view")}
                       </strong>
@@ -509,7 +509,7 @@ export default function StaffSupportPage() {
                   </Link>
 
                   <Link href="/staff/availability" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>
                         {t("support.staff.availability", "Availability")}
                       </strong>
@@ -527,7 +527,7 @@ export default function StaffSupportPage() {
                     href="/staff/notifications"
                     className="support-link-row"
                   >
-                    <span>
+                    <span className="support-link-copy">
                       <strong>
                         {t("staffNotifications.title", "Updates")}
                       </strong>
@@ -542,7 +542,7 @@ export default function StaffSupportPage() {
                   </Link>
 
                   <Link href="/support/messages" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>
                         {t("support.staff.myMessages", "My support messages")}
                       </strong>
@@ -557,7 +557,7 @@ export default function StaffSupportPage() {
                   </Link>
 
                   <Link href="/account" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("nav.account")}</strong>
                       <small>
                         {t(
@@ -570,7 +570,7 @@ export default function StaffSupportPage() {
                   </Link>
 
                   <Link href="/support/business" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("nav.businessSupport")}</strong>
                       <small>
                         {t(
@@ -773,20 +773,21 @@ export default function StaffSupportPage() {
           padding: 0.72rem 0.78rem;
         }
 
-        .support-link-row > span:first-child {
-          display: grid;
-          gap: 0.28rem;
+        .support-link-copy {
+          display: flex;
           flex: 1;
+          flex-direction: column;
+          gap: 0.28rem;
           min-width: 0;
           text-align: left;
         }
 
-        .support-link-row strong {
+        .support-link-copy strong {
           display: block;
           line-height: 1.2;
         }
 
-        .support-link-row small {
+        .support-link-copy small {
           display: block;
           color: var(--text-muted);
           line-height: 1.35;

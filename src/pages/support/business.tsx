@@ -375,7 +375,7 @@ export default function BusinessSupportPage() {
                     href="/dashboard/businesses"
                     className="support-link-row"
                   >
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("support.business.setupHub")}</strong>
                       <small>{t("support.business.setupHubBody")}</small>
                     </span>
@@ -383,7 +383,7 @@ export default function BusinessSupportPage() {
                   </Link>
 
                   <Link href="/dashboard/bookings" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("support.business.bookings")}</strong>
                       <small>{t("support.business.bookingsBody")}</small>
                     </span>
@@ -391,7 +391,7 @@ export default function BusinessSupportPage() {
                   </Link>
 
                   <Link href="/dashboard/services" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("support.business.services")}</strong>
                       <small>{t("support.business.servicesBody")}</small>
                     </span>
@@ -399,7 +399,7 @@ export default function BusinessSupportPage() {
                   </Link>
 
                   <Link href="/dashboard/staff" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("support.business.staff")}</strong>
                       <small>{t("support.business.staffBody")}</small>
                     </span>
@@ -407,7 +407,7 @@ export default function BusinessSupportPage() {
                   </Link>
 
                   <Link href="/support/messages" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>
                         {t(
                           "support.business.myMessages",
@@ -560,20 +560,21 @@ export default function BusinessSupportPage() {
           padding: 0.72rem 0.78rem;
         }
 
-        .support-link-row > span:first-child {
-          display: grid;
-          gap: 0.28rem;
+        .support-link-copy {
+          display: flex;
           flex: 1;
+          flex-direction: column;
+          gap: 0.28rem;
           min-width: 0;
           text-align: left;
         }
 
-        .support-link-row strong {
+        .support-link-copy strong {
           display: block;
           line-height: 1.2;
         }
 
-        .support-link-row small {
+        .support-link-copy small {
           display: block;
           color: var(--text-muted);
           line-height: 1.35;

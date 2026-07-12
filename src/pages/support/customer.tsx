@@ -303,7 +303,7 @@ export default function CustomerSupportPage() {
 
                 <div className="support-link-list">
                   <Link href="/support/messages" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>
                         {t(
                           "support.customer.myMessages",
@@ -321,7 +321,7 @@ export default function CustomerSupportPage() {
                   </Link>
 
                   <Link href="/my-bookings" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("nav.myBookings")}</strong>
                       <small>{t("support.customer.bookingsBody")}</small>
                     </span>
@@ -329,7 +329,7 @@ export default function CustomerSupportPage() {
                   </Link>
 
                   <Link href="/notifications" className="support-link-row">
-                    <span>
+                    <span className="support-link-copy">
                       <strong>{t("nav.notifications")}</strong>
                       <small>{t("support.customer.notificationsBody")}</small>
                     </span>
@@ -412,20 +412,21 @@ export default function CustomerSupportPage() {
           padding: 0.72rem 0.78rem;
         }
 
-        .support-link-row > span:first-child {
-          display: grid;
-          gap: 0.28rem;
+        .support-link-copy {
+          display: flex;
           flex: 1;
+          flex-direction: column;
+          gap: 0.28rem;
           min-width: 0;
           text-align: left;
         }
 
-        .support-link-row strong {
+        .support-link-copy strong {
           display: block;
           line-height: 1.2;
         }
 
-        .support-link-row small {
+        .support-link-copy small {
           display: block;
           color: var(--text-muted);
           line-height: 1.35;
