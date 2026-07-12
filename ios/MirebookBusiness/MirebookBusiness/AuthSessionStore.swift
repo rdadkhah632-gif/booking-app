@@ -34,6 +34,7 @@ final class AuthSessionStore {
 
         do {
             let refreshedToken = try await authClient.refreshSession(refreshToken: token.refreshToken)
+            try await apiClient.completeRegistration(accessToken: refreshedToken.accessToken, allowMissingEndpoint: true)
             let context = try await apiClient.loadSessionContext(accessToken: refreshedToken.accessToken)
             guard context.canUseOperationsApp else {
                 throw AuthClientError.unsupportedAccount
@@ -60,6 +61,7 @@ final class AuthSessionStore {
 
         do {
             let token = try await authClient.signIn(email: cleanEmail, password: password)
+            try await apiClient.completeRegistration(accessToken: token.accessToken, allowMissingEndpoint: true)
             let context = try await apiClient.loadSessionContext(accessToken: token.accessToken)
             guard context.canUseOperationsApp else {
                 throw AuthClientError.unsupportedAccount
@@ -71,6 +73,24 @@ final class AuthSessionStore {
             state = .failed(error.localizedDescription)
             return nil
         }
+    }
+
+    func signUp(input: NativeSignUpInput) async throws -> NativeSignUpResult {
+        let result = try await authClient.signUp(input: input)
+
+        guard let token = result.token else {
+            return .verificationRequired
+        }
+
+        try await apiClient.completeRegistration(accessToken: token.accessToken)
+        let context = try await apiClient.loadSessionContext(accessToken: token.accessToken)
+        guard context.canUseOperationsApp else {
+            throw AuthClientError.unsupportedAccount
+        }
+
+        tokenStore.save(token)
+        state = .signedIn(AuthSession(token: token, context: context))
+        return .signedIn(context)
     }
 
     func signOut() {
@@ -85,6 +105,11 @@ final class AuthSessionStore {
 
         return nil
     }
+}
+
+enum NativeSignUpResult {
+    case signedIn(AppSessionContext)
+    case verificationRequired
 }
 
 struct AuthSession: Equatable {

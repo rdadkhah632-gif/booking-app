@@ -1,6 +1,200 @@
 # Stage 10 - Business and Staff iOS App Foundation
 
-Status: Batch 10E.8 visual UX QA polish implemented.
+Status: Batch 10E.12 production API target prepared for iOS login QA.
+
+Batch 10E.12 production API target status:
+
+- Confirmed the production iOS app API base URL should be:
+  `https://business.mirebook.com`
+- Production currently serves the read-only/native-login app API routes:
+  - `GET /api/app/session-context`
+  - `GET /api/app/calendar`
+  - `GET /api/app/inbox`
+- Production does not yet serve `POST /api/app/complete-registration`; that
+  route must be committed, pushed and deployed before native sign-up completion
+  can be smoke-tested against production.
+- Updated native existing-account sign-in and restore so they tolerate a missing
+  `/api/app/complete-registration` endpoint. This allows existing QA
+  business/staff accounts to log in against production while the completion
+  route is still pending deployment.
+- Native sign-up still requires `/api/app/complete-registration`; if production
+  returns `404`, the app shows a localized unavailable message instead of
+  silently creating an incomplete account path.
+- Updated `scripts/ios-config-from-env.sh` so shell-level
+  `MIREBOOK_IOS_API_BASE_URL` overrides actually work, making production-backed
+  iOS rebuilds explicit and repeatable.
+- Regenerated the ignored local iOS Xcode config with
+  `MIREBOOK_API_BASE_URL = https://business.mirebook.com`.
+- No database schema, RLS policy, billing, booking lifecycle, availability
+  calculation, staff invite/linking rule or calendar behaviour was changed.
+
+Batch 10E.12 validation:
+
+- Production API probe with the existing QA business account returned:
+  - Supabase password token grant: `200`
+  - `POST /api/app/complete-registration`: `404`, expected until deployed
+  - `GET /api/app/session-context`: `200`
+  - app mode: `business`
+- English and Albanian native string files linted successfully with `plutil`.
+- Script syntax checks passed for:
+  - `scripts/ios-config-from-env.sh`
+  - `scripts/ios-test-backend.sh`
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- TypeScript typecheck passed with `npx tsc --noEmit`.
+- XcodeBuildMCP build/run passed on iPhone 17 Pro, iOS 26.5, with
+  `CODE_SIGNING_ALLOWED=NO`, using the production API base URL.
+- Simulator UI automation verified production-backed existing-account sign-in
+  with the QA business account.
+- Today loaded production business data after sign-in.
+- Calendar loaded production appointment data.
+- Inbox loaded production recent update data.
+- Screenshots captured at:
+  - `/tmp/mirebook-ios-qa/production-business-login-today.jpg`
+  - `/tmp/mirebook-ios-qa/production-business-login-inbox.jpg`
+
+Batch 10E.12 remaining deployment need:
+
+- Commit/push/deploy `/api/app/complete-registration` to production before
+  testing native business/staff sign-up against `https://business.mirebook.com`.
+
+Batch 10E.11 native sign-up status:
+
+- Replaced the embedded browser/WebView registration approach from Batch 10E.10
+  with real SwiftUI-native account creation forms.
+- Native login remains the primary sign-in path on the entry screen.
+- Native sign-up now supports:
+  - business owner account creation
+  - starter business profile metadata
+  - optional owner-as-staff metadata
+  - staff account creation using the email the business added
+  - English/Albanian preferred language metadata
+- Native sign-up sends the same Supabase Auth metadata keys used by the web
+  registration flow:
+  - `account_mode`
+  - `pending_registration`
+  - `pending_business`
+  - profile name, phone and preferred language
+- Added `/api/app/complete-registration` so the native app can complete a
+  signed-in user's pending registration through the app API boundary instead of
+  writing profile, business or owner-as-staff rows locally from Swift.
+- Native sign-in and session restore now call `/api/app/complete-registration`
+  before loading `/api/app/session-context`, matching the web login behaviour
+  that completes pending registrations before role routing.
+- Removed the earlier `nativeApp=1` web register-page exception because native
+  sign-up no longer needs the website registration page.
+- No database schema, RLS policy, billing, booking lifecycle, availability
+  calculation, staff invite/linking rule or calendar behaviour was changed.
+
+Batch 10E.11 validation:
+
+- English and Albanian native string files linted successfully with `plutil`.
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- TypeScript typecheck passed with `npx tsc --noEmit`.
+- Production web build passed with `npm run build`; the route list includes
+  `/api/app/complete-registration`.
+- Unauthenticated `POST /api/app/complete-registration` returned the expected
+  `401` auth-required response.
+- XcodeBuildMCP build/run passed on iPhone 17 Pro, iOS 26.5, with
+  `CODE_SIGNING_ALLOWED=NO`.
+- Simulator UI automation confirmed:
+  - native sign in remains available
+  - Create business account opens a native SwiftUI signup sheet
+  - Create staff account opens a native SwiftUI signup sheet
+  - no web content is used for business/staff account creation
+- Native sign-up screenshots captured at:
+  - `/tmp/mirebook-ios-qa/native-business-signup.jpg`
+  - `/tmp/mirebook-ios-qa/native-staff-signup.jpg`
+
+Batch 10E.11 remaining QA:
+
+- Submit a fresh business registration and a fresh staff registration only when
+  you want new test accounts created in the configured Supabase project.
+
+Batch 10E.10 website-aligned native entry and in-app registration status:
+
+- Reworked the native Mirëbook Business entry screen to reference the website's
+  current dark business palette:
+  - background `#0f0e17`
+  - card surface `#1a1927`
+  - secondary surface `#222135`
+  - accent `#ff6b35`
+  - muted text `#a7a5c0`
+- Kept native login as the primary sign-in path.
+- Replaced the external web login action with in-app account creation actions:
+  - Create business account
+  - Create staff account
+  - Reset password
+- Embedded the existing web registration/reset pages inside the app with
+  `WKWebView` so account creation can happen without leaving the app while the
+  web registration flow remains the source of truth for profile, business and
+  owner-as-staff setup writes.
+- Added a narrow `nativeApp=1` register-page query so the native app can load
+  the business/staff registration forms directly in local test mode without
+  changing the normal website redirect to the configured business hostname.
+- No database schema, RLS, billing, staff linking rules, booking lifecycle logic
+  or native booking/calendar behavior was changed.
+
+Batch 10E.10 validation:
+
+- English and Albanian native string files linted successfully with `plutil`.
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- TypeScript typecheck passed with `npx tsc --noEmit`.
+- Production web build passed with `npm run build`.
+- XcodeBuildMCP build/run passed on iPhone 17 Pro, iOS 26.5, with
+  `CODE_SIGNING_ALLOWED=NO`.
+- Simulator UI automation confirmed visible native actions for sign in, create
+  business account, create staff account and reset password.
+- Visual QA confirmed in-app business registration and staff registration load
+  the correct dark website forms.
+- Screenshots captured at:
+  - `/tmp/mirebook-ios-qa/dark-entry-website-colours.jpg`
+  - `/tmp/mirebook-ios-qa/in-app-business-register.jpg`
+  - `/tmp/mirebook-ios-qa/in-app-staff-register.jpg`
+
+Batch 10E.10 remaining QA:
+
+- Submit a fresh business registration and a fresh staff registration only when
+  you want new test accounts created in the configured Supabase project.
+
+Batch 10E.9 native entry background and test backend setup status:
+
+Batch 10E.9 native entry background and test backend setup status:
+
+- Updated the native Mirëbook Business entry screen background from the default
+  system grey to a softer Mirëbook-branded canvas with stronger sign-in and web
+  account action surfaces.
+- Kept all visible native entry copy on the existing localized string keys.
+- Added `scripts/ios-test-backend.sh` as the repeatable local iOS test command:
+  it regenerates the ignored iOS config from `.env.local` and then starts the
+  existing Next.js web/API backend for simulator use.
+- Hardened `scripts/ios-config-from-env.sh` so it validates the required public
+  Supabase URL and anon key before writing `Config/Local.xcconfig`.
+- Added optional `MIREBOOK_IOS_*` override names for simulator or later device
+  testing without changing the shared web app env names.
+- No calendar interpretation, booking creation logic, booking lifecycle logic,
+  availability calculation, staff linking, auth/RLS, billing or web production
+  logic was changed.
+
+Batch 10E.9 validation:
+
+- Backend config generation passed with `scripts/ios-config-from-env.sh`; the
+  ignored local Xcode config was regenerated from `.env.local`.
+- `scripts/ios-test-backend.sh` started the local Next.js API server on
+  `http://localhost:3000`.
+- Unauthenticated `/api/app/session-context` probe returned the expected `401`
+  response, confirming the local app API was reachable without bypassing auth.
+- Script syntax checks passed for:
+  - `scripts/ios-config-from-env.sh`
+  - `scripts/ios-test-backend.sh`
+- Swift source typecheck passed with:
+  `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) && xcrun swiftc -sdk "$SDKROOT" -target arm64-apple-ios17.0-simulator -typecheck ios/MirebookBusiness/MirebookBusiness/*.swift`
+- XcodeBuildMCP build/run passed on iPhone 17 Pro, iOS 26.5, with
+  `CODE_SIGNING_ALLOWED=NO`.
+- Entry background screenshot captured at
+  `/tmp/mirebook-ios-qa/entry-background-test-backend.png`.
 
 Batch 10E.8 visual UX QA polish status:
 

@@ -44,18 +44,6 @@ final class AppState {
         ])
     }
 
-    var businessRegisterURL: URL {
-        businessAuthURL(path: "/register", queryItems: [
-            URLQueryItem(name: "accountType", value: "business")
-        ])
-    }
-
-    var businessWebLoginURL: URL {
-        businessAuthURL(path: "/login", queryItems: [
-            URLQueryItem(name: "product", value: "business")
-        ])
-    }
-
     func apply(context: AppSessionContext) {
         session = context
         mode = context.preferredMode

@@ -28,6 +28,7 @@ struct AppAPIClient {
     enum Endpoint: String, CaseIterable {
         case sessionContext = "/api/app/session-context"
         case calendar = "/api/app/calendar"
+        case completeRegistration = "/api/app/complete-registration"
         case inbox = "/api/app/inbox"
         case ownerToday = "/api/app/today"
         case appointmentActions = "/api/app/appointments/actions"
@@ -40,6 +41,14 @@ struct AppAPIClient {
 
     func loadSessionContext(accessToken: String) async throws -> AppSessionContext {
         try await get(.sessionContext, accessToken: accessToken)
+    }
+
+    func completeRegistration(accessToken: String, allowMissingEndpoint: Bool = false) async throws {
+        do {
+            let _: EmptyAPIResponse = try await post(.completeRegistration, accessToken: accessToken)
+        } catch AppAPIClientError.endpointUnavailable where allowMissingEndpoint {
+            return
+        }
     }
 
     func loadCalendar(accessToken: String, mode: AppMode, from: Date, to: Date) async throws -> [Appointment] {
@@ -76,6 +85,30 @@ struct AppAPIClient {
         try await get(url: url(for: endpoint), accessToken: accessToken)
     }
 
+    private func post<Response: Decodable>(_ endpoint: Endpoint, accessToken: String) async throws -> Response {
+        var request = URLRequest(url: url(for: endpoint))
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let (data, response) = try await urlSession.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AppAPIClientError.invalidResponse
+        }
+
+        if httpResponse.statusCode == 404 {
+            throw AppAPIClientError.endpointUnavailable
+        }
+
+        guard (200..<300).contains(httpResponse.statusCode) else {
+            let error = try? decoder.decode(AppAPIErrorResponse.self, from: data)
+            throw AppAPIClientError.requestFailed(error?.error ?? String(localized: "api.error.requestFailed"))
+        }
+
+        return try decoder.decode(Response.self, from: data)
+    }
+
     private func get<Response: Decodable>(url: URL, accessToken: String) async throws -> Response {
         var request = URLRequest(url: url)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -95,7 +128,10 @@ struct AppAPIClient {
     }
 }
 
+private struct EmptyAPIResponse: Decodable {}
+
 enum AppAPIClientError: LocalizedError {
+    case endpointUnavailable
     case liveAuthNotConnected
     case invalidURL
     case invalidResponse
@@ -103,6 +139,8 @@ enum AppAPIClientError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
+        case .endpointUnavailable:
+            String(localized: "api.error.registrationCompletionUnavailable")
         case .liveAuthNotConnected:
             String(localized: "api.error.authNotConnected")
         case .invalidURL:
