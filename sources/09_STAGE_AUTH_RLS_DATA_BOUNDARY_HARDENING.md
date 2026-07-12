@@ -1413,3 +1413,10 @@ Status: implemented; deployed retest required.
 
 No schema, RLS, role separation, staff linking, booking, availability or
 billing behavior changed in this follow-up.
+
+Mobile account-menu closure follow-up:
+
+- staff and business account menus now explicitly hide their menu panels while
+  the native disclosure is closed, matching the already-tested customer menu
+- this prevents language, account and logout controls from escaping the closed
+  menu on support and other AuthNav routes

@@ -111,6 +111,14 @@ export default function BusinessNav({ onLogout }: NavProps) {
             box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
           }
 
+          .business-nav-mobile-account:not([open]) .business-nav-mobile-menu {
+            display: none;
+          }
+
+          .business-nav-mobile-account[open] .business-nav-mobile-menu {
+            display: grid;
+          }
+
           .business-nav-mobile-menu :global(.language-switcher),
           .business-nav-mobile-menu :global(a),
           .business-nav-mobile-menu button {

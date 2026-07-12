@@ -166,6 +166,14 @@ export default function StaffNav({
             box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
           }
 
+          .staff-nav-mobile-account:not([open]) .staff-nav-mobile-menu {
+            display: none;
+          }
+
+          .staff-nav-mobile-account[open] .staff-nav-mobile-menu {
+            display: grid;
+          }
+
           .staff-nav-mobile-menu :global(.language-switcher),
           .staff-nav-mobile-menu :global(a),
           .staff-nav-mobile-menu button {
