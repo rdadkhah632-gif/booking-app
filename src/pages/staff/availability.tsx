@@ -46,7 +46,7 @@ type Booking = {
   id: string;
 };
 
-const DAYS = [0, 1, 2, 3, 4, 5, 6];
+const DAYS = [1, 2, 3, 4, 5, 6, 0];
 
 function defaultAvailabilityRow(
   staff: StaffMember,

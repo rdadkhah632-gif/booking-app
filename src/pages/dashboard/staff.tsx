@@ -570,6 +570,126 @@ export default function StaffPage() {
     await loadPage();
   }
 
+  async function copyStaffInviteLink(member: StaffMember) {
+    if (!member.email || member.user_id) return;
+
+    setActionLoadingKey(`copy-invite-${member.id}`);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const response = await fetch("/api/staff/invite", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          staffMemberId: member.id,
+          deliveryMode: "link_only",
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload.manualInviteUrl) {
+        throw new Error(
+          payload.error ||
+            t(
+              "dashboardStaff.invite.copyError",
+              "Could not create a secure invite link.",
+            ),
+        );
+      }
+
+      try {
+        await navigator.clipboard.writeText(payload.manualInviteUrl);
+        setSuccess(
+          t(
+            "dashboardStaff.invite.copied",
+            "Secure invite link copied. The previous unused link is no longer valid.",
+          ),
+        );
+      } catch {
+        setSuccess(
+          `${t("dashboardStaff.invite.copyFallback", "Copy this secure invite link:")} ${payload.manualInviteUrl}`,
+        );
+      }
+
+      await loadPage();
+    } catch (inviteError: any) {
+      setError(
+        inviteError.message ||
+          t(
+            "dashboardStaff.invite.copyError",
+            "Could not create a secure invite link.",
+          ),
+      );
+    } finally {
+      setActionLoadingKey(null);
+    }
+  }
+
+  async function revokeStaffInvite(member: StaffMember) {
+    if (member.user_id) return;
+
+    const confirmed = confirm(
+      t(
+        "dashboardStaff.invite.revokeConfirm",
+        "Revoke this pending invite? Its secure link will stop working.",
+      ),
+    );
+    if (!confirmed) return;
+
+    setActionLoadingKey(`revoke-invite-${member.id}`);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const response = await fetch("/api/staff/invite", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ staffMemberId: member.id }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          payload.error ||
+            t(
+              "dashboardStaff.invite.revokeError",
+              "Could not revoke this invite.",
+            ),
+        );
+      }
+
+      setSuccess(
+        t(
+          "dashboardStaff.invite.revoked",
+          "Pending invite revoked. The staff profile remains saved.",
+        ),
+      );
+      await loadPage();
+    } catch (inviteError: any) {
+      setError(
+        inviteError.message ||
+          t(
+            "dashboardStaff.invite.revokeError",
+            "Could not revoke this invite.",
+          ),
+      );
+    } finally {
+      setActionLoadingKey(null);
+    }
+  }
+
   async function toggleStaffActive(member: StaffMember) {
     setActionLoadingKey(`staff-${member.id}`);
     setError(null);
@@ -935,12 +1055,16 @@ export default function StaffPage() {
                       )
                     : null
                 }
+                actionLoadingKey={actionLoadingKey}
                 updateLocalStaff={updateLocalStaff}
                 saveStaff={saveStaff}
                 toggleStaffActive={toggleStaffActive}
                 setEditingStaffId={setEditingStaffId}
                 loadData={loadPage}
                 toggleStaffService={toggleStaffService}
+                resendStaffInvite={markStaffInvited}
+                copyStaffInviteLink={copyStaffInviteLink}
+                revokeStaffInvite={revokeStaffInvite}
                 isCurrentUser={Boolean(
                   member.user_id && member.user_id === accountUserId,
                 )}

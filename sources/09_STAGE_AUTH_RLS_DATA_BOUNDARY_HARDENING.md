@@ -1368,3 +1368,30 @@ Status: implemented; targeted deployed QA required.
 
 No schema, RLS, role, staff-linking, booking-status, slot-generation or billing
 write logic changed in this sweep.
+
+### Post-Closure Operational Polish — 12 July 2026
+
+Status: implemented; build and targeted QA required.
+
+- business, owner-managed staff and staff self-service working-hours pages now
+  use Monday-first ordering without changing stored `day_of_week` values
+- the owner staff-hours page is compressed around the editable day rows, with
+  readiness reduced to one status line and presets kept secondary
+- service editing now has one clear duration control instead of competing
+  numeric and preset duration inputs
+- Booking rules keeps its success confirmation visible after reloading saved
+  settings
+- pending staff invitations now expose resend, copy-secure-link and revoke
+  controls; revocation invalidates unused tokens but does not delete the staff
+  profile
+- Team actions use a compact action menu on small screens instead of multiple
+  full-width buttons per person
+- staff mobile account/help/language/logout controls are grouped behind one
+  account menu
+- support forms now ask for a message when the already-selected subject is not
+  the missing field
+- new operational copy is translated in English and Albanian
+
+No schema, RLS, role separation, staff-account linking, availability save,
+booking lifecycle, slot generation or billing behavior changed in this polish
+batch.

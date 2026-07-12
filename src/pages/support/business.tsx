@@ -120,8 +120,13 @@ export default function BusinessSupportPage() {
       return;
     }
 
-    if (!subject.trim() || !message.trim()) {
-      setError(t("support.business.validation"));
+    if (!message.trim()) {
+      setError(
+        t(
+          "support.validation.messageRequired",
+          "Write a message before sending.",
+        ),
+      );
       return;
     }
 

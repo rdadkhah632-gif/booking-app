@@ -681,6 +681,7 @@ export const sq: TranslationTree = {
     "Duhet të jesh i/e kyçur për të dërguar mesazh ndihme.",
   "support.business.validation":
     "Zgjidh një subjekt dhe shkruaj një mesazh para dërgimit.",
+  "support.validation.messageRequired": "Shkruaj një mesazh para dërgimit.",
   "support.business.success":
     "Kërkesa jote për ndihmë biznesi u dërgua në inbox-in e operatorit Mirëbook.",
   "support.business.formKicker": "Kërkesë ndihme",
@@ -1594,6 +1595,19 @@ export const sq: TranslationTree = {
   "dashboardStaff.save.savedLower": "u ruajt.",
   "dashboardStaff.invite.emailRequired":
     "Shto një email para se ta shënosh këtë staf si të ftuar.",
+  "dashboardStaff.invite.copyError":
+    "Nuk mund të krijohej një link i sigurt ftese.",
+  "dashboardStaff.invite.copied":
+    "Linku i sigurt i ftesës u kopjua. Linku i mëparshëm i papërdorur nuk është më i vlefshëm.",
+  "dashboardStaff.invite.copyFallback": "Kopjo këtë link të sigurt ftese:",
+  "dashboardStaff.invite.revokeConfirm":
+    "Ta anulosh këtë ftesë në pritje? Linku i sigurt nuk do të funksionojë më.",
+  "dashboardStaff.invite.revokeError": "Ftesa nuk mund të anulohej.",
+  "dashboardStaff.invite.revoked":
+    "Ftesa në pritje u anulua. Profili i stafit mbetet i ruajtur.",
+  "dashboardStaff.invite.resend": "Ridërgo ftesën",
+  "dashboardStaff.invite.copy": "Kopjo linkun e ftesës",
+  "dashboardStaff.invite.revoke": "Anulo ftesën",
   "dashboardStaff.toggle.confirmIncomplete":
     "Ky anëtar stafi nuk ka shërbime të caktuara ose orare pune. Mund të mos shfaqet si i rezervueshëm derisa të plotësohen të dyja. Ta shfaqësh gjithsesi?",
   "dashboardStaff.toggle.activeSuccess": "tani është aktiv për rezervime.",
@@ -1619,6 +1633,28 @@ export const sq: TranslationTree = {
   "dashboardStaff.availability.bodyMissing":
     "Vendos disponueshmërinë e stafit që Mirëbook të llogarisë slotet reale të rezervueshme.",
   "dashboardStaff.availability.openCta": "Hap disponueshmërinë",
+  "dashboardStaff.availability.pageTitle": "Orari i punës së stafit",
+  "dashboardStaff.availability.pageSubtitle":
+    "Vendos orarin e punës së stafit.",
+  "dashboardStaff.availability.missingStaff":
+    "Zgjidh një anëtar stafi për të menaxhuar orarin e tij.",
+  "dashboardStaff.availability.staffNotFound": "Ky anëtar stafi nuk u gjet.",
+  "dashboardStaff.availability.noAccess":
+    "Nuk ke akses për të menaxhuar këtë anëtar stafi.",
+  "dashboardStaff.availability.closeAllConfirm":
+    "T'i mbyllësh të gjitha ditët për këtë anëtar stafi? Klientët nuk do ta shohin si të disponueshëm derisa të rihapësh një ditë.",
+  "dashboardStaff.availability.invalidRange":
+    "Një ditë e hapur ka interval kohe të pavlefshëm. Ora e fillimit duhet të jetë para orës së mbarimit.",
+  "dashboardStaff.availability.noOpenDaysConfirm":
+    "Ky anëtar stafi nuk ka ditë të hapura dhe nuk do të shfaqet si i disponueshëm për rezervime. Ta ruash gjithsesi?",
+  "dashboardStaff.availability.hoursReady": "Orari është gati",
+  "dashboardStaff.availability.hoursNeedAttention": "Orari kërkon vëmendje",
+  "dashboardStaff.availability.backToTeam": "Kthehu te Ekipi",
+  "dashboardStaff.availability.invalidDays":
+    "ditë të hapura kanë interval kohe të pavlefshëm.",
+  "dashboardStaff.availability.everyDayPreset": "Çdo ditë 9-5",
+  "dashboardStaff.availability.openForBookings": "Hapur për rezervime",
+  "dashboardStaff.availability.saveCta": "Ruaj orarin e punës së stafit",
   "dashboardStaff.card.untitled": "Anëtar stafi pa emër",
   "dashboardStaff.card.active": "Aktiv",
   "dashboardStaff.card.inactive": "Jo aktiv",
@@ -1628,6 +1664,7 @@ export const sq: TranslationTree = {
   "dashboardStaff.card.openDays": "ditë të hapura",
   "dashboardStaff.card.viewDetails": "Shiko detajet",
   "dashboardStaff.card.hideDetails": "Fshih detajet",
+  "dashboardStaff.card.actions": "Veprimet e stafit",
   "dashboardStaff.card.noServicesAssigned": "Nuk ka shërbime të caktuara",
   "dashboardStaff.card.noRole": "Nuk është shtuar rol",
   "dashboardStaff.card.noEmail": "Pa email",
@@ -1654,6 +1691,7 @@ export const sq: TranslationTree = {
   "dashboardAvailability.confirm.noOpenDays":
     "Ky biznes nuk ka ditë të hapura. Klientët mund të mos mund të rezervojnë nëse nuk është konfiguruar disponueshmëria e stafit. Ta ruash gjithsesi?",
   "dashboardAvailability.success.saved": "Orari i punës u ruajt.",
+  "dashboardAvailability.success.title": "U ruajt",
   "dashboardAvailability.noBusiness.title": "Nuk u gjet biznes",
   "dashboardAvailability.noBusiness.body":
     "Krijo fillimisht një profil biznesi, pastaj vendos oraret e punës në Mirëbook.",

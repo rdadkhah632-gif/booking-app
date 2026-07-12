@@ -41,8 +41,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (!["GET", "POST"].includes(req.method || "")) {
-    res.setHeader("Allow", "GET, POST");
+  if (!["GET", "POST", "DELETE"].includes(req.method || "")) {
+    res.setHeader("Allow", "GET, POST, DELETE");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
@@ -102,6 +102,64 @@ export default async function handler(
 
     if (userError || !user?.email) {
       return res.status(401).json({ error: "Invalid session" });
+    }
+
+    if (req.method === "DELETE") {
+      const staffMemberId =
+        typeof req.body?.staffMemberId === "string"
+          ? req.body.staffMemberId
+          : "";
+      if (!staffMemberId) {
+        return res.status(400).json({ error: "Staff member required" });
+      }
+
+      const { data: staff } = await supabaseAdmin
+        .from("staff_members")
+        .select("id, business_id, user_id")
+        .eq("id", staffMemberId)
+        .maybeSingle<{
+          id: string;
+          business_id: string;
+          user_id?: string | null;
+        }>();
+      if (!staff) {
+        return res.status(404).json({ error: "Staff invite not found" });
+      }
+      if (staff.user_id) {
+        return res.status(409).json({ error: "Staff account already linked" });
+      }
+
+      const { data: business } = await supabaseAdmin
+        .from("businesses")
+        .select("user_id")
+        .eq("id", staff.business_id)
+        .maybeSingle<{ user_id: string }>();
+      if (!business || business.user_id !== user.id) {
+        return res.status(403).json({ error: "Invite not permitted" });
+      }
+
+      const { error: revokeError } = await supabaseAdmin
+        .from("staff_invite_tokens")
+        .update({ revoked_at: new Date().toISOString() })
+        .eq("staff_member_id", staff.id)
+        .is("accepted_at", null)
+        .is("revoked_at", null);
+      if (revokeError) {
+        return res.status(500).json({ error: "Could not revoke invite" });
+      }
+
+      const { error: statusError } = await supabaseAdmin
+        .from("staff_members")
+        .update({ invite_status: "not_invited" })
+        .eq("id", staff.id)
+        .is("user_id", null);
+      if (statusError) {
+        return res
+          .status(500)
+          .json({ error: "Could not update invite status" });
+      }
+
+      return res.status(200).json({ revoked: true });
     }
 
     if (typeof req.body?.staffMemberId === "string") {
@@ -207,6 +265,14 @@ export default async function handler(
         ),
         appUrl,
       ).toString();
+      if (req.body?.deliveryMode === "link_only") {
+        return res.status(200).json({
+          inviteSaved: true,
+          delivery: { status: "skipped", reason: "link_only" },
+          manualInviteUrl: inviteUrl,
+        });
+      }
+
       const [{ data: staffProfile }, { data: ownerProfile }] =
         await Promise.all([
           supabaseAdmin

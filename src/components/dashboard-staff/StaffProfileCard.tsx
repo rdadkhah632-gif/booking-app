@@ -18,6 +18,7 @@ type Props = {
   isEditing: boolean;
   savingStaffId: string | null;
   savingAssignmentKey: string | null;
+  actionLoadingKey: string | null;
   updateLocalStaff: UpdateStaffField;
   saveStaff: (staff: StaffMember) => void;
   toggleStaffActive: (staff: StaffMember) => void;
@@ -29,6 +30,9 @@ type Props = {
     currentlyAssigned: boolean,
   ) => void;
   isCurrentUser?: boolean;
+  resendStaffInvite: (staff: StaffMember) => void;
+  copyStaffInviteLink: (staff: StaffMember) => void;
+  revokeStaffInvite: (staff: StaffMember) => void;
 };
 
 export default function StaffProfileCard({
@@ -39,6 +43,7 @@ export default function StaffProfileCard({
   isEditing,
   savingStaffId,
   savingAssignmentKey,
+  actionLoadingKey,
   updateLocalStaff,
   saveStaff,
   toggleStaffActive,
@@ -46,6 +51,9 @@ export default function StaffProfileCard({
   loadData,
   toggleStaffService,
   isCurrentUser = false,
+  resendStaffInvite,
+  copyStaffInviteLink,
+  revokeStaffInvite,
 }: Props) {
   const { t } = useI18n();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -295,23 +303,26 @@ export default function StaffProfileCard({
                   : t("dashboardStaff.card.viewDetails", "View details")}
               </button>
 
-              <button
-                onClick={() => {
-                  setDetailsOpen(true);
-                  setEditingStaffId(staff.id);
-                }}
-                className="btn btn-ghost"
-              >
-                {t("common.edit", "Edit")}
-              </button>
-
-              {detailsOpen && (
-                <>
+              <details className="staff-more-actions">
+                <summary
+                  aria-label={t("dashboardStaff.card.actions", "Staff actions")}
+                  title={t("dashboardStaff.card.actions", "Staff actions")}
+                >
+                  <span aria-hidden="true">•••</span>
+                </summary>
+                <div className="staff-actions-menu">
                   <button
+                    type="button"
+                    onClick={() => {
+                      setDetailsOpen(true);
+                      setEditingStaffId(staff.id);
+                    }}
+                  >
+                    {t("common.edit", "Edit")}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => toggleStaffActive(staff)}
-                    className={
-                      staff.active ? "btn btn-ghost" : "btn btn-accent"
-                    }
                   >
                     {staff.active
                       ? t("dashboardStaff.card.deactivate", "Deactivate")
@@ -320,15 +331,48 @@ export default function StaffProfileCard({
 
                   <Link
                     href={`/dashboard/staff-availability?staffId=${staff.id}`}
-                    className="btn btn-ghost"
                   >
                     {t(
                       "dashboardStaff.availability.openCta",
                       "Open availability",
                     )}
                   </Link>
-                </>
-              )}
+
+                  {!isLinked && hasInviteEmail && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => resendStaffInvite(staff)}
+                        disabled={actionLoadingKey === `invite-${staff.id}`}
+                      >
+                        {t("dashboardStaff.invite.resend", "Resend invite")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => copyStaffInviteLink(staff)}
+                        disabled={
+                          actionLoadingKey === `copy-invite-${staff.id}`
+                        }
+                      >
+                        {t("dashboardStaff.invite.copy", "Copy invite link")}
+                      </button>
+                      {(normalisedInviteStatus === "invited" ||
+                        normalisedInviteStatus === "pending") && (
+                        <button
+                          type="button"
+                          className="danger"
+                          onClick={() => revokeStaffInvite(staff)}
+                          disabled={
+                            actionLoadingKey === `revoke-invite-${staff.id}`
+                          }
+                        >
+                          {t("dashboardStaff.invite.revoke", "Revoke invite")}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </details>
             </>
           )}
         </div>
@@ -389,6 +433,67 @@ export default function StaffProfileCard({
           gap: 0.55rem;
           flex-wrap: wrap;
           align-items: center;
+        }
+
+        .staff-more-actions {
+          position: relative;
+        }
+
+        .staff-more-actions summary {
+          display: grid;
+          width: 2.55rem;
+          height: 2.55rem;
+          place-items: center;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+          color: var(--text);
+          cursor: pointer;
+          list-style: none;
+          letter-spacing: 0;
+        }
+
+        .staff-more-actions summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .staff-actions-menu {
+          position: absolute;
+          top: calc(100% + 0.4rem);
+          right: 0;
+          z-index: 20;
+          display: grid;
+          min-width: 12rem;
+          padding: 0.35rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface);
+          box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.3);
+        }
+
+        .staff-actions-menu button,
+        .staff-actions-menu a {
+          width: 100%;
+          padding: 0.55rem 0.65rem;
+          border: 0;
+          border-radius: 6px;
+          background: transparent;
+          color: var(--text);
+          font: inherit;
+          text-align: left;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .staff-actions-menu button:hover,
+        .staff-actions-menu button:focus-visible,
+        .staff-actions-menu a:hover,
+        .staff-actions-menu a:focus-visible {
+          background: var(--surface-2);
+        }
+
+        .staff-actions-menu .danger {
+          color: var(--danger);
         }
 
         .staff-status-pill {
@@ -456,12 +561,36 @@ export default function StaffProfileCard({
         }
 
         @media (max-width: 640px) {
-          .staff-card-actions,
-          .staff-card-actions :global(.btn),
-          .staff-card-actions a,
-          .staff-card-actions button {
-            width: 100%;
-            justify-content: center;
+          .staff-profile-card {
+            padding: 0.8rem;
+          }
+
+          .staff-card-top {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.65rem;
+          }
+
+          .staff-main-copy {
+            min-width: 0;
+          }
+
+          .staff-card-actions {
+            display: grid;
+            grid-template-columns: auto 2.55rem;
+            justify-content: end;
+            align-items: start;
+          }
+
+          .staff-card-actions > button {
+            width: auto;
+            min-height: 2.55rem;
+            padding-inline: 0.65rem;
+          }
+
+          .staff-actions-menu {
+            right: 0;
+            min-width: min(13rem, calc(100vw - 2rem));
           }
         }
       `}</style>

@@ -90,8 +90,13 @@ export default function CustomerSupportPage() {
       return;
     }
 
-    if (!subject.trim() || !message.trim()) {
-      setError(t("support.customer.validation"));
+    if (!message.trim()) {
+      setError(
+        t(
+          "support.validation.messageRequired",
+          "Write a message before sending.",
+        ),
+      );
       return;
     }
 

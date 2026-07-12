@@ -14,6 +14,16 @@ const days = [
   "Friday",
   "Saturday",
 ];
+const mondayFirstDayOrder = [1, 2, 3, 4, 5, 6, 0];
+const dayTranslationKeys = [
+  "common.days.sunday",
+  "common.days.monday",
+  "common.days.tuesday",
+  "common.days.wednesday",
+  "common.days.thursday",
+  "common.days.friday",
+  "common.days.saturday",
+];
 
 type StaffMember = {
   id: string;
@@ -113,7 +123,12 @@ export default function StaffAvailabilityPage() {
     }
 
     if (!staffId || Array.isArray(staffId)) {
-      setError("Missing staff member reference.");
+      setError(
+        t(
+          "dashboardStaff.availability.missingStaff",
+          "Choose a staff member to manage their working hours.",
+        ),
+      );
       setLoading(false);
       return;
     }
@@ -138,7 +153,12 @@ export default function StaffAvailabilityPage() {
       .single();
 
     if (staffError || !staffData) {
-      setError(staffError?.message || "Staff member not found.");
+      setError(
+        t(
+          "dashboardStaff.availability.staffNotFound",
+          "This staff member could not be found.",
+        ),
+      );
       setLoading(false);
       return;
     }
@@ -148,7 +168,12 @@ export default function StaffAvailabilityPage() {
       : staffData.businesses;
 
     if (linkedBusiness?.user_id !== session.user.id) {
-      setError("You do not have access to manage this staff member.");
+      setError(
+        t(
+          "dashboardStaff.availability.noAccess",
+          "You do not have access to manage this staff member.",
+        ),
+      );
       setLoading(false);
       return;
     }
@@ -223,6 +248,17 @@ export default function StaffAvailabilityPage() {
       ready: openRows.length > 0 && invalidRows.length === 0,
     };
   }, [rows]);
+  const displayRows = useMemo(
+    () =>
+      rows
+        .map((row, index) => ({ row, index }))
+        .sort(
+          (left, right) =>
+            mondayFirstDayOrder.indexOf(left.row.day_of_week) -
+            mondayFirstDayOrder.indexOf(right.row.day_of_week),
+        ),
+    [rows],
+  );
 
   function updateRow(
     index: number,
@@ -275,7 +311,10 @@ export default function StaffAvailabilityPage() {
 
   function closeAllDays() {
     const confirmed = confirm(
-      "Close every day for this staff member? Customers will not see this staff member as available until you reopen days.",
+      t(
+        "dashboardStaff.availability.closeAllConfirm",
+        "Close every day for this staff member? Customers will not see them as available until you reopen a day.",
+      ),
     );
     if (!confirmed) return;
 
@@ -292,14 +331,20 @@ export default function StaffAvailabilityPage() {
 
     if (invalidRow) {
       setError(
-        `${days[invalidRow.day_of_week]} has an invalid time range. Start time must be before end time.`,
+        t(
+          "dashboardStaff.availability.invalidRange",
+          "An open day has an invalid time range. Start time must be before end time.",
+        ),
       );
       return;
     }
 
     if (openRowsToSave.length === 0) {
       const confirmed = confirm(
-        "This staff member has no open days. They will not appear as available for bookings. Save anyway?",
+        t(
+          "dashboardStaff.availability.noOpenDaysConfirm",
+          "This staff member has no open days and will not appear available for bookings. Save anyway?",
+        ),
       );
       if (!confirmed) return;
     }
@@ -372,14 +417,21 @@ export default function StaffAvailabilityPage() {
 
   return (
     <DashboardLayout
-      title="Staff working hours"
+      title={t("dashboardStaff.availability.pageTitle", "Staff working hours")}
       subtitle={
-        staff ? `Set availability for ${staff.name}` : "Set staff availability."
+        staff
+          ? `${staff.name} · ${staff.businesses?.name || t("common.business", "Business")}`
+          : t(
+              "dashboardStaff.availability.pageSubtitle",
+              "Set staff availability.",
+            )
       }
     >
       {loading && (
         <div className="card">
-          <p className="muted">Loading staff availability...</p>
+          <p className="muted">
+            {t("staffAvailability.loading", "Loading working hours...")}
+          </p>
         </div>
       )}
 
@@ -395,7 +447,7 @@ export default function StaffAvailabilityPage() {
           <div className="staff-availability-banner-row">
             <div>
               <p className="small" style={{ color: "var(--success)" }}>
-                Saved
+                {t("dashboardAvailability.success.title", "Saved")}
               </p>
               <strong>{success}</strong>
             </div>
@@ -404,7 +456,7 @@ export default function StaffAvailabilityPage() {
               className="btn btn-ghost"
               onClick={() => setSuccess(null)}
             >
-              Dismiss
+              {t("common.dismiss", "Dismiss")}
             </button>
           </div>
         </div>
@@ -421,157 +473,82 @@ export default function StaffAvailabilityPage() {
 
       {!loading && staff && (
         <>
-          <div className="card" style={{ marginBottom: "1.25rem" }}>
-            <div className="staff-availability-card-row">
+          <div className="staff-availability-summary">
+            <div className="staff-availability-identity">
               <div>
-                <p className="small muted">Staff member</p>
-                <h3>{staff.name}</h3>
-                <p className="small muted" style={{ marginTop: "0.25rem" }}>
-                  {staff.role_title || "Staff member"} ·{" "}
-                  {staff.businesses?.name || "Business"}
-                </p>
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    flexWrap: "wrap",
-                    marginTop: "0.75rem",
-                  }}
-                >
-                  <span
-                    className="small"
-                    style={{
-                      background: staff.active
-                        ? "rgba(45,212,191,0.12)"
-                        : "rgba(255,190,11,0.12)",
-                      color: staff.active ? "var(--success)" : "var(--warning)",
-                      padding: "0.2rem 0.55rem",
-                      borderRadius: 999,
-                    }}
-                  >
-                    {staff.active
-                      ? "Active staff member"
-                      : "Hidden staff member"}
-                  </span>
-
-                  <span
-                    className="small"
-                    style={{
-                      background: availabilityStats.ready
-                        ? "rgba(45,212,191,0.12)"
-                        : "rgba(255,190,11,0.12)",
-                      color: availabilityStats.ready
-                        ? "var(--success)"
-                        : "var(--warning)",
-                      padding: "0.2rem 0.55rem",
-                      borderRadius: 999,
-                    }}
-                  >
-                    {availabilityStats.ready
-                      ? "Hours ready"
-                      : "Hours need attention"}
-                  </span>
-                </div>
+                <strong>
+                  {staff.role_title || t("common.staff", "Staff member")}
+                </strong>
+                <span className="small muted">
+                  {availabilityStats.openDays}{" "}
+                  {t("dashboardAvailability.stats.openDays", "open days")} ·{" "}
+                  {availabilityStats.closedDays}{" "}
+                  {t("dashboardAvailability.stats.closedDays", "closed days")}
+                </span>
               </div>
-
-              <div className="staff-availability-action-row">
-                <Link
-                  href={`/dashboard/staff?businessId=${staff.business_id}`}
-                  className="btn btn-ghost"
-                >
-                  Back to staff
-                </Link>
-
-                <Link
-                  href={`/dashboard/bookings?businessId=${staff.business_id}`}
-                  className="btn btn-ghost"
-                >
-                  {t("dashboardBookings.businessPicker.cta", "Open calendar")}
-                </Link>
-              </div>
+              <span
+                className={
+                  availabilityStats.ready
+                    ? "hours-status ready"
+                    : "hours-status needs-work"
+                }
+              >
+                {availabilityStats.ready
+                  ? t("dashboardStaff.availability.hoursReady", "Hours ready")
+                  : t(
+                      "dashboardStaff.availability.hoursNeedAttention",
+                      "Hours need attention",
+                    )}
+              </span>
             </div>
+
+            <Link
+              href={`/dashboard/staff?businessId=${staff.business_id}`}
+              className="btn btn-ghost"
+            >
+              {t("dashboardStaff.availability.backToTeam", "Back to Team")}
+            </Link>
           </div>
 
-          <div className="grid-2" style={{ marginBottom: "1.25rem" }}>
-            <div className="card">
-              <p className="small muted">Open days</p>
-              <h3>{availabilityStats.openDays}</h3>
-              <p className="muted small">
-                Days customers can book this staff member
-              </p>
-            </div>
+          {availabilityStats.invalidDays > 0 && (
+            <p role="alert" className="staff-availability-invalid">
+              {availabilityStats.invalidDays}{" "}
+              {t(
+                "dashboardStaff.availability.invalidDays",
+                "open days have an invalid time range.",
+              )}
+            </p>
+          )}
 
-            <div className="card">
-              <p className="small muted">Closed days</p>
-              <h3>{availabilityStats.closedDays}</h3>
-              <p className="muted small">Days hidden from booking</p>
-            </div>
-
-            <div
-              className="card"
-              style={{
-                borderColor:
-                  availabilityStats.invalidDays > 0
-                    ? "rgba(255,77,109,0.35)"
-                    : "var(--border)",
-              }}
-            >
-              <p className="small muted">Invalid days</p>
-              <h3>{availabilityStats.invalidDays}</h3>
-              <p className="muted small">
-                Open days where start time is not before end time
-              </p>
-            </div>
-
-            <div
-              className="card"
-              style={{
-                borderColor: availabilityStats.ready
-                  ? "rgba(45,212,191,0.25)"
-                  : "rgba(255,190,11,0.35)",
-              }}
-            >
-              <p className="small muted">Status</p>
-              <h3>{availabilityStats.ready ? "Ready" : "Needs work"}</h3>
-              <p className="muted small">
-                Staff needs at least one valid open day to be bookable
-              </p>
-            </div>
-          </div>
-
-          <div className="card" style={{ marginBottom: "1.25rem" }}>
-            <div className="staff-availability-card-row">
-              <div>
-                <p className="small muted">Quick presets</p>
-                <h3>Set common working patterns</h3>
-              </div>
-
-              <div className="staff-availability-action-row">
-                <button
-                  type="button"
-                  onClick={applyWeekdayPreset}
-                  className="btn btn-ghost"
-                >
-                  Mon-Fri 9-5
-                </button>
-
-                <button
-                  type="button"
-                  onClick={applyEverydayPreset}
-                  className="btn btn-ghost"
-                >
-                  Every day 9-5
-                </button>
-
-                <button
-                  type="button"
-                  onClick={closeAllDays}
-                  className="btn btn-danger"
-                >
-                  Close all days
-                </button>
-              </div>
+          <div className="staff-availability-presets">
+            <strong>
+              {t("dashboardAvailability.presets.compactTitle", "Quick presets")}
+            </strong>
+            <div className="staff-availability-action-row">
+              <button
+                type="button"
+                onClick={applyWeekdayPreset}
+                className="btn btn-ghost"
+              >
+                {t("dashboardAvailability.presets.weekday", "Mon-Fri 9-5")}
+              </button>
+              <button
+                type="button"
+                onClick={applyEverydayPreset}
+                className="btn btn-ghost"
+              >
+                {t(
+                  "dashboardStaff.availability.everyDayPreset",
+                  "Every day 9-5",
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={closeAllDays}
+                className="btn btn-danger"
+              >
+                {t("dashboardAvailability.presets.closeAll", "Close all days")}
+              </button>
             </div>
           </div>
 
@@ -587,7 +564,7 @@ export default function StaffAvailabilityPage() {
             }}
           >
             <div style={{ display: "grid", gap: "0.75rem" }}>
-              {rows.map((row, index) => {
+              {displayRows.map(({ row, index }) => {
                 const invalid =
                   !row.is_closed && row.start_time >= row.end_time;
 
@@ -605,7 +582,12 @@ export default function StaffAvailabilityPage() {
                     }}
                   >
                     <div>
-                      <strong>{days[row.day_of_week]}</strong>
+                      <strong>
+                        {t(
+                          dayTranslationKeys[row.day_of_week],
+                          days[row.day_of_week],
+                        )}
+                      </strong>
                       <p
                         className="small"
                         style={{
@@ -618,10 +600,19 @@ export default function StaffAvailabilityPage() {
                         }}
                       >
                         {invalid
-                          ? "Invalid time range"
+                          ? t(
+                              "dashboardAvailability.day.invalid",
+                              "Invalid time range",
+                            )
                           : row.is_closed
-                            ? "Closed / day off"
-                            : "Open for bookings"}
+                            ? t(
+                                "dashboardAvailability.day.closedBody",
+                                "Closed / day off",
+                              )
+                            : t(
+                                "dashboardStaff.availability.openForBookings",
+                                "Open for bookings",
+                              )}
                       </p>
                     </div>
 
@@ -641,11 +632,11 @@ export default function StaffAvailabilityPage() {
                           updateRow(index, "is_closed", e.target.checked)
                         }
                       />
-                      Closed
+                      {t("dashboardAvailability.day.closed", "Closed")}
                     </label>
 
                     <label className="small muted">
-                      Start
+                      {t("dashboardAvailability.day.start", "Start")}
                       <input
                         name={`start-${row.day_of_week}`}
                         type="time"
@@ -659,7 +650,7 @@ export default function StaffAvailabilityPage() {
                     </label>
 
                     <label className="small muted">
-                      End
+                      {t("dashboardAvailability.day.end", "End")}
                       <input
                         name={`end-${row.day_of_week}`}
                         type="time"
@@ -682,18 +673,19 @@ export default function StaffAvailabilityPage() {
                 disabled={saving}
                 className="btn btn-accent"
               >
-                {saving ? "Saving..." : "Save staff working hours"}
+                {saving
+                  ? t("common.saving", "Saving...")
+                  : t(
+                      "dashboardStaff.availability.saveCta",
+                      "Save staff working hours",
+                    )}
               </button>
 
               <Link
                 href={`/dashboard/staff?businessId=${staff.business_id}`}
                 className="btn btn-ghost"
               >
-                Back to staff
-              </Link>
-
-              <Link href="/support/business" className="btn btn-ghost">
-                Business support
+                {t("dashboardStaff.availability.backToTeam", "Back to Team")}
               </Link>
             </div>
           </form>
@@ -718,6 +710,57 @@ export default function StaffAvailabilityPage() {
           flex-wrap: wrap;
         }
 
+        .staff-availability-summary,
+        .staff-availability-identity,
+        .staff-availability-presets {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .staff-availability-summary {
+          margin-bottom: 0.7rem;
+          padding: 0.65rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .staff-availability-identity > div {
+          display: grid;
+          gap: 0.15rem;
+        }
+
+        .hours-status {
+          padding: 0.3rem 0.6rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .hours-status.ready {
+          color: var(--success);
+          border-color: rgba(45, 212, 191, 0.3);
+          background: rgba(45, 212, 191, 0.08);
+        }
+
+        .hours-status.needs-work,
+        .staff-availability-invalid {
+          color: var(--warning);
+        }
+
+        .staff-availability-invalid {
+          margin: 0 0 0.7rem;
+        }
+
+        .staff-availability-presets {
+          margin-bottom: 0.7rem;
+          padding-bottom: 0.7rem;
+          border-bottom: 1px solid var(--border);
+        }
+
         .staff-availability-save-row {
           margin-top: 1.25rem;
         }
@@ -731,16 +774,24 @@ export default function StaffAvailabilityPage() {
 
         @media (max-width: 760px) {
           .staff-availability-banner-row,
-          .staff-availability-card-row,
-          .staff-availability-row {
+          .staff-availability-card-row {
             display: grid;
             grid-template-columns: 1fr;
+          }
+
+          .staff-availability-row {
+            grid-template-columns: minmax(0, 1fr) auto;
           }
 
           .staff-availability-action-row,
           .staff-availability-save-row {
             width: 100%;
             justify-content: stretch;
+          }
+
+          .staff-availability-summary,
+          .staff-availability-presets {
+            align-items: stretch;
           }
 
           .staff-availability-action-row :global(.btn),

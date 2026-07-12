@@ -29,10 +29,10 @@ export default function DashboardSettingsPage() {
     );
   }, [businesses, selectedBusinessId]);
 
-  async function loadSettings() {
+  async function loadSettings(options?: { keepSuccess?: boolean }) {
     setLoading(true);
     setError(null);
-    setSuccess(null);
+    if (!options?.keepSuccess) setSuccess(null);
 
     try {
       const {
@@ -149,20 +149,19 @@ export default function DashboardSettingsPage() {
       return;
     }
 
-    setSuccess(
-      `${settings.name} ${t("dashboardSettings.success.saved", "settings saved.")} ${
-        settings.auto_accept_bookings
-          ? t(
-              "dashboardSettings.success.instant",
-              "New bookings will confirm instantly.",
-            )
-          : t(
-              "dashboardSettings.success.manual",
-              "New bookings will go to Needs action for approval.",
-            )
-      }`,
-    );
-    await loadSettings();
+    const savedMessage = `${settings.name} ${t("dashboardSettings.success.saved", "settings saved.")} ${
+      settings.auto_accept_bookings
+        ? t(
+            "dashboardSettings.success.instant",
+            "New bookings will confirm instantly.",
+          )
+        : t(
+            "dashboardSettings.success.manual",
+            "New bookings will go to Needs action for approval.",
+          )
+    }`;
+    await loadSettings({ keepSuccess: true });
+    setSuccess(savedMessage);
   }
 
   return (

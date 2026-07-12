@@ -639,6 +639,7 @@ export const en: TranslationTree = {
     "You need to be logged in to send a support message.",
   "support.business.validation":
     "Choose a subject and write a message before sending.",
+  "support.validation.messageRequired": "Write a message before sending.",
   "support.business.success":
     "Your business support request has been sent to the Mirëbook operator inbox.",
   "support.business.formKicker": "Support request",
@@ -1632,6 +1633,18 @@ export const en: TranslationTree = {
   "dashboardStaff.save.savedLower": "saved.",
   "dashboardStaff.invite.emailRequired":
     "Add an email before marking this staff member as invited.",
+  "dashboardStaff.invite.copyError": "Could not create a secure invite link.",
+  "dashboardStaff.invite.copied":
+    "Secure invite link copied. The previous unused link is no longer valid.",
+  "dashboardStaff.invite.copyFallback": "Copy this secure invite link:",
+  "dashboardStaff.invite.revokeConfirm":
+    "Revoke this pending invite? Its secure link will stop working.",
+  "dashboardStaff.invite.revokeError": "Could not revoke this invite.",
+  "dashboardStaff.invite.revoked":
+    "Pending invite revoked. The staff profile remains saved.",
+  "dashboardStaff.invite.resend": "Resend invite",
+  "dashboardStaff.invite.copy": "Copy invite link",
+  "dashboardStaff.invite.revoke": "Revoke invite",
   "dashboardStaff.toggle.confirmIncomplete":
     "This staff member is missing assigned services or working hours. They may still not appear as bookable until both are complete. Show them anyway?",
   "dashboardStaff.toggle.activeSuccess": "is now active for booking.",
@@ -1657,6 +1670,28 @@ export const en: TranslationTree = {
   "dashboardStaff.availability.bodyMissing":
     "Set staff availability so Mirëbook can calculate exact bookable slots.",
   "dashboardStaff.availability.openCta": "Open availability",
+  "dashboardStaff.availability.pageTitle": "Staff working hours",
+  "dashboardStaff.availability.pageSubtitle": "Set staff working hours.",
+  "dashboardStaff.availability.missingStaff":
+    "Choose a staff member to manage their working hours.",
+  "dashboardStaff.availability.staffNotFound":
+    "This staff member could not be found.",
+  "dashboardStaff.availability.noAccess":
+    "You do not have access to manage this staff member.",
+  "dashboardStaff.availability.closeAllConfirm":
+    "Close every day for this staff member? Customers will not see them as available until you reopen a day.",
+  "dashboardStaff.availability.invalidRange":
+    "An open day has an invalid time range. Start time must be before end time.",
+  "dashboardStaff.availability.noOpenDaysConfirm":
+    "This staff member has no open days and will not appear available for bookings. Save anyway?",
+  "dashboardStaff.availability.hoursReady": "Hours ready",
+  "dashboardStaff.availability.hoursNeedAttention": "Hours need attention",
+  "dashboardStaff.availability.backToTeam": "Back to Team",
+  "dashboardStaff.availability.invalidDays":
+    "open days have an invalid time range.",
+  "dashboardStaff.availability.everyDayPreset": "Every day 9-5",
+  "dashboardStaff.availability.openForBookings": "Open for bookings",
+  "dashboardStaff.availability.saveCta": "Save staff working hours",
   "dashboardStaff.card.untitled": "Untitled staff member",
   "dashboardStaff.card.active": "Active",
   "dashboardStaff.card.inactive": "Inactive",
@@ -1666,6 +1701,7 @@ export const en: TranslationTree = {
   "dashboardStaff.card.openDays": "open days",
   "dashboardStaff.card.viewDetails": "View details",
   "dashboardStaff.card.hideDetails": "Hide details",
+  "dashboardStaff.card.actions": "Staff actions",
   "dashboardStaff.card.noServicesAssigned": "No services assigned",
   "dashboardStaff.card.noRole": "No role title added",
   "dashboardStaff.card.noEmail": "No email",
@@ -1693,6 +1729,7 @@ export const en: TranslationTree = {
   "dashboardAvailability.confirm.noOpenDays":
     "This business has no open days. Customers may not be able to book unless staff-specific availability is configured. Save anyway?",
   "dashboardAvailability.success.saved": "Working hours saved.",
+  "dashboardAvailability.success.title": "Saved",
   "dashboardAvailability.noBusiness.title": "No business found",
   "dashboardAvailability.noBusiness.body":
     "Create a business profile first, then set Mirëbook working hours.",

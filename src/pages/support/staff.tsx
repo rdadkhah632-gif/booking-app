@@ -142,11 +142,11 @@ export default function StaffSupportPage() {
       return;
     }
 
-    if (!subject.trim() || !message.trim()) {
+    if (!message.trim()) {
       setError(
         t(
-          "support.staff.validation",
-          "Choose a subject and write a message before sending.",
+          "support.validation.messageRequired",
+          "Write a message before sending.",
         ),
       );
       return;

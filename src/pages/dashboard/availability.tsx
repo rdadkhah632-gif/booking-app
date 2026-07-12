@@ -32,6 +32,7 @@ const fallbackDays = [
   "Friday",
   "Saturday",
 ];
+const mondayFirstDayOrder = [1, 2, 3, 4, 5, 6, 0];
 
 export default function Availability() {
   const router = useRouter();
@@ -188,6 +189,17 @@ export default function Availability() {
       ready: openRows.length > 0 && invalidRows.length === 0,
     };
   }, [rows]);
+  const displayRows = useMemo(
+    () =>
+      rows
+        .map((row, index) => ({ row, index }))
+        .sort(
+          (left, right) =>
+            mondayFirstDayOrder.indexOf(left.row.day_of_week) -
+            mondayFirstDayOrder.indexOf(right.row.day_of_week),
+        ),
+    [rows],
+  );
 
   function updateRow(
     index: number,
@@ -385,7 +397,7 @@ export default function Availability() {
           />
 
           <div className="availability-day-list">
-            {rows.map((row, index) => (
+            {displayRows.map(({ row, index }) => (
               <AvailabilityDayRow
                 key={row.day_of_week}
                 row={row}

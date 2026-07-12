@@ -151,57 +151,49 @@ export default function ServiceCard({
                   />
 
                   <div className="service-edit-grid">
-                    <input
-                      type="number"
-                      placeholder={t(
-                        "dashboardServices.create.durationPlaceholder",
-                        "Duration",
-                      )}
-                      value={service.duration_minutes}
-                      onChange={(e) =>
-                        updateLocalService(
-                          service.id,
-                          "duration_minutes",
-                          Number(e.target.value),
-                        )
-                      }
-                      min={5}
-                    />
+                    <label>
+                      <span>
+                        {t("dashboardServices.create.duration", "Duration")}
+                      </span>
+                      <select
+                        value={service.duration_minutes}
+                        onChange={(e) =>
+                          updateLocalService(
+                            service.id,
+                            "duration_minutes",
+                            Number(e.target.value),
+                          )
+                        }
+                      >
+                        {durationOptions().map((minutes) => (
+                          <option key={minutes} value={minutes}>
+                            {minutes} {t("common.minutes", "minutes")}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
 
-                    <select
-                      value={service.duration_minutes}
-                      onChange={(e) =>
-                        updateLocalService(
-                          service.id,
-                          "duration_minutes",
-                          Number(e.target.value),
-                        )
-                      }
-                    >
-                      {durationOptions().map((minutes) => (
-                        <option key={minutes} value={minutes}>
-                          {minutes} {t("common.minutes", "minutes")}
-                        </option>
-                      ))}
-                    </select>
-
-                    <input
-                      type="number"
-                      placeholder={t(
-                        "dashboardServices.create.pricePlaceholder",
-                        "Price",
-                      )}
-                      value={service.price}
-                      onChange={(e) =>
-                        updateLocalService(
-                          service.id,
-                          "price",
-                          Number(e.target.value),
-                        )
-                      }
-                      min={0}
-                      step="0.01"
-                    />
+                    <label>
+                      <span>
+                        {t(
+                          "dashboardServices.create.pricePlaceholder",
+                          "Price",
+                        )}
+                      </span>
+                      <input
+                        type="number"
+                        value={service.price}
+                        onChange={(e) =>
+                          updateLocalService(
+                            service.id,
+                            "price",
+                            Number(e.target.value),
+                          )
+                        }
+                        min={0}
+                        step="0.01"
+                      />
+                    </label>
                   </div>
 
                   <ServiceImageUpload
@@ -422,6 +414,14 @@ export default function ServiceCard({
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
           gap: 0.75rem;
+        }
+
+        .service-edit-grid label {
+          display: grid;
+          gap: 0.35rem;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          font-weight: 700;
         }
 
         @media (max-width: 860px) {
