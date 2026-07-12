@@ -243,13 +243,14 @@ export default function MobileDayCalendar({
                 ((appointment.endMinutes - appointment.startMinutes) / 60) *
                   HOUR_HEIGHT,
               );
+              const isCompact = height < 76;
               const width = 100 / appointment.columnCount;
 
               return (
                 <button
                   key={appointment.id}
                   type="button"
-                  className={`mobile-day-appointment ${appointment.status} ${selectedAppointmentId === appointment.id ? "selected" : ""}`.trim()}
+                  className={`mobile-day-appointment ${appointment.status} ${isCompact ? "compact" : ""} ${selectedAppointmentId === appointment.id ? "selected" : ""}`.trim()}
                   style={{
                     top: `${Math.max(0, top)}px`,
                     height: `${height}px`,
@@ -261,9 +262,11 @@ export default function MobileDayCalendar({
                 >
                   <span>{appointment.timeLabel}</span>
                   <strong>{appointment.title}</strong>
-                  <small>{appointment.subtitle}</small>
-                  {appointment.meta && <small>{appointment.meta}</small>}
-                  {appointment.status !== "confirmed" && (
+                  {!isCompact && <small>{appointment.subtitle}</small>}
+                  {!isCompact && appointment.meta && (
+                    <small>{appointment.meta}</small>
+                  )}
+                  {!isCompact && appointment.status !== "confirmed" && (
                     <em>{appointment.statusLabel}</em>
                   )}
                 </button>
@@ -542,6 +545,12 @@ export default function MobileDayCalendar({
             line-height: 1.15;
             text-overflow: ellipsis;
             white-space: nowrap;
+          }
+
+          .mobile-day-appointment.compact {
+            align-content: center;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
           }
 
           .mobile-day-appointment em {

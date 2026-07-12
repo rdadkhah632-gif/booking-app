@@ -1729,6 +1729,7 @@ export const sq: TranslationTree = {
   "dashboardLayout.noActions": "Nuk ka veprime",
   "account.pageTitle": "Llogaria ime",
   "account.pageSubtitle": "Detajet personale, gjuha dhe siguria.",
+  "account.profileTitle": "Profili",
   "account.kicker": "Llogaria",
   "account.businessSettingsKicker": "Cilësimet e biznesit janë të ndara",
   "account.businessSettingsTitle":
@@ -1761,7 +1762,8 @@ export const sq: TranslationTree = {
     "Email-i i verifikimit u dërgua. Kontrollo inbox-in dhe dosjen spam.",
   "account.emailPreferences.kicker": "Preferencat e email-it",
   "account.emailPreferences.title": "Përditësime me email",
-  "account.emailPreferences.body": "Zgjidh cilat përditësime me email do.",
+  "account.emailPreferences.body":
+    "Zgjidh përditësimet. Email-et përdorin gjuhën tënde të ruajtur.",
   "account.emailPreferences.setupRequired":
     "Përditësimet me email nuk janë të disponueshme",
   "account.emailPreferences.setupRequiredBody":
@@ -3915,6 +3917,12 @@ export const sq: TranslationTree = {
   "dashboardHome.today.title": "Çfarë kërkon vëmendje sot",
   "dashboardHome.today.body":
     "Kërkesat, takimet dhe veprimi tjetër i konfigurimit në një vend.",
+  "dashboardHome.today.overviewTitle": "Dita jote",
+  "dashboardHome.today.nextAppointment": "Takimi i ardhshëm",
+  "dashboardHome.today.openCalendar": "Hap në Kalendar",
+  "dashboardHome.today.noUpcoming": "Nuk ka takime të ardhshme",
+  "dashboardHome.today.noUpcomingBody":
+    "Takimet e reja të konfirmuara do të shfaqen këtu.",
   "dashboardHome.today.requests": "Kërkon vëmendje",
   "dashboardHome.today.confirmedToday": "Sot",
   "dashboardHome.today.upcoming": "Në vijim",
@@ -3959,6 +3967,7 @@ export const sq: TranslationTree = {
   "dashboardLayout.staffNav.today": "Sot",
   "dashboardLayout.staffNav.inbox": "Inbox",
   "dashboardBookings.emptyCalendar.readyTitle": "Gati për rezervime?",
+  "dashboardBookings.week.returnToToday": "Kthehu te dita e sotme",
   "dashboardBookings.emptyCalendar.readyBody":
     "Përfundo konfigurimin, shiko profilin e klientit dhe ndaje faqen e rezervimit kur të jesh gati.",
   "dashboardBookings.empty.completeSetup": "Përfundo konfigurimin",

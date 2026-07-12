@@ -981,7 +981,9 @@ export default function Bookings() {
   }
 
   function moveWeek(direction: -1 | 1) {
-    changeCalendarDate(toDateInputValue(addDays(weekStartDate, direction * 7)));
+    changeCalendarDate(
+      toDateInputValue(addDays(selectedDateObject, direction * 7)),
+    );
   }
 
   function updateManualBookingField(
@@ -1586,6 +1588,7 @@ export default function Bookings() {
       CALENDAR_MIN_BLOCK_HEIGHT,
       (durationMinutes / 60) * CALENDAR_HOUR_HEIGHT,
     );
+    const isCompactBlock = blockHeight < 58;
 
     const isSelected = selectedCalendarBookingId === booking.id;
 
@@ -1598,8 +1601,8 @@ export default function Bookings() {
           setSelectedCalendarBookingId(booking.id);
         }}
         className={`calendar-schedule-block ${booking.status} ${
-          isSelected ? "selected" : ""
-        }`}
+          isCompactBlock ? "compact" : ""
+        } ${isSelected ? "selected" : ""}`}
         style={{
           top: `${Math.max(0, blockTop)}px`,
           height: `${blockHeight}px`,
@@ -1614,15 +1617,11 @@ export default function Bookings() {
           {booking.customer_name ||
             t("dashboardBookings.card.customerFallback", "Customer")}
         </strong>
-        <span className="schedule-block-meta">
-          {booking.services?.name ||
-            t("dashboardBookings.card.noService", "No service recorded")}
-          {" · "}
-          {bookingStaffLabel(booking)}
-        </span>
-        <span className={`calendar-status status-${booking.status}`}>
-          {statusLabel(booking.status)}
-        </span>
+        {!isCompactBlock && booking.status === "pending" && (
+          <span className={`calendar-status status-${booking.status}`}>
+            {statusLabel(booking.status)}
+          </span>
+        )}
       </button>
     );
   }
@@ -1975,6 +1974,14 @@ export default function Bookings() {
                     type="button"
                     className="calendar-today-button"
                     onClick={goToToday}
+                    title={t(
+                      "dashboardBookings.week.returnToToday",
+                      "Return to today",
+                    )}
+                    aria-label={t(
+                      "dashboardBookings.week.returnToToday",
+                      "Return to today",
+                    )}
                   >
                     {t("dashboardHome.summary.today", "Today")}
                   </button>
@@ -3165,6 +3172,23 @@ export default function Bookings() {
         :global(.calendar-schedule-block.confirmed .calendar-status),
         :global(.calendar-schedule-block.completed .calendar-status) {
           display: none;
+        }
+
+        :global(.calendar-schedule-block.compact) {
+          align-content: center;
+          gap: 0.06rem;
+          padding: 0.24rem 0.45rem;
+          border-radius: 0.62rem;
+        }
+
+        :global(.calendar-schedule-block.compact .schedule-block-time) {
+          font-size: 0.62rem;
+          line-height: 1.05;
+        }
+
+        :global(.calendar-schedule-block.compact strong) {
+          font-size: 0.74rem;
+          line-height: 1.08;
         }
 
         :global(.calendar-appointment) {

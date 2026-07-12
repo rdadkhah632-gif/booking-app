@@ -396,7 +396,7 @@ export default function StaffCalendarPage() {
 
   function moveWeek(direction: -1 | 1) {
     changeCalendarDate(
-      formatDateInputValue(addDays(weekStartDate, direction * 7)),
+      formatDateInputValue(addDays(selectedDateObject, direction * 7)),
     );
   }
 
@@ -460,6 +460,7 @@ export default function StaffCalendarPage() {
       CALENDAR_MIN_BLOCK_HEIGHT,
       (durationMinutes / 60) * CALENDAR_HOUR_HEIGHT,
     );
+    const isCompactBlock = blockHeight < 58;
     const selected = selectedBookingId === booking.id;
 
     return (
@@ -467,8 +468,8 @@ export default function StaffCalendarPage() {
         key={booking.id}
         type="button"
         className={`staff-schedule-block ${booking.status} ${
-          selected ? "selected" : ""
-        }`}
+          isCompactBlock ? "compact" : ""
+        } ${selected ? "selected" : ""}`}
         style={{
           top: `${Math.max(0, blockTop)}px`,
           height: `${blockHeight}px`,
@@ -485,8 +486,9 @@ export default function StaffCalendarPage() {
         <strong>
           {booking.customer_name || t("common.customer", "Customer")}
         </strong>
-        <small>{serviceName(booking, t("common.service", "Service"))}</small>
-        <em>{statusLabel(booking.status)}</em>
+        {!isCompactBlock && booking.status === "pending" && (
+          <em>{statusLabel(booking.status)}</em>
+        )}
       </button>
     );
   }
@@ -832,6 +834,14 @@ export default function StaffCalendarPage() {
                   type="button"
                   className="staff-today-button"
                   onClick={goToToday}
+                  title={t(
+                    "dashboardBookings.week.returnToToday",
+                    "Return to today",
+                  )}
+                  aria-label={t(
+                    "dashboardBookings.week.returnToToday",
+                    "Return to today",
+                  )}
                 >
                   {t("dashboardHome.summary.today", "Today")}
                 </button>
@@ -1639,6 +1649,26 @@ export default function StaffCalendarPage() {
         :global(.staff-schedule-block.confirmed em),
         :global(.staff-schedule-block.completed em) {
           display: none;
+        }
+
+        .staff-schedule-block.compact,
+        :global(.staff-schedule-block.compact) {
+          align-content: center;
+          gap: 0.06rem;
+          padding: 0.24rem 0.45rem;
+          border-radius: 0.62rem;
+        }
+
+        .staff-schedule-block.compact span,
+        :global(.staff-schedule-block.compact span) {
+          font-size: 0.62rem;
+          line-height: 1.05;
+        }
+
+        .staff-schedule-block.compact strong,
+        :global(.staff-schedule-block.compact strong) {
+          font-size: 0.74rem;
+          line-height: 1.08;
         }
 
         .staff-calendar-empty {

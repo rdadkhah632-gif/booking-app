@@ -91,6 +91,12 @@ export default function AccountPage() {
   const isAdmin = !!profile?.is_admin;
   const isStaffIntentOnly = isStaffIntentAccount && !hasLinkedStaffProfile;
   const isCustomerOnly = !ownsBusiness && !hasStaffAccess && !isAdmin;
+  const accountInitials = (fullName || profile?.email || "M")
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 
   async function loadProfile() {
     setLoading(true);
@@ -426,12 +432,6 @@ export default function AccountPage() {
                 <h1 className="page-title">
                   {t("account.pageTitle", "My account")}
                 </h1>
-                <p className="page-sub account-header-subtitle">
-                  {t(
-                    "account.pageSubtitle",
-                    "Personal details, language and security.",
-                  )}
-                </p>
               </div>
             </div>
 
@@ -447,17 +447,24 @@ export default function AccountPage() {
               </div>
             )}
 
-            <div
-              className={`card account-verification-card ${
-                emailIsVerified
-                  ? "account-verification-card-verified"
-                  : emailIsUnverified
-                    ? "account-verification-card-unverified"
-                    : "account-verification-card-unknown"
-              }`}
-            >
-              <div className="account-card-heading">
-                <h2>
+            <div className="card account-identity-card">
+              <span className="account-avatar" aria-hidden="true">
+                {accountInitials || "M"}
+              </span>
+              <div className="account-identity-copy">
+                <h2>{fullName || profile.email.split("@")[0]}</h2>
+                <p>{profile.email}</p>
+              </div>
+              <div
+                className={`account-verification-status ${
+                  emailIsVerified
+                    ? "verified"
+                    : emailIsUnverified
+                      ? "unverified"
+                      : "unknown"
+                }`}
+              >
+                <strong>
                   {emailIsVerified
                     ? t("account.verification.verified", "Email verified")
                     : emailIsUnverified
@@ -469,23 +476,7 @@ export default function AccountPage() {
                           "account.verification.unknown",
                           "Verification status unavailable",
                         )}
-                </h2>
-                <p className="small muted">
-                  {emailIsVerified
-                    ? t(
-                        "account.verification.verifiedBody",
-                        "This email is linked to your Mirëbook account.",
-                      )
-                    : emailIsUnverified
-                      ? t(
-                          "account.verification.unverifiedBody",
-                          "This email has not been confirmed yet. Check your inbox or send another verification email.",
-                        )
-                      : t(
-                          "account.verification.unknownBody",
-                          "Mirëbook could not confirm the current email status.",
-                        )}
-                </p>
+                </strong>
               </div>
               {emailIsUnverified && (
                 <button
@@ -513,7 +504,7 @@ export default function AccountPage() {
                   <small>
                     {t(
                       "account.emailPreferences.body",
-                      "Choose which email updates you want.",
+                      "Choose your updates. Emails use your saved language.",
                     )}
                   </small>
                 </span>
@@ -830,7 +821,7 @@ export default function AccountPage() {
               className="card account-form-card account-primary-card"
             >
               <div className="account-card-heading">
-                <h2>{t("account.personalDetails", "Personal details")}</h2>
+                <h2>{t("account.profileTitle", "Profile")}</h2>
               </div>
 
               <div className="account-form-grid">
@@ -1070,7 +1061,7 @@ export default function AccountPage() {
           order: 1;
         }
 
-        .account-verification-card {
+        .account-identity-card {
           order: 2;
         }
 
@@ -1217,40 +1208,70 @@ export default function AccountPage() {
           gap: 0.8rem;
         }
 
-        .account-verification-card {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
+        .account-identity-card {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          gap: 0.8rem;
           align-items: center;
-          flex-wrap: wrap;
           padding: 0.8rem 1rem;
         }
 
-        .account-verification-card .account-card-heading {
-          gap: 0.16rem;
+        .account-avatar {
+          display: inline-flex;
+          width: 2.75rem;
+          height: 2.75rem;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: var(--accent-dim);
+          color: var(--accent);
+          font-size: 0.9rem;
+          font-weight: 900;
         }
 
-        .account-verification-card h2 {
-          font-size: 1.05rem;
+        .account-identity-copy {
+          display: grid;
+          gap: 0.08rem;
+          min-width: 0;
         }
 
-        .account-verification-card p {
+        .account-identity-copy h2,
+        .account-identity-copy p {
           margin: 0;
         }
 
-        .account-verification-card-verified {
-          border-color: rgba(45, 212, 191, 0.3);
-          background: rgba(45, 212, 191, 0.06);
+        .account-identity-copy h2 {
+          overflow: hidden;
+          font-family: var(--font-body);
+          font-size: 1rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
-        .account-verification-card-unverified {
-          border-color: rgba(255, 190, 11, 0.3);
-          background: rgba(255, 190, 11, 0.07);
+        .account-identity-copy p {
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
-        .account-verification-card-unknown {
-          border-color: var(--border);
+        .account-verification-status {
+          padding: 0.3rem 0.6rem;
+          border-radius: 999px;
           background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.74rem;
+        }
+
+        .account-verification-status.verified {
+          background: rgba(45, 212, 191, 0.1);
+          color: var(--success);
+        }
+
+        .account-verification-status.unverified {
+          background: rgba(255, 190, 11, 0.1);
+          color: var(--warning);
         }
 
         .account-email-preferences {
@@ -1269,36 +1290,97 @@ export default function AccountPage() {
 
         .account-preference-groups {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-          gap: 0.48rem;
+          gap: 0;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
         }
 
         .account-preference-group {
           display: grid;
-          gap: 0.42rem;
-          padding: 0.58rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          background: var(--surface-2);
+          gap: 0;
+          padding: 0;
+          border: 0;
+          border-radius: 0;
+          background: transparent;
           align-content: start;
         }
 
+        .account-preference-group + .account-preference-group {
+          border-top: 1px solid var(--border);
+        }
+
+        .account-preference-group h3 {
+          margin: 0;
+          padding: 0.65rem 0.75rem 0.35rem;
+          color: var(--text-muted);
+          font-size: 0.75rem;
+          text-transform: uppercase;
+        }
+
         .account-preference-toggle {
-          display: grid;
-          grid-template-columns: auto 1fr;
-          gap: 0.45rem;
-          align-items: flex-start;
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: center;
+          min-height: 3.7rem;
           color: var(--text);
-          padding: 0.08rem 0;
+          padding: 0.65rem 0.75rem;
+          cursor: pointer;
+        }
+
+        .account-preference-toggle + .account-preference-toggle {
+          border-top: 1px solid var(--border);
         }
 
         .account-preference-toggle input {
-          margin-top: 0.25rem;
+          position: relative;
+          flex: 0 0 auto;
+          order: 2;
+          width: 2.65rem;
+          min-width: 2.65rem;
+          height: 1.5rem;
+          min-height: 1.5rem;
+          margin: 0;
+          padding: 0;
+          appearance: none;
+          -webkit-appearance: none;
+          border: 1px solid var(--border-2);
+          border-radius: 999px;
+          background: var(--surface-3);
+          cursor: pointer;
+        }
+
+        .account-preference-toggle input::after {
+          content: "";
+          position: absolute;
+          top: 0.16rem;
+          left: 0.16rem;
+          width: 1.05rem;
+          height: 1.05rem;
+          border-radius: 50%;
+          background: var(--text-muted);
+          transition:
+            transform 0.16s ease,
+            background 0.16s ease;
+        }
+
+        .account-preference-toggle input:checked {
+          border-color: rgba(255, 107, 53, 0.6);
+          background: rgba(255, 107, 53, 0.28);
+        }
+
+        .account-preference-toggle input:checked::after {
+          background: var(--accent);
+          transform: translateX(1.12rem);
         }
 
         .account-preference-toggle span {
           display: grid;
+          order: 1;
           gap: 0.12rem;
+          min-width: 0;
         }
 
         .account-preference-toggle .small {
@@ -1374,12 +1456,22 @@ export default function AccountPage() {
             display: grid;
           }
 
-          .account-verification-card,
-          .account-verification-card button {
+          .account-identity-card,
+          .account-identity-card button {
             width: 100%;
           }
 
-          .account-verification-card button {
+          .account-identity-card {
+            grid-template-columns: auto minmax(0, 1fr);
+          }
+
+          .account-verification-status,
+          .account-identity-card button {
+            grid-column: 1 / -1;
+            justify-self: start;
+          }
+
+          .account-identity-card button {
             justify-content: center;
           }
 

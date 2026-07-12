@@ -3,13 +3,11 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
-import SchedulePreviewCard from "@/components/dashboard-home/SchedulePreviewCard";
 import {
   AvailabilityRow,
   Booking,
   BookingRequest,
   Business,
-  ScheduleDay,
   Service,
   SetupStep,
   StaffMember,
@@ -32,33 +30,11 @@ export default function DashboardHome() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedScheduleDate, setSelectedScheduleDate] = useState(() =>
-    formatDateValue(new Date()),
-  );
-
   function formatDateValue(date: Date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-  }
-
-  function startOfDay(date: Date) {
-    const result = new Date(date);
-    result.setHours(0, 0, 0, 0);
-    return result;
-  }
-
-  function endOfDay(date: Date) {
-    const result = new Date(date);
-    result.setHours(23, 59, 59, 999);
-    return result;
-  }
-
-  function addDays(date: Date, days: number) {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
   }
 
   async function loadDashboard() {
@@ -270,6 +246,7 @@ export default function DashboardHome() {
   }, [requests]);
 
   const pendingActionCount = pendingBookings.length + pendingRescheduleCount;
+  const nextAppointment = upcomingBookings[0] || null;
   const primaryBusinessId = businesses[0]?.id;
   const primaryBusiness = businesses[0];
   const publishedCount = businesses.filter(
@@ -396,45 +373,6 @@ export default function DashboardHome() {
               : t("dashboardLayout.nav.calendar", "Calendar"),
           };
 
-  const scheduleDays = useMemo<ScheduleDay[]>(() => {
-    const today = startOfDay(new Date());
-
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(today, index);
-      const dateString = formatDateValue(date);
-
-      const dayBookings = bookings
-        .filter((booking) => {
-          const bookingDate = new Date(booking.start_at);
-          return (
-            booking.status === "confirmed" &&
-            bookingDate >= startOfDay(date) &&
-            bookingDate <= endOfDay(date)
-          );
-        })
-        .sort(
-          (a, b) =>
-            new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
-        );
-
-      return {
-        date,
-        dateString,
-        label:
-          index === 0
-            ? t("dashboardHome.schedule.today", "Today")
-            : index === 1
-              ? t("dashboardHome.schedule.tomorrow", "Tomorrow")
-              : date.toLocaleDateString(undefined, { weekday: "short" }),
-        shortLabel: date.toLocaleDateString(undefined, {
-          day: "numeric",
-          month: "short",
-        }),
-        bookings: dayBookings,
-      };
-    });
-  }, [bookings, t]);
-
   function bookingsLinkForDate(dateString: string, businessId?: string) {
     return `/dashboard/bookings?${new URLSearchParams({
       ...(businessId || primaryBusinessId
@@ -494,79 +432,105 @@ export default function DashboardHome() {
 
       {businesses.length > 0 && (
         <section className="dashboard-today-panel">
-          <div className="dashboard-today-main">
-            <div className="dashboard-today-heading">
-              <div>
-                <h2>
-                  {t("dashboardHome.today.title", "What needs attention today")}
-                </h2>
-              </div>
-              <span
-                className={
-                  readyToTakeBookings ? "today-status ready" : "today-status"
-                }
-              >
-                {todayStatusLabel}
-              </span>
-            </div>
-
-            <div className="dashboard-today-stats">
-              <Link
-                href="/dashboard/notifications"
-                className={
-                  pendingActionCount > 0 ? "today-stat urgent" : "today-stat"
-                }
-              >
-                <span className="today-stat-number">{pendingActionCount}</span>
-                <span className="today-stat-label">
-                  {t("dashboardHome.today.requests", "Needs attention")}
-                </span>
-              </Link>
-              <Link
-                href={bookingsLinkForDate(formatDateValue(new Date()))}
-                className="today-stat"
-              >
-                <span className="today-stat-number">
-                  {todayBookings.length}
-                </span>
-                <span className="today-stat-label">
-                  {t("dashboardHome.today.confirmedToday", "Today")}
-                </span>
-              </Link>
-              <Link href="/dashboard/bookings" className="today-stat">
-                <span className="today-stat-number">
-                  {upcomingBookings.length}
-                </span>
-                <span className="today-stat-label">
-                  {t("dashboardHome.today.upcoming", "Upcoming")}
-                </span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="dashboard-next-action">
-            <span className="small muted">
-              {t("dashboardHome.today.nextLabel", "Next action")}
+          <header className="dashboard-today-heading">
+            <h2>{t("dashboardHome.today.overviewTitle", "Your day")}</h2>
+            <span
+              className={
+                readyToTakeBookings ? "today-status ready" : "today-status"
+              }
+            >
+              {todayStatusLabel}
             </span>
-            <strong>{primaryNextAction.title}</strong>
-            <p className="small muted">{primaryNextAction.body}</p>
-            <Link href={primaryNextAction.href} className="btn btn-accent">
-              {primaryNextAction.cta}
-            </Link>
+          </header>
+
+          <div className="dashboard-today-grid">
+            <article className="today-next-card">
+              <span className="today-section-label">
+                {t("dashboardHome.today.nextAppointment", "Next appointment")}
+              </span>
+              {nextAppointment ? (
+                <>
+                  <div className="today-appointment-time">
+                    {new Date(nextAppointment.start_at).toLocaleDateString(
+                      undefined,
+                      { weekday: "short", day: "numeric", month: "short" },
+                    )}
+                    <strong>
+                      {new Date(nextAppointment.start_at).toLocaleTimeString(
+                        undefined,
+                        { hour: "2-digit", minute: "2-digit" },
+                      )}
+                    </strong>
+                  </div>
+                  <div className="today-appointment-copy">
+                    <strong>{nextAppointment.customer_name}</strong>
+                    <span>
+                      {nextAppointment.services?.name ||
+                        t("common.service", "Service")}
+                      {nextAppointment.staff_members?.name
+                        ? ` · ${nextAppointment.staff_members.name}`
+                        : ""}
+                    </span>
+                  </div>
+                  <Link
+                    href={bookingsLinkForDate(
+                      formatDateValue(new Date(nextAppointment.start_at)),
+                      nextAppointment.business_id,
+                    )}
+                    className="today-inline-link"
+                  >
+                    {t("dashboardHome.today.openCalendar", "Open in Calendar")}
+                  </Link>
+                </>
+              ) : (
+                <div className="today-empty-copy">
+                  <strong>
+                    {t(
+                      "dashboardHome.today.noUpcoming",
+                      "No upcoming appointments",
+                    )}
+                  </strong>
+                  <span>
+                    {t(
+                      "dashboardHome.today.noUpcomingBody",
+                      "New confirmed appointments will appear here.",
+                    )}
+                  </span>
+                </div>
+              )}
+            </article>
+
+            <article
+              className={
+                pendingActionCount > 0
+                  ? "today-focus-card urgent"
+                  : "today-focus-card"
+              }
+            >
+              <span className="today-section-label">
+                {t("dashboardHome.today.nextLabel", "Next action")}
+              </span>
+              <strong>{primaryNextAction.title}</strong>
+              <p>{primaryNextAction.body}</p>
+              <div className="today-focus-footer">
+                {pendingActionCount > 0 && (
+                  <span className="today-action-count">
+                    {pendingActionCount}
+                  </span>
+                )}
+                <Link href={primaryNextAction.href} className="btn btn-accent">
+                  {primaryNextAction.cta}
+                </Link>
+              </div>
+            </article>
           </div>
         </section>
       )}
 
-      <SchedulePreviewCard
-        scheduleDays={scheduleDays}
-        bookingsLinkForDate={bookingsLinkForDate}
-      />
-
       <style jsx>{`
         .dashboard-today-panel {
           display: grid;
-          grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.72fr);
-          gap: 1rem;
+          gap: 0.9rem;
           margin-bottom: 1.25rem;
           padding: 1rem;
           border: 1px solid var(--border);
@@ -574,21 +538,26 @@ export default function DashboardHome() {
           background: var(--surface);
         }
 
-        .dashboard-today-main,
-        .dashboard-next-action {
-          display: grid;
-          gap: 0.85rem;
-          align-content: start;
-        }
-
         .dashboard-today-panel h2,
         .dashboard-today-panel p {
-          margin-top: 0;
+          margin: 0;
         }
 
         .dashboard-today-heading {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: center;
+        }
+
+        .dashboard-today-heading h2 {
+          font-size: 1.3rem;
+        }
+
+        .dashboard-today-grid {
           display: grid;
-          gap: 0.5rem;
+          grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+          gap: 0.75rem;
         }
 
         .today-status {
@@ -606,97 +575,100 @@ export default function DashboardHome() {
           color: var(--success);
         }
 
-        .dashboard-today-stats {
+        .today-next-card,
+        .today-focus-card {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.6rem;
-        }
-
-        :global(.today-stat) {
-          display: grid;
-          grid-template-columns: 3rem minmax(0, 1fr);
-          gap: 0.8rem;
-          align-items: center;
+          gap: 0.55rem;
           min-width: 0;
-          padding: 0.75rem;
+          padding: 0.9rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
           background: var(--surface-2);
-          color: var(--text);
-          text-decoration: none;
         }
 
-        :global(.today-stat.urgent) {
+        .today-focus-card.urgent {
           border-color: rgba(255, 107, 53, 0.35);
           background: rgba(255, 107, 53, 0.08);
         }
 
-        :global(.today-stat-number) {
-          display: block;
-          min-width: 3rem;
-          color: inherit;
-          font-family: var(--font-display);
-          font-size: 1.8rem;
-          line-height: 1;
+        .today-section-label {
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          font-weight: 800;
+          text-transform: uppercase;
         }
 
-        :global(.today-stat-label) {
-          display: block;
-          overflow: hidden;
+        .today-appointment-time {
+          display: flex;
+          gap: 0.45rem;
+          align-items: baseline;
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          font-weight: 700;
+        }
+
+        .today-appointment-time strong {
+          color: var(--text);
+          font-size: 1.15rem;
+        }
+
+        .today-appointment-copy,
+        .today-empty-copy {
+          display: grid;
+          gap: 0.12rem;
+        }
+
+        .today-appointment-copy span,
+        .today-empty-copy span,
+        .today-focus-card p {
           color: var(--text-muted);
           font-size: 0.84rem;
-          font-weight: 800;
-          text-overflow: ellipsis;
-          white-space: normal;
         }
 
-        .dashboard-next-action {
-          padding-left: 1rem;
-          border-left: 1px solid var(--border);
-        }
-
-        .dashboard-next-action :global(.btn) {
+        :global(.today-inline-link) {
           width: fit-content;
+          color: var(--accent);
+          font-size: 0.82rem;
+          font-weight: 800;
+        }
+
+        .today-focus-footer {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: center;
+          margin-top: auto;
+        }
+
+        .today-action-count {
+          display: inline-flex;
+          width: 2rem;
+          height: 2rem;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          background: var(--accent);
+          color: var(--bg);
+          font-weight: 900;
         }
 
         @media (max-width: 820px) {
-          .dashboard-today-panel {
+          .dashboard-today-grid {
             grid-template-columns: 1fr;
-          }
-
-          .dashboard-next-action {
-            padding-left: 0;
-            padding-top: 1rem;
-            border-left: 0;
-            border-top: 1px solid var(--border);
           }
         }
 
         @media (max-width: 560px) {
-          .dashboard-today-stats {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.45rem;
+          .dashboard-today-panel {
+            padding: 0.75rem;
           }
 
-          :global(.today-stat) {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.25rem;
-            justify-items: center;
-            padding: 0.65rem 0.4rem;
-            text-align: center;
+          .dashboard-today-heading {
+            align-items: flex-start;
+            flex-direction: column;
           }
 
-          :global(.today-stat-number) {
-            min-width: 0;
-            font-size: 1.45rem;
-          }
-
-          :global(.today-stat-label) {
-            font-size: 0.72rem;
-          }
-
-          .dashboard-next-action :global(.btn) {
+          .today-focus-footer :global(.btn) {
             width: 100%;
             justify-content: center;
           }

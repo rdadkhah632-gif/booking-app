@@ -1767,6 +1767,7 @@ export const en: TranslationTree = {
   "dashboardLayout.noActions": "No actions",
   "account.pageTitle": "My account",
   "account.pageSubtitle": "Personal details, language and security.",
+  "account.profileTitle": "Profile",
   "account.kicker": "Account",
   "account.businessSettingsKicker": "Business settings are separate",
   "account.businessSettingsTitle": "Need to change your business setup?",
@@ -1797,7 +1798,8 @@ export const en: TranslationTree = {
     "Verification email sent. Check your inbox and spam folder.",
   "account.emailPreferences.kicker": "Email preferences",
   "account.emailPreferences.title": "Email updates",
-  "account.emailPreferences.body": "Choose which email updates you want.",
+  "account.emailPreferences.body":
+    "Choose your updates. Emails use your saved language.",
   "account.emailPreferences.setupRequired": "Email updates unavailable",
   "account.emailPreferences.setupRequiredBody":
     "These settings are not available yet. Important booking emails remain on.",
@@ -3843,6 +3845,12 @@ export const en: TranslationTree = {
   "dashboardHome.today.title": "What needs attention today",
   "dashboardHome.today.body":
     "Requests, appointments and the next setup action in one place.",
+  "dashboardHome.today.overviewTitle": "Your day",
+  "dashboardHome.today.nextAppointment": "Next appointment",
+  "dashboardHome.today.openCalendar": "Open in Calendar",
+  "dashboardHome.today.noUpcoming": "No upcoming appointments",
+  "dashboardHome.today.noUpcomingBody":
+    "New confirmed appointments will appear here.",
   "dashboardHome.today.requests": "Needs attention",
   "dashboardHome.today.confirmedToday": "Today",
   "dashboardHome.today.upcoming": "Upcoming",
@@ -3887,6 +3895,7 @@ export const en: TranslationTree = {
   "dashboardLayout.staffNav.today": "Today",
   "dashboardLayout.staffNav.inbox": "Inbox",
   "dashboardBookings.emptyCalendar.readyTitle": "Ready to take bookings?",
+  "dashboardBookings.week.returnToToday": "Return to today",
   "dashboardBookings.emptyCalendar.readyBody":
     "Complete setup, preview the customer profile, then share the booking page when you are ready.",
   "dashboardBookings.empty.completeSetup": "Complete setup",
