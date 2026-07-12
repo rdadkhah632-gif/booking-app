@@ -856,25 +856,67 @@ export default function DashboardLayout({
 
         @media (max-width: 720px) {
           .sidebar {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-rows: auto auto;
+            gap: 0.45rem 0.65rem;
             overflow: visible;
+            padding: 0.6rem 0.7rem;
           }
 
           .sidebar-nav {
-            grid-template-columns: minmax(0, 1fr) auto;
-            align-items: start;
+            display: contents;
           }
 
           .sidebar-logo {
-            padding-right: 0.2rem;
+            grid-column: 1;
+            grid-row: 1;
+            align-self: center;
+            min-width: 0;
+            margin: 0;
+            padding: 0;
           }
 
           .sidebar-main-links {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.25rem;
             min-width: 0;
+            overflow: visible;
           }
 
           .sidebar-account {
+            grid-column: 2;
+            grid-row: 1;
             position: relative;
             display: block;
+          }
+
+          .sidebar-link {
+            width: 100%;
+            min-width: 0;
+            min-height: 2.4rem;
+            justify-content: center;
+            padding: 0.4rem 0.25rem;
+            border-radius: 7px;
+            font-size: 0.75rem;
+            line-height: 1.1;
+            text-align: center;
+            white-space: normal;
+          }
+
+          .sidebar-link span {
+            overflow: hidden;
+            max-width: 100%;
+            text-overflow: ellipsis;
+          }
+
+          .sidebar-mobile-account summary {
+            min-height: 2.4rem;
+            padding: 0.38rem 0.55rem;
+            border-radius: 7px;
           }
 
           .sidebar-account-actions-desktop {

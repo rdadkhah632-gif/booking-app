@@ -691,12 +691,14 @@ export default function Businesses() {
         "dashboardBusinesses.pageTitle",
         businesses.length > 0 ? "Setup" : "Create your business",
       )}
-      subtitle={t(
-        "dashboardBusinesses.pageSubtitle",
-        businesses.length > 0
-          ? "Get your business ready for customers to book."
-          : "Create your first business profile, then add services, team, working hours and publish it to Mirëbook.",
-      )}
+      subtitle={
+        businesses.length === 0
+          ? t(
+              "dashboardBusinesses.pageSubtitle",
+              "Create your first business profile, then add services, team, working hours and publish it to Mirëbook.",
+            )
+          : undefined
+      }
     >
       {businesses.length === 0 && <BusinessSetupHero />}
 
@@ -727,12 +729,6 @@ export default function Businesses() {
                 </small>
               </span>
               <div>
-                <p className="setup-summary-label">
-                  {t(
-                    "dashboardBusinesses.setup.outcome",
-                    "Get ready to accept bookings",
-                  )}
-                </p>
                 <h2>
                   {primaryReadiness.publicListingReady
                     ? t(
@@ -836,7 +832,7 @@ export default function Businesses() {
                   </span>
                   <span className="setup-step-copy">
                     <strong>{item.label}</strong>
-                    <small>{item.helper}</small>
+                    {!item.complete && <small>{item.helper}</small>}
                   </span>
                   <span className="setup-step-action">
                     {item.complete

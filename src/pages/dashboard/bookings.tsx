@@ -22,6 +22,7 @@ import {
   minutesSinceMidnightInTimeZone,
   zonedDateTimeToUtc,
 } from "@/lib/timezone";
+import MobileDayCalendar from "@/components/calendar/MobileDayCalendar";
 
 function toDateInputValue(date: Date) {
   const yyyy = date.getFullYear();
@@ -941,9 +942,6 @@ export default function Bookings() {
       ) || null,
     [weekBookings, selectedCalendarBookingId],
   );
-  const weekPendingCount = weekBookings.filter(
-    (booking) => booking.status === "pending",
-  ).length;
   const weekLabel = `${weekStartDate.toLocaleDateString(undefined, {
     day: "numeric",
     month: "short",
@@ -1661,103 +1659,76 @@ export default function Bookings() {
     );
     const showCurrentTime =
       currentMinutes >= startHour * 60 && currentMinutes <= endHour * 60;
+    const selectedGroup =
+      weekGroups.find((group) => group.dateKey === selectedDate) ||
+      weekGroups[0];
+    const mobileWindow = scheduleWindowFor(selectedGroup?.bookings || []);
+    const mobileAppointments = (selectedGroup?.bookings || []).map(
+      (booking) => {
+        const time = bookingTime(booking);
+
+        return {
+          id: booking.id,
+          startMinutes: time.startMinutes,
+          endMinutes: time.endMinutes,
+          timeLabel: time.label,
+          title:
+            booking.customer_name ||
+            t("dashboardBookings.card.customerFallback", "Customer"),
+          subtitle:
+            booking.services?.name ||
+            t("dashboardBookings.card.noService", "No service recorded"),
+          meta: bookingStaffLabel(booking),
+          status: booking.status,
+          statusLabel: statusLabel(booking.status),
+        };
+      },
+    );
 
     return (
       <section className="week-calendar">
-        <div className="week-calendar-summary">
-          <div>
-            <strong>{weekLabel}</strong>
-            <span>
-              {weekBookings.length}{" "}
-              {weekBookings.length === 1
-                ? t("dashboardBookings.appointmentCount", "appointment")
-                : t("dashboardBookings.appointments", "appointments")}
-            </span>
-          </div>
-          {weekPendingCount > 0 && (
-            <span className="calendar-pending">
-              {weekPendingCount}{" "}
-              {t("dashboardBookings.needsApproval", "need approval")}
-            </span>
-          )}
-        </div>
-
-        <div
-          className="mobile-week-agenda"
-          aria-label={t("dashboardBookings.mobileAgenda.label", "Week agenda")}
-        >
-          {weekGroups.map((group) => (
-            <section
-              key={group.dateKey}
-              className={
-                group.dateKey === selectedDate
-                  ? "mobile-agenda-day active"
-                  : "mobile-agenda-day"
-              }
-            >
-              <button
-                type="button"
-                className="mobile-agenda-day-heading"
-                onClick={() => changeCalendarDate(group.dateKey)}
-              >
-                <span>{group.shortLabel}</span>
-                <strong>
-                  {group.bookings.length}{" "}
-                  {group.bookings.length === 1
-                    ? t("dashboardBookings.appointmentCount", "appointment")
-                    : t("dashboardBookings.appointments", "appointments")}
-                </strong>
-              </button>
-
-              {group.bookings.length > 0 ? (
-                <div className="mobile-agenda-list">
-                  {group.bookings.map((booking) => {
-                    const time = bookingTime(booking);
-
-                    return (
-                      <button
-                        key={booking.id}
-                        type="button"
-                        className={`mobile-agenda-booking ${booking.status}`}
-                        onClick={() => {
-                          setManualBookingOpen(false);
-                          changeCalendarDate(group.dateKey);
-                          setSelectedCalendarBookingId(booking.id);
-                        }}
-                      >
-                        <span>{time.label}</span>
-                        <strong>
-                          {booking.customer_name ||
-                            t(
-                              "dashboardBookings.card.customerFallback",
-                              "Customer",
-                            )}
-                        </strong>
-                        <small>
-                          {booking.services?.name ||
-                            t(
-                              "dashboardBookings.card.noService",
-                              "No service recorded",
-                            )}
-                          {" · "}
-                          {bookingStaffLabel(booking)}
-                        </small>
-                        <em>{statusLabel(booking.status)}</em>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="small muted mobile-agenda-empty">
-                  {t(
-                    "dashboardBookings.calendar.emptySlotTitle",
-                    "No appointments on this day",
-                  )}
-                </p>
-              )}
-            </section>
-          ))}
-        </div>
+        {selectedGroup && (
+          <MobileDayCalendar
+            ariaLabel={t(
+              "dashboardBookings.mobileAgenda.label",
+              "Day calendar",
+            )}
+            days={weekGroups.map((group) => ({
+              key: group.dateKey,
+              weekday: group.date.toLocaleDateString(undefined, {
+                weekday: "short",
+              }),
+              date: String(group.date.getDate()),
+              count: group.bookings.length,
+              isToday: group.dateKey === todayKey,
+            }))}
+            selectedDayKey={selectedGroup.dateKey}
+            selectedDayLabel={selectedGroup.label}
+            appointments={mobileAppointments}
+            selectedAppointmentId={selectedCalendarBookingId}
+            startHour={mobileWindow.startHour}
+            endHour={mobileWindow.endHour}
+            currentTimeMinutes={
+              selectedGroup.dateKey === todayKey ? currentMinutes : null
+            }
+            emptyLabel={t(
+              "dashboardBookings.calendar.emptySlotTitle",
+              "No appointments on this day",
+            )}
+            addAtLabel={t("dashboardBookings.manual.addAt", "Add appointment")}
+            onSelectDay={changeCalendarDate}
+            onSelectAppointment={(bookingId) => {
+              setManualBookingOpen(false);
+              setSelectedCalendarBookingId(bookingId);
+            }}
+            onAddSlot={(minutes) =>
+              openManualBookingAt({
+                date: selectedGroup.dateKey,
+                time: timeInputForMinutes(minutes),
+              })
+            }
+          />
+        )}
 
         <div className="week-calendar-scroll">
           <div className="week-calendar-grid">
@@ -2802,7 +2773,7 @@ export default function Bookings() {
         :global(.week-calendar) {
           display: grid;
           gap: 0.85rem;
-          grid-template-rows: auto minmax(0, 1fr);
+          grid-template-rows: minmax(0, 1fr);
           height: 100%;
           min-width: 0;
           max-width: 100%;
@@ -3386,8 +3357,8 @@ export default function Bookings() {
 
         @media (max-width: 700px) {
           .calendar-workspace {
-            height: calc(100dvh - 12.5rem);
-            min-height: 30rem;
+            height: calc(100dvh - 11rem);
+            min-height: 32rem;
           }
 
           .calendar-date-controls {
@@ -3396,7 +3367,7 @@ export default function Bookings() {
 
           .calendar-shell,
           .calendar-empty-state {
-            padding: 0.7rem;
+            padding: 0.55rem;
           }
 
           .manual-booking-footer,
@@ -3410,6 +3381,11 @@ export default function Bookings() {
             grid-template-columns: 1fr;
           }
 
+          .manual-booking-heading {
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start;
+          }
+
           .manual-booking-notes,
           .manual-booking-footer,
           .manual-booking-error,
@@ -3418,13 +3394,18 @@ export default function Bookings() {
             grid-column: auto;
           }
 
-          .manual-booking-heading :global(.btn),
           .manual-booking-actions :global(.btn),
           .manual-booking-footer :global(.btn),
-          .manual-booking-heading button,
           .manual-booking-actions a,
           .manual-booking-footer button {
             width: 100%;
+            justify-content: center;
+          }
+
+          .manual-booking-heading :global(.btn),
+          .manual-booking-heading button {
+            width: auto;
+            min-width: 5rem;
             justify-content: center;
           }
 
@@ -3437,14 +3418,19 @@ export default function Bookings() {
             width: 100%;
           }
 
+          .calendar-toolbar > div:first-child {
+            display: none;
+          }
+
           .calendar-date-controls {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-columns: minmax(0, 1fr) 2.75rem;
+            gap: 0.45rem;
             width: 100%;
           }
 
           .calendar-week-stepper {
-            grid-column: 1 / -1;
+            grid-column: 1;
             width: 100%;
           }
 
@@ -3453,33 +3439,69 @@ export default function Bookings() {
           }
 
           .calendar-date-controls input {
-            width: 100%;
+            grid-column: 2;
+            grid-row: 1;
+            width: 2.75rem;
             max-width: none;
             min-width: 0;
+            padding: 0.45rem;
+            color: transparent;
           }
 
           .calendar-staff-filter {
-            grid-column: 1 / -1;
+            grid-column: 1;
+            grid-row: 2;
             width: 100%;
-            justify-content: space-between;
+            min-height: 2.75rem;
+            padding-left: 0.25rem;
+          }
+
+          .calendar-staff-filter > span {
+            display: none;
           }
 
           .calendar-staff-filter select {
-            max-width: min(65vw, 18rem);
+            max-width: none;
+            width: 100%;
           }
 
           .calendar-add-button {
-            width: 100%;
-            grid-column: 1 / -1;
+            width: 2.75rem;
+            min-width: 2.75rem;
+            grid-column: 2;
+            grid-row: 2;
             justify-content: center;
+            overflow: hidden;
+            padding: 0;
+            color: transparent;
+            position: relative;
+          }
+
+          .calendar-add-button::after {
+            content: "+";
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: var(--bg);
+            font-size: 1.35rem;
+            font-weight: 900;
           }
 
           :global(.week-calendar) {
-            padding: 0.65rem;
-            gap: 0.65rem;
+            grid-template-rows: minmax(0, 1fr);
+            padding: 0;
+            gap: 0;
+            border-radius: 8px;
+            background: transparent;
+            box-shadow: none;
           }
 
           :global(.week-calendar-scroll) {
+            display: none;
+          }
+
+          :global(.week-calendar-summary) {
             display: none;
           }
 

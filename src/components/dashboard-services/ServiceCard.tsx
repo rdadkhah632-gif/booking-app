@@ -107,7 +107,6 @@ export default function ServiceCard({
                   }
                   tone={isBookable ? "success" : "warning"}
                 />
-
               </div>
 
               {!isEditing && (
@@ -117,54 +116,24 @@ export default function ServiceCard({
                     · £{Number(service.price).toFixed(2)}
                   </p>
 
-                  {service.description ? (
+                  {service.description && (
                     <p className="small muted service-line">
                       {service.description}
                     </p>
-                  ) : (
-                    <p className="small muted service-line">
-                      {t(
-                        "dashboardServices.card.noDescription",
-                        "No description added yet.",
-                      )}
-                    </p>
                   )}
 
-                  <div
-                    className="card service-bookability-card"
-                    style={{ background: "var(--surface-2)" }}
+                  <p
+                    className={`small service-assignment ${isBookable ? "ready" : "needs-setup"}`}
                   >
-                    <strong>
-                      {isBookable
-                        ? t(
-                            "dashboardServices.card.customersCanBook",
-                            "Customers can book this service",
+                    {isBookable
+                      ? assignedStaff
+                          .map(
+                            (staff) =>
+                              `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`,
                           )
-                        : t(
-                            "dashboardServices.card.completeSetup",
-                            "Complete setup before customers can book this service",
-                          )}
-                    </strong>
-
-                    <p className="small muted service-line">
-                      {serviceReadinessText(service)}
-                    </p>
-
-                    <p className="small muted service-line">
-                      {t("support.business.staff", "Staff")}:{" "}
-                      {assignedStaff.length > 0
-                        ? assignedStaff
-                            .map(
-                              (staff) =>
-                                `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`,
-                            )
-                            .join(", ")
-                        : t(
-                            "dashboardServices.card.assignStaffHint",
-                            "Assign active staff to make this service bookable.",
-                          )}
-                    </p>
-                  </div>
+                          .join(", ")
+                      : serviceReadinessText(service)}
+                  </p>
                 </>
               )}
 
@@ -296,7 +265,9 @@ export default function ServiceCard({
               )}
             </div>
 
-            <div className="service-card-actions">
+            <div
+              className={`service-card-actions ${isEditing ? "editing" : ""}`}
+            >
               {isEditing ? (
                 <>
                   <button
@@ -397,18 +368,26 @@ export default function ServiceCard({
           margin-top: 0;
         }
 
-        .service-bookability-card {
-          display: grid;
-          gap: 0.45rem;
-          padding: 0.85rem;
-          margin-top: 0.25rem;
-          border-color: ${isBookable
-            ? "rgba(45,212,191,0.22)"
-            : "rgba(255,190,11,0.25)"};
+        .service-assignment {
+          position: relative;
+          margin: 0.1rem 0 0;
+          padding-left: 0.85rem;
+          color: var(--text-muted);
         }
 
-        .service-bookability-card p {
-          margin-top: 0;
+        .service-assignment::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0.56rem;
+          width: 0.42rem;
+          height: 0.42rem;
+          border-radius: 50%;
+          background: var(--warning);
+        }
+
+        .service-assignment.ready::before {
+          background: var(--success);
         }
 
         .service-edit-form {
@@ -457,12 +436,35 @@ export default function ServiceCard({
         }
 
         @media (max-width: 640px) {
-          .service-card-actions,
+          .service-card-content {
+            padding: 0.9rem;
+          }
+
+          .service-main-copy {
+            min-width: 0;
+          }
+
+          .service-card-actions {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.4rem;
+          }
+
+          .service-card-actions.editing {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
           .service-card-actions :global(.btn),
           .service-card-actions a,
           .service-card-actions button {
             width: 100%;
             justify-content: center;
+            min-width: 0;
+            padding: 0.55rem 0.35rem;
+            font-size: 0.76rem;
+            line-height: 1.1;
+            white-space: normal;
           }
         }
       `}</style>

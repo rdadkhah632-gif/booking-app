@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import MobileDayCalendar from "@/components/calendar/MobileDayCalendar";
 
 type StaffProfile = {
   id: string;
@@ -301,9 +302,6 @@ export default function StaffCalendarPage() {
       weekBookings.find((booking) => booking.id === selectedBookingId) || null,
     [selectedBookingId, weekBookings],
   );
-  const weekPendingCount = weekBookings.filter(
-    (booking) => booking.status === "pending",
-  ).length;
   const weekLabel = `${weekStartDate.toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "short",
@@ -505,90 +503,65 @@ export default function StaffCalendarPage() {
     const currentMinutes = minutesSinceMidnight(now);
     const showCurrentTime =
       currentMinutes >= startHour * 60 && currentMinutes <= endHour * 60;
+    const selectedGroup =
+      weekGroups.find((group) => group.dateString === selectedDate) ||
+      weekGroups[0];
+    const mobileWindow = scheduleWindowFor(selectedGroup?.bookings || []);
+    const mobileAppointments = (selectedGroup?.bookings || []).map(
+      (booking) => {
+        const time = bookingTime(booking);
+
+        return {
+          id: booking.id,
+          startMinutes: minutesSinceMidnight(time.start),
+          endMinutes: minutesSinceMidnight(time.end),
+          timeLabel: time.label,
+          title: booking.customer_name || t("common.customer", "Customer"),
+          subtitle: serviceName(booking, t("common.service", "Service")),
+          status: booking.status,
+          statusLabel: statusLabel(booking.status),
+        };
+      },
+    );
 
     return (
       <section className="staff-week-calendar">
-        <div className="staff-week-summary">
-          <div>
-            <strong>{weekLabel}</strong>
-            <span>
-              {weekBookings.length}{" "}
-              {weekBookings.length === 1
-                ? t("dashboardBookings.appointmentCount", "appointment")
-                : t("dashboardBookings.appointments", "appointments")}
-            </span>
-          </div>
-          {weekPendingCount > 0 && (
-            <span className="staff-week-pending">
-              {weekPendingCount}{" "}
-              {t("staffCalendar.pendingCountLabel", "awaiting approval")}
-            </span>
-          )}
-        </div>
-
-        <div
-          className="staff-mobile-week-agenda"
-          aria-label={t("staffCalendar.mobileAgenda.label", "Week agenda")}
-        >
-          {weekGroups.map((group) => (
-            <section
-              key={group.dateString}
-              className={
-                group.dateString === selectedDate
-                  ? "staff-mobile-agenda-day active"
-                  : "staff-mobile-agenda-day"
-              }
-            >
-              <button
-                type="button"
-                className="staff-mobile-agenda-day-heading"
-                onClick={() => changeCalendarDate(group.dateString)}
-              >
-                <span>{group.shortLabel}</span>
-                <strong>
-                  {group.bookings.length}{" "}
-                  {group.bookings.length === 1
-                    ? t("dashboardBookings.appointmentCount", "appointment")
-                    : t("dashboardBookings.appointments", "appointments")}
-                </strong>
-              </button>
-
-              {group.bookings.length > 0 ? (
-                <div className="staff-mobile-agenda-list">
-                  {group.bookings.map((booking) => {
-                    const time = bookingTime(booking);
-
-                    return (
-                      <button
-                        key={booking.id}
-                        type="button"
-                        className={`staff-mobile-agenda-booking ${booking.status}`}
-                        onClick={() => {
-                          changeCalendarDate(group.dateString);
-                          setSelectedBookingId(booking.id);
-                        }}
-                      >
-                        <span>{time.label}</span>
-                        <strong>
-                          {booking.customer_name ||
-                            t("common.customer", "Customer")}
-                        </strong>
-                        <small>
-                          {serviceName(booking, t("common.service", "Service"))}
-                        </small>
-                        <em>{statusLabel(booking.status)}</em>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="small muted staff-mobile-agenda-empty">
-                  {t("staffCalendar.emptyDayShort", "No assigned appointments")}
-                </p>
-              )}
-            </section>
-          ))}
-        </div>
+        {selectedGroup && (
+          <MobileDayCalendar
+            ariaLabel={t("staffCalendar.mobileAgenda.label", "Day calendar")}
+            days={weekGroups.map((group) => ({
+              key: group.dateString,
+              weekday: group.date.toLocaleDateString(dateLocale, {
+                weekday: "short",
+              }),
+              date: String(group.date.getDate()),
+              count: group.bookings.length,
+              isToday: group.dateString === todayKey,
+            }))}
+            selectedDayKey={selectedGroup.dateString}
+            selectedDayLabel={selectedGroup.date.toLocaleDateString(
+              dateLocale,
+              {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              },
+            )}
+            appointments={mobileAppointments}
+            selectedAppointmentId={selectedBookingId}
+            startHour={mobileWindow.startHour}
+            endHour={mobileWindow.endHour}
+            currentTimeMinutes={
+              selectedGroup.dateString === todayKey ? currentMinutes : null
+            }
+            emptyLabel={t(
+              "staffCalendar.emptyDayShort",
+              "No assigned appointments",
+            )}
+            onSelectDay={changeCalendarDate}
+            onSelectAppointment={setSelectedBookingId}
+          />
+        )}
 
         <div className="staff-week-scroll">
           <div className="staff-week-grid">
@@ -840,64 +813,52 @@ export default function StaffCalendarPage() {
         {!loading && !error && staffProfile && (
           <>
             <section className="staff-calendar-toolbar">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => moveWeek(-1)}
+              <div
+                className="staff-week-stepper"
+                aria-label={t(
+                  "dashboardBookings.week.controls",
+                  "Week controls",
+                )}
               >
-                {t("dashboardBookings.week.previous", "Previous")}
-              </button>
-
-              <div>
-                <h2>{weekLabel}</h2>
-              </div>
-
-              <div className="staff-calendar-actions">
                 <button
                   type="button"
-                  className="btn btn-ghost"
+                  className="staff-step-button"
+                  onClick={() => moveWeek(-1)}
+                  aria-label={t("dashboardBookings.week.previous", "Previous")}
+                >
+                  <span aria-hidden="true">‹</span>
+                </button>
+                <button
+                  type="button"
+                  className="staff-today-button"
                   onClick={goToToday}
                 >
                   {t("dashboardHome.summary.today", "Today")}
                 </button>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(event) => changeCalendarDate(event.target.value)}
-                  aria-label={t(
-                    "dashboardBookings.filters.jumpDate",
-                    "Jump to date",
-                  )}
-                />
+                <button
+                  type="button"
+                  className="staff-step-button"
+                  onClick={() => moveWeek(1)}
+                  aria-label={t("dashboardBookings.week.next", "Next")}
+                >
+                  <span aria-hidden="true">›</span>
+                </button>
               </div>
 
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => moveWeek(1)}
-              >
-                {t("dashboardBookings.week.next", "Next")}
-              </button>
+              <strong className="staff-week-label">{weekLabel}</strong>
+
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(event) => changeCalendarDate(event.target.value)}
+                aria-label={t(
+                  "dashboardBookings.filters.jumpDate",
+                  "Jump to date",
+                )}
+              />
             </section>
 
-            {weekBookings.length > 0 ? (
-              renderWeekCalendar()
-            ) : (
-              <div className="staff-calendar-empty">
-                <h3>
-                  {t(
-                    "staffCalendar.emptyWeekTitle",
-                    "No appointments this week",
-                  )}
-                </h3>
-                <p className="muted">
-                  {t(
-                    "staffCalendar.emptyWeekBody",
-                    "Assigned appointments will appear on this week's schedule.",
-                  )}
-                </p>
-              </div>
-            )}
+            {renderWeekCalendar()}
 
             {renderSelectedBooking()}
           </>
@@ -940,27 +901,54 @@ export default function StaffCalendarPage() {
           min-width: 0;
         }
 
-        .staff-calendar-toolbar h2 {
-          margin: 0;
-          font-family: var(--font-display);
-        }
-
-        .staff-calendar-actions {
-          display: flex;
-          gap: 0.65rem;
+        .staff-week-stepper {
+          display: inline-flex;
           align-items: center;
-          flex-wrap: wrap;
-          min-width: 0;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface-2);
         }
 
-        .staff-calendar-actions input {
+        .staff-step-button,
+        .staff-today-button {
+          min-height: 2.55rem;
+          border: 0;
+          background: transparent;
+          color: var(--text);
+          font: inherit;
+          font-weight: 900;
+        }
+
+        .staff-step-button {
+          width: 2.75rem;
+          padding: 0;
+          font-size: 1.25rem;
+        }
+
+        .staff-today-button {
+          min-width: 5.2rem;
+          padding: 0 0.85rem;
+          border-right: 1px solid var(--border);
+          border-left: 1px solid var(--border);
+        }
+
+        .staff-calendar-toolbar input {
+          width: auto;
           min-height: 2.55rem;
           border: 1px solid var(--border);
           background: var(--surface-2);
           color: var(--text);
-          border-radius: var(--radius);
+          border-radius: 8px;
           color-scheme: dark;
           padding: 0.55rem 0.7rem;
+        }
+
+        .staff-week-label {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .staff-calendar-success {
@@ -979,7 +967,7 @@ export default function StaffCalendarPage() {
         .staff-week-calendar {
           display: grid;
           gap: 0.85rem;
-          grid-template-rows: auto minmax(0, 1fr);
+          grid-template-rows: minmax(0, 1fr);
           height: 100%;
           min-width: 0;
           max-width: 100%;
@@ -1006,7 +994,7 @@ export default function StaffCalendarPage() {
         :global(.staff-week-calendar) {
           display: grid;
           gap: 0.85rem;
-          grid-template-rows: auto minmax(0, 1fr);
+          grid-template-rows: minmax(0, 1fr);
           height: 100%;
           min-width: 0;
           max-width: 100%;
@@ -1759,16 +1747,40 @@ export default function StaffCalendarPage() {
 
         @media (max-width: 760px) {
           .staff-workspace-page {
-            height: calc(100dvh - 12.5rem);
-            min-height: 30rem;
+            height: calc(100dvh - 11rem);
+            min-height: 32rem;
           }
 
           .staff-calendar-toolbar,
-          .staff-calendar-actions,
           .staff-selected-heading,
           .staff-selected-card {
             display: grid;
             align-items: stretch;
+          }
+
+          .staff-calendar-toolbar {
+            grid-template-columns: minmax(0, 1fr) 2.75rem;
+            gap: 0.45rem;
+            padding: 0.55rem;
+          }
+
+          .staff-week-stepper {
+            width: 100%;
+          }
+
+          .staff-week-stepper button {
+            flex: 1 1 0;
+          }
+
+          .staff-calendar-toolbar input {
+            width: 2.75rem;
+            min-width: 2.75rem;
+            padding: 0.45rem;
+            color: transparent;
+          }
+
+          .staff-week-label {
+            display: none;
           }
 
           .staff-selected-appointment {
@@ -1780,9 +1792,6 @@ export default function StaffCalendarPage() {
             max-height: min(70vh, 36rem);
           }
 
-          .staff-calendar-actions,
-          .staff-calendar-actions input,
-          .staff-calendar-toolbar :global(.btn),
           .staff-calendar-booking-actions :global(.btn),
           .staff-calendar-booking-actions a {
             width: 100%;
@@ -1790,11 +1799,21 @@ export default function StaffCalendarPage() {
           }
 
           .staff-week-calendar {
-            padding: 0.6rem;
+            grid-template-rows: minmax(0, 1fr);
+            padding: 0;
+            gap: 0;
+            border-radius: 8px;
+            background: transparent;
+            box-shadow: none;
           }
 
           :global(.staff-week-calendar) {
-            padding: 0.6rem;
+            grid-template-rows: minmax(0, 1fr);
+            padding: 0;
+            gap: 0;
+            border-radius: 8px;
+            background: transparent;
+            box-shadow: none;
           }
 
           .staff-week-scroll {
@@ -1802,6 +1821,11 @@ export default function StaffCalendarPage() {
           }
 
           :global(.staff-week-scroll) {
+            display: none;
+          }
+
+          .staff-week-summary,
+          :global(.staff-week-summary) {
             display: none;
           }
 

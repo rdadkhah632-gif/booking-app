@@ -26,10 +26,6 @@ export default function AvailabilityStats({ stats }: Props) {
         {t("dashboardAvailability.stats.openDays", "Open days")}
       </span>
       <span>
-        <strong>{stats.closedDays}</strong>{" "}
-        {t("dashboardAvailability.stats.closedDays", "Closed days")}
-      </span>
-      <span>
         <strong>{formatHours(stats.totalHours)}</strong>{" "}
         {t("dashboardAvailability.stats.weeklyHoursShort", "hours/week")}
       </span>
@@ -86,11 +82,14 @@ export default function AvailabilityStats({ stats }: Props) {
         @media (max-width: 560px) {
           .availability-summary-strip {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
           }
 
           .availability-summary-strip span {
             justify-content: center;
+            min-width: 0;
+            padding-inline: 0.35rem;
+            text-align: center;
           }
         }
       `}</style>
