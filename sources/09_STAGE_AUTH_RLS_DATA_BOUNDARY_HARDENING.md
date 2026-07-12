@@ -1353,6 +1353,10 @@ Status: implemented; targeted deployed QA required.
 - manual appointments are derived server-side from the submitted date, time
   and business timezone; a second client timestamp can no longer contradict
   the visible form, and past appointments are rejected
+- the global Add appointment form now synchronizes native date/time input
+  events and reconstructs its submission draft from the values visibly present
+  in the form, preventing a stale calendar-week draft from overriding the
+  appointment the owner reviewed before submission
 - business and staff Inbox booking rows now show customer, service and
   appointment time when a linked booking is available
 - Inbox and Staff Today links include the appointment date and booking id so

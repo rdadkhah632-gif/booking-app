@@ -110,6 +110,23 @@ const emptyManualBookingDraft: ManualBookingDraft = {
   time: "09:00",
 };
 
+function manualBookingDraftFromForm(form: HTMLFormElement) {
+  const values = new FormData(form);
+  const field = (name: keyof ManualBookingDraft) =>
+    String(values.get(name) || "");
+
+  return {
+    customerName: field("customerName"),
+    customerEmail: field("customerEmail"),
+    customerPhone: field("customerPhone"),
+    customerNotes: field("customerNotes"),
+    serviceId: field("serviceId"),
+    staffMemberId: field("staffMemberId"),
+    date: field("date"),
+    time: field("time"),
+  } satisfies ManualBookingDraft;
+}
+
 function dateKeyForDate(date: Date) {
   return toDateInputValue(date);
 }
@@ -2140,7 +2157,11 @@ export default function Bookings() {
                         className="manual-booking-form"
                         onSubmit={(event) => {
                           event.preventDefault();
-                          void createManualBooking(manualBooking);
+                          const submittedDraft = manualBookingDraftFromForm(
+                            event.currentTarget,
+                          );
+                          setManualBooking(submittedDraft);
+                          void createManualBooking(submittedDraft);
                         }}
                       >
                         <label>
@@ -2292,10 +2313,10 @@ export default function Bookings() {
                             name="date"
                             type="date"
                             value={manualBooking.date}
-                            onChange={(event) =>
+                            onInput={(event) =>
                               updateManualBookingField(
                                 "date",
-                                event.target.value,
+                                event.currentTarget.value,
                               )
                             }
                           />
@@ -2307,10 +2328,10 @@ export default function Bookings() {
                             name="time"
                             type="time"
                             value={manualBooking.time}
-                            onChange={(event) =>
+                            onInput={(event) =>
                               updateManualBookingField(
                                 "time",
-                                event.target.value,
+                                event.currentTarget.value,
                               )
                             }
                           />
