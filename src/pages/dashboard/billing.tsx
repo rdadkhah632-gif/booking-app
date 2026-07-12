@@ -31,9 +31,7 @@ export default function DashboardBillingPage() {
   const [selectedBusinessId, setSelectedBusinessId] = useState("");
   const [schemaAvailable, setSchemaAvailable] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [startingCheckout, setStartingCheckout] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const selectedBusiness = useMemo(
     () =>
@@ -191,63 +189,6 @@ export default function DashboardBillingPage() {
     });
   }
 
-  async function startCheckout() {
-    if (!selectedBusiness || startingCheckout) return;
-
-    setStartingCheckout(true);
-    setCheckoutError(null);
-
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        router.replace("/login?redirectTo=/dashboard/billing");
-        return;
-      }
-
-      const checkoutResponse = await fetch(
-        "/api/stripe/create-checkout-session",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            businessId: selectedBusiness.id,
-          }),
-        },
-      );
-      const checkoutData = (await checkoutResponse.json()) as {
-        url?: string;
-        error?: string;
-      };
-
-      if (!checkoutResponse.ok || !checkoutData.url) {
-        throw new Error(
-          checkoutData.error ||
-            t(
-              "billing.checkout.error",
-              "Could not start Stripe Checkout. Please try again.",
-            ),
-        );
-      }
-
-      window.location.assign(checkoutData.url);
-    } catch (checkoutError: any) {
-      setCheckoutError(
-        checkoutError.message ||
-          t(
-            "billing.checkout.error",
-            "Could not start Stripe Checkout. Please try again.",
-          ),
-      );
-      setStartingCheckout(false);
-    }
-  }
-
   const trialEnd = formatDate(billing.trial_end);
   const currentPeriodEnd = formatDate(billing.current_period_end);
   const monthlyPrice =
@@ -345,18 +286,6 @@ export default function DashboardBillingPage() {
                   "No membership checkout was started. Your Mirëbook access has not changed.",
                 )}
               </p>
-            </div>
-          )}
-
-          {checkoutError && (
-            <div
-              className="card"
-              style={{
-                marginBottom: "1.5rem",
-                borderColor: "rgba(255,77,109,0.35)",
-              }}
-            >
-              <p style={{ color: "var(--danger)" }}>{checkoutError}</p>
             </div>
           )}
 
@@ -504,19 +433,12 @@ export default function DashboardBillingPage() {
                   "Bookings, staff access and your public listing remain available.",
                 )}
               </p>
-              <button
-                type="button"
-                className="btn btn-accent"
-                style={{ marginTop: "1rem" }}
-                onClick={startCheckout}
-                disabled={startingCheckout}
-              >
-                {startingCheckout
-                  ? t("billing.checkout.starting", "Opening checkout...")
-                  : billing.billing_status === "active"
-                    ? t("billing.checkout.runAgain", "Run membership checkout")
-                    : t("billing.checkout.start", "Start membership checkout")}
-              </button>
+              <p className="membership-managed-note">
+                {t(
+                  "billing.checkout.managedSetup",
+                  "Mirëbook will confirm your agreed price before activating online membership payments.",
+                )}
+              </p>
             </div>
           </div>
         </>
@@ -527,6 +449,16 @@ export default function DashboardBillingPage() {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 0.8rem;
+        }
+
+        .membership-managed-note {
+          margin-top: 1rem;
+          padding: 0.7rem 0.8rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.86rem;
         }
 
         .membership-summary-card {

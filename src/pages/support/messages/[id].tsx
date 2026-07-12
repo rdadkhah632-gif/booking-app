@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { requestSupportAdminNotification } from "@/lib/support/adminNotifications";
+import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type SupportMessage = {
   id: string;
@@ -68,6 +69,9 @@ export default function SupportThreadPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [supportContext, setSupportContext] = useState<
+    "customer" | "business" | "staff"
+  >("customer");
 
   useEffect(() => {
     if (!id || typeof id !== "string") return;
@@ -86,6 +90,18 @@ export default function SupportThreadPage() {
       window.location.href = `/login?redirectTo=/support/messages/${ticketId}`;
       return;
     }
+
+    const capabilities = await getAccountCapabilities(
+      session.user.id,
+      session.user.email,
+    );
+    setSupportContext(
+      capabilities.canUseBusiness
+        ? "business"
+        : capabilities.canUseStaff
+          ? "staff"
+          : "customer",
+    );
 
     const { data: ticketData, error: ticketError } = await supabase
       .from("support_messages")
@@ -126,6 +142,12 @@ export default function SupportThreadPage() {
   }, [ticket]);
 
   const unknownDate = t("support.messages.unknownDate", "Unknown date");
+  const supportHubHref =
+    supportContext === "business"
+      ? "/support/business"
+      : supportContext === "staff"
+        ? "/support/staff"
+        : "/support/customer";
 
   async function sendReply() {
     if (!ticket || !replyBody.trim()) return;
@@ -235,7 +257,7 @@ export default function SupportThreadPage() {
               <Link href="/support/messages" className="btn btn-ghost">
                 {t("support.thread.allMessages", "All messages")}
               </Link>
-              <Link href="/support" className="btn btn-ghost">
+              <Link href={supportHubHref} className="btn btn-ghost">
                 {t("support.messages.supportHub", "Support hub")}
               </Link>
             </div>

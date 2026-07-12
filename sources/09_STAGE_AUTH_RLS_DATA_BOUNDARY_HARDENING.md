@@ -1339,3 +1339,28 @@ Remaining tracked follow-up:
 - appointment reminders remain deferred/not active until Vercel Cron is
   deliberately configured, protected with `CRON_SECRET`/`REMINDER_CRON_SECRET`
   and tested against a due confirmed booking
+
+### Post-Closure Launch Blocker Sweep — 12 July 2026
+
+Status: implemented; targeted deployed QA required.
+
+- membership checkout is no longer exposed in the owner UI while pricing is
+  unagreed; the API defaults closed and requires both
+  `BILLING_CHECKOUT_ENABLED=true` and a live Stripe secret key
+- legacy test Stripe configuration can no longer open Checkout accidentally
+- customer history links use the valid by-email route, with a compatibility
+  alias and a friendly guard against non-UUID customer detail paths
+- manual appointments are derived server-side from the submitted date, time
+  and business timezone; a second client timestamp can no longer contradict
+  the visible form, and past appointments are rejected
+- business and staff Inbox booking rows now show customer, service and
+  appointment time when a linked booking is available
+- Inbox and Staff Today links include the appointment date and booking id so
+  Calendar opens the exact appointment instead of only the week
+- staff appointment details use an opaque isolated drawer on desktop and a
+  mobile bottom sheet, preserving the calendar underneath without overlap
+- support conversation actions now preserve customer, business or staff
+  context instead of always offering customer My Bookings
+
+No schema, RLS, role, staff-linking, booking-status, slot-generation or billing
+write logic changed in this sweep.

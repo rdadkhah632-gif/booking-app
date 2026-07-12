@@ -48,13 +48,18 @@ export default async function handler(
 
   const environment = requiredEnvironment();
   if (!environment) {
-    response.status(500).json({ error: "Stripe Checkout is not configured." });
+    response
+      .status(503)
+      .json({ error: "Membership checkout is not available." });
     return;
   }
 
-  if (!environment.stripeSecretKey.startsWith("sk_test_")) {
-    response.status(500).json({
-      error: "Stripe Checkout must use a test-mode secret key in this stage.",
+  if (
+    process.env.BILLING_CHECKOUT_ENABLED !== "true" ||
+    !environment.stripeSecretKey.startsWith("sk_live_")
+  ) {
+    response.status(503).json({
+      error: "Membership checkout is not available.",
     });
     return;
   }

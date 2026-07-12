@@ -3263,6 +3263,10 @@ export const sq: TranslationTree = {
   "billing.checkout.cancelledTitle": "Checkout-i u anulua",
   "billing.checkout.cancelledBody":
     "Nuk u nis asnjë checkout anëtarësimi. Aksesi yt në Mirëbook nuk ka ndryshuar.",
+  "billing.checkout.managedSetup":
+    "Mirëbook do të konfirmojë çmimin e dakorduar para se të aktivizojë pagesat online të anëtarësimit.",
+  "dashboardCustomers.error.invalidCustomer":
+    "Kjo lidhje e klientit nuk është e vlefshme. Kthehu te Kalendari dhe hape përsëri takimin.",
   "nav.operatorNotices": "Njoftime operatori",
   "nav.needsAction": "Kërkon veprim",
   "nav.updates": "Përditësime",

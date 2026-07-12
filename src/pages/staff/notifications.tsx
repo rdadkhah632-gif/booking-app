@@ -7,6 +7,7 @@ import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type Notification = {
   id: string;
+  booking_id: string | null;
   title: string | null;
   message: string | null;
   type: string | null;
@@ -14,6 +15,30 @@ type Notification = {
   read_at: string | null;
   created_at: string;
 };
+
+type BookingContext = {
+  id: string;
+  customer_name: string;
+  start_at: string;
+  duration_minutes: number;
+  status: string;
+  services?: { name?: string | null } | { name?: string | null }[] | null;
+};
+
+function bookingServiceName(booking: BookingContext, fallback: string) {
+  if (!booking.services) return fallback;
+  return Array.isArray(booking.services)
+    ? booking.services[0]?.name || fallback
+    : booking.services.name || fallback;
+}
+
+function dateInputValue(value: string) {
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 function staffNotificationText(
   notification: Notification,
@@ -164,6 +189,9 @@ export default function StaffNotificationsPage() {
   const { locale, t } = useI18n();
   const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [bookingContexts, setBookingContexts] = useState<
+    Record<string, BookingContext>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -197,7 +225,9 @@ export default function StaffNotificationsPage() {
 
     const { data, error } = await supabase
       .from("notifications")
-      .select("id, title, message, type, action_url, read_at, created_at")
+      .select(
+        "id, booking_id, title, message, type, action_url, read_at, created_at",
+      )
       .eq("user_id", session.user.id)
       .in("audience", ["staff", "general"])
       .order("created_at", { ascending: false })
@@ -209,7 +239,38 @@ export default function StaffNotificationsPage() {
       return;
     }
 
-    setNotifications(data || []);
+    const nextNotifications = (data || []) as Notification[];
+    setNotifications(nextNotifications);
+
+    const bookingIds = Array.from(
+      new Set(
+        nextNotifications
+          .map((notification) => notification.booking_id)
+          .filter((bookingId): bookingId is string => Boolean(bookingId)),
+      ),
+    );
+
+    if (bookingIds.length > 0) {
+      const { data: bookingData } = await supabase
+        .from("bookings")
+        .select(
+          "id, customer_name, start_at, duration_minutes, status, services(name)",
+        )
+        .eq("staff_member_id", capabilities.primaryStaffId)
+        .in("id", bookingIds);
+
+      setBookingContexts(
+        ((bookingData || []) as unknown as BookingContext[]).reduce(
+          (map, booking) => {
+            map[booking.id] = booking;
+            return map;
+          },
+          {} as Record<string, BookingContext>,
+        ),
+      );
+    } else {
+      setBookingContexts({});
+    }
     setLoading(false);
   }
 
@@ -296,6 +357,7 @@ export default function StaffNotificationsPage() {
                   filter === "all" ? "btn btn-accent" : "btn btn-ghost"
                 }
                 onClick={() => setFilter("all")}
+                aria-pressed={filter === "all"}
               >
                 {t("staffNotifications.filter.all", "All")}
               </button>
@@ -305,6 +367,7 @@ export default function StaffNotificationsPage() {
                   filter === "unread" ? "btn btn-accent" : "btn btn-ghost"
                 }
                 onClick={() => setFilter("unread")}
+                aria-pressed={filter === "unread"}
               >
                 {t("staffNotifications.filter.unread", "Unread")}
               </button>
@@ -368,6 +431,12 @@ export default function StaffNotificationsPage() {
           <div className="staff-notification-list">
             {filteredNotifications.map((item) => {
               const displayNotification = staffNotificationText(item, t);
+              const booking = item.booking_id
+                ? bookingContexts[item.booking_id]
+                : null;
+              const actionUrl = booking
+                ? `/staff/calendar?date=${dateInputValue(booking.start_at)}&bookingId=${booking.id}`
+                : item.action_url;
 
               return (
                 <div key={item.id} className="card staff-notification-card">
@@ -386,16 +455,40 @@ export default function StaffNotificationsPage() {
 
                     <p className="muted">{displayNotification.message}</p>
 
+                    {booking && (
+                      <div className="staff-notification-appointment">
+                        <strong>{booking.customer_name}</strong>
+                        <span>
+                          {bookingServiceName(
+                            booking,
+                            t("common.service", "Service"),
+                          )}
+                        </span>
+                        <span>
+                          {new Date(booking.start_at).toLocaleString(
+                            dateLocale,
+                            {
+                              weekday: "short",
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
+                        </span>
+                      </div>
+                    )}
+
                     <p className="small muted">
                       {new Date(item.created_at).toLocaleString(dateLocale)}
                     </p>
                   </div>
 
                   <div className="staff-notification-actions">
-                    {item.action_url &&
-                      (item.action_url.startsWith("/staff") ||
-                        item.action_url.startsWith("/support")) && (
-                        <Link href={item.action_url} className="btn btn-ghost">
+                    {actionUrl &&
+                      (actionUrl.startsWith("/staff") ||
+                        actionUrl.startsWith("/support")) && (
+                        <Link href={actionUrl} className="btn btn-ghost">
                           {notificationActionLabel(item.type)}
                         </Link>
                       )}
@@ -474,6 +567,24 @@ export default function StaffNotificationsPage() {
 
         .staff-notification-card p {
           margin: 0.25rem 0 0;
+        }
+
+        .staff-notification-appointment {
+          display: flex;
+          gap: 0.35rem 0.65rem;
+          flex-wrap: wrap;
+          margin-top: 0.5rem;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        .staff-notification-appointment strong {
+          color: var(--text);
+        }
+
+        .staff-notification-appointment span + span::before {
+          content: "·";
+          margin-right: 0.65rem;
         }
 
         .staff-notification-card {

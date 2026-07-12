@@ -12,7 +12,6 @@ type ManualBookingRequest = {
   customerNotes?: string;
   date?: string;
   time?: string;
-  startAt?: string;
 };
 
 type BookingOverlapRow = {
@@ -89,13 +88,7 @@ function manualStartFromRequest(params: {
   date: string;
   time: string;
   timeZone?: string | null;
-  startAt?: string;
 }) {
-  if (params.startAt) {
-    const parsedStart = new Date(params.startAt);
-    if (!Number.isNaN(parsedStart.getTime())) return parsedStart;
-  }
-
   return zonedDateTimeToUtc(params.date, params.time, params.timeZone);
 }
 
@@ -123,7 +116,6 @@ export default async function handler(
   const customerNotes = cleanText(request.customerNotes);
   const date = cleanText(request.date);
   const time = cleanText(request.time);
-  const startAt = cleanText(request.startAt);
 
   if (
     !businessId ||
@@ -210,10 +202,18 @@ export default async function handler(
     date,
     time,
     timeZone: business.timezone || DEFAULT_TIME_ZONE,
-    startAt,
   });
   if (Number.isNaN(start.getTime())) {
     return errorResponse(res, 400, "invalid_time", "Invalid appointment time");
+  }
+
+  if (start.getTime() <= Date.now()) {
+    return errorResponse(
+      res,
+      400,
+      "past_time",
+      "Appointment must be in the future",
+    );
   }
 
   const [

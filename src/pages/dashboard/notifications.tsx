@@ -10,9 +10,11 @@ import {
   supabaseErrorDetails,
 } from "@/lib/bookingStatusErrors";
 import { requestTransactionalEmail } from "@/lib/email/client";
+import { dateKeyInTimeZone } from "@/lib/timezone";
 
 type RelatedBusiness = {
   name: string;
+  timezone?: string | null;
 };
 
 type RelatedService = {
@@ -432,7 +434,8 @@ export default function BusinessNotifications() {
           duration_minutes,
           status,
           businesses (
-            name
+            name,
+            timezone
           ),
           services (
             name,
@@ -1190,6 +1193,13 @@ export default function BusinessNotifications() {
     }).format(date);
   }
 
+  function bookingCalendarUrl(booking: Booking) {
+    const timeZone = firstRelation(booking.businesses)?.timezone;
+    const date = dateKeyInTimeZone(new Date(booking.start_at), timeZone);
+
+    return `/dashboard/bookings?businessId=${booking.business_id}&date=${date}&bookingId=${booking.id}`;
+  }
+
   return (
     <DashboardLayout
       title={t("dashboardLayout.nav.inbox", "Inbox")}
@@ -1477,7 +1487,7 @@ export default function BusinessNotifications() {
                     )}
 
                     <Link
-                      href={`/dashboard/bookings?businessId=${booking.business_id}`}
+                      href={bookingCalendarUrl(booking)}
                       className="btn btn-ghost"
                     >
                       {t(
@@ -1750,6 +1760,9 @@ export default function BusinessNotifications() {
                 t,
                 linkedBooking?.status,
               );
+              const actionUrl = linkedBooking
+                ? bookingCalendarUrl(linkedBooking)
+                : notification.action_url;
 
               return (
                 <div
@@ -1789,15 +1802,39 @@ export default function BusinessNotifications() {
                       </p>
                     )}
 
+                    {linkedBooking && (
+                      <div className="business-update-meta">
+                        <span>{linkedBooking.customer_name}</span>
+                        <span>
+                          {serviceName(
+                            linkedBooking,
+                            t("common.service", "Service"),
+                          )}
+                        </span>
+                        <span>
+                          {staffName(
+                            linkedBooking,
+                            t(
+                              "dashboardBookings.card.noStaff",
+                              "Staff not recorded",
+                            ),
+                          )}
+                        </span>
+                        <span>
+                          {formatInboxDateTime(linkedBooking.start_at)}
+                        </span>
+                      </div>
+                    )}
+
                     <p className="small muted">
                       {formatInboxDateTime(notification.created_at)}
                     </p>
                   </div>
 
                   <div className="business-notification-card-actions">
-                    {notification.action_url && (
+                    {actionUrl && (
                       <Link
-                        href={notification.action_url}
+                        href={actionUrl}
                         className="btn btn-accent"
                         onClick={() => markNotificationRead(notification)}
                       >
@@ -2080,6 +2117,19 @@ export default function BusinessNotifications() {
           display: grid;
           gap: 0.25rem;
           min-width: 0;
+        }
+
+        .business-update-meta {
+          display: flex;
+          gap: 0.35rem 0.65rem;
+          flex-wrap: wrap;
+          color: var(--text-muted);
+          font-size: 0.8rem;
+        }
+
+        .business-update-meta span + span::before {
+          content: "·";
+          margin-right: 0.65rem;
         }
 
         .business-notification-time-grid {

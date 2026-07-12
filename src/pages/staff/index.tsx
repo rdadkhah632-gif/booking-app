@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
@@ -38,6 +39,14 @@ type Service = {
   price?: number | null;
   active?: boolean | null;
 };
+
+function calendarDateValue(value: string) {
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 type StaffService = {
   staff_member_id: string;
@@ -527,14 +536,39 @@ export default function StaffDashboardPage() {
                       )
                     : t("staff.today.titleEmpty", "No appointments today")}
                 </h2>
-                <p className="muted small" style={{ marginTop: "0.35rem" }}>
-                  {nextBooking
-                    ? `${t("staff.today.nextPrefix", "Next appointment")}: ${nextBooking.customer_name || t("common.customer", "Customer")} · ${new Date(nextBooking.start_at).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" })}`
-                    : t(
-                        "staff.today.noUpcoming",
-                        "No assigned appointments coming up.",
+                {nextBooking ? (
+                  <Link
+                    href={`/staff/calendar?date=${calendarDateValue(nextBooking.start_at)}&bookingId=${nextBooking.id}`}
+                    className="staff-next-appointment"
+                  >
+                    <span>
+                      {t("staff.today.nextPrefix", "Next appointment")}
+                    </span>
+                    <strong>
+                      {nextBooking.customer_name ||
+                        t("common.customer", "Customer")}
+                    </strong>
+                    <span>
+                      {new Date(nextBooking.start_at).toLocaleString(
+                        dateLocale,
+                        {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
                       )}
-                </p>
+                    </span>
+                  </Link>
+                ) : (
+                  <p className="muted small" style={{ marginTop: "0.35rem" }}>
+                    {t(
+                      "staff.today.noUpcoming",
+                      "No assigned appointments coming up.",
+                    )}
+                  </p>
+                )}
               </div>
 
               <div className="staff-home-stats">
@@ -647,6 +681,27 @@ export default function StaffDashboardPage() {
             rgba(255, 107, 53, 0.08),
             rgba(11, 18, 32, 0)
           );
+        }
+
+        .staff-next-appointment {
+          display: flex;
+          gap: 0.3rem 0.55rem;
+          align-items: baseline;
+          flex-wrap: wrap;
+          width: fit-content;
+          margin-top: 0.45rem;
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        .staff-next-appointment span {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        .staff-next-appointment:hover strong,
+        .staff-next-appointment:focus-visible strong {
+          color: var(--accent);
         }
 
         .staff-home-stats {

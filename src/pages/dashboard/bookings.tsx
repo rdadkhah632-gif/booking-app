@@ -137,7 +137,7 @@ export default function Bookings() {
   const router = useRouter();
   const { t } = useI18n();
   const bookingStatusLabel = useBookingStatusLabel();
-  const { businessId, date } = router.query;
+  const { businessId, date, bookingId } = router.query;
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [business, setBusiness] = useState<Business | null>(null);
@@ -446,6 +446,15 @@ export default function Bookings() {
       setSelectedDate(date);
     }
   }, [router.isReady, date]);
+
+  useEffect(() => {
+    if (typeof bookingId !== "string") return;
+
+    if (bookings.some((booking) => booking.id === bookingId)) {
+      setManualBookingOpen(false);
+      setSelectedCalendarBookingId(bookingId);
+    }
+  }, [bookingId, bookings]);
 
   async function createCustomerNotification(params: {
     booking: Booking;
@@ -964,7 +973,7 @@ export default function Bookings() {
       return `/dashboard/customers/${booking.customer_user_id}?businessId=${business?.id || booking.business_id}`;
     }
 
-    return `/dashboard/customers/by-email?email=${encodeURIComponent(booking.customer_email || "")}&businessId=${business?.id || booking.business_id}`;
+    return `/dashboard/customers/by-emails?email=${encodeURIComponent(booking.customer_email || "")}&businessId=${business?.id || booking.business_id}`;
   }
 
   function changeCalendarDate(value: string) {
@@ -1149,6 +1158,13 @@ export default function Bookings() {
       return t(
         "dashboardBookings.manual.error.time",
         "Choose a date and time.",
+      );
+    }
+
+    if (start.getTime() <= Date.now()) {
+      return t(
+        "dashboardBookings.manual.error.future",
+        "Choose a future appointment time.",
       );
     }
 
@@ -1364,7 +1380,6 @@ export default function Bookings() {
           customerNotes: draft.customerNotes,
           date: draft.date,
           time: draft.time,
-          startAt: start.toISOString(),
         }),
       });
       const result = await response.json().catch(() => ({}));

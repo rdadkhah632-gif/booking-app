@@ -3197,6 +3197,10 @@ export const en: TranslationTree = {
   "billing.checkout.cancelledTitle": "Checkout cancelled",
   "billing.checkout.cancelledBody":
     "No membership checkout was started. Your Mirëbook access has not changed.",
+  "billing.checkout.managedSetup":
+    "Mirëbook will confirm your agreed price before activating online membership payments.",
+  "dashboardCustomers.error.invalidCustomer":
+    "This customer link is not valid. Return to Calendar and open the appointment again.",
   "nav.operatorNotices": "Operator notices",
   "nav.needsAction": "Needs action",
   "nav.updates": "Updates",

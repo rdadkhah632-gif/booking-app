@@ -52,6 +52,21 @@ export default function CustomerDetailPage() {
     setPageLoading(true);
     setError(null);
 
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        customerId,
+      )
+    ) {
+      setError(
+        t(
+          "dashboardCustomers.error.invalidCustomer",
+          "This customer link is not valid. Return to Calendar and open the appointment again.",
+        ),
+      );
+      setPageLoading(false);
+      return;
+    }
+
     try {
       const {
         data: { session },

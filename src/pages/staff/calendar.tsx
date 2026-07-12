@@ -319,6 +319,15 @@ export default function StaffCalendarPage() {
     }
   }, [bookings, selectedBookingId]);
 
+  useEffect(() => {
+    const bookingId = dateQueryValue(router.query.bookingId);
+    if (!bookingId) return;
+
+    if (bookings.some((booking) => booking.id === bookingId)) {
+      setSelectedBookingId(bookingId);
+    }
+  }, [bookings, router.query.bookingId]);
+
   function statusLabel(status: string) {
     if (status === "pending")
       return t("staff.status.pending", "Awaiting business approval");
@@ -1702,8 +1711,9 @@ export default function StaffCalendarPage() {
           padding: 0.95rem;
           border: 1px solid rgba(255, 107, 53, 0.22);
           border-radius: var(--radius);
-          background: rgba(255, 107, 53, 0.05);
+          background: var(--surface);
           box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+          isolation: isolate;
         }
 
         .staff-selected-heading,
@@ -1716,7 +1726,9 @@ export default function StaffCalendarPage() {
         }
 
         .staff-selected-card {
-          align-items: flex-start;
+          display: grid;
+          grid-template-columns: 1fr;
+          align-items: stretch;
           padding-top: 0.75rem;
           border-top: 1px solid rgba(255, 107, 53, 0.18);
         }
@@ -1763,7 +1775,7 @@ export default function StaffCalendarPage() {
           display: flex;
           gap: 0.6rem;
           flex-wrap: wrap;
-          justify-content: flex-end;
+          justify-content: flex-start;
         }
 
         .staff-selected-no-action {

@@ -17,6 +17,7 @@ import {
 import { getAppBaseUrl } from "@/lib/server/appBaseUrl";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 import { Locale } from "@/lib/i18n";
+import { dateKeyInTimeZone } from "@/lib/timezone";
 
 type BookingRow = {
   id: string;
@@ -126,6 +127,7 @@ async function ensureStaffBookingNotification(params: {
   serviceName: string;
   customerName: string;
   startAt: string;
+  timeZone?: string | null;
 }) {
   if (!params.staffUserId) return;
 
@@ -146,6 +148,10 @@ async function ensureStaffBookingNotification(params: {
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const appointmentDate = dateKeyInTimeZone(
+    new Date(params.startAt),
+    params.timeZone,
+  );
 
   const { error } = await params.supabaseAdmin.from("notifications").insert({
     user_id: params.staffUserId,
@@ -155,7 +161,7 @@ async function ensureStaffBookingNotification(params: {
     type: notification.type,
     title: notification.title,
     message: `${params.customerName}'s ${params.serviceName} appointment is ${notification.statusText} for ${appointmentTime}.`,
-    action_url: "/staff/calendar",
+    action_url: `/staff/calendar?date=${appointmentDate}&bookingId=${params.bookingId}`,
   });
 
   if (error) {
@@ -319,9 +325,14 @@ export default async function handler(
       await Promise.all([
         supabaseAdmin
           .from("businesses")
-          .select("id, user_id, name")
+          .select("id, user_id, name, timezone")
           .eq("id", booking.business_id)
-          .single<{ id: string; user_id?: string | null; name: string }>(),
+          .single<{
+            id: string;
+            user_id?: string | null;
+            name: string;
+            timezone?: string | null;
+          }>(),
         booking.service_id
           ? supabaseAdmin
               .from("services")
@@ -509,6 +520,7 @@ export default async function handler(
       serviceName: service?.name || "Appointment",
       customerName: booking.customer_name || "Customer",
       startAt: booking.start_at,
+      timeZone: business.timezone,
     });
 
     const results: TransactionalEmailResult[] = [];
