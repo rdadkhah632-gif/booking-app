@@ -7,6 +7,7 @@ export type AppProfile = {
   id: string;
   email?: string | null;
   full_name?: string | null;
+  phone?: string | null;
   role?: string | null;
   is_admin?: boolean | null;
   preferred_language?: string | null;
@@ -163,7 +164,7 @@ export async function loadAppContext(req: NextApiRequest): Promise<AppContext> {
     await Promise.all([
       supabaseAdmin
         .from("profiles")
-        .select("id, email, full_name, role, is_admin, preferred_language")
+        .select("id, email, full_name, phone, role, is_admin, preferred_language")
         .eq("id", user.id)
         .maybeSingle<AppProfile>(),
       supabaseAdmin
