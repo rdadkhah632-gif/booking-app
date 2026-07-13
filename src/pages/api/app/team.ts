@@ -14,6 +14,7 @@ type TeamStaffRow = {
   name?: string | null;
   role_title?: string | null;
   email?: string | null;
+  phone?: string | null;
   permission_role?: string | null;
   invite_status?: string | null;
   active?: boolean | null;
@@ -45,7 +46,24 @@ type TeamMutationBody = {
   businessId?: unknown;
   staffId?: unknown;
   serviceIds?: unknown;
+  profile?: unknown;
 };
+
+type TeamProfileInput = {
+  name: string;
+  roleTitle: string | null;
+  email: string | null;
+  phone: string | null;
+};
+
+type ExistingStaffProfile = {
+  id: string;
+  email?: string | null;
+  user_id?: string | null;
+  invite_status?: string | null;
+};
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== "string") return "";
@@ -60,6 +78,48 @@ function normaliseServiceIds(value: unknown) {
   return Array.from(new Set(ids));
 }
 
+function inputError(code: string, message: string, statusCode = 400) {
+  return Object.assign(new Error(message), { statusCode, code });
+}
+
+function profileText(value: unknown, maxLength: number, fieldName: string) {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "string") {
+    throw inputError("invalid_staff_profile", `${fieldName} is invalid`);
+  }
+
+  const cleaned = value.trim();
+  if (!cleaned) return null;
+  if (cleaned.length > maxLength || /[\r\n]/.test(cleaned)) {
+    throw inputError("invalid_staff_profile", `${fieldName} is invalid`);
+  }
+  return cleaned;
+}
+
+function normaliseProfile(value: unknown): TeamProfileInput {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw inputError("invalid_staff_profile", "Staff profile is required");
+  }
+
+  const input = value as Record<string, unknown>;
+  const name = profileText(input.name, 120, "Staff name");
+  if (!name) {
+    throw inputError("staff_name_required", "Staff name is required");
+  }
+
+  const email = profileText(input.email, 320, "Email")?.toLowerCase() || null;
+  if (email && !EMAIL_PATTERN.test(email)) {
+    throw inputError("invalid_staff_email", "Enter a valid staff email");
+  }
+
+  return {
+    name,
+    roleTitle: profileText(input.roleTitle, 120, "Role title"),
+    email,
+    phone: profileText(input.phone, 50, "Phone"),
+  };
+}
+
 async function loadTeam(context: AppContext, businessId: string) {
   const [
     { data: staff, error: staffError },
@@ -68,7 +128,7 @@ async function loadTeam(context: AppContext, businessId: string) {
     context.supabaseAdmin
       .from("staff_members")
       .select(
-        "id, business_id, name, role_title, email, permission_role, invite_status, active, user_id",
+        "id, business_id, name, role_title, email, phone, permission_role, invite_status, active, user_id",
       )
       .eq("business_id", businessId)
       .order("name", { ascending: true })
@@ -133,6 +193,7 @@ async function loadTeam(context: AppContext, businessId: string) {
         name: member.name || "Staff member",
         roleTitle: member.role_title || null,
         email: member.email || null,
+        phone: member.phone || null,
         permissionRole: member.permission_role || "staff",
         inviteStatus: member.invite_status || null,
         active: Boolean(member.active),
@@ -154,6 +215,137 @@ async function loadTeam(context: AppContext, businessId: string) {
       active: Boolean(service.active),
     })),
   };
+}
+
+async function ensureEmailAvailable(
+  context: AppContext,
+  businessId: string,
+  email: string | null,
+  excludingStaffId?: string,
+) {
+  if (!email) return;
+
+  let query = context.supabaseAdmin
+    .from("staff_members")
+    .select("id")
+    .eq("business_id", businessId)
+    .eq("email", email)
+    .limit(1);
+
+  if (excludingStaffId) {
+    query = query.neq("id", excludingStaffId);
+  }
+
+  const { data, error } = await query.returns<Array<{ id: string }>>();
+  if (error) throw error;
+  if ((data || []).length > 0) {
+    throw inputError(
+      "staff_email_in_use",
+      "That email is already used by this team",
+      409,
+    );
+  }
+}
+
+async function createStaffProfile(
+  context: AppContext,
+  businessId: string,
+  body: TeamMutationBody,
+) {
+  const profile = normaliseProfile(body.profile);
+  await ensureEmailAvailable(context, businessId, profile.email);
+
+  const { error } = await context.supabaseAdmin.from("staff_members").insert({
+    business_id: businessId,
+    name: profile.name,
+    role_title: profile.roleTitle,
+    email: profile.email,
+    phone: profile.phone,
+    permission_role: "staff",
+    invite_status: "not_invited",
+    active: true,
+  });
+
+  if (error) throw error;
+}
+
+async function updateStaffProfile(
+  context: AppContext,
+  businessId: string,
+  body: TeamMutationBody,
+) {
+  const staffId = cleanText(body.staffId, 100);
+  if (!staffId) {
+    throw inputError("staff_required", "Staff member is required");
+  }
+
+  const profile = normaliseProfile(body.profile);
+  const { data: existing, error: existingError } = await context.supabaseAdmin
+    .from("staff_members")
+    .select("id, email, user_id, invite_status")
+    .eq("id", staffId)
+    .eq("business_id", businessId)
+    .maybeSingle<ExistingStaffProfile>();
+
+  if (existingError) throw existingError;
+  if (!existing) {
+    throw inputError("staff_not_found", "Staff member is not available", 404);
+  }
+
+  const existingEmail = existing.email?.trim().toLowerCase() || null;
+  const emailChanged = profile.email !== existingEmail;
+  if (emailChanged && existing.user_id) {
+    throw inputError(
+      "linked_staff_email_locked",
+      "A linked staff email cannot be changed here",
+      409,
+    );
+  }
+
+  const inviteStatus = existing.invite_status?.trim().toLowerCase() || "";
+  if (emailChanged && ["invited", "pending"].includes(inviteStatus)) {
+    throw inputError(
+      "pending_invite_email_locked",
+      "Revoke the pending invitation before changing this email",
+      409,
+    );
+  }
+
+  if (emailChanged) {
+    const { data: openInvite, error: inviteError } = await context.supabaseAdmin
+      .from("staff_invite_tokens")
+      .select("id")
+      .eq("staff_member_id", staffId)
+      .is("accepted_at", null)
+      .is("revoked_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+
+    if (inviteError) throw inviteError;
+    if (openInvite) {
+      throw inputError(
+        "pending_invite_email_locked",
+        "Revoke the pending invitation before changing this email",
+        409,
+      );
+    }
+
+    await ensureEmailAvailable(context, businessId, profile.email, staffId);
+  }
+
+  const { error: updateError } = await context.supabaseAdmin
+    .from("staff_members")
+    .update({
+      name: profile.name,
+      role_title: profile.roleTitle,
+      email: profile.email,
+      phone: profile.phone,
+    })
+    .eq("id", staffId)
+    .eq("business_id", businessId);
+
+  if (updateError) throw updateError;
 }
 
 async function saveAssignments(
@@ -293,7 +485,14 @@ export default async function handler(
       return res.status(200).json(await loadTeam(context, business.id));
     }
 
-    if (cleanText(body.action, 40) !== "update_assignments") {
+    const action = cleanText(body.action, 40);
+    if (action === "update_assignments") {
+      await saveAssignments(context, business.id, body);
+    } else if (action === "create_profile") {
+      await createStaffProfile(context, business.id, body);
+    } else if (action === "update_profile") {
+      await updateStaffProfile(context, business.id, body);
+    } else {
       return errorResponse(
         res,
         400,
@@ -302,7 +501,6 @@ export default async function handler(
       );
     }
 
-    await saveAssignments(context, business.id, body);
     return res.status(200).json(await loadTeam(context, business.id));
   } catch (error) {
     return handleAppApiError(res, error);
