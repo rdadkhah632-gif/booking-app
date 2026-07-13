@@ -13,7 +13,7 @@ manual steps below.
 - Customer, business, staff and admin production smoke: PASS.
 - Resend delivery to normal Gmail inboxes: PASS.
 - Business and staff Calendar operational QA: PASS.
-- Marketplace production-data cleanup: REQUIRED.
+- Marketplace production-data cleanup: COMPLETE.
 - Manual appointment customer-claim real-inbox QA: REQUIRED.
 - Reminder dry-run, real delivery and duplicate-prevention QA: REQUIRED before
   reminders are advertised as active.
@@ -31,10 +31,21 @@ Production audit result:
 - No confirmed false positives or obvious missed QA businesses were found.
 - No records were edited, unpublished or deleted during the audit.
 
+Production cleanup result on 13 July 2026:
+
+- all 25 approved QA businesses below were unpublished individually through
+  `/admin/businesses`
+- no business, booking, service, staff or account record was deleted
+- the admin source of truth changed from `25 published · 38 draft` to
+  `0 published · 63 draft`
+- anonymous `/explore` showed `No businesses are live yet` and the polished
+  gradual-launch empty-state message
+- no QA business remained publicly visible
+
 ### Published QA Businesses To Unpublish
 
-Unpublish these records individually through `/admin/businesses`. Do not delete
-them; they remain useful regression fixtures.
+These records were unpublished individually through `/admin/businesses` and
+retained as regression fixtures.
 
 1. Stage 9 Setup QA 1783422558521 — qa-business-setup-20260707-1783422558521@test.com
 2. QA Gmail Reset Studio 20260706-gmail-378352 — moolyjakob@gmail.com
@@ -62,15 +73,16 @@ them; they remain useful regression fixtures.
 24. Amirs hair shop — slotlybusiness2@test.com
 25. Test shop — slotlybusiness2@test.com
 
-After cleanup:
+Completed cleanup verification:
 
-1. Confirm the QA filter still finds the retained unpublished records.
-2. Confirm the published QA count is zero.
-3. Confirm `/explore` does not expose any of the names above.
-4. Because no genuine live businesses currently exist, confirm Explore shows
-   the polished launch empty state rather than an error or raw zero counters.
-5. Publish the first genuine business only after its profile, service, staff,
-   hours and public preview have been reviewed.
+1. The retained records remain available as drafts in Admin Businesses.
+2. Published and published-QA counts are zero.
+3. `/explore` does not expose any of the names above.
+4. Explore shows the polished launch empty state rather than an error or raw
+   zero counters.
+
+Publish the first genuine business only after its profile, service, staff,
+hours and public preview have been reviewed.
 
 ## Transactional Email Language Audit
 
@@ -167,14 +179,13 @@ normalized email match, and business/staff/admin identities are excluded.
 ## Final Release Order
 
 1. Commit and deploy the latest website build.
-2. Unpublish the 25 QA businesses above.
-3. Run marketplace empty-state QA.
-4. Run manual appointment customer-claim QA.
-5. Run reminder dry-run and controlled delivery/deduplication QA.
-6. Run one English and one Albanian smoke across registration, booking email,
+2. Marketplace cleanup and empty-state QA are complete.
+3. Run manual appointment customer-claim QA.
+4. Run reminder dry-run and controlled delivery/deduplication QA.
+5. Run one English and one Albanian smoke across registration, booking email,
    Calendar and account language persistence.
-7. Publish the first reviewed genuine business.
-8. Run one final customer booking against that genuine listing.
+6. Publish the first reviewed genuine business.
+7. Run one final customer booking against that genuine listing.
 
 ## UI Position And Next Batch
 

@@ -1470,7 +1470,7 @@ publication write rules changed in this preparation batch.
 
 ### Production Marketplace And Email Audit — 13 July 2026
 
-Status: audit complete; production cleanup and final delivery QA remain.
+Status: marketplace cleanup complete; final delivery QA remains.
 
 Marketplace result:
 
@@ -1482,6 +1482,15 @@ Marketplace result:
 - no production record was edited during the audit
 - the exact unpublish list and post-cleanup checks are recorded in
   `sources/09_FINAL_WEBSITE_LAUNCH_RUNBOOK.md`
+
+Approved production cleanup completed on 13 July 2026:
+
+- all 25 audited published QA businesses were changed to hidden/draft using the
+  existing per-business admin control
+- records and related test data were retained rather than deleted
+- the admin summary changed from 25 published businesses to zero
+- anonymous Explore showed the intended `No businesses are live yet` launch
+  empty state and no QA listing remained public
 
 Transactional email result:
 
@@ -1499,8 +1508,8 @@ Transactional email result:
 
 Launch decision:
 
-- marketplace cleanup is required before public launch because every currently
-  identified published listing is QA/test data
+- marketplace cleanup is complete; no business should be published again until
+  it has passed the genuine-business launch review
 - reminder and manual-appointment claim code audits passed, but their real
   production flows still require the controlled QA in the launch runbook
 - no new interface blocker was identified; the next interface pass should use
