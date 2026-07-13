@@ -85,8 +85,8 @@ function shapeRow(row: StaffAvailabilityRow) {
     businessId: row.business_id,
     staffId: row.staff_member_id,
     dayOfWeek: row.day_of_week,
-    startTime: row.start_time,
-    endTime: row.end_time,
+    startTime: normaliseTime(row.start_time) || "09:00",
+    endTime: normaliseTime(row.end_time) || "17:00",
     isClosed: row.is_closed,
   };
 }
