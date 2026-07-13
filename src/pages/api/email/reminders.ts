@@ -22,6 +22,9 @@ type ReminderCustomerProfile = {
   preferred_language?: string | null;
 };
 
+const DAILY_WINDOW_START_HOURS = 10;
+const DAILY_WINDOW_END_HOURS = 38;
+
 function requestSecret(req: NextApiRequest) {
   const authorization = req.headers.authorization || "";
   if (authorization.startsWith("Bearer ")) {
@@ -37,6 +40,11 @@ function configuredReminderSecrets() {
     process.env.REMINDER_CRON_SECRET?.trim(),
     process.env.CRON_SECRET?.trim(),
   ].filter((value): value is string => Boolean(value));
+}
+
+function queryFlag(value: string | string[] | undefined) {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return candidate === "1" || candidate === "true";
 }
 
 function localeFromProfile(profile?: ReminderCustomerProfile | null): Locale {
@@ -121,8 +129,12 @@ export default async function handler(
   }
 
   const now = new Date();
-  const windowStart = new Date(now.getTime() + 23.5 * 60 * 60 * 1000);
-  const windowEnd = new Date(now.getTime() + 24.5 * 60 * 60 * 1000);
+  const windowStart = new Date(
+    now.getTime() + DAILY_WINDOW_START_HOURS * 60 * 60 * 1000,
+  );
+  const windowEnd = new Date(
+    now.getTime() + DAILY_WINDOW_END_HOURS * 60 * 60 * 1000,
+  );
 
   const { data, error } = await supabaseAdmin
     .from("bookings")
@@ -151,6 +163,53 @@ export default async function handler(
     missingRecipient: 0,
     failed: 0,
   };
+
+  if (queryFlag(req.query.dryRun)) {
+    const dueBookings = (data || []) as ReminderBooking[];
+    const linkedBookings = dueBookings.filter(
+      (booking) => booking.customer_user_id,
+    );
+    const linkedBookingIds = linkedBookings.map((booking) => booking.id);
+    const { data: existingDeliveries, error: existingDeliveriesError } =
+      linkedBookingIds.length > 0
+        ? await supabaseAdmin
+            .from("appointment_reminder_deliveries")
+            .select("booking_id")
+            .in("booking_id", linkedBookingIds)
+            .eq("reminder_type", "customer_24h")
+        : { data: [], error: null };
+
+    if (existingDeliveriesError) {
+      return res.status(500).json({
+        error: "Could not verify existing reminder deliveries",
+        sent: 0,
+      });
+    }
+
+    const processedBookingIds = new Set(
+      (existingDeliveries || []).map((delivery) => delivery.booking_id),
+    );
+
+    return res.status(200).json({
+      dryRun: true,
+      windowStart: windowStart.toISOString(),
+      windowEnd: windowEnd.toISOString(),
+      windowStrategy: "daily_10_to_38_hours",
+      provider: process.env.EMAIL_PROVIDER || "disabled",
+      due: dueBookings.length,
+      eligibleLinkedCustomers: linkedBookings.length,
+      alreadyProcessed: linkedBookings.filter((booking) =>
+        processedBookingIds.has(booking.id),
+      ).length,
+      unlinkedGuestBookings: dueBookings.filter(
+        (booking) => !booking.customer_user_id && booking.customer_email,
+      ).length,
+      missingRecipient: dueBookings.filter(
+        (booking) => !booking.customer_user_id && !booking.customer_email,
+      ).length,
+      sent: 0,
+    });
+  }
 
   for (const booking of (data || []) as ReminderBooking[]) {
     if (!booking.customer_user_id) {
@@ -286,6 +345,7 @@ export default async function handler(
   return res.status(200).json({
     windowStart: windowStart.toISOString(),
     windowEnd: windowEnd.toISOString(),
+    windowStrategy: "daily_10_to_38_hours",
     provider: process.env.EMAIL_PROVIDER || "disabled",
     ...summary,
   });

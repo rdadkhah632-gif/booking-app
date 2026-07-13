@@ -137,6 +137,26 @@ const FOUNDING_REVIEW_STATUSES: FoundingOfferReviewStatus[] = [
   'declined'
 ]
 
+const QA_BUSINESS_MARKER =
+  /(^|\s)(qa|test|volume|browser|boundary|retest|closure|disposable)(\s|$)/i
+
+function looksLikeQaBusiness(business: BusinessWithOwner) {
+  const emails = [business.billing_email, business.owner?.email]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase())
+
+  return (
+    QA_BUSINESS_MARKER.test(business.name) ||
+    emails.some(
+      (email) =>
+        email.endsWith('@test.com') ||
+        email.endsWith('@web-library.net') ||
+        email.includes('+qa-') ||
+        email.includes('+test-')
+    )
+  )
+}
+
 function dateInputValue(value?: string | null) {
   return value ? value.slice(0, 10) : ''
 }
@@ -199,6 +219,7 @@ export default function AdminBusinessesPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [publishedFilter, setPublishedFilter] = useState('all')
   const [attentionFilter, setAttentionFilter] = useState('all')
+  const [launchDataFilter, setLaunchDataFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [billingLoading, setBillingLoading] = useState(false)
@@ -309,9 +330,21 @@ export default function AdminBusinessesPage() {
           daysUntil(getBillingState(business.id).trial_end) !== null &&
           Number(daysUntil(getBillingState(business.id).trial_end)) <= 7)
 
-      return matchesSearch && matchesStatus && matchesPublished && matchesAttention
+      const likelyQa = looksLikeQaBusiness(business)
+      const matchesLaunchData =
+        launchDataFilter === 'all' ||
+        (launchDataFilter === 'likely_qa' && likelyQa) ||
+        (launchDataFilter === 'likely_live' && !likelyQa)
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesPublished &&
+        matchesAttention &&
+        matchesLaunchData
+      )
     })
-  }, [businesses, billingByBusiness, countsByBusiness, searchTerm, statusFilter, publishedFilter, attentionFilter])
+  }, [businesses, billingByBusiness, countsByBusiness, searchTerm, statusFilter, publishedFilter, attentionFilter, launchDataFilter])
 
   const visibleBusinesses = filteredBusinesses.slice(0, 75)
 
@@ -1100,7 +1133,30 @@ export default function AdminBusinessesPage() {
                   <option value="pending">Pending bookings</option>
                   <option value="trial_ending">Trial ending soon</option>
                 </select>
+
+                <select value={launchDataFilter} onChange={(event) => setLaunchDataFilter(event.target.value)}>
+                  <option value="all">
+                    {t('admin.businesses.launchData.all', 'All launch data')}
+                  </option>
+                  <option value="likely_qa">
+                    {t('admin.businesses.launchData.likelyQa', 'Likely QA / test')}
+                  </option>
+                  <option value="likely_live">
+                    {t('admin.businesses.launchData.likelyLive', 'Likely live businesses')}
+                  </option>
+                </select>
               </div>
+
+              {launchDataFilter === 'likely_qa' && (
+                <div className="admin-hint-box">
+                  <p className="small muted">
+                    {t(
+                      'admin.businesses.launchData.reviewHint',
+                      'Review each match before unpublishing it. This filter never changes or deletes business data.'
+                    )}
+                  </p>
+                </div>
+              )}
 
               {filteredBusinesses.length > 75 && (
                 <div className="admin-hint-box">
@@ -1143,6 +1199,11 @@ export default function AdminBusinessesPage() {
                           <span className={business.published ? 'admin-pill admin-pill-success' : 'admin-pill admin-pill-muted'}>
                             {business.published ? 'Published' : 'Draft'}
                           </span>
+                          {looksLikeQaBusiness(business) && (
+                            <span className="admin-pill admin-pill-warning">
+                              {t('admin.businesses.launchData.qaBadge', 'Likely QA')}
+                            </span>
+                          )}
                           <span className="admin-pill admin-pill-accent">
                             {statusLabel(getBillingState(business.id).billing_status)}
                           </span>

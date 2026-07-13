@@ -3602,6 +3602,12 @@ export const en: TranslationTree = {
   "admin.businesses.billing.saveError": "Could not save billing changes.",
   "admin.businesses.billing.standard": "Standard launch",
   "admin.businesses.founding.kicker": "Admin only · Launch offer tracking",
+  "admin.businesses.launchData.all": "All launch data",
+  "admin.businesses.launchData.likelyQa": "Likely QA / test",
+  "admin.businesses.launchData.likelyLive": "Likely live businesses",
+  "admin.businesses.launchData.reviewHint":
+    "Review each match before unpublishing it. This filter never changes or deletes business data.",
+  "admin.businesses.launchData.qaBadge": "Likely QA",
   "admin.businesses.founding.title": "Founding offer review",
   "admin.businesses.founding.body":
     "Raw signups are not enough. Review confirmed and completed bookings, unique customers and verification status before granting a second free month.",

@@ -4,8 +4,8 @@ Status: COMPLETE.
 
 Closure QA: PASS.
 
-Reminder cron status: deferred/not active until Vercel Cron is deliberately
-configured and QA'd.
+Reminder cron status: configured daily at 08:00 UTC; dry-run and real delivery
+QA remain before reminders are advertised as launch-ready.
 
 Stage 9 completed:
 
@@ -1336,9 +1336,9 @@ Stage 9 is complete.
 
 Remaining tracked follow-up:
 
-- appointment reminders remain deferred/not active until Vercel Cron is
-  deliberately configured, protected with `CRON_SECRET`/`REMINDER_CRON_SECRET`
-  and tested against a due confirmed booking
+- appointment reminders are configured but still require one dry-run and one
+  real due-booking delivery/deduplication QA before launch marketing mentions
+  them
 
 ### Post-Closure Launch Blocker Sweep — 12 July 2026
 
@@ -1420,3 +1420,50 @@ Mobile account-menu closure follow-up:
   the native disclosure is closed, matching the already-tested customer menu
 - this prevents language, account and logout controls from escaping the closed
   menu on support and other AuthNav routes
+
+### Final Launch-Gate Preparation — 13 July 2026
+
+Status: implemented; production data QA required.
+
+Manual appointment claim audit:
+
+- manual appointment email links preserve the booking ID through login,
+  customer registration and email verification
+- `/api/customer/bookings` claims only unlinked bookings whose normalized
+  customer email matches the authenticated, verified Supabase email
+- business, staff and admin identities remain excluded from customer claiming
+- no code gap was found; one real-inbox end-to-end claim QA remains
+
+Reminder scheduling correction:
+
+- the daily `08:00 UTC` cron previously selected only appointments 23.5–24.5
+  hours ahead, which could miss almost every appointment outside that one-hour
+  band
+- the protected reminder route now uses an overlapping 10–38-hour daily
+  window; the existing unique delivery record prevents a second reminder
+- authenticated `?dryRun=1` returns counts and window diagnostics without
+  inserting delivery rows or sending email
+- reminders remain scoped to linked customer accounts with reminders enabled;
+  unlinked guest appointments are reported separately in dry-run output
+
+Safe production QA order:
+
+1. Create one confirmed linked-customer booking inside the reported reminder
+   window.
+2. Call `/api/email/reminders?dryRun=1` with the configured reminder bearer
+   secret and confirm `eligibleLinkedCustomers` is at least one.
+3. Call the route without `dryRun`, confirm one Gmail/Resend delivery and a
+   `sent: 1` response.
+4. Call it again and confirm `skippedDuplicate` increases while `sent` remains
+   zero.
+
+Marketplace cleanup preparation:
+
+- Admin Businesses now provides a read-only `Likely QA / test` review filter
+  based on explicit QA-style names and disposable email domains
+- matching rows receive a visible `Likely QA` badge
+- the filter never changes or deletes data; each business must be reviewed and
+  unpublished individually using the existing audited admin workflow
+
+No booking, claim, reminder preference, role, RLS, billing or marketplace
+publication write rules changed in this preparation batch.

@@ -3663,6 +3663,12 @@ export const sq: TranslationTree = {
   "admin.businesses.billing.standard": "Plan standard lançimi",
   "admin.businesses.founding.kicker":
     "Vetëm për administratorin · Ndjekja e ofertës së lançimit",
+  "admin.businesses.launchData.all": "Të gjitha të dhënat e lançimit",
+  "admin.businesses.launchData.likelyQa": "Me gjasë QA / test",
+  "admin.businesses.launchData.likelyLive": "Biznese me gjasë reale",
+  "admin.businesses.launchData.reviewHint":
+    "Kontrollo çdo rezultat para se ta heqësh nga publikimi. Ky filtër nuk ndryshon dhe nuk fshin të dhëna biznesi.",
+  "admin.businesses.launchData.qaBadge": "Me gjasë QA",
   "admin.businesses.founding.title":
     "Shqyrtimi i ofertës për biznesin themelues",
   "admin.businesses.founding.body":
