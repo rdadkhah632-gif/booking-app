@@ -13,11 +13,13 @@ import {
   StaffMember,
 } from "@/components/dashboard-home/dashboardHomeTypes";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 export default function DashboardHome() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -452,12 +454,12 @@ export default function DashboardHome() {
                 <>
                   <div className="today-appointment-time">
                     {new Date(nextAppointment.start_at).toLocaleDateString(
-                      undefined,
+                      dateLocale,
                       { weekday: "short", day: "numeric", month: "short" },
                     )}
                     <strong>
                       {new Date(nextAppointment.start_at).toLocaleTimeString(
-                        undefined,
+                        dateLocale,
                         { hour: "2-digit", minute: "2-digit" },
                       )}
                     </strong>

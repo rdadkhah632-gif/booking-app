@@ -22,7 +22,7 @@ export default function BookingUpdatesSection({
   statusColor,
   statusBackground,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   if (bookings.length === 0) return null;
 
@@ -92,7 +92,7 @@ export default function BookingUpdatesSection({
               </p>
 
               <p className="small muted">
-                {t("common.time")}: {formatCustomerDateTime(booking.start_at)}
+                {t("common.time")}: {formatCustomerDateTime(booking.start_at, locale)}
               </p>
             </div>
 

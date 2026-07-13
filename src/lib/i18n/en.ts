@@ -20,6 +20,7 @@ export const en: TranslationTree = {
   "nav.customerProduct": "Customer Mirëbook",
   "nav.businessLogin": "Business login",
   "nav.startBusiness": "Start business setup",
+  "myBookings.loading": "Loading your Mirëbook bookings...",
   "product.business.suffix": "Business",
   "auth.logout": "Log out",
   "login.checkingSession": "Checking your Mirëbook session...",

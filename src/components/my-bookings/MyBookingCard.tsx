@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 import { Booking, BookingMode, BookingRequest } from "./myBookingsTypes";
 
 type Props = {
@@ -44,7 +45,8 @@ export default function MyBookingCard({
   statusBackground,
   cardTone,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
   const isLocked =
     booking.status === "cancelled" ||
     booking.status === "declined" ||
@@ -58,7 +60,7 @@ export default function MyBookingCard({
   const showLifecycleCopy = booking.status !== "confirmed" || hasPendingChange;
 
   function formatAppointmentDateTime(value: string) {
-    return new Date(value).toLocaleString(undefined, {
+    return new Date(value).toLocaleString(dateLocale, {
       dateStyle: "medium",
       timeStyle: "short",
     });

@@ -26,7 +26,7 @@ export default function ResolvedRescheduleRequestsSection({
   statusColor,
   statusBackground,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   if (requests.length === 0) return null;
 
@@ -90,7 +90,7 @@ export default function ResolvedRescheduleRequestsSection({
 
                 <p className="small muted">
                   {t("notifications.requestedTime", "Requested time")}:{" "}
-                  {formatCustomerDateTime(request.requested_start_at)}
+                  {formatCustomerDateTime(request.requested_start_at, locale)}
                 </p>
 
                 <p className="small muted">
@@ -108,8 +108,8 @@ export default function ResolvedRescheduleRequestsSection({
                 <p className="small muted" style={{ marginTop: "0.5rem" }}>
                   {t("notifications.updated", "Updated")}:{" "}
                   {request.updated_at
-                    ? formatCustomerDateTime(request.updated_at)
-                    : formatCustomerDateTime(request.created_at)}
+                    ? formatCustomerDateTime(request.updated_at, locale)
+                    : formatCustomerDateTime(request.created_at, locale)}
                 </p>
               </div>
 

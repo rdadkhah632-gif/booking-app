@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
-import { claimUnlinkedCustomerBookings } from "@/lib/server/claimCustomerBookings";
+import {
+  ClaimedCustomerBooking,
+  claimUnlinkedCustomerBookings,
+} from "@/lib/server/claimCustomerBookings";
+import { Locale, translate } from "@/lib/i18n";
 
 type ViewerRole = "customer" | "business";
 
@@ -85,6 +89,53 @@ type ExistingBookingRow = {
 
 type SupabaseAdminClient = ReturnType<typeof createSupabaseAdminClient>;
 
+type CustomerNotificationCopy = {
+  type: string;
+  titleKey: string;
+  titleFallback: string;
+  messageKey: string;
+  messageFallback: string;
+};
+
+const customerNotificationCopy: Record<string, CustomerNotificationCopy> = {
+  pending: {
+    type: "booking_requested",
+    titleKey: "notifications.types.bookingRequested.title",
+    titleFallback: "Request sent",
+    messageKey: "notifications.types.bookingRequested.message",
+    messageFallback:
+      "Your booking request has been sent to the business for review.",
+  },
+  confirmed: {
+    type: "booking_accepted",
+    titleKey: "notifications.types.bookingAccepted.title",
+    titleFallback: "Booking accepted",
+    messageKey: "notifications.types.bookingAccepted.message",
+    messageFallback: "Your booking has been accepted and confirmed.",
+  },
+  declined: {
+    type: "booking_declined",
+    titleKey: "notifications.types.bookingDeclined.title",
+    titleFallback: "Booking declined",
+    messageKey: "notifications.types.bookingDeclined.message",
+    messageFallback: "Your booking request was declined.",
+  },
+  cancelled: {
+    type: "booking_cancelled",
+    titleKey: "notifications.types.bookingCancelled.title",
+    titleFallback: "Booking cancelled",
+    messageKey: "notifications.types.bookingCancelled.message",
+    messageFallback: "Your booking was cancelled by the business.",
+  },
+  completed: {
+    type: "booking_completed",
+    titleKey: "notifications.types.bookingCompleted.title",
+    titleFallback: "Appointment completed",
+    messageKey: "notifications.types.bookingCompleted.message",
+    messageFallback: "Your appointment has been marked as completed.",
+  },
+};
+
 function bearerToken(request: NextApiRequest) {
   const authorization = request.headers.authorization || "";
   return authorization.startsWith("Bearer ")
@@ -106,6 +157,65 @@ function uniqueStrings(values: Array<string | null | undefined>) {
 
 function indexById<T extends { id: string }>(rows: T[]) {
   return new Map(rows.map((row) => [row.id, row]));
+}
+
+async function ensureClaimedBookingNotifications(
+  supabaseAdmin: SupabaseAdminClient,
+  userId: string,
+  claimedBookings: ClaimedCustomerBooking[],
+) {
+  if (claimedBookings.length === 0) return;
+
+  const bookingIds = claimedBookings.map((booking) => booking.id);
+  const [{ data: profile }, { data: existingRows, error: existingError }] =
+    await Promise.all([
+      supabaseAdmin
+        .from("profiles")
+        .select("preferred_language")
+        .eq("id", userId)
+        .maybeSingle<{ preferred_language?: string | null }>(),
+      supabaseAdmin
+        .from("notifications")
+        .select("booking_id, type")
+        .eq("user_id", userId)
+        .in("booking_id", bookingIds),
+    ]);
+
+  if (existingError) throw existingError;
+
+  const locale: Locale = profile?.preferred_language === "sq" ? "sq" : "en";
+  const existingKeys = new Set(
+    (existingRows || []).map(
+      (row: { booking_id?: string | null; type?: string | null }) =>
+        `${row.booking_id || ""}:${row.type || ""}`,
+    ),
+  );
+
+  const notifications = claimedBookings.flatMap((booking) => {
+    const copy = customerNotificationCopy[booking.status];
+    if (!copy || existingKeys.has(`${booking.id}:${copy.type}`)) return [];
+
+    return [
+      {
+        user_id: userId,
+        business_id: booking.business_id,
+        booking_id: booking.id,
+        audience: "customer",
+        type: copy.type,
+        title: translate(locale, copy.titleKey, copy.titleFallback),
+        message: translate(locale, copy.messageKey, copy.messageFallback),
+        action_url: `/booking-confirmation?id=${booking.id}`,
+      },
+    ];
+  });
+
+  if (notifications.length === 0) return;
+
+  const { error } = await supabaseAdmin
+    .from("notifications")
+    .insert(notifications);
+
+  if (error) throw error;
 }
 
 function safeBusinessForBooking(business: BusinessRow | null | undefined) {
@@ -419,16 +529,25 @@ export default async function handler(
       return;
     }
 
-    await claimUnlinkedCustomerBookings(supabaseAdmin, {
-      userId: user.id,
-      email: user.email,
-      accountMode:
-        typeof user.user_metadata?.account_mode === "string"
-          ? user.user_metadata.account_mode
-          : typeof user.user_metadata?.role === "string"
-            ? user.user_metadata.role
-            : null,
-    });
+    const claimedBookings = await claimUnlinkedCustomerBookings(
+      supabaseAdmin,
+      {
+        userId: user.id,
+        email: user.email,
+        accountMode:
+          typeof user.user_metadata?.account_mode === "string"
+            ? user.user_metadata.account_mode
+            : typeof user.user_metadata?.role === "string"
+              ? user.user_metadata.role
+              : null,
+      },
+    );
+
+    await ensureClaimedBookingNotifications(
+      supabaseAdmin,
+      user.id,
+      claimedBookings,
+    );
 
     const bookingId = readStringParam(request.query.id);
 

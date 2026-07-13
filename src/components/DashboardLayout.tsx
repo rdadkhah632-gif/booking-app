@@ -20,7 +20,7 @@ export default function DashboardLayout({
   workspace = "business",
 }: Props) {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [pendingCount, setPendingCount] = useState(0);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
@@ -105,7 +105,7 @@ export default function DashboardLayout({
     }
 
     loadPendingNotifications();
-  }, [router.pathname, workspace]);
+  }, [locale, router.pathname, workspace]);
 
   const businessMainLinks = [
     { href: "/dashboard", label: t("dashboardLayout.nav.today", "Today") },

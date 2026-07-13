@@ -22,7 +22,7 @@ export default function PendingBookingRequestsSection({
   statusColor,
   statusBackground,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   if (bookings.length === 0) return null;
 
@@ -104,7 +104,9 @@ export default function PendingBookingRequestsSection({
                     "Requested appointment time",
                   )}
                 </p>
-                <strong>{formatCustomerDateTime(booking.start_at)}</strong>
+                <strong>
+                  {formatCustomerDateTime(booking.start_at, locale)}
+                </strong>
                 <p className="small muted" style={{ marginTop: "0.3rem" }}>
                   {t(
                     "notifications.reservedWhileWaiting",

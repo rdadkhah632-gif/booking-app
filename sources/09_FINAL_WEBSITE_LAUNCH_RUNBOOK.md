@@ -14,11 +14,15 @@ manual steps below.
 - Resend delivery to normal Gmail inboxes: PASS.
 - Business and staff Calendar operational QA: PASS.
 - Marketplace production-data cleanup: COMPLETE.
-- Manual appointment customer-claim real-inbox QA: REQUIRED.
+- Manual appointment customer-claim real-inbox QA: PARTIAL PASS; notification
+  backfill implemented and awaiting focused retest.
 - Reminder dry-run, real delivery and duplicate-prevention QA: REQUIRED before
   reminders are advertised as active.
 - Supabase confirmation/recovery email localization: dashboard-managed and not
   yet proven as per-recipient EN/SQ.
+- Application transactional email templates and recipient-locale selection:
+  CODE-AUDITED for EN/SQ; one real Albanian inbox delivery remains to be
+  verified.
 
 ## Marketplace Data Audit
 
@@ -176,14 +180,64 @@ Required real-inbox flow:
 The code audit passed: claiming is limited to unlinked bookings with an exact
 normalized email match, and business/staff/admin identities are excluded.
 
+Production QA on 13 July 2026 confirmed that a manual appointment survived the
+verification return, appeared once on Booking confirmation and appeared once
+in My Bookings. It also found that the claimed customer did not receive the
+matching in-app notification.
+
+The follow-up implementation now returns the exact rows linked during the
+claim and creates one status-appropriate customer notification for each newly
+claimed booking. Existing notification rows are checked first, and subsequent
+booking loads do not re-claim the same row, so the backfill is idempotent for
+the claim flow. Booking creation, status and customer-isolation rules were not
+changed.
+
+Focused retest required:
+
+1. Create a new manual appointment for an email with no Mirëbook account.
+2. Complete customer registration and verification through the appointment
+   link.
+3. Confirm Booking confirmation, My Bookings and Notifications each show the
+   appointment once.
+4. Refresh My Bookings and Notifications twice and confirm no duplicate
+   notification is created.
+5. Confirm a different verified customer cannot see the appointment or its
+   notification.
+
+## Albanian Launch Localization Follow-Up
+
+The 13 July EN/SQ smoke found correct Albanian marketplace copy but reproduced
+English document language metadata, English-formatted dates, an English My
+Bookings loading fallback and two English staff Inbox labels.
+
+The follow-up implementation:
+
+- synchronizes the document `lang` attribute with the active `en` or `sq`
+  locale
+- uses `sq-AL` date formatting on the public booking, confirmation,
+  reschedule, My Bookings, customer notification, business Today and business
+  Calendar surfaces
+- refreshes the staff shell's derived workspace label when the saved locale
+  loads
+- adds the missing Albanian My Bookings loading copy
+- replaces the remaining staff Inbox labels with `Njoftimet`
+
+Application booking, reminder, support and staff-invite email templates already
+contain complete Albanian copy and choose locale from the relevant customer,
+owner or staff profile. Real-inbox QA is still required to prove one Albanian
+subject/body delivery after deployment. Supabase Auth confirmation and recovery
+templates remain dashboard-managed and should stay bilingual unless a separate
+localized Auth email-hook project is approved.
+
 ## Final Release Order
 
 1. Commit and deploy the latest website build.
 2. Marketplace cleanup and empty-state QA are complete.
-3. Run manual appointment customer-claim QA.
+3. Retest manual appointment customer-claim notification backfill and
+   cross-account isolation.
 4. Run reminder dry-run and controlled delivery/deduplication QA.
 5. Run one English and one Albanian smoke across registration, booking email,
-   Calendar and account language persistence.
+   public booking, Calendar, Notifications and account language persistence.
 6. Publish the first reviewed genuine business.
 7. Run one final customer booking against that genuine listing.
 

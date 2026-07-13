@@ -183,7 +183,7 @@ export default function NotificationInboxSection({
   notificationBorder,
   notificationBackground,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   if (notifications.length === 0) return null;
 
@@ -237,7 +237,7 @@ export default function NotificationInboxSection({
 
                 <p className="small muted customer-notification-time">
                   {notification.created_at
-                    ? formatCustomerDateTime(notification.created_at)
+                    ? formatCustomerDateTime(notification.created_at, locale)
                     : t("notifications.recently", "Recently")}
                 </p>
               </div>

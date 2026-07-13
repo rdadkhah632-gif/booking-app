@@ -8,6 +8,12 @@ type ClaimInput = {
   accountMode?: string | null;
 };
 
+export type ClaimedCustomerBooking = {
+  id: string;
+  business_id: string;
+  status: string;
+};
+
 function normaliseEmail(email?: string | null) {
   return email?.trim().toLowerCase() || "";
 }
@@ -21,10 +27,10 @@ export async function claimUnlinkedCustomerBookings(
   input: ClaimInput,
 ) {
   const email = normaliseEmail(input.email);
-  if (!email || !email.includes("@")) return 0;
+  if (!email || !email.includes("@")) return [];
 
   const accountMode = normaliseAccountMode(input.accountMode);
-  if (accountMode === "business" || accountMode === "staff") return 0;
+  if (accountMode === "business" || accountMode === "staff") return [];
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("profiles")
@@ -38,7 +44,7 @@ export async function claimUnlinkedCustomerBookings(
     profile?.is_admin ||
     normaliseAccountMode(profile?.role) === "business"
   ) {
-    return 0;
+    return [];
   }
 
   const { data, error } = await supabaseAdmin
@@ -46,9 +52,9 @@ export async function claimUnlinkedCustomerBookings(
     .update({ customer_user_id: input.userId })
     .is("customer_user_id", null)
     .ilike("customer_email", email)
-    .select("id");
+    .select("id, business_id, status");
 
   if (error) throw error;
 
-  return data?.length || 0;
+  return (data || []) as ClaimedCustomerBooking[];
 }

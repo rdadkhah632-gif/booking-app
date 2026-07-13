@@ -13,11 +13,13 @@ import {
 } from "@/components/my-bookings/myBookingsTypes";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
 
 export default function MyBookings() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [requests, setRequests] = useState<BookingRequest[]>([]);
@@ -233,7 +235,7 @@ export default function MyBookings() {
       booking,
       "booking_cancelled",
       t("myBookings.notification.cancelledTitle", "Customer cancelled booking"),
-      `${booking.customer_name || t("publicBusiness.customerFallback", "A customer")} ${t("myBookings.notification.cancelledWord", "cancelled their booking for")} ${serviceName(booking)} ${t("publicBusiness.notification.forWord", "for")} ${new Date(booking.start_at).toLocaleString()}.`,
+      `${booking.customer_name || t("publicBusiness.customerFallback", "A customer")} ${t("myBookings.notification.cancelledWord", "cancelled their booking for")} ${serviceName(booking)} ${t("publicBusiness.notification.forWord", "for")} ${new Date(booking.start_at).toLocaleString(dateLocale, { dateStyle: "medium", timeStyle: "short" })}.`,
     );
     void requestTransactionalEmail({
       event: "booking_customer_cancelled",

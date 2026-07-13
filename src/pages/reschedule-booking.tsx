@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 type Booking = {
   id: string;
   business_id: string;
@@ -96,7 +97,8 @@ type Role = "customer" | "business" | null;
 export default function RescheduleBooking() {
   const router = useRouter();
   const { id } = router.query;
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
@@ -266,7 +268,7 @@ export default function RescheduleBooking() {
   }
 
   function monthLabel(date: Date) {
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(dateLocale, {
       month: "long",
       year: "numeric",
     });
@@ -439,13 +441,13 @@ export default function RescheduleBooking() {
     if (!selectedDate) return null;
 
     const date = new Date(`${selectedDate}T12:00:00`);
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(dateLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-  }, [selectedDate]);
+  }, [dateLocale, selectedDate]);
 
   const calendarDays = useMemo<CalendarDay[]>(() => {
     const firstOfMonth = new Date(
@@ -479,7 +481,7 @@ export default function RescheduleBooking() {
         isCurrentMonth,
         isToday,
         isPast,
-        label: date.toLocaleDateString(undefined, {
+        label: date.toLocaleDateString(dateLocale, {
           weekday: "short",
           day: "numeric",
           month: "short",
@@ -497,6 +499,7 @@ export default function RescheduleBooking() {
     staffAvailability,
     availability,
     existingBookings,
+    dateLocale,
   ]);
 
   const availableStaffForSelectedTime = useMemo(() => {
@@ -561,7 +564,7 @@ export default function RescheduleBooking() {
   }
 
   function appointmentDateTime(value: string) {
-    return new Date(value).toLocaleString(undefined, {
+    return new Date(value).toLocaleString(dateLocale, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -1065,7 +1068,7 @@ export default function RescheduleBooking() {
               </p>
               <h3 style={{ marginTop: "0.25rem" }}>
                 {requestedStart
-                  ? `${appointmentDateTime(requestedStart.toISOString())}${requestedEnd ? ` - ${requestedEnd.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`
+                  ? `${appointmentDateTime(requestedStart.toISOString())}${requestedEnd ? ` - ${requestedEnd.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" })}` : ""}`
                   : t(
                       "reschedule.requested.chooseDateTime",
                       "Choose a new date and time",

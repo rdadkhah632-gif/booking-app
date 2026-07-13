@@ -10,6 +10,7 @@ import {
 } from "@/components/dashboard-bookings/dashboardBookingsTypes";
 import { useBookingStatusLabel } from "@/components/dashboard-bookings/BookingStatusBadge";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 import {
   isDeclinedStatusUnsupported,
   supabaseErrorDetails,
@@ -131,8 +132,8 @@ function dateKeyForDate(date: Date) {
   return toDateInputValue(date);
 }
 
-function labelForDateKey(dateKey: string) {
-  return new Date(`${dateKey}T12:00:00`).toLocaleDateString(undefined, {
+function labelForDateKey(dateKey: string, dateLocale: string) {
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString(dateLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -152,7 +153,8 @@ function timeInputForMinutes(totalMinutes: number) {
 
 export default function Bookings() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
   const bookingStatusLabel = useBookingStatusLabel();
   const { businessId, date, bookingId } = router.query;
 
@@ -510,7 +512,10 @@ export default function Bookings() {
   }
 
   function appointmentDateTime(booking: Booking) {
-    return new Date(booking.start_at).toLocaleString();
+    return new Date(booking.start_at).toLocaleString(dateLocale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
   }
 
   async function acceptPendingBooking(booking: Booking) {
@@ -948,8 +953,8 @@ export default function Bookings() {
       return {
         date: day,
         dateKey,
-        label: labelForDateKey(dateKey),
-        shortLabel: day.toLocaleDateString(undefined, {
+        label: labelForDateKey(dateKey, dateLocale),
+        shortLabel: day.toLocaleDateString(dateLocale, {
           weekday: "short",
           day: "numeric",
         }),
@@ -960,7 +965,7 @@ export default function Bookings() {
         ),
       };
     });
-  }, [weekDays, weekBookings, calendarTimeZone]);
+  }, [weekDays, weekBookings, calendarTimeZone, dateLocale]);
   const selectedCalendarBooking = useMemo(
     () =>
       weekBookings.find(
@@ -968,10 +973,10 @@ export default function Bookings() {
       ) || null,
     [weekBookings, selectedCalendarBookingId],
   );
-  const weekLabel = `${weekStartDate.toLocaleDateString(undefined, {
+  const weekLabel = `${weekStartDate.toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "short",
-  })} - ${weekEndDate.toLocaleDateString(undefined, {
+  })} - ${weekEndDate.toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "short",
   })}`;
@@ -1726,7 +1731,7 @@ export default function Bookings() {
             )}
             days={weekGroups.map((group) => ({
               key: group.dateKey,
-              weekday: group.date.toLocaleDateString(undefined, {
+              weekday: group.date.toLocaleDateString(dateLocale, {
                 weekday: "short",
               }),
               date: String(group.date.getDate()),

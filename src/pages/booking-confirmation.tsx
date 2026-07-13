@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 
 type Booking = {
   id: string;
@@ -61,7 +62,8 @@ type Booking = {
 export default function BookingConfirmation() {
   const router = useRouter();
   const { id } = router.query;
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -235,7 +237,7 @@ export default function BookingConfirmation() {
 
   function appointmentDateTime() {
     if (!booking) return "";
-    return new Date(booking.start_at).toLocaleString(undefined, {
+    return new Date(booking.start_at).toLocaleString(dateLocale, {
       dateStyle: "medium",
       timeStyle: "short",
     });

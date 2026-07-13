@@ -11,6 +11,7 @@ import PublicBusinessAvailability from "@/components/public-business/PublicBusin
 import PublicBusinessSummary from "@/components/public-business/PublicBusinessSummary";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
 
 type Service = {
@@ -115,7 +116,8 @@ type CalendarDay = {
 
 export default function BusinessBookingPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
   const { businessId } = router.query;
 
   const [business, setBusiness] = useState<Business | null>(null);
@@ -383,7 +385,7 @@ export default function BusinessBookingPage() {
   }
 
   function monthLabel(date: Date) {
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(dateLocale, {
       month: "long",
       year: "numeric",
     });
@@ -527,7 +529,10 @@ export default function BusinessBookingPage() {
     )
       return;
 
-    const appointmentTime = new Date(startAt).toLocaleString();
+    const appointmentTime = new Date(startAt).toLocaleString(dateLocale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
     const staff = staffMembers.find((member) => member.id === staffMemberId);
     const staffLabel = staff
       ? publicStaffDisplayName(staff)
@@ -758,7 +763,7 @@ export default function BusinessBookingPage() {
         isCurrentMonth,
         isToday,
         isPast,
-        label: date.toLocaleDateString(undefined, {
+        label: date.toLocaleDateString(dateLocale, {
           weekday: "short",
           day: "numeric",
           month: "short",
@@ -776,6 +781,7 @@ export default function BusinessBookingPage() {
     staffAvailability,
     bookings,
     business,
+    dateLocale,
   ]);
 
   const selectedStaff = useMemo(() => {
@@ -1325,7 +1331,7 @@ export default function BusinessBookingPage() {
   }
 
   const selectedDateLabel = selectedDate
-    ? new Date(`${selectedDate}T12:00:00`).toLocaleDateString(undefined, {
+    ? new Date(`${selectedDate}T12:00:00`).toLocaleDateString(dateLocale, {
         weekday: "long",
         day: "numeric",
         month: "long",

@@ -26,7 +26,7 @@ export default function PendingRescheduleRequestsSection({
   statusColor,
   statusBackground,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   if (requests.length === 0) return null;
 
@@ -110,7 +110,7 @@ export default function PendingRescheduleRequestsSection({
                     </p>
                     <strong>
                       {linkedBooking?.start_at
-                        ? formatCustomerDateTime(linkedBooking.start_at)
+                        ? formatCustomerDateTime(linkedBooking.start_at, locale)
                         : t("notifications.notRecorded", "Not recorded")}
                     </strong>
                   </div>
@@ -130,7 +130,10 @@ export default function PendingRescheduleRequestsSection({
                       )}
                     </p>
                     <strong>
-                      {formatCustomerDateTime(request.requested_start_at)}
+                      {formatCustomerDateTime(
+                        request.requested_start_at,
+                        locale,
+                      )}
                     </strong>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
+import { localeCodeFor } from "@/lib/i18n";
 import { Booking } from "./dashboardBookingsTypes";
 import BookingStatusBadge, { statusColor } from "./BookingStatusBadge";
 
@@ -26,7 +27,8 @@ export default function BookingCard({
   cancelBooking,
   completeBooking,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const dateLocale = localeCodeFor(locale);
   const isLocked =
     booking.status === "cancelled" ||
     booking.status === "declined" ||
@@ -67,12 +69,15 @@ export default function BookingCard({
           </div>
 
           <p className="small muted booking-card-line">
-            {start.toLocaleTimeString([], {
+            {start.toLocaleTimeString(dateLocale, {
               hour: "2-digit",
               minute: "2-digit",
             })}{" "}
             -{" "}
-            {end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}{" "}
+            {end.toLocaleTimeString(dateLocale, {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}{" "}
             · {booking.duration_minutes} {t("common.minutes", "minutes")}
           </p>
 
@@ -121,13 +126,13 @@ export default function BookingCard({
             </p>
 
             <strong>
-              {start.toLocaleDateString(undefined, {
+              {start.toLocaleDateString(dateLocale, {
                 weekday: "short",
                 day: "numeric",
                 month: "short",
               })}{" "}
               {t("account.at", "at")}{" "}
-              {start.toLocaleTimeString([], {
+              {start.toLocaleTimeString(dateLocale, {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
