@@ -1467,3 +1467,41 @@ Marketplace cleanup preparation:
 
 No booking, claim, reminder preference, role, RLS, billing or marketplace
 publication write rules changed in this preparation batch.
+
+### Production Marketplace And Email Audit — 13 July 2026
+
+Status: audit complete; production cleanup and final delivery QA remain.
+
+Marketplace result:
+
+- the read-only admin filter found 63 likely QA/test businesses
+- 25 of those records were still published
+- the likely-live filter returned zero businesses
+- QA badges appeared consistently and no confirmed false positives or obvious
+  missing QA records were found
+- no production record was edited during the audit
+- the exact unpublish list and post-cleanup checks are recorded in
+  `sources/09_FINAL_WEBSITE_LAUNCH_RUNBOOK.md`
+
+Transactional email result:
+
+- Mirëbook booking, reminder, staff-invite and support templates contain
+  complete English and Albanian copy
+- linked customer, business-owner and staff messages use the recipient
+  profile's `preferred_language`
+- staff invites use an existing invited profile language, then the inviting
+  owner's language, then English
+- unregistered manual-booking recipients fall back to English because no
+  customer language profile exists yet
+- Supabase confirmation and recovery templates remain dashboard-managed;
+  per-recipient EN/SQ behavior is not considered verified by the repository
+  audit
+
+Launch decision:
+
+- marketplace cleanup is required before public launch because every currently
+  identified published listing is QA/test data
+- reminder and manual-appointment claim code audits passed, but their real
+  production flows still require the controlled QA in the launch runbook
+- no new interface blocker was identified; the next interface pass should use
+  cleaned marketplace data and EN/SQ smoke rather than reopen broad Stage 8
