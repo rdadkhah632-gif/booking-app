@@ -47,6 +47,10 @@ type TeamMutationBody = {
   staffId?: unknown;
   serviceIds?: unknown;
   profile?: unknown;
+  active?: unknown;
+  confirmFutureBookings?: unknown;
+  confirmOwnerProfile?: unknown;
+  confirmIncompleteSetup?: unknown;
 };
 
 type TeamProfileInput = {
@@ -61,6 +65,23 @@ type ExistingStaffProfile = {
   email?: string | null;
   user_id?: string | null;
   invite_status?: string | null;
+};
+
+type ActivationStaffRow = {
+  id: string;
+  business_id: string;
+  user_id?: string | null;
+  active?: boolean | null;
+};
+
+type ActivationPreview = {
+  staffId: string;
+  currentActive: boolean;
+  targetActive: boolean;
+  upcomingBookingCount: number;
+  ownerProfile: boolean;
+  missingActiveServices: boolean;
+  missingWorkingHours: boolean;
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -348,6 +369,147 @@ async function updateStaffProfile(
   if (updateError) throw updateError;
 }
 
+async function loadActivationPreview(
+  context: AppContext,
+  businessId: string,
+  body: TeamMutationBody,
+): Promise<ActivationPreview> {
+  const staffId = cleanText(body.staffId, 100);
+  if (!staffId) {
+    throw inputError("staff_required", "Staff member is required");
+  }
+  if (typeof body.active !== "boolean") {
+    throw inputError(
+      "invalid_staff_active_state",
+      "Choose a valid staff active state",
+    );
+  }
+
+  const { data: staff, error: staffError } = await context.supabaseAdmin
+    .from("staff_members")
+    .select("id, business_id, user_id, active")
+    .eq("id", staffId)
+    .eq("business_id", businessId)
+    .maybeSingle<ActivationStaffRow>();
+
+  if (staffError) throw staffError;
+  if (!staff) {
+    throw inputError("staff_not_found", "Staff member is not available", 404);
+  }
+
+  const [
+    { count: upcomingBookingCount, error: bookingError },
+    { count: openDayCount, error: availabilityError },
+    { data: assignments, error: assignmentError },
+  ] = await Promise.all([
+    context.supabaseAdmin
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("staff_member_id", staff.id)
+      .in("status", ["pending", "confirmed"])
+      .gte("start_at", new Date().toISOString()),
+    context.supabaseAdmin
+      .from("staff_availability")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .eq("staff_member_id", staff.id)
+      .eq("is_closed", false),
+    context.supabaseAdmin
+      .from("staff_services")
+      .select("service_id")
+      .eq("staff_member_id", staff.id)
+      .returns<Array<{ service_id: string }>>(),
+  ]);
+
+  if (bookingError) throw bookingError;
+  if (availabilityError) throw availabilityError;
+  if (assignmentError) throw assignmentError;
+
+  const assignedServiceIds = Array.from(
+    new Set((assignments || []).map((assignment) => assignment.service_id)),
+  );
+  let activeServiceCount = 0;
+
+  if (assignedServiceIds.length > 0) {
+    const { count, error } = await context.supabaseAdmin
+      .from("services")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .eq("active", true)
+      .in("id", assignedServiceIds);
+
+    if (error) throw error;
+    activeServiceCount = count || 0;
+  }
+
+  return {
+    staffId: staff.id,
+    currentActive: Boolean(staff.active),
+    targetActive: body.active,
+    upcomingBookingCount: upcomingBookingCount || 0,
+    ownerProfile: Boolean(staff.user_id && staff.user_id === context.user.id),
+    missingActiveServices: activeServiceCount === 0,
+    missingWorkingHours: (openDayCount || 0) === 0,
+  };
+}
+
+async function saveActiveState(
+  context: AppContext,
+  businessId: string,
+  body: TeamMutationBody,
+) {
+  const preview = await loadActivationPreview(context, businessId, body);
+  if (preview.targetActive === preview.currentActive) return;
+
+  if (preview.targetActive) {
+    if (
+      (preview.missingActiveServices || preview.missingWorkingHours) &&
+      body.confirmIncompleteSetup !== true
+    ) {
+      throw inputError(
+        "incomplete_setup_confirmation_required",
+        "Confirm activation with incomplete services or working hours",
+        409,
+      );
+    }
+  } else {
+    if (
+      preview.upcomingBookingCount > 0 &&
+      body.confirmFutureBookings !== true
+    ) {
+      throw inputError(
+        "future_bookings_confirmation_required",
+        "Confirm deactivation with upcoming bookings",
+        409,
+      );
+    }
+    if (preview.ownerProfile && body.confirmOwnerProfile !== true) {
+      throw inputError(
+        "owner_profile_confirmation_required",
+        "Confirm deactivation of your own staff profile",
+        409,
+      );
+    }
+  }
+
+  const { data: updated, error: updateError } = await context.supabaseAdmin
+    .from("staff_members")
+    .update({ active: preview.targetActive })
+    .eq("id", preview.staffId)
+    .eq("business_id", businessId)
+    .eq("active", preview.currentActive)
+    .select("id");
+
+  if (updateError) throw updateError;
+  if (!updated || updated.length === 0) {
+    throw inputError(
+      "stale_staff_active_state",
+      "Staff status changed. Refresh and try again",
+      409,
+    );
+  }
+}
+
 async function saveAssignments(
   context: AppContext,
   businessId: string,
@@ -486,7 +648,13 @@ export default async function handler(
     }
 
     const action = cleanText(body.action, 40);
-    if (action === "update_assignments") {
+    if (action === "activation_preview") {
+      return res.status(200).json({
+        preview: await loadActivationPreview(context, business.id, body),
+      });
+    } else if (action === "set_active") {
+      await saveActiveState(context, business.id, body);
+    } else if (action === "update_assignments") {
       await saveAssignments(context, business.id, body);
     } else if (action === "create_profile") {
       await createStaffProfile(context, business.id, body);
