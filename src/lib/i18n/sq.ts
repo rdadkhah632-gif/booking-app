@@ -880,6 +880,7 @@ export const sq: TranslationTree = {
   "bookingConfirmation.status.cancelled": "Anuluar",
   "bookingConfirmation.error.noPermission":
     "Hyr me adresën e email-it të klientit ku u dërgua ky takim, ose krijo një llogari klienti me atë email.",
+  "bookingConfirmation.error.notFound": "Rezervimi nuk u gjet.",
   "bookingConfirmation.error.title": "Rezervimi nuk u ngarkua",
   "myBookings.error.load": "Rezervimet e tua nuk u ngarkuan.",
   "bookingConfirmation.fallback.business": "ky biznes",
@@ -3902,8 +3903,14 @@ export const sq: TranslationTree = {
   "reschedule.requested.chooseDateTime": "Zgjidh një datë dhe orë të re",
   "reschedule.requested.chooseStaff":
     "Zgjidh një orë, pastaj çdo anëtar stafi të disponueshëm ose një person të caktuar.",
+  "reschedule.requested.staffPrefix": "Stafi",
+  "reschedule.requested.assignedAutomatically": "Caktuar automatikisht",
+  "reschedule.requested.anyAvailableStaff": "Çdo staf i disponueshëm",
+  "reschedule.requested.staffAvailable": "anëtarë stafi të disponueshëm",
   "reschedule.form.title": "Orari i ri i takimit",
   "reschedule.form.calendar": "Datat e disponueshme",
+  "reschedule.form.noAssignedStaff":
+    "Ky rezervim nuk mund të ndryshohet ende sepse nuk ka staf aktiv të caktuar për këtë shërbim.",
   "reschedule.availableAt": "I disponueshëm në",
   "reschedule.actions.businessBookings": "Rezervimet e biznesit",
   "reschedule.actions.sending": "Duke dërguar kërkesën...",
@@ -3937,6 +3944,10 @@ export const sq: TranslationTree = {
   "reschedule.calendar.allDays": "Shfaq të gjitha ditët e rezervueshme",
   "reschedule.calendar.selected": "Zgjedhur",
   "reschedule.calendar.filteredTo": "filtruar për",
+  "reschedule.calendar.disabledDaysHint":
+    "Mirëbook çaktivizon ditët ku ky shërbim nuk mund të përfundojë brenda orarit.",
+  "reschedule.calendar.slots": "orare",
+  "reschedule.calendar.unavailable": "i padisponueshëm",
   "reschedule.times.title": "Oraret e disponueshme",
   "reschedule.times.chooseDate": "Zgjidh fillimisht një datë të disponueshme.",
   "reschedule.times.empty":

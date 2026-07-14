@@ -1,6 +1,6 @@
 import { TimeSlot } from "./publicBusinessTypes";
 import { useI18n } from "@/lib/useI18n";
-import { localeCodeFor } from "@/lib/i18n";
+import { formatLocalizedDate } from "@/lib/i18n";
 
 type DateOption = {
   value: string;
@@ -34,7 +34,6 @@ export default function PublicBusinessAvailability({
   onSelectSlot,
 }: Props) {
   const { locale, t } = useI18n();
-  const dateLocale = localeCodeFor(locale);
   const dateOptions = Array.from({ length: 10 }, (_, index): DateOption => {
     const date = new Date();
     date.setDate(date.getDate() + index);
@@ -48,8 +47,8 @@ export default function PublicBusinessAvailability({
       weekday:
         index === 0
           ? t("publicBusiness.availability.today", "Today")
-          : date.toLocaleDateString(dateLocale, { weekday: "short" }),
-      dateLabel: date.toLocaleDateString(dateLocale, {
+          : formatLocalizedDate(date, locale, { weekday: "short" }),
+      dateLabel: formatLocalizedDate(date, locale, {
         day: "numeric",
         month: "short",
       }),

@@ -1,4 +1,4 @@
-import { Locale, localeCodeFor } from "@/lib/i18n";
+import { formatLocalizedDate, Locale } from "@/lib/i18n";
 
 export function formatCustomerDateTime(
   value?: string | null,
@@ -6,7 +6,7 @@ export function formatCustomerDateTime(
 ) {
   if (!value) return "";
 
-  return new Date(value).toLocaleString(localeCodeFor(locale), {
+  return formatLocalizedDate(value, locale, {
     day: "numeric",
     month: "short",
     year: "numeric",

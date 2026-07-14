@@ -11,7 +11,7 @@ import PublicBusinessAvailability from "@/components/public-business/PublicBusin
 import PublicBusinessSummary from "@/components/public-business/PublicBusinessSummary";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
-import { localeCodeFor } from "@/lib/i18n";
+import { formatLocalizedDate } from "@/lib/i18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
 
 type Service = {
@@ -117,7 +117,6 @@ type CalendarDay = {
 export default function BusinessBookingPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const dateLocale = localeCodeFor(locale);
   const { businessId } = router.query;
 
   const [business, setBusiness] = useState<Business | null>(null);
@@ -385,7 +384,7 @@ export default function BusinessBookingPage() {
   }
 
   function monthLabel(date: Date) {
-    return date.toLocaleDateString(dateLocale, {
+    return formatLocalizedDate(date, locale, {
       month: "long",
       year: "numeric",
     });
@@ -529,7 +528,7 @@ export default function BusinessBookingPage() {
     )
       return;
 
-    const appointmentTime = new Date(startAt).toLocaleString(dateLocale, {
+    const appointmentTime = formatLocalizedDate(startAt, locale, {
       dateStyle: "medium",
       timeStyle: "short",
     });
@@ -763,7 +762,7 @@ export default function BusinessBookingPage() {
         isCurrentMonth,
         isToday,
         isPast,
-        label: date.toLocaleDateString(dateLocale, {
+        label: formatLocalizedDate(date, locale, {
           weekday: "short",
           day: "numeric",
           month: "short",
@@ -781,7 +780,7 @@ export default function BusinessBookingPage() {
     staffAvailability,
     bookings,
     business,
-    dateLocale,
+    locale,
   ]);
 
   const selectedStaff = useMemo(() => {
@@ -1331,7 +1330,7 @@ export default function BusinessBookingPage() {
   }
 
   const selectedDateLabel = selectedDate
-    ? new Date(`${selectedDate}T12:00:00`).toLocaleDateString(dateLocale, {
+    ? formatLocalizedDate(new Date(`${selectedDate}T12:00:00`), locale, {
         weekday: "long",
         day: "numeric",
         month: "long",

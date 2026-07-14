@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
-import { localeCodeFor } from "@/lib/i18n";
+import { formatLocalizedDate } from "@/lib/i18n";
 type Booking = {
   id: string;
   business_id: string;
@@ -97,8 +97,7 @@ type Role = "customer" | "business" | null;
 export default function RescheduleBooking() {
   const router = useRouter();
   const { id } = router.query;
-  const { locale, t } = useI18n();
-  const dateLocale = localeCodeFor(locale);
+  const { locale, profileLoaded, t } = useI18n();
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
@@ -167,8 +166,12 @@ export default function RescheduleBooking() {
 
     if (!response.ok || !payload.booking) {
       setError(
-        (typeof payload.error === "string" && payload.error) ||
-          t("reschedule.error.notFound", "Booking not found."),
+        response.status === 404
+          ? t("reschedule.error.notFound", "Booking not found.")
+          : t(
+              "reschedule.error.noPermission",
+              "You do not have permission to reschedule this booking.",
+            ),
       );
       setLoading(false);
       return;
@@ -238,9 +241,9 @@ export default function RescheduleBooking() {
   }
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady || !profileLoaded) return;
     loadPage();
-  }, [router.isReady, id]);
+  }, [router.isReady, id, locale, profileLoaded]);
 
   function formatDateInputValue(date: Date) {
     const yyyy = date.getFullYear();
@@ -268,7 +271,7 @@ export default function RescheduleBooking() {
   }
 
   function monthLabel(date: Date) {
-    return date.toLocaleDateString(dateLocale, {
+    return formatLocalizedDate(date, locale, {
       month: "long",
       year: "numeric",
     });
@@ -441,13 +444,13 @@ export default function RescheduleBooking() {
     if (!selectedDate) return null;
 
     const date = new Date(`${selectedDate}T12:00:00`);
-    return date.toLocaleDateString(dateLocale, {
+    return formatLocalizedDate(date, locale, {
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-  }, [dateLocale, selectedDate]);
+  }, [locale, selectedDate]);
 
   const calendarDays = useMemo<CalendarDay[]>(() => {
     const firstOfMonth = new Date(
@@ -481,7 +484,7 @@ export default function RescheduleBooking() {
         isCurrentMonth,
         isToday,
         isPast,
-        label: date.toLocaleDateString(dateLocale, {
+        label: formatLocalizedDate(date, locale, {
           weekday: "short",
           day: "numeric",
           month: "short",
@@ -499,7 +502,7 @@ export default function RescheduleBooking() {
     staffAvailability,
     availability,
     existingBookings,
-    dateLocale,
+    locale,
   ]);
 
   const availableStaffForSelectedTime = useMemo(() => {
@@ -556,21 +559,38 @@ export default function RescheduleBooking() {
     return slot.staffIds[0] || "";
   }
   function serviceName() {
-    return booking?.services?.name || "your appointment";
+    return (
+      booking?.services?.name ||
+      t("staff.fallback.appointment", "your appointment")
+    );
   }
 
   function businessName() {
-    return booking?.businesses?.name || "the business";
+    return booking?.businesses?.name || t("common.business", "the business");
   }
 
   function appointmentDateTime(value: string) {
-    return new Date(value).toLocaleString(dateLocale, {
+    return formatLocalizedDate(value, locale, {
       day: "numeric",
       month: "short",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
+  }
+
+  function bookingStatusLabel(status: string) {
+    if (status === "pending")
+      return t("bookingConfirmation.status.pending", "Request sent");
+    if (status === "confirmed")
+      return t("bookingConfirmation.status.confirmed", "Confirmed");
+    if (status === "declined")
+      return t("bookingConfirmation.status.declined", "Declined");
+    if (status === "completed")
+      return t("bookingConfirmation.status.completed", "Completed");
+    if (status === "cancelled")
+      return t("bookingConfirmation.status.cancelled", "Cancelled");
+    return status;
   }
 
   function isSameStartAsCurrentBooking(value: string) {
@@ -1047,9 +1067,7 @@ export default function RescheduleBooking() {
 
                 <div>
                   <p className="small muted">{t("common.status", "Status")}</p>
-                  <strong style={{ textTransform: "capitalize" }}>
-                    {booking.status}
-                  </strong>
+                  <strong>{bookingStatusLabel(booking.status)}</strong>
                 </div>
 
                 <div>
@@ -1068,7 +1086,7 @@ export default function RescheduleBooking() {
               </p>
               <h3 style={{ marginTop: "0.25rem" }}>
                 {requestedStart
-                  ? `${appointmentDateTime(requestedStart.toISOString())}${requestedEnd ? ` - ${requestedEnd.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" })}` : ""}`
+                  ? `${appointmentDateTime(requestedStart.toISOString())}${requestedEnd ? ` - ${formatLocalizedDate(requestedEnd, locale, { hour: "2-digit", minute: "2-digit" })}` : ""}`
                   : t(
                       "reschedule.requested.chooseDateTime",
                       "Choose a new date and time",
@@ -1077,10 +1095,10 @@ export default function RescheduleBooking() {
               <p className="small muted" style={{ marginTop: "0.45rem" }}>
                 {selectedTime
                   ? selectedStaff
-                    ? `Staff: ${selectedStaff.name}${selectedStaff.role_title ? ` — ${selectedStaff.role_title}` : ""}`
+                    ? `${t("reschedule.requested.staffPrefix", "Staff")}: ${selectedStaff.name}${selectedStaff.role_title ? ` — ${selectedStaff.role_title}` : ""}`
                     : availableStaffForSelectedTime.length === 1
-                      ? `Assigned automatically: ${availableStaffForSelectedTime[0].name}`
-                      : `Any available staff · ${availableStaffForSelectedTime.length} staff can do this time`
+                      ? `${t("reschedule.requested.assignedAutomatically", "Assigned automatically")}: ${availableStaffForSelectedTime[0].name}`
+                      : `${t("reschedule.requested.anyAvailableStaff", "Any available staff")} · ${availableStaffForSelectedTime.length} ${t("reschedule.requested.staffAvailable", "staff available")}`
                   : t(
                       "reschedule.requested.chooseStaff",
                       "Choose a time, then select any available staff member or a specific person.",
@@ -1107,8 +1125,10 @@ export default function RescheduleBooking() {
 
                 {selectableStaff.length === 0 && (
                   <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                    This booking cannot be rescheduled yet because no active
-                    staff are assigned to this service.
+                    {t(
+                      "reschedule.form.noAssignedStaff",
+                      "This booking cannot be rescheduled yet because no active staff are assigned to this service.",
+                    )}
                   </p>
                 )}
 
@@ -1142,7 +1162,10 @@ export default function RescheduleBooking() {
                       <div style={{ textAlign: "center" }}>
                         <strong>{monthLabel(calendarMonth)}</strong>
                         <p className="small muted">
-                          Mirëbook disables days that cannot fit this service.
+                          {t(
+                            "reschedule.calendar.disabledDaysHint",
+                            "Mirëbook disables days that cannot fit this service.",
+                          )}
                         </p>
                       </div>
 
@@ -1314,8 +1337,8 @@ export default function RescheduleBooking() {
                             }}
                             title={
                               day.isBookable
-                                ? `${day.label} · ${day.availableSlotCount} slots`
-                                : `${day.label} · unavailable`
+                                ? `${day.label} · ${day.availableSlotCount} ${t("reschedule.calendar.slots", "slots")}`
+                                : `${day.label} · ${t("reschedule.calendar.unavailable", "unavailable")}`
                             }
                             style={{
                               minHeight: 46,

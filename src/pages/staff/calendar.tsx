@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import MobileDayCalendar from "@/components/calendar/MobileDayCalendar";
+import { formatLocalizedDate } from "@/lib/i18n";
 
 type StaffProfile = {
   id: string;
@@ -121,7 +122,6 @@ const DEFAULT_CALENDAR_END_HOUR = 18;
 export default function StaffCalendarPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
 
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -289,23 +289,23 @@ export default function StaffCalendarPage() {
       return {
         date,
         dateString,
-        shortLabel: date.toLocaleDateString(dateLocale, {
+        shortLabel: formatLocalizedDate(date, locale, {
           weekday: "short",
           day: "numeric",
         }),
         bookings: dayBookings,
       };
     });
-  }, [dateLocale, weekBookings, weekDays]);
+  }, [locale, weekBookings, weekDays]);
   const selectedBooking = useMemo(
     () =>
       weekBookings.find((booking) => booking.id === selectedBookingId) || null,
     [selectedBookingId, weekBookings],
   );
-  const weekLabel = `${weekStartDate.toLocaleDateString(dateLocale, {
+  const weekLabel = `${formatLocalizedDate(weekStartDate, locale, {
     day: "numeric",
     month: "short",
-  })} - ${weekEndDate.toLocaleDateString(dateLocale, {
+  })} - ${formatLocalizedDate(weekEndDate, locale, {
     day: "numeric",
     month: "short",
   })}`;
@@ -347,10 +347,10 @@ export default function StaffCalendarPage() {
     return {
       start,
       end,
-      label: `${start.toLocaleTimeString(dateLocale, {
+      label: `${formatLocalizedDate(start, locale, {
         hour: "2-digit",
         minute: "2-digit",
-      })} - ${end.toLocaleTimeString(dateLocale, {
+      })} - ${formatLocalizedDate(end, locale, {
         hour: "2-digit",
         minute: "2-digit",
       })}`,
@@ -443,7 +443,7 @@ export default function StaffCalendarPage() {
         audience: "customer",
         type: "booking_completed",
         title: t("staff.notification.completedTitle", "Appointment completed"),
-        message: `${t("staff.notification.completedStart", "Your appointment for")} ${serviceName(booking, t("staff.fallback.appointment", "your appointment"))} ${t("staff.notification.completedMiddle", "on")} ${new Date(booking.start_at).toLocaleString(dateLocale)} ${t("staff.notification.completedEnd", "has been marked as completed by staff.")}`,
+        message: `${t("staff.notification.completedStart", "Your appointment for")} ${serviceName(booking, t("staff.fallback.appointment", "your appointment"))} ${t("staff.notification.completedMiddle", "on")} ${formatLocalizedDate(booking.start_at, locale)} ${t("staff.notification.completedEnd", "has been marked as completed by staff.")}`,
         action_url: "/my-bookings",
       });
     }
@@ -542,7 +542,7 @@ export default function StaffCalendarPage() {
             ariaLabel={t("staffCalendar.mobileAgenda.label", "Day calendar")}
             days={weekGroups.map((group) => ({
               key: group.dateString,
-              weekday: group.date.toLocaleDateString(dateLocale, {
+              weekday: formatLocalizedDate(group.date, locale, {
                 weekday: "short",
               }),
               date: String(group.date.getDate()),
@@ -550,14 +550,11 @@ export default function StaffCalendarPage() {
               isToday: group.dateString === todayKey,
             }))}
             selectedDayKey={selectedGroup.dateString}
-            selectedDayLabel={selectedGroup.date.toLocaleDateString(
-              dateLocale,
-              {
+            selectedDayLabel={formatLocalizedDate(selectedGroup.date, locale, {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
-              },
-            )}
+              })}
             appointments={mobileAppointments}
             selectedAppointmentId={selectedBookingId}
             startHour={mobileWindow.startHour}

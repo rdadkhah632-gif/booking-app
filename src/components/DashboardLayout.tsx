@@ -55,12 +55,7 @@ export default function DashboardLayout({
           session.user.email?.split("@")[0] ||
           t("dashboardLayout.account.fallback", "Account"),
       );
-      setWorkspaceLabel(
-        capabilities.ownedBusinesses[0]?.name ||
-          (workspace === "staff"
-            ? t("staff.workspace.kicker", "Staff workspace")
-            : t("product.business.suffix", "Business")),
-      );
+      setWorkspaceLabel(capabilities.ownedBusinesses[0]?.name || "");
 
       if (workspace === "staff") {
         if (!capabilities.canUseStaff && !capabilities.canUseBusiness) {
@@ -275,7 +270,12 @@ export default function DashboardLayout({
                 </span>
                 <span className="sidebar-account-copy">
                   <strong>{accountLabel}</strong>
-                  <small>{workspaceLabel}</small>
+                  <small>
+                    {workspaceLabel ||
+                      (workspace === "staff"
+                        ? t("staff.workspace.kicker", "Staff workspace")
+                        : t("product.business.suffix", "Business"))}
+                  </small>
                 </span>
               </Link>
               <details className="sidebar-mobile-account">

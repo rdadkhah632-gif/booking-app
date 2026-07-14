@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
-import { localeCodeFor } from "@/lib/i18n";
+import { formatLocalizedDate } from "@/lib/i18n";
 
 type Booking = {
   id: string;
@@ -62,8 +62,7 @@ type Booking = {
 export default function BookingConfirmation() {
   const router = useRouter();
   const { id } = router.query;
-  const { locale, t } = useI18n();
-  const dateLocale = localeCodeFor(locale);
+  const { locale, profileLoaded, t } = useI18n();
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,7 +77,7 @@ export default function BookingConfirmation() {
   }
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady || !profileLoaded) return;
 
     async function loadBooking() {
       setLoading(true);
@@ -124,8 +123,11 @@ export default function BookingConfirmation() {
 
       if (!response.ok || !payload.booking) {
         setError(
-          typeof payload.error === "string"
-            ? payload.error
+          response.status === 404
+            ? t(
+                "bookingConfirmation.error.notFound",
+                "Booking not found.",
+              )
             : t(
                 "bookingConfirmation.error.noPermission",
                 "You do not have permission to view this booking.",
@@ -141,7 +143,7 @@ export default function BookingConfirmation() {
     }
 
     loadBooking();
-  }, [router.isReady, id]);
+  }, [router.isReady, id, locale, profileLoaded]);
 
   function statusLabel(status: string) {
     if (status === "pending")
@@ -237,7 +239,7 @@ export default function BookingConfirmation() {
 
   function appointmentDateTime() {
     if (!booking) return "";
-    return new Date(booking.start_at).toLocaleString(dateLocale, {
+    return formatLocalizedDate(booking.start_at, locale, {
       dateStyle: "medium",
       timeStyle: "short",
     });

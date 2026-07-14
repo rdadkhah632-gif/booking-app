@@ -192,17 +192,17 @@ booking loads do not re-claim the same row, so the backfill is idempotent for
 the claim flow. Booking creation, status and customer-isolation rules were not
 changed.
 
-Focused retest required:
+Focused production retest passed on 13 July 2026:
 
-1. Create a new manual appointment for an email with no Mirëbook account.
-2. Complete customer registration and verification through the appointment
-   link.
-3. Confirm Booking confirmation, My Bookings and Notifications each show the
-   appointment once.
-4. Refresh My Bookings and Notifications twice and confirm no duplicate
-   notification is created.
-5. Confirm a different verified customer cannot see the appointment or its
-   notification.
+- the appointment claim link stayed on the customer domain and preserved the
+  booking ID through registration and email verification
+- Booking confirmation, My Bookings and Notifications each showed the claimed
+  appointment exactly once
+- two refreshes of My Bookings and Notifications created no duplicate rows
+- the notification action returned to the same booking ID
+- a different verified customer could not view the appointment or its details
+
+The manual appointment claim lifecycle is therefore launch-ready.
 
 ## Albanian Launch Localization Follow-Up
 
@@ -214,9 +214,13 @@ The follow-up implementation:
 
 - synchronizes the document `lang` attribute with the active `en` or `sq`
   locale
-- uses `sq-AL` date formatting on the public booking, confirmation,
-  reschedule, My Bookings, customer notification, business Today and business
-  Calendar surfaces
+- uses deterministic Albanian month and weekday names on the public booking,
+  confirmation, reschedule, My Bookings, customer notification, business
+  Today/Calendar and staff Today/Calendar/Notifications surfaces instead of
+  relying on inconsistent browser locale data
+- translates booking status, unavailable-day guidance, staff-selection copy
+  and inaccessible/not-found states on the customer reschedule and
+  confirmation routes
 - refreshes the staff shell's derived workspace label when the saved locale
   loads
 - adds the missing Albanian My Bookings loading copy
@@ -229,12 +233,18 @@ subject/body delivery after deployment. Supabase Auth confirmation and recovery
 templates remain dashboard-managed and should stay bilingual unless a separate
 localized Auth email-hook project is approved.
 
+Focused QA already confirmed `html lang="sq"`, Albanian My Bookings loading
+copy and `Njoftimet` navigation. After this date/copy follow-up is deployed,
+retest one SQ customer booking/confirmation/reschedule flow, business
+Today/Calendar and staff Today/Calendar/Notifications. The remaining email
+check requires either inbox access or the captured subject/body and Resend
+delivery detail; it cannot be inferred from browser UI alone.
+
 ## Final Release Order
 
 1. Commit and deploy the latest website build.
 2. Marketplace cleanup and empty-state QA are complete.
-3. Retest manual appointment customer-claim notification backfill and
-   cross-account isolation.
+3. Manual appointment claim notification and cross-account QA are complete.
 4. Run reminder dry-run and controlled delivery/deduplication QA.
 5. Run one English and one Albanian smoke across registration, booking email,
    public booking, Calendar, Notifications and account language persistence.

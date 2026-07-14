@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
-import { localeCodeFor } from "@/lib/i18n";
+import { formatLocalizedDate } from "@/lib/i18n";
 import { Business, Service, TimeSlot } from "./publicBusinessTypes";
 
 type Props = {
@@ -61,7 +61,6 @@ export default function PublicBusinessSummary({
   reschedulePolicyText,
 }: Props) {
   const { locale, t } = useI18n();
-  const dateLocale = localeCodeFor(locale);
   const blockedByRole = Boolean(
     customerUserId && userRole && userRole !== "customer",
   );
@@ -112,7 +111,7 @@ export default function PublicBusinessSummary({
               <span className="small muted">{t("common.time", "Time")}</span>
               <strong>
                 {selectedDateLabel ||
-                  new Date(selectedSlot!.startAt).toLocaleString(dateLocale, {
+                  formatLocalizedDate(selectedSlot!.startAt, locale, {
                     dateStyle: "medium",
                     timeStyle: "short",
                   })}

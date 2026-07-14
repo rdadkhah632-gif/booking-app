@@ -5,6 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { formatLocalizedDate } from "@/lib/i18n";
 
 type StaffMember = {
   id: string;
@@ -79,7 +80,6 @@ function endOfDay(date: Date) {
 export default function StaffDashboardPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
 
   const [staffProfile, setStaffProfile] = useState<StaffMember | null>(null);
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
@@ -549,16 +549,13 @@ export default function StaffDashboardPage() {
                         t("common.customer", "Customer")}
                     </strong>
                     <span>
-                      {new Date(nextBooking.start_at).toLocaleString(
-                        dateLocale,
-                        {
-                          weekday: "short",
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        },
-                      )}
+                      {formatLocalizedDate(nextBooking.start_at, locale, {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </Link>
                 ) : (

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { formatLocalizedDate } from "@/lib/i18n";
 
 type Notification = {
   id: string;
@@ -187,7 +188,6 @@ function staffNotificationText(
 
 export default function StaffNotificationsPage() {
   const { locale, t } = useI18n();
-  const dateLocale = locale === "sq" ? "sq-AL" : "en-GB";
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [bookingContexts, setBookingContexts] = useState<
     Record<string, BookingContext>
@@ -465,22 +465,19 @@ export default function StaffNotificationsPage() {
                           )}
                         </span>
                         <span>
-                          {new Date(booking.start_at).toLocaleString(
-                            dateLocale,
-                            {
-                              weekday: "short",
-                              day: "numeric",
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )}
+                          {formatLocalizedDate(booking.start_at, locale, {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       </div>
                     )}
 
                     <p className="small muted">
-                      {new Date(item.created_at).toLocaleString(dateLocale)}
+                      {formatLocalizedDate(item.created_at, locale)}
                     </p>
                   </div>
 

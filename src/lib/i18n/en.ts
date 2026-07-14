@@ -832,6 +832,7 @@ export const en: TranslationTree = {
   "bookingConfirmation.status.cancelled": "Cancelled",
   "bookingConfirmation.error.noPermission":
     "Sign in with the customer email address this appointment was sent to, or create a customer account with that email.",
+  "bookingConfirmation.error.notFound": "Booking not found.",
   "bookingConfirmation.error.title": "Could not load booking",
   "myBookings.error.load": "Could not load your bookings.",
   "bookingConfirmation.fallback.business": "this business",
@@ -3831,8 +3832,14 @@ export const en: TranslationTree = {
   "reschedule.requested.chooseDateTime": "Choose a new date and time",
   "reschedule.requested.chooseStaff":
     "Choose a time, then select any available staff member or a specific person.",
+  "reschedule.requested.staffPrefix": "Staff",
+  "reschedule.requested.assignedAutomatically": "Assigned automatically",
+  "reschedule.requested.anyAvailableStaff": "Any available staff",
+  "reschedule.requested.staffAvailable": "staff available",
   "reschedule.form.title": "New appointment time",
   "reschedule.form.calendar": "Available dates",
+  "reschedule.form.noAssignedStaff":
+    "This booking cannot be rescheduled yet because no active staff are assigned to this service.",
   "reschedule.availableAt": "Available at",
   "reschedule.actions.businessBookings": "Business bookings",
   "reschedule.actions.sending": "Sending request...",
@@ -3864,6 +3871,10 @@ export const en: TranslationTree = {
   "reschedule.calendar.allDays": "Show all bookable days",
   "reschedule.calendar.selected": "Selected",
   "reschedule.calendar.filteredTo": "filtered to",
+  "reschedule.calendar.disabledDaysHint":
+    "Mirëbook disables days that cannot fit this service.",
+  "reschedule.calendar.slots": "slots",
+  "reschedule.calendar.unavailable": "unavailable",
   "reschedule.times.title": "Available times",
   "reschedule.times.chooseDate": "Choose an available date first.",
   "reschedule.times.empty":
