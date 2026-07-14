@@ -279,6 +279,32 @@ Today/Calendar and staff Today/Calendar/Notifications. The remaining email
 check requires either inbox access or the captured subject/body and Resend
 delivery detail; it cannot be inferred from browser UI alone.
 
+## Regional Display Refinement
+
+The grouped launch-refinement pass now uses each business's saved currency and
+timezone throughout the active customer and owner surfaces:
+
+- public service prices, Booking confirmation and My Bookings
+- Services setup/preview and Team service assignments
+- customer appointment history and completed-value summaries
+- Today appointment dates, day matching and Calendar deep links
+- the optional Analytics route and reusable booking/value components
+
+GBP, EUR, ALL and legacy USD values use one locale-aware formatter rather than
+page-specific symbols. Albanian date formatting now honors an explicitly
+provided business timezone while retaining Mirëbook's deterministic Albanian
+month, weekday and 24-hour time style.
+
+The same pass added explicit button behavior to active non-submit controls,
+improved language-selector semantics and restored complete EN/SQ translation
+key parity. It changes presentation only: no booking, availability, auth, RLS,
+staff-linking, notification-generation or billing-write behavior was changed.
+
+Local production build, whitespace validation, button-semantic audit and
+translation parity checks pass. Hold production QA until this grouped batch is
+deployed; then verify one GBP, one EUR and one ALL service across the public
+profile, confirmation, My Bookings, Services, Team and customer history.
+
 ## Final Release Order
 
 1. Commit and deploy the latest website build.

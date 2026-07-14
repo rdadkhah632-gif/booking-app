@@ -17,7 +17,7 @@ import { useI18n } from "@/lib/useI18n";
 
 export default function Services() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const { businessId } = router.query;
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -49,7 +49,7 @@ export default function Services() {
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
       .from("businesses")
-      .select("id, name, published")
+      .select("id, name, published, currency")
       .eq("user_id", sessionUserId)
       .order("created_at", { ascending: false });
 
@@ -593,6 +593,7 @@ export default function Services() {
                 imageFile={imageFile}
                 duration={duration}
                 price={price}
+                currency={business.currency}
                 durationOptions={durationOptions}
                 setFormExpanded={setFormExpanded}
                 setName={setName}
@@ -640,6 +641,7 @@ export default function Services() {
               <ServiceCard
                 key={service.id}
                 business={business}
+                locale={locale}
                 service={service}
                 assignedStaff={assignedStaffForService(service.id)}
                 isEditing={editingServiceId === service.id}

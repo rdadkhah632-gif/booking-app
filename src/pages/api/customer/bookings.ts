@@ -28,6 +28,8 @@ type BusinessRow = {
   id: string;
   user_id?: string | null;
   name: string;
+  currency?: string | null;
+  timezone?: string | null;
   address?: string | null;
   city?: string | null;
   country?: string | null;
@@ -268,7 +270,9 @@ async function loadBusinesses(
 
   const { data, error } = await supabaseAdmin
     .from("businesses")
-    .select("id, user_id, name, address, city, country, phone")
+    .select(
+      "id, user_id, name, currency, timezone, address, city, country, phone",
+    )
     .in("id", ids);
 
   if (error) throw error;

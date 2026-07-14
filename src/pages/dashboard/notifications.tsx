@@ -1448,6 +1448,7 @@ export default function BusinessNotifications() {
 
                   <div className="business-notification-card-actions">
                     <button
+                      type="button"
                       onClick={() => acceptBooking(booking)}
                       disabled={isWorking}
                       className="btn btn-accent"
@@ -1461,6 +1462,7 @@ export default function BusinessNotifications() {
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => declineBooking(booking)}
                       disabled={isWorking}
                       className="btn btn-danger"
@@ -1690,6 +1692,7 @@ export default function BusinessNotifications() {
                     ) : (
                       <>
                         <button
+                          type="button"
                           onClick={() => acceptRequest(request)}
                           disabled={isWorking}
                           className="btn btn-accent"
@@ -1706,6 +1709,7 @@ export default function BusinessNotifications() {
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => openDeclineComposer(request)}
                           disabled={isWorking}
                           className="btn btn-danger"

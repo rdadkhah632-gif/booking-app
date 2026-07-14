@@ -28,7 +28,11 @@ export default function ExploreResultsHeader({
       </div>
 
       {hasFilters && (
-        <button onClick={onClearFilters} className="btn btn-ghost">
+        <button
+          type="button"
+          onClick={onClearFilters}
+          className="btn btn-ghost"
+        >
           {t("explore.results.clearCurrent")}
         </button>
       )}

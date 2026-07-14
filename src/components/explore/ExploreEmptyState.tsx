@@ -61,7 +61,11 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
       </p>
       <div className="explore-empty-actions">
         {onClearFilters && (
-          <button onClick={onClearFilters} className="btn btn-accent">
+          <button
+            type="button"
+            onClick={onClearFilters}
+            className="btn btn-accent"
+          >
             {t('explore.filters.clear')}
           </button>
         )}

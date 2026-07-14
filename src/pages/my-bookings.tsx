@@ -230,7 +230,7 @@ export default function MyBookings() {
       booking,
       "booking_cancelled",
       t("myBookings.notification.cancelledTitle", "Customer cancelled booking"),
-      `${booking.customer_name || t("publicBusiness.customerFallback", "A customer")} ${t("myBookings.notification.cancelledWord", "cancelled their booking for")} ${serviceName(booking)} ${t("publicBusiness.notification.forWord", "for")} ${formatLocalizedDate(booking.start_at, locale, { dateStyle: "medium", timeStyle: "short" })}.`,
+      `${booking.customer_name || t("publicBusiness.customerFallback", "A customer")} ${t("myBookings.notification.cancelledWord", "cancelled their booking for")} ${serviceName(booking)} ${t("publicBusiness.notification.forWord", "for")} ${formatLocalizedDate(booking.start_at, locale, { dateStyle: "medium", timeStyle: "short", timeZone: businessTimeZone(booking) || undefined })}.`,
     );
     void requestTransactionalEmail({
       event: "booking_customer_cancelled",
@@ -350,6 +350,14 @@ export default function MyBookings() {
       firstRelation(booking.businesses)?.name ||
       t("dashboardNotifications.labels.businessFallback", "Business")
     );
+  }
+
+  function businessCurrency(booking: Booking) {
+    return firstRelation(booking.businesses)?.currency || "GBP";
+  }
+
+  function businessTimeZone(booking: Booking) {
+    return firstRelation(booking.businesses)?.timezone || null;
   }
 
   function serviceName(booking: Booking) {
@@ -523,6 +531,8 @@ export default function MyBookings() {
         isWorking={actionLoadingId === booking.id}
         onCancel={cancelBooking}
         businessName={businessName}
+        businessCurrency={businessCurrency}
+        businessTimeZone={businessTimeZone}
         serviceName={serviceName}
         servicePrice={servicePrice}
         staffName={staffName}

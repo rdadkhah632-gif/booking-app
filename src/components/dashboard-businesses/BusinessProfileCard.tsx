@@ -168,6 +168,7 @@ export default function BusinessProfileCard({
         </div>
 
         <button
+          type="button"
           onClick={() => onTogglePublished(business)}
           className={business.published ? "btn btn-ghost" : "btn btn-accent"}
           disabled={isPublishing}
@@ -386,6 +387,7 @@ export default function BusinessProfileCard({
 
       <div className="business-profile-actions">
         <button
+          type="button"
           onClick={() => onSave(business)}
           className="btn btn-accent"
           disabled={isSaving}

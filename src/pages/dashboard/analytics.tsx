@@ -5,6 +5,9 @@ import { supabase } from "@/lib/supabaseClient";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { formatCurrencyAmount } from "@/lib/currency";
+import { formatLocalizedDate } from "@/lib/i18n";
+import { dateKeyInTimeZone } from "@/lib/timezone";
 
 type Timeframe = "7d" | "30d" | "90d" | "all";
 
@@ -12,6 +15,8 @@ type Business = {
   id: string;
   name: string;
   published: boolean;
+  currency?: string | null;
+  timezone?: string | null;
 };
 
 type Booking = {
@@ -59,7 +64,7 @@ type DailySummary = {
 
 export default function AnalyticsPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -94,7 +99,7 @@ export default function AnalyticsPage() {
 
     const { data: businessData, error: businessError } = await supabase
       .from("businesses")
-      .select("id, name, published")
+      .select("id, name, published, currency, timezone")
       .eq("user_id", session.user.id)
       .order("created_at", { ascending: false });
 
@@ -160,6 +165,17 @@ export default function AnalyticsPage() {
   useEffect(() => {
     loadAnalytics();
   }, []);
+
+  const businessById = useMemo(
+    () => new Map(businesses.map((business) => [business.id, business])),
+    [businesses],
+  );
+  const selectedBusiness =
+    selectedBusinessId === "all"
+      ? businesses[0]
+      : businessById.get(selectedBusinessId);
+  const displayCurrency = selectedBusiness?.currency;
+  const displayTimeZone = selectedBusiness?.timezone;
 
   function timeframeStartDate(currentTimeframe: Timeframe) {
     if (currentTimeframe === "all") return null;
@@ -272,7 +288,7 @@ export default function AnalyticsPage() {
     );
 
     const businessMap = filteredBookings.reduce<
-      Record<string, { name: string; count: number; value: number }>
+      Record<string, { id: string; name: string; count: number; value: number }>
     >((acc, booking) => {
       const businessName =
         booking.businesses?.name ||
@@ -282,6 +298,7 @@ export default function AnalyticsPage() {
 
       if (!acc[businessKey]) {
         acc[businessKey] = {
+          id: businessKey,
           name: businessName,
           count: 0,
           value: 0,
@@ -301,10 +318,13 @@ export default function AnalyticsPage() {
     const dailyMap = filteredBookings.reduce<Record<string, DailySummary>>(
       (acc, booking) => {
         const date = new Date(booking.start_at);
-        const dateKey = date.toISOString().slice(0, 10);
-        const label = date.toLocaleDateString(undefined, {
+        const timeZone =
+          businessById.get(booking.business_id)?.timezone || displayTimeZone;
+        const dateKey = dateKeyInTimeZone(date, timeZone);
+        const label = formatLocalizedDate(date, locale, {
           day: "2-digit",
           month: "short",
+          timeZone: timeZone || undefined,
         });
         const price = Number(booking.services?.price || 0);
 
@@ -369,7 +389,13 @@ export default function AnalyticsPage() {
       mostValuableDay,
       recentActivity,
     };
-  }, [filteredBookings]);
+  }, [
+    filteredBookings,
+    businessById,
+    displayTimeZone,
+    locale,
+    t,
+  ]);
 
   function timeframeLabel() {
     if (timeframe === "7d")
@@ -387,6 +413,20 @@ export default function AnalyticsPage() {
     if (status === "pending") return "var(--accent)";
     if (status === "cancelled") return "var(--warning)";
     return "var(--text-muted)";
+  }
+
+  function statusLabel(status: string) {
+    if (status === "pending")
+      return t("dashboardBookings.status.needsApproval", "Needs approval");
+    if (status === "confirmed")
+      return t("dashboardBookings.status.confirmed", "Confirmed");
+    if (status === "completed")
+      return t("dashboardBookings.status.completed", "Completed");
+    if (status === "cancelled")
+      return t("dashboardBookings.status.cancelled", "Cancelled");
+    if (status === "declined")
+      return t("dashboardBookings.status.declined", "Declined");
+    return status;
   }
 
   function maxDailyCount() {
@@ -485,7 +525,11 @@ export default function AnalyticsPage() {
                 </p>
               </div>
 
-              <button onClick={loadAnalytics} className="btn btn-ghost">
+              <button
+                type="button"
+                onClick={loadAnalytics}
+                className="btn btn-ghost"
+              >
                 {t("dashboardAnalytics.controls.refresh", "Refresh analytics")}
               </button>
             </div>
@@ -568,7 +612,13 @@ export default function AnalyticsPage() {
                   "Estimated completed value",
                 )}
               </p>
-              <h3>£{analytics.estimatedCompletedValue.toFixed(2)}</h3>
+              <h3>
+                {formatCurrencyAmount(
+                  analytics.estimatedCompletedValue,
+                  displayCurrency,
+                  locale,
+                )}
+              </h3>
               <p className="muted small">
                 {t(
                   "dashboardAnalytics.metrics.completedValueBody",
@@ -584,7 +634,13 @@ export default function AnalyticsPage() {
                   "Average booking value",
                 )}
               </p>
-              <h3>£{analytics.averageBookingValue.toFixed(2)}</h3>
+              <h3>
+                {formatCurrencyAmount(
+                  analytics.averageBookingValue,
+                  displayCurrency,
+                  locale,
+                )}
+              </h3>
               <p className="muted small">
                 {t(
                   "dashboardAnalytics.metrics.averageValueBody",
@@ -623,7 +679,13 @@ export default function AnalyticsPage() {
                   "Confirmed upcoming value",
                 )}
               </p>
-              <h3>£{analytics.estimatedConfirmedValue.toFixed(2)}</h3>
+              <h3>
+                {formatCurrencyAmount(
+                  analytics.estimatedConfirmedValue,
+                  displayCurrency,
+                  locale,
+                )}
+              </h3>
               <p className="muted small">
                 {t(
                   "dashboardAnalytics.metrics.confirmedValueBody",
@@ -938,7 +1000,11 @@ export default function AnalyticsPage() {
                               {t("support.business.bookings", "bookings")}
                             </p>
                             <p className="small muted">
-                              £{service.estimatedValue.toFixed(2)}
+                              {formatCurrencyAmount(
+                                service.estimatedValue,
+                                displayCurrency,
+                                locale,
+                              )}
                             </p>
                           </div>
                         </div>
@@ -990,7 +1056,7 @@ export default function AnalyticsPage() {
                 <div style={{ display: "grid", gap: "0.75rem" }}>
                   {analytics.businessBreakdown.map((business) => (
                     <div
-                      key={business.name}
+                      key={business.id}
                       className="card"
                       style={{
                         background: "var(--surface-2)",
@@ -1013,7 +1079,13 @@ export default function AnalyticsPage() {
                           </p>
                         </div>
 
-                        <strong>£{business.value.toFixed(2)}</strong>
+                        <strong>
+                          {formatCurrencyAmount(
+                            business.value,
+                            businessById.get(business.id)?.currency,
+                            locale,
+                          )}
+                        </strong>
                       </div>
                     </div>
                   ))}
@@ -1098,7 +1170,13 @@ export default function AnalyticsPage() {
                             )}
                         </p>
                         <p className="small muted">
-                          {new Date(booking.start_at).toLocaleString()}
+                          {formatLocalizedDate(booking.start_at, locale, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                            timeZone:
+                              businessById.get(booking.business_id)?.timezone ||
+                              undefined,
+                          })}
                         </p>
                       </div>
 
@@ -1113,13 +1191,17 @@ export default function AnalyticsPage() {
                             textTransform: "capitalize",
                           }}
                         >
-                          {booking.status}
+                          {statusLabel(booking.status)}
                         </span>
                         <p
                           className="small muted"
                           style={{ marginTop: "0.45rem" }}
                         >
-                          £{Number(booking.services?.price || 0).toFixed(2)}
+                          {formatCurrencyAmount(
+                            Number(booking.services?.price || 0),
+                            businessById.get(booking.business_id)?.currency,
+                            locale,
+                          )}
                         </p>
                       </div>
                     </div>

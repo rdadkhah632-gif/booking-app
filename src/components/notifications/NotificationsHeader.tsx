@@ -33,6 +33,7 @@ export default function NotificationsHeader({
         <div className="customer-notification-actions">
           {showActions && (
             <button
+              type="button"
               onClick={onRefresh}
               className="btn btn-ghost"
               disabled={loading}
@@ -45,6 +46,7 @@ export default function NotificationsHeader({
 
           {unreadCount > 0 && (
             <button
+              type="button"
               onClick={onMarkAllRead}
               className="btn btn-accent"
               disabled={markingRead}

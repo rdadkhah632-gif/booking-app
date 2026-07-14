@@ -4,6 +4,7 @@ export type Business = {
   published: boolean
   category?: string | null
   city?: string | null
+  timezone?: string | null
 }
 
 export type Booking = {

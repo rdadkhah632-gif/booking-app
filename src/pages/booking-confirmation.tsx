@@ -6,6 +6,7 @@ import AuthNav from "@/components/AuthNav";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 type Booking = {
   id: string;
@@ -22,6 +23,8 @@ type Booking = {
         id?: string;
         user_id?: string;
         name: string;
+        currency?: string | null;
+        timezone?: string | null;
         address?: string | null;
         city?: string | null;
         country?: string | null;
@@ -31,6 +34,8 @@ type Booking = {
         id?: string;
         user_id?: string;
         name: string;
+        currency?: string | null;
+        timezone?: string | null;
         address?: string | null;
         city?: string | null;
         country?: string | null;
@@ -220,7 +225,7 @@ export default function BookingConfirmation() {
     const price = servicePrice();
     if (price === null)
       return t("bookingConfirmation.priceNotSet", "Price not shown");
-    return `£${price.toFixed(2)}`;
+    return formatCurrencyAmount(price, businessRelation()?.currency, locale);
   }
 
   function staffName() {
@@ -242,6 +247,7 @@ export default function BookingConfirmation() {
     return formatLocalizedDate(booking.start_at, locale, {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: businessRelation()?.timezone || undefined,
     });
   }
 

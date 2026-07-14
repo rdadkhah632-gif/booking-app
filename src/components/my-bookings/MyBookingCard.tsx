@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
+import { formatCurrencyAmount } from "@/lib/currency";
 import { Booking, BookingMode, BookingRequest } from "./myBookingsTypes";
 
 type Props = {
@@ -10,6 +11,8 @@ type Props = {
   isWorking: boolean;
   onCancel: (booking: Booking) => void;
   businessName: (booking: Booking) => string;
+  businessCurrency: (booking: Booking) => string;
+  businessTimeZone: (booking: Booking) => string | null;
   serviceName: (booking: Booking) => string;
   servicePrice: (booking: Booking) => number;
   staffName: (booking: Booking) => string;
@@ -35,6 +38,8 @@ export default function MyBookingCard({
   isWorking,
   onCancel,
   businessName,
+  businessCurrency,
+  businessTimeZone,
   serviceName,
   servicePrice,
   staffName,
@@ -62,6 +67,7 @@ export default function MyBookingCard({
     return formatLocalizedDate(value, locale, {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: businessTimeZone(booking) || undefined,
     });
   }
 
@@ -151,8 +157,13 @@ export default function MyBookingCard({
                 {booking.duration_minutes} {t("common.minutes", "minutes")}
               </span>
               <span>
-                <b>{t("myBookings.card.price", "Price")}</b>£
-                {servicePrice(booking).toFixed(2)}
+                <b>{t("myBookings.card.price", "Price")}</b>
+                {" "}
+                {formatCurrencyAmount(
+                  servicePrice(booking),
+                  businessCurrency(booking),
+                  locale,
+                )}
               </span>
             </div>
           </div>

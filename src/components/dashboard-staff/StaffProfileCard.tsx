@@ -7,11 +7,14 @@ import {
   StaffMember,
   UpdateStaffField,
 } from "./dashboardStaffTypes";
+import type { Locale } from "@/lib/i18n";
 import StaffAvailabilitySummary from "./StaffAvailabilitySummary";
 import StaffServiceAssignmentCard from "./StaffServiceAssignmentCard";
 
 type Props = {
   staff: StaffMember;
+  currency?: string | null;
+  locale: Locale;
   services: Service[];
   assignedServiceIds: string[];
   availabilityRows: AvailabilityRow[];
@@ -37,6 +40,8 @@ type Props = {
 
 export default function StaffProfileCard({
   staff,
+  currency,
+  locale,
   services,
   assignedServiceIds,
   availabilityRows,
@@ -274,6 +279,7 @@ export default function StaffProfileCard({
           {isEditing ? (
             <>
               <button
+                type="button"
                 onClick={() => saveStaff(staff)}
                 className="btn btn-accent"
                 disabled={savingStaffId === staff.id}
@@ -284,6 +290,7 @@ export default function StaffProfileCard({
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   setEditingStaffId(null);
                   loadData();
@@ -425,6 +432,8 @@ export default function StaffProfileCard({
         <div className="grid-2 staff-card-grid">
           <StaffServiceAssignmentCard
             staff={staff}
+            currency={currency}
+            locale={locale}
             services={services}
             assignedServiceIds={assignedServiceIds}
             savingAssignmentKey={savingAssignmentKey}

@@ -20,7 +20,7 @@ import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 export default function StaffPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const { businessId } = router.query;
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -62,7 +62,7 @@ export default function StaffPage() {
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
       .from("businesses")
-      .select("id, name")
+      .select("id, name, currency")
       .eq("user_id", sessionUserId)
       .order("created_at", { ascending: false });
 
@@ -1065,6 +1065,8 @@ export default function StaffPage() {
               <StaffProfileCard
                 key={member.id}
                 staff={member}
+                currency={business.currency}
+                locale={locale}
                 services={services}
                 assignedServiceIds={assignedServicesForStaff(member.id).map(
                   (service) => service.id,

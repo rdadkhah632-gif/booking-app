@@ -13,6 +13,7 @@ type Props = {
   imageFile: File | null;
   duration: number;
   price: number;
+  currency?: string | null;
   durationOptions: () => number[];
   setFormExpanded: (value: boolean | ((previous: boolean) => boolean)) => void;
   setName: (value: string) => void;
@@ -37,6 +38,7 @@ export default function CreateServiceCard({
   imageFile,
   duration,
   price,
+  currency,
   durationOptions,
   setFormExpanded,
   setName,
@@ -106,7 +108,7 @@ export default function CreateServiceCard({
               </label>
 
               <label className="small muted">
-                {t("dashboardServices.create.price", "Price")}
+                {t("dashboardServices.create.price", "Price")} ({currency || "GBP"})
                 <input
                   type="number"
                   placeholder={t(
@@ -155,6 +157,7 @@ export default function CreateServiceCard({
                   name={name}
                   duration={duration}
                   price={price}
+                  currency={currency}
                   description={description}
                   imageUrl={imagePreviewUrl || imageUrl}
                 />

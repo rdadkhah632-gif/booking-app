@@ -22,7 +22,12 @@ export default function BookingsTopToolbar({
       </p>
 
       <div className="booking-top-toolbar-actions">
-        <button onClick={onRefresh} className="btn btn-ghost" disabled={pageLoading}>
+        <button
+          type="button"
+          onClick={onRefresh}
+          className="btn btn-ghost"
+          disabled={pageLoading}
+        >
           {pageLoading
             ? t('dashboardBookings.toolbar.refreshing', 'Refreshing...')
             : t('dashboardBookings.toolbar.refresh', 'Refresh bookings')}

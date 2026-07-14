@@ -3,6 +3,7 @@ import { TranslationTree } from "./types";
 export const en: TranslationTree = {
   "language.english": "English",
   "language.albanian": "Albanian",
+  "language.selector": "Language",
   "language.short.en": "EN",
   "language.short.sq": "SQ",
 
@@ -3271,6 +3272,7 @@ export const en: TranslationTree = {
   "explore.filters.clearButton": "Clear filters",
   "explore.filters.refreshButton": "Refresh results",
   "staffAvailability.templates.compactTitle": "Templates",
+  "staffAvailability.templates.title": "Quick templates",
   "staff.workspace.ownerStaffWorkspace": "My work inside this business",
   "staff.actions.businessDashboard": "Business dashboard",
 

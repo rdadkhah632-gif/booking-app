@@ -54,6 +54,41 @@ function dateValue(value: Date | string | number) {
   return value instanceof Date ? value : new Date(value);
 }
 
+function dateValueInTimeZone(
+  date: Date,
+  timeZone?: string,
+) {
+  if (!timeZone) return date;
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).formatToParts(date);
+    const values = parts.reduce<Record<string, string>>((result, part) => {
+      if (part.type !== "literal") result[part.type] = part.value;
+      return result;
+    }, {});
+
+    return new Date(
+      Number(values.year),
+      Number(values.month) - 1,
+      Number(values.day),
+      Number(values.hour),
+      Number(values.minute),
+      Number(values.second),
+    );
+  } catch {
+    return date;
+  }
+}
+
 function twoDigits(value: number) {
   return String(value).padStart(2, "0");
 }
@@ -140,12 +175,13 @@ export function formatLocalizedDate(
     return new Intl.DateTimeFormat("en-GB", options).format(date);
   }
 
-  const effectiveOptions =
+  const effectiveOptions: Intl.DateTimeFormatOptions =
     Object.keys(options).length > 0
       ? options
-      : ({ dateStyle: "medium", timeStyle: "short" } as const);
-  const formattedDate = sqDateParts(date, effectiveOptions);
-  const formattedTime = sqTimeParts(date, effectiveOptions);
+      : { dateStyle: "medium", timeStyle: "short" };
+  const displayDate = dateValueInTimeZone(date, effectiveOptions.timeZone);
+  const formattedDate = sqDateParts(displayDate, effectiveOptions);
+  const formattedTime = sqTimeParts(displayDate, effectiveOptions);
 
   if (formattedDate && formattedTime) return `${formattedDate}, ${formattedTime}`;
   return formattedDate || formattedTime;

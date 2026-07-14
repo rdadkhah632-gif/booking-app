@@ -1,26 +1,32 @@
 import { useI18n } from "@/lib/useI18n";
 
 export default function LanguageToggle() {
-  const { locale, setLocale } = useI18n();
+  const { locale, setLocale, t } = useI18n();
 
   return (
-    <div className="language-switcher" aria-label="Language selector">
+    <div
+      className="language-switcher"
+      role="group"
+      aria-label={t("language.selector", "Language")}
+    >
       <button
         type="button"
         className={locale === "en" ? "active" : ""}
         onClick={() => setLocale("en")}
-        aria-label="Switch language to English"
+        aria-label={`${t("language.selector", "Language")}: ${t("language.english", "English")}`}
+        aria-pressed={locale === "en"}
       >
         EN
       </button>
 
-      <span>/</span>
+      <span aria-hidden="true">/</span>
 
       <button
         type="button"
         className={locale === "sq" ? "active" : ""}
         onClick={() => setLocale("sq")}
-        aria-label="Kalo gjuhën në shqip"
+        aria-label={`${t("language.selector", "Language")}: ${t("language.albanian", "Albanian")}`}
+        aria-pressed={locale === "sq"}
       >
         SQ
       </button>

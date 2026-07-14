@@ -3,6 +3,7 @@ import { TranslationTree } from "./types";
 export const sq: TranslationTree = {
   "language.english": "Anglisht",
   "language.albanian": "Shqip",
+  "language.selector": "Gjuha",
   "language.short.en": "EN",
   "language.short.sq": "SQ",
 
@@ -1192,13 +1193,23 @@ export const sq: TranslationTree = {
   "dashboardHome.shortcuts.setup.body":
     "Menaxho profile biznesi, status publikimi, foto dhe konfigurimin kryesor.",
   "dashboardHome.shortcuts.services.title": "Shërbimet",
-  "dashboardHome.shortcuts.services.body": "Ndrysho emrat e shërbimeve, kohëz.",
+  "dashboardHome.shortcuts.services.body":
+    "Ndrysho emrat, kohëzgjatjen, çmimet, imazhet dhe statusin e shërbimeve.",
+  "dashboardHome.shortcuts.staff.title": "Stafi",
+  "dashboardHome.shortcuts.staff.body":
+    "Menaxho profilet e stafit, caktimet, oraret dhe disponueshmërinë.",
   "dashboardHome.shortcuts.team.title": "Ekipi",
   "dashboardHome.shortcuts.team.body":
     "Menaxho stafin e rezervueshëm, caktimet e shërbimeve, ftesat dhe pronarin si staf.",
   "dashboardHome.shortcuts.availability.title": "Vendos disponueshmërinë",
   "dashboardHome.shortcuts.availability.body":
     "Vendos ditët dhe oraret kur klientët mund të rezervojnë.",
+  "dashboardHome.shortcuts.settings.title": "Cilësimet e biznesit",
+  "dashboardHome.shortcuts.settings.body":
+    "Kontrollo miratimin e rezervimeve, njoftimet, intervalet, politikat dhe cilësimet rajonale.",
+  "dashboardHome.shortcuts.billing.title": "Faturimi",
+  "dashboardHome.shortcuts.billing.body":
+    "Shqyrto periudhën provuese, anëtarësimin dhe faturimin në Mirëbook.",
   "dashboardBusinesses.pageTitle": "Konfigurimi",
   "dashboardBusinesses.pageSubtitle":
     "Përgatit biznesin që klientët të rezervojnë.",
@@ -3227,6 +3238,25 @@ export const sq: TranslationTree = {
   "billing.trialActive": "Prova e partnerit të hershëm aktive",
   "billing.trialEndsOn": "Periudha provuese përfundon",
   "billing.noTrialConfigured": "Nuk është caktuar datë për periudhën provuese.",
+  "billing.howItWorks": "Si funksionojnë anëtarësimet e Mirëbook",
+  "billing.businessSubscriptionsTitle":
+    "Anëtarësimet e bizneseve mbështesin platformën",
+  "billing.businessSubscriptionsBody":
+    "Bizneset paguajnë një anëtarësim në Mirëbook për mjetet e rezervimeve, menaxhimin e stafit, njoftimet dhe veçoritë e ardhshme të platformës.",
+  "billing.customerPaymentsSeparate":
+    "Pagesat, depozitat dhe proceset e pagesës së takimeve të klientëve mbeten të ndara nga anëtarësimi në Mirëbook.",
+  "billing.planStarter": "Fillestar",
+  "billing.planStarterTitle": "Biznese të pavarura",
+  "billing.planStarterBody": "Biznese në fazë fillestare dhe operatorë individualë.",
+  "billing.planGrowth": "Rritje",
+  "billing.planGrowthTitle": "Ekipe në rritje",
+  "billing.planGrowthBody": "Më shumë staf dhe volum më i lartë rezervimesh.",
+  "billing.planPro": "Pro",
+  "billing.planProTitle": "Biznese të konsoliduara",
+  "billing.planProBody": "Mjete të avancuara dhe veçori operacionale.",
+  "billing.planCustom": "Sipas nevojës",
+  "billing.planCustomTitle": "Ndërmarrje",
+  "billing.planCustomBody": "Shumë vendndodhje dhe zgjidhje të përshtatura.",
   "billing.pageTitle": "Anëtarësimi",
   "billing.pageSubtitle": "Detajet e anëtarësimit.",
   "billing.pageSubtitleBusiness": "Detajet e anëtarësimit për {{business}}.",

@@ -1,9 +1,11 @@
 import { useI18n } from '@/lib/useI18n'
+import { formatCurrencyAmount } from '@/lib/currency'
 
 type Props = {
   name: string
   duration: number
   price: number
+  currency?: string | null
   description: string
   imageUrl: string
 }
@@ -12,10 +14,11 @@ export default function ServicePreviewCard({
   name,
   duration,
   price,
+  currency,
   description,
   imageUrl
 }: Props) {
-  const { t } = useI18n()
+  const { locale, t } = useI18n()
 
   return (
     <div className="card" style={{ background: 'var(--surface-2)' }}>
@@ -44,7 +47,7 @@ export default function ServicePreviewCard({
       <h3>{name || t('dashboardServices.preview.serviceName', 'Service name')}</h3>
 
       <p className="small muted" style={{ marginTop: '0.35rem' }}>
-        {duration || 0} {t('common.minutes', 'minutes')} · £{Number(price || 0).toFixed(2)}
+        {duration || 0} {t('common.minutes', 'minutes')} · {formatCurrencyAmount(Number(price || 0), currency, locale)}
       </p>
 
       <p className="small muted" style={{ marginTop: '0.45rem' }}>

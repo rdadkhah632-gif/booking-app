@@ -3,10 +3,13 @@ import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { Booking } from "./dashboardBookingsTypes";
 import BookingStatusBadge, { statusColor } from "./BookingStatusBadge";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 type Props = {
   booking: Booking;
   businessId?: string | null;
+  currency?: string | null;
+  timeZone?: string | null;
   actionLoadingId: string | null;
   actionError?: string | null;
   customerHistoryLink: (booking: Booking) => string;
@@ -19,6 +22,8 @@ type Props = {
 export default function BookingCard({
   booking,
   businessId,
+  currency,
+  timeZone,
   actionLoadingId,
   actionError,
   customerHistoryLink,
@@ -71,11 +76,13 @@ export default function BookingCard({
             {formatLocalizedDate(start, locale, {
               hour: "2-digit",
               minute: "2-digit",
+              timeZone: timeZone || undefined,
             })}{" "}
             -{" "}
             {formatLocalizedDate(end, locale, {
               hour: "2-digit",
               minute: "2-digit",
+              timeZone: timeZone || undefined,
             })}{" "}
             · {booking.duration_minutes} {t("common.minutes", "minutes")}
           </p>
@@ -84,10 +91,12 @@ export default function BookingCard({
             {t("dashboardBookings.card.service", "Service")}:{" "}
             {booking.services?.name ||
               t("dashboardBookings.card.noService", "No service recorded")}{" "}
-            · £
-            {booking.services?.price
-              ? Number(booking.services.price).toFixed(2)
-              : "0.00"}
+            ·{" "}
+            {formatCurrencyAmount(
+              Number(booking.services?.price || 0),
+              currency,
+              locale,
+            )}
           </p>
 
           <p className="small muted booking-card-line">
@@ -228,6 +237,7 @@ export default function BookingCard({
               </div>
 
               <button
+                type="button"
                 onClick={() => acceptPendingBooking(booking)}
                 className="btn btn-accent"
                 disabled={isWorking}
@@ -238,6 +248,7 @@ export default function BookingCard({
               </button>
 
               <button
+                type="button"
                 onClick={() => declinePendingBooking(booking)}
                 className="btn btn-danger"
                 disabled={isWorking}
@@ -262,6 +273,7 @@ export default function BookingCard({
           {booking.status === "confirmed" && !isLocked && (
             <>
               <button
+                type="button"
                 onClick={() => completeBooking(booking)}
                 className="btn btn-accent"
                 disabled={isWorking}
@@ -282,6 +294,7 @@ export default function BookingCard({
               </Link>
 
               <button
+                type="button"
                 onClick={() => cancelBooking(booking)}
                 className="btn btn-danger"
                 disabled={isWorking}

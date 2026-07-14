@@ -10,6 +10,8 @@ import CustomerHistoryView from "@/components/dashboard-customers/CustomerHistor
 type Business = {
   id: string;
   name: string;
+  currency?: string | null;
+  timezone?: string | null;
 };
 
 type Booking = {
@@ -89,7 +91,7 @@ export default function CustomerDetailPage() {
 
       const { data: ownedBusinesses, error: businessesError } = await supabase
         .from("businesses")
-        .select("id, name")
+        .select("id, name, currency, timezone")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
@@ -260,6 +262,7 @@ export default function CustomerDetailPage() {
         <CustomerHistoryView
           customer={customer}
           bookings={bookings}
+          businesses={businesses}
           selectedBusiness={selectedBusiness}
           matchMode="account"
         />

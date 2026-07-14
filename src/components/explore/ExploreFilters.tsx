@@ -113,12 +113,20 @@ export default function ExploreFilters({
           </div>
         )}
 
-        <button className="btn btn-accent" onClick={onApplyFilters}>
+        <button
+          type="button"
+          className="btn btn-accent"
+          onClick={onApplyFilters}
+        >
           {t("explore.filters.searchButton", "Search")}
         </button>
 
         {hasFilters && (
-          <button className="btn btn-ghost" onClick={onClearFilters}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onClearFilters}
+          >
             {t("explore.filters.clearButton", "Clear filters")}
           </button>
         )}

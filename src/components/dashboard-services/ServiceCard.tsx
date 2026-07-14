@@ -3,9 +3,12 @@ import { useI18n } from "@/lib/useI18n";
 import { Business, Service, StaffMember } from "./dashboardServicesTypes";
 import ServiceImageUpload from "./ServiceImageUpload";
 import ServiceStatusBadge from "./ServiceStatusBadge";
+import { formatCurrencyAmount } from "@/lib/currency";
+import type { Locale } from "@/lib/i18n";
 
 type Props = {
   business: Business;
+  locale: Locale;
   service: Service;
   assignedStaff: StaffMember[];
   isEditing: boolean;
@@ -29,6 +32,7 @@ type Props = {
 
 export default function ServiceCard({
   business,
+  locale,
   service,
   assignedStaff,
   isEditing,
@@ -113,7 +117,7 @@ export default function ServiceCard({
                 <>
                   <p className="small muted service-line">
                     {service.duration_minutes} {t("common.minutes", "minutes")}{" "}
-                    · £{Number(service.price).toFixed(2)}
+                    · {formatCurrencyAmount(Number(service.price), business.currency, locale)}
                   </p>
 
                   {service.description && (
@@ -263,6 +267,7 @@ export default function ServiceCard({
               {isEditing ? (
                 <>
                   <button
+                    type="button"
                     onClick={() => saveService(service)}
                     className="btn btn-accent"
                     disabled={savingServiceId === service.id}
@@ -273,6 +278,7 @@ export default function ServiceCard({
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => {
                       setEditingServiceId(null);
                       loadData();
@@ -285,6 +291,7 @@ export default function ServiceCard({
               ) : (
                 <>
                   <button
+                    type="button"
                     onClick={() => setEditingServiceId(service.id)}
                     className="btn btn-ghost"
                   >
@@ -292,6 +299,7 @@ export default function ServiceCard({
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => toggleService(service)}
                     className={
                       service.active ? "btn btn-ghost" : "btn btn-accent"

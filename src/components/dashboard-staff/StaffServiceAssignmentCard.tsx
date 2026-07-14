@@ -1,9 +1,13 @@
 import Link from 'next/link'
 import { useI18n } from '@/lib/useI18n'
 import { Service, StaffMember } from './dashboardStaffTypes'
+import { formatCurrencyAmount } from '@/lib/currency'
+import type { Locale } from '@/lib/i18n'
 
 type Props = {
   staff: StaffMember
+  currency?: string | null
+  locale: Locale
   services: Service[]
   assignedServiceIds: string[]
   savingAssignmentKey: string | null
@@ -12,6 +16,8 @@ type Props = {
 
 export default function StaffServiceAssignmentCard({
   staff,
+  currency,
+  locale,
   services,
   assignedServiceIds,
   savingAssignmentKey,
@@ -73,7 +79,7 @@ export default function StaffServiceAssignmentCard({
                 <span>
                   <strong>{service.name}</strong>
                   <p className="small muted">
-                    {service.duration_minutes || 0} {t('common.minutes', 'minutes')} · £{Number(service.price || 0).toFixed(2)}
+                    {service.duration_minutes || 0} {t('common.minutes', 'minutes')} · {formatCurrencyAmount(Number(service.price || 0), currency, locale)}
                   </p>
                 </span>
 

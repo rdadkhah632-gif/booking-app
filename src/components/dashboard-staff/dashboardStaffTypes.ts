@@ -2,6 +2,7 @@ export type Business = {
   id: string
   name: string
   published?: boolean | null
+  currency?: string | null
 }
 
 export type StaffMember = {

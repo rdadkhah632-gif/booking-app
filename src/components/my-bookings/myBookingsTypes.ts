@@ -5,7 +5,15 @@ export type Booking = {
   start_at: string
   duration_minutes: number
   status: string
-  businesses?: { name: string } | { name: string }[] | null
+  businesses?: {
+    name: string
+    currency?: string | null
+    timezone?: string | null
+  } | {
+    name: string
+    currency?: string | null
+    timezone?: string | null
+  }[] | null
   services?: { name: string; price: number } | { name: string; price: number }[] | null
   staff_members?: { name: string; role_title?: string | null } | { name: string; role_title?: string | null }[] | null
   completed_at?: string | null

@@ -17,6 +17,7 @@ export default function BusinessSettingsActions({
   return (
     <div className="settings-final-actions">
       <button
+        type="button"
         className="btn btn-accent"
         onClick={onSave}
         disabled={saving || !selectedBusiness}

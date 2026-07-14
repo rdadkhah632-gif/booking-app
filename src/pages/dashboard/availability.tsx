@@ -413,6 +413,7 @@ export default function Availability() {
 
           <div className="availability-save-actions">
             <button
+              type="button"
               onClick={saveAvailability}
               disabled={loading}
               className="btn btn-accent"

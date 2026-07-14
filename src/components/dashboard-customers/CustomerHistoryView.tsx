@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useI18n } from "@/lib/useI18n";
+import { formatLocalizedDate } from "@/lib/i18n";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 export type CustomerHistoryBusiness = {
   id: string;
   name: string;
+  currency?: string | null;
+  timezone?: string | null;
 };
 
 export type CustomerHistoryBooking = {
@@ -37,6 +41,7 @@ type CustomerProfile = {
 type Props = {
   customer: CustomerProfile;
   bookings: CustomerHistoryBooking[];
+  businesses: CustomerHistoryBusiness[];
   selectedBusiness: CustomerHistoryBusiness | null;
   matchMode: "account" | "email";
 };
@@ -44,10 +49,11 @@ type Props = {
 export default function CustomerHistoryView({
   customer,
   bookings,
+  businesses,
   selectedBusiness,
   matchMode,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -141,18 +147,37 @@ export default function CustomerHistoryView({
     const end = booking.end_at
       ? new Date(booking.end_at)
       : new Date(start.getTime() + booking.duration_minutes * 60000);
+    const timeZone = businessForBooking(booking)?.timezone || undefined;
 
-    return `${start.toLocaleDateString(undefined, {
+    return `${formatLocalizedDate(start, locale, {
       weekday: "short",
       day: "numeric",
       month: "short",
-    })} · ${start.toLocaleTimeString([], {
+      timeZone,
+    })} · ${formatLocalizedDate(start, locale, {
       hour: "2-digit",
       minute: "2-digit",
-    })}-${end.toLocaleTimeString([], {
+      timeZone,
+    })}-${formatLocalizedDate(end, locale, {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone,
     })}`;
+  }
+
+  function businessForBooking(booking: CustomerHistoryBooking) {
+    return (
+      businesses.find((business) => business.id === booking.business_id) ||
+      selectedBusiness
+    );
+  }
+
+  function bookingPrice(booking: CustomerHistoryBooking) {
+    return formatCurrencyAmount(
+      Number(booking.services?.price || 0),
+      businessForBooking(booking)?.currency,
+      locale,
+    );
   }
 
   function staffLabel(booking: CustomerHistoryBooking) {
@@ -194,8 +219,8 @@ export default function CustomerHistoryView({
           </strong>
           <p className="small muted">
             {staffLabel(booking)} · {booking.duration_minutes}{" "}
-            {t("dashboardCustomers.labels.minutes", "min")} · £
-            {Number(booking.services?.price || 0).toFixed(2)}
+            {t("dashboardCustomers.labels.minutes", "min")} ·{" "}
+            {bookingPrice(booking)}
           </p>
         </div>
 
@@ -316,7 +341,13 @@ export default function CustomerHistoryView({
           <span>{t("dashboardCustomers.summary.upcoming", "Upcoming")}</span>
         </div>
         <div>
-          <strong>£{stats.estimatedCompletedValue.toFixed(2)}</strong>
+          <strong>
+            {formatCurrencyAmount(
+              stats.estimatedCompletedValue,
+              selectedBusiness?.currency || businesses[0]?.currency,
+              locale,
+            )}
+          </strong>
           <span>
             {t("dashboardCustomers.summary.completedValue", "Completed value")}
           </span>

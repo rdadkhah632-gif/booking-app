@@ -1,17 +1,20 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
 import { DashboardAnalytics } from "./dashboardHomeTypes";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 type Props = {
   analytics: DashboardAnalytics;
   completionRate: number;
+  currency?: string | null;
 };
 
 export default function AnalyticsPreviewCard({
   analytics,
   completionRate,
+  currency,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const topService = analytics.topServices[0];
 
   return (
@@ -54,7 +57,13 @@ export default function AnalyticsPreviewCard({
         </div>
 
         <div className="card" style={{ background: "var(--surface-2)" }}>
-          <h3>£{analytics.estimatedUpcomingValue.toFixed(2)}</h3>
+          <h3>
+            {formatCurrencyAmount(
+              analytics.estimatedUpcomingValue,
+              currency,
+              locale,
+            )}
+          </h3>
           <strong>
             {t("dashboardHome.analytics.upcomingValue", "Upcoming value")}
           </strong>
@@ -67,7 +76,13 @@ export default function AnalyticsPreviewCard({
         </div>
 
         <div className="card" style={{ background: "var(--surface-2)" }}>
-          <h3>£{analytics.averageBookingValue.toFixed(2)}</h3>
+          <h3>
+            {formatCurrencyAmount(
+              analytics.averageBookingValue,
+              currency,
+              locale,
+            )}
+          </h3>
           <strong>
             {t(
               "dashboardHome.analytics.averageValue",

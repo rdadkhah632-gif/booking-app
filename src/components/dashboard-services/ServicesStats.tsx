@@ -1,12 +1,14 @@
 import { useI18n } from '@/lib/useI18n'
 import { ServiceStats } from './dashboardServicesTypes'
+import { formatCurrencyAmount } from '@/lib/currency'
 
 type Props = {
   stats: ServiceStats
+  currency?: string | null
 }
 
-export default function ServicesStats({ stats }: Props) {
-  const { t } = useI18n()
+export default function ServicesStats({ stats, currency }: Props) {
+  const { locale, t } = useI18n()
 
   return (
     <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
@@ -42,9 +44,9 @@ export default function ServicesStats({ stats }: Props) {
 
       <div className="card">
         <p className="small muted">{t('dashboardServices.stats.averageService', 'Average service')}</p>
-        <h3>£{stats.averagePrice.toFixed(2)}</h3>
+        <h3>{formatCurrencyAmount(stats.averagePrice, currency, locale)}</h3>
         <p className="muted small">
-          {t('dashboardServices.stats.averagePrefix', 'Avg.')} {Math.round(stats.averageDuration)} {t('common.minutes', 'minutes')} · £{stats.totalValue.toFixed(2)} {t('dashboardServices.stats.totalListValue', 'total list value')}
+          {t('dashboardServices.stats.averagePrefix', 'Avg.')} {Math.round(stats.averageDuration)} {t('common.minutes', 'minutes')} · {formatCurrencyAmount(stats.totalValue, currency, locale)} {t('dashboardServices.stats.totalListValue', 'total list value')}
         </p>
       </div>
     </div>

@@ -15,6 +15,7 @@ import {
 import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { dateKeyInTimeZone } from "@/lib/timezone";
 
 export default function DashboardHome() {
   const router = useRouter();
@@ -31,12 +32,6 @@ export default function DashboardHome() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  function formatDateValue(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
 
   async function loadDashboard() {
     setLoading(true);
@@ -63,7 +58,7 @@ export default function DashboardHome() {
 
     const { data: businessData, error: businessError } = await supabase
       .from("businesses")
-      .select("id, name, published, category, city")
+      .select("id, name, published, category, city, timezone")
       .eq("user_id", session.user.id)
       .order("created_at", { ascending: false });
 
@@ -205,6 +200,21 @@ export default function DashboardHome() {
   }, []);
 
   const now = useMemo(() => new Date(), [bookings]);
+  const businessTimeZoneById = useMemo(
+    () =>
+      new Map(
+        businesses.map((business) => [business.id, business.timezone || null]),
+      ),
+    [businesses],
+  );
+
+  function timeZoneForBooking(booking: Booking) {
+    return (
+      businessTimeZoneById.get(booking.business_id) ||
+      businesses[0]?.timezone ||
+      undefined
+    );
+  }
 
   const pendingBookings = useMemo(() => {
     return bookings.filter((booking) => booking.status === "pending");
@@ -214,15 +224,14 @@ export default function DashboardHome() {
     const today = new Date();
 
     return bookings.filter((booking) => {
-      const date = new Date(booking.start_at);
+      const timeZone = timeZoneForBooking(booking);
       return (
         booking.status === "confirmed" &&
-        date.getFullYear() === today.getFullYear() &&
-        date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate()
+        dateKeyInTimeZone(new Date(booking.start_at), timeZone) ===
+          dateKeyInTimeZone(today, timeZone)
       );
     });
-  }, [bookings]);
+  }, [bookings, businessTimeZoneById, businesses]);
 
   const upcomingBookings = useMemo(() => {
     return bookings
@@ -349,7 +358,9 @@ export default function DashboardHome() {
             "dashboardHome.today.nextCalendarBody",
             "Confirmed appointments for today are ready.",
           ),
-          href: bookingsLinkForDate(formatDateValue(new Date())),
+          href: bookingsLinkForDate(
+            dateKeyInTimeZone(new Date(), primaryBusiness?.timezone),
+          ),
           cta: t("dashboardHome.today.nextCalendarCta", "Open today"),
         }
       : nextSetupStep
@@ -453,11 +464,20 @@ export default function DashboardHome() {
                 <>
                   <div className="today-appointment-time">
                     {formatLocalizedDate(nextAppointment.start_at, locale,
-                      { weekday: "short", day: "numeric", month: "short" },
+                      {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                        timeZone: timeZoneForBooking(nextAppointment),
+                      },
                     )}
                     <strong>
                       {formatLocalizedDate(nextAppointment.start_at, locale,
-                        { hour: "2-digit", minute: "2-digit" },
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: timeZoneForBooking(nextAppointment),
+                        },
                       )}
                     </strong>
                   </div>
@@ -473,7 +493,10 @@ export default function DashboardHome() {
                   </div>
                   <Link
                     href={bookingsLinkForDate(
-                      formatDateValue(new Date(nextAppointment.start_at)),
+                      dateKeyInTimeZone(
+                        new Date(nextAppointment.start_at),
+                        timeZoneForBooking(nextAppointment),
+                      ),
                       nextAppointment.business_id,
                     )}
                     className="today-inline-link"

@@ -11,6 +11,7 @@ import PublicBusinessAvailability from "@/components/public-business/PublicBusin
 import PublicBusinessSummary from "@/components/public-business/PublicBusinessSummary";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
+import { formatCurrencyAmount } from "@/lib/currency";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
 
@@ -431,15 +432,12 @@ export default function BusinessBookingPage() {
     return business?.buffer_after_minutes || 0;
   }
 
-  function currencySymbol() {
-    if (business?.currency === "EUR") return "€";
-    if (business?.currency === "ALL") return "L";
-    if (business?.currency === "USD") return "$";
-    return "£";
-  }
-
   function formatServicePrice(price: number) {
-    return `${currencySymbol()}${Number(price || 0).toFixed(2)}`;
+    return formatCurrencyAmount(
+      Number(price || 0),
+      business?.currency,
+      locale,
+    );
   }
 
   function locationLabel() {
