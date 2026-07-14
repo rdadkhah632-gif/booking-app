@@ -24,6 +24,36 @@ manual steps below.
   CODE-AUDITED for EN/SQ; one real Albanian inbox delivery remains to be
   verified.
 
+## Static Launch Asset And Header Audit
+
+The 14 July static production audit found and corrected two launch-facing
+issues that were not visible in normal booking QA:
+
+- `public/manifest.json` contained an obsolete Slotly manifest followed by the
+  Mirëbook manifest, making the file invalid JSON
+- the declared favicon, 192px icon and 512px icon returned `404`
+
+The manifest is now one valid Mirëbook document and the declared browser,
+Apple touch and manifest icons use a single Mirëbook mark. Basic non-breaking
+browser hardening headers are also configured globally:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+
+The default `X-Powered-By` framework disclosure is disabled.
+Pages without route-specific metadata now use `Mirëbook` as the browser title
+instead of displaying the raw domain.
+
+The final translation audit also restored the English entries used by shared
+account loading, save and linked-business states; their Albanian counterparts
+were already present.
+
+No content security policy was added in this batch because introducing one
+without a dedicated Supabase, Stripe and Next.js browser-flow test could break
+launch behavior. HTTPS/HSTS remains provided by Vercel.
+
 ## Marketplace Data Audit
 
 Production audit result:

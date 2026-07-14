@@ -29,7 +29,13 @@ export default function Document() {
         />
 
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/mirebook-mark.svg" type="image/svg+xml" />
+        <link
+          rel="icon"
+          href="/icons/icon-32.png"
+          type="image/png"
+          sizes="32x32"
+        />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </Head>
 
