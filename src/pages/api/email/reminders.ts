@@ -265,9 +265,9 @@ export default async function handler(
     ] = await Promise.all([
       supabaseAdmin
         .from("businesses")
-        .select("name")
+        .select("name, timezone")
         .eq("id", booking.business_id)
-        .maybeSingle<{ name?: string | null }>(),
+        .maybeSingle<{ name?: string | null; timezone?: string | null }>(),
       booking.service_id
         ? supabaseAdmin
             .from("services")
@@ -299,6 +299,7 @@ export default async function handler(
         serviceName: service?.name,
         staffName: staff?.name,
         startAt: booking.start_at,
+        timeZone: business?.timezone,
         actionUrl: `${appUrl}/booking-confirmation?id=${booking.id}`,
         locale: localeFromProfile(customerProfile),
         preferenceEnabled: preferences.email_booking_reminders,

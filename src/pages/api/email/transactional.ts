@@ -428,6 +428,7 @@ export default async function handler(
           serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
+          timeZone: business.timezone,
           actionUrl: bookingUrl,
           locale: localeFromProfile(customerProfile),
           customerAccountHint: !booking.customer_user_id,
@@ -451,6 +452,7 @@ export default async function handler(
           serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
+          timeZone: business.timezone,
           actionUrl: businessUrl,
           locale: localeFromProfile(ownerProfile),
           preferenceEnabled:
@@ -474,6 +476,7 @@ export default async function handler(
           serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
+          timeZone: business.timezone,
           actionUrl: businessUrl,
           locale: localeFromProfile(ownerProfile),
           preferenceEnabled:
@@ -499,6 +502,7 @@ export default async function handler(
           serviceName: service?.name,
           staffName: staff?.name,
           startAt: booking.start_at,
+          timeZone: business.timezone,
           actionUrl: staffUrl,
           locale: localeFromProfile(staffProfile),
           preferenceEnabled:

@@ -263,6 +263,15 @@ subject/body delivery after deployment. Supabase Auth confirmation and recovery
 templates remain dashboard-managed and should stay bilingual unless a separate
 localized Auth email-hook project is approved.
 
+Real-inbox evidence on 14 July confirmed the Albanian booking email body,
+labels and customer CTA. It also exposed that email appointment times were
+being formatted in UTC rather than the business timezone. Booking update and
+reminder templates now receive the business timezone and display the local
+appointment time with a short zone marker, with `Europe/London` as the same
+safe fallback used by the booking platform. A focused real-inbox retest should
+confirm that the controlled 10:00 BST appointment is displayed as 10:00 rather
+than 09:00 UTC.
+
 Focused QA already confirmed `html lang="sq"`, Albanian My Bookings loading
 copy and `Njoftimet` navigation. After this date/copy follow-up is deployed,
 retest one SQ customer booking/confirmation/reschedule flow, business

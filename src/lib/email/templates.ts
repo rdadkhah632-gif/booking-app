@@ -1,4 +1,5 @@
 import { Locale } from "@/lib/i18n";
+import { DEFAULT_TIME_ZONE } from "@/lib/timezone";
 import {
   BookingEmailStatus,
   TransactionalEmailEvent,
@@ -17,6 +18,7 @@ type BookingTemplateInput = {
   serviceName?: string | null;
   staffName?: string | null;
   startAt: string;
+  timeZone?: string | null;
   actionUrl: string;
   locale?: EmailLocale;
   preferenceEnabled?: boolean;
@@ -440,12 +442,35 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-function formatDateTime(value: string, copy: EmailCopy) {
-  return `${new Date(value).toLocaleString(copy.localeCode, {
-    dateStyle: "full",
-    timeStyle: "short",
-    timeZone: "UTC",
-  })} UTC`;
+function safeEmailTimeZone(timeZone?: string | null) {
+  const candidate = timeZone || DEFAULT_TIME_ZONE;
+
+  try {
+    new Intl.DateTimeFormat("en-GB", { timeZone: candidate }).format(
+      new Date(),
+    );
+    return candidate;
+  } catch {
+    return DEFAULT_TIME_ZONE;
+  }
+}
+
+function formatDateTime(
+  value: string,
+  copy: EmailCopy,
+  timeZone?: string | null,
+) {
+  return new Intl.DateTimeFormat(copy.localeCode, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: safeEmailTimeZone(timeZone),
+    timeZoneName: "short",
+  }).format(new Date(value));
 }
 
 function detailRows(details: EmailDetail[]) {
@@ -540,7 +565,11 @@ export function bookingEmailTemplate(
   const businessName = input.businessName || copy.businessFallback;
   const customerName = input.customerName || copy.customerFallback;
   const serviceName = input.serviceName || copy.appointmentFallback;
-  const appointmentTime = formatDateTime(input.startAt, copy);
+  const appointmentTime = formatDateTime(
+    input.startAt,
+    copy,
+    input.timeZone,
+  );
   const bookingNote =
     input.recipientRole === "customer" && input.customerAccountHint
       ? copy.customerAccountNote
@@ -594,6 +623,7 @@ export function appointmentReminderEmailTemplate(input: {
   serviceName?: string | null;
   staffName?: string | null;
   startAt: string;
+  timeZone?: string | null;
   actionUrl: string;
   locale?: EmailLocale;
   preferenceEnabled?: boolean;
@@ -601,7 +631,11 @@ export function appointmentReminderEmailTemplate(input: {
   const copy = copyFor(input.locale);
   const businessName = input.businessName || copy.businessFallback;
   const serviceName = input.serviceName || copy.appointmentFallback;
-  const appointmentTime = formatDateTime(input.startAt, copy);
+  const appointmentTime = formatDateTime(
+    input.startAt,
+    copy,
+    input.timeZone,
+  );
   const staffLine = input.staffName
     ? `\n${copy.staffLabel}: ${input.staffName}`
     : "";
