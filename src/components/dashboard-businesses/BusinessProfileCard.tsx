@@ -6,6 +6,7 @@ import {
   UpdateBusinessField,
 } from "./dashboardBusinessesTypes";
 import BusinessImageUpload from "./BusinessImageUpload";
+import BusinessLocationVerification from "./BusinessLocationVerification";
 
 type Props = {
   business: Business;
@@ -13,6 +14,7 @@ type Props = {
   savingBusinessId: string | null;
   publishingBusinessId: string | null;
   uploadingBusinessId: string | null;
+  locationRefreshKey: number;
   updateLocalBusiness: UpdateBusinessField;
   onSave: (business: Business) => void;
   onTogglePublished: (business: Business) => void;
@@ -26,6 +28,7 @@ export default function BusinessProfileCard({
   savingBusinessId,
   publishingBusinessId,
   uploadingBusinessId,
+  locationRefreshKey,
   updateLocalBusiness,
   onSave,
   onTogglePublished,
@@ -298,6 +301,14 @@ export default function BusinessProfileCard({
               />
             </label>
           </div>
+
+          <BusinessLocationVerification
+            businessId={business.id}
+            address={business.address}
+            city={business.city}
+            country={business.country}
+            refreshKey={locationRefreshKey}
+          />
 
           <BusinessImageUpload
             business={business}

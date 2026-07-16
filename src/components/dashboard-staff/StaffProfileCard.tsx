@@ -20,10 +20,13 @@ type Props = {
   availabilityRows: AvailabilityRow[];
   isEditing: boolean;
   savingStaffId: string | null;
+  uploadingStaffId: string | null;
   savingAssignmentKey: string | null;
   actionLoadingKey: string | null;
   updateLocalStaff: UpdateStaffField;
   saveStaff: (staff: StaffMember) => void;
+  uploadStaffImage: (staff: StaffMember, file: File | null) => void;
+  removeStaffImage: (staff: StaffMember) => void;
   toggleStaffActive: (staff: StaffMember) => void;
   setEditingStaffId: (id: string | null) => void;
   loadData: () => void;
@@ -47,10 +50,13 @@ export default function StaffProfileCard({
   availabilityRows,
   isEditing,
   savingStaffId,
+  uploadingStaffId,
   savingAssignmentKey,
   actionLoadingKey,
   updateLocalStaff,
   saveStaff,
+  uploadStaffImage,
+  removeStaffImage,
   toggleStaffActive,
   setEditingStaffId,
   loadData,
@@ -136,6 +142,18 @@ export default function StaffProfileCard({
       }}
     >
       <div className="staff-card-top">
+        <div
+          className="staff-avatar"
+          style={
+            staff.image_url
+              ? { backgroundImage: `url(${staff.image_url})` }
+              : undefined
+          }
+          aria-hidden="true"
+        >
+          {!staff.image_url && displayName.trim().charAt(0).toUpperCase()}
+        </div>
+
         <div className="staff-main-copy">
           <div className="staff-title-row">
             <strong>{displayName}</strong>
@@ -188,6 +206,49 @@ export default function StaffProfileCard({
 
           {isEditing && (
             <div className="staff-edit-grid">
+              <div className="staff-photo-editor">
+                <div>
+                  <strong>
+                    {t("dashboardStaff.image.photoLabel", "Staff photo")}
+                  </strong>
+                  <p className="small muted staff-line">
+                    {t(
+                      "dashboardStaff.image.photoOptional",
+                      "Optional. Shown when customers choose a provider.",
+                    )}
+                  </p>
+                </div>
+
+                <div className="staff-photo-actions">
+                  <label className="btn btn-ghost staff-photo-upload">
+                    {uploadingStaffId === staff.id
+                      ? t("dashboardStaff.image.uploading", "Uploading...")
+                      : staff.image_url
+                        ? t("dashboardStaff.image.change", "Change photo")
+                        : t("dashboardStaff.image.choose", "Choose photo")}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={(event) =>
+                        uploadStaffImage(staff, event.target.files?.[0] || null)
+                      }
+                      disabled={uploadingStaffId === staff.id}
+                    />
+                  </label>
+
+                  {staff.image_url && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => removeStaffImage(staff)}
+                      disabled={uploadingStaffId === staff.id}
+                    >
+                      {t("dashboardStaff.image.remove", "Remove photo")}
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <input
                 placeholder={t(
                   "dashboardStaff.create.namePlaceholder",
@@ -454,11 +515,24 @@ export default function StaffProfileCard({
         }
 
         .staff-card-top {
-          display: flex;
-          justify-content: space-between;
+          display: grid;
+          grid-template-columns: 3.25rem minmax(0, 1fr) auto;
           gap: 1.25rem;
-          flex-wrap: wrap;
           align-items: flex-start;
+        }
+
+        .staff-avatar {
+          display: grid;
+          place-items: center;
+          width: 3.25rem;
+          height: 3.25rem;
+          border: 1px solid var(--border);
+          border-radius: 50%;
+          background-color: var(--surface-2);
+          background-position: center;
+          background-size: cover;
+          color: var(--text-muted);
+          font-weight: 800;
         }
 
         .staff-main-copy {
@@ -555,6 +629,37 @@ export default function StaffProfileCard({
           margin-top: 0.25rem;
         }
 
+        .staff-photo-editor {
+          grid-column: 1 / -1;
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: center;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .staff-photo-actions {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .staff-photo-upload {
+          position: relative;
+          overflow: hidden;
+          cursor: pointer;
+        }
+
+        .staff-photo-upload input {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          opacity: 0;
+          pointer-events: none;
+        }
+
         .staff-active-toggle {
           cursor: pointer;
           grid-column: 1 / -1;
@@ -576,9 +681,13 @@ export default function StaffProfileCard({
           }
 
           .staff-card-top {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-columns: 2.75rem minmax(0, 1fr);
             gap: 0.65rem;
+          }
+
+          .staff-avatar {
+            width: 2.75rem;
+            height: 2.75rem;
           }
 
           .staff-main-copy {
@@ -586,10 +695,25 @@ export default function StaffProfileCard({
           }
 
           .staff-card-actions {
+            grid-column: 1 / -1;
             display: grid;
             grid-template-columns: auto auto;
             justify-content: end;
             align-items: start;
+          }
+
+          .staff-photo-editor {
+            display: grid;
+          }
+
+          .staff-photo-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .staff-photo-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
 
           .staff-card-actions > button {

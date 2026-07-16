@@ -370,5 +370,27 @@ staff and customer retests. The next UI batch should therefore be a narrow
 - correct only reproduced clipping, mixed-language, empty-state or density bugs
 
 Business cover photos, ratings/reviews, customer-side light-theme redesign and
-profile-photo upload are product-expansion items. They require storage, trust or
-design decisions and are not launch blockers for the current booking product.
+broader marketplace redesign remain product-expansion items. Ratings and
+reviews require a separate trust/data design and are not launch blockers for
+the current booking product.
+
+## Visual Content Showcase Follow-Up
+
+Four disposable businesses with realistic cover images, service images, staff,
+hours, currencies and booking modes passed a temporary published-marketplace
+showcase on desktop and mobile. All four were hidden again after QA and Explore
+returned to the polished empty state.
+
+The resulting presentation follow-up:
+
+- exposes the existing optional `staff_members.image_url` support in Team for
+  create, replace and remove photo actions, without a schema change
+- keeps staff photos visible in the compact Team row and existing public staff
+  picker
+- stacks Category and City filters at narrow mobile widths so placeholders do
+  not collide or truncate
+- reduces image-backed service card height on mobile so owners can scan larger
+  menus without excessive scrolling
+
+Launch marketing imagery still needs a curated, rights-cleared asset pack. That
+is a content task rather than a code or marketplace-rule change.

@@ -407,14 +407,6 @@ export default function StaffPage() {
   }
 
   async function removeStaffImage(member: StaffMember) {
-    const confirmed = confirm(
-      t(
-        "dashboardStaff.image.confirmRemove",
-        "Remove this optional staff photo?",
-      ),
-    );
-    if (!confirmed) return;
-
     setUploadingStaffId(member.id);
     setError(null);
     setSuccess(null);
@@ -999,11 +991,19 @@ export default function StaffPage() {
               roleTitle={roleTitle}
               email={email}
               phone={phone}
+              imagePreviewUrl={imagePreviewUrl}
+              uploadingImage={uploadingImage}
               setFormExpanded={setFormExpanded}
               setName={setName}
               setRoleTitle={setRoleTitle}
               setEmail={setEmail}
               setPhone={setPhone}
+              onImageChange={handleCreateImageChange}
+              clearImage={() => {
+                setImageUrl("");
+                setImageFile(null);
+                setImagePreviewUrl("");
+              }}
               resetForm={resetForm}
               addStaff={addStaff}
             />
@@ -1074,6 +1074,7 @@ export default function StaffPage() {
                 availabilityRows={staffAvailability}
                 isEditing={editingStaffId === member.id}
                 savingStaffId={savingStaffId}
+                uploadingStaffId={uploadingStaffId}
                 savingAssignmentKey={
                   actionLoadingKey?.startsWith(`service-${member.id}-`)
                     ? actionLoadingKey.replace(
@@ -1085,6 +1086,8 @@ export default function StaffPage() {
                 actionLoadingKey={actionLoadingKey}
                 updateLocalStaff={updateLocalStaff}
                 saveStaff={saveStaff}
+                uploadStaffImage={uploadStaffImage}
+                removeStaffImage={removeStaffImage}
                 toggleStaffActive={toggleStaffActive}
                 setEditingStaffId={setEditingStaffId}
                 loadData={loadPage}

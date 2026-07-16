@@ -1330,6 +1330,53 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.profile.addressPlaceholder": "Adresa",
   "dashboardBusinesses.profile.descriptionPlaceholder":
     "Përshkrimi që shfaqet për klientët",
+  "dashboardBusinesses.location.title": "Vendndodhja në hartë",
+  "dashboardBusinesses.location.body":
+    "Konfirmo ku duhet ta gjejnë klientët këtë biznes.",
+  "dashboardBusinesses.location.loading":
+    "Duke kontrolluar vendndodhjen në hartë...",
+  "dashboardBusinesses.location.missingAddress":
+    "Shto dhe ruaj fillimisht adresën, qytetin dhe shtetin.",
+  "dashboardBusinesses.location.unsavedAddress":
+    "Ruaj profilin para se të kontrollosh adresën e përditësuar.",
+  "dashboardBusinesses.location.staleBody":
+    "Adresa e ruajtur ndryshoi. Verifiko sërish vendndodhjen në hartë.",
+  "dashboardBusinesses.location.chooseTitle": "Zgjidh vendndodhjen e saktë",
+  "dashboardBusinesses.location.previewMap": "Shiko hartën",
+  "dashboardBusinesses.location.previewingMap": "Duke ngarkuar hartën...",
+  "dashboardBusinesses.location.mapPreviewAlt":
+    "Pamje e hartës për vendndodhjen e zgjedhur të biznesit",
+  "dashboardBusinesses.location.success": "Vendndodhja në hartë u konfirmua.",
+  "dashboardBusinesses.location.finding": "Duke kërkuar vendndodhjen...",
+  "dashboardBusinesses.location.findAgain": "Kontrollo një rezultat tjetër",
+  "dashboardBusinesses.location.find": "Gjej vendndodhjen",
+  "dashboardBusinesses.location.confirming": "Duke konfirmuar...",
+  "dashboardBusinesses.location.confirm": "Konfirmo vendndodhjen",
+  "dashboardBusinesses.location.status.unsaved": "Ruaj ndryshimet e adresës",
+  "dashboardBusinesses.location.status.verified": "E verifikuar",
+  "dashboardBusinesses.location.status.stale": "Verifiko sërish",
+  "dashboardBusinesses.location.status.pending": "E paverifikuar",
+  "dashboardBusinesses.location.precision.exact": "Adresë e saktë",
+  "dashboardBusinesses.location.precision.street": "Në nivel rruge",
+  "dashboardBusinesses.location.precision.postcode": "Zona e kodit postar",
+  "dashboardBusinesses.location.precision.city": "Zona e qytetit",
+  "dashboardBusinesses.location.precision.approximate": "E përafërt",
+  "dashboardBusinesses.location.error.addressIncomplete":
+    "Shto dhe ruaj fillimisht adresën, qytetin dhe shtetin.",
+  "dashboardBusinesses.location.error.notFound":
+    "Nuk u gjet një vendndodhje e përshtatshme. Kontrollo adresën e ruajtur dhe provo sërish.",
+  "dashboardBusinesses.location.error.notConfigured":
+    "Verifikimi në hartë nuk është ende i disponueshëm. Kontakto suportin e Mirëbook.",
+  "dashboardBusinesses.location.error.changed":
+    "Rezultatet e adresës ndryshuan. Kërko sërish dhe zgjidh vendndodhjen e saktë.",
+  "dashboardBusinesses.location.error.choose":
+    "Zgjidh një vendndodhje para konfirmimit.",
+  "dashboardBusinesses.location.error.session":
+    "Hyr sërish për të verifikuar këtë vendndodhje.",
+  "dashboardBusinesses.location.error.unavailable":
+    "Vendndodhja në hartë nuk mund të verifikohej. Provo sërish pas pak.",
+  "dashboardBusinesses.location.error.unsaved":
+    "Ruaj profilin para se të verifikosh këtë adresë.",
   "dashboardBusinesses.image.kicker": "Imazhi i biznesit",
   "dashboardBusinesses.image.replace": "Zëvendëso imazhin e ngarkuar",
   "dashboardBusinesses.image.upload": "Ngarko nga pajisja jote",
@@ -1598,6 +1645,13 @@ export const sq: TranslationTree = {
     "Shto anëtarët e ekipit për të menaxhuar takimet dhe për të mbuluar shërbimet.",
   "dashboardStaff.empty.cta": "Shto anëtarin e parë të stafit",
   "dashboardStaff.image.chooseFirst": "Zgjidh një skedar imazhi fillimisht.",
+  "dashboardStaff.image.photoLabel": "Foto e stafit",
+  "dashboardStaff.image.photoOptional":
+    "Opsionale. Shfaqet kur klientët zgjedhin ofruesin.",
+  "dashboardStaff.image.choose": "Zgjidh foto",
+  "dashboardStaff.image.change": "Ndrysho foton",
+  "dashboardStaff.image.remove": "Hiq foton",
+  "dashboardStaff.image.uploading": "Duke ngarkuar...",
   "dashboardStaff.image.uploaded": "Imazhi i stafit u ngarkua.",
   "dashboardStaff.image.uploadedLower": "imazhi u ngarkua.",
   "dashboardStaff.image.uploadError": "Imazhi nuk u ngarkua.",
@@ -3247,7 +3301,8 @@ export const sq: TranslationTree = {
     "Pagesat, depozitat dhe proceset e pagesës së takimeve të klientëve mbeten të ndara nga anëtarësimi në Mirëbook.",
   "billing.planStarter": "Fillestar",
   "billing.planStarterTitle": "Biznese të pavarura",
-  "billing.planStarterBody": "Biznese në fazë fillestare dhe operatorë individualë.",
+  "billing.planStarterBody":
+    "Biznese në fazë fillestare dhe operatorë individualë.",
   "billing.planGrowth": "Rritje",
   "billing.planGrowthTitle": "Ekipe në rritje",
   "billing.planGrowthBody": "Më shumë staf dhe volum më i lartë rezervimesh.",

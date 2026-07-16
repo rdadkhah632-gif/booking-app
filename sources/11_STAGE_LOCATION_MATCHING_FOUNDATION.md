@@ -1,6 +1,7 @@
 # Stage 11 - Location Matching Foundation
 
-Status: Batch 1 implemented, applied to Supabase and access-smoke tested.
+Status: Batch 1 applied and access-smoke tested. Batch 2 implemented; Mapbox
+production configuration and deployed QA remain.
 
 ## Purpose
 
@@ -72,13 +73,13 @@ again.
 
 ## Access Boundary
 
-| Role | Exact coordinate access | Distance matching |
-| --- | --- | --- |
-| Anonymous/customer | No | Future public API only |
-| Staff | No | Not required |
-| Business owner | Read own verification row | Future owner preview only |
-| Admin | Read verification rows | Operational QA |
-| Service role | Read/write | Yes |
+| Role               | Exact coordinate access   | Distance matching         |
+| ------------------ | ------------------------- | ------------------------- |
+| Anonymous/customer | No                        | Future public API only    |
+| Staff              | No                        | Not required              |
+| Business owner     | Read own verification row | Future owner preview only |
+| Admin              | Read verification rows    | Operational QA            |
+| Service role       | Read/write                | Yes                       |
 
 Authenticated browser clients receive no insert, update or delete grant on
 `business_locations`. Later geocoding must run through a server route using the
@@ -158,16 +159,94 @@ smoke test confirmed:
 The rejected owner insert created no row. No production coordinates, business
 details, publication states or customer records were changed during QA.
 
+## Batch 2 - Business Location Verification
+
+Batch 2 adds an owner-controlled address verification flow to Business Setup.
+It does not change readiness, publication or booking behavior.
+
+Implementation:
+
+- `src/lib/server/mapboxGeocoding.ts` calls Mapbox Geocoding v6 only from the
+  server
+- `src/pages/api/dashboard/business-location.ts` authenticates the owner,
+  checks business ownership and returns public-safe status/candidate data
+- `src/components/dashboard-businesses/BusinessLocationVerification.tsx`
+  lets an owner find, preview and confirm the saved business address
+- Business Profile refreshes the verification state after profile saves
+- English and Albanian location states and errors are included
+
+The owner flow is:
+
+1. Add address, city and country, then save Business Profile.
+2. Select `Find location`.
+3. Review up to three normalised address candidates and optionally load a
+   Mapbox static preview.
+4. Select the correct candidate and confirm it.
+5. Mirëbook re-runs permanent geocoding on the server and saves that provider
+   result through the service role.
+
+The confirmation request contains the Mapbox place ID only. It never accepts
+latitude or longitude from the browser. The server re-geocodes the current
+saved business address and refuses the confirmation if the selected result is
+no longer present.
+
+API responses intentionally omit exact coordinates. The owner receives only:
+
+- verification status
+- normalised address
+- precision label
+- provider-safe place ID during candidate selection
+- a short-lived Mapbox static preview image only when the owner requests it
+
+The browser never receives the Mapbox access token or candidate coordinates.
+The preview is rendered by the Mapbox Static Images API through the protected
+owner route, with Mapbox logo and attribution retained. Temporary candidate
+results and preview images are not saved.
+
+### Batch 2 Configuration
+
+Add this server-only value locally and to the Vercel project:
+
+```text
+MAPBOX_ACCESS_TOKEN=
+```
+
+Do not prefix it with `NEXT_PUBLIC_`. Add it to the environments used for QA
+and production, then redeploy. Mapbox permanent geocoding must be enabled for
+the Mapbox account because confirmed results are stored in Supabase. The token
+must also allow `styles:tiles` so the server can render the owner-only static
+preview. Use a dedicated restricted token for production rather than relying
+on the account default token.
+
+Batch 2 adds no SQL. It uses the already-applied
+`business_locations` table from SQL 18.
+
+### Batch 2 QA
+
+After configuring Mapbox and deploying:
+
+1. Open Business Setup as an owner and expand Business Profile.
+2. Confirm an incomplete address cannot start map verification.
+3. Save a complete address, city and country.
+4. Confirm `Find location` returns readable candidates without raw provider
+   errors.
+5. Load a candidate map preview and confirm it matches the intended business.
+6. Confirm the selected location and refresh the page.
+7. Confirm the owner sees `Verified` and the normalised address.
+8. Confirm one `business_locations` row exists with `provider = 'mapbox'`, a
+   verified status and a verification timestamp.
+9. Confirm browser network responses contain no raw latitude/longitude,
+   PostGIS `location` field or Mapbox access token.
+10. Edit and save the address, then confirm the UI changes to `Verify again`.
+11. Confirm a different owner receives `403` for this business ID.
+12. Confirm direct browser writes to `business_locations` remain denied.
+13. Repeat the compact UI check in English, Albanian and at `390x844`.
+
+Until Batch 3, a verified coordinate is private setup data only. Explore does
+not request customer location, display distance, reorder results or hide
+businesses based on location verification.
+
 ## Next Batches
-
-### Batch 2 - Business Location Verification
-
-- add server-only Mapbox geocoding
-- use `MAPBOX_ACCESS_TOKEN` only on the server
-- geocode the business's saved address rather than trusting client coordinates
-- show the owner the normalised address and map position for confirmation
-- save verified coordinates through the service role
-- provide clear stale/needs-review states
 
 ### Batch 3 - Customer Nearby Search
 

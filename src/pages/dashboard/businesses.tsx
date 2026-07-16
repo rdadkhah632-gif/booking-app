@@ -48,6 +48,7 @@ export default function Businesses() {
     string | null
   >(null);
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
+  const [locationRefreshKey, setLocationRefreshKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -647,6 +648,7 @@ export default function Businesses() {
     );
     setSavingBusinessId(null);
     await loadBusinesses();
+    setLocationRefreshKey((current) => current + 1);
   }
 
   async function togglePublished(business: Business) {
@@ -1073,6 +1075,7 @@ export default function Businesses() {
                 savingBusinessId={savingBusinessId}
                 publishingBusinessId={publishingBusinessId}
                 uploadingBusinessId={uploadingBusinessId}
+                locationRefreshKey={locationRefreshKey}
                 updateLocalBusiness={updateLocalBusiness}
                 onSave={saveBusiness}
                 onTogglePublished={togglePublished}

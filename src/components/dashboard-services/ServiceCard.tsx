@@ -73,11 +73,9 @@ export default function ServiceCard({
       >
         {service.image_url && (
           <div
+            className="service-card-image"
             style={{
-              minHeight: 180,
               backgroundImage: `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.65)), url(${service.image_url})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
             }}
           />
         )}
@@ -117,7 +115,12 @@ export default function ServiceCard({
                 <>
                   <p className="small muted service-line">
                     {service.duration_minutes} {t("common.minutes", "minutes")}{" "}
-                    · {formatCurrencyAmount(Number(service.price), business.currency, locale)}
+                    ·{" "}
+                    {formatCurrencyAmount(
+                      Number(service.price),
+                      business.currency,
+                      locale,
+                    )}
                   </p>
 
                   {service.description && (
@@ -338,6 +341,12 @@ export default function ServiceCard({
           border-right: 1px solid var(--border);
         }
 
+        .service-card-image {
+          min-height: 180px;
+          background-position: center;
+          background-size: cover;
+        }
+
         .service-card-content {
           padding: 1.05rem;
         }
@@ -441,11 +450,24 @@ export default function ServiceCard({
             border-right: 0;
             border-bottom: 1px solid var(--border);
           }
+
+          .service-card-image {
+            min-height: 132px;
+          }
         }
 
         @media (max-width: 640px) {
+          .service-card-image {
+            min-height: 96px;
+          }
+
           .service-card-content {
-            padding: 0.9rem;
+            padding: 0.8rem;
+          }
+
+          .service-card-top-row,
+          .service-main-copy {
+            gap: 0.5rem;
           }
 
           .service-main-copy {

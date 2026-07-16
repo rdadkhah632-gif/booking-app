@@ -202,6 +202,28 @@ export default function ExploreFilters({
             font-size: 0.82rem;
           }
         }
+
+        @media (max-width: 480px) {
+          .explore-filter-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .explore-filter-grid > div,
+          .explore-filter-grid > div:first-child,
+          .explore-filter-grid :global(.btn-ghost),
+          .explore-filter-grid :global(.btn-accent) {
+            grid-column: 1;
+          }
+
+          .explore-filter-grid label {
+            font-size: 0.76rem;
+          }
+
+          .explore-filter-grid input,
+          .explore-filter-grid select {
+            font-size: 0.88rem;
+          }
+        }
       `}</style>
     </aside>
   );

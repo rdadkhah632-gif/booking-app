@@ -1348,6 +1348,52 @@ export const en: TranslationTree = {
   "dashboardBusinesses.profile.addressPlaceholder": "Address",
   "dashboardBusinesses.profile.descriptionPlaceholder":
     "Description shown to customers",
+  "dashboardBusinesses.location.title": "Map location",
+  "dashboardBusinesses.location.body":
+    "Confirm where customers should find this business.",
+  "dashboardBusinesses.location.loading": "Checking map location...",
+  "dashboardBusinesses.location.missingAddress":
+    "Add and save an address, city and country first.",
+  "dashboardBusinesses.location.unsavedAddress":
+    "Save the profile before checking the updated address.",
+  "dashboardBusinesses.location.staleBody":
+    "The saved address changed. Verify its map location again.",
+  "dashboardBusinesses.location.chooseTitle": "Choose the correct location",
+  "dashboardBusinesses.location.previewMap": "Preview map",
+  "dashboardBusinesses.location.previewingMap": "Loading map...",
+  "dashboardBusinesses.location.mapPreviewAlt":
+    "Map preview of the selected business location",
+  "dashboardBusinesses.location.success": "Map location confirmed.",
+  "dashboardBusinesses.location.finding": "Finding location...",
+  "dashboardBusinesses.location.findAgain": "Check another match",
+  "dashboardBusinesses.location.find": "Find location",
+  "dashboardBusinesses.location.confirming": "Confirming...",
+  "dashboardBusinesses.location.confirm": "Confirm location",
+  "dashboardBusinesses.location.status.unsaved": "Save address changes",
+  "dashboardBusinesses.location.status.verified": "Verified",
+  "dashboardBusinesses.location.status.stale": "Verify again",
+  "dashboardBusinesses.location.status.pending": "Not verified",
+  "dashboardBusinesses.location.precision.exact": "Exact address",
+  "dashboardBusinesses.location.precision.street": "Street level",
+  "dashboardBusinesses.location.precision.postcode": "Postcode area",
+  "dashboardBusinesses.location.precision.city": "City area",
+  "dashboardBusinesses.location.precision.approximate": "Approximate",
+  "dashboardBusinesses.location.error.addressIncomplete":
+    "Add and save an address, city and country first.",
+  "dashboardBusinesses.location.error.notFound":
+    "No matching map location was found. Check the saved address and try again.",
+  "dashboardBusinesses.location.error.notConfigured":
+    "Map verification is not available yet. Contact Mirëbook support.",
+  "dashboardBusinesses.location.error.changed":
+    "The address results changed. Search again and choose the correct location.",
+  "dashboardBusinesses.location.error.choose":
+    "Choose a location before confirming.",
+  "dashboardBusinesses.location.error.session":
+    "Sign in again to verify this location.",
+  "dashboardBusinesses.location.error.unavailable":
+    "The map location could not be verified. Try again shortly.",
+  "dashboardBusinesses.location.error.unsaved":
+    "Save the profile before verifying this address.",
   "dashboardBusinesses.image.kicker": "Business image",
   "dashboardBusinesses.image.replace": "Replace uploaded image",
   "dashboardBusinesses.image.upload": "Upload from your device",
@@ -1627,6 +1673,13 @@ export const en: TranslationTree = {
     "Add your team members to manage appointments and keep services covered.",
   "dashboardStaff.empty.cta": "Add your first staff member",
   "dashboardStaff.image.chooseFirst": "Choose an image file first.",
+  "dashboardStaff.image.photoLabel": "Staff photo",
+  "dashboardStaff.image.photoOptional":
+    "Optional. Shown when customers choose a provider.",
+  "dashboardStaff.image.choose": "Choose photo",
+  "dashboardStaff.image.change": "Change photo",
+  "dashboardStaff.image.remove": "Remove photo",
+  "dashboardStaff.image.uploading": "Uploading...",
   "dashboardStaff.image.uploaded": "Staff image uploaded.",
   "dashboardStaff.image.uploadedLower": "image uploaded.",
   "dashboardStaff.image.uploadError": "Could not upload image.",

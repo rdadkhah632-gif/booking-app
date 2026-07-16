@@ -7,11 +7,15 @@ type Props = {
   roleTitle: string;
   email: string;
   phone: string;
+  imagePreviewUrl: string;
+  uploadingImage: boolean;
   setFormExpanded: (value: boolean | ((previous: boolean) => boolean)) => void;
   setName: (value: string) => void;
   setRoleTitle: (value: string) => void;
   setEmail: (value: string) => void;
   setPhone: (value: string) => void;
+  onImageChange: (file: File | null) => void;
+  clearImage: () => void;
   resetForm: () => void;
   addStaff: (event: React.FormEvent) => void;
 };
@@ -23,11 +27,15 @@ export default function CreateStaffCard({
   roleTitle,
   email,
   phone,
+  imagePreviewUrl,
+  uploadingImage,
   setFormExpanded,
   setName,
   setRoleTitle,
   setEmail,
   setPhone,
+  onImageChange,
+  clearImage,
   resetForm,
   addStaff,
 }: Props) {
@@ -53,6 +61,61 @@ export default function CreateStaffCard({
 
       {formExpanded && (
         <form onSubmit={addStaff} className="staff-create-form">
+          <div className="staff-photo-field">
+            <div
+              className="staff-photo-preview"
+              style={
+                imagePreviewUrl
+                  ? { backgroundImage: `url(${imagePreviewUrl})` }
+                  : undefined
+              }
+              aria-hidden="true"
+            >
+              {!imagePreviewUrl && (name.trim().charAt(0).toUpperCase() || "+")}
+            </div>
+
+            <div className="staff-photo-copy">
+              <strong>
+                {t("dashboardStaff.image.photoLabel", "Staff photo")}
+              </strong>
+              <span className="small muted">
+                {t(
+                  "dashboardStaff.image.photoOptional",
+                  "Optional. Shown when customers choose a provider.",
+                )}
+              </span>
+            </div>
+
+            <div className="staff-photo-actions">
+              <label className="btn btn-ghost staff-photo-upload">
+                {uploadingImage
+                  ? t("dashboardStaff.image.uploading", "Uploading...")
+                  : imagePreviewUrl
+                    ? t("dashboardStaff.image.change", "Change photo")
+                    : t("dashboardStaff.image.choose", "Choose photo")}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(event) =>
+                    onImageChange(event.target.files?.[0] || null)
+                  }
+                  disabled={loading || uploadingImage}
+                />
+              </label>
+
+              {imagePreviewUrl && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={clearImage}
+                  disabled={loading || uploadingImage}
+                >
+                  {t("dashboardStaff.image.remove", "Remove photo")}
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="staff-create-grid">
             <input
               placeholder={t(
@@ -133,6 +196,57 @@ export default function CreateStaffCard({
           gap: 1rem;
         }
 
+        .staff-photo-field {
+          display: grid;
+          grid-template-columns: 3.25rem minmax(180px, 1fr) auto;
+          gap: 0.75rem;
+          align-items: center;
+          padding-bottom: 0.9rem;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .staff-photo-preview {
+          display: grid;
+          place-items: center;
+          width: 3.25rem;
+          height: 3.25rem;
+          border: 1px solid var(--border);
+          border-radius: 50%;
+          background-color: var(--surface-2);
+          background-position: center;
+          background-size: cover;
+          color: var(--text-muted);
+          font-size: 1.1rem;
+          font-weight: 800;
+        }
+
+        .staff-photo-copy {
+          display: grid;
+          gap: 0.18rem;
+          min-width: 0;
+        }
+
+        .staff-photo-actions {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .staff-photo-upload {
+          position: relative;
+          overflow: hidden;
+          cursor: pointer;
+        }
+
+        .staff-photo-upload input {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          opacity: 0;
+          pointer-events: none;
+        }
+
         .staff-create-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -148,6 +262,26 @@ export default function CreateStaffCard({
         }
 
         @media (max-width: 640px) {
+          .staff-photo-field {
+            grid-template-columns: 3rem minmax(0, 1fr);
+          }
+
+          .staff-photo-preview {
+            width: 3rem;
+            height: 3rem;
+          }
+
+          .staff-photo-actions {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .staff-photo-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+
           .staff-create-actions,
           .staff-create-actions :global(.btn),
           .staff-create-actions button {
