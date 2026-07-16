@@ -10,6 +10,7 @@ import {
   supabaseErrorDetails,
 } from "@/lib/bookingStatusErrors";
 import { requestTransactionalEmail } from "@/lib/email/client";
+import { formatLocalizedDate } from "@/lib/i18n/dateFormatting";
 import { dateKeyInTimeZone } from "@/lib/timezone";
 
 type RelatedBusiness = {
@@ -342,7 +343,7 @@ function businessNotificationActionLabel(
 
 export default function BusinessNotifications() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -1184,13 +1185,13 @@ export default function BusinessNotifications() {
       return t("dashboardNotifications.inbox.recently", "Recently");
     }
 
-    return new Intl.DateTimeFormat(undefined, {
+    return formatLocalizedDate(date, locale, {
       weekday: "short",
       day: "numeric",
       month: "short",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(date);
+    });
   }
 
   function bookingCalendarUrl(booking: Booking) {

@@ -14,15 +14,12 @@ manual steps below.
 - Resend delivery to normal Gmail inboxes: PASS.
 - Business and staff Calendar operational QA: PASS.
 - Marketplace production-data cleanup: COMPLETE.
-- Manual appointment customer-claim real-inbox QA: PARTIAL PASS; notification
-  backfill implemented and awaiting focused retest.
-- Reminder dry-run, real delivery and duplicate-prevention QA: REQUIRED before
-  reminders are advertised as active.
+- Manual appointment customer-claim real-inbox QA: PASS.
+- Reminder dry-run, real delivery and duplicate-prevention QA: PASS.
 - Supabase confirmation/recovery email localization: dashboard-managed and not
   yet proven as per-recipient EN/SQ.
 - Application transactional email templates and recipient-locale selection:
-  CODE-AUDITED for EN/SQ; one real Albanian inbox delivery remains to be
-  verified.
+  PASS for EN/SQ, including real Albanian Resend delivery.
 
 ## Static Launch Asset And Header Audit
 
@@ -192,6 +189,27 @@ Confirm the expected Gmail/Resend delivery, then repeat the same POST once.
 The second response should report `sent: 0` for the tested booking and increase
 `skippedDuplicate`.
 
+### Production Result — 15 July 2026
+
+The controlled production run passed the complete reminder gate:
+
+- dry run returned HTTP `200`, `dryRun: true`, provider `resend` and strategy
+  `daily_10_to_38_hours`
+- both due linked-customer appointments were already processed, with no
+  missing recipient or unlinked guest booking
+- the controlled booking had exactly one `customer_24h` delivery row with
+  status `sent`
+- Resend recorded exactly one delivered Albanian reminder with the correct
+  business, service, staff, local appointment time and customer-domain CTA
+- a repeated live request returned `sent: 0` and `skippedDuplicate: 2`
+- Booking confirmation, My Bookings, business Calendar and business Inbox
+  remained consistent with no duplicate appointment or reminder
+
+One already-processed `@test.com` fixture also fell inside the due window. The
+unique delivery constraint prevented any duplicate send. Remove or move old
+future reminder fixtures during launch data housekeeping; do not add a broad
+email-domain filter to production reminder logic.
+
 ## Manual Appointment Customer Claim QA
 
 Required real-inbox flow:
@@ -305,16 +323,40 @@ translation parity checks pass. Hold production QA until this grouped batch is
 deployed; then verify one GBP, one EUR and one ALL service across the public
 profile, confirmation, My Bookings, Services, Team and customer history.
 
+## Final Cross-Role Visual Refinement
+
+A final desktop and mobile inspection against Mirëbook's compact operating
+principles found a small group of presentation issues rather than another
+structural redesign need. The grouped follow-up:
+
+- separates the Staff Today next-appointment label, customer and date so they
+  cannot concatenate, and makes its count strip wrap safely
+- keeps Staff Inbox filters compact on mobile instead of stacking three large
+  equal-priority buttons
+- gives the Explore search and clear actions an unambiguous full-width mobile
+  row
+- balances the signed-in customer mobile navigation while keeping Logout as a
+  visible top-level action
+- formats business Inbox appointment and update dates in the selected English
+  or Albanian locale
+
+Calendar, guided Setup, Account, public booking cards and the overall theme
+were intentionally left structurally unchanged because their current versions
+passed the visual inspection. This pass changes presentation only and does not
+alter booking, availability, notification-generation, auth, RLS, staff-linking
+or billing behavior.
+
 ## Final Release Order
 
 1. Commit and deploy the latest website build.
 2. Marketplace cleanup and empty-state QA are complete.
 3. Manual appointment claim notification and cross-account QA are complete.
-4. Run reminder dry-run and controlled delivery/deduplication QA.
-5. Run one English and one Albanian smoke across registration, booking email,
-   public booking, Calendar, Notifications and account language persistence.
-6. Publish the first reviewed genuine business.
-7. Run one final customer booking against that genuine listing.
+4. Reminder dry-run and controlled delivery/deduplication QA are complete.
+5. EN/SQ interface and application transactional-email smoke are complete.
+6. Remove or move future QA reminder fixtures from the launch monitoring
+   window.
+7. Publish the first reviewed genuine business.
+8. Run one final customer booking against that genuine listing.
 
 ## UI Position And Next Batch
 

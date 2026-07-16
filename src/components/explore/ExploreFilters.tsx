@@ -188,6 +188,10 @@ export default function ExploreFilters({
             grid-column: 1 / -1;
           }
 
+          .explore-filter-grid :global(.btn-accent) {
+            grid-column: 1 / -1;
+          }
+
           .explore-filter-grid label {
             font-size: 0.72rem;
           }

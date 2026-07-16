@@ -375,7 +375,7 @@ export default function StaffNotificationsPage() {
                 <button
                   type="button"
                   onClick={markAllRead}
-                  className="btn btn-ghost"
+                  className="btn btn-ghost staff-mark-all-read"
                 >
                   {t("staffNotifications.markAllRead", "Mark all read")}
                 </button>
@@ -534,6 +534,11 @@ export default function StaffNotificationsPage() {
           justify-content: flex-end;
         }
 
+        .staff-mark-all-read {
+          min-height: 2.25rem;
+          font-size: 0.8rem;
+        }
+
         :global(.badge-muted) {
           background: var(--surface-2);
           color: var(--text-muted);
@@ -627,13 +632,19 @@ export default function StaffNotificationsPage() {
 
           .staff-notification-filters {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 
           .staff-notification-filters :global(.btn),
           .staff-notification-filters button {
             width: 100%;
             justify-content: center;
+          }
+
+          .staff-notification-filters .staff-mark-all-read {
+            grid-column: 1 / -1;
+            min-height: 2.15rem;
+            padding-block: 0.45rem;
           }
         }
       `}</style>

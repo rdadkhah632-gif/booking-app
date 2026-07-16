@@ -527,7 +527,7 @@ export default function StaffDashboardPage() {
             )}
 
             <div className="card staff-today-card">
-              <div>
+              <div className="staff-today-copy">
                 <h2>
                   {todayBookings.length > 0
                     ? t(
@@ -541,21 +541,23 @@ export default function StaffDashboardPage() {
                     href={`/staff/calendar?date=${calendarDateValue(nextBooking.start_at)}&bookingId=${nextBooking.id}`}
                     className="staff-next-appointment"
                   >
-                    <span>
+                    <span className="staff-next-label">
                       {t("staff.today.nextPrefix", "Next appointment")}
                     </span>
-                    <strong>
-                      {nextBooking.customer_name ||
-                        t("common.customer", "Customer")}
-                    </strong>
-                    <span>
-                      {formatLocalizedDate(nextBooking.start_at, locale, {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <span className="staff-next-details">
+                      <strong>
+                        {nextBooking.customer_name ||
+                          t("common.customer", "Customer")}
+                      </strong>
+                      <span>
+                        {formatLocalizedDate(nextBooking.start_at, locale, {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </span>
                   </Link>
                 ) : (
@@ -680,22 +682,6 @@ export default function StaffDashboardPage() {
           );
         }
 
-        .staff-next-appointment {
-          display: flex;
-          gap: 0.3rem 0.55rem;
-          align-items: baseline;
-          flex-wrap: wrap;
-          width: fit-content;
-          margin-top: 0.45rem;
-          color: var(--text);
-          text-decoration: none;
-        }
-
-        .staff-next-appointment span {
-          color: var(--text-muted);
-          font-size: 0.82rem;
-        }
-
         .staff-next-appointment:hover strong,
         .staff-next-appointment:focus-visible strong {
           color: var(--accent);
@@ -753,6 +739,46 @@ export default function StaffDashboardPage() {
           margin-top: 0;
         }
 
+        .staff-today-copy {
+          min-width: 0;
+          flex: 1 1 auto;
+        }
+
+        .staff-next-appointment {
+          display: grid;
+          gap: 0.2rem;
+          width: fit-content;
+          max-width: 100%;
+          margin-top: 0.45rem;
+          color: var(--text);
+          text-decoration: none;
+        }
+
+        .staff-next-label {
+          color: var(--text-muted);
+          font-size: 0.76rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .staff-next-details {
+          display: flex;
+          gap: 0.25rem 0.5rem;
+          align-items: baseline;
+          flex-wrap: wrap;
+          overflow-wrap: anywhere;
+        }
+
+        .staff-next-details > span {
+          color: var(--text-muted);
+          font-size: 0.82rem;
+        }
+
+        .staff-next-details > span::before {
+          content: "\\00b7";
+          margin-right: 0.5rem;
+        }
+
         @media (max-width: 620px) {
           .staff-today-card,
           .staff-service-summary {
@@ -762,6 +788,19 @@ export default function StaffDashboardPage() {
           .staff-home-stats {
             grid-template-columns: repeat(3, minmax(0, 1fr));
             min-width: 0;
+          }
+
+          .staff-home-stats span {
+            overflow-wrap: anywhere;
+          }
+
+          .staff-next-details {
+            display: grid;
+            gap: 0.15rem;
+          }
+
+          .staff-next-details > span::before {
+            content: none;
           }
 
           .staff-owner-context {

@@ -129,8 +129,10 @@ export default function CustomerNav({ notificationCount }: NavProps) {
 
         @media (max-width: 540px) {
           :global(.nav-role-customer .auth-nav-links) {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
             gap: 0.38rem;
             width: 100%;
           }
@@ -139,10 +141,11 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           .customer-nav-account-menu,
           .customer-nav-logout,
           .customer-nav-account-menu summary {
-            width: 100%;
+            width: auto;
             min-width: 0;
             justify-content: center;
             text-align: center;
+            white-space: nowrap;
           }
 
           .customer-nav-primary,
@@ -155,7 +158,7 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           }
 
           .customer-nav-account-menu[open] {
-            grid-column: 1 / -1;
+            flex: 1 0 100%;
           }
 
           .customer-nav-account-menu-panel {
