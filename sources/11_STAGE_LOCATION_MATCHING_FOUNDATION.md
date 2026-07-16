@@ -1,6 +1,6 @@
 # Stage 11 - Location Matching Foundation
 
-Status: Batch 1 implemented in the repository; Supabase SQL not yet applied.
+Status: Batch 1 implemented, applied to Supabase and access-smoke tested.
 
 ## Purpose
 
@@ -140,6 +140,23 @@ After applying SQL 18, verify:
     `stale` without deleting it.
 
 Do not add real coordinates until the server-side geocoding route is present.
+
+## Batch 1 Application QA
+
+SQL 18 was applied to production Supabase on 16 July 2026. A read-only access
+smoke test confirmed:
+
+- the service role can read `business_locations`
+- the table initially contains no location rows
+- anonymous reads are denied
+- the service role can execute `mirebook_business_distances`
+- anonymous callers cannot execute the distance function
+- an authenticated business owner can read through the owner-scoped policy
+- an authenticated owner cannot insert coordinates directly
+- authenticated browser callers cannot execute the distance function
+
+The rejected owner insert created no row. No production coordinates, business
+details, publication states or customer records were changed during QA.
 
 ## Next Batches
 
