@@ -1,7 +1,8 @@
 # Stage 11 - Location Matching Foundation
 
-Status: Batch 1 applied and access-smoke tested. Batch 2 implemented; Mapbox
-production configuration and deployed QA remain.
+Status: Batch 1 applied and access-smoke tested. Batch 2 deployed and production
+QA passed. The owner-side marketplace rollback follow-up is implemented and
+awaiting focused deployed QA.
 
 ## Purpose
 
@@ -245,6 +246,28 @@ After configuring Mapbox and deploying:
 Until Batch 3, a verified coordinate is private setup data only. Explore does
 not request customer location, display distance, reorder results or hide
 businesses based on location verification.
+
+### Batch 2 Production QA
+
+Production QA on 17 July 2026 confirmed:
+
+- Mapbox returned readable Tirana candidates for the saved business address
+- the protected static preview rendered with Mapbox/OpenStreetMap attribution
+- confirmed location state persisted after refresh
+- changing the business address marked the location `stale` and prompted the
+  owner to verify it again
+- owner-facing responses exposed no token, exact coordinates, geometry or
+  PostGIS values
+- direct authenticated browser writes to private location storage remained
+  denied
+- English, Albanian and mobile setup states worked without horizontal overflow
+
+The same QA found that the prominent Setup summary exposed publishing but hid
+the reversible owner action inside the collapsed profile editor after a business
+went live. The primary business now keeps one visible publishing control in the
+Setup summary: it publishes while hidden and changes to `Hide from marketplace`
+when live. The duplicate primary toggle was removed from the profile editor;
+secondary business profiles retain their own scoped toggle.
 
 ## Next Batches
 

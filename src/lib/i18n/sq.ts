@@ -1970,6 +1970,7 @@ export const sq: TranslationTree = {
   "account.saveSuccess": "Detajet e llogarisë Mirëbook u përditësuan.",
   "account.linkedBusiness": "Biznes i lidhur",
   "account.saving": "Duke ruajtur...",
+  "account.publicPage": "Faqja publike",
   "dashboardBookings.pageTitle": "Kalendari",
   "dashboardBookings.pageSubtitle": "Krijo fillimisht një biznes.",
   "dashboardBookings.pageSubtitleSelected": "Shiko çfarë ndodh dhe kur për",

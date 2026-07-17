@@ -797,6 +797,25 @@ export default function Businesses() {
                   {nextSetupStep.action}
                 </a>
               ) : null}
+              {primaryBusiness.published ? (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  aria-label={t(
+                    "dashboardBusinesses.hideMarketplace",
+                    "Hide from marketplace",
+                  )}
+                  onClick={() => togglePublished(primaryBusiness)}
+                  disabled={publishingBusinessId === primaryBusiness.id}
+                >
+                  {publishingBusinessId === primaryBusiness.id
+                    ? t("common.updating", "Updating...")
+                    : t(
+                        "dashboardBusinesses.hideMarketplace",
+                        "Hide from marketplace",
+                      )}
+                </button>
+              ) : null}
             </div>
             <div className="setup-progress-track" aria-hidden="true">
               <span style={{ width: `${setupProgressPercent}%` }} />
@@ -1076,6 +1095,7 @@ export default function Businesses() {
                 publishingBusinessId={publishingBusinessId}
                 uploadingBusinessId={uploadingBusinessId}
                 locationRefreshKey={locationRefreshKey}
+                showPublishingAction={business.id !== primaryBusiness?.id}
                 updateLocalBusiness={updateLocalBusiness}
                 onSave={saveBusiness}
                 onTogglePublished={togglePublished}

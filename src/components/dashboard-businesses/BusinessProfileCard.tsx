@@ -15,6 +15,7 @@ type Props = {
   publishingBusinessId: string | null;
   uploadingBusinessId: string | null;
   locationRefreshKey: number;
+  showPublishingAction: boolean;
   updateLocalBusiness: UpdateBusinessField;
   onSave: (business: Business) => void;
   onTogglePublished: (business: Business) => void;
@@ -29,6 +30,7 @@ export default function BusinessProfileCard({
   publishingBusinessId,
   uploadingBusinessId,
   locationRefreshKey,
+  showPublishingAction,
   updateLocalBusiness,
   onSave,
   onTogglePublished,
@@ -52,7 +54,11 @@ export default function BusinessProfileCard({
             : "var(--border)",
       }}
     >
-      <div className="business-profile-card-top">
+      <div
+        className={`business-profile-card-top${
+          showPublishingAction ? "" : " without-publishing-action"
+        }`}
+      >
         <div
           className="business-profile-image-preview"
           style={{
@@ -170,23 +176,25 @@ export default function BusinessProfileCard({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onTogglePublished(business)}
-          className={business.published ? "btn btn-ghost" : "btn btn-accent"}
-          disabled={isPublishing}
-        >
-          {isPublishing
-            ? t("common.updating", "Updating...")
-            : business.published
-              ? t(
-                  "dashboardBusinesses.hideMarketplace",
-                  "Hide from marketplace",
-                )
-              : readiness.bookingReady
-                ? t("dashboardBusinesses.publish", "Publish to Mirëbook")
-                : t("dashboardBusinesses.finishSetup", "Finish setup first")}
-        </button>
+        {showPublishingAction ? (
+          <button
+            type="button"
+            onClick={() => onTogglePublished(business)}
+            className={business.published ? "btn btn-ghost" : "btn btn-accent"}
+            disabled={isPublishing}
+          >
+            {isPublishing
+              ? t("common.updating", "Updating...")
+              : business.published
+                ? t(
+                    "dashboardBusinesses.hideMarketplace",
+                    "Hide from marketplace",
+                  )
+                : readiness.bookingReady
+                  ? t("dashboardBusinesses.publish", "Publish to Mirëbook")
+                  : t("dashboardBusinesses.finishSetup", "Finish setup first")}
+          </button>
+        ) : null}
       </div>
 
       <div className="business-detail-grid">
@@ -419,6 +427,10 @@ export default function BusinessProfileCard({
           grid-template-columns: 150px minmax(0, 1fr) minmax(170px, auto);
           gap: 1rem;
           align-items: start;
+        }
+
+        .business-profile-card-top.without-publishing-action {
+          grid-template-columns: 150px minmax(0, 1fr);
         }
 
         .business-status-pills,

@@ -1949,6 +1949,7 @@ export const en: TranslationTree = {
   "account.saveSuccess": "Mirëbook account details updated.",
   "account.linkedBusiness": "Linked business",
   "account.saving": "Saving...",
+  "account.publicPage": "Public page",
   "account.emailBody":
     "Used for login, booking confirmations, staff linking and future email notifications.",
   "account.emailChangeBody": "Contact support if this email is wrong.",
