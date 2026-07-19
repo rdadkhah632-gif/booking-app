@@ -2,8 +2,9 @@
 
 Status: Batches 1 through 4 are deployed to the repository. SQL 19, SQL 20,
 SQL 22 and SQL 24 were applied manually to production Supabase on 19 July
-2026. Batch 5 is implemented locally and requires deployment QA. SQL 21 and
-SQL 23 belong to the separate customer-app work and are not discovery
+2026. Batch 5 is deployed and passed production QA on 19 July 2026. Batch 6 is
+implemented locally and requires SQL 26 plus deployment QA. SQL 21, SQL 23 and
+SQL 25 belong to the separate customer-app work and are not discovery
 dependencies.
 
 ## Product Direction
@@ -122,18 +123,39 @@ The exporter:
 - writes a stable fingerprint for refresh comparison
 - never connects to Supabase
 
-### 3. Validate without writing
+### 3. Curate a balanced launch shortlist
+
+Do not import the full Albania export merely because it is available. Produce
+a deterministic review-sized shortlist first:
+
+```bash
+npm run directory:shortlist -- \
+  --input /tmp/mirebook-albania-directory-2026-06-17.jsonl \
+  --output /tmp/mirebook-albania-launch-shortlist.jsonl \
+  --summary-output /tmp/mirebook-albania-launch-shortlist-summary.json
+```
+
+The default selects at most three high-confidence, information-complete records
+for each supported category in Tiranë, Durrës, Vlorë, Sarandë, Shkodër, Korçë,
+Himarë, Berat and Gjirokastër. It reports empty city/category combinations so
+the launch set can be improved deliberately.
+
+The command is local and deterministic. It does not read environment secrets,
+connect to Supabase, alter source records or publish anything. The output is
+still only an importer input and every imported row remains `needs_review`.
+
+### 4. Validate without writing
 
 ```bash
 npm run directory:import -- \
-  --input /tmp/mirebook-albania-directory-2026-06-17.jsonl
+  --input /tmp/mirebook-albania-launch-shortlist.jsonl
 ```
 
 Dry run is the default. It validates every record, refuses mixed releases and
 duplicate source IDs, and reports category/city counts. It does not read
 Supabase credentials or create an import run.
 
-### 4. Apply only after SQL and sample review
+### 5. Apply only after SQL and sample review
 
 First run `sources/sql/19_albania_discovery_directory_foundation.sql` in the
 Supabase SQL editor. Then inspect a representative sample from every category
@@ -141,7 +163,7 @@ and major city. Only then run:
 
 ```bash
 npm run directory:import -- \
-  --input /tmp/mirebook-albania-directory-2026-06-17.jsonl \
+  --input /tmp/mirebook-albania-launch-shortlist.jsonl \
   --apply \
   --confirm-review-only-import
 ```
@@ -489,6 +511,81 @@ RLS policy or new booking behavior.
 9. Confirm no unpublished business or unreviewed directory record appears.
 10. Confirm business registration links stay on Mirëbook Business and existing
     customer booking routes still work unchanged.
+
+Production QA passed in English and Albanian at 1440x900 and 390x844. It
+confirmed homepage-to-Explore search transfer, category and city shortcuts,
+the `All` / `Bookable` / `Places` URL state, List/Map state preservation, Clear
+returning to `All`, and opt-in-only location handling with a graceful city
+fallback when location was unavailable. No horizontal overflow, clipped text,
+raw translation keys, console errors or visible unpublished/unreviewed records
+were found.
+
+One assertion remains data-blocked rather than failed: production had no live
+business or directory cards, so QA could not visually prove mixed-result type
+separation. Before a populated marketplace launch, rerun item 5 with one
+controlled ready published business and one controlled approved directory
+place, then return both records to their prior safe state.
+
+## Batch 6 - Launch Curation and Coverage
+
+Batch 6 turns the existing private directory pipeline into a controlled launch
+workflow without adding a bulk-publish path.
+
+### Deterministic shortlist
+
+`scripts/directory/curate-launch-shortlist.mjs` takes the full validated
+Overture export and produces a smaller, balanced JSONL file for operator
+review. Selection is deterministic and favours source confidence, contact
+completeness and recent source updates. It caps each city/category combination,
+removes obvious same-place candidates within a combination and reports
+coverage gaps.
+
+The shortlist command:
+
+- never connects to Supabase
+- never changes source records
+- never sets a listing status
+- never approves or publishes a place
+- preserves the normal importer as the only write path
+
+### Exact admin coverage
+
+SQL 26 adds `mirebook_admin_directory_launch_coverage()`, a read-only aggregate
+that is executable only by `service_role`. It returns counts grouped by city,
+category and existing listing status. It has no write statement and cannot
+import, review, publish, claim or edit a place.
+
+`/admin/directory` uses that aggregate to show compact launch coverage for the
+nine priority cities and supported categories. Each row opens the existing
+private review queue, preferring records awaiting review and falling back to
+already approved records. The existing one-place-at-a-time audited decision
+flow remains the only approval control.
+
+If SQL 26 has not been run, the review queue continues to work and the page
+shows a migration note instead of guessing at coverage.
+
+### Batch 6 application and QA
+
+1. Run `sources/sql/26_directory_launch_coverage.sql` after SQL 19 and SQL 20.
+2. Confirm the new RPC executes with `service_role` and is denied to `anon` and
+   `authenticated`.
+3. Run the shortlist command twice against the same export and confirm the
+   JSONL and summary outputs are identical.
+4. Validate the shortlist through `directory:import` without `--apply` first.
+5. Confirm the summary identifies empty city/category combinations and the
+   selected count never exceeds the configured per-combination cap.
+6. Import only the controlled shortlist with the explicit review-only
+   confirmation flag.
+7. Confirm all imported rows remain private `needs_review` records and Explore
+   is unchanged.
+8. Open `/admin/directory` and compare the city/category totals with direct
+   read-only SQL counts.
+9. Use a coverage row to open its queue, review one disposable record and
+   confirm only that record changes status with one audit row.
+10. Confirm no bulk approval control exists, EN/SQ copy is complete and the
+    coverage section has no horizontal overflow at 390px.
+
+SQL 26 is idempotent for this schema version and performs no data mutation.
 
 ### Later
 

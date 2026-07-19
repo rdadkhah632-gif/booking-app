@@ -4125,6 +4125,19 @@ export const en: TranslationTree = {
   "admin.directory.safetyTitle": "Approval is the public gate",
   "admin.directory.safetyBody":
     "Imported places start private. Approval makes only the directory record discoverable; it does not enable booking or claim ownership.",
+  "admin.directory.coverage.kicker": "Launch curation",
+  "admin.directory.coverage.title": "Launch coverage",
+  "admin.directory.coverage.body":
+    "Open a city or category to work through its private review queue before approving anything for discovery.",
+  "admin.directory.coverage.cities": "Priority cities",
+  "admin.directory.coverage.categories": "Categories",
+  "admin.directory.coverage.approved": "approved",
+  "admin.directory.coverage.awaiting": "awaiting review",
+  "admin.directory.coverage.approvedShort": "approved",
+  "admin.directory.coverage.review": "to review",
+  "admin.directory.coverage.empty": "No candidates",
+  "admin.directory.coverage.unavailable":
+    "Run SQL 26 to enable exact launch coverage totals. The review queue remains available.",
   "admin.directory.statusSummary": "Directory status summary",
   "admin.directory.status.needsReview": "Needs review",
   "admin.directory.status.active": "Approved",

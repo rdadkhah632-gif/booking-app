@@ -66,10 +66,29 @@ type DirectoryPlace = {
   latestReview?: DirectoryReview | null;
 };
 
+type CoverageItem = {
+  key: string;
+  approved: number;
+  needsReview: number;
+};
+
+type DirectoryCoverage = {
+  available: boolean;
+  cities: CoverageItem[];
+  categories: CoverageItem[];
+};
+
 type DirectoryResponse = {
   places: DirectoryPlace[];
   counts: Record<DirectoryStatus, number>;
+  coverage: DirectoryCoverage;
   pagination: { total: number; limit: number; offset: number };
+};
+
+type DirectoryFilterOverrides = {
+  category?: string;
+  city?: string;
+  search?: string;
 };
 
 const STATUSES: DirectoryStatus[] = [
@@ -130,6 +149,11 @@ export default function AdminDirectoryPage() {
     hidden: 0,
     closed: 0,
     duplicate: 0,
+  });
+  const [coverage, setCoverage] = useState<DirectoryCoverage>({
+    available: false,
+    cities: [],
+    categories: [],
   });
   const [pagination, setPagination] = useState({ total: 0, limit: 50, offset: 0 });
   const [pendingAction, setPendingAction] = useState<DirectoryAction | null>(null);
@@ -254,6 +278,7 @@ export default function AdminDirectoryPage() {
     suppliedToken?: string,
     statusOverride?: DirectoryStatus,
     preserveSuccess = false,
+    filterOverrides: DirectoryFilterOverrides = {},
   ) {
     setLoading(true);
     setError("");
@@ -270,9 +295,12 @@ export default function AdminDirectoryPage() {
         limit: String(pagination.limit),
         offset: String(nextOffset),
       });
-      if (category) params.set("category", category);
-      if (city.trim()) params.set("city", city.trim());
-      if (search.trim()) params.set("search", search.trim());
+      const appliedCategory = filterOverrides.category ?? category;
+      const appliedCity = filterOverrides.city ?? city;
+      const appliedSearch = filterOverrides.search ?? search;
+      if (appliedCategory) params.set("category", appliedCategory);
+      if (appliedCity.trim()) params.set("city", appliedCity.trim());
+      if (appliedSearch.trim()) params.set("search", appliedSearch.trim());
 
       const response = await fetch(`/api/admin/directory-places?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -283,6 +311,7 @@ export default function AdminDirectoryPage() {
       const next = payload as DirectoryResponse;
       setPlaces(next.places);
       setCounts(next.counts);
+      setCoverage(next.coverage || { available: false, cities: [], categories: [] });
       setPagination(next.pagination);
       setSelectedId((current) =>
         next.places.some((place) => place.id === current)
@@ -307,6 +336,26 @@ export default function AdminDirectoryPage() {
   function applyFilters(event: FormEvent) {
     event.preventDefault();
     loadDirectory(0);
+  }
+
+  function openCoverage(
+    item: CoverageItem,
+    filterType: "city" | "category",
+  ) {
+    const nextStatus: DirectoryStatus =
+      item.needsReview > 0 ? "needs_review" : "active";
+    const nextCategory = filterType === "category" ? item.key : "";
+    const nextCity = filterType === "city" ? item.key : "";
+
+    setStatus(nextStatus);
+    setCategory(nextCategory);
+    setCity(nextCity);
+    setSearch("");
+    loadDirectory(0, undefined, nextStatus, false, {
+      category: nextCategory,
+      city: nextCity,
+      search: "",
+    });
   }
 
   function choosePlace(placeId: string) {
@@ -482,6 +531,101 @@ export default function AdminDirectoryPage() {
             </button>
           ))}
         </div>
+
+        <section className="directory-coverage" aria-labelledby="directory-coverage-title">
+          <div className="directory-coverage-heading">
+            <div>
+              <p className="small directory-kicker">
+                {t("admin.directory.coverage.kicker", "Launch curation")}
+              </p>
+              <h2 id="directory-coverage-title">
+                {t("admin.directory.coverage.title", "Launch coverage")}
+              </h2>
+            </div>
+            <p className="small muted">
+              {t(
+                "admin.directory.coverage.body",
+                "Open a city or category to work through its private review queue before approving anything for discovery.",
+              )}
+            </p>
+          </div>
+
+          {coverage.available ? (
+            <div className="directory-coverage-groups">
+              {(
+                [
+                  {
+                    key: "cities",
+                    title: t("admin.directory.coverage.cities", "Priority cities"),
+                    items: coverage.cities,
+                  },
+                  {
+                    key: "categories",
+                    title: t("admin.directory.coverage.categories", "Categories"),
+                    items: coverage.categories,
+                  },
+                ] as const
+              ).map((group) => (
+                <div key={group.key} className="directory-coverage-group">
+                  <h3>{group.title}</h3>
+                  <div className="directory-coverage-rows">
+                    {group.items.map((item) => {
+                      const label =
+                        group.key === "categories" ? categoryLabel(item.key) : item.key;
+                      const isEmpty = item.approved === 0 && item.needsReview === 0;
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          className="directory-coverage-row"
+                          disabled={isEmpty || loading}
+                          onClick={() =>
+                            openCoverage(
+                              item,
+                              group.key === "categories" ? "category" : "city",
+                            )
+                          }
+                          aria-label={`${label}. ${item.approved} ${t(
+                            "admin.directory.coverage.approved",
+                            "approved",
+                          )}, ${item.needsReview} ${t(
+                            "admin.directory.coverage.awaiting",
+                            "awaiting review",
+                          )}.`}
+                        >
+                          <span>{label}</span>
+                          {isEmpty ? (
+                            <small>
+                              {t("admin.directory.coverage.empty", "No candidates")}
+                            </small>
+                          ) : (
+                            <span className="directory-coverage-totals">
+                              <small className="is-approved">
+                                {item.approved}{" "}
+                                {t("admin.directory.coverage.approvedShort", "approved")}
+                              </small>
+                              <small className="is-review">
+                                {item.needsReview}{" "}
+                                {t("admin.directory.coverage.review", "to review")}
+                              </small>
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="directory-coverage-unavailable">
+              {t(
+                "admin.directory.coverage.unavailable",
+                "Run SQL 26 to enable exact launch coverage totals. The review queue remains available.",
+              )}
+            </p>
+          )}
+        </section>
 
         <form className="directory-filters" onSubmit={applyFilters}>
           <label>
@@ -858,6 +1002,107 @@ export default function AdminDirectoryPage() {
           background: var(--accent-dim);
         }
 
+        .directory-coverage {
+          margin-top: 1rem;
+          padding: 1rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .directory-coverage-heading {
+          display: flex;
+          align-items: end;
+          justify-content: space-between;
+          gap: 1rem 2rem;
+        }
+
+        .directory-coverage-heading h2,
+        .directory-coverage-group h3 {
+          margin: 0;
+        }
+
+        .directory-coverage-heading > p {
+          max-width: 620px;
+        }
+
+        .directory-coverage-groups {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 1.5rem;
+          margin-top: 0.85rem;
+        }
+
+        .directory-coverage-group h3 {
+          margin-bottom: 0.35rem;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          text-transform: uppercase;
+          letter-spacing: 0;
+        }
+
+        .directory-coverage-rows {
+          display: grid;
+        }
+
+        .directory-coverage-row {
+          width: 100%;
+          min-width: 0;
+          min-height: 38px;
+          padding: 0.4rem 0.25rem;
+          border: 0;
+          border-bottom: 1px solid var(--border);
+          border-radius: 0;
+          background: transparent;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          text-align: left;
+        }
+
+        .directory-coverage-row:not(:disabled):hover {
+          background: var(--surface-2);
+        }
+
+        .directory-coverage-row:disabled {
+          cursor: default;
+          color: var(--text-muted);
+          opacity: 0.7;
+        }
+
+        .directory-coverage-row > span:first-child {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .directory-coverage-totals {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+        }
+
+        .directory-coverage-row small {
+          color: var(--text-muted);
+          white-space: nowrap;
+        }
+
+        .directory-coverage-row .is-approved {
+          color: var(--success);
+        }
+
+        .directory-coverage-row .is-review {
+          color: var(--warning);
+        }
+
+        .directory-coverage-unavailable {
+          margin-top: 0.85rem;
+          color: var(--text-muted);
+        }
+
         .directory-filters {
           margin-top: 1rem;
           padding: 0.9rem;
@@ -1104,7 +1349,8 @@ export default function AdminDirectoryPage() {
           }
 
           .directory-header,
-          .directory-detail-header {
+          .directory-detail-header,
+          .directory-coverage-heading {
             display: grid;
           }
 
@@ -1123,8 +1369,13 @@ export default function AdminDirectoryPage() {
           }
 
           .directory-filters,
-          .directory-facts {
+          .directory-facts,
+          .directory-coverage-groups {
             grid-template-columns: 1fr;
+          }
+
+          .directory-coverage-groups {
+            gap: 1rem;
           }
 
           .directory-row {

@@ -4225,6 +4225,19 @@ export const sq: TranslationTree = {
   "admin.directory.safetyTitle": "Miratimi kontrollon shfaqjen publike",
   "admin.directory.safetyBody":
     "Vendet e importuara nisin si private. Miratimi bën të dukshëm vetëm regjistrimin në direktori; nuk aktivizon rezervimet dhe as pretendimin e pronësisë.",
+  "admin.directory.coverage.kicker": "Përzgjedhja për lançim",
+  "admin.directory.coverage.title": "Mbulimi për lançim",
+  "admin.directory.coverage.body":
+    "Hap një qytet ose kategori për të shqyrtuar radhën private para se të miratosh diçka për kërkim.",
+  "admin.directory.coverage.cities": "Qytetet prioritare",
+  "admin.directory.coverage.categories": "Kategoritë",
+  "admin.directory.coverage.approved": "të miratuara",
+  "admin.directory.coverage.awaiting": "në pritje të shqyrtimit",
+  "admin.directory.coverage.approvedShort": "të miratuara",
+  "admin.directory.coverage.review": "për shqyrtim",
+  "admin.directory.coverage.empty": "Pa kandidatë",
+  "admin.directory.coverage.unavailable":
+    "Ekzekuto SQL 26 për të aktivizuar totalet e sakta të mbulimit. Radha e shqyrtimit mbetet e disponueshme.",
   "admin.directory.statusSummary": "Përmbledhja e gjendjeve të direktorisë",
   "admin.directory.status.needsReview": "Për shqyrtim",
   "admin.directory.status.active": "Miratuar",

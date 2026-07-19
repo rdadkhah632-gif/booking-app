@@ -33,9 +33,33 @@ const CATEGORY_KEYS = [
   "food_drink",
   "lodging",
 ] as const;
+const LAUNCH_CITIES = [
+  "Tiranë",
+  "Durrës",
+  "Vlorë",
+  "Sarandë",
+  "Shkodër",
+  "Korçë",
+  "Himarë",
+  "Berat",
+  "Gjirokastër",
+] as const;
 
 type DirectoryStatus = (typeof STATUSES)[number];
 type DirectoryAction = (typeof ACTIONS)[number];
+
+type CoverageGroupRow = {
+  city: string;
+  category_key: string;
+  listing_status: DirectoryStatus;
+  place_count: number | string;
+};
+
+type CoverageItem = {
+  key: string;
+  approved: number;
+  needsReview: number;
+};
 
 type DirectoryPlaceRow = {
   id: string;
@@ -193,6 +217,54 @@ async function statusCounts(
   return Object.fromEntries(results) as Record<DirectoryStatus, number>;
 }
 
+async function launchCoverage(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+) {
+  const { data, error } = await supabase
+    .rpc("mirebook_admin_directory_launch_coverage")
+    .returns<CoverageGroupRow[]>();
+
+  if (error) {
+    if (isMissingDirectorySchema(error)) {
+      return {
+        available: false,
+        cities: [] as CoverageItem[],
+        categories: [] as CoverageItem[],
+      };
+    }
+    throw error;
+  }
+
+  const rows = (Array.isArray(data) ? data : []) as CoverageGroupRow[];
+  const totalsFor = (
+    key: string,
+    matches: (row: CoverageGroupRow) => boolean,
+  ): CoverageItem => {
+    let approved = 0;
+    let needsReview = 0;
+    for (const row of rows) {
+      if (!matches(row)) continue;
+      const count = Number(row.place_count) || 0;
+      if (row.listing_status === "active") approved += count;
+      if (row.listing_status === "needs_review") needsReview += count;
+    }
+    return { key, approved, needsReview };
+  };
+
+  return {
+    available: true,
+    cities: LAUNCH_CITIES.map((city) =>
+      totalsFor(
+        city,
+        (row) => row.city.localeCompare(city, "sq", { sensitivity: "base" }) === 0,
+      ),
+    ),
+    categories: CATEGORY_KEYS.map((category) =>
+      totalsFor(category, (row) => row.category_key === category),
+    ),
+  };
+}
+
 async function handleList(
   request: NextApiRequest,
   response: NextApiResponse,
@@ -265,12 +337,18 @@ async function handleList(
     );
   }
 
+  const [counts, coverage] = await Promise.all([
+    statusCounts(admin.supabase),
+    launchCoverage(admin.supabase),
+  ]);
+
   response.status(200).json({
     places: places.map((place) => ({
       ...place,
       latestReview: latestReviewByPlace[place.id] || null,
     })),
-    counts: await statusCounts(admin.supabase),
+    counts,
+    coverage,
     pagination: { total: count || 0, limit, offset },
   });
 }

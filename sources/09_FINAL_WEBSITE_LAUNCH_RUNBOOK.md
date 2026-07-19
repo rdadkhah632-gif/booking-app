@@ -2,10 +2,10 @@
 
 ## Albania discovery migrations
 
-- SQL 19, SQL 20 and SQL 22 were applied manually on 19 July 2026.
-- Stage 12 Batch 4 ownership claims require SQL 24 after its code is deployed.
-- SQL 21 and SQL 23 are customer-app contracts and must not be confused with
-  the website discovery migration sequence.
+- SQL 19, SQL 20, SQL 22 and SQL 24 were applied manually on 19 July 2026.
+- Stage 12 Batch 6 launch coverage requires read-only SQL 26 after deployment.
+- SQL 21, SQL 23 and SQL 25 are customer-app migrations and must not be
+  confused with the website discovery migration sequence.
 - Before approving any claim, confirm the claimant owns the selected Mirëbook
   business and that approval leaves `businesses.published` unchanged.
 
@@ -25,6 +25,10 @@ manual steps below.
 - Marketplace production-data cleanup: COMPLETE.
 - Manual appointment customer-claim real-inbox QA: PASS.
 - Reminder dry-run, real delivery and duplicate-prevention QA: PASS.
+- Customer-first homepage and Explore Batch 5 production QA: PASS on desktop,
+  mobile, EN and SQ.
+- Explore mixed-result type separation: pending one controlled-data retest;
+  production had no live business or directory cards during Batch 5 QA.
 - Supabase confirmation/recovery email localization: dashboard-managed and not
   yet proven as per-recipient EN/SQ.
 - Application transactional email templates and recipient-locale selection:
@@ -127,6 +131,30 @@ Completed cleanup verification:
 
 Publish the first genuine business only after its profile, service, staff,
 hours and public preview have been reviewed.
+
+## Directory Launch Curation
+
+Do not import or approve the full Albania source export as a launch shortcut.
+Create a balanced private shortlist first:
+
+```bash
+npm run directory:shortlist -- \
+  --input /tmp/mirebook-albania-directory-2026-06-17.jsonl \
+  --output /tmp/mirebook-albania-launch-shortlist.jsonl \
+  --summary-output /tmp/mirebook-albania-launch-shortlist-summary.json
+
+npm run directory:import -- \
+  --input /tmp/mirebook-albania-launch-shortlist.jsonl
+```
+
+Review the generated coverage gaps and inspect a sample from every populated
+city/category before applying the importer. Apply mode still requires
+`--confirm-review-only-import`; every imported record remains private and must
+be approved individually in `/admin/directory`.
+
+After SQL 26 is applied, use Admin Directory launch coverage to work through
+priority city and category queues. SQL 26 is read-only and service-only. The
+coverage view is not permission to bulk approve records.
 
 ## Transactional Email Language Audit
 

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "directory:export:albania": "python3 scripts/directory/export-overture-albania.py",
+    "directory:shortlist": "node scripts/directory/curate-launch-shortlist.mjs",
     "directory:import": "node scripts/directory/import-places.mjs"
   },
   "dependencies": {
