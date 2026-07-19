@@ -351,6 +351,34 @@ export const sq: TranslationTree = {
     "Pronarët dhe stafi përdorin një hapësirë të veçantë për konfigurim, kalendar dhe inbox.",
   "home.businessEntry.cta": "Vizito Mirëbook Biznes",
   "home.businessEntry.setupCta": "Regjistro biznesin",
+  "home.discovery.metaTitle": "Eksploro dhe rezervo në Shqipëri | Mirëbook",
+  "home.discovery.metaDescription":
+    "Zbulo shërbime, aktivitete dhe vende lokale në Shqipëri, pastaj rezervo bizneset pjesëmarrëse përmes Mirëbook.",
+  "home.discovery.kicker": "Zbulo Shqipërinë",
+  "home.discovery.title": "Gjej vende për të shkuar dhe shërbime për të rezervuar.",
+  "home.discovery.subtitle":
+    "Eksploro vende lokale, aktivitete dhe biznese të rezervueshme në të gjithë Shqipërinë.",
+  "home.discovery.searchLabel": "Çfarë",
+  "home.discovery.searchPlaceholder": "Shërbime, aktivitete ose vende",
+  "home.discovery.cityLabel": "Ku",
+  "home.discovery.cityPlaceholder": "Qyteti ose zona",
+  "home.discovery.search": "Kërko",
+  "home.discovery.bookable": "Rezervo tani",
+  "home.discovery.map": "Eksploro hartën",
+  "home.discovery.browseKicker": "Fillo të eksplorosh",
+  "home.discovery.browseTitle": "Çfarë po kërkon?",
+  "home.discovery.viewAll": "Shiko gjithçka",
+  "home.discovery.cities": "Eksploro sipas qytetit",
+  "home.discovery.bookTitle": "Rezervo në Mirëbook",
+  "home.discovery.bookBody":
+    "Zgjidh një shërbim dhe një orar të lirë nga bizneset pjesëmarrëse.",
+  "home.discovery.placeTitle": "Zbulo vende lokale",
+  "home.discovery.placeBody":
+    "Shiko detaje dhe udhëzime për vendet ku rezervimi në Mirëbook nuk është ende i disponueshëm.",
+  "home.discovery.businessTitle": "Sill biznesin tënd në Mirëbook",
+  "home.discovery.businessBody":
+    "Pretendo një vend ekzistues ose krijo një profil, pastaj menaxho rezervimet përmes Mirëbook Biznes.",
+  "home.discovery.businessCta": "Pretendo ose listo biznesin tënd",
 
   "businessHome.metaTitle":
     "Mirëbook Biznes | Rezervime, staf dhe disponueshmëri",
@@ -4146,9 +4174,13 @@ export const sq: TranslationTree = {
   "explore.view.label": "Pamja e rezultateve",
   "explore.view.list": "Listë",
   "explore.view.map": "Hartë",
+  "explore.kind.label": "Lloji i rezultateve",
+  "explore.kind.all": "Të gjitha",
+  "explore.kind.bookable": "Rezervo",
+  "explore.kind.places": "Vende",
   "explore.location.finding": "Po gjej vendndodhjen...",
   "explore.location.clear": "Hiq kërkimin pranë",
-  "explore.location.use": "Përdor vendndodhjen time",
+  "explore.location.use": "Pranë meje",
   "explore.location.denied":
     "Vendndodhja nuk u nda. Kërko sipas qytetit.",
   "explore.location.unavailable":

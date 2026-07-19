@@ -1,12 +1,15 @@
 import {
+  CalendarCheck,
+  Compass,
   List,
   LoaderCircle,
   LocateFixed,
   Map,
+  MapPin,
   X,
 } from "lucide-react";
 import { useI18n } from "@/lib/useI18n";
-import { ExploreView } from "./exploreTypes";
+import type { DiscoveryKind, ExploreView } from "./exploreTypes";
 
 export type LocationState =
   | "idle"
@@ -17,16 +20,20 @@ export type LocationState =
 
 type Props = {
   view: ExploreView;
+  kind: DiscoveryKind;
   locationState: LocationState;
   onViewChange: (view: ExploreView) => void;
+  onKindChange: (kind: DiscoveryKind) => void;
   onUseLocation: () => void;
   onClearLocation: () => void;
 };
 
 export default function ExploreViewControls({
   view,
+  kind,
   locationState,
   onViewChange,
+  onKindChange,
   onUseLocation,
   onClearLocation,
 }: Props) {
@@ -35,6 +42,40 @@ export default function ExploreViewControls({
 
   return (
     <div className="explore-view-controls">
+      <div
+        className="explore-kind-segment"
+        role="group"
+        aria-label={t("explore.kind.label", "Result type")}
+      >
+        <button
+          type="button"
+          className={kind === "all" ? "is-active" : ""}
+          aria-pressed={kind === "all"}
+          onClick={() => onKindChange("all")}
+        >
+          <Compass size={17} aria-hidden="true" />
+          {t("explore.kind.all", "All")}
+        </button>
+        <button
+          type="button"
+          className={kind === "bookable" ? "is-active" : ""}
+          aria-pressed={kind === "bookable"}
+          onClick={() => onKindChange("bookable")}
+        >
+          <CalendarCheck size={17} aria-hidden="true" />
+          {t("explore.kind.bookable", "Bookable")}
+        </button>
+        <button
+          type="button"
+          className={kind === "places" ? "is-active" : ""}
+          aria-pressed={kind === "places"}
+          onClick={() => onKindChange("places")}
+        >
+          <MapPin size={17} aria-hidden="true" />
+          {t("explore.kind.places", "Places")}
+        </button>
+      </div>
+
       <div
         className="explore-view-segment"
         role="group"
@@ -103,16 +144,25 @@ export default function ExploreViewControls({
           margin-bottom: 0.85rem;
         }
 
-        .explore-view-segment {
+        .explore-view-segment,
+        .explore-kind-segment {
           display: inline-grid;
-          grid-template-columns: 1fr 1fr;
           padding: 3px;
           border: 1px solid var(--border);
           border-radius: 8px;
           background: var(--surface);
         }
 
+        .explore-view-segment {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .explore-kind-segment {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
         .explore-view-segment button,
+        .explore-kind-segment button,
         .location-button {
           min-height: 38px;
           border: 0;
@@ -129,11 +179,13 @@ export default function ExploreViewControls({
           cursor: pointer;
         }
 
-        .explore-view-segment button {
+        .explore-view-segment button,
+        .explore-kind-segment button {
           padding: 0.45rem 0.8rem;
         }
 
-        .explore-view-segment button.is-active {
+        .explore-view-segment button.is-active,
+        .explore-kind-segment button.is-active {
           background: var(--surface-2);
           color: var(--text);
           box-shadow: inset 0 0 0 1px var(--border-2);
@@ -173,6 +225,11 @@ export default function ExploreViewControls({
         }
 
         @media (max-width: 520px) {
+          .explore-kind-segment {
+            flex: 1 0 100%;
+            width: 100%;
+          }
+
           .explore-view-segment,
           .location-button {
             flex: 1 1 0;

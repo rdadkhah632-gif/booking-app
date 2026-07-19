@@ -99,3 +99,5 @@ export type MarketplaceStats = {
 export type SortOption = 'newest' | 'distance' | 'name' | 'city' | 'services'
 
 export type ExploreView = 'list' | 'map'
+
+export type DiscoveryKind = 'all' | 'bookable' | 'places'

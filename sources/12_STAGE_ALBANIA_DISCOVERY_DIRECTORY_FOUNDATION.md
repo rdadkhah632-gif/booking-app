@@ -1,8 +1,8 @@
 # Stage 12 - Albania Discovery Directory Foundation
 
-Status: Batches 1 through 3 deployed to the repository. SQL 19, SQL 20 and SQL
-22 were applied manually to production Supabase on 19 July 2026. Batch 4 is
-implemented locally and requires SQL 24 before deployed claim QA. SQL 21 and
+Status: Batches 1 through 4 are deployed to the repository. SQL 19, SQL 20,
+SQL 22 and SQL 24 were applied manually to production Supabase on 19 July
+2026. Batch 5 is implemented locally and requires deployment QA. SQL 21 and
 SQL 23 belong to the separate customer-app work and are not discovery
 dependencies.
 
@@ -368,7 +368,7 @@ Future directory UI must follow these rules:
 
 ## Protected Systems Untouched
 
-Batches 1 through 3 do not change:
+Batches 1 through 5 do not change:
 
 - existing Explore listing/readiness rules
 - booking creation, availability or lifecycle
@@ -443,6 +443,52 @@ reject a claim merely by being applied.
 - optional secure document upload after a private storage policy is designed
 - operator notifications when a new claim arrives
 - owner claim-history entry inside Setup if claim volume justifies it
+
+## Batch 5 - Customer-First Launch Surface
+
+The customer homepage now starts with discovery rather than product
+explanation. It presents one clear Albania search for services, activities and
+places, followed by compact category and city shortcuts. A project-owned hero
+image was generated for Mirëbook and stored locally at
+`public/mirebook-customer-discovery-hero.jpg`; it does not represent a real
+partner business.
+
+Explore now has an explicit result-type control:
+
+- `All` combines ready Mirëbook businesses and reviewed directory places.
+- `Bookable` shows only ready Mirëbook businesses with the existing booking
+  journey.
+- `Places` shows only reviewed directory places with details, directions and
+  ownership context.
+
+The selected result type stays in the Explore URL and is preserved when the
+customer changes between List and Map. Broad homepage category shortcuts use
+stable directory category keys. Existing business categories are matched to
+those broad groups with presentation-only keywords; no business record or
+category value is rewritten.
+
+Location remains opt-in. The homepage and Explore do not request location on
+load, and this batch adds no saved customer coordinates, database schema, SQL,
+RLS policy or new booking behavior.
+
+### Batch 5 deployment QA
+
+1. Confirm the homepage image, search and first browse section render at
+   1440x900 and 390x844 with a hint of browse content below the hero.
+2. Confirm homepage search preserves What and Where values in the Explore URL.
+3. Confirm each category and city shortcut opens a filtered Explore view.
+4. Confirm `All`, `Bookable` and `Places` update the URL and visible result
+   types without changing any underlying record.
+5. Confirm `Bookable` contains no directory-place card and `Places` contains no
+   Mirëbook booking card.
+6. Confirm the result-type selection survives List/Map switching and Clear
+   returns to `All`.
+7. Confirm location is requested only after `Use my location` is selected.
+8. Verify EN/SQ copy, keyboard focus, selected control states and no horizontal
+   overflow on mobile.
+9. Confirm no unpublished business or unreviewed directory record appears.
+10. Confirm business registration links stay on Mirëbook Business and existing
+    customer booking routes still work unchanged.
 
 ### Later
 

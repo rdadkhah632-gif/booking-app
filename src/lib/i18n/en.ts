@@ -302,6 +302,34 @@ export const en: TranslationTree = {
     "Owners and staff use a separate workspace for setup, calendar and inbox.",
   "home.businessEntry.cta": "Visit Mirëbook Business",
   "home.businessEntry.setupCta": "List your business",
+  "home.discovery.metaTitle": "Explore and book Albania | Mirëbook",
+  "home.discovery.metaDescription":
+    "Discover local services, activities and places across Albania, then book participating businesses through Mirëbook.",
+  "home.discovery.kicker": "Discover Albania",
+  "home.discovery.title": "Find places to go and services to book.",
+  "home.discovery.subtitle":
+    "Explore local favourites, activities and bookable businesses across Albania.",
+  "home.discovery.searchLabel": "What",
+  "home.discovery.searchPlaceholder": "Services, activities or places",
+  "home.discovery.cityLabel": "Where",
+  "home.discovery.cityPlaceholder": "City or area",
+  "home.discovery.search": "Search",
+  "home.discovery.bookable": "Bookable now",
+  "home.discovery.map": "Explore the map",
+  "home.discovery.browseKicker": "Start exploring",
+  "home.discovery.browseTitle": "What are you looking for?",
+  "home.discovery.viewAll": "View everything",
+  "home.discovery.cities": "Explore by city",
+  "home.discovery.bookTitle": "Book on Mirëbook",
+  "home.discovery.bookBody":
+    "Choose a service and an available time from participating businesses.",
+  "home.discovery.placeTitle": "Discover local places",
+  "home.discovery.placeBody":
+    "View useful details and directions where Mirëbook booking is not available yet.",
+  "home.discovery.businessTitle": "Bring your business onto Mirëbook",
+  "home.discovery.businessBody":
+    "Claim an existing place or create a profile, then manage bookings through Mirëbook Business.",
+  "home.discovery.businessCta": "Claim or list your business",
 
   "businessHome.metaTitle":
     "Mirëbook Business | Bookings, staff and availability",
@@ -4047,9 +4075,13 @@ export const en: TranslationTree = {
   "explore.view.label": "Result view",
   "explore.view.list": "List",
   "explore.view.map": "Map",
+  "explore.kind.label": "Result type",
+  "explore.kind.all": "All",
+  "explore.kind.bookable": "Bookable",
+  "explore.kind.places": "Places",
   "explore.location.finding": "Finding you...",
   "explore.location.clear": "Clear nearby",
-  "explore.location.use": "Use my location",
+  "explore.location.use": "Near me",
   "explore.location.denied":
     "Location was not shared. Search by city instead.",
   "explore.location.unavailable":

@@ -15,12 +15,14 @@ import ExploreViewControls, {
 } from "@/components/explore/ExploreViewControls";
 import {
   DIRECTORY_CATEGORIES,
+  businessMatchesDirectoryCategory,
   directoryCategoryFromLabel,
   directoryCategoryLabel,
 } from "@/components/explore/directoryCategories";
 import {
   Business,
   BusinessCardStats,
+  DiscoveryKind,
   DirectoryPlace,
   DiscoveryMapItem,
   ExploreView,
@@ -38,7 +40,10 @@ type AppliedFilters = {
   city: string;
   category: string;
   sort: SortOption;
+  kind: DiscoveryKind;
 };
+
+type DiscoveryQuery = Pick<AppliedFilters, "query" | "city" | "category">;
 
 type DiscoveryListItem =
   | {
@@ -67,6 +72,7 @@ const VALID_SORTS: SortOption[] = [
   "city",
   "services",
 ];
+const VALID_KINDS: DiscoveryKind[] = ["all", "bookable", "places"];
 
 function queryText(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
@@ -159,16 +165,33 @@ export default function Explore() {
       sort: VALID_SORTS.includes(sortValue as SortOption)
         ? (sortValue as SortOption)
         : "newest",
+      kind: VALID_KINDS.includes(queryText(router.query.kind) as DiscoveryKind)
+        ? (queryText(router.query.kind) as DiscoveryKind)
+        : "all",
     };
   }, [
     router.query.category,
     router.query.city,
     router.query.query,
     router.query.sort,
+    router.query.kind,
   ]);
 
   const routeView: ExploreView =
     queryText(router.query.view) === "map" ? "map" : "list";
+
+  const discoveryQuery = useMemo<DiscoveryQuery>(
+    () => ({
+      query: appliedFilters.query,
+      city: appliedFilters.city,
+      category: appliedFilters.category,
+    }),
+    [
+      appliedFilters.category,
+      appliedFilters.city,
+      appliedFilters.query,
+    ],
+  );
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [directoryPlaces, setDirectoryPlaces] = useState<DirectoryPlace[]>([]);
@@ -176,6 +199,7 @@ export default function Explore() {
   const [city, setCity] = useState("");
   const [category, setCategory] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [kind, setKind] = useState<DiscoveryKind>("all");
   const [view, setView] = useState<ExploreView>("list");
   const [selectedMapId, setSelectedMapId] = useState("");
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
@@ -197,11 +221,12 @@ export default function Explore() {
         : appliedFilters.category,
     );
     setSortBy(appliedFilters.sort);
+    setKind(appliedFilters.kind);
     setView(routeView);
   }, [appliedFilters, routeView, router.isReady, t]);
 
   const loadDiscovery = useCallback(
-    async (filters: AppliedFilters, coordinates: Coordinates | null) => {
+    async (filters: DiscoveryQuery, coordinates: Coordinates | null) => {
       const requestId = ++requestSequence.current;
       setLoading(true);
       setError(null);
@@ -298,8 +323,8 @@ export default function Explore() {
 
   useEffect(() => {
     if (!router.isReady) return;
-    void loadDiscovery(appliedFilters, userLocation);
-  }, [appliedFilters, loadDiscovery, router.isReady, userLocation]);
+    void loadDiscovery(discoveryQuery, userLocation);
+  }, [discoveryQuery, loadDiscovery, router.isReady, userLocation]);
 
   useEffect(() => {
     return () => {
@@ -324,6 +349,10 @@ export default function Explore() {
   }
 
   const filteredBusinesses = useMemo(() => {
+    const selectedDirectoryCategory = directoryCategoryFromLabel(
+      appliedFilters.category,
+      t,
+    );
     return businesses.filter((business) => {
       const searchText = `${business.name || ""} ${business.description || ""} ${
         business.category || ""
@@ -338,14 +367,19 @@ export default function Explore() {
             .toLocaleLowerCase()
             .includes(appliedFilters.city.toLocaleLowerCase())
         : true;
-      const matchesCategory = appliedFilters.category
-        ? (business.category || "")
-            .toLocaleLowerCase()
-            .includes(appliedFilters.category.toLocaleLowerCase())
-        : true;
+      const matchesCategory = selectedDirectoryCategory
+        ? businessMatchesDirectoryCategory(
+            business.category,
+            selectedDirectoryCategory,
+          )
+        : appliedFilters.category
+          ? (business.category || "")
+              .toLocaleLowerCase()
+              .includes(appliedFilters.category.toLocaleLowerCase())
+          : true;
       return matchesSearch && matchesCity && matchesCategory;
     });
-  }, [appliedFilters, businesses]);
+  }, [appliedFilters, businesses, t]);
 
   const filteredDirectoryPlaces = useMemo(() => {
     const selectedDirectoryCategory = directoryCategoryFromLabel(
@@ -423,34 +457,48 @@ export default function Explore() {
         place,
       })),
     ];
+    const visibleItems = items.filter((item) => {
+      if (appliedFilters.kind === "bookable") {
+        return item.resultType === "business";
+      }
+      if (appliedFilters.kind === "places") {
+        return item.resultType === "directory_place";
+      }
+      return true;
+    });
 
     if (appliedFilters.sort === "distance") {
-      return items.sort(
+      return visibleItems.sort(
         (left, right) =>
           distanceValue(left.distanceMeters) -
           distanceValue(right.distanceMeters),
       );
     }
     if (appliedFilters.sort === "name") {
-      return items.sort((left, right) => left.name.localeCompare(right.name));
+      return visibleItems.sort((left, right) => left.name.localeCompare(right.name));
     }
     if (appliedFilters.sort === "city") {
-      return items.sort(
+      return visibleItems.sort(
         (left, right) =>
           left.city.localeCompare(right.city) || left.name.localeCompare(right.name),
       );
     }
     if (appliedFilters.sort === "services") {
-      return items.sort(
+      return visibleItems.sort(
         (left, right) =>
           right.services - left.services || left.name.localeCompare(right.name),
       );
     }
-    return items;
-  }, [appliedFilters.sort, filteredBusinesses, visibleDirectoryPlaces]);
+    return visibleItems;
+  }, [
+    appliedFilters.kind,
+    appliedFilters.sort,
+    filteredBusinesses,
+    visibleDirectoryPlaces,
+  ]);
 
   const mapItems = useMemo<DiscoveryMapItem[]>(() => {
-    const businessItems = filteredBusinesses.flatMap((business) => {
+    const businessItems = appliedFilters.kind === "places" ? [] : filteredBusinesses.flatMap((business) => {
       if (!business.location) return [];
       return [
         {
@@ -466,7 +514,7 @@ export default function Explore() {
         },
       ];
     });
-    const directoryItems = visibleDirectoryPlaces.map((place) => ({
+    const directoryItems = appliedFilters.kind === "bookable" ? [] : visibleDirectoryPlaces.map((place) => ({
       id: `directory:${place.id}`,
       resultType: "directory_place" as const,
       name: place.name,
@@ -480,7 +528,7 @@ export default function Explore() {
       href: `/places/${place.id}`,
     }));
     return [...businessItems, ...directoryItems];
-  }, [filteredBusinesses, visibleDirectoryPlaces, t]);
+  }, [appliedFilters.kind, filteredBusinesses, visibleDirectoryPlaces, t]);
 
   const selectedMapItem = useMemo(
     () => mapItems.find((item) => item.id === selectedMapId) || null,
@@ -508,9 +556,11 @@ export default function Explore() {
     category?: string;
     sort?: SortOption;
     view?: ExploreView;
+    kind?: DiscoveryKind;
   }) {
     const nextView = next.view ?? view;
     const nextSort = next.sort ?? sortBy;
+    const nextKind = next.kind ?? kind;
     void router.push({
       pathname: "/explore",
       query: {
@@ -519,6 +569,7 @@ export default function Explore() {
         ...(next.category?.trim() ? { category: next.category.trim() } : {}),
         ...(nextSort !== "newest" ? { sort: nextSort } : {}),
         ...(nextView === "map" ? { view: "map" } : {}),
+        ...(nextKind !== "all" ? { kind: nextKind } : {}),
       },
     });
   }
@@ -533,7 +584,8 @@ export default function Explore() {
     setCity("");
     setCategory("");
     setSortBy(nextSort);
-    pushFilters({ query: "", city: "", category: "", sort: nextSort });
+    setKind("all");
+    pushFilters({ query: "", city: "", category: "", sort: nextSort, kind: "all" });
   }
 
   function changeView(nextView: ExploreView) {
@@ -544,6 +596,19 @@ export default function Explore() {
       category: appliedFilters.category,
       sort: appliedFilters.sort,
       view: nextView,
+      kind: appliedFilters.kind,
+    });
+  }
+
+  function changeKind(nextKind: DiscoveryKind) {
+    setKind(nextKind);
+    pushFilters({
+      query: appliedFilters.query,
+      city: appliedFilters.city,
+      category: appliedFilters.category,
+      sort: appliedFilters.sort,
+      view,
+      kind: nextKind,
     });
   }
 
@@ -595,7 +660,10 @@ export default function Explore() {
   }
 
   const hasFilters = Boolean(
-    appliedFilters.query || appliedFilters.city || appliedFilters.category,
+    appliedFilters.query ||
+      appliedFilters.city ||
+      appliedFilters.category ||
+      appliedFilters.kind !== "all",
   );
   const hasAnyResults = businesses.length > 0 || directoryPlaces.length > 0;
 
@@ -625,8 +693,10 @@ export default function Explore() {
 
         <ExploreViewControls
           view={view}
+          kind={kind}
           locationState={locationState}
           onViewChange={changeView}
+          onKindChange={changeKind}
           onUseLocation={useCurrentLocation}
           onClearLocation={clearCurrentLocation}
         />
@@ -635,7 +705,7 @@ export default function Explore() {
           <ExploreEmptyState
             type="error"
             error={error}
-            onRetry={() => loadDiscovery(appliedFilters, userLocation)}
+            onRetry={() => loadDiscovery(discoveryQuery, userLocation)}
           />
         )}
 

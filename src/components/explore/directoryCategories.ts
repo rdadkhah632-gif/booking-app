@@ -30,6 +30,60 @@ const CATEGORY_ALIASES: Record<DirectoryCategoryKey, string[]> = {
   lodging: ["accommodation", "akomodim"],
 };
 
+const BUSINESS_CATEGORY_KEYWORDS: Record<DirectoryCategoryKey, string[]> = {
+  beauty_grooming: [
+    "barber",
+    "hair",
+    "nail",
+    "beauty",
+    "grooming",
+    "tattoo",
+    "salon",
+  ],
+  dental_health: ["dental", "dentist", "clinic", "medical", "health"],
+  wellness_fitness: [
+    "fitness",
+    "gym",
+    "wellness",
+    "physio",
+    "yoga",
+    "pilates",
+    "massage",
+  ],
+  events: ["event", "venue", "party", "wedding"],
+  learning_lessons: [
+    "lesson",
+    "class",
+    "course",
+    "school",
+    "language",
+    "tutor",
+    "training",
+  ],
+  tours_activities: ["tour", "activity", "experience", "guide", "excursion"],
+  rentals: ["rental", "hire", "jet ski", "bike", "boat", "car"],
+  attractions: ["attraction", "museum", "landmark", "park", "gallery"],
+  food_drink: ["restaurant", "cafe", "coffee", "food", "drink", "bar"],
+  lodging: [
+    "hotel",
+    "hostel",
+    "accommodation",
+    "guesthouse",
+    "apartment",
+    "resort",
+  ],
+};
+
+export function businessMatchesDirectoryCategory(
+  value: string | null | undefined,
+  category: DirectoryCategoryKey,
+) {
+  const normalized = (value || "").trim().toLocaleLowerCase();
+  return BUSINESS_CATEGORY_KEYWORDS[category].some((keyword) =>
+    normalized.includes(keyword),
+  );
+}
+
 export function directoryCategoryLabel(
   category: DirectoryCategoryKey,
   t: (key: string, fallback?: string) => string,
