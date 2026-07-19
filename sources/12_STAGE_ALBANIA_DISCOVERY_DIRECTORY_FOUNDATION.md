@@ -1,8 +1,10 @@
 # Stage 12 - Albania Discovery Directory Foundation
 
-Status: Batches 1 through 3 implemented locally. SQL 19, SQL 20 and SQL 22 are
-not assumed to be applied. SQL 21 belongs to the separate customer-app booking
-contract and is not a dependency of this discovery batch.
+Status: Batches 1 through 3 deployed to the repository. SQL 19, SQL 20 and SQL
+22 were applied manually to production Supabase on 19 July 2026. Batch 4 is
+implemented locally and requires SQL 24 before deployed claim QA. SQL 21 and
+SQL 23 belong to the separate customer-app work and are not discovery
+dependencies.
 
 ## Product Direction
 
@@ -382,11 +384,65 @@ Batches 1 through 3 do not change:
 
 ### Batch 4 - Claim Flow
 
-- `Claim this place` entry from a directory profile
-- login/register return context
-- business match suggestions without automatic linking
-- evidence submission and admin review
-- post-approval handoff into existing Business Setup
+Implemented:
+
+- `/places/[placeId]` gives each reviewed directory result a public-safe detail
+  page with directions, source attribution, reporting and ownership context.
+- `Claim this place` crosses into Mirëbook Business without offering customer
+  or staff registration as ownership choices.
+- Business login, registration, verification and resend flows preserve the
+  internal `/claim/[placeId]` return path.
+- `/claim/[placeId]` shows only businesses owned by the signed-in claimant.
+  Name, city and phone similarities are displayed only as suggestions and
+  never select, link or approve ownership automatically.
+- Claim evidence is reduced before storage. Email evidence stores the domain,
+  phone evidence stores only the final four digits, and document/other evidence
+  stores a description rather than a document upload.
+- `/admin/directory-claims` provides an operator queue for approve, request
+  more information and reject decisions with no native browser prompts.
+- Approved claims link the directory record to the existing business, then
+  return the owner to the existing Setup workspace. Approval does not publish
+  the business or change booking readiness.
+- Claimed directory results are removed from the combined Explore list only
+  when their linked, ready business is already present, preventing duplicate
+  cards without hiding a claimed-but-not-yet-live place.
+
+SQL 24 adds a private append-only claim event trail and service-only submit and
+review functions. Browser roles keep no direct access to `business_claims` or
+`business_claim_events`. The earlier SQL 19 approval function is replaced with
+an audited compatibility wrapper.
+
+### SQL 24 application and QA checklist
+
+1. Confirm SQL 19 and SQL 20 have already run successfully.
+2. Run `sources/sql/24_directory_business_claim_workflow.sql` in Supabase.
+3. Confirm `business_claim_events` has RLS enabled and no `anon` or
+   `authenticated` grants or policies.
+4. Confirm the submit/review RPCs are executable only by `service_role`.
+5. Approve one disposable directory place and open its public detail page.
+6. Start a claim logged out and confirm Business login/register retains the
+   exact place ID through email verification.
+7. Confirm a customer-only or non-owner account cannot submit a claim for a
+   business it does not own.
+8. Submit a disposable owner claim and confirm it remains `pending`, while the
+   place remains non-bookable and the business publication state is unchanged.
+9. Request more information as admin, confirm the owner sees the note, then
+   resubmit and confirm a claim event is appended.
+10. Approve the claim and confirm the place links to that exact owned business,
+    competing open claims are rejected, and the owner is sent to Setup.
+11. Confirm approval does not publish the business, create services/staff,
+    change readiness or alter any booking rule.
+12. Verify EN/SQ and 390px layouts, then leave no disposable active claim or
+    published QA business in customer discovery.
+
+SQL 24 is rerunnable for this schema version. It does not create, approve or
+reject a claim merely by being applied.
+
+### Later claim follow-ups
+
+- optional secure document upload after a private storage policy is designed
+- operator notifications when a new claim arrives
+- owner claim-history entry inside Setup if claim volume justifies it
 
 ### Later
 

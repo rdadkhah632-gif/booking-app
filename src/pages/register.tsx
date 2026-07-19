@@ -71,12 +71,22 @@ export default function RegisterPage() {
     : null;
   const loginUrl =
     role === "business"
-      ? getBusinessAppUrl("/login?product=business")
+      ? getBusinessAppUrl(
+          `/login?product=business${
+            safeRedirectTo?.startsWith("/claim/")
+              ? `&redirectTo=${encodeURIComponent(safeRedirectTo)}`
+              : ""
+          }`,
+        )
       : role === "staff"
         ? getBusinessAppUrl("/login?product=business")
         : getCustomerAppUrl("/login");
   const businessRegisterUrl = getBusinessAppUrl(
-    "/register?accountType=business",
+    `/register?accountType=business${
+      safeRedirectTo?.startsWith("/claim/")
+        ? `&redirectTo=${encodeURIComponent(safeRedirectTo)}`
+        : ""
+    }`,
   );
   const staffRegisterUrl = getBusinessAppUrl("/register?accountType=staff");
   const customerRegisterUrl = getCustomerAppUrl("/register");
@@ -92,6 +102,9 @@ export default function RegisterPage() {
   ) {
     if (!value) return null;
     if (value.startsWith("/staff/invite?token=")) return value;
+    if (accountRole === "business" && value.startsWith("/claim/")) {
+      return value;
+    }
     if (
       accountRole === "customer" &&
       (value.startsWith("/explore/") ||

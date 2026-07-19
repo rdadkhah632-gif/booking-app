@@ -687,6 +687,17 @@ export default function AdminIndexPage() {
                 )}
               </p>
             </Link>
+
+            <Link href="/admin/directory-claims" className="card admin-control-card">
+              <p className="small muted">{t('admin.claims.controlKicker', 'Ownership review')}</p>
+              <h3>{t('admin.claims.controlTitle', 'Directory ownership claims')}</h3>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                {t(
+                  'admin.claims.controlBody',
+                  'Review evidence before linking a directory place to a Mirëbook business.'
+                )}
+              </p>
+            </Link>
           </div>
 
           <div className="admin-dashboard-grid">

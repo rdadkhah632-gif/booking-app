@@ -1,5 +1,6 @@
 import {
   Activity,
+  ArrowRight,
   BedDouble,
   Bike,
   Building2,
@@ -90,6 +91,10 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
             {t("directory.card.notBookable", "Not bookable on Mirëbook yet")}
           </span>
           <div className="directory-card-actions">
+            <Link href={`/places/${place.id}`} className="btn btn-accent">
+              {t("directory.card.details", "Details")}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
             <button
               type="button"
               className="btn btn-ghost"
@@ -109,13 +114,7 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
                 {t("directory.card.website", "Website")}
               </a>
             )}
-            <Link
-              href={{
-                pathname: "/support/customer",
-                query: { reportPlace: place.name, placeId: place.id },
-              }}
-              className="btn btn-ghost"
-            >
+            <Link href={{ pathname: "/support/customer", query: { reportPlace: place.name, placeId: place.id } }} className="btn btn-ghost" aria-label={t("directory.card.reportPlace", "Report incorrect place details")}>
               <Flag size={16} aria-hidden="true" />
               {t("directory.card.report", "Report")}
             </Link>

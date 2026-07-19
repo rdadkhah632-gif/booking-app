@@ -24,6 +24,10 @@ export default function AdminNav({
         {t("nav.directory", "Directory")}
       </Link>
 
+      <Link href="/admin/directory-claims" className="muted">
+        {t("nav.claims", "Claims")}
+      </Link>
+
       <Link
         href="/admin/notifications"
         className={notificationCount > 0 ? "btn btn-accent" : "muted"}

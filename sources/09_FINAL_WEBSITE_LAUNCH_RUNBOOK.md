@@ -1,5 +1,14 @@
 # Mirëbook Final Website Launch Runbook
 
+## Albania discovery migrations
+
+- SQL 19, SQL 20 and SQL 22 were applied manually on 19 July 2026.
+- Stage 12 Batch 4 ownership claims require SQL 24 after its code is deployed.
+- SQL 21 and SQL 23 are customer-app contracts and must not be confused with
+  the website discovery migration sequence.
+- Before approving any claim, confirm the claimant owns the selected Mirëbook
+  business and that approval leaves `businesses.published` unchanged.
+
 Status: prepared on 13 July 2026.
 
 This runbook covers the remaining production operations after the Stage 9 code,

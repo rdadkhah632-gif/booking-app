@@ -374,6 +374,14 @@ export default function Explore() {
     });
   }, [appliedFilters, directoryPlaces, t]);
 
+  const visibleDirectoryPlaces = useMemo(() => {
+    const visibleBusinessIds = new Set(businesses.map((business) => business.id));
+    return filteredDirectoryPlaces.filter(
+      (place) =>
+        !place.linkedBusinessId || !visibleBusinessIds.has(place.linkedBusinessId),
+    );
+  }, [businesses, filteredDirectoryPlaces]);
+
   const cities = useMemo(() => {
     const unique = new Set(
       [
@@ -405,7 +413,7 @@ export default function Explore() {
         services: businessStats(business).activeServices,
         business,
       })),
-      ...filteredDirectoryPlaces.map((place) => ({
+      ...visibleDirectoryPlaces.map((place) => ({
         id: `directory:${place.id}`,
         resultType: "directory_place" as const,
         name: place.name,
@@ -439,7 +447,7 @@ export default function Explore() {
       );
     }
     return items;
-  }, [appliedFilters.sort, filteredBusinesses, filteredDirectoryPlaces]);
+  }, [appliedFilters.sort, filteredBusinesses, visibleDirectoryPlaces]);
 
   const mapItems = useMemo<DiscoveryMapItem[]>(() => {
     const businessItems = filteredBusinesses.flatMap((business) => {
@@ -458,7 +466,7 @@ export default function Explore() {
         },
       ];
     });
-    const directoryItems = filteredDirectoryPlaces.map((place) => ({
+    const directoryItems = visibleDirectoryPlaces.map((place) => ({
       id: `directory:${place.id}`,
       resultType: "directory_place" as const,
       name: place.name,
@@ -469,10 +477,10 @@ export default function Explore() {
       latitude: place.location.latitude,
       longitude: place.location.longitude,
       distanceMeters: place.distanceMeters ?? null,
-      href: null,
+      href: `/places/${place.id}`,
     }));
     return [...businessItems, ...directoryItems];
-  }, [filteredBusinesses, filteredDirectoryPlaces, t]);
+  }, [filteredBusinesses, visibleDirectoryPlaces, t]);
 
   const selectedMapItem = useMemo(
     () => mapItems.find((item) => item.id === selectedMapId) || null,
@@ -707,7 +715,9 @@ export default function Explore() {
                     </div>
                     {selectedMapItem.href ? (
                       <Link href={selectedMapItem.href} className="btn btn-accent">
-                        {t("explore.card.viewTimes", "View times")}
+                        {selectedMapItem.resultType === "business"
+                          ? t("explore.card.viewTimes", "View times")
+                          : t("directory.card.details", "Details")}
                         <ArrowRight size={16} aria-hidden="true" />
                       </Link>
                     ) : (

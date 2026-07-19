@@ -23,11 +23,20 @@ export default function LoginPage() {
   const safeRedirectTo = router.isReady
     ? safeInternalRedirect(router.query.redirectTo)
     : null;
+  const businessClaimRedirect = safeRedirectTo?.startsWith("/claim/")
+    ? safeRedirectTo
+    : null;
   const customerRegistrationPath = safeRedirectTo
     ? `/register?redirectTo=${encodeURIComponent(safeRedirectTo)}`
     : "/register";
   const registrationUrl = isBusinessEntry
-    ? getBusinessAppUrl("/register?accountType=business")
+    ? getBusinessAppUrl(
+        `/register?accountType=business${
+          businessClaimRedirect
+            ? `&redirectTo=${encodeURIComponent(businessClaimRedirect)}`
+            : ""
+        }`,
+      )
     : getCustomerAppUrl(customerRegistrationPath);
   const forgotPasswordUrl = isBusinessEntry
     ? getBusinessAppUrl("/forgot-password?product=business")
@@ -81,6 +90,11 @@ export default function LoginPage() {
     }
 
     if (safeRedirectTo?.startsWith("/staff/invite?token=")) {
+      router.replace(safeRedirectTo);
+      return;
+    }
+
+    if (safeRedirectTo?.startsWith("/claim/") && capabilities.ownsBusiness) {
       router.replace(safeRedirectTo);
       return;
     }
@@ -195,7 +209,10 @@ export default function LoginPage() {
         window.location.origin,
       ),
     );
-    if (redirectTo?.startsWith("/staff/invite?token=")) {
+    if (
+      redirectTo?.startsWith("/staff/invite?token=") ||
+      (isBusinessEntry && redirectTo?.startsWith("/claim/"))
+    ) {
       verificationRedirect.searchParams.set("redirectTo", redirectTo);
     }
 
