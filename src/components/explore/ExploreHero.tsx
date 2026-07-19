@@ -11,18 +11,19 @@ export default function ExploreHero({ marketplaceStats }: Props) {
     <header className="explore-hero-compact">
       <div>
         <h1 className="page-title">
-          {t("explore.hero.title", "Find a service")}
+          {t("explore.discovery.title", "Explore Albania")}
         </h1>
         <p className="page-sub">
           {t(
-            "explore.stage8.subtitle",
-            "Search local businesses and choose a time that works.",
+            "explore.discovery.subtitle",
+            "Find services, activities and places around you.",
           )}
         </p>
       </div>
-      {marketplaceStats.businesses > 0 && (
+      {marketplaceStats.visible > 0 && (
         <p className="small muted">
-          {marketplaceStats.visible} {t("explore.results.title", "results")}
+          {marketplaceStats.visible}{" "}
+          {t("explore.discovery.resultLabel", "results")}
         </p>
       )}
       <style jsx>{`

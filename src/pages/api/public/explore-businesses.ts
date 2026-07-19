@@ -39,6 +39,28 @@ type AvailabilityRow = {
   is_closed?: boolean | null;
 };
 
+type BusinessMapLocationRow = {
+  business_id: string;
+  latitude: number;
+  longitude: number;
+};
+
+type BusinessDistanceRow = {
+  business_id: string;
+  distance_meters: number;
+};
+
+function coordinateQuery(value: string | string[] | undefined) {
+  const text = Array.isArray(value) ? value[0] : value;
+  if (typeof text !== "string" || !text.trim()) return null;
+  const parsed = Number(text);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}
+
+function missingDiscoveryFunction(code?: string) {
+  return ["42P01", "42703", "PGRST202", "PGRST205"].includes(code || "");
+}
+
 function groupBy<T extends Record<string, unknown>>(rows: T[], key: keyof T) {
   return rows.reduce<Record<string, T[]>>((groups, row) => {
     const value = String(row[key] || "");
@@ -80,6 +102,25 @@ export default async function handler(
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
     response.status(405).json({ error: "Method not allowed." });
+    return;
+  }
+
+  const latitude = coordinateQuery(request.query.latitude);
+  const longitude = coordinateQuery(request.query.longitude);
+  const hasLocation = latitude !== null || longitude !== null;
+
+  if (
+    hasLocation &&
+    (latitude === null ||
+      longitude === null ||
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180)
+  ) {
+    response.status(400).json({ error: "A valid latitude and longitude are required." });
     return;
   }
 
@@ -163,7 +204,7 @@ export default async function handler(
       "service_id",
     );
 
-    const marketplaceBusinesses = businesses
+    const readyBusinesses = businesses
       .map((business) => {
         const services = (servicesByBusiness[business.id] || []).map(
           (service) => ({
@@ -206,6 +247,74 @@ export default async function handler(
         ),
       );
 
+    const readyBusinessIds = readyBusinesses.map((business) => business.id);
+    const [mapLocationResult, distanceResult] = await Promise.all([
+      supabaseAdmin.rpc("mirebook_public_business_map_locations", {
+        p_business_ids: readyBusinessIds,
+      }),
+      latitude !== null && longitude !== null
+        ? supabaseAdmin.rpc("mirebook_business_distances", {
+            p_business_ids: readyBusinessIds,
+            p_latitude: latitude,
+            p_longitude: longitude,
+            p_radius_meters: null,
+            p_limit: 200,
+          })
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (
+      mapLocationResult.error &&
+      !missingDiscoveryFunction(mapLocationResult.error.code)
+    ) {
+      throw mapLocationResult.error;
+    }
+    if (distanceResult.error) throw distanceResult.error;
+
+    const mapLocations = new Map(
+      (Array.isArray(mapLocationResult.data)
+        ? (mapLocationResult.data as unknown as BusinessMapLocationRow[])
+        : []
+      ).map((location) => [location.business_id, location]),
+    );
+    const distances = new Map(
+      (Array.isArray(distanceResult.data)
+        ? (distanceResult.data as unknown as BusinessDistanceRow[])
+        : []
+      ).map((distance) => [distance.business_id, distance.distance_meters]),
+    );
+
+    const marketplaceBusinesses = readyBusinesses
+      .map((business) => {
+        const mapLocation = mapLocations.get(business.id);
+        const distanceMeters = distances.get(business.id);
+        return {
+          ...business,
+          location: mapLocation
+            ? {
+                latitude: mapLocation.latitude,
+                longitude: mapLocation.longitude,
+                precision: "approximately_10m",
+              }
+            : null,
+          distanceMeters:
+            typeof distanceMeters === "number"
+              ? Math.round(distanceMeters)
+              : null,
+        };
+      })
+      .sort((left, right) => {
+        if (latitude === null || longitude === null) return 0;
+        return (
+          (left.distanceMeters ?? Number.POSITIVE_INFINITY) -
+          (right.distanceMeters ?? Number.POSITIVE_INFINITY)
+        );
+      });
+
+    response.setHeader(
+      "Cache-Control",
+      hasLocation ? "private, no-store" : "public, s-maxage=120, stale-while-revalidate=300",
+    );
     response.status(200).json({ businesses: marketplaceBusinesses });
   } catch (error) {
     console.error("[public-explore] Could not load marketplace", error);

@@ -45,9 +45,9 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
   if (type === 'no-businesses') {
     return (
       <div className="card">
-        <h3>{t('explore.empty.title')}</h3>
+        <h3>{t('explore.discovery.emptyTitle', 'More of Albania is coming')}</h3>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
-          {t('explore.stage8.emptyBody', 'Mirëbook is opening this marketplace gradually. Check back soon for bookable businesses near you.')}
+          {t('explore.discovery.emptyBody', 'Reviewed places and bookable businesses will appear here as they are added.')}
         </p>
       </div>
     )
@@ -55,9 +55,9 @@ export default function ExploreEmptyState({ type, error, onRetry, onClearFilters
 
   return (
     <div className="card">
-      <h3>{t('explore.empty.noResultsTitle')}</h3>
+      <h3>{t('explore.discovery.noResultsTitle', 'No places match these filters')}</h3>
       <p className="muted" style={{ marginTop: '0.5rem' }}>
-        {t('explore.empty.noResultsBody')}
+        {t('explore.discovery.noResultsBody', 'Try another category, city or search.')}
       </p>
       <div className="explore-empty-actions">
         {onClearFilters && (

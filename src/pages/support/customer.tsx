@@ -19,6 +19,7 @@ const CUSTOMER_SUBJECT_KEYS = [
   "support.customer.subject.cancel",
   "support.customer.subject.noResponse",
   "support.customer.subject.wrongDetails",
+  "support.customer.subject.placeDetails",
   "support.customer.subject.account",
   "support.customer.subject.notifications",
   "support.customer.subject.other",
@@ -40,8 +41,32 @@ export default function CustomerSupportPage() {
   const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!router.isReady) return;
     loadProfile();
-  }, []);
+  }, [router.isReady]);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const placeName =
+      typeof router.query.reportPlace === "string"
+        ? router.query.reportPlace.trim().slice(0, 140)
+        : "";
+    const placeId =
+      typeof router.query.placeId === "string"
+        ? router.query.placeId.trim().slice(0, 80)
+        : "";
+    if (!placeName) return;
+
+    setSubject("support.customer.subject.placeDetails");
+    setMessage(
+      t(
+        "support.customer.reportPlacePrefill",
+        "Place: {place}\nReference: {reference}\n\nTell us what is incorrect or out of date.",
+      )
+        .replace("{place}", placeName)
+        .replace("{reference}", placeId || "-"),
+    );
+  }, [router.isReady, router.query.placeId, router.query.reportPlace, t]);
 
   async function loadProfile() {
     setLoading(true);
@@ -52,7 +77,7 @@ export default function CustomerSupportPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login?redirectTo=/support/customer");
+      router.replace(`/login?redirectTo=${encodeURIComponent(router.asPath)}`);
       return;
     }
 

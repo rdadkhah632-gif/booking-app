@@ -534,6 +534,10 @@ export default function AdminIndexPage() {
                 Users
               </Link>
 
+              <Link href="/admin/directory" className="btn btn-ghost">
+                {t('nav.directory', 'Directory')}
+              </Link>
+
               <Link href="/admin/notifications" className="btn btn-ghost">
                 Notifications
               </Link>
@@ -670,6 +674,17 @@ export default function AdminIndexPage() {
               <h3>Support inbox and replies</h3>
               <p className="small muted" style={{ marginTop: '0.4rem' }}>
                 Review customer, staff and business help requests, then reply from the operator workspace.
+              </p>
+            </Link>
+
+            <Link href="/admin/directory" className="card admin-control-card">
+              <p className="small muted">{t('admin.directory.controlKicker', 'Marketplace review')}</p>
+              <h3>{t('admin.directory.controlTitle', 'Imported place directory')}</h3>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                {t(
+                  'admin.directory.controlBody',
+                  'Review source records before they can appear in customer discovery.'
+                )}
               </p>
             </Link>
           </div>

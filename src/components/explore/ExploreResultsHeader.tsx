@@ -23,7 +23,10 @@ export default function ExploreResultsHeader({
         <p className="small muted" style={{ marginTop: 0 }}>
           {loading
             ? t("explore.results.loading")
-            : `${filteredCount} ${t("explore.results.title").toLowerCase()}`}
+            : `${filteredCount} ${t(
+                "explore.discovery.resultLabel",
+                "results",
+              ).toLowerCase()}`}
         </p>
       </div>
 

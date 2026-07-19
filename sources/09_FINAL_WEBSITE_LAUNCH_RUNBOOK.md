@@ -37,7 +37,11 @@ browser hardening headers are also configured globally:
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: strict-origin-when-cross-origin`
-- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=(self)`
+
+Geolocation remains unavailable to third-party frames. Same-origin access is
+permitted only so Explore can respond after a customer explicitly taps `Use my
+location`; the app does not request location on load or persist coordinates.
 
 The default `X-Powered-By` framework disclosure is disabled.
 Pages without route-specific metadata now use `Mirëbook` as the browser title

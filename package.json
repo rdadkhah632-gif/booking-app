@@ -5,10 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "directory:export:albania": "python3 scripts/directory/export-overture-albania.py",
+    "directory:import": "node scripts/directory/import-places.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
+    "lucide-react": "^1.25.0",
+    "mapbox-gl": "^3.26.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

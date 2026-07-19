@@ -1,5 +1,6 @@
 import { SortOption } from "./exploreTypes";
 import { useI18n } from "@/lib/useI18n";
+import { Search, X } from "lucide-react";
 
 type Props = {
   search: string;
@@ -9,6 +10,7 @@ type Props = {
   cities: string[];
   categories: string[];
   resultCount: number;
+  locationActive: boolean;
   onSearchChange: (value: string) => void;
   onCityChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
@@ -25,6 +27,7 @@ export default function ExploreFilters({
   cities,
   categories,
   resultCount,
+  locationActive,
   onSearchChange,
   onCityChange,
   onCategoryChange,
@@ -33,10 +36,17 @@ export default function ExploreFilters({
   onClearFilters,
 }: Props) {
   const { t } = useI18n();
-  const hasFilters = Boolean(search || city || category || sortBy !== "newest");
+  const hasFilters = Boolean(
+    search ||
+      city ||
+      category ||
+      (sortBy !== "newest" && !(locationActive && sortBy === "distance")),
+  );
   return (
     <aside className="explore-filter-panel">
-      <h3 className="explore-filter-title">{t("explore.filters.title")}</h3>
+      <h3 className="explore-filter-title">
+        {t("explore.discovery.searchTitle", "Search Albania")}
+      </h3>
 
       <div className="explore-filter-grid">
         <div>
@@ -46,7 +56,10 @@ export default function ExploreFilters({
           <input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t("explore.search.placeholder")}
+            placeholder={t(
+              "explore.discovery.searchPlaceholder",
+              "Services, activities or places",
+            )}
             style={{ width: "100%", marginTop: "0.4rem" }}
           />
         </div>
@@ -55,19 +68,20 @@ export default function ExploreFilters({
           <label className="small muted">
             {t("explore.filters.categoryLabel", "Category")}
           </label>
-          <input
+          <select
             value={category}
             onChange={(e) => onCategoryChange(e.target.value)}
-            placeholder={t("explore.category.placeholder")}
-            list="category-options"
             style={{ width: "100%", marginTop: "0.4rem" }}
-          />
-
-          <datalist id="category-options">
+          >
+            <option value="">
+              {t("explore.category.all", "All categories")}
+            </option>
             {categories.map((item) => (
-              <option key={item} value={item} />
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
-          </datalist>
+          </select>
         </div>
 
         <div>
@@ -77,7 +91,10 @@ export default function ExploreFilters({
           <input
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
-            placeholder={t("explore.city.placeholder")}
+            placeholder={t(
+              "explore.discovery.cityPlaceholder",
+              "Tirana, Durrës, Sarandë...",
+            )}
             list="city-options"
             style={{ width: "100%", marginTop: "0.4rem" }}
           />
@@ -100,8 +117,13 @@ export default function ExploreFilters({
               style={{ width: "100%", marginTop: "0.4rem" }}
             >
               <option value="newest">
-                {t("explore.sort.newest", "Newest first")}
+                {t("explore.sort.recommended", "Recommended")}
               </option>
+              {(locationActive || sortBy === "distance") && (
+                <option value="distance">
+                  {t("explore.sort.distance", "Nearest first")}
+                </option>
+              )}
               <option value="name">
                 {t("explore.sort.name", "Business name")}
               </option>
@@ -118,7 +140,8 @@ export default function ExploreFilters({
           className="btn btn-accent"
           onClick={onApplyFilters}
         >
-          {t("explore.filters.searchButton", "Search")}
+          <Search size={17} aria-hidden="true" />
+          {t("explore.discovery.searchButton", "Search")}
         </button>
 
         {hasFilters && (
@@ -127,6 +150,7 @@ export default function ExploreFilters({
             className="btn btn-ghost"
             onClick={onClearFilters}
           >
+            <X size={17} aria-hidden="true" />
             {t("explore.filters.clearButton", "Clear filters")}
           </button>
         )}

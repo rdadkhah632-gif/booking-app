@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import { useI18n } from "@/lib/useI18n";
 import { Business, BusinessCardStats } from "./exploreTypes";
 
@@ -16,6 +17,23 @@ function businessInitials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+function distanceLabel(
+  distanceMeters: number | null | undefined,
+  t: (key: string, fallback?: string) => string,
+) {
+  if (typeof distanceMeters !== "number") return null;
+  if (distanceMeters < 1_000) {
+    return `${Math.max(100, Math.round(distanceMeters / 100) * 100)} ${t(
+      "directory.distance.metres",
+      "m away",
+    )}`;
+  }
+  return `${(distanceMeters / 1_000).toFixed(distanceMeters < 10_000 ? 1 : 0)} ${t(
+    "directory.distance.kilometres",
+    "km away",
+  )}`;
 }
 
 export default function ExploreBusinessCard({
@@ -36,6 +54,7 @@ export default function ExploreBusinessCard({
       ? t("explore.card.staffSingle", "staff member")
       : t("explore.card.staffPlural", "staff members")
   }`;
+  const distance = distanceLabel(business.distanceMeters, t);
 
   return (
     <Link
@@ -83,7 +102,11 @@ export default function ExploreBusinessCard({
         )}
 
         <div className="explore-card-facts">
-          <span>{locationLabel(business)}</span>
+          <span className="explore-card-location">
+            <MapPin size={14} aria-hidden="true" />
+            <span>{locationLabel(business)}</span>
+            {distance && <strong>{distance}</strong>}
+          </span>
           <span>
             {serviceText} · {staffText}
           </span>
@@ -187,6 +210,23 @@ export default function ExploreBusinessCard({
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+
+        .explore-card-location {
+          display: flex;
+          align-items: center;
+          gap: 0.28rem;
+          min-width: 0;
+        }
+
+        .explore-card-location > span {
+          min-width: 0;
+        }
+
+        .explore-card-location strong {
+          flex: 0 0 auto;
+          color: var(--text);
+          font-size: 0.7rem;
         }
 
         .explore-card-cta {

@@ -2,4 +2,7 @@ node_modules/
 .next/
 .env.local
 .DS_Store
+__pycache__/
+*.pyc
 ios/MirebookBusiness/Config/Local.xcconfig
+ios/MirebookCustomer/Config/Local.xcconfig

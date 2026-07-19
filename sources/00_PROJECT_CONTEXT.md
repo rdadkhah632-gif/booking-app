@@ -11,13 +11,23 @@ Target users:
 
 Launch geography/product direction:
 
-- initial focus includes Albania and the UK
+- launch positioning is customer-first discovery and booking in Albania
+- the existing Business and Staff booking product remains a core product, not a
+  separate or abandoned direction
+- reviewed real-world directory places may make discovery useful before every
+  business has joined Mirëbook
+- imported directory places must remain distinct from owner-managed, published
+  and bookable Mirëbook businesses until an ownership claim is approved
+- the architecture should retain a future route into the UK and other markets
 - international expansion should remain possible
 - English and Albanian language support are important
 
 Product model:
 
-- customers discover businesses and book appointments
+- customers discover services, activities and places, then book when the result
+  is a ready Mirëbook business
+- unclaimed directory places can offer details, directions and a claim path but
+  must not pretend to support Mirëbook booking
 - businesses manage profiles, services, staff, availability and bookings
 - staff can see assigned bookings and manage staff availability where allowed
 - business subscription billing is separate from the customer booking journey
@@ -54,4 +64,3 @@ General quality bar:
 - keep public booking free of billing confusion
 - keep visible text translatable
 - prefer small, testable changes over broad rewrites
-

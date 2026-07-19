@@ -282,6 +282,11 @@ secondary business profiles retain their own scoped toggle.
 - show approximate distance, never raw coordinates
 - keep city search as the full fallback
 
+Stage 12 expands this future search surface with a separate reviewed directory
+place type. Nearby search must merge only `active` directory records through a
+public-safe server API. It must never read `directory_places` directly from the
+browser or describe an unclaimed record as bookable.
+
 ### Later, Not Batch 1
 
 - map view
