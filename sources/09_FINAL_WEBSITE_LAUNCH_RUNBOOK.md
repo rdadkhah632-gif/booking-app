@@ -172,6 +172,12 @@ On 25 July 2026, the controlled Batch 7 shortlist was imported:
 - public directory API results after import: `0`
 - published Mirëbook business API results after import: `0`
 
+Independent production closure QA passed with no findings. It matched all city
+and category totals, reached the final pagination page, confirmed private
+source context and individual-only review controls, denied every non-admin
+role, kept anonymous Explore empty in EN/SQ List and Map modes, and found no
+desktop or 390px overflow. No directory status changed during that QA.
+
 Do not bulk approve this queue. Review each candidate's name, category, current
 operation, address, map position and contact details before deciding. Category
 coverage is an operator planning aid, not a launch target that overrides data

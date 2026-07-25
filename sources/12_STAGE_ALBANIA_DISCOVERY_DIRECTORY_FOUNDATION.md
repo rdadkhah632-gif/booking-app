@@ -665,6 +665,15 @@ The Admin Directory UI loaded all 57 candidates, showed exact per-city and
 per-category review totals, and exposed source/contact/provenance context for
 individual review. It showed `0 Approved`.
 
+Independent deployed QA passed with no P0, P1 or P2 findings. It confirmed the
+exact nine-city and eight-category totals, filtering, pagination through
+records 51-57, private source detail, one-record-at-a-time controls and the
+absence of bulk approval. Anonymous Explore remained empty in EN and SQ across
+All, Bookable and Places in List and Map views. Anonymous direct table access
+was denied with `401 / 42501`, non-admin roles received localized denial copy,
+and the directory workspace had no clipping or horizontal overflow at
+1440x900 or 390x844. No record or setting was changed during QA.
+
 ### Review protocol
 
 1. Review one place at a time in `/admin/directory`.
