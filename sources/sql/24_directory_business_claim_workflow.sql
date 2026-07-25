@@ -393,8 +393,9 @@ begin
     claim_record.id,
     p_reviewer_id,
     case clean_action
+      when 'approve' then 'approved'
       when 'request_more_info' then 'needs_more_info'
-      else clean_action
+      when 'reject' then 'rejected'
     end,
     claim_record.status,
     next_status,

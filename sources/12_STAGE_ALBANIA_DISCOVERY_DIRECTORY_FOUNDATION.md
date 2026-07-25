@@ -833,6 +833,15 @@ This batch reuses SQL 24 and requires no new SQL, table, policy or RLS change.
 Email failures are logged but never roll back or misrepresent the authoritative
 claim transition.
 
+### Batch 11 approval follow-up
+
+Deployed lifecycle QA exposed an audit-vocabulary mismatch in the original SQL
+24 review function: the actions `approve` and `reject` were written directly as
+event types, while the immutable event table accepts `approved` and `rejected`.
+SQL 28 replaces only that function and normalizes both action names before the
+event insert. It changes no claim eligibility, approval result, publication
+state, role boundary, schema or RLS policy.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

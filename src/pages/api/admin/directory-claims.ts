@@ -305,9 +305,16 @@ async function handlePost(
       response.status(503).json({ error: "Business claim review is not ready." });
       return;
     }
-    if (["22023", "23505", "42501", "P0002"].includes(error.code || "")) {
+    if (
+      ["22023", "23505", "23514", "42501", "P0002"].includes(
+        error.code || "",
+      )
+    ) {
       response.status(error.code === "P0002" ? 404 : 400).json({
-        error: error.message || "The claim could not be reviewed.",
+        error:
+          error.code === "23514"
+            ? "The ownership decision could not be saved. Refresh and try again."
+            : error.message || "The claim could not be reviewed.",
       });
       return;
     }
