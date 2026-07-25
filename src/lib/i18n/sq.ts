@@ -4197,6 +4197,24 @@ export const sq: TranslationTree = {
   "explore.map.loading": "Po ngarkohet harta...",
   "explore.map.empty":
     "Nuk ka ende vende në hartë që përputhen me këta filtra.",
+  "explore.map.control.toggleAttribution": "Shfaq ose fshih burimet",
+  "explore.map.control.enterFullscreen": "Hap në ekran të plotë",
+  "explore.map.control.exitFullscreen": "Dil nga ekrani i plotë",
+  "explore.map.control.findLocation": "Gjej vendndodhjen time",
+  "explore.map.control.locationUnavailable":
+    "Vendndodhja nuk është e disponueshme",
+  "explore.map.control.mapboxHomepage": "Faqja kryesore e Mapbox",
+  "explore.map.control.improveMap": "Përmirëso këtë hartë",
+  "explore.map.control.mapTitle": "Hartë",
+  "explore.map.control.resetBearing": "Kthe orientimin nga veriu",
+  "explore.map.control.zoomIn": "Zmadho hartën",
+  "explore.map.control.zoomOut": "Zvogëlo hartën",
+  "explore.map.control.ctrlZoom":
+    "Mbaj Ctrl dhe lëviz rrotën për të zmadhuar hartën",
+  "explore.map.control.commandZoom":
+    "Mbaj ⌘ dhe lëviz rrotën për të zmadhuar hartën",
+  "explore.map.control.touchPan":
+    "Përdor dy gishta për të lëvizur hartën",
   "directory.category.beauty_grooming": "Bukuri dhe kujdes personal",
   "directory.category.dental_health": "Shëndet dentar",
   "directory.category.wellness_fitness": "Mirëqenie dhe palestër",
@@ -4243,7 +4261,10 @@ export const sq: TranslationTree = {
   "admin.directory.coverage.empty": "Pa kandidatë",
   "admin.directory.coverage.unavailable":
     "Ekzekuto SQL 26 për të aktivizuar totalet e sakta të mbulimit. Radha e shqyrtimit mbetet e disponueshme.",
+  "admin.directory.coverage.loading": "Po ngarkohet mbulimi për lançim...",
   "admin.directory.statusSummary": "Përmbledhja e gjendjeve të direktorisë",
+  "admin.directory.loadingSummary":
+    "Po ngarkohet përmbledhja e direktorisë...",
   "admin.directory.status.needsReview": "Për shqyrtim",
   "admin.directory.status.active": "Miratuar",
   "admin.directory.status.hidden": "Fshehur",

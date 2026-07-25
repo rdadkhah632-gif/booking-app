@@ -752,6 +752,27 @@ whose operation, identity, category or location can no longer be confirmed.
 Hiding a directory record does not affect Mirëbook businesses, booking logic
 or claim ownership.
 
+## Batch 9 - Reviewed Discovery Polish
+
+Batch 9 closes the non-blocking issues found during the first reviewed public
+set QA without changing directory records, approval state or discovery
+boundaries.
+
+- Admin Directory no longer renders initialized zero totals or SQL migration
+  guidance while its first authenticated response is still loading. Stable
+  summary and coverage placeholders hold the layout until real data arrives.
+- Public map markers that project onto the same small screen area are spread
+  around their source point and recalculated after map movement or resizing.
+  Each reviewed place therefore remains independently clickable at the default
+  Albania overview while returning to its exact map position as the user zooms.
+- Mapbox controls, accessibility labels and cooperative-gesture guidance now
+  follow the selected EN/SQ language. The underlying provider attribution
+  remains visible.
+
+This is presentation-only work. It does not alter source coordinates, public
+payloads, approval workflow, booking behavior, claims, auth, RLS or database
+schema.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls

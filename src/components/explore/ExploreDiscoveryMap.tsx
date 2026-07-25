@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   Map as MapboxMap,
   Marker as MapboxMarker,
@@ -15,6 +15,63 @@ type Props = {
 };
 
 const ALBANIA_CENTER: [number, number] = [20.05, 41.15];
+const MARKER_COLLISION_DISTANCE = 38;
+
+type DiscoveryMarker = {
+  id: string;
+  marker: MapboxMarker;
+  longitude: number;
+  latitude: number;
+};
+
+function spreadOverlappingMarkers(
+  map: MapboxMap,
+  markers: DiscoveryMarker[],
+) {
+  const projected = markers.map((entry) => ({
+    entry,
+    point: map.project([entry.longitude, entry.latitude]),
+  }));
+  const grouped = new Set<number>();
+
+  projected.forEach((current, startIndex) => {
+    if (grouped.has(startIndex)) return;
+
+    const group = [startIndex];
+    grouped.add(startIndex);
+
+    for (let cursor = 0; cursor < group.length; cursor += 1) {
+      const currentIndex = group[cursor];
+      const currentPoint = projected[currentIndex].point;
+
+      projected.forEach((candidate, candidateIndex) => {
+        if (grouped.has(candidateIndex)) return;
+        const distance = Math.hypot(
+          candidate.point.x - currentPoint.x,
+          candidate.point.y - currentPoint.y,
+        );
+        if (distance <= MARKER_COLLISION_DISTANCE) {
+          grouped.add(candidateIndex);
+          group.push(candidateIndex);
+        }
+      });
+    }
+
+    if (group.length === 1) {
+      current.entry.marker.setOffset([0, 0]);
+      return;
+    }
+
+    const radius = Math.min(52, 22 + group.length * 4);
+    group.forEach((markerIndex, index) => {
+      const angle = (Math.PI * 2 * index) / group.length - Math.PI / 2;
+      projected[markerIndex].entry.marker.setOffset([
+        Math.round(Math.cos(angle) * radius),
+        Math.round(Math.sin(angle) * radius),
+      ]);
+    });
+  });
+}
 
 export default function ExploreDiscoveryMap({
   items,
@@ -22,16 +79,70 @@ export default function ExploreDiscoveryMap({
   userLocation,
   onSelect,
 }: Props) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
-  const markerRefs = useRef<Array<{ id: string; marker: MapboxMarker }>>([]);
+  const markerRefs = useRef<DiscoveryMarker[]>([]);
   const userMarkerRef = useRef<MapboxMarker | null>(null);
   const onSelectRef = useRef(onSelect);
   const selectedIdRef = useRef(selectedId);
   const [ready, setReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN?.trim() || "";
+  const mapLocale = useMemo(
+    () => ({
+      "AttributionControl.ToggleAttribution": t(
+        "explore.map.control.toggleAttribution",
+        "Toggle attribution",
+      ),
+      "FullscreenControl.Enter": t(
+        "explore.map.control.enterFullscreen",
+        "Enter fullscreen",
+      ),
+      "FullscreenControl.Exit": t(
+        "explore.map.control.exitFullscreen",
+        "Exit fullscreen",
+      ),
+      "GeolocateControl.FindMyLocation": t(
+        "explore.map.control.findLocation",
+        "Find my location",
+      ),
+      "GeolocateControl.LocationNotAvailable": t(
+        "explore.map.control.locationUnavailable",
+        "Location not available",
+      ),
+      "LogoControl.Title": t(
+        "explore.map.control.mapboxHomepage",
+        "Mapbox homepage",
+      ),
+      "Map.Title": t("explore.map.control.mapTitle", "Map"),
+      "NavigationControl.ResetBearing": t(
+        "explore.map.control.resetBearing",
+        "Reset bearing to north",
+      ),
+      "NavigationControl.ZoomIn": t(
+        "explore.map.control.zoomIn",
+        "Zoom in",
+      ),
+      "NavigationControl.ZoomOut": t(
+        "explore.map.control.zoomOut",
+        "Zoom out",
+      ),
+      "ScrollZoomBlocker.CtrlMessage": t(
+        "explore.map.control.ctrlZoom",
+        "Use ctrl + scroll to zoom the map",
+      ),
+      "ScrollZoomBlocker.CmdMessage": t(
+        "explore.map.control.commandZoom",
+        "Use ⌘ + scroll to zoom the map",
+      ),
+      "TouchPanBlocker.Message": t(
+        "explore.map.control.touchPan",
+        "Use two fingers to move the map",
+      ),
+    }),
+    [t],
+  );
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -44,6 +155,8 @@ export default function ExploreDiscoveryMap({
   useEffect(() => {
     if (!containerRef.current || !accessToken || mapRef.current) return;
     let cancelled = false;
+    setReady(false);
+    setMapError(false);
 
     async function startMap() {
       try {
@@ -52,6 +165,7 @@ export default function ExploreDiscoveryMap({
 
         const mapboxgl = mapboxModule.default;
         mapboxgl.accessToken = accessToken;
+        containerRef.current.replaceChildren();
         const map = new mapboxgl.Map({
           container: containerRef.current,
           style: "mapbox://styles/mapbox/streets-v12",
@@ -59,10 +173,35 @@ export default function ExploreDiscoveryMap({
           zoom: 6.35,
           attributionControl: true,
           cooperativeGestures: true,
+          language: locale === "sq" ? "sq" : "en",
+          locale: mapLocale,
         });
-        map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+        map.addControl(
+          new mapboxgl.NavigationControl({ showCompass: false }),
+          "top-right",
+        );
+        const updateMarkerOffsets = () =>
+          spreadOverlappingMarkers(map, markerRefs.current);
+        const localizeProviderLinks = () => {
+          const improveMapLink =
+            containerRef.current?.querySelector<HTMLAnchorElement>(
+              ".mapbox-improve-map",
+            );
+          if (improveMapLink) {
+            improveMapLink.textContent = t(
+              "explore.map.control.improveMap",
+              "Improve this map",
+            );
+          }
+        };
+        map.on("moveend", updateMarkerOffsets);
+        map.on("resize", updateMarkerOffsets);
+        map.on("styledata", localizeProviderLinks);
         map.on("load", () => {
-          if (!cancelled) setReady(true);
+          if (!cancelled) {
+            localizeProviderLinks();
+            setReady(true);
+          }
         });
         map.on("error", () => {
           if (!cancelled) setMapError(true);
@@ -82,8 +221,9 @@ export default function ExploreDiscoveryMap({
       userMarkerRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
+      containerRef.current?.replaceChildren();
     };
-  }, [accessToken]);
+  }, [accessToken, locale, mapLocale]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -118,9 +258,15 @@ export default function ExploreDiscoveryMap({
         const marker = new mapboxgl.Marker({ element, anchor: "bottom" })
           .setLngLat([item.longitude, item.latitude])
           .addTo(map);
-        markerRefs.current.push({ id: item.id, marker });
+        markerRefs.current.push({
+          id: item.id,
+          marker,
+          longitude: item.longitude,
+          latitude: item.latitude,
+        });
         bounds.extend([item.longitude, item.latitude]);
       });
+      spreadOverlappingMarkers(map, markerRefs.current);
 
       if (userLocation) {
         const userElement = document.createElement("div");

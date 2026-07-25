@@ -135,6 +135,7 @@ export default function AdminDirectoryPage() {
   const { locale, t } = useI18n();
   const [adminReady, setAdminReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [directoryLoaded, setDirectoryLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mapLoading, setMapLoading] = useState(false);
   const [places, setPlaces] = useState<DirectoryPlace[]>([]);
@@ -312,6 +313,7 @@ export default function AdminDirectoryPage() {
       setCounts(next.counts);
       setCoverage(next.coverage || { available: false, cities: [], categories: [] });
       setPagination(next.pagination);
+      setDirectoryLoaded(true);
       setSelectedId((current) =>
         next.places.some((place) => place.id === current)
           ? current
@@ -518,22 +520,55 @@ export default function AdminDirectoryPage() {
           </span>
         </div>
 
-        <div className="directory-counts" aria-label={t("admin.directory.statusSummary", "Directory status summary")}>
-          {STATUSES.map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={status === value ? "directory-count is-active" : "directory-count"}
-              onClick={() => {
-                setStatus(value);
-                loadDirectory(0, undefined, value);
-              }}
-            >
-              <strong>{counts[value]}</strong>
-              <span>{statusLabel(value)}</span>
-            </button>
-          ))}
-        </div>
+        {directoryLoaded ? (
+          <div
+            className="directory-counts"
+            aria-label={t(
+              "admin.directory.statusSummary",
+              "Directory status summary",
+            )}
+          >
+            {STATUSES.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={
+                  status === value
+                    ? "directory-count is-active"
+                    : "directory-count"
+                }
+                onClick={() => {
+                  setStatus(value);
+                  loadDirectory(0, undefined, value);
+                }}
+              >
+                <strong>{counts[value]}</strong>
+                <span>{statusLabel(value)}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div
+            className="directory-counts"
+            role="status"
+            aria-live="polite"
+            aria-label={t(
+              "admin.directory.loadingSummary",
+              "Loading directory summary...",
+            )}
+          >
+            {STATUSES.map((value) => (
+              <div
+                key={value}
+                className="directory-count directory-count-placeholder"
+                aria-hidden="true"
+              >
+                <span />
+                <span />
+              </div>
+            ))}
+          </div>
+        )}
 
         <section className="directory-coverage" aria-labelledby="directory-coverage-title">
           <div className="directory-coverage-heading">
@@ -553,7 +588,26 @@ export default function AdminDirectoryPage() {
             </p>
           </div>
 
-          {coverage.available ? (
+          {!directoryLoaded ? (
+            <div
+              className="directory-coverage-loading"
+              role="status"
+              aria-live="polite"
+            >
+              <span>
+                {t(
+                  "admin.directory.coverage.loading",
+                  "Loading launch coverage...",
+                )}
+              </span>
+              <div aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
+            </div>
+          ) : coverage.available ? (
             <div className="directory-coverage-groups">
               {(
                 [
@@ -1005,6 +1059,30 @@ export default function AdminDirectoryPage() {
           background: var(--accent-dim);
         }
 
+        .directory-count-placeholder {
+          align-content: center;
+          gap: 0.55rem;
+          pointer-events: none;
+        }
+
+        .directory-count-placeholder span,
+        .directory-coverage-loading i {
+          display: block;
+          border-radius: 4px;
+          background: var(--surface-2);
+          animation: directory-loading-pulse 1.2s ease-in-out infinite;
+        }
+
+        .directory-count-placeholder span:first-child {
+          width: 2rem;
+          height: 1.15rem;
+        }
+
+        .directory-count-placeholder span:last-child {
+          width: min(100%, 6rem);
+          height: 0.75rem;
+        }
+
         .directory-coverage {
           margin-top: 1rem;
           padding: 1rem 0;
@@ -1104,6 +1182,43 @@ export default function AdminDirectoryPage() {
         .directory-coverage-unavailable {
           margin-top: 0.85rem;
           color: var(--text-muted);
+        }
+
+        .directory-coverage-loading {
+          min-height: 170px;
+          margin-top: 0.85rem;
+          color: var(--text-muted);
+          display: grid;
+          align-content: start;
+          gap: 0.75rem;
+        }
+
+        .directory-coverage-loading > div {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.65rem 1.5rem;
+        }
+
+        .directory-coverage-loading i {
+          height: 2.25rem;
+        }
+
+        @keyframes directory-loading-pulse {
+          0%,
+          100% {
+            opacity: 0.55;
+          }
+
+          50% {
+            opacity: 1;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .directory-count-placeholder span,
+          .directory-coverage-loading i {
+            animation: none;
+          }
         }
 
         .directory-filters {
@@ -1374,6 +1489,10 @@ export default function AdminDirectoryPage() {
           .directory-filters,
           .directory-facts,
           .directory-coverage-groups {
+            grid-template-columns: 1fr;
+          }
+
+          .directory-coverage-loading > div {
             grid-template-columns: 1fr;
           }
 
