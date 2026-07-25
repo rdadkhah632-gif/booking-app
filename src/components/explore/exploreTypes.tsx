@@ -52,7 +52,7 @@ export type DirectoryPlace = {
   postcode?: string | null
   phone?: string | null
   website?: string | null
-  location: {
+  mapPosition: {
     latitude: number
     longitude: number
     precision: string

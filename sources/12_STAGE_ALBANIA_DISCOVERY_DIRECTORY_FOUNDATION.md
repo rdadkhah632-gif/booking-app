@@ -254,8 +254,10 @@ row as:
 - claimable only while the ownership state is `unclaimed`
 
 The response omits source place IDs, source confidence, raw attribution JSON,
-exact PostGIS values and service credentials. Location values are rounded to
-four decimals and every result includes durable source attribution.
+exact PostGIS values and service credentials. Public directory markers use a
+separate `mapPosition` contract snapped to an approximately one-kilometre grid;
+the ordinary `location` field and exact source coordinates are not returned.
+Every result includes durable source attribution.
 
 This endpoint is **not connected to `/explore` in Batch 2**. Existing bookable
 business results, readiness rules and the polished empty marketplace state are
@@ -287,9 +289,9 @@ unavailable response.
 6. Import only a small reviewed QA sample and confirm every row starts as
    `needs_review` and does not appear in the public API.
 7. As an admin, inspect source details/map and approve one disposable place.
-8. Confirm the public API returns that record once with `bookable: false`,
-   rounded coordinates and Overture attribution, without source IDs,
-   confidence, raw geometry or tokens.
+8. Confirm the public API returns that record once with `bookable: false`, a
+   coarse `mapPosition` and Overture attribution, without a `location` field,
+   source IDs, confidence, raw geometry or tokens.
 9. Confirm `/explore` remains unchanged and does not show the directory row.
 10. Hide the disposable place and confirm it disappears from the public API.
 11. Exercise close, duplicate and return-to-review on disposable records and
@@ -322,18 +324,20 @@ booking profile; selecting a directory marker shows discovery information only.
 `Use my location` is an explicit customer action. Mirëbook does not request
 location on page load, write customer coordinates to Supabase, put them in the
 Explore URL or persist them in browser storage. Browser coordinates are reduced
-to four decimal places before they are sent to the two public server endpoints
-for the active request, and those responses use `private, no-store` caching.
+to four decimal places before they are sent in an ephemeral POST body to the
+two public server endpoints for the active request, and those responses use
+`private, no-store` caching. Coordinates are not placed in request URLs.
 
 SQL 22 adds service-only RPCs for:
 
 - rounded map points for already-published, verified business locations
 - reviewed directory search with optional PostGIS distance ordering
 
-Public responses round place/business points to four decimal places. Exact
-PostGIS values, Mapbox server credentials, source IDs and confidence values
-remain private. If location is declined or unavailable, city/category search
-continues to work normally.
+Public business responses retain their existing owner-verified map position.
+Directory responses expose only the separate approximately one-kilometre
+`mapPosition` grid. Exact PostGIS values, Mapbox server credentials, source
+IDs and confidence values remain private. If location is declined or
+unavailable, city/category search continues to work normally.
 
 ### Customer correction path
 
@@ -772,6 +776,29 @@ boundaries.
 This is presentation-only work. It does not alter source coordinates, public
 payloads, approval workflow, booking behavior, claims, auth, RLS or database
 schema.
+
+## Batch 10 - Public Directory Map Boundary
+
+Batch 10 closes the public payload issue found during Batch 9 deployed QA.
+
+- Exact directory geometry remains server-only for PostGIS filtering and
+  distance ordering.
+- Public directory rows no longer contain `location.latitude`,
+  `location.longitude` or an approximately-ten-metre precision claim.
+- The map receives only `mapPosition`, deterministically snapped to a
+  0.01-degree grid (approximately one kilometre in Albania).
+- Customer-facing distance is rounded to 250-metre steps so the response
+  cannot be combined with a precise customer point to infer the source point.
+- Nearby discovery sends the already-rounded customer point in a POST body
+  rather than exposing it in an API request URL.
+- Both nearby endpoints return `private, no-store` even when the marketplace
+  currently has no matching businesses or places.
+- Address, directions and place details continue to provide the useful public
+  destination context, while map pins deliberately indicate an approximate
+  area.
+
+No source row, approval, claim, booking, auth, RLS, billing or schema behavior
+changes in this batch.
 
 ### Later
 

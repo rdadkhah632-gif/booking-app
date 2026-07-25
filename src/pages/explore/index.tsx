@@ -125,12 +125,19 @@ function normaliseBusiness(value: Business): Business {
   };
 }
 
-async function fetchWithTimeout(path: string, timeoutMs = 10_000) {
+async function fetchWithTimeout(
+  path: string,
+  init: RequestInit = {},
+  timeoutMs = 10_000,
+) {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(path, { signal: controller.signal });
+    const response = await fetch(path, {
+      ...init,
+      signal: controller.signal,
+    });
     let payload: unknown = null;
     try {
       payload = await response.json();
@@ -231,7 +238,6 @@ export default function Explore() {
       setLoading(true);
       setError(null);
 
-      const businessParams = new URLSearchParams();
       const directoryParams = new URLSearchParams({ limit: "100" });
       if (filters.query) directoryParams.set("q", filters.query);
       if (filters.city) directoryParams.set("city", filters.city);
@@ -244,23 +250,23 @@ export default function Explore() {
         directoryParams.set("category", directoryCategory);
       }
 
-      if (coordinates) {
-        const latitude = coordinates.latitude.toFixed(6);
-        const longitude = coordinates.longitude.toFixed(6);
-        businessParams.set("latitude", latitude);
-        businessParams.set("longitude", longitude);
-        directoryParams.set("latitude", latitude);
-        directoryParams.set("longitude", longitude);
-      }
+      const locationRequest = coordinates
+        ? {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              latitude: approximateCoordinate(coordinates.latitude),
+              longitude: approximateCoordinate(coordinates.longitude),
+            }),
+          }
+        : {};
 
-      const businessPath = `/api/public/explore-businesses${
-        businessParams.size ? `?${businessParams.toString()}` : ""
-      }`;
+      const businessPath = "/api/public/explore-businesses";
       const directoryPath = `/api/public/directory-places?${directoryParams.toString()}`;
 
       const [businessResult, directoryResult] = await Promise.allSettled([
-        fetchWithTimeout(businessPath),
-        fetchWithTimeout(directoryPath),
+        fetchWithTimeout(businessPath, locationRequest),
+        fetchWithTimeout(directoryPath, locationRequest),
       ]);
 
       if (requestId !== requestSequence.current) return;
@@ -296,8 +302,8 @@ export default function Explore() {
           (place) =>
             place.resultType === "directory_place" &&
             DIRECTORY_CATEGORIES.includes(place.categoryKey) &&
-            Number.isFinite(place.location?.latitude) &&
-            Number.isFinite(place.location?.longitude),
+            Number.isFinite(place.mapPosition?.latitude) &&
+            Number.isFinite(place.mapPosition?.longitude),
         );
         successfulSource = true;
       }
@@ -522,8 +528,8 @@ export default function Explore() {
       locationLabel:
         [place.city, place.region].filter(Boolean).join(", ") ||
         t("directory.card.albania", "Albania"),
-      latitude: place.location.latitude,
-      longitude: place.location.longitude,
+      latitude: place.mapPosition.latitude,
+      longitude: place.mapPosition.longitude,
       distanceMeters: place.distanceMeters ?? null,
       href: `/places/${place.id}`,
     }));

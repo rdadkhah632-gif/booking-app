@@ -35,6 +35,9 @@ type PublicDirectoryRow = {
   total_count: number;
 };
 
+const PUBLIC_MAP_GRID_DEGREES = 0.01;
+const PUBLIC_DISTANCE_STEP_METERS = 250;
+
 function cleanQuery(value: string | string[] | undefined, maxLength: number) {
   const text = Array.isArray(value) ? value[0] : value;
   return typeof text === "string" ? text.trim().slice(0, maxLength) : "";
@@ -51,8 +54,15 @@ function numberQuery(
   return Math.min(Math.max(parsed, minimum), maximum);
 }
 
-function coordinateQuery(value: string | string[] | undefined) {
+function coordinateValue(
+  request: NextApiRequest,
+  key: "latitude" | "longitude",
+) {
+  const value =
+    request.method === "POST" ? request.body?.[key] : request.query[key];
   const text = Array.isArray(value) ? value[0] : value;
+  if (typeof value === "number")
+    return Number.isFinite(value) ? value : Number.NaN;
   if (typeof text !== "string" || !text.trim()) return null;
   const parsed = Number(text);
   return Number.isFinite(parsed) ? parsed : Number.NaN;
@@ -105,12 +115,40 @@ function safeWebsite(value?: string | null) {
   }
 }
 
+function publicMapPosition(latitude: number, longitude: number) {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+  return {
+    latitude: Number(
+      (
+        Math.round(latitude / PUBLIC_MAP_GRID_DEGREES) *
+        PUBLIC_MAP_GRID_DEGREES
+      ).toFixed(2),
+    ),
+    longitude: Number(
+      (
+        Math.round(longitude / PUBLIC_MAP_GRID_DEGREES) *
+        PUBLIC_MAP_GRID_DEGREES
+      ).toFixed(2),
+    ),
+    precision: "approximately_1km",
+  };
+}
+
+function publicDistance(value?: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return (
+    Math.round(value / PUBLIC_DISTANCE_STEP_METERS) *
+    PUBLIC_DISTANCE_STEP_METERS
+  );
+}
+
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  if (request.method !== "GET") {
-    response.setHeader("Allow", "GET");
+  if (!["GET", "POST"].includes(request.method || "")) {
+    response.setHeader("Allow", "GET, POST");
     response.status(405).json({ error: "Method not allowed." });
     return;
   }
@@ -123,8 +161,8 @@ export default async function handler(
   const city = cleanQuery(request.query.city, 80);
   const limit = numberQuery(request.query.limit, 50, 1, 100);
   const offset = numberQuery(request.query.offset, 0, 0, 10_000);
-  const latitude = coordinateQuery(request.query.latitude);
-  const longitude = coordinateQuery(request.query.longitude);
+  const latitude = coordinateValue(request, "latitude");
+  const longitude = coordinateValue(request, "longitude");
   const radiusKm = numberQuery(request.query.radiusKm, 0, 0, 1_000);
   const hasLocation = latitude !== null || longitude !== null;
 
@@ -139,7 +177,9 @@ export default async function handler(
       longitude < -180 ||
       longitude > 180)
   ) {
-    response.status(400).json({ error: "A valid latitude and longitude are required." });
+    response
+      .status(400)
+      .json({ error: "A valid latitude and longitude are required." });
     return;
   }
 
@@ -147,7 +187,9 @@ export default async function handler(
   try {
     supabase = createSupabaseAdminClient();
   } catch {
-    response.status(503).json({ error: "Directory discovery is not configured." });
+    response
+      .status(503)
+      .json({ error: "Directory discovery is not configured." });
     return;
   }
 
@@ -222,33 +264,33 @@ export default async function handler(
         : "public, s-maxage=300, stale-while-revalidate=600",
     );
     response.status(200).json({
-      places: rows.map((row) => ({
-        id: row.id,
-        resultType: "directory_place",
-        name: row.name,
-        categoryKey: row.category_key,
-        description: row.description || null,
-        address: row.address || null,
-        city: row.city || null,
-        region: row.region || null,
-        countryCode: row.country_code,
-        postcode: row.postcode || null,
-        phone: row.phone || null,
-        website: safeWebsite(row.website),
-        location: {
-          latitude: row.latitude,
-          longitude: row.longitude,
-          precision: "approximately_10m",
-        },
-        bookable: false,
-        claimable: row.claim_status === "unclaimed",
-        linkedBusinessId: row.linked_business_id || null,
-        distanceMeters:
-          typeof row.distance_meters === "number"
-            ? Math.round(row.distance_meters)
-            : null,
-        attribution: attributionFor(row.source),
-      })),
+      places: rows.flatMap((row) => {
+        const mapPosition = publicMapPosition(row.latitude, row.longitude);
+        if (!mapPosition) return [];
+
+        return [
+          {
+            id: row.id,
+            resultType: "directory_place",
+            name: row.name,
+            categoryKey: row.category_key,
+            description: row.description || null,
+            address: row.address || null,
+            city: row.city || null,
+            region: row.region || null,
+            countryCode: row.country_code,
+            postcode: row.postcode || null,
+            phone: row.phone || null,
+            website: safeWebsite(row.website),
+            mapPosition,
+            bookable: false,
+            claimable: row.claim_status === "unclaimed",
+            linkedBusinessId: row.linked_business_id || null,
+            distanceMeters: publicDistance(row.distance_meters),
+            attribution: attributionFor(row.source),
+          },
+        ];
+      }),
       pagination: {
         total: Number(rows[0]?.total_count || 0),
         limit,

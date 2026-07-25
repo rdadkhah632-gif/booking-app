@@ -50,8 +50,15 @@ type BusinessDistanceRow = {
   distance_meters: number;
 };
 
-function coordinateQuery(value: string | string[] | undefined) {
+function coordinateValue(
+  request: NextApiRequest,
+  key: "latitude" | "longitude",
+) {
+  const value =
+    request.method === "POST" ? request.body?.[key] : request.query[key];
   const text = Array.isArray(value) ? value[0] : value;
+  if (typeof value === "number")
+    return Number.isFinite(value) ? value : Number.NaN;
   if (typeof text !== "string" || !text.trim()) return null;
   const parsed = Number(text);
   return Number.isFinite(parsed) ? parsed : Number.NaN;
@@ -99,14 +106,14 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  if (request.method !== "GET") {
-    response.setHeader("Allow", "GET");
+  if (!["GET", "POST"].includes(request.method || "")) {
+    response.setHeader("Allow", "GET, POST");
     response.status(405).json({ error: "Method not allowed." });
     return;
   }
 
-  const latitude = coordinateQuery(request.query.latitude);
-  const longitude = coordinateQuery(request.query.longitude);
+  const latitude = coordinateValue(request, "latitude");
+  const longitude = coordinateValue(request, "longitude");
   const hasLocation = latitude !== null || longitude !== null;
 
   if (
@@ -120,7 +127,9 @@ export default async function handler(
       longitude < -180 ||
       longitude > 180)
   ) {
-    response.status(400).json({ error: "A valid latitude and longitude are required." });
+    response
+      .status(400)
+      .json({ error: "A valid latitude and longitude are required." });
     return;
   }
 
@@ -149,6 +158,12 @@ export default async function handler(
     const businessIds = businesses.map((business) => business.id);
 
     if (businessIds.length === 0) {
+      response.setHeader(
+        "Cache-Control",
+        hasLocation
+          ? "private, no-store"
+          : "public, s-maxage=120, stale-while-revalidate=300",
+      );
       response.status(200).json({ businesses: [] });
       return;
     }
@@ -313,7 +328,9 @@ export default async function handler(
 
     response.setHeader(
       "Cache-Control",
-      hasLocation ? "private, no-store" : "public, s-maxage=120, stale-while-revalidate=300",
+      hasLocation
+        ? "private, no-store"
+        : "public, s-maxage=120, stale-while-revalidate=300",
     );
     response.status(200).json({ businesses: marketplaceBusinesses });
   } catch (error) {
