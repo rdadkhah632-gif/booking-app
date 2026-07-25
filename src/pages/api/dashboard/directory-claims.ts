@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { notifyDirectoryClaimSubmitted } from "@/lib/server/directoryClaimNotifications";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 
 const UUID_PATTERN =
@@ -32,6 +33,11 @@ type ClaimRow = {
   created_at: string;
   updated_at: string;
 };
+
+type ClaimPlace = Pick<
+  DirectoryPlaceRow,
+  "id" | "name" | "address" | "city" | "region" | "country_code"
+>;
 
 type DirectoryPlaceRow = {
   id: string;
@@ -175,6 +181,25 @@ async function handleGet(
     placePromise,
   ]);
   if (claimsResult.error) throw claimsResult.error;
+  const claims = claimsResult.data || [];
+  const claimPlaceIds = Array.from(
+    new Set(claims.map((claim) => claim.directory_place_id)),
+  );
+  const { data: claimPlaces, error: claimPlacesError } = claimPlaceIds.length
+    ? await auth.supabase
+        .from("directory_places")
+        .select("id, name, address, city, region, country_code")
+        .in("id", claimPlaceIds)
+        .returns<ClaimPlace[]>()
+    : { data: [] as ClaimPlace[], error: null };
+  if (claimPlacesError) throw claimPlacesError;
+  const placesById = new Map(
+    (claimPlaces || []).map((claimPlace) => [claimPlace.id, claimPlace]),
+  );
+  const enrichedClaims = claims.map((claim) => ({
+    ...claim,
+    place: placesById.get(claim.directory_place_id) || null,
+  }));
 
   if (placeId && !UUID_PATTERN.test(placeId)) {
     response.status(400).json({ error: "A valid place is required." });
@@ -204,9 +229,9 @@ async function handleGet(
       ...business,
       matchReasons: place ? matchReasons(place, business) : [],
     })),
-    claims: claimsResult.data || [],
+    claims: enrichedClaims,
     currentClaim: place
-      ? (claimsResult.data || []).find(
+      ? enrichedClaims.find(
           (claim) => claim.directory_place_id === place.id,
         ) || null
       : null,
@@ -242,6 +267,50 @@ async function handlePost(
     return;
   }
 
+  const [
+    { data: place, error: placeError },
+    { data: business, error: businessError },
+    { data: existingClaim, error: existingClaimError },
+  ] = await Promise.all([
+    auth.supabase
+      .from("directory_places")
+      .select("id, name, listing_status, claim_status, linked_business_id")
+      .eq("id", placeId)
+      .maybeSingle<{
+        id: string;
+        name: string;
+        listing_status: string;
+        claim_status: string;
+        linked_business_id?: string | null;
+      }>(),
+    auth.supabase
+      .from("businesses")
+      .select("id, name, user_id")
+      .eq("id", businessId)
+      .eq("user_id", auth.user.id)
+      .maybeSingle<{ id: string; name: string; user_id: string }>(),
+    auth.supabase
+      .from("business_claims")
+      .select("id, status")
+      .eq("directory_place_id", placeId)
+      .eq("business_id", businessId)
+      .eq("claimant_user_id", auth.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ id: string; status: string }>(),
+  ]);
+  if (placeError) throw placeError;
+  if (businessError) throw businessError;
+  if (existingClaimError) throw existingClaimError;
+  if (!place || place.listing_status !== "active") {
+    response.status(404).json({ error: "This place is not available." });
+    return;
+  }
+  if (!business) {
+    response.status(403).json({ error: "Choose a business you own." });
+    return;
+  }
+
   const maskedEvidence = maskEvidence({
     evidenceType,
     evidenceValue,
@@ -273,7 +342,30 @@ async function handlePost(
     throw error;
   }
 
-  response.status(200).json({ ok: true, claim: data?.[0] || null });
+  const claim = data?.[0] || null;
+  const stateChanged = !existingClaim || existingClaim.status !== "pending";
+  if (claim?.claim_id && stateChanged) {
+    try {
+      await notifyDirectoryClaimSubmitted({
+        supabase: auth.supabase,
+        claimId: claim.claim_id,
+        claimantUserId: auth.user.id,
+        businessId: business.id,
+        businessName: business.name,
+        placeId: place.id,
+        placeName: place.name,
+      });
+    } catch (notificationError) {
+      console.error(
+        "[directory-claims] Claim saved but notification delivery failed",
+        notificationError instanceof Error
+          ? notificationError.name
+          : "UnknownError",
+      );
+    }
+  }
+
+  response.status(200).json({ ok: true, claim });
 }
 
 export default async function handler(

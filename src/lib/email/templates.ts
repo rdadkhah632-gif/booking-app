@@ -752,3 +752,213 @@ export function supportEmailTemplate(input: {
     preferenceEnabled: input.preferenceEnabled,
   };
 }
+
+type OwnershipClaimStatus =
+  | "submitted"
+  | "needs_more_info"
+  | "approved"
+  | "rejected";
+
+const OWNERSHIP_CLAIM_COPY: Record<
+  EmailLocale,
+  {
+    place: string;
+    business: string;
+    reviewNote: string;
+    footer: string;
+    operator: {
+      subject: string;
+      eyebrow: string;
+      title: string;
+      intro: (businessName: string, placeName: string) => string;
+      action: string;
+      note: string;
+    };
+    owner: Record<
+      OwnershipClaimStatus,
+      {
+        subject: string;
+        eyebrow: string;
+        title: string;
+        intro: (placeName: string) => string;
+        action: string;
+        note: string;
+      }
+    >;
+  }
+> = {
+  en: {
+    place: "Directory place",
+    business: "Mirëbook business",
+    reviewNote: "Review note",
+    footer:
+      "This email was sent by Mirëbook about a business ownership request. Mirëbook Business remains the source of truth.",
+    operator: {
+      subject: "Mirëbook: Ownership claim needs review",
+      eyebrow: "Ownership review",
+      title: "Ownership claim needs review",
+      intro: (businessName, placeName) =>
+        `${businessName} submitted an ownership claim for ${placeName}.`,
+      action: "Review claim",
+      note:
+        "Review the evidence before linking any directory place to a Mirëbook business.",
+    },
+    owner: {
+      submitted: {
+        subject: "Mirëbook: Ownership claim received",
+        eyebrow: "Ownership request",
+        title: "Ownership claim received",
+        intro: (placeName) =>
+          `We received your ownership request for ${placeName}.`,
+        action: "View request",
+        note:
+          "The directory listing stays unchanged while Mirëbook reviews the evidence.",
+      },
+      needs_more_info: {
+        subject: "Mirëbook: More ownership information needed",
+        eyebrow: "Action needed",
+        title: "More information is needed",
+        intro: (placeName) =>
+          `Mirëbook needs more information for your ownership request for ${placeName}.`,
+        action: "Add information",
+        note:
+          "Open the request to read the review note and submit clearer evidence.",
+      },
+      approved: {
+        subject: "Mirëbook: Ownership claim approved",
+        eyebrow: "Ownership approved",
+        title: "Ownership claim approved",
+        intro: (placeName) =>
+          `${placeName} is now linked to your Mirëbook business.`,
+        action: "Continue business setup",
+        note:
+          "Approval does not publish the business. Complete Setup and publish only when you are ready.",
+      },
+      rejected: {
+        subject: "Mirëbook: Ownership claim not approved",
+        eyebrow: "Ownership review",
+        title: "Ownership claim not approved",
+        intro: (placeName) =>
+          `The ownership request for ${placeName} was not approved.`,
+        action: "Review decision",
+        note:
+          "Open the request to read the review note before submitting new evidence.",
+      },
+    },
+  },
+  sq: {
+    place: "Vendi në direktori",
+    business: "Biznesi në Mirëbook",
+    reviewNote: "Shënimi i shqyrtimit",
+    footer:
+      "Ky email u dërgua nga Mirëbook për një kërkesë pronësie biznesi. Mirëbook Business mbetet burimi zyrtar.",
+    operator: {
+      subject: "Mirëbook: Pretendim pronësie për shqyrtim",
+      eyebrow: "Shqyrtimi i pronësisë",
+      title: "Pretendim pronësie për shqyrtim",
+      intro: (businessName, placeName) =>
+        `${businessName} dërgoi një pretendim pronësie për ${placeName}.`,
+      action: "Shqyrto pretendimin",
+      note:
+        "Kontrollo provat përpara se të lidhësh një vend të direktorisë me një biznes në Mirëbook.",
+    },
+    owner: {
+      submitted: {
+        subject: "Mirëbook: Pretendimi i pronësisë u mor",
+        eyebrow: "Kërkesë pronësie",
+        title: "Pretendimi i pronësisë u mor",
+        intro: (placeName) =>
+          `Morëm kërkesën tënde të pronësisë për ${placeName}.`,
+        action: "Shiko kërkesën",
+        note:
+          "Listimi në direktori mbetet i pandryshuar ndërsa Mirëbook shqyrton provat.",
+      },
+      needs_more_info: {
+        subject: "Mirëbook: Nevojiten më shumë të dhëna pronësie",
+        eyebrow: "Nevojitet veprim",
+        title: "Nevojiten më shumë të dhëna",
+        intro: (placeName) =>
+          `Mirëbook ka nevojë për më shumë të dhëna për kërkesën e pronësisë për ${placeName}.`,
+        action: "Shto të dhëna",
+        note:
+          "Hap kërkesën për të lexuar shënimin e shqyrtimit dhe dërgo prova më të qarta.",
+      },
+      approved: {
+        subject: "Mirëbook: Pretendimi i pronësisë u miratua",
+        eyebrow: "Pronësia u miratua",
+        title: "Pretendimi i pronësisë u miratua",
+        intro: (placeName) =>
+          `${placeName} tani është lidhur me biznesin tënd në Mirëbook.`,
+        action: "Vazhdo konfigurimin e biznesit",
+        note:
+          "Miratimi nuk e publikon biznesin. Përfundo Konfigurimin dhe publikoje vetëm kur të jesh gati.",
+      },
+      rejected: {
+        subject: "Mirëbook: Pretendimi i pronësisë nuk u miratua",
+        eyebrow: "Shqyrtimi i pronësisë",
+        title: "Pretendimi i pronësisë nuk u miratua",
+        intro: (placeName) =>
+          `Kërkesa e pronësisë për ${placeName} nuk u miratua.`,
+        action: "Shiko vendimin",
+        note:
+          "Hap kërkesën për të lexuar shënimin përpara se të dërgosh prova të reja.",
+      },
+    },
+  },
+};
+
+export function ownershipClaimEmailTemplate(input: {
+  recipientEmail: string;
+  recipientRole: "owner" | "operator";
+  status: OwnershipClaimStatus;
+  placeName: string;
+  businessName: string;
+  actionUrl: string;
+  reviewNote?: string | null;
+  locale?: EmailLocale;
+}): TransactionalEmailMessage {
+  const locale = input.locale === "sq" ? "sq" : "en";
+  const copy = OWNERSHIP_CLAIM_COPY[locale];
+  const content =
+    input.recipientRole === "operator"
+      ? copy.operator
+      : copy.owner[input.status];
+  const intro =
+    input.recipientRole === "operator"
+      ? copy.operator.intro(input.businessName, input.placeName)
+      : copy.owner[input.status].intro(input.placeName);
+
+  return {
+    event:
+      input.status === "submitted"
+        ? "directory_claim_submitted"
+        : "directory_claim_status_changed",
+    to: input.recipientEmail,
+    subject: content.subject,
+    text: `${intro}
+
+${copy.place}: ${input.placeName}
+${copy.business}: ${input.businessName}${
+      input.reviewNote ? `\n${copy.reviewNote}: ${input.reviewNote}` : ""
+    }
+
+${content.action}: ${input.actionUrl}
+
+${content.note}`,
+    html: brandedEmailHtml({
+      preview: intro,
+      eyebrow: content.eyebrow,
+      title: content.title,
+      intro,
+      details: [
+        { label: copy.place, value: input.placeName },
+        { label: copy.business, value: input.businessName },
+        { label: copy.reviewNote, value: input.reviewNote },
+      ],
+      actionLabel: content.action,
+      actionUrl: input.actionUrl,
+      note: content.note,
+      footer: copy.footer,
+    }),
+  };
+}

@@ -66,6 +66,11 @@ const TYPE_OPTIONS = [
   { value: 'platform_update', label: 'Platform update' }
 ]
 
+const RECENT_NOTIFICATION_TYPES = [
+  ...TYPE_OPTIONS.map((option) => option.value),
+  'directory_claim_submitted'
+]
+
 function profileLabel(profile: ProfileRow) {
   const name = profile.full_name ? ` · ${profile.full_name}` : ''
   const role = profile.is_admin ? ' · admin' : profile.role ? ` · ${profile.role}` : ''
@@ -256,7 +261,7 @@ export default function AdminNotificationsPage() {
       const { data: notificationRows, error: notificationRowsError } = await supabase
         .from('notifications')
         .select('id, user_id, business_id, audience, type, title, message, action_url, read_at, created_at')
-        .in('type', TYPE_OPTIONS.map((option) => option.value))
+        .in('type', RECENT_NOTIFICATION_TYPES)
         .order('created_at', { ascending: false })
         .limit(60)
 

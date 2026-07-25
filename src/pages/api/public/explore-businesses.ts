@@ -19,6 +19,7 @@ type BusinessRow = {
 type ServiceRow = {
   id: string;
   business_id: string;
+  name: string;
   active?: boolean | null;
 };
 
@@ -175,7 +176,7 @@ export default async function handler(
     ] = await Promise.all([
       supabaseAdmin
         .from("services")
-        .select("id, business_id, active")
+        .select("id, business_id, name, active")
         .in("business_id", businessIds)
         .eq("active", true)
         .returns<ServiceRow[]>(),
@@ -224,6 +225,7 @@ export default async function handler(
         const services = (servicesByBusiness[business.id] || []).map(
           (service) => ({
             id: service.id,
+            name: service.name,
             active: Boolean(service.active),
             staff_services: (staffServicesByService[service.id] || []).map(
               (assignment) => ({

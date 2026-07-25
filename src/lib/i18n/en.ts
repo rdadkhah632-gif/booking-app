@@ -4299,6 +4299,23 @@ export const en: TranslationTree = {
   "directory.claim.submit": "Submit for review",
   "directory.claim.resubmit": "Send additional information",
   "directory.claim.submitting": "Submitting...",
+  "dashboardBusinesses.claim.placeFallback": "Directory place",
+  "dashboardBusinesses.claim.pending": "Ownership under review",
+  "dashboardBusinesses.claim.pendingBody":
+    "Mirëbook is checking the ownership information.",
+  "dashboardBusinesses.claim.view": "View request",
+  "dashboardBusinesses.claim.moreInfo": "More ownership information needed",
+  "dashboardBusinesses.claim.moreInfoBody":
+    "Read the review note and send clearer evidence.",
+  "dashboardBusinesses.claim.addInfo": "Add information",
+  "dashboardBusinesses.claim.approved": "Ownership approved",
+  "dashboardBusinesses.claim.approvedBody":
+    "This place is linked to your business. Publishing still follows Setup readiness.",
+  "dashboardBusinesses.claim.viewPlace": "View place",
+  "dashboardBusinesses.claim.rejected": "Ownership not approved",
+  "dashboardBusinesses.claim.rejectedBody":
+    "Review the decision before submitting new evidence.",
+  "dashboardBusinesses.claim.review": "Review decision",
   "admin.claims.metaTitle": "Ownership claims | Mirëbook",
   "admin.claims.kicker": "Marketplace ownership",
   "admin.claims.title": "Ownership claims",

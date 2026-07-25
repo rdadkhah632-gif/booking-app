@@ -126,8 +126,13 @@ export default function AdminDirectoryClaimsPage() {
       if (!response.ok) throw new Error(payload.error || "load_failed");
       setClaims(payload.claims || []);
       setCounts(payload.counts);
+      const requestedClaimId =
+        typeof router.query.claimId === "string" ? router.query.claimId : null;
       setSelectedId((current) =>
-        payload.claims.some((claim) => claim.id === current)
+        requestedClaimId &&
+        payload.claims.some((claim) => claim.id === requestedClaimId)
+          ? requestedClaimId
+          : payload.claims.some((claim) => claim.id === current)
           ? current
           : payload.claims[0]?.id || null,
       );
@@ -141,8 +146,9 @@ export default function AdminDirectoryClaimsPage() {
   }
 
   useEffect(() => {
+    if (!router.isReady) return;
     void loadClaims(status);
-  }, [status]);
+  }, [status, router.isReady, router.query.claimId]);
 
   function beginReview(action: ClaimAction) {
     setReviewAction(action);

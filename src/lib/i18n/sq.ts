@@ -4404,6 +4404,24 @@ export const sq: TranslationTree = {
   "directory.claim.submit": "Dërgo për shqyrtim",
   "directory.claim.resubmit": "Dërgo të dhëna shtesë",
   "directory.claim.submitting": "Po dërgohet...",
+  "dashboardBusinesses.claim.placeFallback": "Vendi në direktori",
+  "dashboardBusinesses.claim.pending": "Pronësia në shqyrtim",
+  "dashboardBusinesses.claim.pendingBody":
+    "Mirëbook po kontrollon të dhënat e pronësisë.",
+  "dashboardBusinesses.claim.view": "Shiko kërkesën",
+  "dashboardBusinesses.claim.moreInfo":
+    "Nevojiten më shumë të dhëna pronësie",
+  "dashboardBusinesses.claim.moreInfoBody":
+    "Lexo shënimin e shqyrtimit dhe dërgo prova më të qarta.",
+  "dashboardBusinesses.claim.addInfo": "Shto të dhëna",
+  "dashboardBusinesses.claim.approved": "Pronësia u miratua",
+  "dashboardBusinesses.claim.approvedBody":
+    "Ky vend është lidhur me biznesin tënd. Publikimi vazhdon të ndjekë gatishmërinë e Konfigurimit.",
+  "dashboardBusinesses.claim.viewPlace": "Shiko vendin",
+  "dashboardBusinesses.claim.rejected": "Pronësia nuk u miratua",
+  "dashboardBusinesses.claim.rejectedBody":
+    "Shiko vendimin përpara se të dërgosh prova të reja.",
+  "dashboardBusinesses.claim.review": "Shiko vendimin",
   "admin.claims.metaTitle": "Pretendimet e pronësisë | Mirëbook",
   "admin.claims.kicker": "Pronësia në treg",
   "admin.claims.title": "Pretendimet e pronësisë",

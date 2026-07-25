@@ -800,6 +800,68 @@ Batch 10 closes the public payload issue found during Batch 9 deployed QA.
 No source row, approval, claim, booking, auth, RLS, billing or schema behavior
 changes in this batch.
 
+## Batch 11 - Claim-to-Business Conversion Closure
+
+Batch 11 turns the existing audited ownership workflow into a visible
+end-to-end conversion loop without weakening its approval boundary.
+
+- A genuinely new claim or a resubmission creates one owner update and one
+  operator update. Repeating a pending submission does not create duplicate
+  notifications or emails.
+- The operator receives an in-app notice with a deep link to the exact claim
+  in the existing admin notice feed and, when configured, an email at
+  `SUPPORT_ADMIN_EMAIL`.
+- The owner receives a localized EN/SQ in-app update and branded email when a
+  claim is received, needs more information, is approved or is rejected.
+- If approval closes competing open claims, each affected owner receives the
+  same localized rejected-state update without exposing the approved claimant.
+- Business Setup shows the latest ownership state as one compact row. Only the
+  relevant action is offered: view the request, add information, review the
+  decision or view the linked place.
+- The owner claim API enriches private owner-scoped claims with the safe place
+  name/address context needed by Setup. It does not expose claim records to
+  public or unrelated accounts.
+- Approval still only links the reviewed directory place to the exact
+  owner-managed business selected in the claim. It does not publish the
+  business, create services or staff, change availability, or bypass Setup
+  readiness.
+- Existing Explore de-duplication remains authoritative: a linked directory
+  card is suppressed only when the corresponding ready published business is
+  already present.
+
+This batch reuses SQL 24 and requires no new SQL, table, policy or RLS change.
+Email failures are logged but never roll back or misrepresent the authoritative
+claim transition.
+
+### Batch 11 deployment QA
+
+1. Use one disposable active directory place and one disposable Business owner
+   account. Keep the business hidden throughout the claim review.
+2. Start from the public place detail page while logged out. Confirm only
+   Business login/create-account choices appear and the place ID survives
+   login, registration and email verification.
+3. Submit a claim, then repeat the same pending submit request. Confirm exactly
+   one owner update, one operator queue item and no duplicated email/notice.
+4. Confirm the owner sees `Ownership under review` in Setup and the directory
+   place remains public, non-bookable and unlinked.
+5. As admin, open the operator notice and confirm it selects the exact claim.
+6. Request more information with a clear note. Confirm the owner receives
+   localized in-app/email copy and Setup offers one `Add information` action.
+7. Resubmit once and confirm the same claim returns to pending with one new
+   claim event and one operator update.
+8. Approve the claim. Confirm the directory record links to the selected owned
+   business, competing open claims close, and Setup shows `Ownership approved`.
+9. Confirm approval leaves the business hidden and does not change services,
+   staff, hours, booking mode, readiness or billing.
+10. Publish only if a fully controlled ready QA business is available. Confirm
+    Explore shows one business result rather than duplicate place/business
+    cards, then restore the business and directory record to their agreed QA
+    state.
+11. Confirm a customer, staff member, unrelated owner and anonymous caller
+    cannot read or mutate private claims.
+12. Verify EN/SQ at desktop and 390px, email subjects/body/CTA domains, no raw
+    provider errors and no horizontal overflow.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls

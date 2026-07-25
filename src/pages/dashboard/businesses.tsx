@@ -8,6 +8,7 @@ import BusinessSetupHero from "@/components/dashboard-businesses/BusinessSetupHe
 import BusinessSetupStats from "@/components/dashboard-businesses/BusinessSetupStats";
 import CreateBusinessCard from "@/components/dashboard-businesses/CreateBusinessCard";
 import BusinessProfileCard from "@/components/dashboard-businesses/BusinessProfileCard";
+import BusinessClaimStatus from "@/components/dashboard-businesses/BusinessClaimStatus";
 import {
   AvailabilityRow,
   Business,
@@ -821,6 +822,8 @@ export default function Businesses() {
               <span style={{ width: `${setupProgressPercent}%` }} />
             </div>
           </div>
+
+          <BusinessClaimStatus businessId={primaryBusiness.id} />
 
           <div className="setup-grid">
             <div className="setup-checklist">

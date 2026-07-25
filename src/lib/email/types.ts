@@ -2,6 +2,8 @@ export type TransactionalEmailEvent =
   | "booking_created"
   | "booking_status_changed"
   | "booking_customer_cancelled"
+  | "directory_claim_submitted"
+  | "directory_claim_status_changed"
   | "support_created"
   | "support_replied"
   | "staff_invited"

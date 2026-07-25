@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { notifyDirectoryClaimReviewed } from "@/lib/server/directoryClaimNotifications";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 
 const UUID_PATTERN =
@@ -14,6 +15,12 @@ const ACTIONS = ["approve", "request_more_info", "reject"] as const;
 
 type ClaimStatus = (typeof STATUSES)[number];
 type ClaimAction = (typeof ACTIONS)[number];
+
+type CompetingClaim = {
+  claimant_user_id: string;
+  business_id: string;
+  business_name: string;
+};
 
 type ClaimRow = {
   id: string;
@@ -202,6 +209,88 @@ async function handlePost(
     return;
   }
 
+  const { data: claimBeforeReview, error: claimBeforeReviewError } =
+    await admin.supabase
+      .from("business_claims")
+      .select("id, directory_place_id, business_id, claimant_user_id, status")
+      .eq("id", claimId)
+      .maybeSingle<{
+        id: string;
+        directory_place_id: string;
+        business_id: string;
+        claimant_user_id: string;
+        status: ClaimStatus;
+      }>();
+  if (claimBeforeReviewError) throw claimBeforeReviewError;
+  if (!claimBeforeReview) {
+    response.status(404).json({ error: "Business claim was not found." });
+    return;
+  }
+
+  const [
+    { data: place, error: placeError },
+    { data: business, error: businessError },
+  ] = await Promise.all([
+      admin.supabase
+        .from("directory_places")
+        .select("id, name")
+        .eq("id", claimBeforeReview.directory_place_id)
+        .maybeSingle<{ id: string; name: string }>(),
+      admin.supabase
+        .from("businesses")
+        .select("id, name")
+        .eq("id", claimBeforeReview.business_id)
+        .maybeSingle<{ id: string; name: string }>(),
+    ]);
+  if (placeError) throw placeError;
+  if (businessError) throw businessError;
+  if (!place || !business) {
+    response.status(409).json({
+      error: "The claim no longer has a valid place and business.",
+    });
+    return;
+  }
+
+  let competingClaims: CompetingClaim[] = [];
+  if (action === "approve") {
+    const { data: competingRows, error: competingError } = await admin.supabase
+      .from("business_claims")
+      .select("claimant_user_id, business_id")
+      .eq("directory_place_id", claimBeforeReview.directory_place_id)
+      .neq("id", claimId)
+      .in("status", ["pending", "needs_more_info"])
+      .returns<
+        Array<{
+          claimant_user_id: string;
+          business_id: string;
+        }>
+      >();
+    if (competingError) throw competingError;
+
+    const competingBusinessIds = Array.from(
+      new Set((competingRows || []).map((claim) => claim.business_id)),
+    );
+    const { data: competingBusinesses, error: competingBusinessesError } =
+      competingBusinessIds.length
+        ? await admin.supabase
+            .from("businesses")
+            .select("id, name")
+            .in("id", competingBusinessIds)
+            .returns<Array<{ id: string; name: string }>>()
+        : { data: [] as Array<{ id: string; name: string }>, error: null };
+    if (competingBusinessesError) throw competingBusinessesError;
+
+    const businessNames = new Map(
+      (competingBusinesses || []).map((item) => [item.id, item.name]),
+    );
+    competingClaims = (competingRows || [])
+      .map((claim) => ({
+        ...claim,
+        business_name: businessNames.get(claim.business_id) || "",
+      }))
+      .filter((claim) => claim.business_name);
+  }
+
   const { data, error } = await admin.supabase.rpc(
     "mirebook_review_business_claim",
     {
@@ -224,6 +313,45 @@ async function handlePost(
     }
     throw error;
   }
+
+  try {
+    await Promise.all([
+      notifyDirectoryClaimReviewed({
+        supabase: admin.supabase,
+        claimantUserId: claimBeforeReview.claimant_user_id,
+        businessId: business.id,
+        businessName: business.name,
+        placeId: place.id,
+        placeName: place.name,
+        status:
+          action === "approve"
+            ? "approved"
+            : action === "request_more_info"
+              ? "needs_more_info"
+              : "rejected",
+        reviewNote: notes || null,
+      }),
+      ...competingClaims.map((claim) =>
+        notifyDirectoryClaimReviewed({
+          supabase: admin.supabase,
+          claimantUserId: claim.claimant_user_id,
+          businessId: claim.business_id,
+          businessName: claim.business_name,
+          placeId: place.id,
+          placeName: place.name,
+          status: "rejected",
+        }),
+      ),
+    ]);
+  } catch (notificationError) {
+    console.error(
+      "[admin-directory-claims] Review saved but notification delivery failed",
+      notificationError instanceof Error
+        ? notificationError.name
+        : "UnknownError",
+    );
+  }
+
   response.status(200).json({ ok: true, claim: data?.[0] || null });
 }
 
