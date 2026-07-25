@@ -849,6 +849,20 @@ Direct place details now use `private, no-store`, and the public page explicitly
 bypasses browser caching so a hidden or closed record becomes unavailable
 immediately. List and map cache behavior is unchanged.
 
+## Batch 12 - Claimed Place Handoff
+
+An approved ownership claim remains only a link until the existing business
+passes the same public readiness checks used by Explore. Once that linked
+business is both published and bookable, an old directory-place URL hands the
+customer to the live business profile instead of continuing to describe the
+place as non-bookable.
+
+The handoff fails closed. Hidden, unpublished or incomplete businesses leave
+the reviewed directory place as the non-bookable fallback. Claim approval
+still does not publish a business, modify Setup, create availability or bypass
+any booking-readiness rule. Explore's existing place/business de-duplication
+continues to show one result when the linked business is live.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

@@ -4348,6 +4348,10 @@ export const sq: TranslationTree = {
   "directory.profile.loading": "Po ngarkohen detajet e vendit...",
   "directory.profile.notFound": "Vendi nuk u gjet",
   "directory.profile.notFoundBody": "Ky vend nuk është më i disponueshëm në kërkimin e Mirëbook.",
+  "directory.profile.handoffTitle": "Ky biznes është gati për rezervime",
+  "directory.profile.handoffBody":
+    "Po hapet profili i tij aktiv në Mirëbook me shërbimet dhe oraret e lira.",
+  "directory.profile.handoffAction": "Shiko shërbimet dhe rezervo",
   "directory.profile.directions": "Merr udhëzime",
   "directory.profile.ownerTitle": "A është ky biznesi yt?",
   "directory.profile.ownerBody": "Pretendo këtë listim me një llogari Mirëbook Business. Mirëbook shqyrton çdo kërkesë përpara lidhjes.",

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { publicBookableBusinessIds } from "@/lib/server/publicBusinessReadiness";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 
 const UUID_PATTERN =
@@ -87,6 +88,29 @@ export default async function handler(
       return;
     }
 
+    let bookingBusinessId: string | null = null;
+    if (data.linked_business_id) {
+      try {
+        const bookableBusinessIds = await publicBookableBusinessIds(supabase, [
+          data.linked_business_id,
+        ]);
+        if (bookableBusinessIds.has(data.linked_business_id)) {
+          bookingBusinessId = data.linked_business_id;
+        }
+      } catch (readinessError) {
+        const readinessCode =
+          typeof readinessError === "object" &&
+          readinessError &&
+          "code" in readinessError
+            ? String(readinessError.code)
+            : "unknown";
+        console.warn(
+          "[public-directory-place] Linked business readiness unavailable",
+          readinessCode,
+        );
+      }
+    }
+
     response.status(200).json({
       place: {
         id: data.id,
@@ -101,7 +125,8 @@ export default async function handler(
         postcode: data.postcode || null,
         phone: data.phone || null,
         website: safeWebsite(data.website),
-        bookable: false,
+        bookable: Boolean(bookingBusinessId),
+        bookingBusinessId,
         claimable: data.claim_status === "unclaimed",
         linkedBusinessId: data.linked_business_id || null,
         attribution: attributionFor(data.source),

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { isPublicBusinessBookable } from "@/lib/server/publicBusinessReadiness";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 
 type BusinessRow = {
@@ -77,30 +78,6 @@ function groupBy<T extends Record<string, unknown>>(rows: T[], key: keyof T) {
     groups[value].push(row);
     return groups;
   }, {});
-}
-
-function isBookable(
-  services: Array<ServiceRow & { staff_services: StaffServiceRow[] }>,
-  staffMembers: StaffRow[],
-  availability: AvailabilityRow[],
-) {
-  const activeStaffIds = new Set(
-    staffMembers.filter((staff) => staff.active).map((staff) => staff.id),
-  );
-  const activeServices = services.filter((service) => service.active);
-  const assignedServices = activeServices.filter((service) =>
-    service.staff_services.some((assignment) =>
-      activeStaffIds.has(assignment.staff_member_id),
-    ),
-  );
-  const openDays = availability.filter((row) => row.is_closed !== true);
-
-  return (
-    activeServices.length > 0 &&
-    activeStaffIds.size > 0 &&
-    assignedServices.length > 0 &&
-    openDays.length > 0
-  );
 }
 
 export default async function handler(
@@ -255,7 +232,7 @@ export default async function handler(
         };
       })
       .filter((business) =>
-        isBookable(
+        isPublicBusinessBookable(
           business.services as Array<
             ServiceRow & { staff_services: StaffServiceRow[] }
           >,

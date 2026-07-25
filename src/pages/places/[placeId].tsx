@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ArrowRight,
   Building2,
   ExternalLink,
   Flag,
@@ -29,7 +30,8 @@ type PlaceDetail = {
   postcode?: string | null;
   phone?: string | null;
   website?: string | null;
-  bookable: false;
+  bookable: boolean;
+  bookingBusinessId?: string | null;
   claimable: boolean;
   linkedBusinessId?: string | null;
   attribution: { label: string; url?: string | null };
@@ -41,6 +43,7 @@ export default function DirectoryPlacePage() {
   const [place, setPlace] = useState<PlaceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [bookingBusinessId, setBookingBusinessId] = useState("");
 
   useEffect(() => {
     if (!router.isReady || typeof router.query.placeId !== "string") return;
@@ -49,6 +52,7 @@ export default function DirectoryPlacePage() {
     async function loadPlace() {
       setLoading(true);
       setNotFound(false);
+      setBookingBusinessId("");
       try {
         const response = await fetch(
           `/api/public/directory-place?id=${encodeURIComponent(String(router.query.placeId))}`,
@@ -59,7 +63,17 @@ export default function DirectoryPlacePage() {
           return;
         }
         const payload = (await response.json()) as { place?: PlaceDetail };
-        if (!cancelled) setPlace(payload.place || null);
+        if (cancelled) return;
+
+        const nextPlace = payload.place || null;
+        if (nextPlace?.bookable && nextPlace.bookingBusinessId) {
+          setPlace(null);
+          setBookingBusinessId(nextPlace.bookingBusinessId);
+          setLoading(false);
+          void router.replace(`/explore/${nextPlace.bookingBusinessId}`);
+          return;
+        }
+        setPlace(nextPlace);
       } catch {
         if (!cancelled) setNotFound(true);
       } finally {
@@ -104,7 +118,33 @@ export default function DirectoryPlacePage() {
           {t("directory.profile.back", "Back to Explore")}
         </Link>
 
-        {loading ? (
+        {bookingBusinessId ? (
+          <div className="place-state" role="status">
+            <Building2 size={30} aria-hidden="true" />
+            <h1>
+              {t(
+                "directory.profile.handoffTitle",
+                "This business is ready to book",
+              )}
+            </h1>
+            <p>
+              {t(
+                "directory.profile.handoffBody",
+                "Opening its live Mirëbook profile with services and available times.",
+              )}
+            </p>
+            <Link
+              href={`/explore/${bookingBusinessId}`}
+              className="btn btn-accent"
+            >
+              {t(
+                "directory.profile.handoffAction",
+                "View services and book",
+              )}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+        ) : loading ? (
           <div className="place-state">
             {t("directory.profile.loading", "Loading place details...")}
           </div>

@@ -4243,6 +4243,10 @@ export const en: TranslationTree = {
   "directory.profile.loading": "Loading place details...",
   "directory.profile.notFound": "Place not found",
   "directory.profile.notFoundBody": "This place is no longer available in Mirëbook discovery.",
+  "directory.profile.handoffTitle": "This business is ready to book",
+  "directory.profile.handoffBody":
+    "Opening its live Mirëbook profile with services and available times.",
+  "directory.profile.handoffAction": "View services and book",
   "directory.profile.directions": "Get directions",
   "directory.profile.ownerTitle": "Is this your business?",
   "directory.profile.ownerBody": "Claim this listing with a Mirëbook Business account. Mirëbook reviews every request before linking it.",
