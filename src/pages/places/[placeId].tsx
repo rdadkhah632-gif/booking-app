@@ -52,6 +52,7 @@ export default function DirectoryPlacePage() {
       try {
         const response = await fetch(
           `/api/public/directory-place?id=${encodeURIComponent(String(router.query.placeId))}`,
+          { cache: "no-store" },
         );
         if (!response.ok) {
           if (!cancelled) setNotFound(true);

@@ -55,6 +55,7 @@ export default async function handler(
     response.status(405).json({ error: "Method not allowed." });
     return;
   }
+  response.setHeader("Cache-Control", "private, no-store");
 
   const placeId = queryText(request.query.id);
   if (!UUID_PATTERN.test(placeId)) {
@@ -86,10 +87,6 @@ export default async function handler(
       return;
     }
 
-    response.setHeader(
-      "Cache-Control",
-      "public, s-maxage=300, stale-while-revalidate=600",
-    );
     response.status(200).json({
       place: {
         id: data.id,

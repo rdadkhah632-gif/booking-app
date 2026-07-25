@@ -842,6 +842,13 @@ SQL 28 replaces only that function and normalizes both action names before the
 event insert. It changes no claim eligibility, approval result, publication
 state, role boundary, schema or RLS policy.
 
+Focused approval QA then exposed stale direct-place details after an operator
+hid the disposable fixture. The database query already required an active
+listing; the stale response came from the direct detail endpoint's CDN window.
+Direct place details now use `private, no-store`, and the public page explicitly
+bypasses browser caching so a hidden or closed record becomes unavailable
+immediately. List and map cache behavior is unchanged.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
