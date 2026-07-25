@@ -2731,6 +2731,10 @@ export const en: TranslationTree = {
   "nav.role.staff": "Staff",
   "nav.role.customer": "Customer",
   "nav.checkingAccount": "Checking account...",
+  "nav.operator": "Operator",
+  "nav.operatorMenu": "Operator menu",
+  "nav.businesses": "Businesses",
+  "nav.users": "Users",
   "staff.today.kicker": "Today’s workflow",
   "staff.today.titleWithBookings": "You have appointments today",
   "staff.today.titleEmpty": "No appointments today",
@@ -4115,6 +4119,7 @@ export const en: TranslationTree = {
   "support.customer.subject.placeDetails": "Incorrect place details",
   "support.customer.reportPlacePrefill":
     "Place: {place}\nReference: {reference}\n\nTell us what is incorrect or out of date.",
+  "admin.directory.adminOnlyTitle": "Admin only",
   "admin.directory.adminOnly": "Admin access is required.",
   "admin.directory.kicker": "Marketplace data",
   "admin.directory.title": "Directory review",

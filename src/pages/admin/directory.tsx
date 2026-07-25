@@ -191,7 +191,6 @@ export default function AdminDirectoryPage() {
 
       if (cancelled) return;
       if (profileError || !profile?.is_admin) {
-        setError(t("admin.directory.adminOnly", "Admin access is required."));
         setLoading(false);
         return;
       }
@@ -469,9 +468,13 @@ export default function AdminDirectoryPage() {
             <h1>
               {loading
                 ? t("common.loadingAccount", "Checking account...")
-                : t("admin.directory.adminOnly", "Admin access is required.")}
+                : t("admin.directory.adminOnlyTitle", "Admin only")}
             </h1>
-            {!loading && error && <p className="muted">{error}</p>}
+            {!loading && (
+              <p className="muted">
+                {t("admin.directory.adminOnly", "Admin access is required.")}
+              </p>
+            )}
           </div>
         </section>
       </main>

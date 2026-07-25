@@ -3,7 +3,8 @@
 ## Albania discovery migrations
 
 - SQL 19, SQL 20, SQL 22 and SQL 24 were applied manually on 19 July 2026.
-- Stage 12 Batch 6 launch coverage requires read-only SQL 26 after deployment.
+- Stage 12 Batch 6 read-only SQL 26 was applied manually on 25 July 2026.
+  Service-role execution passed and anonymous execution was denied.
 - SQL 21, SQL 23 and SQL 25 are customer-app migrations and must not be
   confused with the website discovery migration sequence.
 - Before approving any claim, confirm the claimant owns the selected Mirëbook

@@ -49,4 +49,6 @@ grant execute on function public.mirebook_admin_directory_launch_coverage()
 comment on function public.mirebook_admin_directory_launch_coverage() is
   'Service-only read aggregate for the admin launch coverage view. It performs no directory mutation.';
 
+notify pgrst, 'reload schema';
+
 commit;

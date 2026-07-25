@@ -2836,6 +2836,10 @@ export const sq: TranslationTree = {
   "nav.role.staff": "Staf",
   "nav.role.customer": "Klient",
   "nav.checkingAccount": "Duke kontrolluar llogarinë...",
+  "nav.operator": "Operator",
+  "nav.operatorMenu": "Menyja e operatorit",
+  "nav.businesses": "Bizneset",
+  "nav.users": "Përdoruesit",
   "staff.today.kicker": "Rrjedha e sotme",
   "staff.today.titleWithBookings": "Ke takime sot",
   "staff.today.titleEmpty": "Nuk ke takime sot",
@@ -4215,6 +4219,7 @@ export const sq: TranslationTree = {
   "support.customer.subject.placeDetails": "Të dhëna të pasakta për vendin",
   "support.customer.reportPlacePrefill":
     "Vendi: {place}\nReferenca: {reference}\n\nNa trego çfarë është e pasaktë ose e vjetruar.",
+  "admin.directory.adminOnlyTitle": "Vetëm për administratorin",
   "admin.directory.adminOnly": "Kërkohet qasje administratori.",
   "admin.directory.kicker": "Të dhënat e tregut",
   "admin.directory.title": "Shqyrtimi i direktorisë",

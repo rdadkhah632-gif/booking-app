@@ -1,11 +1,13 @@
 # Stage 12 - Albania Discovery Directory Foundation
 
 Status: Batches 1 through 4 are deployed to the repository. SQL 19, SQL 20,
-SQL 22 and SQL 24 were applied manually to production Supabase on 19 July
-2026. Batch 5 is deployed and passed production QA on 19 July 2026. Batch 6 is
-implemented locally and requires SQL 26 plus deployment QA. SQL 21, SQL 23 and
-SQL 25 belong to the separate customer-app work and are not discovery
-dependencies.
+SQL 22 and SQL 24 were applied manually to production Supabase on 19 July 2026. Batch 5 is deployed and passed production QA on 19 July 2026. Batch 6 is
+implemented and deployed. Its deterministic local safety checks passed. SQL 26
+was applied manually to production Supabase on 25 July 2026 and its
+service-role/anonymous boundary check passed. The mobile Operator navigation
+and localized access-denial follow-ups are implemented locally for
+redeployment. SQL 21, SQL 23 and SQL 25 belong to the separate customer-app
+work and are not discovery dependencies.
 
 ## Product Direction
 
@@ -586,6 +588,20 @@ shows a migration note instead of guessing at coverage.
     coverage section has no horizontal overflow at 390px.
 
 SQL 26 is idempotent for this schema version and performs no data mutation.
+It also requests a PostgREST schema-cache refresh after the function is
+created.
+
+Production QA confirmed the shortlist is deterministic, respects the configured
+city/category cap, skips duplicate candidates and leaves importer output at
+private `needs_review` in dry-run mode. Admin and public role boundaries passed,
+and Explore remained unchanged. Initial exact-coverage QA was blocked because
+the production database returned `PGRST202` for the missing SQL 26 function.
+After SQL 26 was applied, the service-role RPC succeeded and anonymous
+execution was denied with `42501`. No directory records are currently imported,
+so the aggregate correctly returns no source rows while the admin UI presents
+the defined city/category matrix with zero totals. The follow-up also replaces
+the overflowing mobile Operator link row with a compact menu and keeps the
+admin-denial message fully localized.
 
 ### Later
 
