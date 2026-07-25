@@ -159,6 +159,36 @@ After SQL 26 is applied, use Admin Directory launch coverage to work through
 priority city and category queues. SQL 26 is read-only and service-only. The
 coverage view is not permission to bulk approve records.
 
+### Current private launch seed
+
+On 25 July 2026, the controlled Batch 7 shortlist was imported:
+
+- Overture source release: `2026-06-17.0`
+- shortlist cap: one candidate per priority city/category
+- records imported: `57`
+- import run: `4cb75b56-6b03-4b9b-b90d-90accbec2ee7`
+- status after import: `57 needs_review`, `0 active`
+- claim state after import: `57 unclaimed`
+- public directory API results after import: `0`
+- published Mirëbook business API results after import: `0`
+
+Do not bulk approve this queue. Review each candidate's name, category, current
+operation, address, map position and contact details before deciding. Category
+coverage is an operator planning aid, not a launch target that overrides data
+quality.
+
+After any approval session:
+
+1. Compare the Admin Directory approved total with the public directory API
+   total.
+2. Confirm no `needs_review` record is returned publicly.
+3. Check the approved card and detail page in EN and SQ at desktop and 390px.
+4. Confirm it says `Local place`, remains non-bookable and includes source
+   attribution.
+5. Confirm Bookable results contain only ready Mirëbook businesses.
+6. Hide the record immediately if name, category, operation or location cannot
+   be reconfirmed.
+
 ## Transactional Email Language Audit
 
 Mirëbook application emails have complete EN/SQ template copy. Locale selection

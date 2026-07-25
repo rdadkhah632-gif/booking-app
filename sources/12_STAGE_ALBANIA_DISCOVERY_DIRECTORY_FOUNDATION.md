@@ -1,11 +1,14 @@
 # Stage 12 - Albania Discovery Directory Foundation
 
 Status: Batches 1 through 4 are deployed to the repository. SQL 19, SQL 20,
-SQL 22 and SQL 24 were applied manually to production Supabase on 19 July 2026. Batch 5 is deployed and passed production QA on 19 July 2026. Batch 6 is
+SQL 22 and SQL 24 were applied manually to production Supabase on 19 July 2026.
+Batch 5 is deployed and passed production QA on 19 July 2026. Batch 6 is
 deployed and passed production QA on 25 July 2026. Its deterministic shortlist,
 SQL 26 boundary, exact coverage matrix, mobile Operator navigation, localized
-access denial and public non-exposure checks all passed. SQL 21, SQL 23 and SQL
-25 belong to the separate customer-app work and are not discovery dependencies.
+access denial and public non-exposure checks all passed. Batch 7 imported the
+first controlled 57-place launch seed into the private review queue on 25 July
+2026; zero places were approved or made public. SQL 21, SQL 23 and SQL 25
+belong to the separate customer-app work and are not discovery dependencies.
 
 ## Product Direction
 
@@ -606,6 +609,76 @@ priority cities and ten categories, kept the desktop document at 1440px and the
 mobile document at 390px with the Operator menu both closed and open, denied
 anonymous/customer/business/staff access, and left anonymous Explore unchanged
 with no directory records exposed.
+
+## Batch 7 - Controlled Private Launch Seed
+
+Batch 7 creates a manageable operator review queue without changing the public
+marketplace.
+
+### Source and shortlist
+
+- Source: Overture Maps Foundation Places release `2026-06-17.0`
+- Source confidence floor: `0.75`
+- Exported product-aligned Albania candidates: `2,386`
+- Launch cities: Tiranë, Durrës, Vlorë, Sarandë, Shkodër, Korçë, Himarë,
+  Berat and Gjirokastër
+- Included categories: beauty and grooming, dental health, wellness and
+  fitness, events, learning and lessons, tours and activities, rentals and
+  attractions
+- Food and accommodation: deliberately excluded from this first seed
+- Shortlist cap: one record per city/category
+- Shortlisted records: `57`
+- Shortlist SHA-256:
+  `1d1da600c5b5397538e25cc660e0359e4f8cd1334abab9453c60b8b29c376a18`
+
+The shortlist was generated twice. Both JSONL outputs had the same hash. All 57
+records had unique source IDs and fingerprints, an address and an Albania
+location. Fifty-three included a phone, 37 a website, 40 an email and 55 at
+least one social URL. No record was marked permanently closed.
+
+The shortlist is candidate data, not a recommendation or verification. Some
+source categories are adjacent rather than exact, and source contact details
+can be stale. Every record therefore requires individual operator inspection.
+
+### Production import
+
+The importer dry run validated all 57 records before apply mode was used with
+the explicit review-only confirmation.
+
+- Import run: `4cb75b56-6b03-4b9b-b90d-90accbec2ee7`
+- Processed: `57`
+- Inserted: `57`
+- Updated: `0`
+- Skipped: `0`
+- Failed: `0`
+- Resulting status: `57 needs_review`
+- Claim status: `57 unclaimed`
+- Public listings created: `0`
+
+Read-only production verification matched the importer output and the SQL 26
+coverage aggregate. Direct anonymous table reads remained denied with `42501`.
+The public directory API returned zero records, the existing business API
+returned zero published businesses and anonymous Explore kept its polished
+launch empty state.
+
+The Admin Directory UI loaded all 57 candidates, showed exact per-city and
+per-category review totals, and exposed source/contact/provenance context for
+individual review. It showed `0 Approved`.
+
+### Review protocol
+
+1. Review one place at a time in `/admin/directory`.
+2. Verify name, category, address, current operation, contact details and map
+   position from reliable sources before approval.
+3. Correct or reject category-adjacent records rather than approving them for
+   the sake of filling a coverage gap.
+4. Use `duplicate`, `closed` or `hidden` with a clear operator note when
+   appropriate.
+5. Approve only a small launch-quality set for each city/category.
+6. After each review session, confirm public totals match the exact approved
+   count and that no `needs_review` row appears through the public API.
+7. Keep imported directory places visibly non-bookable and distinct from
+   owner-managed Mirëbook businesses.
 
 ### Later
 
