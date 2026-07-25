@@ -30,8 +30,11 @@ manual steps below.
   mobile, EN and SQ.
 - Stage 12 Batch 6 private shortlist safety, launch coverage, admin role
   boundaries and responsive Operator controls: PASS.
-- Explore mixed-result type separation: pending one controlled-data retest;
-  production had no live business or directory cards during Batch 5 QA.
+- Stage 12 Batch 8 first reviewed directory release: PASS with eight public,
+  non-bookable places in EN/SQ List and Map views.
+- Explore directory separation: PASS for All/Places versus Bookable. A true
+  mixed business-plus-place retest remains pending the first genuine published
+  Mirëbook business.
 - Supabase confirmation/recovery email localization: dashboard-managed and not
   yet proven as per-recipient EN/SQ.
 - Application transactional email templates and recipient-locale selection:
@@ -177,6 +180,36 @@ and category totals, reached the final pagination page, confirmed private
 source context and individual-only review controls, denied every non-admin
 role, kept anonymous Explore empty in EN/SQ List and Map modes, and found no
 desktop or 390px overflow. No directory status changed during that QA.
+
+### First reviewed public set
+
+On 25 July 2026, eight candidates passed current-source verification and were
+approved individually:
+
+- City Dental Clinic - Tiranë - dental health
+- Bunk'Art 2 - Tiranë - attractions
+- Geraldina Sposa - Tiranë - events
+- Cimi Stil Unik - Durrës - beauty and grooming
+- Balikci Dental - Vlorë - dental health
+- Helen Doron English Vlorë - Vlorë - learning and lessons
+- Kopliku Travel - Shkodër - tours and activities
+- Experience Gjirokaster - Gjirokastër - tours and activities
+
+Current directory state is `8 active`, `49 needs_review`, with no hidden,
+closed or duplicate records. All eight remain unclaimed and non-bookable.
+Public API, List, Map and detail checks matched the exact approved count in EN
+and SQ at desktop and 390px. Bookable results returned no directory records,
+anonymous direct table access remained denied, and public payloads omitted
+private source/review fields.
+
+The customer-facing Map requires both Mapbox variables in Vercel:
+
+- `MAPBOX_ACCESS_TOKEN` for server-side geocoding and map previews
+- `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` for the public Explore map
+
+Both are configured for Preview and Production. After changing the public
+variable, rebuild a production deployment because `NEXT_PUBLIC_*` values are
+embedded at build time.
 
 Do not bulk approve this queue. Review each candidate's name, category, current
 operation, address, map position and contact details before deciding. Category

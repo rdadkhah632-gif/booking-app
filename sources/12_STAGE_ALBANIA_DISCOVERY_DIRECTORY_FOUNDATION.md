@@ -7,8 +7,11 @@ deployed and passed production QA on 25 July 2026. Its deterministic shortlist,
 SQL 26 boundary, exact coverage matrix, mobile Operator navigation, localized
 access denial and public non-exposure checks all passed. Batch 7 imported the
 first controlled 57-place launch seed into the private review queue on 25 July
-2026; zero places were approved or made public. SQL 21, SQL 23 and SQL 25
-belong to the separate customer-app work and are not discovery dependencies.
+2026. Batch 8 individually verified and approved the first eight public places
+on 25 July 2026. Public List, Map, detail, EN/SQ, mobile and non-bookable
+boundary checks passed; 49 candidates remain private. SQL 21, SQL 23 and SQL
+25 belong to the separate customer-app work and are not discovery
+dependencies.
 
 ## Product Direction
 
@@ -688,6 +691,66 @@ and the directory workspace had no clipping or horizontal overflow at
    count and that no `needs_review` row appears through the public API.
 7. Keep imported directory places visibly non-bookable and distinct from
    owner-managed Mirëbook businesses.
+
+## Batch 8 - First Reviewed Public Set
+
+Batch 8 moves only a small, evidence-backed set through the existing audited
+one-place-at-a-time approval flow. Category coverage was not treated as a
+reason to approve weak data.
+
+### Approved places
+
+| Place | City | Category | Current source checked |
+| --- | --- | --- | --- |
+| City Dental Clinic | Tiranë | Dental health | Official clinic website |
+| Bunk'Art 2 | Tiranë | Attractions | Tirana Municipality and current museum information |
+| Geraldina Sposa | Tiranë | Events | Official business website |
+| Cimi Stil Unik | Durrës | Beauty and grooming | Official business website |
+| Balikci Dental | Vlorë | Dental health | Official clinic website |
+| Helen Doron English Vlorë | Vlorë | Learning and lessons | Official Helen Doron Albania centre page |
+| Kopliku Travel | Shkodër | Tours and activities | Official agency website |
+| Experience Gjirokaster | Gjirokastër | Tours and activities | Official agency website |
+
+For each approval, the operator compared the imported name, category, current
+operation, address, contact details and map context with the current source,
+then saved a dated review note. The review audit remains visible in Admin
+Directory.
+
+Candidates with material uncertainty remained private. Examples include a
+wellness website now redirecting to an unrelated business, stale or conflicting
+addresses for rental and learning records, changed phone/email details for
+marine operators, a guide record that did not represent Butrint itself, an
+Osum Canyon point located in Berat rather than near the canyon, and a museum
+record without sufficiently strong current evidence. None was approved merely
+to fill a city or category gap.
+
+### Production result
+
+- Admin status: `8 active`, `49 needs_review`, `0 hidden`, `0 closed`,
+  `0 duplicate`
+- Claim status: all eight remain `unclaimed`
+- Public directory API: exactly eight records
+- Public cards: labelled `Local place` / `Vend lokal`
+- Booking boundary: every directory record reports `bookable: false`; the
+  Bookable result type returns no directory cards
+- Public payload: no source ID, source confidence, provenance payload or
+  operator review fields
+- Details: phone/website/directions/report and moderated claim route work
+- List and Map: all eight records render in EN and SQ on desktop and 390px
+- Direct anonymous table access: denied with `401 / 42501`
+- Browser logs: no warnings or errors during the closure pass
+
+Production Map initially showed its safe unavailable state because only the
+server-side Mapbox variable existed. `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` was
+added to the Vercel Preview and Production environments using the existing
+public Mapbox token, then the previous clean production deployment was rebuilt.
+The public map subsequently loaded all eight markers with Mapbox/OpenStreetMap
+attribution and no horizontal overflow.
+
+Rollback remains one-place-at-a-time: use Admin Directory to hide any record
+whose operation, identity, category or location can no longer be confirmed.
+Hiding a directory record does not affect Mirëbook businesses, booking logic
+or claim ownership.
 
 ### Later
 
