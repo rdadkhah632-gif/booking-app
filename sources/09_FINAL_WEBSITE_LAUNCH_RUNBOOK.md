@@ -28,6 +28,8 @@ manual steps below.
 - Reminder dry-run, real delivery and duplicate-prevention QA: PASS.
 - Customer-first homepage and Explore Batch 5 production QA: PASS on desktop,
   mobile, EN and SQ.
+- Stage 12 Batch 6 private shortlist safety, launch coverage, admin role
+  boundaries and responsive Operator controls: PASS.
 - Explore mixed-result type separation: pending one controlled-data retest;
   production had no live business or directory cards during Batch 5 QA.
 - Supabase confirmation/recovery email localization: dashboard-managed and not

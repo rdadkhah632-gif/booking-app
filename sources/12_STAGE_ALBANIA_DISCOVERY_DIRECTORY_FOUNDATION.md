@@ -2,12 +2,10 @@
 
 Status: Batches 1 through 4 are deployed to the repository. SQL 19, SQL 20,
 SQL 22 and SQL 24 were applied manually to production Supabase on 19 July 2026. Batch 5 is deployed and passed production QA on 19 July 2026. Batch 6 is
-implemented and deployed. Its deterministic local safety checks passed. SQL 26
-was applied manually to production Supabase on 25 July 2026 and its
-service-role/anonymous boundary check passed. The mobile Operator navigation
-and localized access-denial follow-ups are implemented locally for
-redeployment. SQL 21, SQL 23 and SQL 25 belong to the separate customer-app
-work and are not discovery dependencies.
+deployed and passed production QA on 25 July 2026. Its deterministic shortlist,
+SQL 26 boundary, exact coverage matrix, mobile Operator navigation, localized
+access denial and public non-exposure checks all passed. SQL 21, SQL 23 and SQL
+25 belong to the separate customer-app work and are not discovery dependencies.
 
 ## Product Direction
 
@@ -602,6 +600,12 @@ so the aggregate correctly returns no source rows while the admin UI presents
 the defined city/category matrix with zero totals. The follow-up also replaces
 the overflowing mobile Operator link row with a compact menu and keeps the
 admin-denial message fully localized.
+
+The deployed follow-up retest passed with no findings. It rendered all nine
+priority cities and ten categories, kept the desktop document at 1440px and the
+mobile document at 390px with the Operator menu both closed and open, denied
+anonymous/customer/business/staff access, and left anonymous Explore unchanged
+with no directory records exposed.
 
 ### Later
 
