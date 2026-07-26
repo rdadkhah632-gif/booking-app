@@ -422,6 +422,16 @@ export default function Explore() {
     );
   }, [businesses, filteredDirectoryPlaces]);
 
+  const linkedPlaceByBusinessId = useMemo(() => {
+    const linkedPlaces = new Map<string, DirectoryPlace>();
+    for (const place of directoryPlaces) {
+      if (place.linkedBusinessId) {
+        linkedPlaces.set(place.linkedBusinessId, place);
+      }
+    }
+    return linkedPlaces;
+  }, [directoryPlaces]);
+
   const cities = useMemo(() => {
     const unique = new Set(
       [
@@ -505,7 +515,11 @@ export default function Explore() {
 
   const mapItems = useMemo<DiscoveryMapItem[]>(() => {
     const businessItems = appliedFilters.kind === "places" ? [] : filteredBusinesses.flatMap((business) => {
-      if (!business.location) return [];
+      const mapPosition =
+        business.location ||
+        linkedPlaceByBusinessId.get(business.id)?.mapPosition ||
+        null;
+      if (!mapPosition) return [];
       return [
         {
           id: `business:${business.id}`,
@@ -513,8 +527,8 @@ export default function Explore() {
           name: business.name,
           category: business.category || t("common.business", "Business"),
           locationLabel: locationLabel(business),
-          latitude: business.location.latitude,
-          longitude: business.location.longitude,
+          latitude: mapPosition.latitude,
+          longitude: mapPosition.longitude,
           distanceMeters: business.distanceMeters ?? null,
           href: `/explore/${business.id}`,
         },
@@ -534,7 +548,13 @@ export default function Explore() {
       href: `/places/${place.id}`,
     }));
     return [...businessItems, ...directoryItems];
-  }, [appliedFilters.kind, filteredBusinesses, visibleDirectoryPlaces, t]);
+  }, [
+    appliedFilters.kind,
+    filteredBusinesses,
+    linkedPlaceByBusinessId,
+    visibleDirectoryPlaces,
+    t,
+  ]);
 
   const selectedMapItem = useMemo(
     () => mapItems.find((item) => item.id === selectedMapId) || null,

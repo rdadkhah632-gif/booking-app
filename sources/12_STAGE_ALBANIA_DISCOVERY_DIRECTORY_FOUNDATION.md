@@ -863,6 +863,12 @@ still does not publish a business, modify Setup, create availability or bypass
 any booking-readiness rule. Explore's existing place/business de-duplication
 continues to show one result when the linked business is live.
 
+If the live business has not yet verified its own map location, the Map view
+uses the linked directory place's already-public approximate map position as a
+temporary fallback. The marker still opens the live business profile, exact
+directory coordinates remain private, and a subsequently verified business
+location takes precedence automatically.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
