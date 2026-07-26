@@ -309,14 +309,6 @@ export default function Explore() {
         successfulSource = true;
       }
 
-      const liveBusinessIds = new Set(
-        nextBusinesses.map((business) => business.id),
-      );
-      nextPlaces = nextPlaces.filter(
-        (place) =>
-          !place.linkedBusinessId || !liveBusinessIds.has(place.linkedBusinessId),
-      );
-
       setBusinesses(nextBusinesses);
       setDirectoryPlaces(nextPlaces);
       setLoading(false);
@@ -569,12 +561,18 @@ export default function Explore() {
   const marketplaceStats = useMemo(
     () => ({
       businesses: businesses.length,
-      places: directoryPlaces.length,
+      places: visibleDirectoryPlaces.length,
       cities: cities.length,
       categories: categories.length,
       visible: listItems.length,
     }),
-    [businesses.length, categories.length, cities.length, directoryPlaces.length, listItems.length],
+    [
+      businesses.length,
+      categories.length,
+      cities.length,
+      listItems.length,
+      visibleDirectoryPlaces.length,
+    ],
   );
 
   function pushFilters(next: {
@@ -692,7 +690,8 @@ export default function Explore() {
       appliedFilters.category ||
       appliedFilters.kind !== "all",
   );
-  const hasAnyResults = businesses.length > 0 || directoryPlaces.length > 0;
+  const hasAnyResults =
+    businesses.length > 0 || visibleDirectoryPlaces.length > 0;
 
   return (
     <main>

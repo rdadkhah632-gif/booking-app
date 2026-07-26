@@ -877,6 +877,13 @@ Publication and directory visibility therefore come from current database
 state rather than a stale CDN window. No record, readiness rule or public
 payload field changed.
 
+The first cache-free retest then exposed a client ordering issue: Explore
+removed the linked directory record before the Map could use its approximate
+position. Explore now retains the raw active directory result as internal map
+context and applies de-duplication only when building visible cards and place
+markers. Public result totals continue to count the live business once and do
+not count its suppressed directory identity.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
