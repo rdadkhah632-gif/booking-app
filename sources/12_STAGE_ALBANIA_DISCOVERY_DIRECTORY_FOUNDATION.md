@@ -884,6 +884,28 @@ context and applies de-duplication only when building visible cards and place
 markers. Public result totals continue to count the live business once and do
 not count its suppressed directory identity.
 
+### Batch 12 closure QA
+
+Deployed production QA passed the complete controlled handoff:
+
+- the active claimed place remained a non-bookable directory result while its
+  linked business was hidden
+- publishing the ready linked business produced one business card, one
+  business marker and no duplicate place identity
+- All showed nine results/markers, Bookable showed the one linked business and
+  Places retained only the eight genuine reviewed places
+- selecting the fallback marker opened the exact live business booking profile
+- public geometry remained limited to the approximately-one-kilometre
+  `mapPosition`
+- hiding the business restored the directory fallback immediately
+- hiding the disposable fixture removed it immediately from collection and
+  detail APIs
+
+Final production cleanup left the QA business in draft, the fixture hidden,
+Admin Directory at `8 approved / 1 hidden`, and anonymous discovery at the
+eight genuine reviewed places. No genuine record or protected booking,
+readiness, billing, auth or role behavior changed.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
