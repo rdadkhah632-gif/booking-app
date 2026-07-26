@@ -1009,6 +1009,61 @@ production QA then passed Lake Koman and VATO cards/details in EN and SQ at
 desktop and 390px, with one localized credit, working Wikimedia links, loaded
 images and no remaining P0/P1/P2 finding.
 
+## Batch 15 - Durres And Vlore Catalogue Depth
+
+Batch 15 strengthens the launch catalogue where customer discovery was still
+thin rather than adding another marketplace feature. SQL 32 prepares ten
+existing private candidates for individual operator review:
+
+- Dental Center Durres, Klinika e Fizioterapise AD-AR, Elements Beach Bar and
+  Lider Center in Durres
+- Golden Gym, Emiral Beach, Sole Agjensi and Albi Tattoo & Piercing in Vlore
+- Enterprise Rent-A-Car Tirana City and Advanced Hair Transplant Clinic in
+  Tirana
+
+The group adds dental, wellness, learning, tours, rentals and beauty coverage.
+Elements Beach Bar and Emiral Beach also become the first reviewed
+food-and-drink candidates in the launch catalogue. Each record receives
+concise English and Albanian copy plus current reviewed contact facts.
+
+Elements Beach Bar and Emiral Beach receive reusable Wikimedia Commons
+destination photographs with visible attribution and private licence notes.
+The images represent Gjiri i Lalzit and the Vlore coast respectively; neither
+is described as a photograph of the business premises. The other eight
+records retain the category fallback because no sufficiently clear reusable
+business photograph was found.
+
+Source review used current operator pages where available, current local or
+claimed venue listings for businesses without an active website, the Albanian
+tourism-agency register as a secondary identity check, and the corresponding
+Wikimedia Commons file pages. The review deliberately excluded candidates
+whose domains no longer resolve, redirect to unrelated property content,
+present unfinished sites, have mismatched contact details, or cannot be
+classified confidently. In particular, Nobis, Hera Holiday, Bbelva Motors,
+Cobo Center, Silhouette Sports Center and the weakly classified Himare lodging
+record were not promoted into this batch.
+
+SQL 32 is deterministic and does not alter `listing_status`, `claim_status`,
+imported source facts, ownership, business publication, booking behavior or
+RLS. All ten records therefore remain private until an operator reviews and
+approves them one at a time.
+
+### Batch 15 operator sequence
+
+1. Apply SQL 32 after SQL 29, SQL 30 and SQL 31.
+2. Confirm the result lists exactly ten reviewed records and leaves every one
+   in `needs_review`.
+3. In Admin Directory, inspect each record's current source, map position,
+   reviewed facts and bilingual description before taking any action.
+4. For Elements Beach Bar and Emiral Beach, verify the photograph, alt text,
+   single localized credit, Commons source page and licence.
+5. Approve records individually. Do not use a bulk action and stop on any
+   identity, location, contact, category, content or image-rights mismatch.
+6. After each city group, inspect EN/SQ Places List, Map and one direct detail
+   at desktop and 390px.
+7. Confirm Bookable contains no directory records, private evidence remains
+   absent from public APIs, and the hidden ownership fixture stays hidden.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
