@@ -89,6 +89,7 @@ export default async function handler(
     response.status(405).json({ error: "Method not allowed." });
     return;
   }
+  response.setHeader("Cache-Control", "private, no-store");
 
   const latitude = coordinateValue(request, "latitude");
   const longitude = coordinateValue(request, "longitude");
@@ -136,12 +137,6 @@ export default async function handler(
     const businessIds = businesses.map((business) => business.id);
 
     if (businessIds.length === 0) {
-      response.setHeader(
-        "Cache-Control",
-        hasLocation
-          ? "private, no-store"
-          : "public, s-maxage=120, stale-while-revalidate=300",
-      );
       response.status(200).json({ businesses: [] });
       return;
     }
@@ -305,12 +300,6 @@ export default async function handler(
         );
       });
 
-    response.setHeader(
-      "Cache-Control",
-      hasLocation
-        ? "private, no-store"
-        : "public, s-maxage=120, stale-while-revalidate=300",
-    );
     response.status(200).json({ businesses: marketplaceBusinesses });
   } catch (error) {
     console.error("[public-explore] Could not load marketplace", error);

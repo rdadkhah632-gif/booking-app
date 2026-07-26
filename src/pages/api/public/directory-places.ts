@@ -152,6 +152,7 @@ export default async function handler(
     response.status(405).json({ error: "Method not allowed." });
     return;
   }
+  response.setHeader("Cache-Control", "private, no-store");
 
   const query = cleanQuery(request.query.q, 100).replace(/[%_]/g, "");
   const requestedCategory = cleanQuery(request.query.category, 50);
@@ -257,12 +258,6 @@ export default async function handler(
             (right.distance_meters || Number.POSITIVE_INFINITY),
         );
     }
-    response.setHeader(
-      "Cache-Control",
-      hasLocation
-        ? "private, no-store"
-        : "public, s-maxage=300, stale-while-revalidate=600",
-    );
     response.status(200).json({
       places: rows.flatMap((row) => {
         const mapPosition = publicMapPosition(row.latitude, row.longitude);

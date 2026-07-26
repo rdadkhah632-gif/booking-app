@@ -135,6 +135,7 @@ async function fetchWithTimeout(
 
   try {
     const response = await fetch(path, {
+      cache: "no-store",
       ...init,
       signal: controller.signal,
     });

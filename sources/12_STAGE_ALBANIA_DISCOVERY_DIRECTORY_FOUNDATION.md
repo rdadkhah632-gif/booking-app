@@ -869,6 +869,14 @@ temporary fallback. The marker still opens the live business profile, exact
 directory coordinates remain private, and a subsequently verified business
 location takes precedence automatically.
 
+Focused handoff QA exposed a shared-cache race: an old directory response could
+omit the newly activated claimed place during publication, then retain it after
+the operator hid it again. Public directory and bookable-business collections
+now use `private, no-store`, and Explore explicitly bypasses browser caching.
+Publication and directory visibility therefore come from current database
+state rather than a stale CDN window. No record, readiness rule or public
+payload field changed.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
