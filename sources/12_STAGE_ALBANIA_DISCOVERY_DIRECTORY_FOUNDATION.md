@@ -1004,7 +1004,10 @@ table-access boundaries passed.
 The only follow-up was a duplicated photo prefix when an attribution label
 already contained `Photo:`. Public rendering now removes a stored English or
 Albanian photo prefix before adding the selected language's single localized
-label. Stored attribution and licence evidence remain unchanged.
+label. Stored attribution and licence evidence remain unchanged. Focused
+production QA then passed Lake Koman and VATO cards/details in EN and SQ at
+desktop and 390px, with one localized credit, working Wikimedia links, loaded
+images and no remaining P0/P1/P2 finding.
 
 ### Batch 11 deployment QA
 
