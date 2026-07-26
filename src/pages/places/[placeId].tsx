@@ -34,12 +34,17 @@ type PlaceDetail = {
   bookingBusinessId?: string | null;
   claimable: boolean;
   linkedBusinessId?: string | null;
+  image?: {
+    url: string;
+    alt: string;
+    attribution: { label: string; url?: string | null };
+  } | null;
   attribution: { label: string; url?: string | null };
 };
 
 export default function DirectoryPlacePage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [place, setPlace] = useState<PlaceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -55,7 +60,7 @@ export default function DirectoryPlacePage() {
       setBookingBusinessId("");
       try {
         const response = await fetch(
-          `/api/public/directory-place?id=${encodeURIComponent(String(router.query.placeId))}`,
+          `/api/public/directory-place?id=${encodeURIComponent(String(router.query.placeId))}&locale=${locale}`,
           { cache: "no-store" },
         );
         if (!response.ok) {
@@ -85,7 +90,7 @@ export default function DirectoryPlacePage() {
     return () => {
       cancelled = true;
     };
-  }, [router.isReady, router.query.placeId]);
+  }, [locale, router.isReady, router.query.placeId]);
 
   const location = place
     ? [place.address, place.city, place.region, place.postcode]
@@ -171,6 +176,30 @@ export default function DirectoryPlacePage() {
               </span>
             </header>
 
+            {place.image && (
+              <figure className="place-media">
+                <img
+                  src={place.image.url}
+                  alt={place.image.alt}
+                  decoding="async"
+                />
+                <figcaption>
+                  {t("directory.card.photo", "Photo")}:{" "}
+                  {place.image.attribution.url ? (
+                    <a
+                      href={place.image.attribution.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {place.image.attribution.label}
+                    </a>
+                  ) : (
+                    place.image.attribution.label
+                  )}
+                </figcaption>
+              </figure>
+            )}
+
             <div className="place-grid">
               <section className="place-main">
                 {place.description && <p className="place-description">{place.description}</p>}
@@ -251,6 +280,10 @@ export default function DirectoryPlacePage() {
         .place-type { color: var(--success); font-size: .76rem; font-weight: 800; text-transform: uppercase; }
         .place-category, .place-status, .place-description, .place-owner-panel p, .place-attribution { color: var(--text-muted); }
         .place-status { padding: .5rem .7rem; border: 1px solid var(--border); border-radius: 999px; font-size: .78rem; white-space: nowrap; }
+        .place-media { position: relative; overflow: hidden; margin: 1.25rem 0 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+        .place-media img { display: block; width: 100%; max-height: 440px; aspect-ratio: 16 / 7; object-fit: cover; }
+        .place-media figcaption { position: absolute; right: .65rem; bottom: .65rem; max-width: calc(100% - 1.3rem); padding: .3rem .48rem; border-radius: 4px; background: rgba(11, 18, 32, .82); color: #fff; font-size: .68rem; }
+        .place-media figcaption a { color: inherit; }
         .place-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .75fr); gap: 2.5rem; padding: 2rem 0; }
         .place-main { min-width: 0; }
         .place-description { max-width: 66ch; margin: 0 0 1.5rem; font-size: 1.05rem; }
@@ -275,6 +308,7 @@ export default function DirectoryPlacePage() {
           .place-status { width: fit-content; white-space: normal; }
           .place-grid { grid-template-columns: 1fr; gap: 1.5rem; padding-top: 1.4rem; }
           .place-header h1 { font-size: 2.25rem; }
+          .place-media img { aspect-ratio: 4 / 3; }
           .place-actions :global(.btn) { flex: 1 1 140px; }
         }
       `}</style>

@@ -22,6 +22,16 @@ type DirectoryPlaceRow = {
   source: string;
 };
 
+type DirectoryEditorialRow = {
+  editorial_description_en?: string | null;
+  editorial_description_sq?: string | null;
+  image_url?: string | null;
+  image_alt_en?: string | null;
+  image_alt_sq?: string | null;
+  image_attribution_label?: string | null;
+  image_attribution_url?: string | null;
+};
+
 function queryText(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value || "").trim();
 }
@@ -34,6 +44,43 @@ function safeWebsite(value?: string | null) {
   } catch {
     return null;
   }
+}
+
+function safeHttpsUrl(value?: string | null) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function missingEditorialSchema(code?: string) {
+  return ["42703", "PGRST202", "PGRST205"].includes(code || "");
+}
+
+function publicImage(
+  row: DirectoryEditorialRow | null,
+  locale: "en" | "sq",
+) {
+  if (!row) return null;
+  const url = safeHttpsUrl(row.image_url);
+  const attributionLabel = row.image_attribution_label?.trim();
+  const alt =
+    locale === "sq"
+      ? row.image_alt_sq?.trim() || row.image_alt_en?.trim()
+      : row.image_alt_en?.trim() || row.image_alt_sq?.trim();
+  if (!url || !alt || !attributionLabel) return null;
+
+  return {
+    url,
+    alt,
+    attribution: {
+      label: attributionLabel,
+      url: safeHttpsUrl(row.image_attribution_url),
+    },
+  };
 }
 
 function attributionFor(source: string) {
@@ -59,6 +106,8 @@ export default async function handler(
   response.setHeader("Cache-Control", "private, no-store");
 
   const placeId = queryText(request.query.id);
+  const locale: "en" | "sq" =
+    queryText(request.query.locale).toLowerCase() === "sq" ? "sq" : "en";
   if (!UUID_PATTERN.test(placeId)) {
     response.status(400).json({ error: "A valid place is required." });
     return;
@@ -86,6 +135,24 @@ export default async function handler(
     if (!data) {
       response.status(404).json({ error: "Place not found." });
       return;
+    }
+
+    let editorial: DirectoryEditorialRow | null = null;
+    const { data: editorialData, error: editorialError } = await supabase
+      .from("directory_places")
+      .select(
+        "editorial_description_en, editorial_description_sq, image_url, image_alt_en, image_alt_sq, image_attribution_label, image_attribution_url",
+      )
+      .eq("id", placeId)
+      .eq("listing_status", "active")
+      .maybeSingle<DirectoryEditorialRow>();
+
+    if (editorialError) {
+      if (!missingEditorialSchema(editorialError.code)) {
+        throw editorialError;
+      }
+    } else {
+      editorial = editorialData;
     }
 
     let bookingBusinessId: string | null = null;
@@ -117,7 +184,14 @@ export default async function handler(
         resultType: "directory_place",
         name: data.name,
         categoryKey: data.category_key,
-        description: data.description || null,
+        description:
+          (locale === "sq"
+            ? editorial?.editorial_description_sq ||
+              editorial?.editorial_description_en
+            : editorial?.editorial_description_en ||
+              editorial?.editorial_description_sq) ||
+          data.description ||
+          null,
         address: data.address || null,
         city: data.city || null,
         region: data.region || null,
@@ -129,6 +203,7 @@ export default async function handler(
         bookingBusinessId,
         claimable: data.claim_status === "unclaimed",
         linkedBusinessId: data.linked_business_id || null,
+        image: publicImage(editorial, locale),
         attribution: attributionFor(data.source),
       },
     });

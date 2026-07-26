@@ -85,6 +85,16 @@ type DirectoryPlaceRow = {
   source_updated_at?: string | null;
   source_attribution?: Record<string, unknown> | null;
   source_fingerprint?: string | null;
+  editorial_description_en?: string | null;
+  editorial_description_sq?: string | null;
+  image_url?: string | null;
+  image_alt_en?: string | null;
+  image_alt_sq?: string | null;
+  image_attribution_label?: string | null;
+  image_attribution_url?: string | null;
+  image_rights_note?: string | null;
+  content_updated_by?: string | null;
+  content_updated_at?: string | null;
   listing_status: DirectoryStatus;
   claim_status: string;
   linked_business_id?: string | null;
@@ -112,6 +122,15 @@ type ReviewBody = {
   action?: unknown;
   notes?: unknown;
   duplicateOfPlaceId?: unknown;
+  descriptionEn?: unknown;
+  descriptionSq?: unknown;
+  imageUrl?: unknown;
+  imageAltEn?: unknown;
+  imageAltSq?: unknown;
+  imageAttributionLabel?: unknown;
+  imageAttributionUrl?: unknown;
+  imageRightsNote?: unknown;
+  rightsConfirmed?: unknown;
 };
 
 const PLACE_SELECT = `
@@ -147,6 +166,20 @@ const PLACE_SELECT = `
   updated_at
 `;
 
+const CONTENT_SELECT = `
+  id,
+  editorial_description_en,
+  editorial_description_sq,
+  image_url,
+  image_alt_en,
+  image_alt_sq,
+  image_attribution_label,
+  image_attribution_url,
+  image_rights_note,
+  content_updated_by,
+  content_updated_at
+`;
+
 function bearerToken(request: NextApiRequest) {
   const authorization = request.headers.authorization || "";
   return authorization.startsWith("Bearer ")
@@ -161,6 +194,16 @@ function cleanQuery(value: string | string[] | undefined, maxLength = 100) {
 
 function cleanBodyText(value: unknown, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
+function safeHttpsUrl(value: string) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function numberQuery(
@@ -314,41 +357,78 @@ async function handleList(
   const places = data || [];
   const placeIds = places.map((place) => place.id);
   let latestReviewByPlace: Record<string, ReviewRow> = {};
+  let contentEditingAvailable = true;
+  let editorialContentByPlace: Record<
+    string,
+    Partial<DirectoryPlaceRow>
+  > = {};
 
-  if (placeIds.length > 0) {
-    const { data: reviews, error: reviewError } = await admin.supabase
-      .from("directory_place_reviews")
-      .select(
-        "id, directory_place_id, reviewer_id, action, from_status, to_status, notes, duplicate_of_place_id, source_fingerprint, created_at",
-      )
-      .in("directory_place_id", placeIds)
-      .order("created_at", { ascending: false })
-      .returns<ReviewRow[]>();
-    if (reviewError) throw reviewError;
+  const contentQuery = admin.supabase
+    .from("directory_places")
+    .select(CONTENT_SELECT);
+  const editorialRequest =
+    placeIds.length > 0
+      ? contentQuery.in("id", placeIds).returns<DirectoryPlaceRow[]>()
+      : contentQuery.limit(1).returns<DirectoryPlaceRow[]>();
+  const reviewRequest =
+    placeIds.length > 0
+      ? admin.supabase
+          .from("directory_place_reviews")
+          .select(
+            "id, directory_place_id, reviewer_id, action, from_status, to_status, notes, duplicate_of_place_id, source_fingerprint, created_at",
+          )
+          .in("directory_place_id", placeIds)
+          .order("created_at", { ascending: false })
+          .returns<ReviewRow[]>()
+      : Promise.resolve({ data: [] as ReviewRow[], error: null });
 
-    latestReviewByPlace = (reviews || []).reduce<Record<string, ReviewRow>>(
-      (map, review) => {
-        if (!map[review.directory_place_id]) {
-          map[review.directory_place_id] = review;
-        }
-        return map;
-      },
-      {},
-    );
-  }
-
-  const [counts, coverage] = await Promise.all([
+  const [
+    { data: editorialRows, error: editorialError },
+    { data: reviews, error: reviewError },
+    counts,
+    coverage,
+  ] = await Promise.all([
+    editorialRequest,
+    reviewRequest,
     statusCounts(admin.supabase),
     launchCoverage(admin.supabase),
   ]);
 
+  if (editorialError) {
+    if (isMissingDirectorySchema(editorialError)) {
+      contentEditingAvailable = false;
+    } else {
+      throw editorialError;
+    }
+  } else {
+    editorialContentByPlace = (editorialRows || []).reduce<
+      Record<string, Partial<DirectoryPlaceRow>>
+    >((content, row) => {
+      content[row.id] = row;
+      return content;
+    }, {});
+  }
+
+  if (reviewError) throw reviewError;
+  latestReviewByPlace = (reviews || []).reduce<Record<string, ReviewRow>>(
+    (map, review) => {
+      if (!map[review.directory_place_id]) {
+        map[review.directory_place_id] = review;
+      }
+      return map;
+    },
+    {},
+  );
+
   response.status(200).json({
     places: places.map((place) => ({
       ...place,
+      ...(editorialContentByPlace[place.id] || {}),
       latestReview: latestReviewByPlace[place.id] || null,
     })),
     counts,
     coverage,
+    contentEditingAvailable,
     pagination: { total: count || 0, limit, offset },
   });
 }
@@ -410,6 +490,97 @@ async function handleAction(
 
   if (action === "map_preview") {
     await handleMapPreview(response, admin, placeId);
+    return;
+  }
+
+  if (action === "save_content") {
+    const descriptionEn = cleanBodyText(body.descriptionEn, 600);
+    const descriptionSq = cleanBodyText(body.descriptionSq, 600);
+    const imageUrlInput = cleanBodyText(body.imageUrl, 1_200);
+    const imageAltEn = cleanBodyText(body.imageAltEn, 180);
+    const imageAltSq = cleanBodyText(body.imageAltSq, 180);
+    const imageAttributionLabel = cleanBodyText(
+      body.imageAttributionLabel,
+      180,
+    );
+    const imageAttributionUrlInput = cleanBodyText(
+      body.imageAttributionUrl,
+      1_200,
+    );
+    const imageRightsNote = cleanBodyText(body.imageRightsNote, 500);
+    const imageUrl = safeHttpsUrl(imageUrlInput);
+    const imageAttributionUrl = safeHttpsUrl(imageAttributionUrlInput);
+
+    if (imageUrlInput && !imageUrl) {
+      response.status(400).json({ error: "Use a secure HTTPS image URL." });
+      return;
+    }
+    if (imageAttributionUrlInput && !imageAttributionUrl) {
+      response
+        .status(400)
+        .json({ error: "Use a secure HTTPS attribution URL." });
+      return;
+    }
+    if (
+      imageUrl &&
+      (!imageAttributionLabel ||
+        !imageRightsNote ||
+        (!imageAltEn && !imageAltSq))
+    ) {
+      response.status(400).json({
+        error:
+          "Add image alt text, a public credit and a private permission or licence note.",
+      });
+      return;
+    }
+    if (imageUrl && body.rightsConfirmed !== true) {
+      response.status(400).json({
+        error: "Confirm that Mirëbook may use this image before saving.",
+      });
+      return;
+    }
+
+    const { data, error } = await admin.supabase
+      .from("directory_places")
+      .update({
+        editorial_description_en: descriptionEn || null,
+        editorial_description_sq: descriptionSq || null,
+        image_url: imageUrl,
+        image_alt_en: imageUrl ? imageAltEn || null : null,
+        image_alt_sq: imageUrl ? imageAltSq || null : null,
+        image_attribution_label: imageUrl
+          ? imageAttributionLabel || null
+          : null,
+        image_attribution_url: imageUrl ? imageAttributionUrl : null,
+        image_rights_note: imageUrl ? imageRightsNote || null : null,
+        content_updated_by: admin.user.id,
+        content_updated_at: new Date().toISOString(),
+      })
+      .eq("id", placeId)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+
+    if (error) {
+      if (isMissingDirectorySchema(error)) {
+        response.status(503).json({
+          error: "Run SQL 29 before editing directory content.",
+        });
+        return;
+      }
+      if (["22001", "23514"].includes(error.code || "")) {
+        response.status(400).json({
+          error: "The description or image details are not valid.",
+        });
+        return;
+      }
+      throw error;
+    }
+    if (!data) {
+      response.status(404).json({ error: "Directory place was not found." });
+      return;
+    }
+
+    response.status(200).json({ ok: true });
     return;
   }
 

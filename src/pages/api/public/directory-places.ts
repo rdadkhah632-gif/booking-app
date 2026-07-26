@@ -35,6 +35,17 @@ type PublicDirectoryRow = {
   total_count: number;
 };
 
+type DirectoryEditorialRow = {
+  id: string;
+  editorial_description_en?: string | null;
+  editorial_description_sq?: string | null;
+  image_url?: string | null;
+  image_alt_en?: string | null;
+  image_alt_sq?: string | null;
+  image_attribution_label?: string | null;
+  image_attribution_url?: string | null;
+};
+
 const PUBLIC_MAP_GRID_DEGREES = 0.01;
 const PUBLIC_DISTANCE_STEP_METERS = 250;
 
@@ -115,6 +126,61 @@ function safeWebsite(value?: string | null) {
   }
 }
 
+function safeHttpsUrl(value?: string | null) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function editorialDescription(
+  row: DirectoryEditorialRow | undefined,
+  sourceDescription: string | null | undefined,
+  locale: "en" | "sq",
+) {
+  if (!row) return sourceDescription || null;
+  if (locale === "sq") {
+    return (
+      row.editorial_description_sq ||
+      row.editorial_description_en ||
+      sourceDescription ||
+      null
+    );
+  }
+  return (
+    row.editorial_description_en ||
+    row.editorial_description_sq ||
+    sourceDescription ||
+    null
+  );
+}
+
+function publicImage(
+  row: DirectoryEditorialRow | undefined,
+  locale: "en" | "sq",
+) {
+  if (!row) return null;
+  const url = safeHttpsUrl(row.image_url);
+  const attributionLabel = row.image_attribution_label?.trim();
+  const alt =
+    locale === "sq"
+      ? row.image_alt_sq?.trim() || row.image_alt_en?.trim()
+      : row.image_alt_en?.trim() || row.image_alt_sq?.trim();
+  if (!url || !alt || !attributionLabel) return null;
+
+  return {
+    url,
+    alt,
+    attribution: {
+      label: attributionLabel,
+      url: safeHttpsUrl(row.image_attribution_url),
+    },
+  };
+}
+
 function publicMapPosition(latitude: number, longitude: number) {
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
 
@@ -160,6 +226,8 @@ export default async function handler(
     ? requestedCategory
     : "";
   const city = cleanQuery(request.query.city, 80);
+  const locale: "en" | "sq" =
+    cleanQuery(request.query.locale, 2).toLowerCase() === "sq" ? "sq" : "en";
   const limit = numberQuery(request.query.limit, 50, 1, 100);
   const offset = numberQuery(request.query.offset, 0, 0, 10_000);
   const latitude = coordinateValue(request, "latitude");
@@ -258,10 +326,34 @@ export default async function handler(
             (right.distance_meters || Number.POSITIVE_INFINITY),
         );
     }
+
+    const placeIds = Array.from(new Set(rows.map((row) => row.id)));
+    const editorialByPlace = new Map<string, DirectoryEditorialRow>();
+    if (placeIds.length > 0) {
+      const { data: editorialRows, error: editorialError } = await supabase
+        .from("directory_places")
+        .select(
+          "id, editorial_description_en, editorial_description_sq, image_url, image_alt_en, image_alt_sq, image_attribution_label, image_attribution_url",
+        )
+        .in("id", placeIds)
+        .returns<DirectoryEditorialRow[]>();
+
+      if (editorialError) {
+        if (!missingDirectoryFunction(editorialError.code)) {
+          throw editorialError;
+        }
+      } else {
+        for (const editorialRow of editorialRows || []) {
+          editorialByPlace.set(editorialRow.id, editorialRow);
+        }
+      }
+    }
+
     response.status(200).json({
       places: rows.flatMap((row) => {
         const mapPosition = publicMapPosition(row.latitude, row.longitude);
         if (!mapPosition) return [];
+        const editorial = editorialByPlace.get(row.id);
 
         return [
           {
@@ -269,7 +361,11 @@ export default async function handler(
             resultType: "directory_place",
             name: row.name,
             categoryKey: row.category_key,
-            description: row.description || null,
+            description: editorialDescription(
+              editorial,
+              row.description,
+              locale,
+            ),
             address: row.address || null,
             city: row.city || null,
             region: row.region || null,
@@ -282,6 +378,7 @@ export default async function handler(
             claimable: row.claim_status === "unclaimed",
             linkedBusinessId: row.linked_business_id || null,
             distanceMeters: publicDistance(row.distance_meters),
+            image: publicImage(editorial, locale),
             attribution: attributionFor(row.source),
           },
         ];

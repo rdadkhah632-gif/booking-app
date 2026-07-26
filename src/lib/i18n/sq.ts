@@ -4231,6 +4231,7 @@ export const sq: TranslationTree = {
   "directory.card.showMap": "Harta",
   "directory.card.website": "Faqja e internetit",
   "directory.card.report": "Raporto",
+  "directory.card.photo": "Foto",
   "directory.distance.metres": "m larg",
   "directory.distance.kilometres": "km larg",
   "directory.map.bookableBusiness": "Biznes i rezervueshëm",
@@ -4336,6 +4337,51 @@ export const sq: TranslationTree = {
   "admin.directory.error.load": "Direktoria nuk mund të ngarkohej.",
   "admin.directory.error.save": "Shqyrtimi nuk mund të ruhej.",
   "admin.directory.error.map": "Pamja e hartës nuk është e disponueshme.",
+  "admin.directory.content.kicker": "Paraqitja për klientët",
+  "admin.directory.content.title": "Përshkrimi dhe fotografia",
+  "admin.directory.content.updated": "Përditësuar",
+  "admin.directory.content.sqlRequired":
+    "Ekzekuto SQL 29 për të aktivizuar përshkrimet dhe fotografitë e shqyrtuara.",
+  "admin.directory.content.body":
+    "Shto tekst të shkurtër e të verifikuar dhe vetëm imazhe që Mirëbook ka leje t'i publikojë.",
+  "admin.directory.content.descriptionEn": "Përshkrimi në anglisht",
+  "admin.directory.content.descriptionSq": "Përshkrimi në shqip",
+  "admin.directory.content.descriptionPlaceholder":
+    "Çfarë e bën këtë vend të dobishëm ose të vlefshëm për t'u vizituar?",
+  "admin.directory.content.sourceDescription": "Përshkrimi i importuar",
+  "admin.directory.content.noPhoto": "Asnjë fotografi e shqyrtuar",
+  "admin.directory.content.photoUpload": "Ngarko një fotografi të shqyrtuar",
+  "admin.directory.content.photoHelp":
+    "Përdor një imazh në pronësi, me leje ose me licencë të përshtatshme. JPG, PNG, WEBP ose GIF deri në 5MB.",
+  "admin.directory.content.uploading": "Po ngarkohet fotografia...",
+  "admin.directory.content.removePhoto": "Hiq fotografinë",
+  "admin.directory.content.altEn": "Përshkrimi i imazhit në anglisht",
+  "admin.directory.content.altSq": "Përshkrimi i imazhit në shqip",
+  "admin.directory.content.credit": "Krediti publik i fotografisë",
+  "admin.directory.content.creditPlaceholder":
+    "Fotografi, pronari ose burimi i imazhit",
+  "admin.directory.content.creditUrl":
+    "URL-ja e kreditit ose licencës (opsionale)",
+  "admin.directory.content.rightsNote":
+    "Shënim privat për lejen ose licencën",
+  "admin.directory.content.rightsPlaceholder":
+    "Regjistro kush e dha imazhin ose licencën që lejon publikimin.",
+  "admin.directory.content.rightsConfirm":
+    "Kam konfirmuar që Mirëbook mund ta publikojë këtë imazh.",
+  "admin.directory.content.saving": "Po ruhet përmbajtja publike...",
+  "admin.directory.content.save": "Ruaj përmbajtjen publike",
+  "admin.directory.content.uploadReady":
+    "Fotografia u ngarkua. Shto kreditin dhe të dhënat e lejes, pastaj ruaje.",
+  "admin.directory.content.uploadError":
+    "Fotografia nuk mund të ngarkohej.",
+  "admin.directory.content.saved":
+    "Përshkrimi publik dhe të dhënat e fotografisë u ruajtën.",
+  "admin.directory.content.saveError":
+    "Përmbajtja publike nuk mund të ruhej.",
+  "admin.directory.content.incomplete":
+    "Shto përshkrimin e imazhit, kreditin publik dhe shënimin privat për lejen ose licencën.",
+  "admin.directory.content.invalidUrl":
+    "Përdor një URL të sigurt HTTPS për kreditin ose licencën.",
   "admin.directory.controlKicker": "Shqyrtimi i tregut",
   "admin.directory.controlTitle": "Direktoria e vendeve të importuara",
   "admin.directory.controlBody":

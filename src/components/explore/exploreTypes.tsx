@@ -61,6 +61,14 @@ export type DirectoryPlace = {
   bookable: false
   claimable: boolean
   linkedBusinessId?: string | null
+  image?: {
+    url: string
+    alt: string
+    attribution: {
+      label: string
+      url?: string | null
+    }
+  } | null
   attribution: {
     label: string
     url?: string | null

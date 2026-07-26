@@ -906,6 +906,36 @@ Admin Directory at `8 approved / 1 hidden`, and anonymous discovery at the
 eight genuine reviewed places. No genuine record or protected booking,
 readiness, billing, auth or role behavior changed.
 
+## Batch 13 - Reviewed Catalogue Content
+
+Batch 13 adds a controlled content-quality layer for Albania discovery.
+Owner-managed businesses continue to use their existing profile description
+and uploaded business cover image. Reviewed directory places can now receive:
+
+- concise English and Albanian editorial descriptions
+- one Mirëbook-hosted public photo
+- localized image alt text
+- a visible photographer, owner or source credit
+- an optional public licence/source link
+- a private operator note recording the permission or licence basis
+
+SQL 29 adds only optional editorial columns to `directory_places`. It does not
+change imported source fields, listing status, approval, ownership claims,
+business publication, booking readiness or RLS. The admin editor is
+single-place only and requires an explicit image-rights confirmation before a
+photo can be saved.
+
+Public list and detail APIs fail closed: only active reviewed places can expose
+the selected localized description and sanitized HTTPS photo metadata. The
+private rights note, editor identity, source IDs, confidence, provenance and
+exact coordinates are never returned. If SQL 29 has not yet run, existing
+directory discovery continues without editorial imagery and Admin Directory
+shows the migration requirement.
+
+Explore uses the reviewed image when available and retains its compact category
+fallback otherwise. Descriptions are line-clamped on cards and shown in full on
+the place page; photo attribution is visible on both surfaces.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

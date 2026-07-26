@@ -4127,6 +4127,7 @@ export const en: TranslationTree = {
   "directory.card.showMap": "Map",
   "directory.card.website": "Website",
   "directory.card.report": "Report",
+  "directory.card.photo": "Photo",
   "directory.distance.metres": "m away",
   "directory.distance.kilometres": "km away",
   "directory.map.bookableBusiness": "Bookable business",
@@ -4231,6 +4232,48 @@ export const en: TranslationTree = {
   "admin.directory.error.load": "Directory could not be loaded.",
   "admin.directory.error.save": "Review could not be saved.",
   "admin.directory.error.map": "Map preview is unavailable.",
+  "admin.directory.content.kicker": "Customer presentation",
+  "admin.directory.content.title": "Description and photo",
+  "admin.directory.content.updated": "Updated",
+  "admin.directory.content.sqlRequired":
+    "Run SQL 29 to enable reviewed descriptions and photos.",
+  "admin.directory.content.body":
+    "Add concise, verified copy and only imagery Mirëbook has permission to publish.",
+  "admin.directory.content.descriptionEn": "English description",
+  "admin.directory.content.descriptionSq": "Albanian description",
+  "admin.directory.content.descriptionPlaceholder":
+    "What makes this place useful or worth visiting?",
+  "admin.directory.content.sourceDescription": "Imported description",
+  "admin.directory.content.noPhoto": "No reviewed photo",
+  "admin.directory.content.photoUpload": "Upload a reviewed photo",
+  "admin.directory.content.photoHelp":
+    "Use an owned, permitted or appropriately licensed image. JPG, PNG, WEBP or GIF up to 5MB.",
+  "admin.directory.content.uploading": "Uploading photo...",
+  "admin.directory.content.removePhoto": "Remove photo",
+  "admin.directory.content.altEn": "English image description",
+  "admin.directory.content.altSq": "Albanian image description",
+  "admin.directory.content.credit": "Public photo credit",
+  "admin.directory.content.creditPlaceholder":
+    "Photographer, owner or image source",
+  "admin.directory.content.creditUrl": "Credit or licence URL (optional)",
+  "admin.directory.content.rightsNote":
+    "Private permission or licence note",
+  "admin.directory.content.rightsPlaceholder":
+    "Record who supplied the image or the licence that allows publication.",
+  "admin.directory.content.rightsConfirm":
+    "I have confirmed Mirëbook may publish this image.",
+  "admin.directory.content.saving": "Saving public content...",
+  "admin.directory.content.save": "Save public content",
+  "admin.directory.content.uploadReady":
+    "Photo uploaded. Add its credit and permission details, then save.",
+  "admin.directory.content.uploadError": "The photo could not be uploaded.",
+  "admin.directory.content.saved":
+    "Public description and photo details saved.",
+  "admin.directory.content.saveError": "Public content could not be saved.",
+  "admin.directory.content.incomplete":
+    "Add image alt text, a public credit and a private permission or licence note.",
+  "admin.directory.content.invalidUrl":
+    "Use a secure HTTPS credit or licence URL.",
   "admin.directory.controlKicker": "Marketplace review",
   "admin.directory.controlTitle": "Imported place directory",
   "admin.directory.controlBody":

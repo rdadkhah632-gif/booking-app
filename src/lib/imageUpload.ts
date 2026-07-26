@@ -2,7 +2,11 @@ import { supabase } from '@/lib/supabaseClient'
 
 const IMAGE_BUCKET = 'mirebook-images'
 
-export type ImageUploadFolder = 'businesses' | 'services' | 'staff'
+export type ImageUploadFolder =
+  | 'businesses'
+  | 'services'
+  | 'staff'
+  | 'directory'
 
 function safeFileExtension(file: File) {
   const extension = file.name.split('.').pop()?.toLowerCase()

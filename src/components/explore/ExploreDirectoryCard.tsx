@@ -64,8 +64,20 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
   return (
     <article className="explore-directory-card">
-      <div className="directory-card-icon" aria-hidden="true">
-        <CategoryIcon size={28} strokeWidth={1.8} />
+      <div
+        className={`directory-card-media ${place.image ? "has-image" : "no-image"}`}
+        aria-hidden={place.image ? undefined : "true"}
+      >
+        {place.image ? (
+          <img
+            src={place.image.url}
+            alt={place.image.alt}
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <CategoryIcon size={28} strokeWidth={1.8} />
+        )}
       </div>
       <div className="directory-card-content">
         <div className="directory-card-heading">
@@ -81,6 +93,9 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         <p className="directory-category">
           {directoryCategoryLabel(place.categoryKey, t)}
         </p>
+        {place.description && (
+          <p className="directory-description">{place.description}</p>
+        )}
         <p className="directory-location">
           <MapPin size={15} aria-hidden="true" />
           <span>{location || t("directory.card.albania", "Albania")}</span>
@@ -121,35 +136,54 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           </div>
         </div>
 
-        {place.attribution.url ? (
-          <a
-            className="directory-attribution"
-            href={place.attribution.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {place.attribution.label}
-          </a>
-        ) : (
-          <span className="directory-attribution">
-            {place.attribution.label}
-          </span>
-        )}
+        <div className="directory-credits">
+          {place.image &&
+            (place.image.attribution.url ? (
+              <a
+                className="directory-attribution"
+                href={place.image.attribution.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t("directory.card.photo", "Photo")}:{" "}
+                {place.image.attribution.label}
+              </a>
+            ) : (
+              <span className="directory-attribution">
+                {t("directory.card.photo", "Photo")}:{" "}
+                {place.image.attribution.label}
+              </span>
+            ))}
+          {place.attribution.url ? (
+            <a
+              className="directory-attribution"
+              href={place.attribution.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {place.attribution.label}
+            </a>
+          ) : (
+            <span className="directory-attribution">
+              {place.attribution.label}
+            </span>
+          )}
+        </div>
       </div>
 
       <style jsx>{`
         .explore-directory-card {
           min-width: 0;
           display: grid;
-          grid-template-columns: 92px minmax(0, 1fr);
+          grid-template-columns: 118px minmax(0, 1fr);
           border: 1px solid var(--border);
           border-radius: 8px;
           overflow: hidden;
           background: var(--surface);
         }
 
-        .directory-card-icon {
-          min-height: 164px;
+        .directory-card-media {
+          min-height: 178px;
           display: grid;
           place-items: center;
           color: var(--success);
@@ -157,6 +191,13 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
             linear-gradient(145deg, rgba(45, 212, 191, 0.15), transparent),
             var(--surface-2);
           border-right: 1px solid var(--border);
+          overflow: hidden;
+        }
+
+        .directory-card-media img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
         .directory-card-content {
@@ -208,10 +249,21 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         .directory-category,
+        .directory-description,
         .directory-location,
         .directory-booking-note,
         .directory-attribution {
           color: var(--text-muted);
+        }
+
+        .directory-description {
+          display: -webkit-box;
+          overflow: hidden;
+          margin: 0;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          font-size: 0.78rem;
+          line-height: 1.4;
         }
 
         .directory-location {
@@ -242,9 +294,15 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           font-size: 0.76rem;
         }
 
+        .directory-credits {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.2rem 0.65rem;
+          margin-top: 0.05rem;
+        }
+
         .directory-attribution {
           width: fit-content;
-          margin-top: 0.05rem;
           text-decoration: none;
         }
 
@@ -254,10 +312,10 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
         @media (max-width: 640px) {
           .explore-directory-card {
-            grid-template-columns: 64px minmax(0, 1fr);
+            grid-template-columns: 82px minmax(0, 1fr);
           }
 
-          .directory-card-icon {
+          .directory-card-media {
             min-height: 0;
           }
 

@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
+import { uploadMirebookImage } from "@/lib/imageUpload";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 
@@ -57,6 +58,15 @@ type DirectoryPlace = {
     sources?: Array<{ dataset?: string }>;
   } | null;
   source_fingerprint?: string | null;
+  editorial_description_en?: string | null;
+  editorial_description_sq?: string | null;
+  image_url?: string | null;
+  image_alt_en?: string | null;
+  image_alt_sq?: string | null;
+  image_attribution_label?: string | null;
+  image_attribution_url?: string | null;
+  image_rights_note?: string | null;
+  content_updated_at?: string | null;
   listing_status: DirectoryStatus;
   claim_status: string;
   linked_business_id?: string | null;
@@ -82,6 +92,7 @@ type DirectoryResponse = {
   places: DirectoryPlace[];
   counts: Record<DirectoryStatus, number>;
   coverage: DirectoryCoverage;
+  contentEditingAvailable?: boolean;
   pagination: { total: number; limit: number; offset: number };
 };
 
@@ -89,6 +100,28 @@ type DirectoryFilterOverrides = {
   category?: string;
   city?: string;
   search?: string;
+};
+
+type EditorialDraft = {
+  descriptionEn: string;
+  descriptionSq: string;
+  imageUrl: string;
+  imageAltEn: string;
+  imageAltSq: string;
+  imageAttributionLabel: string;
+  imageAttributionUrl: string;
+  imageRightsNote: string;
+};
+
+const EMPTY_EDITORIAL_DRAFT: EditorialDraft = {
+  descriptionEn: "",
+  descriptionSq: "",
+  imageUrl: "",
+  imageAltEn: "",
+  imageAltSq: "",
+  imageAttributionLabel: "",
+  imageAttributionUrl: "",
+  imageRightsNote: "",
 };
 
 const STATUSES: DirectoryStatus[] = [
@@ -130,13 +163,25 @@ function safeWebsite(value?: string | null) {
   }
 }
 
+function isSafeHttpsUrl(value: string) {
+  if (!value.trim()) return true;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export default function AdminDirectoryPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const [adminReady, setAdminReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [directoryLoaded, setDirectoryLoaded] = useState(false);
+  const [contentEditingAvailable, setContentEditingAvailable] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [contentSaving, setContentSaving] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [mapLoading, setMapLoading] = useState(false);
   const [places, setPlaces] = useState<DirectoryPlace[]>([]);
   const [selectedId, setSelectedId] = useState("");
@@ -161,6 +206,10 @@ export default function AdminDirectoryPage() {
   const [reviewNotes, setReviewNotes] = useState("");
   const [duplicateOfPlaceId, setDuplicateOfPlaceId] = useState("");
   const [mapImage, setMapImage] = useState("");
+  const [editorialDraft, setEditorialDraft] = useState<EditorialDraft>(
+    EMPTY_EDITORIAL_DRAFT,
+  );
+  const [imageRightsConfirmed, setImageRightsConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -168,6 +217,25 @@ export default function AdminDirectoryPage() {
     () => places.find((place) => place.id === selectedId) || null,
     [places, selectedId],
   );
+
+  useEffect(() => {
+    setEditorialDraft(
+      selectedPlace
+        ? {
+            descriptionEn: selectedPlace.editorial_description_en || "",
+            descriptionSq: selectedPlace.editorial_description_sq || "",
+            imageUrl: selectedPlace.image_url || "",
+            imageAltEn: selectedPlace.image_alt_en || "",
+            imageAltSq: selectedPlace.image_alt_sq || "",
+            imageAttributionLabel:
+              selectedPlace.image_attribution_label || "",
+            imageAttributionUrl: selectedPlace.image_attribution_url || "",
+            imageRightsNote: selectedPlace.image_rights_note || "",
+          }
+        : EMPTY_EDITORIAL_DRAFT,
+    );
+    setImageRightsConfirmed(false);
+  }, [selectedPlace]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -312,6 +380,7 @@ export default function AdminDirectoryPage() {
       setPlaces(next.places);
       setCounts(next.counts);
       setCoverage(next.coverage || { available: false, cities: [], categories: [] });
+      setContentEditingAvailable(next.contentEditingAvailable !== false);
       setPagination(next.pagination);
       setDirectoryLoaded(true);
       setSelectedId((current) =>
@@ -447,6 +516,143 @@ export default function AdminDirectoryPage() {
       );
     } finally {
       setMapLoading(false);
+    }
+  }
+
+  function updateEditorialDraft(
+    field: keyof EditorialDraft,
+    value: string,
+  ) {
+    setEditorialDraft((current) => ({ ...current, [field]: value }));
+    setSuccess("");
+  }
+
+  async function uploadDirectoryImage(file: File | null) {
+    if (!file || !selectedPlace) return;
+    setError("");
+    setSuccess("");
+    setImageUploading(true);
+
+    try {
+      const uploaded = await uploadMirebookImage({
+        file,
+        folder: "directory",
+        recordId: selectedPlace.id,
+      });
+      setEditorialDraft((current) => ({
+        ...current,
+        imageUrl: uploaded.publicUrl,
+        imageAltEn: current.imageAltEn || selectedPlace.name,
+        imageAltSq: current.imageAltSq || selectedPlace.name,
+      }));
+      setImageRightsConfirmed(false);
+      setSuccess(
+        t(
+          "admin.directory.content.uploadReady",
+          "Photo uploaded. Add its credit and permission details, then save.",
+        ),
+      );
+    } catch {
+      setError(
+        t(
+          "admin.directory.content.uploadError",
+          "The photo could not be uploaded.",
+        ),
+      );
+    } finally {
+      setImageUploading(false);
+    }
+  }
+
+  function removeDirectoryImage() {
+    setEditorialDraft((current) => ({
+      ...current,
+      imageUrl: "",
+      imageAltEn: "",
+      imageAltSq: "",
+      imageAttributionLabel: "",
+      imageAttributionUrl: "",
+      imageRightsNote: "",
+    }));
+    setImageRightsConfirmed(false);
+    setSuccess("");
+  }
+
+  async function saveEditorialContent() {
+    if (!selectedPlace) return;
+    setError("");
+    setSuccess("");
+    if (
+      editorialDraft.imageUrl &&
+      (!editorialDraft.imageAttributionLabel.trim() ||
+        !editorialDraft.imageRightsNote.trim() ||
+        (!editorialDraft.imageAltEn.trim() &&
+          !editorialDraft.imageAltSq.trim()))
+    ) {
+      setError(
+        t(
+          "admin.directory.content.incomplete",
+          "Add image alt text, a public credit and a private permission or licence note.",
+        ),
+      );
+      return;
+    }
+    if (!isSafeHttpsUrl(editorialDraft.imageAttributionUrl)) {
+      setError(
+        t(
+          "admin.directory.content.invalidUrl",
+          "Use a secure HTTPS credit or licence URL.",
+        ),
+      );
+      return;
+    }
+    const token = await currentToken();
+    if (!token) return;
+    setContentSaving(true);
+
+    try {
+      const response = await fetch("/api/admin/directory-places", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          placeId: selectedPlace.id,
+          action: "save_content",
+          ...editorialDraft,
+          rightsConfirmed: imageRightsConfirmed,
+        }),
+      });
+      await response.json();
+      if (!response.ok) {
+        throw new Error(
+          t(
+            "admin.directory.content.saveError",
+            "Public content could not be saved.",
+          ),
+        );
+      }
+
+      setSuccess(
+        t(
+          "admin.directory.content.saved",
+          "Public description and photo details saved.",
+        ),
+      );
+      setImageRightsConfirmed(false);
+      await loadDirectory(pagination.offset, token, undefined, true);
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : t(
+              "admin.directory.content.saveError",
+              "Public content could not be saved.",
+            ),
+      );
+    } finally {
+      setContentSaving(false);
     }
   }
 
@@ -821,6 +1027,333 @@ export default function AdminDirectoryPage() {
                     <img src={mapImage} alt={t("admin.directory.mapAlt", "Map preview for this directory place")} />
                   </div>
                 )}
+
+                <section
+                  className="directory-content-editor"
+                  aria-labelledby="directory-public-content"
+                >
+                  <div className="directory-content-heading">
+                    <div>
+                      <p className="small muted">
+                        {t(
+                          "admin.directory.content.kicker",
+                          "Customer presentation",
+                        )}
+                      </p>
+                      <h3 id="directory-public-content">
+                        {t(
+                          "admin.directory.content.title",
+                          "Description and photo",
+                        )}
+                      </h3>
+                    </div>
+                    {selectedPlace.content_updated_at && (
+                      <span className="small muted">
+                        {t(
+                          "admin.directory.content.updated",
+                          "Updated",
+                        )}{" "}
+                        {formatDate(selectedPlace.content_updated_at, locale)}
+                      </span>
+                    )}
+                  </div>
+
+                  {!contentEditingAvailable ? (
+                    <p className="directory-content-unavailable">
+                      {t(
+                        "admin.directory.content.sqlRequired",
+                        "Run SQL 29 to enable reviewed descriptions and photos.",
+                      )}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="small muted">
+                        {t(
+                          "admin.directory.content.body",
+                          "Add concise, verified copy and only imagery Mirëbook has permission to publish.",
+                        )}
+                      </p>
+
+                      <div className="directory-content-fields">
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.content.descriptionEn",
+                              "English description",
+                            )}
+                          </span>
+                          <textarea
+                            rows={3}
+                            maxLength={600}
+                            value={editorialDraft.descriptionEn}
+                            onChange={(event) =>
+                              updateEditorialDraft(
+                                "descriptionEn",
+                                event.target.value,
+                              )
+                            }
+                            placeholder={t(
+                              "admin.directory.content.descriptionPlaceholder",
+                              "What makes this place useful or worth visiting?",
+                            )}
+                          />
+                        </label>
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.content.descriptionSq",
+                              "Albanian description",
+                            )}
+                          </span>
+                          <textarea
+                            rows={3}
+                            maxLength={600}
+                            value={editorialDraft.descriptionSq}
+                            onChange={(event) =>
+                              updateEditorialDraft(
+                                "descriptionSq",
+                                event.target.value,
+                              )
+                            }
+                            placeholder={t(
+                              "admin.directory.content.descriptionPlaceholder",
+                              "What makes this place useful or worth visiting?",
+                            )}
+                          />
+                        </label>
+                      </div>
+
+                      {selectedPlace.description && (
+                        <p className="directory-source-description small muted">
+                          <strong>
+                            {t(
+                              "admin.directory.content.sourceDescription",
+                              "Imported description",
+                            )}
+                          </strong>{" "}
+                          {selectedPlace.description}
+                        </p>
+                      )}
+
+                      <div className="directory-image-workspace">
+                        <div className="directory-image-preview">
+                          {editorialDraft.imageUrl ? (
+                            <img
+                              src={editorialDraft.imageUrl}
+                              alt={
+                                editorialDraft.imageAltEn ||
+                                editorialDraft.imageAltSq ||
+                                selectedPlace.name
+                              }
+                            />
+                          ) : (
+                            <span>
+                              {t(
+                                "admin.directory.content.noPhoto",
+                                "No reviewed photo",
+                              )}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="directory-image-controls">
+                          <label>
+                            <span>
+                              {t(
+                                "admin.directory.content.photoUpload",
+                                "Upload a reviewed photo",
+                              )}
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/gif"
+                              disabled={imageUploading || contentSaving}
+                              onChange={(event) => {
+                                void uploadDirectoryImage(
+                                  event.target.files?.[0] || null,
+                                );
+                                event.currentTarget.value = "";
+                              }}
+                            />
+                          </label>
+                          <p className="small muted">
+                            {t(
+                              "admin.directory.content.photoHelp",
+                              "Use an owned, permitted or appropriately licensed image. JPG, PNG, WEBP or GIF up to 5MB.",
+                            )}
+                          </p>
+                          {imageUploading && (
+                            <p className="small muted" role="status">
+                              {t(
+                                "admin.directory.content.uploading",
+                                "Uploading photo...",
+                              )}
+                            </p>
+                          )}
+                          {editorialDraft.imageUrl && (
+                            <button
+                              type="button"
+                              className="btn btn-ghost"
+                              onClick={removeDirectoryImage}
+                              disabled={contentSaving}
+                            >
+                              {t(
+                                "admin.directory.content.removePhoto",
+                                "Remove photo",
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {editorialDraft.imageUrl && (
+                        <>
+                          <div className="directory-content-fields">
+                            <label>
+                              <span>
+                                {t(
+                                  "admin.directory.content.altEn",
+                                  "English image description",
+                                )}
+                              </span>
+                              <input
+                                maxLength={180}
+                                value={editorialDraft.imageAltEn}
+                                onChange={(event) =>
+                                  updateEditorialDraft(
+                                    "imageAltEn",
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </label>
+                            <label>
+                              <span>
+                                {t(
+                                  "admin.directory.content.altSq",
+                                  "Albanian image description",
+                                )}
+                              </span>
+                              <input
+                                maxLength={180}
+                                value={editorialDraft.imageAltSq}
+                                onChange={(event) =>
+                                  updateEditorialDraft(
+                                    "imageAltSq",
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </label>
+                            <label>
+                              <span>
+                                {t(
+                                  "admin.directory.content.credit",
+                                  "Public photo credit",
+                                )}
+                              </span>
+                              <input
+                                maxLength={180}
+                                value={editorialDraft.imageAttributionLabel}
+                                onChange={(event) =>
+                                  updateEditorialDraft(
+                                    "imageAttributionLabel",
+                                    event.target.value,
+                                  )
+                                }
+                                placeholder={t(
+                                  "admin.directory.content.creditPlaceholder",
+                                  "Photographer, owner or image source",
+                                )}
+                              />
+                            </label>
+                            <label>
+                              <span>
+                                {t(
+                                  "admin.directory.content.creditUrl",
+                                  "Credit or licence URL (optional)",
+                                )}
+                              </span>
+                              <input
+                                type="url"
+                                inputMode="url"
+                                maxLength={1200}
+                                value={editorialDraft.imageAttributionUrl}
+                                onChange={(event) =>
+                                  updateEditorialDraft(
+                                    "imageAttributionUrl",
+                                    event.target.value,
+                                  )
+                                }
+                                placeholder="https://"
+                              />
+                            </label>
+                          </div>
+                          <label className="directory-rights-note">
+                            <span>
+                              {t(
+                                "admin.directory.content.rightsNote",
+                                "Private permission or licence note",
+                              )}
+                            </span>
+                            <textarea
+                              rows={2}
+                              maxLength={500}
+                              value={editorialDraft.imageRightsNote}
+                              onChange={(event) =>
+                                updateEditorialDraft(
+                                  "imageRightsNote",
+                                  event.target.value,
+                                )
+                              }
+                              placeholder={t(
+                                "admin.directory.content.rightsPlaceholder",
+                                "Record who supplied the image or the licence that allows publication.",
+                              )}
+                            />
+                          </label>
+                          <label className="directory-rights-confirmation">
+                            <input
+                              type="checkbox"
+                              checked={imageRightsConfirmed}
+                              onChange={(event) =>
+                                setImageRightsConfirmed(event.target.checked)
+                              }
+                            />
+                            <span>
+                              {t(
+                                "admin.directory.content.rightsConfirm",
+                                "I have confirmed Mirëbook may publish this image.",
+                              )}
+                            </span>
+                          </label>
+                        </>
+                      )}
+
+                      <button
+                        type="button"
+                        className="btn btn-accent directory-content-save"
+                        onClick={saveEditorialContent}
+                        disabled={
+                          contentSaving ||
+                          imageUploading ||
+                          (Boolean(editorialDraft.imageUrl) &&
+                            !imageRightsConfirmed)
+                        }
+                      >
+                        {contentSaving
+                          ? t(
+                              "admin.directory.content.saving",
+                              "Saving public content...",
+                            )
+                          : t(
+                              "admin.directory.content.save",
+                              "Save public content",
+                            )}
+                      </button>
+                    </>
+                  )}
+                </section>
 
                 <dl className="directory-facts">
                   <div>
@@ -1386,6 +1919,119 @@ export default function AdminDirectoryPage() {
           object-fit: cover;
         }
 
+        .directory-content-editor {
+          display: grid;
+          gap: 0.8rem;
+          padding: 1rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .directory-content-heading {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+
+        .directory-content-heading h3,
+        .directory-content-heading p,
+        .directory-content-editor > p {
+          margin: 0;
+        }
+
+        .directory-content-fields {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.7rem;
+        }
+
+        .directory-content-fields label,
+        .directory-image-controls label,
+        .directory-rights-note {
+          display: grid;
+          gap: 0.35rem;
+          color: var(--text-muted);
+          font-size: 0.8rem;
+        }
+
+        .directory-content-fields input,
+        .directory-content-fields textarea,
+        .directory-rights-note textarea {
+          width: 100%;
+        }
+
+        .directory-source-description {
+          padding-left: 0.7rem;
+          border-left: 2px solid var(--border-2);
+          overflow-wrap: anywhere;
+        }
+
+        .directory-image-workspace {
+          display: grid;
+          grid-template-columns: minmax(150px, 0.65fr) minmax(0, 1fr);
+          gap: 0.8rem;
+          align-items: start;
+        }
+
+        .directory-image-preview {
+          min-height: 130px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+          color: var(--text-muted);
+          display: grid;
+          place-items: center;
+          text-align: center;
+        }
+
+        .directory-image-preview img {
+          width: 100%;
+          height: 100%;
+          min-height: 130px;
+          object-fit: cover;
+        }
+
+        .directory-image-controls {
+          min-width: 0;
+          display: grid;
+          justify-items: start;
+          gap: 0.45rem;
+        }
+
+        .directory-image-controls p {
+          margin: 0;
+        }
+
+        .directory-rights-confirmation {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.55rem;
+          color: var(--text);
+          font-size: 0.82rem;
+        }
+
+        .directory-rights-confirmation input {
+          flex: 0 0 auto;
+          width: 18px;
+          height: 18px;
+          margin-top: 0.05rem;
+          accent-color: var(--accent);
+        }
+
+        .directory-content-save {
+          width: fit-content;
+        }
+
+        .directory-content-unavailable {
+          padding: 0.75rem;
+          border: 1px solid rgba(255, 190, 11, 0.3);
+          border-radius: 8px;
+          background: var(--warning-dim);
+          color: var(--warning);
+        }
+
         .directory-facts {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1488,8 +2134,20 @@ export default function AdminDirectoryPage() {
 
           .directory-filters,
           .directory-facts,
+          .directory-content-fields,
+          .directory-image-workspace,
           .directory-coverage-groups {
             grid-template-columns: 1fr;
+          }
+
+          .directory-content-heading {
+            display: grid;
+          }
+
+          .directory-content-save,
+          .directory-image-controls :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
 
           .directory-coverage-loading > div {

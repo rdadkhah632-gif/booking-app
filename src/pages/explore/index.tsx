@@ -161,7 +161,7 @@ function approximateCoordinate(value: number) {
 
 export default function Explore() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const requestSequence = useRef(0);
 
   const appliedFilters = useMemo<AppliedFilters>(() => {
@@ -239,7 +239,10 @@ export default function Explore() {
       setLoading(true);
       setError(null);
 
-      const directoryParams = new URLSearchParams({ limit: "100" });
+      const directoryParams = new URLSearchParams({
+        limit: "100",
+        locale,
+      });
       if (filters.query) directoryParams.set("q", filters.query);
       if (filters.city) directoryParams.set("city", filters.city);
 
@@ -317,7 +320,7 @@ export default function Explore() {
         setError(t("explore.empty.genericError"));
       }
     },
-    [t],
+    [locale, t],
   );
 
   useEffect(() => {
