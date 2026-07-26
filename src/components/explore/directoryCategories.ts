@@ -103,6 +103,10 @@ export function directoryCategoryLabel(
   return t(`directory.category.${category}`, fallbacks[category]);
 }
 
+export function directoryImageCredit(label: string) {
+  return label.replace(/^(?:(?:photo|foto)\s*:\s*)+/i, "").trim();
+}
+
 export function directoryCategoryFromLabel(
   value: string,
   t: (key: string, fallback?: string) => string,

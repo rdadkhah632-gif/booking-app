@@ -992,6 +992,20 @@ an operator inspects and approves it one at a time in Admin Directory.
 6. Hide an individual record immediately if its identity, operation, category,
    location or image rights become uncertain.
 
+### Batch 14 closure QA
+
+Production QA approved all twelve records individually and left the catalogue
+at `20 approved / 37 needs review / 1 hidden`. Public List and Map both showed
+twenty non-bookable places, all five licensed photographs loaded with visible
+attribution, and the remaining records retained clean category fallbacks.
+EN/SQ, desktop/mobile, private evidence, coarse-map-position and anonymous
+table-access boundaries passed.
+
+The only follow-up was a duplicated photo prefix when an attribution label
+already contained `Photo:`. Public rendering now removes a stored English or
+Albanian photo prefix before adding the selected language's single localized
+label. Stored attribution and licence evidence remain unchanged.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

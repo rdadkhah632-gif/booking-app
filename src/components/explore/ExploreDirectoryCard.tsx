@@ -18,7 +18,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
-import { directoryCategoryLabel } from "./directoryCategories";
+import {
+  directoryCategoryLabel,
+  directoryImageCredit,
+} from "./directoryCategories";
 import { DirectoryCategoryKey, DirectoryPlace } from "./exploreTypes";
 
 type Props = {
@@ -146,12 +149,12 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
                 rel="noreferrer"
               >
                 {t("directory.card.photo", "Photo")}:{" "}
-                {place.image.attribution.label}
+                {directoryImageCredit(place.image.attribution.label)}
               </a>
             ) : (
               <span className="directory-attribution">
                 {t("directory.card.photo", "Photo")}:{" "}
-                {place.image.attribution.label}
+                {directoryImageCredit(place.image.attribution.label)}
               </span>
             ))}
           {place.attribution.url ? (

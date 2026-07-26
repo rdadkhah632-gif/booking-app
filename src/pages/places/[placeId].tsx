@@ -13,7 +13,10 @@ import {
   Phone,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
-import { directoryCategoryLabel } from "@/components/explore/directoryCategories";
+import {
+  directoryCategoryLabel,
+  directoryImageCredit,
+} from "@/components/explore/directoryCategories";
 import type { DirectoryCategoryKey } from "@/components/explore/exploreTypes";
 import { getBusinessAppUrl } from "@/lib/appUrls";
 import { useI18n } from "@/lib/useI18n";
@@ -191,10 +194,10 @@ export default function DirectoryPlacePage() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      {place.image.attribution.label}
+                      {directoryImageCredit(place.image.attribution.label)}
                     </a>
                   ) : (
-                    place.image.attribution.label
+                    directoryImageCredit(place.image.attribution.label)
                   )}
                 </figcaption>
               </figure>
