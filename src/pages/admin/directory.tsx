@@ -67,6 +67,16 @@ type DirectoryPlace = {
   image_attribution_url?: string | null;
   image_rights_note?: string | null;
   content_updated_at?: string | null;
+  public_facts_reviewed?: boolean | null;
+  public_name?: string | null;
+  public_category_key?: string | null;
+  public_address?: string | null;
+  public_postcode?: string | null;
+  public_phone?: string | null;
+  public_website?: string | null;
+  public_facts_source_url?: string | null;
+  public_facts_note?: string | null;
+  public_facts_updated_at?: string | null;
   listing_status: DirectoryStatus;
   claim_status: string;
   linked_business_id?: string | null;
@@ -93,6 +103,7 @@ type DirectoryResponse = {
   counts: Record<DirectoryStatus, number>;
   coverage: DirectoryCoverage;
   contentEditingAvailable?: boolean;
+  factsEditingAvailable?: boolean;
   pagination: { total: number; limit: number; offset: number };
 };
 
@@ -113,6 +124,18 @@ type EditorialDraft = {
   imageRightsNote: string;
 };
 
+type PublicFactsDraft = {
+  factsReviewed: boolean;
+  publicName: string;
+  publicCategoryKey: string;
+  publicAddress: string;
+  publicPostcode: string;
+  publicPhone: string;
+  publicWebsite: string;
+  publicFactsSourceUrl: string;
+  publicFactsNote: string;
+};
+
 const EMPTY_EDITORIAL_DRAFT: EditorialDraft = {
   descriptionEn: "",
   descriptionSq: "",
@@ -122,6 +145,18 @@ const EMPTY_EDITORIAL_DRAFT: EditorialDraft = {
   imageAttributionLabel: "",
   imageAttributionUrl: "",
   imageRightsNote: "",
+};
+
+const EMPTY_PUBLIC_FACTS_DRAFT: PublicFactsDraft = {
+  factsReviewed: false,
+  publicName: "",
+  publicCategoryKey: "",
+  publicAddress: "",
+  publicPostcode: "",
+  publicPhone: "",
+  publicWebsite: "",
+  publicFactsSourceUrl: "",
+  publicFactsNote: "",
 };
 
 const STATUSES: DirectoryStatus[] = [
@@ -179,8 +214,10 @@ export default function AdminDirectoryPage() {
   const [loading, setLoading] = useState(true);
   const [directoryLoaded, setDirectoryLoaded] = useState(false);
   const [contentEditingAvailable, setContentEditingAvailable] = useState(true);
+  const [factsEditingAvailable, setFactsEditingAvailable] = useState(true);
   const [saving, setSaving] = useState(false);
   const [contentSaving, setContentSaving] = useState(false);
+  const [factsSaving, setFactsSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [mapLoading, setMapLoading] = useState(false);
   const [places, setPlaces] = useState<DirectoryPlace[]>([]);
@@ -209,6 +246,9 @@ export default function AdminDirectoryPage() {
   const [editorialDraft, setEditorialDraft] = useState<EditorialDraft>(
     EMPTY_EDITORIAL_DRAFT,
   );
+  const [publicFactsDraft, setPublicFactsDraft] = useState<PublicFactsDraft>(
+    EMPTY_PUBLIC_FACTS_DRAFT,
+  );
   const [imageRightsConfirmed, setImageRightsConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -235,6 +275,37 @@ export default function AdminDirectoryPage() {
         : EMPTY_EDITORIAL_DRAFT,
     );
     setImageRightsConfirmed(false);
+  }, [selectedPlace]);
+
+  useEffect(() => {
+    setPublicFactsDraft(
+      selectedPlace
+        ? {
+            factsReviewed: selectedPlace.public_facts_reviewed === true,
+            publicName: selectedPlace.public_facts_reviewed
+              ? selectedPlace.public_name || ""
+              : selectedPlace.name || "",
+            publicCategoryKey: selectedPlace.public_facts_reviewed
+              ? selectedPlace.public_category_key || ""
+              : selectedPlace.category_key || "",
+            publicAddress: selectedPlace.public_facts_reviewed
+              ? selectedPlace.public_address || ""
+              : selectedPlace.address || "",
+            publicPostcode: selectedPlace.public_facts_reviewed
+              ? selectedPlace.public_postcode || ""
+              : selectedPlace.postcode || "",
+            publicPhone: selectedPlace.public_facts_reviewed
+              ? selectedPlace.public_phone || ""
+              : selectedPlace.phone || "",
+            publicWebsite: selectedPlace.public_facts_reviewed
+              ? selectedPlace.public_website || ""
+              : selectedPlace.website || "",
+            publicFactsSourceUrl:
+              selectedPlace.public_facts_source_url || "",
+            publicFactsNote: selectedPlace.public_facts_note || "",
+          }
+        : EMPTY_PUBLIC_FACTS_DRAFT,
+    );
   }, [selectedPlace]);
 
   useEffect(() => {
@@ -381,6 +452,7 @@ export default function AdminDirectoryPage() {
       setCounts(next.counts);
       setCoverage(next.coverage || { available: false, cities: [], categories: [] });
       setContentEditingAvailable(next.contentEditingAvailable !== false);
+      setFactsEditingAvailable(next.factsEditingAvailable !== false);
       setPagination(next.pagination);
       setDirectoryLoaded(true);
       setSelectedId((current) =>
@@ -653,6 +725,101 @@ export default function AdminDirectoryPage() {
       );
     } finally {
       setContentSaving(false);
+    }
+  }
+
+  function updatePublicFactsDraft(
+    field: keyof PublicFactsDraft,
+    value: string | boolean,
+  ) {
+    setPublicFactsDraft((current) => ({ ...current, [field]: value }));
+    setSuccess("");
+  }
+
+  async function savePublicFacts() {
+    if (!selectedPlace) return;
+    setError("");
+    setSuccess("");
+
+    if (
+      publicFactsDraft.factsReviewed &&
+      (!publicFactsDraft.publicName.trim() ||
+        !publicFactsDraft.publicCategoryKey ||
+        !publicFactsDraft.publicFactsSourceUrl.trim() ||
+        !publicFactsDraft.publicFactsNote.trim())
+    ) {
+      setError(
+        t(
+          "admin.directory.facts.incomplete",
+          "Add a public name, category, secure evidence URL and private verification note.",
+        ),
+      );
+      return;
+    }
+    if (
+      !isSafeHttpsUrl(publicFactsDraft.publicWebsite) ||
+      !isSafeHttpsUrl(publicFactsDraft.publicFactsSourceUrl)
+    ) {
+      setError(
+        t(
+          "admin.directory.facts.invalidUrl",
+          "Use secure HTTPS links for the public website and verification source.",
+        ),
+      );
+      return;
+    }
+
+    const token = await currentToken();
+    if (!token) return;
+    setFactsSaving(true);
+
+    try {
+      const response = await fetch("/api/admin/directory-places", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          placeId: selectedPlace.id,
+          action: "save_public_facts",
+          ...publicFactsDraft,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          payload.error ||
+            t(
+              "admin.directory.facts.saveError",
+              "Reviewed public details could not be saved.",
+            ),
+        );
+      }
+
+      setSuccess(
+        publicFactsDraft.factsReviewed
+          ? t(
+              "admin.directory.facts.saved",
+              "Reviewed public details saved.",
+            )
+          : t(
+              "admin.directory.facts.sourceRestored",
+              "Public details now use the imported source again.",
+            ),
+      );
+      await loadDirectory(pagination.offset, token, undefined, true);
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : t(
+              "admin.directory.facts.saveError",
+              "Reviewed public details could not be saved.",
+            ),
+      );
+    } finally {
+      setFactsSaving(false);
     }
   }
 
@@ -1029,6 +1196,295 @@ export default function AdminDirectoryPage() {
                 )}
 
                 <section
+                  className="directory-facts-editor"
+                  aria-labelledby="directory-public-facts"
+                >
+                  <div className="directory-content-heading">
+                    <div>
+                      <p className="small muted">
+                        {t(
+                          "admin.directory.facts.kicker",
+                          "Public accuracy",
+                        )}
+                      </p>
+                      <h3 id="directory-public-facts">
+                        {t(
+                          "admin.directory.facts.title",
+                          "Reviewed public details",
+                        )}
+                      </h3>
+                    </div>
+                    <span
+                      className={`directory-pill ${
+                        selectedPlace.public_facts_reviewed
+                          ? "is-active"
+                          : "is-needs_review"
+                      }`}
+                    >
+                      {selectedPlace.public_facts_reviewed
+                        ? t(
+                            "admin.directory.facts.reviewed",
+                            "Reviewed details",
+                          )
+                        : t(
+                            "admin.directory.facts.imported",
+                            "Imported details",
+                          )}
+                    </span>
+                  </div>
+
+                  {!factsEditingAvailable ? (
+                    <p className="directory-content-unavailable">
+                      {t(
+                        "admin.directory.facts.sqlRequired",
+                        "Reviewed public details are temporarily unavailable.",
+                      )}
+                    </p>
+                  ) : (
+                    <>
+                      <label className="directory-rights-confirmation">
+                        <input
+                          type="checkbox"
+                          checked={publicFactsDraft.factsReviewed}
+                          onChange={(event) =>
+                            updatePublicFactsDraft(
+                              "factsReviewed",
+                              event.target.checked,
+                            )
+                          }
+                        />
+                        <span>
+                          {t(
+                            "admin.directory.facts.enable",
+                            "Use these verified details in public discovery.",
+                          )}
+                        </span>
+                      </label>
+                      <p className="small muted">
+                        {t(
+                          "admin.directory.facts.body",
+                          "Correct stale source facts without changing the imported record. Empty optional fields stay hidden publicly.",
+                        )}
+                      </p>
+
+                      <div className="directory-content-fields">
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.facts.name",
+                              "Public name",
+                            )}
+                          </span>
+                          <input
+                            maxLength={180}
+                            value={publicFactsDraft.publicName}
+                            disabled={
+                              !publicFactsDraft.factsReviewed || factsSaving
+                            }
+                            onChange={(event) =>
+                              updatePublicFactsDraft(
+                                "publicName",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.facts.category",
+                              "Public category",
+                            )}
+                          </span>
+                          <select
+                            value={publicFactsDraft.publicCategoryKey}
+                            disabled={
+                              !publicFactsDraft.factsReviewed || factsSaving
+                            }
+                            onChange={(event) =>
+                              updatePublicFactsDraft(
+                                "publicCategoryKey",
+                                event.target.value,
+                              )
+                            }
+                          >
+                            {CATEGORIES.map((categoryKey) => (
+                              <option key={categoryKey} value={categoryKey}>
+                                {categoryLabel(categoryKey)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.facts.address",
+                              "Public address",
+                            )}
+                          </span>
+                          <input
+                            maxLength={500}
+                            value={publicFactsDraft.publicAddress}
+                            disabled={
+                              !publicFactsDraft.factsReviewed || factsSaving
+                            }
+                            onChange={(event) =>
+                              updatePublicFactsDraft(
+                                "publicAddress",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.facts.postcode",
+                              "Public postcode",
+                            )}
+                          </span>
+                          <input
+                            maxLength={40}
+                            value={publicFactsDraft.publicPostcode}
+                            disabled={
+                              !publicFactsDraft.factsReviewed || factsSaving
+                            }
+                            onChange={(event) =>
+                              updatePublicFactsDraft(
+                                "publicPostcode",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.facts.phone",
+                              "Public phone",
+                            )}
+                          </span>
+                          <input
+                            maxLength={80}
+                            value={publicFactsDraft.publicPhone}
+                            disabled={
+                              !publicFactsDraft.factsReviewed || factsSaving
+                            }
+                            onChange={(event) =>
+                              updatePublicFactsDraft(
+                                "publicPhone",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label>
+                          <span>
+                            {t(
+                              "admin.directory.facts.website",
+                              "Public website",
+                            )}
+                          </span>
+                          <input
+                            type="url"
+                            inputMode="url"
+                            maxLength={1200}
+                            placeholder="https://"
+                            value={publicFactsDraft.publicWebsite}
+                            disabled={
+                              !publicFactsDraft.factsReviewed || factsSaving
+                            }
+                            onChange={(event) =>
+                              updatePublicFactsDraft(
+                                "publicWebsite",
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
+
+                      {publicFactsDraft.factsReviewed && (
+                        <div className="directory-facts-evidence">
+                          <label>
+                            <span>
+                              {t(
+                                "admin.directory.facts.sourceUrl",
+                                "Private verification source",
+                              )}
+                            </span>
+                            <input
+                              type="url"
+                              inputMode="url"
+                              maxLength={1200}
+                              placeholder="https://"
+                              value={publicFactsDraft.publicFactsSourceUrl}
+                              disabled={factsSaving}
+                              onChange={(event) =>
+                                updatePublicFactsDraft(
+                                  "publicFactsSourceUrl",
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </label>
+                          <label>
+                            <span>
+                              {t(
+                                "admin.directory.facts.note",
+                                "Private verification note",
+                              )}
+                            </span>
+                            <textarea
+                              rows={2}
+                              maxLength={1000}
+                              value={publicFactsDraft.publicFactsNote}
+                              disabled={factsSaving}
+                              onChange={(event) =>
+                                updatePublicFactsDraft(
+                                  "publicFactsNote",
+                                  event.target.value,
+                                )
+                              }
+                              placeholder={t(
+                                "admin.directory.facts.notePlaceholder",
+                                "Record what was checked and when.",
+                              )}
+                            />
+                          </label>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        className="btn btn-accent directory-content-save"
+                        onClick={savePublicFacts}
+                        disabled={
+                          factsSaving ||
+                          (!publicFactsDraft.factsReviewed &&
+                            selectedPlace.public_facts_reviewed !== true)
+                        }
+                      >
+                        {factsSaving
+                          ? t(
+                              "admin.directory.facts.saving",
+                              "Saving reviewed details...",
+                            )
+                          : publicFactsDraft.factsReviewed
+                            ? t(
+                                "admin.directory.facts.save",
+                                "Save reviewed details",
+                              )
+                            : t(
+                                "admin.directory.facts.restore",
+                                "Use imported details",
+                              )}
+                      </button>
+                    </>
+                  )}
+                </section>
+
+                <section
                   className="directory-content-editor"
                   aria-labelledby="directory-public-content"
                 >
@@ -1062,7 +1518,7 @@ export default function AdminDirectoryPage() {
                     <p className="directory-content-unavailable">
                       {t(
                         "admin.directory.content.sqlRequired",
-                        "Run SQL 29 to enable reviewed descriptions and photos.",
+                        "Reviewed descriptions and photos are temporarily unavailable.",
                       )}
                     </p>
                   ) : (
@@ -1919,6 +2375,7 @@ export default function AdminDirectoryPage() {
           object-fit: cover;
         }
 
+        .directory-facts-editor,
         .directory-content-editor {
           display: grid;
           gap: 0.8rem;
@@ -1936,6 +2393,7 @@ export default function AdminDirectoryPage() {
 
         .directory-content-heading h3,
         .directory-content-heading p,
+        .directory-facts-editor > p,
         .directory-content-editor > p {
           margin: 0;
         }
@@ -1947,6 +2405,7 @@ export default function AdminDirectoryPage() {
         }
 
         .directory-content-fields label,
+        .directory-facts-evidence label,
         .directory-image-controls label,
         .directory-rights-note {
           display: grid;
@@ -1956,9 +2415,21 @@ export default function AdminDirectoryPage() {
         }
 
         .directory-content-fields input,
+        .directory-content-fields select,
         .directory-content-fields textarea,
+        .directory-facts-evidence input,
+        .directory-facts-evidence textarea,
         .directory-rights-note textarea {
           width: 100%;
+        }
+
+        .directory-facts-evidence {
+          display: grid;
+          gap: 0.7rem;
+          padding: 0.8rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
         }
 
         .directory-source-description {

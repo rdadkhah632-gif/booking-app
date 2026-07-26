@@ -9,9 +9,13 @@ access denial and public non-exposure checks all passed. Batch 7 imported the
 first controlled 57-place launch seed into the private review queue on 25 July
 2026. Batch 8 individually verified and approved the first eight public places
 on 25 July 2026. Public List, Map, detail, EN/SQ, mobile and non-bookable
-boundary checks passed; 49 candidates remain private. SQL 21, SQL 23 and SQL
-25 belong to the separate customer-app work and are not discovery
-dependencies.
+boundary checks passed; 49 candidates remain private. Batches 9 through 12
+closed the map privacy, ownership claim, claimed-business handoff and cache
+boundaries in deployed QA. Batch 13 adds reviewed descriptions and licensed
+imagery. Batch 14 prepares reviewed public-fact corrections and a second
+12-place private launch catalogue; SQL 29, SQL 30 and SQL 31 must be applied in
+that order before its operator review. SQL 21, SQL 23 and SQL 25 belong to the
+separate customer-app work and are not discovery dependencies.
 
 ## Product Direction
 
@@ -935,6 +939,58 @@ shows the migration requirement.
 Explore uses the reviewed image when available and retains its compact category
 fallback otherwise. Descriptions are line-clamped on cards and shown in full on
 the place page; photo attribution is visible on both surfaces.
+
+## Batch 14 - Reviewed Facts And Catalogue Expansion
+
+Batch 14 separates imported source data from the current facts Mirëbook has
+personally checked. SQL 30 adds optional public overrides for name, category,
+address, postcode, phone and website. Enabling those fields requires:
+
+- a secure private evidence URL
+- a private dated review note
+- a valid public name and supported category
+- an authenticated operator action
+
+Imported facts remain unchanged for provenance and refresh comparison. Private
+evidence, operator notes and editor identity never enter public payloads.
+Disabling the override returns the place to its imported facts without changing
+approval or ownership state.
+
+SQL 31 then prepares twelve existing private candidates for individual
+operator review:
+
+- Nomad Camper Hire and VATO in Berat
+- Ethnographic Museum of Gjirokastër
+- Himara Nautica One
+- Bratko Museum of Oriental Art in Korçë
+- Butrint National Park, Enterprise Sarandë Port and Marin Yacht Agency
+- Lake Koman, Marubi Dental Center and Cuni Auto in Shkodër
+- FuturA+ Education Academy in Tiranë
+
+Each candidate receives a concise English and Albanian description plus
+current reviewed public facts. Five receive reusable Wikimedia Commons
+photographs with visible attribution and private licence notes. Generic
+destination photographs are labelled honestly and are never presented as
+business premises or owner-supplied media. Records without a strong,
+clearly-reusable photograph retain the existing category fallback.
+
+Primary review sources include the operators' own current websites, Albania's
+National Tourism Agency, the Municipality of Korçë and the corresponding
+Wikimedia Commons file pages. SQL 31 is deterministic and does not alter
+`listing_status`, `claim_status`, imported source fields, ownership, business
+publication or booking behavior. Every record therefore remains private until
+an operator inspects and approves it one at a time in Admin Directory.
+
+### Batch 14 operator sequence
+
+1. Finish any QA that depends on the current `8 approved / 1 hidden` baseline.
+2. Apply SQL 29, SQL 30 and SQL 31 in numerical order.
+3. Open each of the twelve records in Admin Directory and check the reviewed
+   facts, bilingual copy, source evidence, map location and image attribution.
+4. Approve only records that still match their current source and map context.
+5. Check EN/SQ List, Map and direct detail after each small approval group.
+6. Hide an individual record immediately if its identity, operation, category,
+   location or image rights become uncertain.
 
 ### Batch 11 deployment QA
 

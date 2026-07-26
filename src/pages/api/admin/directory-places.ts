@@ -95,6 +95,17 @@ type DirectoryPlaceRow = {
   image_rights_note?: string | null;
   content_updated_by?: string | null;
   content_updated_at?: string | null;
+  public_facts_reviewed?: boolean | null;
+  public_name?: string | null;
+  public_category_key?: string | null;
+  public_address?: string | null;
+  public_postcode?: string | null;
+  public_phone?: string | null;
+  public_website?: string | null;
+  public_facts_source_url?: string | null;
+  public_facts_note?: string | null;
+  public_facts_updated_by?: string | null;
+  public_facts_updated_at?: string | null;
   listing_status: DirectoryStatus;
   claim_status: string;
   linked_business_id?: string | null;
@@ -131,6 +142,15 @@ type ReviewBody = {
   imageAttributionUrl?: unknown;
   imageRightsNote?: unknown;
   rightsConfirmed?: unknown;
+  factsReviewed?: unknown;
+  publicName?: unknown;
+  publicCategoryKey?: unknown;
+  publicAddress?: unknown;
+  publicPostcode?: unknown;
+  publicPhone?: unknown;
+  publicWebsite?: unknown;
+  publicFactsSourceUrl?: unknown;
+  publicFactsNote?: unknown;
 };
 
 const PLACE_SELECT = `
@@ -178,6 +198,21 @@ const CONTENT_SELECT = `
   image_rights_note,
   content_updated_by,
   content_updated_at
+`;
+
+const PUBLIC_FACTS_SELECT = `
+  id,
+  public_facts_reviewed,
+  public_name,
+  public_category_key,
+  public_address,
+  public_postcode,
+  public_phone,
+  public_website,
+  public_facts_source_url,
+  public_facts_note,
+  public_facts_updated_by,
+  public_facts_updated_at
 `;
 
 function bearerToken(request: NextApiRequest) {
@@ -358,10 +393,12 @@ async function handleList(
   const placeIds = places.map((place) => place.id);
   let latestReviewByPlace: Record<string, ReviewRow> = {};
   let contentEditingAvailable = true;
+  let factsEditingAvailable = true;
   let editorialContentByPlace: Record<
     string,
     Partial<DirectoryPlaceRow>
   > = {};
+  let publicFactsByPlace: Record<string, Partial<DirectoryPlaceRow>> = {};
 
   const contentQuery = admin.supabase
     .from("directory_places")
@@ -370,6 +407,13 @@ async function handleList(
     placeIds.length > 0
       ? contentQuery.in("id", placeIds).returns<DirectoryPlaceRow[]>()
       : contentQuery.limit(1).returns<DirectoryPlaceRow[]>();
+  const publicFactsQuery = admin.supabase
+    .from("directory_places")
+    .select(PUBLIC_FACTS_SELECT);
+  const publicFactsRequest =
+    placeIds.length > 0
+      ? publicFactsQuery.in("id", placeIds).returns<DirectoryPlaceRow[]>()
+      : publicFactsQuery.limit(1).returns<DirectoryPlaceRow[]>();
   const reviewRequest =
     placeIds.length > 0
       ? admin.supabase
@@ -384,11 +428,13 @@ async function handleList(
 
   const [
     { data: editorialRows, error: editorialError },
+    { data: publicFactsRows, error: publicFactsError },
     { data: reviews, error: reviewError },
     counts,
     coverage,
   ] = await Promise.all([
     editorialRequest,
+    publicFactsRequest,
     reviewRequest,
     statusCounts(admin.supabase),
     launchCoverage(admin.supabase),
@@ -409,6 +455,21 @@ async function handleList(
     }, {});
   }
 
+  if (publicFactsError) {
+    if (isMissingDirectorySchema(publicFactsError)) {
+      factsEditingAvailable = false;
+    } else {
+      throw publicFactsError;
+    }
+  } else {
+    publicFactsByPlace = (publicFactsRows || []).reduce<
+      Record<string, Partial<DirectoryPlaceRow>>
+    >((facts, row) => {
+      facts[row.id] = row;
+      return facts;
+    }, {});
+  }
+
   if (reviewError) throw reviewError;
   latestReviewByPlace = (reviews || []).reduce<Record<string, ReviewRow>>(
     (map, review) => {
@@ -424,11 +485,13 @@ async function handleList(
     places: places.map((place) => ({
       ...place,
       ...(editorialContentByPlace[place.id] || {}),
+      ...(publicFactsByPlace[place.id] || {}),
       latestReview: latestReviewByPlace[place.id] || null,
     })),
     counts,
     coverage,
     contentEditingAvailable,
+    factsEditingAvailable,
     pagination: { total: count || 0, limit, offset },
   });
 }
@@ -563,13 +626,116 @@ async function handleAction(
     if (error) {
       if (isMissingDirectorySchema(error)) {
         response.status(503).json({
-          error: "Run SQL 29 before editing directory content.",
+          error: "Reviewed directory content is temporarily unavailable.",
         });
         return;
       }
       if (["22001", "23514"].includes(error.code || "")) {
         response.status(400).json({
           error: "The description or image details are not valid.",
+        });
+        return;
+      }
+      throw error;
+    }
+    if (!data) {
+      response.status(404).json({ error: "Directory place was not found." });
+      return;
+    }
+
+    response.status(200).json({ ok: true });
+    return;
+  }
+
+  if (action === "save_public_facts") {
+    const factsReviewed = body.factsReviewed === true;
+    const publicName = cleanBodyText(body.publicName, 180);
+    const publicCategoryKey = cleanBodyText(body.publicCategoryKey, 50);
+    const publicAddress = cleanBodyText(body.publicAddress, 500);
+    const publicPostcode = cleanBodyText(body.publicPostcode, 40);
+    const publicPhone = cleanBodyText(body.publicPhone, 80);
+    const publicWebsiteInput = cleanBodyText(body.publicWebsite, 1_200);
+    const publicFactsSourceUrlInput = cleanBodyText(
+      body.publicFactsSourceUrl,
+      1_200,
+    );
+    const publicFactsNote = cleanBodyText(body.publicFactsNote, 1_000);
+    const publicWebsite = safeHttpsUrl(publicWebsiteInput);
+    const publicFactsSourceUrl = safeHttpsUrl(publicFactsSourceUrlInput);
+
+    if (
+      factsReviewed &&
+      (!publicName ||
+        !CATEGORY_KEYS.includes(
+          publicCategoryKey as (typeof CATEGORY_KEYS)[number],
+        ) ||
+        !publicFactsSourceUrl ||
+        !publicFactsNote)
+    ) {
+      response.status(400).json({
+        error:
+          "Add a public name, category, secure evidence URL and private verification note.",
+      });
+      return;
+    }
+    if (publicWebsiteInput && !publicWebsite) {
+      response.status(400).json({
+        error: "Use a secure HTTPS public website URL.",
+      });
+      return;
+    }
+    if (publicFactsSourceUrlInput && !publicFactsSourceUrl) {
+      response.status(400).json({
+        error: "Use a secure HTTPS verification source URL.",
+      });
+      return;
+    }
+
+    const reviewedFacts = factsReviewed
+      ? {
+          public_facts_reviewed: true,
+          public_name: publicName,
+          public_category_key: publicCategoryKey,
+          public_address: publicAddress || null,
+          public_postcode: publicPostcode || null,
+          public_phone: publicPhone || null,
+          public_website: publicWebsite,
+          public_facts_source_url: publicFactsSourceUrl,
+          public_facts_note: publicFactsNote,
+          public_facts_updated_by: admin.user.id,
+          public_facts_updated_at: new Date().toISOString(),
+        }
+      : {
+          public_facts_reviewed: false,
+          public_name: null,
+          public_category_key: null,
+          public_address: null,
+          public_postcode: null,
+          public_phone: null,
+          public_website: null,
+          public_facts_source_url: null,
+          public_facts_note: null,
+          public_facts_updated_by: admin.user.id,
+          public_facts_updated_at: new Date().toISOString(),
+        };
+
+    const { data, error } = await admin.supabase
+      .from("directory_places")
+      .update(reviewedFacts)
+      .eq("id", placeId)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+
+    if (error) {
+      if (isMissingDirectorySchema(error)) {
+        response.status(503).json({
+          error: "Reviewed public details are temporarily unavailable.",
+        });
+        return;
+      }
+      if (["22001", "23514"].includes(error.code || "")) {
+        response.status(400).json({
+          error: "The reviewed public details are not valid.",
         });
         return;
       }

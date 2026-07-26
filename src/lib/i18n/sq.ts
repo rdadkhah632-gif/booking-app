@@ -4341,7 +4341,7 @@ export const sq: TranslationTree = {
   "admin.directory.content.title": "Përshkrimi dhe fotografia",
   "admin.directory.content.updated": "Përditësuar",
   "admin.directory.content.sqlRequired":
-    "Ekzekuto SQL 29 për të aktivizuar përshkrimet dhe fotografitë e shqyrtuara.",
+    "Përshkrimet dhe fotografitë e shqyrtuara nuk janë përkohësisht të disponueshme.",
   "admin.directory.content.body":
     "Shto tekst të shkurtër e të verifikuar dhe vetëm imazhe që Mirëbook ka leje t'i publikojë.",
   "admin.directory.content.descriptionEn": "Përshkrimi në anglisht",
@@ -4382,6 +4382,40 @@ export const sq: TranslationTree = {
     "Shto përshkrimin e imazhit, kreditin publik dhe shënimin privat për lejen ose licencën.",
   "admin.directory.content.invalidUrl":
     "Përdor një URL të sigurt HTTPS për kreditin ose licencën.",
+  "admin.directory.facts.kicker": "Saktësia publike",
+  "admin.directory.facts.title": "Të dhëna publike të verifikuara",
+  "admin.directory.facts.reviewed": "Të dhëna të verifikuara",
+  "admin.directory.facts.imported": "Të dhëna të importuara",
+  "admin.directory.facts.sqlRequired":
+    "Të dhënat publike të verifikuara nuk janë përkohësisht të disponueshme.",
+  "admin.directory.facts.enable":
+    "Përdori këto të dhëna të verifikuara në kërkimin publik.",
+  "admin.directory.facts.body":
+    "Korrigjo të dhënat e vjetruara pa ndryshuar regjistrimin e importuar. Fushat opsionale bosh mbeten të fshehura publikisht.",
+  "admin.directory.facts.name": "Emri publik",
+  "admin.directory.facts.category": "Kategoria publike",
+  "admin.directory.facts.address": "Adresa publike",
+  "admin.directory.facts.postcode": "Kodi postar publik",
+  "admin.directory.facts.phone": "Telefoni publik",
+  "admin.directory.facts.website": "Faqja publike",
+  "admin.directory.facts.sourceUrl": "Burimi privat i verifikimit",
+  "admin.directory.facts.note": "Shënim privat verifikimi",
+  "admin.directory.facts.notePlaceholder":
+    "Shëno çfarë u kontrollua dhe kur.",
+  "admin.directory.facts.saving":
+    "Po ruhen të dhënat e verifikuara...",
+  "admin.directory.facts.save": "Ruaj të dhënat e verifikuara",
+  "admin.directory.facts.restore": "Përdor të dhënat e importuara",
+  "admin.directory.facts.saved":
+    "Të dhënat publike të verifikuara u ruajtën.",
+  "admin.directory.facts.sourceRestored":
+    "Të dhënat publike tani përdorin përsëri burimin e importuar.",
+  "admin.directory.facts.saveError":
+    "Të dhënat publike të verifikuara nuk mund të ruheshin.",
+  "admin.directory.facts.incomplete":
+    "Shto emrin publik, kategorinë, URL-në e sigurt të burimit dhe shënimin privat të verifikimit.",
+  "admin.directory.facts.invalidUrl":
+    "Përdor lidhje të sigurta HTTPS për faqen publike dhe burimin e verifikimit.",
   "admin.directory.controlKicker": "Shqyrtimi i tregut",
   "admin.directory.controlTitle": "Direktoria e vendeve të importuara",
   "admin.directory.controlBody":

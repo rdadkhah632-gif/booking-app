@@ -32,6 +32,16 @@ type DirectoryEditorialRow = {
   image_attribution_url?: string | null;
 };
 
+type DirectoryPublicFactsRow = {
+  public_facts_reviewed?: boolean | null;
+  public_name?: string | null;
+  public_category_key?: string | null;
+  public_address?: string | null;
+  public_postcode?: string | null;
+  public_phone?: string | null;
+  public_website?: string | null;
+};
+
 function queryText(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value || "").trim();
 }
@@ -155,6 +165,44 @@ export default async function handler(
       editorial = editorialData;
     }
 
+    let reviewedFacts: DirectoryPublicFactsRow | null = null;
+    const { data: factsData, error: factsError } = await supabase
+      .from("directory_places")
+      .select(
+        "public_facts_reviewed, public_name, public_category_key, public_address, public_postcode, public_phone, public_website",
+      )
+      .eq("id", placeId)
+      .eq("listing_status", "active")
+      .maybeSingle<DirectoryPublicFactsRow>();
+
+    if (factsError) {
+      if (!missingEditorialSchema(factsError.code)) {
+        throw factsError;
+      }
+    } else {
+      reviewedFacts = factsData;
+    }
+
+    const useReviewedFacts = reviewedFacts?.public_facts_reviewed === true;
+    const publicName =
+      (useReviewedFacts ? reviewedFacts?.public_name : data.name) || data.name;
+    const publicCategoryKey =
+      (useReviewedFacts
+        ? reviewedFacts?.public_category_key
+        : data.category_key) || data.category_key;
+    const publicAddress = useReviewedFacts
+      ? reviewedFacts?.public_address || null
+      : data.address || null;
+    const publicPostcode = useReviewedFacts
+      ? reviewedFacts?.public_postcode || null
+      : data.postcode || null;
+    const publicPhone = useReviewedFacts
+      ? reviewedFacts?.public_phone || null
+      : data.phone || null;
+    const publicWebsite = useReviewedFacts
+      ? reviewedFacts?.public_website || null
+      : data.website || null;
+
     let bookingBusinessId: string | null = null;
     if (data.linked_business_id) {
       try {
@@ -182,8 +230,8 @@ export default async function handler(
       place: {
         id: data.id,
         resultType: "directory_place",
-        name: data.name,
-        categoryKey: data.category_key,
+        name: publicName,
+        categoryKey: publicCategoryKey,
         description:
           (locale === "sq"
             ? editorial?.editorial_description_sq ||
@@ -192,13 +240,13 @@ export default async function handler(
               editorial?.editorial_description_sq) ||
           data.description ||
           null,
-        address: data.address || null,
+        address: publicAddress,
         city: data.city || null,
         region: data.region || null,
         countryCode: data.country_code,
-        postcode: data.postcode || null,
-        phone: data.phone || null,
-        website: safeWebsite(data.website),
+        postcode: publicPostcode,
+        phone: publicPhone,
+        website: safeWebsite(publicWebsite),
         bookable: Boolean(bookingBusinessId),
         bookingBusinessId,
         claimable: data.claim_status === "unclaimed",

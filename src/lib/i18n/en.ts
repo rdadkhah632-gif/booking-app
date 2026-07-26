@@ -4236,7 +4236,7 @@ export const en: TranslationTree = {
   "admin.directory.content.title": "Description and photo",
   "admin.directory.content.updated": "Updated",
   "admin.directory.content.sqlRequired":
-    "Run SQL 29 to enable reviewed descriptions and photos.",
+    "Reviewed descriptions and photos are temporarily unavailable.",
   "admin.directory.content.body":
     "Add concise, verified copy and only imagery Mirëbook has permission to publish.",
   "admin.directory.content.descriptionEn": "English description",
@@ -4274,6 +4274,38 @@ export const en: TranslationTree = {
     "Add image alt text, a public credit and a private permission or licence note.",
   "admin.directory.content.invalidUrl":
     "Use a secure HTTPS credit or licence URL.",
+  "admin.directory.facts.kicker": "Public accuracy",
+  "admin.directory.facts.title": "Reviewed public details",
+  "admin.directory.facts.reviewed": "Reviewed details",
+  "admin.directory.facts.imported": "Imported details",
+  "admin.directory.facts.sqlRequired":
+    "Reviewed public details are temporarily unavailable.",
+  "admin.directory.facts.enable":
+    "Use these verified details in public discovery.",
+  "admin.directory.facts.body":
+    "Correct stale source facts without changing the imported record. Empty optional fields stay hidden publicly.",
+  "admin.directory.facts.name": "Public name",
+  "admin.directory.facts.category": "Public category",
+  "admin.directory.facts.address": "Public address",
+  "admin.directory.facts.postcode": "Public postcode",
+  "admin.directory.facts.phone": "Public phone",
+  "admin.directory.facts.website": "Public website",
+  "admin.directory.facts.sourceUrl": "Private verification source",
+  "admin.directory.facts.note": "Private verification note",
+  "admin.directory.facts.notePlaceholder":
+    "Record what was checked and when.",
+  "admin.directory.facts.saving": "Saving reviewed details...",
+  "admin.directory.facts.save": "Save reviewed details",
+  "admin.directory.facts.restore": "Use imported details",
+  "admin.directory.facts.saved": "Reviewed public details saved.",
+  "admin.directory.facts.sourceRestored":
+    "Public details now use the imported source again.",
+  "admin.directory.facts.saveError":
+    "Reviewed public details could not be saved.",
+  "admin.directory.facts.incomplete":
+    "Add a public name, category, secure evidence URL and private verification note.",
+  "admin.directory.facts.invalidUrl":
+    "Use secure HTTPS links for the public website and verification source.",
   "admin.directory.controlKicker": "Marketplace review",
   "admin.directory.controlTitle": "Imported place directory",
   "admin.directory.controlBody":
