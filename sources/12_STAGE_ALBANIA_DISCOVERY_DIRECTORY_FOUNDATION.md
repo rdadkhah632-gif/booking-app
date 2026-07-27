@@ -1157,8 +1157,99 @@ real 44px marker button, preserving button semantics, keyboard focus and an
 explicit `aria-pressed` state instead of allowing Mapbox to convert the
 interactive element to an image role. Local EN/SQ verification confirmed the
 Emilio-to-EDBI sequence updates the exact summary while the map remains at the
-Albania overview. A focused deployed retest is required before Batch 16 is
-closed.
+Albania overview.
+
+The focused deployed retest passed the exact regression at 1440x900 in SQ:
+Places reported 40 results and 40 labelled marker buttons, Emilio selected
+correctly, then EDBI immediately replaced it without a reload, and the sole
+pressed state moved to EDBI. The public API remained at 40 places, Bookable
+remained empty and the hidden fixture remained absent. Reverse-order,
+cluster, mobile, keyboard and final console checks were interrupted by the
+Browser automation session rather than by a reproduced product fault. Those
+are retained as ordinary regression coverage, not as Batch 16 blockers.
+Batch 16 is closed.
+
+## Batch 17 - Legacy Catalogue Quality Pass
+
+Batch 17 brings the eight original approved directory records into the same
+reviewed-content standard as the later launch catalogue. Before this pass they
+were the only active records without reviewed public facts or bilingual
+editorial descriptions:
+
+- Bunk'Art 2, Geraldina Sposa and City Dental Clinic in Tirana
+- Cimi Stil Unik in Durres
+- Helen Doron English Vlore and Balikci Dental in Vlore
+- Kopliku Travel in Shkoder
+- Experience Gjirokastra in Gjirokaster
+
+SQL 34 replaces only their public presentation fields with current,
+source-reviewed names, categories, addresses, contact routes, official
+websites and concise English/Albanian descriptions. Current first-party
+sources were used throughout: the Bunk'Art museum site, Geraldina Sposa,
+Cimi, City Dental Clinic, Helen Doron Albania, Balikci Dental, Kopliku Travel
+and Experience Gjirokastra.
+
+Bunk'Art 2 receives a photograph of its actual exterior by Andrew Milligan
+sumo under CC BY 2.0. Experience Gjirokastra receives a destination image of
+Rruga Gjin Zenebisi by Radoslaw Botev under CC BY 3.0 Poland; the private
+rights note and alt text explicitly avoid presenting it as the agency's
+premises. The other six records retain category fallbacks because their
+operator-owned media does not provide clear reusable rights.
+
+This is a content-quality migration, not a publication or ownership action.
+SQL 34 requires all eight target records to still be active, leaves imported
+facts intact, and does not alter `listing_status`, `claim_status`, ownership,
+business publication, booking behavior, billing, auth or RLS. Reviewed
+evidence and image-rights notes remain private. The descriptions do not imply
+that an owner has joined, consented to promotion or endorsed Mirëbook.
+
+### Batch 17 operator sequence
+
+1. Apply SQL 34 only after SQL 29 and SQL 30.
+2. Confirm the result lists exactly eight active reviewed records and exactly
+   two records with reviewed images.
+3. Check all eight cards and details in EN and SQ. Confirm names, categories,
+   descriptions, contact details and official links match the private source
+   evidence.
+4. Confirm the Bunk'Art 2 and Experience Gjirokastra images load with one
+   localized credit, working Commons source links and the recorded licences.
+5. Confirm the other six records use clean category fallbacks with no broken
+   or empty image frame.
+6. Verify Places List and Map still contain forty records, each map marker
+   opens its exact summary, and Bookable still contains no directory record.
+7. At 1440x900 and 390x844, check EN/SQ List, Map and sampled direct details
+   for overflow, clipped copy, raw keys and console errors.
+8. Confirm the public API exposes no private evidence, rights notes, updater
+   identity, provenance, source IDs, exact geometry or exact coordinates.
+9. Confirm the hidden ownership fixture remains absent from public collection
+   and direct APIs, and no listing, business, claim or booking state changes.
+
+### Batch 17 QA and map follow-up
+
+Production data QA passed for all eight records. The public catalogue remained
+at forty non-bookable places, the hidden fixture stayed absent with a no-store
+404, anonymous table access remained denied, and no private review evidence,
+rights notes, source IDs, exact geometry or exact coordinates entered the
+public payload. All eight records exposed distinct EN/SQ descriptions and
+current public details. Bunk'Art 2 and Experience Gjirokastra exposed their
+licensed images and source attribution; the other six retained clean category
+fallbacks.
+
+The initial browser session could not complete visual Map coverage. A local
+browser follow-up found that several 44px marker targets could overlap at the
+Albania overview, allowing one nearby place to intercept another place's
+selection. Forcing every marker apart made the hitboxes distinct but displaced
+pins too far from their real geography, so that approach was not retained.
+
+The final Map treatment groups nearby places into compact, localized count
+markers at country scale. Activating a group zooms into its real geographic
+area; remaining nearby records can be expanded into separate 44px targets.
+Individual markers retain exact pressed-state and detail-link behavior.
+Click, Enter and Space activation were verified locally for the southern
+clusters, including Experience Gjirokastra, Himara Nautica One and the
+Ethnographic Museum. Desktop and 390px checks found no visible hitbox overlap,
+no document overflow and no cross-selection between the previously conflicting
+records. A deployed focused regression remains required after release.
 
 ### Batch 11 deployment QA
 

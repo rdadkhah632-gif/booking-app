@@ -4197,6 +4197,8 @@ export const sq: TranslationTree = {
   "explore.map.loading": "Po ngarkohet harta...",
   "explore.map.empty":
     "Nuk ka ende vende në hartë që përputhen me këta filtra.",
+  "explore.map.clusterLabel":
+    "{count} vende pranë njëri-tjetrit. Aktivizo për t'i ndarë.",
   "explore.map.control.toggleAttribution": "Shfaq ose fshih burimet",
   "explore.map.control.enterFullscreen": "Hap në ekran të plotë",
   "explore.map.control.exitFullscreen": "Dil nga ekrani i plotë",

@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type {
   Map as MapboxMap,
   Marker as MapboxMarker,
@@ -15,61 +21,161 @@ type Props = {
 };
 
 const ALBANIA_CENTER: [number, number] = [20.05, 41.15];
-const MARKER_COLLISION_DISTANCE = 38;
+const MARKER_CLUSTER_DISTANCE = 52;
+const MARKER_EXPANDED_SPACING = 52;
+const MARKER_EDGE_PADDING = 28;
 
 type DiscoveryMarker = {
   id: string;
   marker: MapboxMarker;
   button: HTMLButtonElement;
+  clusterCount: HTMLSpanElement;
+  label: string;
   longitude: number;
   latitude: number;
 };
 
-function spreadOverlappingMarkers(
+function markerClusterKey(markers: DiscoveryMarker[]) {
+  return markers
+    .map(({ id }) => id)
+    .sort()
+    .join("|");
+}
+
+function layoutMapMarkers(
   map: MapboxMap,
   markers: DiscoveryMarker[],
+  selectedId: string,
+  expandedClusterKey: string,
+  getClusterLabel: (count: number) => string,
 ) {
   const projected = markers.map((entry) => ({
     entry,
     point: map.project([entry.longitude, entry.latitude]),
   }));
+  const container = map.getContainer();
   const grouped = new Set<number>();
+  const groups: typeof projected[] = [];
+
+  markers.forEach((entry) => {
+    const element = entry.marker.getElement();
+    element.style.display = "";
+    element.classList.remove("is-cluster");
+    element.classList.toggle("is-selected", entry.id === selectedId);
+    entry.marker.setOffset([0, 0]);
+    entry.button.dataset.clusterIds = "";
+    entry.button.setAttribute("aria-label", entry.label);
+    entry.button.setAttribute("aria-pressed", String(entry.id === selectedId));
+    entry.clusterCount.textContent = "";
+  });
 
   projected.forEach((current, startIndex) => {
     if (grouped.has(startIndex)) return;
-
-    const group = [startIndex];
+    const group = [current];
+    const queue = [startIndex];
     grouped.add(startIndex);
 
-    for (let cursor = 0; cursor < group.length; cursor += 1) {
-      const currentIndex = group[cursor];
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      const currentIndex = queue[cursor];
       const currentPoint = projected[currentIndex].point;
 
       projected.forEach((candidate, candidateIndex) => {
         if (grouped.has(candidateIndex)) return;
-        const distance = Math.hypot(
-          candidate.point.x - currentPoint.x,
-          candidate.point.y - currentPoint.y,
-        );
-        if (distance <= MARKER_COLLISION_DISTANCE) {
+        if (
+          Math.abs(candidate.point.x - currentPoint.x) <
+            MARKER_CLUSTER_DISTANCE &&
+          Math.abs(candidate.point.y - currentPoint.y) <
+            MARKER_CLUSTER_DISTANCE
+        ) {
           grouped.add(candidateIndex);
-          group.push(candidateIndex);
+          queue.push(candidateIndex);
+          group.push(candidate);
         }
       });
     }
 
-    if (group.length === 1) {
-      current.entry.marker.setOffset([0, 0]);
+    groups.push(group);
+  });
+
+  groups.forEach((group) => {
+    if (group.length === 1) return;
+
+    const entries = group.map(({ entry }) => entry);
+    const clusterKey = markerClusterKey(entries);
+    const center = {
+      x:
+        group.reduce((total, { point }) => total + point.x, 0) /
+        group.length,
+      y:
+        group.reduce((total, { point }) => total + point.y, 0) /
+        group.length,
+    };
+
+    if (clusterKey === expandedClusterKey) {
+      const ordered = [...group].sort((left, right) =>
+        left.entry.id.localeCompare(right.entry.id),
+      );
+      const columns = Math.ceil(Math.sqrt(ordered.length));
+      const rows = Math.ceil(ordered.length / columns);
+      const halfWidth = ((columns - 1) * MARKER_EXPANDED_SPACING) / 2;
+      const halfHeight = ((rows - 1) * MARKER_EXPANDED_SPACING) / 2;
+      const centerX = Math.min(
+        container.clientWidth - MARKER_EDGE_PADDING - halfWidth,
+        Math.max(MARKER_EDGE_PADDING + halfWidth, center.x),
+      );
+      const centerY = Math.min(
+        container.clientHeight - MARKER_EDGE_PADDING - halfHeight,
+        Math.max(MARKER_EDGE_PADDING + halfHeight, center.y),
+      );
+
+      ordered.forEach(({ entry, point }, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const targetX =
+          centerX +
+          (column - (columns - 1) / 2) * MARKER_EXPANDED_SPACING;
+        const targetY =
+          centerY +
+          (row - (rows - 1) / 2) * MARKER_EXPANDED_SPACING;
+        entry.marker.setOffset([
+          Math.round(targetX - point.x),
+          Math.round(targetY - point.y),
+        ]);
+      });
       return;
     }
 
-    const radius = Math.min(52, 22 + group.length * 4);
-    group.forEach((markerIndex, index) => {
-      const angle = (Math.PI * 2 * index) / group.length - Math.PI / 2;
-      projected[markerIndex].entry.marker.setOffset([
-        Math.round(Math.cos(angle) * radius),
-        Math.round(Math.sin(angle) * radius),
-      ]);
+    const representative =
+      group.find(({ entry }) => entry.id === selectedId) ||
+      [...group].sort(
+        (left, right) =>
+          Math.hypot(left.point.x - center.x, left.point.y - center.y) -
+            Math.hypot(right.point.x - center.x, right.point.y - center.y) ||
+          left.entry.id.localeCompare(right.entry.id),
+      )[0];
+    const containsSelection = entries.some(({ id }) => id === selectedId);
+    const representativeElement = representative.entry.marker.getElement();
+    representativeElement.classList.add("is-cluster");
+    representativeElement.classList.toggle("is-selected", containsSelection);
+    representative.entry.marker.setOffset([
+      Math.round(center.x - representative.point.x),
+      Math.round(center.y - representative.point.y),
+    ]);
+    representative.entry.button.dataset.clusterIds = clusterKey;
+    representative.entry.button.setAttribute(
+      "aria-label",
+      getClusterLabel(group.length),
+    );
+    representative.entry.button.setAttribute(
+      "aria-pressed",
+      String(containsSelection),
+    );
+    representative.entry.clusterCount.textContent = String(group.length);
+
+    group.forEach(({ entry }) => {
+      if (entry.id !== representative.entry.id) {
+        entry.marker.getElement().style.display = "none";
+      }
     });
   });
 }
@@ -87,9 +193,19 @@ export default function ExploreDiscoveryMap({
   const userMarkerRef = useRef<MapboxMarker | null>(null);
   const onSelectRef = useRef(onSelect);
   const selectedIdRef = useRef(selectedId);
+  const expandedClusterKeyRef = useRef("");
   const [ready, setReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN?.trim() || "";
+  const clusterLabelTemplate = t(
+    "explore.map.clusterLabel",
+    "{count} nearby places. Activate to separate them.",
+  );
+  const getClusterLabel = useCallback(
+    (count: number) =>
+      clusterLabelTemplate.replace("{count}", String(count)),
+    [clusterLabelTemplate],
+  );
   const mapLocale = useMemo(
     () => ({
       "AttributionControl.ToggleAttribution": t(
@@ -182,7 +298,13 @@ export default function ExploreDiscoveryMap({
           "top-right",
         );
         const updateMarkerOffsets = () =>
-          spreadOverlappingMarkers(map, markerRefs.current);
+          layoutMapMarkers(
+            map,
+            markerRefs.current,
+            selectedIdRef.current,
+            expandedClusterKeyRef.current,
+            getClusterLabel,
+          );
         const localizeProviderLinks = () => {
           const improveMapLink =
             containerRef.current?.querySelector<HTMLAnchorElement>(
@@ -218,13 +340,14 @@ export default function ExploreDiscoveryMap({
       cancelled = true;
       markerRefs.current.forEach(({ marker }) => marker.remove());
       markerRefs.current = [];
+      expandedClusterKeyRef.current = "";
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
       containerRef.current?.replaceChildren();
     };
-  }, [accessToken, locale, mapLocale]);
+  }, [accessToken, getClusterLabel, locale, mapLocale, t]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -238,6 +361,7 @@ export default function ExploreDiscoveryMap({
 
       markerRefs.current.forEach(({ marker }) => marker.remove());
       markerRefs.current = [];
+      expandedClusterKeyRef.current = "";
 
       const bounds = new mapboxgl.LngLatBounds();
       items.slice(0, 200).forEach((item) => {
@@ -255,10 +379,8 @@ export default function ExploreDiscoveryMap({
         button.type = "button";
         button.className = "discovery-map-marker-button";
         button.dataset.markerId = item.id;
-        button.setAttribute(
-          "aria-label",
-          `${item.name}, ${item.category}, ${item.locationLabel}`,
-        );
+        const markerLabel = `${item.name}, ${item.category}, ${item.locationLabel}`;
+        button.setAttribute("aria-label", markerLabel);
         button.setAttribute(
           "aria-pressed",
           String(selectedIdRef.current === item.id),
@@ -266,10 +388,63 @@ export default function ExploreDiscoveryMap({
         const pin = document.createElement("span");
         pin.className = "discovery-map-marker-pin";
         pin.setAttribute("aria-hidden", "true");
-        button.append(pin);
+        const clusterCount = document.createElement("span");
+        clusterCount.className = "discovery-map-marker-count";
+        clusterCount.setAttribute("aria-hidden", "true");
+        button.append(pin, clusterCount);
+        const activateMarker = () => {
+          const clusterIds = (button.dataset.clusterIds || "")
+            .split("|")
+            .filter(Boolean);
+          if (clusterIds.length > 1) {
+            const clusterEntries = markerRefs.current.filter(({ id }) =>
+              clusterIds.includes(id),
+            );
+            const clusterKey = markerClusterKey(clusterEntries);
+            const expandCluster = () => {
+              expandedClusterKeyRef.current = clusterKey;
+              layoutMapMarkers(
+                map,
+                markerRefs.current,
+                selectedIdRef.current,
+                expandedClusterKeyRef.current,
+                getClusterLabel,
+              );
+              const focusTarget = clusterEntries.find(
+                ({ marker }) =>
+                  marker.getElement().style.display !== "none",
+              );
+              focusTarget?.button.focus({ preventScroll: true });
+            };
+
+            if (map.getZoom() < 10.5) {
+              const clusterBounds = new mapboxgl.LngLatBounds();
+              clusterEntries.forEach(({ longitude, latitude }) =>
+                clusterBounds.extend([longitude, latitude]),
+              );
+              expandedClusterKeyRef.current = "";
+              map.once("moveend", expandCluster);
+              map.fitBounds(clusterBounds, {
+                padding: { top: 72, right: 72, bottom: 72, left: 72 },
+                maxZoom: 12,
+                duration: 400,
+              });
+            } else {
+              expandCluster();
+            }
+            return;
+          }
+          onSelectRef.current(item.id);
+        };
         button.addEventListener("click", (event) => {
           event.stopPropagation();
-          onSelectRef.current(item.id);
+          activateMarker();
+        });
+        button.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          activateMarker();
         });
         markerElement.append(button);
 
@@ -285,12 +460,20 @@ export default function ExploreDiscoveryMap({
           id: item.id,
           marker,
           button,
+          clusterCount,
+          label: markerLabel,
           longitude: item.longitude,
           latitude: item.latitude,
         });
         bounds.extend([item.longitude, item.latitude]);
       });
-      spreadOverlappingMarkers(map, markerRefs.current);
+      layoutMapMarkers(
+        map,
+        markerRefs.current,
+        selectedIdRef.current,
+        expandedClusterKeyRef.current,
+        getClusterLabel,
+      );
 
       if (userLocation) {
         const userElement = document.createElement("div");
@@ -325,14 +508,19 @@ export default function ExploreDiscoveryMap({
     return () => {
       active = false;
     };
-  }, [items, ready, t, userLocation]);
+  }, [getClusterLabel, items, ready, t, userLocation]);
 
   useEffect(() => {
-    markerRefs.current.forEach(({ id, marker, button }) => {
-      marker.getElement().classList.toggle("is-selected", id === selectedId);
-      button.setAttribute("aria-pressed", String(id === selectedId));
-    });
-  }, [selectedId]);
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    layoutMapMarkers(
+      map,
+      markerRefs.current,
+      selectedId,
+      expandedClusterKeyRef.current,
+      getClusterLabel,
+    );
+  }, [getClusterLabel, ready, selectedId]);
 
   if (!accessToken || mapError) {
     return (
@@ -455,6 +643,32 @@ export default function ExploreDiscoveryMap({
             box-shadow 0.15s ease;
         }
 
+        :global(.discovery-map-marker-count) {
+          display: none;
+        }
+
+        :global(.discovery-map-marker-shell.is-cluster .discovery-map-marker-pin) {
+          display: none;
+        }
+
+        :global(.discovery-map-marker-shell.is-cluster .discovery-map-marker-count) {
+          position: absolute;
+          inset: 3px;
+          display: grid;
+          place-items: center;
+          border: 3px solid #ffffff;
+          border-radius: 50%;
+          background: #111827;
+          box-shadow: 0 3px 12px rgba(11, 18, 32, 0.3);
+          color: #ffffff;
+          font-size: 0.78rem;
+          font-weight: 800;
+          line-height: 1;
+          transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease;
+        }
+
         :global(.discovery-map-marker-shell.is-business .discovery-map-marker-pin) {
           background: #ff6b35;
         }
@@ -473,6 +687,13 @@ export default function ExploreDiscoveryMap({
         :global(.discovery-map-marker-shell:focus-within .discovery-map-marker-pin),
         :global(.discovery-map-marker-shell.is-selected .discovery-map-marker-pin) {
           transform: rotate(-45deg) scale(1.2);
+          box-shadow: 0 4px 18px rgba(11, 18, 32, 0.42);
+        }
+
+        :global(.discovery-map-marker-shell.is-cluster:hover .discovery-map-marker-count),
+        :global(.discovery-map-marker-shell.is-cluster:focus-within .discovery-map-marker-count),
+        :global(.discovery-map-marker-shell.is-cluster.is-selected .discovery-map-marker-count) {
+          transform: scale(1.12);
           box-shadow: 0 4px 18px rgba(11, 18, 32, 0.42);
         }
 

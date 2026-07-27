@@ -4097,6 +4097,8 @@ export const en: TranslationTree = {
   "explore.map.label": "Discovery map",
   "explore.map.loading": "Loading map...",
   "explore.map.empty": "No mapped places match these filters yet.",
+  "explore.map.clusterLabel":
+    "{count} nearby places. Activate to separate them.",
   "explore.map.control.toggleAttribution": "Toggle attribution",
   "explore.map.control.enterFullscreen": "Enter fullscreen",
   "explore.map.control.exitFullscreen": "Exit fullscreen",
