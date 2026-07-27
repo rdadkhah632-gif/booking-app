@@ -1251,6 +1251,74 @@ Ethnographic Museum. Desktop and 390px checks found no visible hitbox overlap,
 no document overflow and no cross-selection between the previously conflicting
 records. A deployed focused regression remains required after release.
 
+## Batch 18 - Owner Outreach And Claim Conversion
+
+Batch 18 adds the private operating layer between a reviewed directory place
+and the existing owner claim flow. It gives Mirëbook operators one compact
+queue for appointment- or reservation-friendly places, their verified contact
+routes, the correct owner-specific Mirëbook Business claim link, and a private
+next-step record.
+
+This is deliberately not an email campaign tool or a second claim system:
+
+- no email, SMS, social message or notification is sent automatically
+- no bulk-contact action exists
+- an outreach status does not imply consent, partnership or endorsement
+- a place cannot be claimed, linked, published or made bookable from Outreach
+- pending ownership claims leave the Outreach queue and continue through the
+  existing audited Claims workspace
+- attractions are retained in customer discovery but excluded from the first
+  owner-outreach queue so operators can focus on businesses with a practical
+  booking, appointment, lesson, rental or reservation path
+
+SQL 35 creates a private current-state table and an append-only event table.
+Browser roles receive no table access. The service role can read the private
+rows, while updates must use an admin-checked security-definer function. That
+function locks the directory place and rejects hidden, unreviewed, claimed,
+linked or open-claim records before writing an atomic current state and audit
+event.
+
+The operator can record:
+
+- not started, planned, contacted, follow up, interested, declined or
+  unreachable
+- email, phone, social, website form, in-person or other contact channel
+- an optional future follow-up date
+- a concise private note without sensitive personal data
+
+The admin API returns only active, reviewed, unclaimed candidates and excludes
+places with pending or more-information ownership claims. Public directory
+APIs and place pages receive no outreach fields. The responsive workspace
+provides EN/SQ filters, due-follow-up visibility, stored contact actions,
+public-place context and a selectable claim-link fallback when browser
+clipboard access is unavailable. The five latest append-only events are shown
+read-only beside the current state so operators can verify what changed
+without opening the database.
+
+### Batch 18 operator sequence
+
+1. Apply SQL 35 after SQL 24 and SQL 30. Confirm it creates no rows and changes
+   no directory, claim, business or publication state.
+2. Deploy the API, Outreach page, admin navigation and translations.
+3. Start with one explicitly authorised outreach candidate. Do not send a real
+   message during workflow QA.
+4. Copy the owner claim link and confirm it opens Mirëbook Business with the
+   exact place ID preserved and only Business login/account setup choices.
+5. Record a planned channel and future follow-up, refresh, then confirm the
+   private state persists and the due count changes only when appropriate.
+6. Move the candidate through contacted and interested, checking that each
+   save creates one audit event. Restore its agreed private state after QA;
+   never change its public listing.
+7. Submit no ownership claim unless a fully disposable owner/business is
+   available. If a claim is submitted, confirm the place leaves Outreach and
+   appears once in Claims.
+8. Confirm anonymous, customer, business-owner and staff callers cannot open
+   the page, call the admin API or read either outreach table.
+9. Confirm public collection/detail APIs expose no outreach status, channel,
+   follow-up date, private note, actor ID or event.
+10. Verify EN/SQ at 1440x900 and 390x844 with no horizontal overflow, blank
+    actions, raw provider errors or automatic outbound messages.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

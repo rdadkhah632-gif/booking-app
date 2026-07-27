@@ -538,6 +538,10 @@ export default function AdminIndexPage() {
                 {t('nav.directory', 'Directory')}
               </Link>
 
+              <Link href="/admin/outreach" className="btn btn-ghost">
+                {t('nav.outreach', 'Outreach')}
+              </Link>
+
               <Link href="/admin/notifications" className="btn btn-ghost">
                 Notifications
               </Link>
@@ -695,6 +699,17 @@ export default function AdminIndexPage() {
                 {t(
                   'admin.claims.controlBody',
                   'Review evidence before linking a directory place to a Mirëbook business.'
+                )}
+              </p>
+            </Link>
+
+            <Link href="/admin/outreach" className="card admin-control-card">
+              <p className="small muted">{t('admin.outreach.controlKicker', 'Owner conversion')}</p>
+              <h3>{t('admin.outreach.controlTitle', 'Outreach and follow-ups')}</h3>
+              <p className="small muted" style={{ marginTop: '0.4rem' }}>
+                {t(
+                  'admin.outreach.controlBody',
+                  'Prioritise claim-ready places, record conversations and share the reviewed Business ownership path.'
                 )}
               </p>
             </Link>
