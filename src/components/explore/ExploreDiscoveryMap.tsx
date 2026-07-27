@@ -20,6 +20,7 @@ const MARKER_COLLISION_DISTANCE = 38;
 type DiscoveryMarker = {
   id: string;
   marker: MapboxMarker;
+  button: HTMLButtonElement;
   longitude: number;
   latitude: number;
 };
@@ -240,27 +241,50 @@ export default function ExploreDiscoveryMap({
 
       const bounds = new mapboxgl.LngLatBounds();
       items.slice(0, 200).forEach((item) => {
-        const element = document.createElement("button");
-        element.type = "button";
-        element.className = [
-          "discovery-map-marker",
+        const markerElement = document.createElement("div");
+        markerElement.className = [
+          "discovery-map-marker-shell",
           item.resultType === "business" ? "is-business" : "is-directory",
           selectedIdRef.current === item.id ? "is-selected" : "",
         ]
           .filter(Boolean)
           .join(" ");
-        element.setAttribute(
+        markerElement.dataset.markerId = item.id;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "discovery-map-marker-button";
+        button.dataset.markerId = item.id;
+        button.setAttribute(
           "aria-label",
           `${item.name}, ${item.category}, ${item.locationLabel}`,
         );
-        element.addEventListener("click", () => onSelectRef.current(item.id));
+        button.setAttribute(
+          "aria-pressed",
+          String(selectedIdRef.current === item.id),
+        );
+        const pin = document.createElement("span");
+        pin.className = "discovery-map-marker-pin";
+        pin.setAttribute("aria-hidden", "true");
+        button.append(pin);
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          onSelectRef.current(item.id);
+        });
+        markerElement.append(button);
 
-        const marker = new mapboxgl.Marker({ element, anchor: "bottom" })
+        const marker = new mapboxgl.Marker({
+          element: markerElement,
+          anchor: "bottom",
+        })
           .setLngLat([item.longitude, item.latitude])
           .addTo(map);
+        markerElement.setAttribute("role", "presentation");
+        markerElement.removeAttribute("aria-label");
         markerRefs.current.push({
           id: item.id,
           marker,
+          button,
           longitude: item.longitude,
           latitude: item.latitude,
         });
@@ -304,19 +328,11 @@ export default function ExploreDiscoveryMap({
   }, [items, ready, t, userLocation]);
 
   useEffect(() => {
-    markerRefs.current.forEach(({ id, marker }) => {
+    markerRefs.current.forEach(({ id, marker, button }) => {
       marker.getElement().classList.toggle("is-selected", id === selectedId);
+      button.setAttribute("aria-pressed", String(id === selectedId));
     });
-
-    if (!selectedId) return;
-    const selected = items.find((item) => item.id === selectedId);
-    if (selected && mapRef.current) {
-      mapRef.current.easeTo({
-        center: [selected.longitude, selected.latitude],
-        duration: 350,
-      });
-    }
-  }, [items, selectedId]);
+  }, [selectedId]);
 
   if (!accessToken || mapError) {
     return (
@@ -406,34 +422,61 @@ export default function ExploreDiscoveryMap({
           text-align: center;
         }
 
-        :global(.discovery-map-marker) {
+        :global(.discovery-map-marker-shell) {
+          width: 44px;
+          height: 44px;
+          z-index: 1;
+        }
+
+        :global(.discovery-map-marker-button) {
+          position: relative;
+          width: 44px;
+          height: 44px;
+          min-height: 44px;
+          padding: 0;
+          border: 0;
+          border-radius: 50%;
+          background: transparent;
+          cursor: pointer;
+        }
+
+        :global(.discovery-map-marker-pin) {
+          position: absolute;
+          top: 10px;
+          left: 8px;
           width: 28px;
           height: 28px;
-          padding: 0;
           border: 3px solid #ffffff;
           border-radius: 50% 50% 50% 4px;
           box-shadow: 0 3px 12px rgba(11, 18, 32, 0.3);
           transform: rotate(-45deg);
-          cursor: pointer;
           transition:
             transform 0.15s ease,
             box-shadow 0.15s ease;
         }
 
-        :global(.discovery-map-marker.is-business) {
+        :global(.discovery-map-marker-shell.is-business .discovery-map-marker-pin) {
           background: #ff6b35;
         }
 
-        :global(.discovery-map-marker.is-directory) {
+        :global(.discovery-map-marker-shell.is-directory .discovery-map-marker-pin) {
           background: #14b8a6;
         }
 
-        :global(.discovery-map-marker:hover),
-        :global(.discovery-map-marker:focus-visible),
-        :global(.discovery-map-marker.is-selected) {
+        :global(.discovery-map-marker-shell:hover),
+        :global(.discovery-map-marker-shell:focus-within),
+        :global(.discovery-map-marker-shell.is-selected) {
           z-index: 3;
+        }
+
+        :global(.discovery-map-marker-shell:hover .discovery-map-marker-pin),
+        :global(.discovery-map-marker-shell:focus-within .discovery-map-marker-pin),
+        :global(.discovery-map-marker-shell.is-selected .discovery-map-marker-pin) {
           transform: rotate(-45deg) scale(1.2);
           box-shadow: 0 4px 18px rgba(11, 18, 32, 0.42);
+        }
+
+        :global(.discovery-map-marker-button:focus-visible) {
           outline: 2px solid rgba(255, 107, 53, 0.4);
           outline-offset: 2px;
         }

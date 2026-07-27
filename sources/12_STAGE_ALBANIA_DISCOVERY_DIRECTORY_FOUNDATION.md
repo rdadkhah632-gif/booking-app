@@ -1064,6 +1064,102 @@ approves them one at a time.
 7. Confirm Bookable contains no directory records, private evidence remains
    absent from public APIs, and the hidden ownership fixture stays hidden.
 
+### Batch 15 closure QA
+
+Production QA passed with no P0, P1 or P2 finding. All ten prepared records
+were reviewed and approved individually, moving the catalogue from 20 approved
+and 37 awaiting review to 30 approved and 27 awaiting review. The hidden QA
+fixture remained hidden.
+
+EN/SQ Places List and Map showed 30 matching, individually selectable places
+at 1440x900 and 390x844. Bookable contained no directory result. The Elements
+Beach Bar and Emiral Beach destination images loaded with one localized credit
+and working Commons licence links; the other eight records used intact
+category fallbacks.
+
+Public payload QA found no evidence URLs, operator notes, updater identity,
+provenance, confidence, source IDs, exact geometry or exact coordinates. Map
+positions remained at `approximately_1km`, anonymous table access was denied,
+the hidden fixture API returned a no-store 404, and no business became
+published or bookable.
+
+## Batch 16 - Claim-Ready Local Business Catalogue
+
+Batch 16 adds an outreach-first layer to catalogue curation. SQL 33 prepares
+ten existing private candidates that are practical prospects for Mirëbook
+onboarding:
+
+- Xhardo Dental Center and Suela Beauty Salon in Berat
+- Klinika Dentare Hashoti and La Barberia Vrako in Gjirokastër
+- Klinika Orkiderma, Commando Arena and 3H House of Horses near Korçë
+- Emilio's Barber Shop in Sarandë
+- Reni Barbershop and Autoshkolla EDBI in Shkodër
+
+These candidates were selected because their services naturally involve an
+appointment, lesson, session or reservation; they have a direct owner contact
+path; they appear independently operated; and their current public presence
+does not offer a clear modern end-to-end booking experience. This makes them
+more practical launch conversations than a large chain or an attraction that
+cannot become bookable.
+
+Selection is not consent. Mirëbook must not describe a candidate as wanting
+promotion, agreeing to join or endorsing the platform until the owner has
+explicitly agreed. Source-reviewed directory approval, business ownership
+claiming and promotional treatment remain three separate decisions.
+
+The review rejected candidates with dead domains, mismatched websites,
+uncertain identity or stronger existing booking-platform dependence even when
+their imported confidence score was high. No unlicensed business photographs
+are attached. Category fallbacks remain until an owner provides authentic
+media or a clearly reusable image is independently verified.
+
+SQL 33 is deterministic and does not alter `listing_status`, `claim_status`,
+ownership, business publication, booking behavior or RLS. All ten records
+remain private until an operator reviews and approves them individually.
+
+### Batch 16 operator sequence
+
+1. Complete the SQL 32 review before starting SQL 33 so catalogue totals stay
+   easy to reconcile.
+2. Apply SQL 33 after SQL 29 and SQL 30.
+3. Confirm exactly ten rows are returned, every row remains `needs_review` and
+   no image is attached.
+4. Review the current identity, address, contact route, category, bilingual
+   description and private evidence for each candidate.
+5. Approve records individually only when the public listing is factually
+   supportable. Approval does not claim that the owner has joined Mirëbook.
+6. For outreach, record owner consent outside the public description before
+   offering feature placement, onboarding help or promotional copy.
+7. After each city group, inspect EN/SQ Places List, Map and one detail page at
+   desktop and 390px.
+8. Confirm Bookable contains no unclaimed directory records, private evidence
+   remains absent from public APIs and the hidden ownership fixture remains
+   hidden.
+
+### Batch 16 approval QA and map follow-up
+
+Production review approved all ten prepared records individually. Catalogue
+totals moved from 30 approved and 27 awaiting review to 40 approved and 17
+awaiting review; the hidden ownership fixture remained hidden. Places List,
+public API boundaries, EN/SQ rendering, direct details and the 390px list all
+passed without exposing review evidence, source IDs, exact geometry or exact
+coordinates.
+
+The first Map pass found one interaction defect: after selecting Emilio's
+Barber Shop, selecting Autoshkolla EDBI could leave Emilio's summary active.
+The marker itself was valid. Selecting a place automatically recentred the
+whole Albania map, which moved distant markers outside the clipped map while
+leaving their Mapbox DOM nodes discoverable to automation.
+
+The follow-up implementation keeps the current map extent when a visible
+marker is selected. It also separates Mapbox's positioning element from the
+real 44px marker button, preserving button semantics, keyboard focus and an
+explicit `aria-pressed` state instead of allowing Mapbox to convert the
+interactive element to an image role. Local EN/SQ verification confirmed the
+Emilio-to-EDBI sequence updates the exact summary while the map remains at the
+Albania overview. A focused deployed retest is required before Batch 16 is
+closed.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
