@@ -1409,6 +1409,21 @@ this QA unless the user separately authorises that exact real-world message.
    confirm no outbound message, listing, claim, business or publication state
    changed.
 
+### Batch 19 deployed follow-up
+
+Deployment QA passed the queue, copy/reset, manual-contact guard, quick dates,
+Claims handoff, localization, responsive layout and public/private boundaries.
+The first release omitted the public-place URL from Social, Phone and In-person
+drafts. Those three EN/SQ templates and their component fallbacks now include
+both the secure Business claim URL and current public-place URL, matching the
+other formats.
+
+The same QA session logged one invalid-refresh-token warning after an earlier
+isolated auth probe had invalidated that admin refresh session. This was a
+stale QA-session recovery event rather than an Outreach runtime failure. A
+fresh authenticated admin tab loaded Outreach with zero console warnings or
+errors, so the shared role/auth foundation was not changed.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

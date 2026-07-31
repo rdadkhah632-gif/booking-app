@@ -75,7 +75,7 @@ function buildDraft(
     ],
     social: [
       "admin.outreach.template.social.message",
-      "Hello. We have added a public-information listing for {placeName} to Mirëbook, an Albania-focused discovery and booking platform. If you own or manage it, you can securely claim and review the listing here: {claimUrl}. Claiming is optional and does not publish booking services automatically.",
+      "Hello. We have added a public-information listing for {placeName} to Mirëbook, an Albania-focused discovery and booking platform. If you own or manage it, you can securely claim and review the listing here: {claimUrl}. Claiming is optional and does not publish booking services automatically. Current public listing: {publicUrl}",
     ],
     website: [
       "admin.outreach.template.website.message",
@@ -83,11 +83,11 @@ function buildDraft(
     ],
     phone: [
       "admin.outreach.template.phone.message",
-      "Hello, I am calling from Mirëbook. We maintain a public-information listing for {placeName}. I would like to confirm whether you manage the business and explain how you can claim and review the listing. Claiming is optional, and nothing becomes bookable until the owner chooses to publish it. I can send the secure claim link: {claimUrl}",
+      "Hello, I am calling from Mirëbook. We maintain a public-information listing for {placeName}. I would like to confirm whether you manage the business and explain how you can claim and review the listing. Claiming is optional, and nothing becomes bookable until the owner chooses to publish it. I can send the secure claim link: {claimUrl}. The current public listing is: {publicUrl}",
     ],
     in_person: [
       "admin.outreach.template.inPerson.message",
-      "Hello, I am from Mirëbook. We maintain a public-information listing for {placeName}. If you manage the business, I can show you the listing and provide a secure link to claim and review it. Claiming is optional, and no booking services are published automatically. Claim link: {claimUrl}",
+      "Hello, I am from Mirëbook. We maintain a public-information listing for {placeName}. If you manage the business, I can show you the listing and provide a secure link to claim and review it. Claiming is optional, and no booking services are published automatically. Claim link: {claimUrl}. Current public listing: {publicUrl}",
     ],
     other: [
       "admin.outreach.template.other.message",

@@ -4517,13 +4517,13 @@ export const en: TranslationTree = {
   "admin.outreach.template.email.message":
     "Hello,\n\nWe have added a public-information listing for {placeName} to Mirëbook, an Albania-focused discovery and booking platform.\n\nIf you own or manage this business, you can claim the listing, review its details and choose whether to publish bookable services. Claiming is optional and does not publish anything automatically.\n\nClaim and review the listing:\n{claimUrl}\n\nView the current public information:\n{publicUrl}\n\nMirëbook",
   "admin.outreach.template.social.message":
-    "Hello. We have added a public-information listing for {placeName} to Mirëbook, an Albania-focused discovery and booking platform. If you own or manage it, you can securely claim and review the listing here: {claimUrl}. Claiming is optional and does not publish booking services automatically.",
+    "Hello. We have added a public-information listing for {placeName} to Mirëbook, an Albania-focused discovery and booking platform. If you own or manage it, you can securely claim and review the listing here: {claimUrl}. Claiming is optional and does not publish booking services automatically. Current public listing: {publicUrl}",
   "admin.outreach.template.website.message":
     "Hello. I am contacting you from Mirëbook about the public-information listing for {placeName}. If you own or manage the business, you can securely claim and review it here: {claimUrl}. Claiming is optional and nothing becomes bookable automatically. Current listing: {publicUrl}",
   "admin.outreach.template.phone.message":
-    "Hello, I am calling from Mirëbook. We maintain a public-information listing for {placeName}. I would like to confirm whether you manage the business and explain how you can claim and review the listing. Claiming is optional, and nothing becomes bookable until the owner chooses to publish it. I can send the secure claim link: {claimUrl}",
+    "Hello, I am calling from Mirëbook. We maintain a public-information listing for {placeName}. I would like to confirm whether you manage the business and explain how you can claim and review the listing. Claiming is optional, and nothing becomes bookable until the owner chooses to publish it. I can send the secure claim link: {claimUrl}. The current public listing is: {publicUrl}",
   "admin.outreach.template.inPerson.message":
-    "Hello, I am from Mirëbook. We maintain a public-information listing for {placeName}. If you manage the business, I can show you the listing and provide a secure link to claim and review it. Claiming is optional, and no booking services are published automatically. Claim link: {claimUrl}",
+    "Hello, I am from Mirëbook. We maintain a public-information listing for {placeName}. If you manage the business, I can show you the listing and provide a secure link to claim and review it. Claiming is optional, and no booking services are published automatically. Claim link: {claimUrl}. Current public listing: {publicUrl}",
   "admin.outreach.template.other.message":
     "Hello. Mirëbook has a public-information listing for {placeName}. An authorised owner or manager can securely claim and review it here: {claimUrl}. Claiming is optional and does not automatically publish bookable services. Public listing: {publicUrl}",
   "admin.outreach.historyTitle": "Recent activity",
