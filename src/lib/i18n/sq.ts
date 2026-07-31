@@ -4568,6 +4568,36 @@ export const sq: TranslationTree = {
     "Asgjë nuk dërgohet automatikisht. Interesi nuk pretendon ose publikon një vend; pronësia vazhdon përmes rrjedhës së shqyrtuar të pretendimit.",
   "admin.outreach.preparing":
     "Gjurmimi privat i kontaktit po përgatitet. Kandidatët mbeten të disponueshëm për shqyrtim.",
+  "admin.outreach.pilot.title": "Pilotimi i parë me pronarë",
+  "admin.outreach.pilot.body":
+    "Një listë private me dhjetë vende, e renditur sipas kontaktit të drejtpërdrejtë, profilit të shqyrtuar dhe shërbimeve që kalojnë natyrshëm në rezervime.",
+  "admin.outreach.pilot.progress": "Ecuria e pilotimit",
+  "admin.outreach.pilot.ready": "gati",
+  "admin.outreach.pilot.inProgress": "në proces",
+  "admin.outreach.pilot.interested": "të interesuar",
+  "admin.outreach.pilot.viewLabel": "Pamja e kandidatëve",
+  "admin.outreach.pilot.all": "Të gjithë kandidatët",
+  "admin.outreach.pilot.shortlist": "Pilotimi",
+  "admin.outreach.pilot.rank": "Piloti #{rank}",
+  "admin.outreach.pilot.fitTitle": "Përshtatja për nisje",
+  "admin.outreach.pilot.fit.strong": "Përshtatje e fortë",
+  "admin.outreach.pilot.fit.ready": "Gati për kontakt",
+  "admin.outreach.pilot.fit.prepare": "Përgatit kontaktin",
+  "admin.outreach.pilot.fit.strongBody":
+    "Disa mënyra të drejtpërdrejta kontakti dhe një profil i plotë i shqyrtuar e bëjnë këtë një bisedë të parë praktike.",
+  "admin.outreach.pilot.fit.readyBody":
+    "Një mënyrë e drejtpërdrejtë kontakti dhe të dhënat publike të shqyrtuara janë gati për një bisedë të kujdesshme me pronarin.",
+  "admin.outreach.pilot.fit.prepareBody":
+    "Verifiko një mënyrë më të fortë kontakti te shqyrtimi i direktorisë përpara se t'i drejtohesh pronarit.",
+  "admin.outreach.pilot.reason.email": "Email i drejtpërdrejtë",
+  "admin.outreach.pilot.reason.social": "Kontakt në rrjete sociale",
+  "admin.outreach.pilot.reason.phone": "Kontakt telefonik",
+  "admin.outreach.pilot.reason.website": "Faqe interneti",
+  "admin.outreach.pilot.reason.bilingual": "Profil EN/SQ",
+  "admin.outreach.pilot.reason.image": "Foto e shqyrtuar",
+  "admin.outreach.pilot.reason.booking": "I përshtatshëm për rezervime",
+  "admin.outreach.pilot.recommended":
+    "Kontakti i parë i rekomanduar: {channel}",
   "admin.outreach.statuses": "Gjendjet e kontaktit",
   "admin.outreach.status.all": "Të gjitha",
   "admin.outreach.status.notStarted": "Pa nisur",
@@ -4624,6 +4654,12 @@ export const sq: TranslationTree = {
   "admin.outreach.template.copyMessage": "Kopjo mesazhin",
   "admin.outreach.template.reset": "Rivendos tekstin",
   "admin.outreach.template.openEmail": "Hap emailin",
+  "admin.outreach.template.includeOffer":
+    "Përfshi ftesën për partnerët e hershëm",
+  "admin.outreach.template.includeOfferBody":
+    "Shton mesazhin aktual pa komision për rezervimet e klientëve dhe me ndihmë për konfigurimin. Përdore vetëm kur ofrohet pilotimi i nisjes.",
+  "admin.outreach.template.offer.message":
+    "Mirëbook Business është aktualisht i hapur për një grup të vogël partnerësh të hershëm. Gjatë kësaj periudhe nuk ka komision për rezervimet e klientëve dhe mund t'ju ndihmojmë të konfiguroni shërbimet dhe oraret. Pjesëmarrja është opsionale.",
   "admin.outreach.template.email.subject":
     "Pretendo dhe menaxho {placeName} në Mirëbook",
   "admin.outreach.template.email.message":

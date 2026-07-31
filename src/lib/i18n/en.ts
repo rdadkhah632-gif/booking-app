@@ -4457,6 +4457,36 @@ export const en: TranslationTree = {
     "Nothing is sent automatically. Interest does not claim or publish a place; ownership still follows the reviewed claim flow.",
   "admin.outreach.preparing":
     "Private outreach tracking is being prepared. Candidates remain available to review.",
+  "admin.outreach.pilot.title": "First-owner launch pilot",
+  "admin.outreach.pilot.body":
+    "A private ten-place shortlist weighted toward direct contact, reviewed profiles and services that naturally convert to bookings.",
+  "admin.outreach.pilot.progress": "Launch pilot progress",
+  "admin.outreach.pilot.ready": "ready",
+  "admin.outreach.pilot.inProgress": "in progress",
+  "admin.outreach.pilot.interested": "interested",
+  "admin.outreach.pilot.viewLabel": "Candidate view",
+  "admin.outreach.pilot.all": "All candidates",
+  "admin.outreach.pilot.shortlist": "Launch pilot",
+  "admin.outreach.pilot.rank": "Pilot #{rank}",
+  "admin.outreach.pilot.fitTitle": "Launch fit",
+  "admin.outreach.pilot.fit.strong": "Strong launch fit",
+  "admin.outreach.pilot.fit.ready": "Ready to approach",
+  "admin.outreach.pilot.fit.prepare": "Prepare contact first",
+  "admin.outreach.pilot.fit.strongBody":
+    "Multiple direct contact routes and a complete reviewed profile make this a practical first conversation.",
+  "admin.outreach.pilot.fit.readyBody":
+    "A direct contact route and reviewed public details are ready for a careful owner conversation.",
+  "admin.outreach.pilot.fit.prepareBody":
+    "Verify a stronger direct contact route in Directory review before approaching the owner.",
+  "admin.outreach.pilot.reason.email": "Direct email",
+  "admin.outreach.pilot.reason.social": "Social contact",
+  "admin.outreach.pilot.reason.phone": "Phone contact",
+  "admin.outreach.pilot.reason.website": "Website",
+  "admin.outreach.pilot.reason.bilingual": "EN/SQ profile",
+  "admin.outreach.pilot.reason.image": "Reviewed photo",
+  "admin.outreach.pilot.reason.booking": "Booking-friendly",
+  "admin.outreach.pilot.recommended":
+    "Recommended first contact: {channel}",
   "admin.outreach.statuses": "Outreach statuses",
   "admin.outreach.status.all": "All",
   "admin.outreach.status.notStarted": "Not started",
@@ -4512,6 +4542,12 @@ export const en: TranslationTree = {
   "admin.outreach.template.copyMessage": "Copy message",
   "admin.outreach.template.reset": "Reset draft",
   "admin.outreach.template.openEmail": "Open email draft",
+  "admin.outreach.template.includeOffer":
+    "Include early-partner invitation",
+  "admin.outreach.template.includeOfferBody":
+    "Adds the current no-customer-booking-commission and setup-support message. Use only when offering the launch pilot.",
+  "admin.outreach.template.offer.message":
+    "Mirëbook Business is currently open to a small group of early partners. During this period there is no customer booking commission, and we can help set up services and availability. Participation is optional.",
   "admin.outreach.template.email.subject":
     "Claim and manage {placeName} on Mirëbook",
   "admin.outreach.template.email.message":

@@ -28,6 +28,15 @@ const CONTACT_RECORDED_STATUSES = [
   "declined",
   "unreachable",
 ] as const;
+const PILOT_LIMIT = 10;
+const PILOT_CITY_LIMIT = 2;
+const PILOT_CATEGORY_LIMIT = 3;
+const PILOT_ACTIVE_STATUSES = [
+  "planned",
+  "contacted",
+  "follow_up",
+  "interested",
+] as const;
 const OUTREACH_CATEGORIES = [
   "beauty_grooming",
   "dental_health",
@@ -42,6 +51,15 @@ const OUTREACH_CATEGORIES = [
 
 type OutreachStatus = (typeof STATUSES)[number];
 type OutreachChannel = (typeof CHANNELS)[number];
+type LaunchFit = "strong" | "ready" | "prepare";
+type LaunchReason =
+  | "direct_email"
+  | "social_contact"
+  | "phone_contact"
+  | "website_contact"
+  | "bilingual_profile"
+  | "image_ready"
+  | "appointment_fit";
 
 type DirectoryCandidateRow = {
   id: string;
@@ -61,6 +79,9 @@ type DirectoryCandidateRow = {
   public_address?: string | null;
   public_phone?: string | null;
   public_website?: string | null;
+  editorial_description_en?: string | null;
+  editorial_description_sq?: string | null;
+  image_url?: string | null;
   listing_status: string;
   claim_status: string;
   linked_business_id?: string | null;
@@ -105,6 +126,14 @@ type OutreachCandidate = {
   outreach: OutreachRow;
   recentEvents: OutreachEventRow[];
   isDue: boolean;
+  launchPilot: {
+    rank: number | null;
+    score: number;
+    fit: LaunchFit;
+    recommendedChannel: OutreachChannel;
+    contactRoutes: number;
+    reasons: LaunchReason[];
+  };
 };
 
 function bearerToken(request: NextApiRequest) {
@@ -202,6 +231,151 @@ function statusRank(status: OutreachStatus) {
   return order[status];
 }
 
+function pilotStatusRank(status: OutreachStatus) {
+  const order: Record<OutreachStatus, number> = {
+    interested: 0,
+    follow_up: 1,
+    contacted: 2,
+    planned: 3,
+    not_started: 4,
+    unreachable: 5,
+    declined: 6,
+  };
+  return order[status];
+}
+
+function launchPilotProfile(
+  place: DirectoryCandidateRow,
+  candidateSocialUrls: string[],
+) {
+  const hasEmail = Boolean(place.email?.trim());
+  const hasSocial = candidateSocialUrls.length > 0;
+  const hasPhone = Boolean((place.public_phone || place.phone)?.trim());
+  const hasWebsite = Boolean(
+    safeWebUrl(place.public_website || place.website),
+  );
+  const hasBilingualProfile = Boolean(
+    place.editorial_description_en?.trim() &&
+      place.editorial_description_sq?.trim(),
+  );
+  const hasImage = Boolean(place.image_url?.trim());
+  const categoryKey = place.public_category_key || place.category_key;
+  const contactRoutes = [hasEmail, hasSocial, hasPhone, hasWebsite].filter(
+    Boolean,
+  ).length;
+  const categoryScores: Record<string, number> = {
+    beauty_grooming: 24,
+    dental_health: 24,
+    wellness_fitness: 22,
+    learning_lessons: 20,
+    tours_activities: 18,
+    rentals: 16,
+    events: 14,
+    food_drink: 12,
+    lodging: 10,
+  };
+  const reasons: LaunchReason[] = [];
+
+  if (hasEmail) reasons.push("direct_email");
+  if (hasSocial) reasons.push("social_contact");
+  if (hasPhone) reasons.push("phone_contact");
+  if (hasWebsite) reasons.push("website_contact");
+  if (hasBilingualProfile) reasons.push("bilingual_profile");
+  if (hasImage) reasons.push("image_ready");
+  reasons.push("appointment_fit");
+
+  const score =
+    (hasEmail ? 34 : 0) +
+    (hasSocial ? 28 : 0) +
+    (hasPhone ? 24 : 0) +
+    (hasWebsite ? 12 : 0) +
+    Math.max(0, contactRoutes - 1) * 3 +
+    (hasBilingualProfile ? 8 : 0) +
+    (hasImage ? 3 : 0) +
+    (categoryScores[categoryKey] || 8);
+  const recommendedChannel: OutreachChannel = hasEmail
+    ? "email"
+    : hasSocial
+      ? "social"
+      : hasPhone
+        ? "phone"
+        : hasWebsite
+          ? "website"
+          : "in_person";
+  const fit: LaunchFit =
+    hasBilingualProfile && contactRoutes >= 2
+      ? "strong"
+      : hasBilingualProfile && contactRoutes >= 1
+        ? "ready"
+        : "prepare";
+
+  return {
+    rank: null,
+    score,
+    fit,
+    recommendedChannel,
+    contactRoutes,
+    reasons,
+  };
+}
+
+function selectLaunchPilotCandidates(candidates: OutreachCandidate[]) {
+  const ranked = candidates
+    .filter(
+      (candidate) =>
+        !["declined", "unreachable"].includes(candidate.outreach.status),
+    )
+    .sort((left, right) => {
+      const statusDifference =
+        pilotStatusRank(left.outreach.status) -
+        pilotStatusRank(right.outreach.status);
+      if (statusDifference !== 0) return statusDifference;
+      if (left.launchPilot.score !== right.launchPilot.score) {
+        return right.launchPilot.score - left.launchPilot.score;
+      }
+      return left.name.localeCompare(right.name, "en");
+    });
+  const selected: OutreachCandidate[] = [];
+  const deferred: OutreachCandidate[] = [];
+  const cityCounts = new Map<string, number>();
+  const categoryCounts = new Map<string, number>();
+
+  const addCandidate = (candidate: OutreachCandidate) => {
+    selected.push(candidate);
+    cityCounts.set(candidate.city, (cityCounts.get(candidate.city) || 0) + 1);
+    categoryCounts.set(
+      candidate.categoryKey,
+      (categoryCounts.get(candidate.categoryKey) || 0) + 1,
+    );
+  };
+
+  for (const candidate of ranked) {
+    if (selected.length >= PILOT_LIMIT) break;
+
+    const isActive = PILOT_ACTIVE_STATUSES.some(
+      (status) => status === candidate.outreach.status,
+    );
+    const cityHasRoom =
+      (cityCounts.get(candidate.city) || 0) < PILOT_CITY_LIMIT;
+    const categoryHasRoom =
+      (categoryCounts.get(candidate.categoryKey) || 0) <
+      PILOT_CATEGORY_LIMIT;
+
+    if (isActive || (cityHasRoom && categoryHasRoom)) {
+      addCandidate(candidate);
+    } else {
+      deferred.push(candidate);
+    }
+  }
+
+  for (const candidate of deferred) {
+    if (selected.length >= PILOT_LIMIT) break;
+    addCandidate(candidate);
+  }
+
+  return selected;
+}
+
 async function requireAdmin(request: NextApiRequest) {
   const token = bearerToken(request);
   if (!token) return null;
@@ -234,13 +408,14 @@ async function handleGet(
   const category = cleanQuery(request.query.category, 50);
   const city = cleanQuery(request.query.city, 80);
   const search = cleanQuery(request.query.search, 100).toLocaleLowerCase();
+  const pilotOnly = cleanQuery(request.query.pilot, 10) === "1";
   const limit = numberQuery(request.query.limit, 50, 1, 100);
   const offset = numberQuery(request.query.offset, 0, 0, 10_000);
 
   const { data: candidateRows, error: candidatesError } = await admin.supabase
     .from("directory_places")
     .select(
-      "id, name, category_key, address, city, region, country_code, phone, website, email, social_urls, public_facts_reviewed, public_name, public_category_key, public_address, public_phone, public_website, listing_status, claim_status, linked_business_id",
+      "id, name, category_key, address, city, region, country_code, phone, website, email, social_urls, public_facts_reviewed, public_name, public_category_key, public_address, public_phone, public_website, editorial_description_en, editorial_description_sq, image_url, listing_status, claim_status, linked_business_id",
     )
     .eq("listing_status", "active")
     .eq("claim_status", "unclaimed")
@@ -330,6 +505,7 @@ async function handleGet(
     .filter((place) => !openClaimPlaceIds.has(place.id))
     .map((place) => {
       const outreach = outreachByPlace.get(place.id) || virtualOutreach(place.id);
+      const candidateSocialUrls = socialUrls(place.social_urls);
       return {
         id: place.id,
         name: place.public_name || place.name,
@@ -341,7 +517,7 @@ async function handleGet(
         phone: place.public_phone || place.phone || null,
         email: place.email || null,
         website: safeWebUrl(place.public_website || place.website),
-        socialUrls: socialUrls(place.social_urls),
+        socialUrls: candidateSocialUrls,
         outreach,
         recentEvents: eventsByPlace.get(place.id) || [],
         isDue: Boolean(
@@ -349,8 +525,20 @@ async function handleGet(
             outreach.follow_up_on <= today &&
             !["declined", "unreachable"].includes(outreach.status),
         ),
+        launchPilot: launchPilotProfile(
+          place,
+          candidateSocialUrls,
+        ),
       };
     });
+
+  const pilotCandidates = selectLaunchPilotCandidates(candidates);
+  const pilotRankById = new Map(
+    pilotCandidates.map((candidate, index) => [candidate.id, index + 1]),
+  );
+  candidates.forEach((candidate) => {
+    candidate.launchPilot.rank = pilotRankById.get(candidate.id) || null;
+  });
 
   const categoryFiltered = category
     ? candidates.filter((candidate) => candidate.categoryKey === category)
@@ -372,21 +560,30 @@ async function handleGet(
       )
     : cityFiltered;
 
+  const pilotFiltered = pilotOnly
+    ? searchFiltered.filter((candidate) => candidate.launchPilot.rank !== null)
+    : searchFiltered;
+
   const counts = Object.fromEntries(
     STATUSES.map((value) => [
       value,
-      searchFiltered.filter(
+      pilotFiltered.filter(
         (candidate) => candidate.outreach.status === value,
       ).length,
     ]),
   ) as Record<OutreachStatus, number>;
-  const dueFollowUps = searchFiltered.filter((candidate) => candidate.isDue).length;
+  const dueFollowUps = pilotFiltered.filter((candidate) => candidate.isDue).length;
   const statusFiltered = status
-    ? searchFiltered.filter(
+    ? pilotFiltered.filter(
         (candidate) => candidate.outreach.status === status,
       )
-    : searchFiltered;
+    : pilotFiltered;
   const sorted = statusFiltered.sort((left, right) => {
+    if (pilotOnly) {
+      const leftRank = left.launchPilot.rank || Number.MAX_SAFE_INTEGER;
+      const rightRank = right.launchPilot.rank || Number.MAX_SAFE_INTEGER;
+      if (leftRank !== rightRank) return leftRank - rightRank;
+    }
     if (left.isDue !== right.isDue) return left.isDue ? -1 : 1;
     const statusDifference =
       statusRank(left.outreach.status) - statusRank(right.outreach.status);
@@ -412,6 +609,21 @@ async function handleGet(
     dueFollowUps,
     trackingAvailable,
     excludedOpenClaims: openClaimPlaceIds.size,
+    pilotSummary: {
+      limit: PILOT_LIMIT,
+      selected: pilotCandidates.length,
+      ready: pilotCandidates.filter(
+        (candidate) => candidate.launchPilot.fit !== "prepare",
+      ).length,
+      inProgress: pilotCandidates.filter((candidate) =>
+        PILOT_ACTIVE_STATUSES.some(
+          (status) => status === candidate.outreach.status,
+        ),
+      ).length,
+      interested: pilotCandidates.filter(
+        (candidate) => candidate.outreach.status === "interested",
+      ).length,
+    },
     filters: { cities, categories },
     pagination: {
       total: sorted.length,

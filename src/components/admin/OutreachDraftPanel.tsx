@@ -58,6 +58,7 @@ function buildDraft(
   language: Locale,
   channel: TemplateChannel,
   values: Record<"placeName" | "claimUrl" | "publicUrl", string>,
+  includeEarlyPartnerOffer: boolean,
 ): TemplateDraft {
   const subject = fillTemplate(
     translate(
@@ -95,12 +96,21 @@ function buildDraft(
     ],
   };
 
+  const message = fillTemplate(
+    translate(language, messageKeys[channel][0], messageKeys[channel][1]),
+    values,
+  );
+  const offerMessage = translate(
+    language,
+    "admin.outreach.template.offer.message",
+    "Mirëbook Business is currently open to a small group of early partners. During this period there is no customer booking commission, and we can help set up services and availability. Participation is optional.",
+  );
+
   return {
     subject: channel === "email" ? subject : "",
-    message: fillTemplate(
-      translate(language, messageKeys[channel][0], messageKeys[channel][1]),
-      values,
-    ),
+    message: includeEarlyPartnerOffer
+      ? `${message}\n\n${offerMessage}`
+      : message,
   };
 }
 
@@ -130,18 +140,26 @@ export default function OutreachDraftPanel({
   const [language, setLanguage] = useState<Locale>(uiLocale);
   const [channel, setChannel] =
     useState<TemplateChannel>(preferredChannel);
+  const [includeEarlyPartnerOffer, setIncludeEarlyPartnerOffer] =
+    useState(false);
   const [draft, setDraft] = useState<TemplateDraft>(() =>
-    buildDraft(uiLocale, preferredChannel, values),
+    buildDraft(uiLocale, preferredChannel, values, false),
   );
   const [copiedTarget, setCopiedTarget] = useState<CopyTarget>("");
   const subjectRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const claimRef = useRef<HTMLInputElement>(null);
 
-  function applyTemplate(nextLanguage: Locale, nextChannel: TemplateChannel) {
+  function applyTemplate(
+    nextLanguage: Locale,
+    nextChannel: TemplateChannel,
+    nextIncludeOffer = includeEarlyPartnerOffer,
+  ) {
     setLanguage(nextLanguage);
     setChannel(nextChannel);
-    setDraft(buildDraft(nextLanguage, nextChannel, values));
+    setDraft(
+      buildDraft(nextLanguage, nextChannel, values, nextIncludeOffer),
+    );
     setCopiedTarget("");
   }
 
@@ -222,6 +240,32 @@ export default function OutreachDraftPanel({
           </select>
         </label>
       </div>
+
+      <label className="outreach-offer-toggle">
+        <input
+          type="checkbox"
+          checked={includeEarlyPartnerOffer}
+          onChange={(event) => {
+            const nextIncludeOffer = event.target.checked;
+            setIncludeEarlyPartnerOffer(nextIncludeOffer);
+            applyTemplate(language, channel, nextIncludeOffer);
+          }}
+        />
+        <span>
+          <strong>
+            {t(
+              "admin.outreach.template.includeOffer",
+              "Include early-partner invitation",
+            )}
+          </strong>
+          <small>
+            {t(
+              "admin.outreach.template.includeOfferBody",
+              "Adds the current no-customer-booking-commission and setup-support message. Use only when offering the launch pilot.",
+            )}
+          </small>
+        </span>
+      </label>
 
       {channel === "email" && (
         <label className="outreach-template-field">
@@ -416,6 +460,39 @@ export default function OutreachDraftPanel({
         .outreach-claim-tools input {
           width: 100%;
           min-width: 0;
+        }
+
+        .outreach-offer-toggle {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 0.65rem;
+          align-items: start;
+          padding: 0.7rem;
+          border: 1px solid var(--border);
+          border-radius: calc(var(--radius) * 0.75);
+          background: var(--surface-2);
+          cursor: pointer;
+        }
+
+        .outreach-offer-toggle input {
+          width: 1rem;
+          height: 1rem;
+          min-height: 1rem;
+          margin-top: 0.12rem;
+          padding: 0;
+          border-radius: 0.2rem;
+          accent-color: var(--accent);
+        }
+
+        .outreach-offer-toggle span {
+          display: grid;
+          gap: 0.18rem;
+        }
+
+        .outreach-offer-toggle small {
+          color: var(--muted);
+          font-size: 0.76rem;
+          line-height: 1.4;
         }
 
         .outreach-template-field textarea {

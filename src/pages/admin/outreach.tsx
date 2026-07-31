@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
+  BadgeCheck,
   CalendarClock,
   ExternalLink,
   Globe2,
@@ -10,6 +11,7 @@ import {
   MapPin,
   Phone,
   RefreshCw,
+  Rocket,
   ShieldCheck,
   UserRoundSearch,
 } from "lucide-react";
@@ -85,6 +87,22 @@ type OutreachCandidate = {
   outreach: OutreachRow;
   recentEvents: OutreachEvent[];
   isDue: boolean;
+  launchPilot: {
+    rank: number | null;
+    score: number;
+    fit: "strong" | "ready" | "prepare";
+    recommendedChannel: OutreachChannel;
+    contactRoutes: number;
+    reasons: Array<
+      | "direct_email"
+      | "social_contact"
+      | "phone_contact"
+      | "website_contact"
+      | "bilingual_profile"
+      | "image_ready"
+      | "appointment_fit"
+    >;
+  };
 };
 
 type OutreachPayload = {
@@ -93,6 +111,13 @@ type OutreachPayload = {
   dueFollowUps: number;
   trackingAvailable: boolean;
   excludedOpenClaims: number;
+  pilotSummary: {
+    limit: number;
+    selected: number;
+    ready: number;
+    inProgress: number;
+    interested: number;
+  };
   filters: {
     cities: string[];
     categories: string[];
@@ -126,6 +151,14 @@ const EMPTY_DRAFT: OutreachDraft = {
   channel: "",
   followUpOn: "",
   notes: "",
+};
+
+const EMPTY_PILOT_SUMMARY = {
+  limit: 10,
+  selected: 0,
+  ready: 0,
+  inProgress: 0,
+  interested: 0,
 };
 
 function formatDate(
@@ -174,6 +207,8 @@ export default function AdminOutreachPage() {
     useState<Record<OutreachStatus, number>>(EMPTY_COUNTS);
   const [dueFollowUps, setDueFollowUps] = useState(0);
   const [excludedOpenClaims, setExcludedOpenClaims] = useState(0);
+  const [pilotOnly, setPilotOnly] = useState(false);
+  const [pilotSummary, setPilotSummary] = useState(EMPTY_PILOT_SUMMARY);
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [pagination, setPagination] = useState({
@@ -325,6 +360,54 @@ export default function AdminOutreachPage() {
     );
   }
 
+  function launchFitLabel(value: OutreachCandidate["launchPilot"]["fit"]) {
+    const labels = {
+      strong: t("admin.outreach.pilot.fit.strong", "Strong launch fit"),
+      ready: t("admin.outreach.pilot.fit.ready", "Ready to approach"),
+      prepare: t("admin.outreach.pilot.fit.prepare", "Prepare contact first"),
+    };
+    return labels[value];
+  }
+
+  function launchFitBody(value: OutreachCandidate["launchPilot"]["fit"]) {
+    const labels = {
+      strong: t(
+        "admin.outreach.pilot.fit.strongBody",
+        "Multiple direct contact routes and a complete reviewed profile make this a practical first conversation.",
+      ),
+      ready: t(
+        "admin.outreach.pilot.fit.readyBody",
+        "A direct contact route and reviewed public details are ready for a careful owner conversation.",
+      ),
+      prepare: t(
+        "admin.outreach.pilot.fit.prepareBody",
+        "Verify a stronger direct contact route in Directory review before approaching the owner.",
+      ),
+    };
+    return labels[value];
+  }
+
+  function launchReasonLabel(
+    value: OutreachCandidate["launchPilot"]["reasons"][number],
+  ) {
+    const labels = {
+      direct_email: t("admin.outreach.pilot.reason.email", "Direct email"),
+      social_contact: t("admin.outreach.pilot.reason.social", "Social contact"),
+      phone_contact: t("admin.outreach.pilot.reason.phone", "Phone contact"),
+      website_contact: t("admin.outreach.pilot.reason.website", "Website"),
+      bilingual_profile: t(
+        "admin.outreach.pilot.reason.bilingual",
+        "EN/SQ profile",
+      ),
+      image_ready: t("admin.outreach.pilot.reason.image", "Reviewed photo"),
+      appointment_fit: t(
+        "admin.outreach.pilot.reason.booking",
+        "Booking-friendly",
+      ),
+    };
+    return labels[value];
+  }
+
   async function loadCandidates(params: {
     token?: string;
     nextOffset?: number;
@@ -332,6 +415,7 @@ export default function AdminOutreachPage() {
     nextSearch?: string;
     nextCity?: string;
     nextCategory?: string;
+    nextPilotOnly?: boolean;
   } = {}) {
     setLoading(true);
     setError("");
@@ -349,6 +433,7 @@ export default function AdminOutreachPage() {
 
       const nextOffset = params.nextOffset ?? pagination.offset;
       const nextStatus = params.nextStatus ?? statusFilter;
+      const nextPilotOnly = params.nextPilotOnly ?? pilotOnly;
       const query = new URLSearchParams({
         limit: String(pagination.limit),
         offset: String(nextOffset),
@@ -363,6 +448,7 @@ export default function AdminOutreachPage() {
       if (params.nextCategory ?? appliedCategory) {
         query.set("category", params.nextCategory ?? appliedCategory);
       }
+      if (nextPilotOnly) query.set("pilot", "1");
 
       const response = await fetch(`/api/admin/directory-outreach?${query}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -380,6 +466,7 @@ export default function AdminOutreachPage() {
       setCounts(payload.counts || EMPTY_COUNTS);
       setDueFollowUps(payload.dueFollowUps || 0);
       setExcludedOpenClaims(payload.excludedOpenClaims || 0);
+      setPilotSummary(payload.pilotSummary || EMPTY_PILOT_SUMMARY);
       setTrackingAvailable(payload.trackingAvailable !== false);
       setAvailableCities(payload.filters?.cities || []);
       setAvailableCategories(payload.filters?.categories || []);
@@ -417,6 +504,11 @@ export default function AdminOutreachPage() {
   async function changeStatusFilter(nextStatus: StatusFilter) {
     setStatusFilter(nextStatus);
     await loadCandidates({ nextOffset: 0, nextStatus });
+  }
+
+  async function changePilotMode(nextPilotOnly: boolean) {
+    setPilotOnly(nextPilotOnly);
+    await loadCandidates({ nextOffset: 0, nextPilotOnly });
   }
 
   async function saveOutreach() {
@@ -628,6 +720,64 @@ export default function AdminOutreachPage() {
           </div>
         </div>
 
+        <section className="outreach-pilot" aria-labelledby="launch-pilot-title">
+          <div className="outreach-pilot-copy">
+            <Rocket size={22} aria-hidden="true" />
+            <div>
+              <strong id="launch-pilot-title">
+                {t(
+                  "admin.outreach.pilot.title",
+                  "First-owner launch pilot",
+                )}
+              </strong>
+              <span>
+                {t(
+                  "admin.outreach.pilot.body",
+                  "A private ten-place shortlist weighted toward direct contact, reviewed profiles and services that naturally convert to bookings.",
+                )}
+              </span>
+            </div>
+          </div>
+          <div className="outreach-pilot-metrics" aria-label={t(
+            "admin.outreach.pilot.progress",
+            "Launch pilot progress",
+          )}>
+            <span>
+              <strong>{pilotSummary.ready}</strong>
+              {t("admin.outreach.pilot.ready", "ready")}
+            </span>
+            <span>
+              <strong>{pilotSummary.inProgress}</strong>
+              {t("admin.outreach.pilot.inProgress", "in progress")}
+            </span>
+            <span>
+              <strong>{pilotSummary.interested}</strong>
+              {t("admin.outreach.pilot.interested", "interested")}
+            </span>
+          </div>
+          <div className="outreach-pilot-switch" role="group" aria-label={t(
+            "admin.outreach.pilot.viewLabel",
+            "Candidate view",
+          )}>
+            <button
+              type="button"
+              aria-pressed={!pilotOnly}
+              className={!pilotOnly ? "is-active" : ""}
+              onClick={() => changePilotMode(false)}
+            >
+              {t("admin.outreach.pilot.all", "All candidates")}
+            </button>
+            <button
+              type="button"
+              aria-pressed={pilotOnly}
+              className={pilotOnly ? "is-active" : ""}
+              onClick={() => changePilotMode(true)}
+            >
+              {t("admin.outreach.pilot.shortlist", "Launch pilot")} · {pilotSummary.selected}
+            </button>
+          </div>
+        </section>
+
         {!trackingAvailable && (
           <div className="outreach-message is-neutral">
             {t(
@@ -782,6 +932,15 @@ export default function AdminOutreachPage() {
                           .filter(Boolean)
                           .join(" · ")}
                       </small>
+                      {candidate.launchPilot.rank && (
+                        <small className="outreach-pilot-rank">
+                          {t("admin.outreach.pilot.rank", "Pilot #{rank}").replace(
+                            "{rank}",
+                            String(candidate.launchPilot.rank),
+                          )}{" "}
+                          · {channelLabel(candidate.launchPilot.recommendedChannel)}
+                        </small>
+                      )}
                     </span>
                     <span className={`outreach-pill is-${candidate.outreach.status}`}>
                       {statusLabel(candidate.outreach.status)}
@@ -873,6 +1032,37 @@ export default function AdminOutreachPage() {
                     {t("admin.outreach.publicPlace", "Public place")}
                   </Link>
                 </header>
+
+                <section className="outreach-launch-fit">
+                  <header>
+                    <div>
+                      <BadgeCheck size={18} aria-hidden="true" />
+                      <strong>
+                        {t("admin.outreach.pilot.fitTitle", "Launch fit")}
+                      </strong>
+                    </div>
+                    <span className={`is-${selectedCandidate.launchPilot.fit}`}>
+                      {launchFitLabel(selectedCandidate.launchPilot.fit)}
+                    </span>
+                  </header>
+                  <p>{launchFitBody(selectedCandidate.launchPilot.fit)}</p>
+                  <div className="outreach-launch-reasons">
+                    {selectedCandidate.launchPilot.reasons.map((reason) => (
+                      <span key={reason}>{launchReasonLabel(reason)}</span>
+                    ))}
+                  </div>
+                  <small>
+                    {t(
+                      "admin.outreach.pilot.recommended",
+                      "Recommended first contact: {channel}",
+                    ).replace(
+                      "{channel}",
+                      channelLabel(
+                        selectedCandidate.launchPilot.recommendedChannel,
+                      ),
+                    )}
+                  </small>
+                </section>
 
                 <div className="outreach-contact-section">
                   <h3>{t("admin.outreach.contactTitle", "Contact routes")}</h3>
@@ -1287,6 +1477,91 @@ export default function AdminOutreachPage() {
           line-height: 1.45;
         }
 
+        .outreach-pilot {
+          display: grid;
+          grid-template-columns: minmax(0, 1.3fr) auto auto;
+          gap: 1rem;
+          align-items: center;
+          padding: 0.9rem 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface);
+        }
+
+        .outreach-pilot-copy {
+          min-width: 0;
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 0.7rem;
+          align-items: start;
+        }
+
+        .outreach-pilot-copy > svg {
+          color: var(--accent);
+        }
+
+        .outreach-pilot-copy > div {
+          display: grid;
+          gap: 0.2rem;
+        }
+
+        .outreach-pilot-copy span {
+          color: var(--muted);
+          font-size: 0.82rem;
+          line-height: 1.4;
+        }
+
+        .outreach-pilot-metrics,
+        .outreach-pilot-switch {
+          display: inline-flex;
+          align-items: stretch;
+        }
+
+        .outreach-pilot-metrics {
+          gap: 0.9rem;
+        }
+
+        .outreach-pilot-metrics span {
+          display: grid;
+          gap: 0.05rem;
+          color: var(--muted);
+          font-size: 0.7rem;
+          white-space: nowrap;
+        }
+
+        .outreach-pilot-metrics strong {
+          color: var(--text);
+          font-size: 1rem;
+        }
+
+        .outreach-pilot-switch {
+          border: 1px solid var(--border);
+          border-radius: calc(var(--radius) * 0.75);
+          overflow: hidden;
+        }
+
+        .outreach-pilot-switch button {
+          min-height: 2.55rem;
+          padding: 0.45rem 0.7rem;
+          border: 0;
+          border-right: 1px solid var(--border);
+          background: var(--surface-2);
+          color: var(--muted);
+          font-size: 0.76rem;
+          font-weight: 800;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+
+        .outreach-pilot-switch button:last-child {
+          border-right: 0;
+        }
+
+        .outreach-pilot-switch button.is-active {
+          background: var(--accent-dim);
+          color: var(--accent);
+        }
+
         .outreach-message {
           padding: 0.8rem 1rem;
           border: 1px solid var(--border);
@@ -1500,6 +1775,11 @@ export default function AdminOutreachPage() {
           line-height: 1.3;
         }
 
+        .outreach-row-main .outreach-pilot-rank {
+          color: var(--accent);
+          font-weight: 800;
+        }
+
         .outreach-row-main .is-due {
           flex: 0 0 auto;
           padding: 0.15rem 0.35rem;
@@ -1557,6 +1837,7 @@ export default function AdminOutreachPage() {
         }
 
         .outreach-detail-header,
+        .outreach-launch-fit,
         .outreach-contact-section,
         .outreach-history-section,
         .outreach-edit-section {
@@ -1587,6 +1868,7 @@ export default function AdminOutreachPage() {
         }
 
         .outreach-contact-section,
+        .outreach-launch-fit,
         .outreach-history-section,
         .outreach-edit-section {
           display: grid;
@@ -1596,6 +1878,71 @@ export default function AdminOutreachPage() {
         .outreach-contact-section h3,
         .outreach-history-section h3 {
           font-size: 1rem;
+        }
+
+        .outreach-launch-fit {
+          display: grid;
+          gap: 0.6rem;
+          background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+        }
+
+        .outreach-launch-fit > header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+        }
+
+        .outreach-launch-fit > header > div {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+        }
+
+        .outreach-launch-fit > header > div svg {
+          color: var(--accent);
+        }
+
+        .outreach-launch-fit > header > span {
+          padding: 0.25rem 0.45rem;
+          border-radius: 999px;
+          background: var(--surface-3);
+          color: var(--muted);
+          font-size: 0.7rem;
+          font-weight: 800;
+        }
+
+        .outreach-launch-fit > header > span.is-strong {
+          background: var(--success-dim);
+          color: var(--success);
+        }
+
+        .outreach-launch-fit > header > span.is-ready {
+          background: var(--accent-dim);
+          color: var(--accent);
+        }
+
+        .outreach-launch-fit p,
+        .outreach-launch-fit > small {
+          color: var(--muted);
+          font-size: 0.8rem;
+          line-height: 1.4;
+        }
+
+        .outreach-launch-reasons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.35rem;
+        }
+
+        .outreach-launch-reasons span {
+          padding: 0.22rem 0.42rem;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--surface);
+          color: var(--muted);
+          font-size: 0.68rem;
+          font-weight: 750;
         }
 
         .outreach-address {
@@ -1768,6 +2115,15 @@ export default function AdminOutreachPage() {
         }
 
         @media (max-width: 1040px) {
+          .outreach-pilot {
+            grid-template-columns: minmax(0, 1fr) auto;
+          }
+
+          .outreach-pilot-switch {
+            grid-column: 1 / -1;
+            justify-self: start;
+          }
+
           .outreach-statuses {
             grid-template-columns: repeat(4, minmax(0, 1fr));
           }
@@ -1826,6 +2182,26 @@ export default function AdminOutreachPage() {
             width: 100%;
           }
 
+          .outreach-pilot {
+            grid-template-columns: minmax(0, 1fr);
+          }
+
+          .outreach-pilot-metrics {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .outreach-pilot-switch {
+            grid-column: auto;
+            width: 100%;
+          }
+
+          .outreach-pilot-switch button {
+            flex: 1 1 0;
+            min-width: 0;
+            white-space: normal;
+          }
+
           .outreach-header-actions :global(.btn) {
             flex: 1 1 0;
             justify-content: center;
@@ -1875,6 +2251,10 @@ export default function AdminOutreachPage() {
 
           .outreach-contact-actions {
             display: grid;
+          }
+
+          .outreach-launch-fit > header {
+            align-items: flex-start;
           }
 
           .outreach-contact-actions :global(.btn) {
