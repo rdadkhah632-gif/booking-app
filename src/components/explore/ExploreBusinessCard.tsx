@@ -120,8 +120,8 @@ export default function ExploreBusinessCard({
 
       <style jsx>{`
         .explore-business-image {
-          min-height: 100%;
-          border-right: 1px solid var(--border);
+          min-height: 142px;
+          border-bottom: 1px solid var(--border);
           display: grid;
           place-items: center;
           overflow: hidden;
@@ -193,7 +193,7 @@ export default function ExploreBusinessCard({
           margin: 0;
           color: var(--text-muted);
           -webkit-box-orient: vertical;
-          -webkit-line-clamp: 1;
+          -webkit-line-clamp: 2;
           font-size: 0.78rem;
           line-height: 1.35;
         }

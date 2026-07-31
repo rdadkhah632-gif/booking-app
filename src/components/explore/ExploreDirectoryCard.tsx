@@ -1,45 +1,16 @@
-import {
-  Activity,
-  ArrowRight,
-  BedDouble,
-  Bike,
-  Building2,
-  Dumbbell,
-  ExternalLink,
-  Flag,
-  GraduationCap,
-  Landmark,
-  MapPin,
-  Scissors,
-  Stethoscope,
-  Ticket,
-  Utensils,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useI18n } from "@/lib/useI18n";
+import DirectoryCategoryArtwork from "./DirectoryCategoryArtwork";
 import {
   directoryCategoryLabel,
   directoryImageCredit,
 } from "./directoryCategories";
-import { DirectoryCategoryKey, DirectoryPlace } from "./exploreTypes";
+import { DirectoryPlace } from "./exploreTypes";
 
 type Props = {
   place: DirectoryPlace;
   onShowOnMap: (placeId: string) => void;
-};
-
-const CATEGORY_ICONS: Record<DirectoryCategoryKey, LucideIcon> = {
-  beauty_grooming: Scissors,
-  dental_health: Stethoscope,
-  wellness_fitness: Dumbbell,
-  events: Ticket,
-  learning_lessons: GraduationCap,
-  tours_activities: Bike,
-  rentals: Building2,
-  attractions: Landmark,
-  food_drink: Utensils,
-  lodging: BedDouble,
 };
 
 function distanceLabel(
@@ -61,7 +32,6 @@ function distanceLabel(
 
 export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
   const { t } = useI18n();
-  const CategoryIcon = CATEGORY_ICONS[place.categoryKey] || Activity;
   const location = [place.city, place.region].filter(Boolean).join(", ");
   const distance = distanceLabel(place.distanceMeters, t);
 
@@ -79,7 +49,7 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
             decoding="async"
           />
         ) : (
-          <CategoryIcon size={28} strokeWidth={1.8} />
+          <DirectoryCategoryArtwork category={place.categoryKey} />
         )}
       </div>
       <div className="directory-card-content">
@@ -88,7 +58,9 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
             <span className="directory-type">
               {t("directory.card.type", "Local place")}
             </span>
-            <h2>{place.name}</h2>
+            <h2>
+              <Link href={`/places/${place.id}`}>{place.name}</Link>
+            </h2>
           </div>
           {distance && <span className="directory-distance">{distance}</span>}
         </div>
@@ -121,21 +93,6 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
               <MapPin size={16} aria-hidden="true" />
               {t("directory.card.showMap", "Map")}
             </button>
-            {place.website && (
-              <a
-                href={place.website}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-ghost"
-              >
-                <ExternalLink size={16} aria-hidden="true" />
-                {t("directory.card.website", "Website")}
-              </a>
-            )}
-            <Link href={{ pathname: "/support/customer", query: { reportPlace: place.name, placeId: place.id } }} className="btn btn-ghost" aria-label={t("directory.card.reportPlace", "Report incorrect place details")}>
-              <Flag size={16} aria-hidden="true" />
-              {t("directory.card.report", "Report")}
-            </Link>
           </div>
         </div>
 
@@ -178,7 +135,7 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         .explore-directory-card {
           min-width: 0;
           display: grid;
-          grid-template-columns: 118px minmax(0, 1fr);
+          grid-template-rows: 142px minmax(0, 1fr);
           border: 1px solid var(--border);
           border-radius: 8px;
           overflow: hidden;
@@ -186,14 +143,11 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         .directory-card-media {
-          min-height: 178px;
+          min-height: 142px;
           display: grid;
           place-items: center;
-          color: var(--success);
-          background:
-            linear-gradient(145deg, rgba(45, 212, 191, 0.15), transparent),
-            var(--surface-2);
-          border-right: 1px solid var(--border);
+          background: var(--surface-2);
+          border-bottom: 1px solid var(--border);
           overflow: hidden;
         }
 
@@ -206,8 +160,8 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         .directory-card-content {
           min-width: 0;
           padding: 0.8rem;
-          display: grid;
-          align-content: start;
+          display: flex;
+          flex-direction: column;
           gap: 0.42rem;
         }
 
@@ -231,6 +185,15 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           font-size: 1rem;
           line-height: 1.2;
           overflow-wrap: anywhere;
+        }
+
+        .directory-card-heading h2 a {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        .directory-card-heading h2 a:hover {
+          color: var(--accent);
         }
 
         .directory-type,
@@ -282,7 +245,10 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         .directory-card-footer {
-          margin-top: 0.15rem;
+          align-self: end;
+          width: 100%;
+          margin-top: auto;
+          padding-top: 0.25rem;
         }
 
         .directory-card-actions {
@@ -315,11 +281,11 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
         @media (max-width: 640px) {
           .explore-directory-card {
-            grid-template-columns: 82px minmax(0, 1fr);
+            grid-template-rows: 118px minmax(0, 1fr);
           }
 
           .directory-card-media {
-            min-height: 0;
+            min-height: 118px;
           }
 
           .directory-card-heading,

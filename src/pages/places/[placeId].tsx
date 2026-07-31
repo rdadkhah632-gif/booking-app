@@ -13,6 +13,7 @@ import {
   Phone,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
+import DirectoryCategoryArtwork from "@/components/explore/DirectoryCategoryArtwork";
 import {
   directoryCategoryLabel,
   directoryImageCredit,
@@ -179,29 +180,38 @@ export default function DirectoryPlacePage() {
               </span>
             </header>
 
-            {place.image && (
-              <figure className="place-media">
-                <img
-                  src={place.image.url}
-                  alt={place.image.alt}
-                  decoding="async"
+            <figure
+              className={`place-media ${place.image ? "has-image" : "no-image"}`}
+            >
+              {place.image ? (
+                <>
+                  <img
+                    src={place.image.url}
+                    alt={place.image.alt}
+                    decoding="async"
+                  />
+                  <figcaption>
+                    {t("directory.card.photo", "Photo")}:{" "}
+                    {place.image.attribution.url ? (
+                      <a
+                        href={place.image.attribution.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {directoryImageCredit(place.image.attribution.label)}
+                      </a>
+                    ) : (
+                      directoryImageCredit(place.image.attribution.label)
+                    )}
+                  </figcaption>
+                </>
+              ) : (
+                <DirectoryCategoryArtwork
+                  category={place.categoryKey}
+                  size={58}
                 />
-                <figcaption>
-                  {t("directory.card.photo", "Photo")}:{" "}
-                  {place.image.attribution.url ? (
-                    <a
-                      href={place.image.attribution.url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {directoryImageCredit(place.image.attribution.label)}
-                    </a>
-                  ) : (
-                    directoryImageCredit(place.image.attribution.label)
-                  )}
-                </figcaption>
-              </figure>
-            )}
+              )}
+            </figure>
 
             <div className="place-grid">
               <section className="place-main">
@@ -285,6 +295,8 @@ export default function DirectoryPlacePage() {
         .place-status { padding: .5rem .7rem; border: 1px solid var(--border); border-radius: 999px; font-size: .78rem; white-space: nowrap; }
         .place-media { position: relative; overflow: hidden; margin: 1.25rem 0 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
         .place-media img { display: block; width: 100%; max-height: 440px; aspect-ratio: 16 / 7; object-fit: cover; }
+        .place-media.no-image { height: 280px; }
+        .place-media.no-image :global(.directory-category-artwork span) { width: 5.5rem; height: 5.5rem; }
         .place-media figcaption { position: absolute; right: .65rem; bottom: .65rem; max-width: calc(100% - 1.3rem); padding: .3rem .48rem; border-radius: 4px; background: rgba(11, 18, 32, .82); color: #fff; font-size: .68rem; }
         .place-media figcaption a { color: inherit; }
         .place-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .75fr); gap: 2.5rem; padding: 2rem 0; }
@@ -312,6 +324,7 @@ export default function DirectoryPlacePage() {
           .place-grid { grid-template-columns: 1fr; gap: 1.5rem; padding-top: 1.4rem; }
           .place-header h1 { font-size: 2.25rem; }
           .place-media img { aspect-ratio: 4 / 3; }
+          .place-media.no-image { height: 210px; }
           .place-actions :global(.btn) { flex: 1 1 140px; }
         }
       `}</style>

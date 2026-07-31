@@ -857,15 +857,15 @@ export default function Explore() {
 
         .explore-results-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0.75rem;
         }
 
         :global(.explore-business-card) {
           display: grid;
-          grid-template-columns: 116px minmax(0, 1fr);
+          grid-template-rows: 142px minmax(0, 1fr);
           align-items: stretch;
-          min-height: 164px;
+          min-height: 320px;
           overflow: hidden;
           padding: 0;
           color: var(--text);
@@ -942,7 +942,13 @@ export default function Explore() {
           margin-top: 1rem;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1320px) {
+          .explore-results-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 740px) {
           .explore-results-grid {
             grid-template-columns: 1fr;
           }
@@ -960,14 +966,12 @@ export default function Explore() {
           }
 
           :global(.explore-business-card) {
-            grid-template-columns: 92px minmax(0, 1fr);
-            min-height: 146px;
+            grid-template-rows: 118px minmax(0, 1fr);
+            min-height: 286px;
           }
 
           :global(.explore-business-image) {
-            min-height: 100% !important;
-            border-right: 1px solid var(--border);
-            border-bottom: 0;
+            min-height: 118px !important;
           }
 
           :global(.explore-business-content) {

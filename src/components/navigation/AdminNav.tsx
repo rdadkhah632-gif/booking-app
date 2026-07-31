@@ -80,7 +80,7 @@ export default function AdminNav({
           position: relative;
         }
 
-        @media (max-width: 540px) {
+        @media (max-width: 1100px) {
           .admin-nav-desktop {
             display: none;
           }
