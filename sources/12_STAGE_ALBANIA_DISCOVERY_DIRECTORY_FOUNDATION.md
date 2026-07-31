@@ -1333,6 +1333,82 @@ publication or outbound-message behavior changes. After SQL 36 is applied,
 rerun one controlled planned-state save, refresh persistence, due-count and
 single-event checks before continuing the outreach lifecycle.
 
+Production RPC closure passed after SQL 36. The controlled `3H House of
+Horses` candidate moved from `not_started` to `planned` with its private Other
+channel, future follow-up date and explicit no-contact QA note persisted. The
+write returned one row and added exactly one audit event. Resetting it to
+`not_started` cleared the channel, date and note, returned one row and added
+exactly one second event. The place remained active, unclaimed and unlinked.
+No email, notification, claim, business link or publication action occurred.
+The Browser-only retest could not type into its native date control, but the
+production write path and both insert/update branches are now verified.
+
+## Batch 19 - Manual Owner Outreach Conversion
+
+Batch 19 turns the private Outreach queue into a usable manual conversion
+workspace without turning Mirëbook into an automated campaign sender. Each
+candidate now has editable English and Albanian drafts for email, social,
+website forms, phone, in-person and other contact. Drafts include the exact
+Business claim URL and current public-place URL, can be reset after editing,
+and can be copied independently. Email candidates also expose a normal mail
+draft link; Mirëbook still does not send the message.
+
+The operating boundary is explicit:
+
+- every draft is labelled `Manual send only`
+- copying or opening a draft does not change outreach status
+- contacted, follow-up, interested, declined and unreachable states require
+  an explicit confirmation that the operator personally contacted the owner
+- the same confirmation is enforced by the admin API, not only by the page
+- planned activity does not require false contact confirmation
+- quick future-date controls avoid dependence on a browser-native date picker
+- interested candidates show the existing Ownership claims handoff; interest
+  never claims, links, publishes or makes a place bookable
+- no bulk-send action, background sender, provider integration or new public
+  payload field is introduced
+
+The page keeps contact routes, public context, editable copy, current private
+state and recent audit events in one responsive operator surface. Public APIs,
+customer pages and non-admin roles remain unchanged. No SQL migration is
+required for Batch 19; it builds on the SQL 35/36 private state and event
+boundary.
+
+Local closure passed with all 35 candidates loaded. English email and Albanian
+social drafts rendered with the correct place and claim URLs; edited text
+copied exactly and reset to the generated draft. The unconfirmed Contacted
+save was blocked in the interface, and a direct authenticated API probe
+returned `400` with `manual_contact_confirmation_required` without writing a
+row. Interested exposed the Claims handoff and the +3 days control produced a
+valid future date. Desktop and 390px rendering had no horizontal overflow,
+framework overlay or console warning/error. `npm run build` passed.
+
+### Batch 19 deployment QA
+
+Use one explicitly authorised candidate and do not contact its owner during
+this QA unless the user separately authorises that exact real-world message.
+
+1. Open `/admin/outreach` and confirm candidates, contact routes, recent
+   activity and the Ownership claims shortcut load without raw errors.
+2. Switch a draft between EN/SQ and email/social/website/phone/in-person/other.
+   Confirm the place name, public URL and exact Business claim URL remain
+   correct. Edit, copy and reset one draft; do not open or send it externally.
+3. Confirm `Manual send only` remains visible and no status, event, email,
+   notification or claim is created by editing or copying a draft.
+4. Select Contacted without checking the manual-contact confirmation and press
+   Save. Confirm the save is blocked with friendly localized copy and no audit
+   event is added.
+5. Use Tomorrow, +3 days and +7 days to confirm valid future dates populate
+   without relying on the native date control. Do not save the QA state.
+6. Select Interested without saving. Confirm the Claims handoff appears and
+   points to `/admin/directory-claims`; no claim is created automatically.
+7. Confirm anonymous, customer, owner and staff roles remain denied from the
+   page/API, and public directory payloads contain no draft or outreach data.
+8. Check EN/SQ at 1440x900 and 390x844 for clipped controls, horizontal
+   overflow, blank actions, mixed-language copy and console errors.
+9. End with the candidate's original private outreach state unchanged and
+   confirm no outbound message, listing, claim, business or publication state
+   changed.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

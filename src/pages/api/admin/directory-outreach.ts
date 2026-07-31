@@ -21,6 +21,13 @@ const CHANNELS = [
   "in_person",
   "other",
 ] as const;
+const CONTACT_RECORDED_STATUSES = [
+  "contacted",
+  "follow_up",
+  "interested",
+  "declined",
+  "unreachable",
+] as const;
 const OUTREACH_CATEGORIES = [
   "beauty_grooming",
   "dental_health",
@@ -425,6 +432,7 @@ async function handlePost(
   const channel = cleanText(body.channel, 30) as OutreachChannel;
   const followUpOn = cleanText(body.followUpOn, 10);
   const notes = cleanText(body.notes, 2_000);
+  const manualContactConfirmed = body.manualContactConfirmed === true;
 
   if (!UUID_PATTERN.test(placeId)) {
     response.status(400).json({ error: "Choose a valid directory place." });
@@ -461,6 +469,16 @@ async function handlePost(
   }
   if (["declined", "unreachable"].includes(status) && !notes) {
     response.status(400).json({ error: "Add a short private note for this outcome." });
+    return;
+  }
+  if (
+    CONTACT_RECORDED_STATUSES.some((value) => value === status) &&
+    !manualContactConfirmed
+  ) {
+    response.status(400).json({
+      code: "manual_contact_confirmation_required",
+      error: "Confirm that contact happened outside Mirëbook before saving.",
+    });
     return;
   }
 

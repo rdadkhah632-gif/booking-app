@@ -4560,6 +4560,7 @@ export const sq: TranslationTree = {
   "admin.outreach.title": "Kontakti me pronarët",
   "admin.outreach.subtitle":
     "Jepu përparësi vendeve lokale të shqyrtuara, regjistro bisedat dhe ndaj rrugën e saktë të pronësisë.",
+  "admin.outreach.claims": "Pretendimet e pronësisë",
   "admin.outreach.directory": "Shqyrtimi i direktorisë",
   "admin.outreach.refresh": "Rifresko",
   "admin.outreach.safetyTitle": "Gjurmim privat, zgjedhje e pronarit",
@@ -4610,6 +4611,33 @@ export const sq: TranslationTree = {
   "admin.outreach.copy": "Kopjo",
   "admin.outreach.copied": "U kopjua",
   "admin.outreach.openClaim": "Hap",
+  "admin.outreach.template.title": "Përgatit kontaktin",
+  "admin.outreach.template.body":
+    "Zgjidh gjuhën dhe mënyrën e kontaktit, pastaj përshtate përpara kopjimit.",
+  "admin.outreach.template.manualOnly": "Vetëm dërgim manual",
+  "admin.outreach.template.languageLabel": "Gjuha e mesazhit",
+  "admin.outreach.template.formatLabel": "Mënyra e kontaktit",
+  "admin.outreach.template.subjectLabel": "Subjekti",
+  "admin.outreach.template.messageLabel": "Mesazhi",
+  "admin.outreach.template.scriptLabel": "Udhëzues bisede",
+  "admin.outreach.template.copySubject": "Kopjo subjektin",
+  "admin.outreach.template.copyMessage": "Kopjo mesazhin",
+  "admin.outreach.template.reset": "Rivendos tekstin",
+  "admin.outreach.template.openEmail": "Hap emailin",
+  "admin.outreach.template.email.subject":
+    "Pretendo dhe menaxho {placeName} në Mirëbook",
+  "admin.outreach.template.email.message":
+    "Përshëndetje,\n\nKemi shtuar në Mirëbook një listim me informacion publik për {placeName}. Mirëbook është një platformë për zbulimin dhe rezervimin e shërbimeve në Shqipëri.\n\nNëse e zotëroni ose menaxhoni këtë biznes, mund ta pretendoni listimin, të kontrolloni të dhënat dhe të zgjidhni nëse dëshironi të publikoni shërbime për rezervim. Pretendimi është opsional dhe nuk publikon asgjë automatikisht.\n\nPretendoni dhe kontrolloni listimin:\n{claimUrl}\n\nShikoni informacionin aktual publik:\n{publicUrl}\n\nMirëbook",
+  "admin.outreach.template.social.message":
+    "Përshëndetje. Kemi shtuar në Mirëbook një listim me informacion publik për {placeName}. Nëse e zotëroni ose menaxhoni biznesin, mund ta pretendoni dhe kontrolloni listimin në mënyrë të sigurt këtu: {claimUrl}. Pretendimi është opsional dhe nuk publikon automatikisht shërbime për rezervim.",
+  "admin.outreach.template.website.message":
+    "Përshëndetje. Po ju kontaktoj nga Mirëbook për listimin me informacion publik të {placeName}. Nëse e zotëroni ose menaxhoni biznesin, mund ta pretendoni dhe kontrolloni në mënyrë të sigurt këtu: {claimUrl}. Pretendimi është opsional dhe asgjë nuk bëhet automatikisht e rezervueshme. Listimi aktual: {publicUrl}",
+  "admin.outreach.template.phone.message":
+    "Përshëndetje, po telefonoj nga Mirëbook. Ne mirëmbajmë një listim me informacion publik për {placeName}. Dëshiroj të konfirmoj nëse e menaxhoni biznesin dhe t'ju shpjegoj si mund ta pretendoni dhe kontrolloni listimin. Pretendimi është opsional dhe asgjë nuk bëhet e rezervueshme derisa pronari të zgjedhë ta publikojë. Mund t'ju dërgoj lidhjen e sigurt: {claimUrl}",
+  "admin.outreach.template.inPerson.message":
+    "Përshëndetje, jam nga Mirëbook. Ne mirëmbajmë një listim me informacion publik për {placeName}. Nëse e menaxhoni biznesin, mund t'jua tregoj listimin dhe t'ju jap një lidhje të sigurt për ta pretenduar dhe kontrolluar. Pretendimi është opsional dhe shërbimet për rezervim nuk publikohen automatikisht. Lidhja: {claimUrl}",
+  "admin.outreach.template.other.message":
+    "Përshëndetje. Mirëbook ka një listim me informacion publik për {placeName}. Një pronar ose menaxher i autorizuar mund ta pretendojë dhe kontrollojë në mënyrë të sigurt këtu: {claimUrl}. Pretendimi është opsional dhe nuk publikon automatikisht shërbime për rezervim. Listimi publik: {publicUrl}",
   "admin.outreach.historyTitle": "Aktiviteti i fundit",
   "admin.outreach.historyEmpty":
     "Nuk ka ndryshime private kontakti të regjistruara.",
@@ -4625,9 +4653,21 @@ export const sq: TranslationTree = {
   "admin.outreach.channel.inPerson": "Fizikisht",
   "admin.outreach.channel.other": "Tjetër",
   "admin.outreach.followUpLabel": "Data e ndjekjes",
+  "admin.outreach.quickFollowUp": "Data të shpejta për ndjekje",
+  "admin.outreach.tomorrow": "Nesër",
+  "admin.outreach.inDays.3": "+3 ditë",
+  "admin.outreach.inDays.7": "+7 ditë",
   "admin.outreach.noteLabel": "Shënim privat i operatorit",
   "admin.outreach.notePlaceholder":
     "Regjistro çfarë ndodhi dhe hapin e dobishëm të radhës. Mos shto të dhëna personale delikate.",
+  "admin.outreach.manualConfirmationTitle":
+    "Kontakti ndodhi jashtë Mirëbook",
+  "admin.outreach.manualConfirmationBody":
+    "Konfirmo vetëm pasi ta kesh dërguar vetë mesazhin ose ta kesh kryer bisedën.",
+  "admin.outreach.handoffTitle": "Gati për kalimin e pronësisë",
+  "admin.outreach.handoffBody":
+    "Ndaj lidhjen e sigurt të pretendimit. Pasi të dërgohet kërkesa, ky vend largohet nga Kontaktet dhe kalon te Pretendimet e pronësisë.",
+  "admin.outreach.handoffAction": "Hap pretendimet",
   "admin.outreach.saving": "Po ruhet...",
   "admin.outreach.save": "Ruaj përditësimin e kontaktit",
   "admin.outreach.updated": "Përditësuar",
@@ -4640,6 +4680,8 @@ export const sq: TranslationTree = {
   "admin.outreach.error.channel": "Zgjidh si u kontaktua biznesi.",
   "admin.outreach.error.followUp": "Zgjidh një datë ndjekjeje.",
   "admin.outreach.error.note": "Shto një shënim të shkurtër privat për këtë rezultat.",
+  "admin.outreach.error.manualConfirmation":
+    "Konfirmo se kontakti ndodhi jashtë Mirëbook përpara se të ruash këtë gjendje.",
   "admin.outreach.controlKicker": "Konvertimi i pronarëve",
   "admin.outreach.controlTitle": "Kontaktet dhe ndjekjet",
   "admin.outreach.controlBody":

@@ -4,8 +4,6 @@ import { useRouter } from "next/router";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   CalendarClock,
-  Check,
-  Clipboard,
   ExternalLink,
   Globe2,
   Mail,
@@ -16,7 +14,8 @@ import {
   UserRoundSearch,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
-import { getBusinessAppUrl } from "@/lib/appUrls";
+import OutreachDraftPanel from "@/components/admin/OutreachDraftPanel";
+import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 
@@ -37,6 +36,13 @@ const CHANNELS = [
   "in_person",
   "other",
 ] as const;
+const CONTACT_RECORDED_STATUSES: OutreachStatus[] = [
+  "contacted",
+  "follow_up",
+  "interested",
+  "declined",
+  "unreachable",
+];
 
 type OutreachStatus = (typeof STATUSES)[number];
 type OutreachChannel = (typeof CHANNELS)[number];
@@ -142,6 +148,20 @@ function mailtoHref(email: string) {
   return `mailto:${email.replace(/\s/g, "")}`;
 }
 
+function dateAfterDays(days: number) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function preferredOutreachChannel(candidate: OutreachCandidate): OutreachChannel {
+  if (candidate.email) return "email";
+  if (candidate.socialUrls.length > 0) return "social";
+  if (candidate.phone) return "phone";
+  if (candidate.website) return "website";
+  return "in_person";
+}
+
 export default function AdminOutreachPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
@@ -171,7 +191,8 @@ export default function AdminOutreachPage() {
   const [appliedCategory, setAppliedCategory] = useState("");
   const [draft, setDraft] = useState<OutreachDraft>(EMPTY_DRAFT);
   const [claimLink, setClaimLink] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [publicPlaceLink, setPublicPlaceLink] = useState("");
+  const [manualContactConfirmed, setManualContactConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -192,6 +213,8 @@ export default function AdminOutreachPage() {
     if (!selectedCandidate) {
       setDraft(EMPTY_DRAFT);
       setClaimLink("");
+      setPublicPlaceLink("");
+      setManualContactConfirmed(false);
       return;
     }
 
@@ -201,15 +224,23 @@ export default function AdminOutreachPage() {
       followUpOn: selectedCandidate.outreach.follow_up_on || "",
       notes: selectedCandidate.outreach.notes || "",
     });
-    setCopied(false);
+    setManualContactConfirmed(false);
 
-    const path = getBusinessAppUrl(
+    const claimPath = getBusinessAppUrl(
       `/claim/${encodeURIComponent(selectedCandidate.id)}`,
+    );
+    const publicPath = getCustomerAppUrl(
+      `/places/${encodeURIComponent(selectedCandidate.id)}`,
     );
     setClaimLink(
       typeof window === "undefined"
-        ? path
-        : new URL(path, window.location.origin).toString(),
+        ? claimPath
+        : new URL(claimPath, window.location.origin).toString(),
+    );
+    setPublicPlaceLink(
+      typeof window === "undefined"
+        ? publicPath
+        : new URL(publicPath, window.location.origin).toString(),
     );
   }, [selectedCandidate]);
 
@@ -391,15 +422,25 @@ export default function AdminOutreachPage() {
   async function saveOutreach() {
     if (!selectedCandidate || !trackingAvailable) return;
     if (
-      ["contacted", "follow_up", "interested", "declined", "unreachable"].includes(
-        draft.status,
-      ) &&
+      CONTACT_RECORDED_STATUSES.includes(draft.status) &&
       !draft.channel
     ) {
       setError(
         t(
           "admin.outreach.error.channel",
           "Choose how the business was contacted.",
+        ),
+      );
+      return;
+    }
+    if (
+      CONTACT_RECORDED_STATUSES.includes(draft.status) &&
+      !manualContactConfirmed
+    ) {
+      setError(
+        t(
+          "admin.outreach.error.manualConfirmation",
+          "Confirm that contact happened outside Mirëbook before saving this status.",
         ),
       );
       return;
@@ -444,9 +485,11 @@ export default function AdminOutreachPage() {
           channel: draft.channel || null,
           followUpOn: draft.followUpOn || null,
           notes: draft.notes.trim() || null,
+          manualContactConfirmed,
         }),
       });
       const payload = (await response.json()) as {
+        code?: string;
         error?: string;
         trackingAvailable?: boolean;
       };
@@ -455,6 +498,9 @@ export default function AdminOutreachPage() {
         if (response.status === 503) {
           setTrackingAvailable(false);
           throw new Error("tracking_unavailable");
+        }
+        if (payload.code === "manual_contact_confirmation_required") {
+          throw new Error("manual_confirmation_required");
         }
         throw new Error("save_failed");
       }
@@ -476,6 +522,12 @@ export default function AdminOutreachPage() {
                 "admin.outreach.preparing",
                 "Private outreach tracking is being prepared. Candidates remain available to review.",
               )
+            : saveError instanceof Error &&
+                saveError.message === "manual_confirmation_required"
+              ? t(
+                  "admin.outreach.error.manualConfirmation",
+                  "Confirm that contact happened outside Mirëbook before saving this status.",
+                )
             : t(
                 "admin.outreach.error.save",
                 "The outreach update could not be saved.",
@@ -484,21 +536,6 @@ export default function AdminOutreachPage() {
     } finally {
       setSaving(false);
     }
-  }
-
-  async function copyClaimLink() {
-    if (!claimLink) return;
-    setCopied(false);
-    try {
-      await navigator.clipboard.writeText(claimLink);
-    } catch {
-      const input = document.getElementById(
-        "outreach-claim-link",
-      ) as HTMLInputElement | null;
-      input?.focus();
-      input?.select();
-    }
-    setCopied(true);
   }
 
   if (!adminReady) {
@@ -555,6 +592,9 @@ export default function AdminOutreachPage() {
             </p>
           </div>
           <div className="outreach-header-actions">
+            <Link href="/admin/directory-claims" className="btn btn-ghost">
+              {t("admin.outreach.claims", "Ownership claims")}
+            </Link>
             <Link href="/admin/directory" className="btn btn-ghost">
               {t("admin.outreach.directory", "Directory review")}
             </Link>
@@ -898,54 +938,19 @@ export default function AdminOutreachPage() {
                     )}
                 </div>
 
-                <div className="outreach-claim-section">
-                  <div>
-                    <h3>
-                      {t("admin.outreach.claimTitle", "Owner claim link")}
-                    </h3>
-                    <p>
-                      {t(
-                        "admin.outreach.claimBody",
-                        "Share this only with an authorised owner. It opens Mirëbook Business and preserves this place.",
-                      )}
-                    </p>
-                  </div>
-                  <div className="outreach-copy-row">
-                    <input
-                      id="outreach-claim-link"
-                      type="text"
-                      readOnly
-                      value={claimLink}
-                      aria-label={t(
-                        "admin.outreach.claimLinkLabel",
-                        "Owner claim link",
-                      )}
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={copyClaimLink}
-                    >
-                      {copied ? (
-                        <Check size={17} aria-hidden="true" />
-                      ) : (
-                        <Clipboard size={17} aria-hidden="true" />
-                      )}
-                      {copied
-                        ? t("admin.outreach.copied", "Copied")
-                        : t("admin.outreach.copy", "Copy")}
-                    </button>
-                    <a
-                      href={claimLink}
-                      className="btn btn-ghost"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <ExternalLink size={17} aria-hidden="true" />
-                      {t("admin.outreach.openClaim", "Open")}
-                    </a>
-                  </div>
-                </div>
+                {claimLink && publicPlaceLink && (
+                  <OutreachDraftPanel
+                    key={`${selectedCandidate.id}:${locale}:${claimLink}:${publicPlaceLink}`}
+                    candidateId={selectedCandidate.id}
+                    placeName={selectedCandidate.name}
+                    email={selectedCandidate.email}
+                    claimLink={claimLink}
+                    publicPlaceLink={publicPlaceLink}
+                    preferredChannel={preferredOutreachChannel(selectedCandidate)}
+                    uiLocale={locale}
+                    t={t}
+                  />
+                )}
 
                 <div className="outreach-history-section">
                   <h3>{t("admin.outreach.historyTitle", "Recent activity")}</h3>
@@ -1001,19 +1006,30 @@ export default function AdminOutreachPage() {
                       <span>{t("admin.outreach.statusLabel", "Status")}</span>
                       <select
                         value={draft.status}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          const nextStatus = event.target
+                            .value as OutreachStatus;
+                          setManualContactConfirmed(false);
                           setDraft((current) => ({
                             ...current,
-                            status: event.target.value as OutreachStatus,
-                            ...(event.target.value === "not_started"
+                            status: nextStatus,
+                            ...(nextStatus === "not_started"
                               ? {
                                   channel: "",
                                   followUpOn: "",
                                   notes: "",
                                 }
+                              : CONTACT_RECORDED_STATUSES.includes(nextStatus) &&
+                                  !current.channel
+                                ? {
+                                    channel:
+                                      preferredOutreachChannel(
+                                        selectedCandidate,
+                                      ),
+                                  }
                               : {}),
-                          }))
-                        }
+                          }));
+                        }}
                         disabled={!trackingAvailable}
                       >
                         {STATUSES.map((value) => (
@@ -1052,11 +1068,12 @@ export default function AdminOutreachPage() {
                         ))}
                       </select>
                     </label>
-                    <label>
-                      <span>
+                    <div className="outreach-date-control">
+                      <label htmlFor="outreach-follow-up-date">
                         {t("admin.outreach.followUpLabel", "Follow-up date")}
-                      </span>
+                      </label>
                       <input
+                        id="outreach-follow-up-date"
                         type="date"
                         value={draft.followUpOn}
                         min={new Date().toISOString().slice(0, 10)}
@@ -1070,7 +1087,37 @@ export default function AdminOutreachPage() {
                           !trackingAvailable || draft.status === "not_started"
                         }
                       />
-                    </label>
+                      {draft.status !== "not_started" && (
+                        <div
+                          className="outreach-date-presets"
+                          aria-label={t(
+                            "admin.outreach.quickFollowUp",
+                            "Quick follow-up dates",
+                          )}
+                        >
+                          {[1, 3, 7].map((days) => (
+                            <button
+                              key={days}
+                              type="button"
+                              onClick={() =>
+                                setDraft((current) => ({
+                                  ...current,
+                                  followUpOn: dateAfterDays(days),
+                                }))
+                              }
+                              disabled={!trackingAvailable}
+                            >
+                              {days === 1
+                                ? t("admin.outreach.tomorrow", "Tomorrow")
+                                : t(
+                                    `admin.outreach.inDays.${days}`,
+                                    `+${days} days`,
+                                  )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <label className="outreach-note">
                     <span>
@@ -1095,6 +1142,32 @@ export default function AdminOutreachPage() {
                       }
                     />
                   </label>
+                  {CONTACT_RECORDED_STATUSES.includes(draft.status) && (
+                    <label className="outreach-confirmation">
+                      <input
+                        type="checkbox"
+                        checked={manualContactConfirmed}
+                        onChange={(event) =>
+                          setManualContactConfirmed(event.target.checked)
+                        }
+                        disabled={!trackingAvailable}
+                      />
+                      <span>
+                        <strong>
+                          {t(
+                            "admin.outreach.manualConfirmationTitle",
+                            "Contact happened outside Mirëbook",
+                          )}
+                        </strong>
+                        <small>
+                          {t(
+                            "admin.outreach.manualConfirmationBody",
+                            "Confirm only after you personally sent the message or completed the conversation.",
+                          )}
+                        </small>
+                      </span>
+                    </label>
+                  )}
                   <div className="outreach-save-row">
                     <button
                       type="button"
@@ -1121,6 +1194,27 @@ export default function AdminOutreachPage() {
                     </span>
                   </div>
                 </div>
+                {draft.status === "interested" && (
+                  <div className="outreach-handoff">
+                    <div>
+                      <strong>
+                        {t(
+                          "admin.outreach.handoffTitle",
+                          "Ready for ownership handoff",
+                        )}
+                      </strong>
+                      <span>
+                        {t(
+                          "admin.outreach.handoffBody",
+                          "Share the secure claim link. Once submitted, this place leaves Outreach and moves to Ownership claims.",
+                        )}
+                      </span>
+                    </div>
+                    <Link href="/admin/directory-claims" className="btn btn-ghost">
+                      {t("admin.outreach.handoffAction", "Open claims")}
+                    </Link>
+                  </div>
+                )}
               </>
             )}
           </section>
@@ -1138,7 +1232,6 @@ export default function AdminOutreachPage() {
 
         .outreach-header,
         .outreach-detail-header,
-        .outreach-copy-row,
         .outreach-save-row,
         .outreach-context {
           display: flex;
@@ -1166,8 +1259,7 @@ export default function AdminOutreachPage() {
 
         .outreach-header-actions :global(.btn),
         .outreach-contact-actions :global(.btn),
-        .outreach-detail-header :global(.btn),
-        .outreach-copy-row :global(.btn) {
+        .outreach-detail-header :global(.btn) {
           display: inline-flex;
           align-items: center;
           gap: 0.45rem;
@@ -1285,6 +1377,7 @@ export default function AdminOutreachPage() {
 
         .outreach-filters label,
         .outreach-form-grid label,
+        .outreach-date-control,
         .outreach-note {
           min-width: 0;
           display: grid;
@@ -1293,6 +1386,7 @@ export default function AdminOutreachPage() {
 
         .outreach-filters label > span,
         .outreach-form-grid label > span,
+        .outreach-date-control > label,
         .outreach-note > span {
           color: var(--muted);
           font-size: 0.78rem;
@@ -1303,8 +1397,8 @@ export default function AdminOutreachPage() {
         .outreach-filters select,
         .outreach-form-grid input,
         .outreach-form-grid select,
-        .outreach-note textarea,
-        .outreach-copy-row input {
+        .outreach-date-control input,
+        .outreach-note textarea {
           width: 100%;
           min-width: 0;
         }
@@ -1464,7 +1558,6 @@ export default function AdminOutreachPage() {
 
         .outreach-detail-header,
         .outreach-contact-section,
-        .outreach-claim-section,
         .outreach-history-section,
         .outreach-edit-section {
           padding: 1rem;
@@ -1488,14 +1581,12 @@ export default function AdminOutreachPage() {
           overflow-wrap: anywhere;
         }
 
-        .outreach-detail-header p,
-        .outreach-claim-section p {
+        .outreach-detail-header p {
           color: var(--muted);
           line-height: 1.45;
         }
 
         .outreach-contact-section,
-        .outreach-claim-section,
         .outreach-history-section,
         .outreach-edit-section {
           display: grid;
@@ -1503,7 +1594,6 @@ export default function AdminOutreachPage() {
         }
 
         .outreach-contact-section h3,
-        .outreach-claim-section h3,
         .outreach-history-section h3 {
           font-size: 1rem;
         }
@@ -1524,22 +1614,39 @@ export default function AdminOutreachPage() {
           text-align: left;
         }
 
-        .outreach-claim-section {
-          grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1.3fr);
-          align-items: end;
-        }
-
-        .outreach-copy-row {
-          min-width: 0;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto auto;
-          gap: 0.5rem;
-        }
-
         .outreach-form-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0.75rem;
+        }
+
+        .outreach-date-presets {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.3rem;
+        }
+
+        .outreach-date-presets button {
+          min-width: 0;
+          min-height: 2rem;
+          padding: 0.25rem 0.35rem;
+          border: 1px solid var(--border);
+          border-radius: calc(var(--radius) * 0.65);
+          background: var(--surface-2);
+          color: var(--muted);
+          font-size: 0.7rem;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .outreach-date-presets button:hover {
+          border-color: var(--accent);
+          color: var(--text);
+        }
+
+        .outreach-date-presets button:disabled {
+          cursor: not-allowed;
+          opacity: 0.55;
         }
 
         .outreach-history {
@@ -1579,6 +1686,60 @@ export default function AdminOutreachPage() {
         .outreach-note textarea {
           resize: vertical;
           min-height: 6.5rem;
+        }
+
+        .outreach-confirmation {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 0.65rem;
+          align-items: start;
+          padding: 0.75rem;
+          border: 1px solid rgba(255, 107, 53, 0.3);
+          border-radius: var(--radius);
+          background: var(--accent-dim);
+          cursor: pointer;
+        }
+
+        .outreach-confirmation input {
+          width: 1rem;
+          height: 1rem;
+          margin-top: 0.15rem;
+          accent-color: var(--accent);
+        }
+
+        .outreach-confirmation span {
+          display: grid;
+          gap: 0.2rem;
+        }
+
+        .outreach-confirmation small {
+          color: var(--muted);
+          line-height: 1.4;
+        }
+
+        .outreach-handoff {
+          padding: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          background: var(--success-dim);
+        }
+
+        .outreach-handoff > div {
+          min-width: 0;
+          display: grid;
+          gap: 0.25rem;
+        }
+
+        .outreach-handoff span {
+          color: var(--muted);
+          font-size: 0.84rem;
+          line-height: 1.4;
+        }
+
+        .outreach-handoff :global(.btn) {
+          flex: 0 0 auto;
         }
 
         .outreach-save-row {
@@ -1688,14 +1849,11 @@ export default function AdminOutreachPage() {
           }
 
           .outreach-filters,
-          .outreach-form-grid,
-          .outreach-claim-section,
-          .outreach-copy-row {
+          .outreach-form-grid {
             grid-template-columns: minmax(0, 1fr);
           }
 
           .outreach-filters :global(.btn),
-          .outreach-copy-row :global(.btn),
           .outreach-detail-header :global(.btn),
           .outreach-save-row :global(.btn) {
             width: 100%;
@@ -1721,6 +1879,15 @@ export default function AdminOutreachPage() {
 
           .outreach-contact-actions :global(.btn) {
             width: 100%;
+          }
+
+          .outreach-handoff {
+            display: grid;
+          }
+
+          .outreach-handoff :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

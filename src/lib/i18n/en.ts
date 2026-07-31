@@ -4449,6 +4449,7 @@ export const en: TranslationTree = {
   "admin.outreach.title": "Owner outreach",
   "admin.outreach.subtitle":
     "Prioritise reviewed local places, record conversations and share the correct ownership path.",
+  "admin.outreach.claims": "Ownership claims",
   "admin.outreach.directory": "Directory review",
   "admin.outreach.refresh": "Refresh",
   "admin.outreach.safetyTitle": "Private tracking, owner choice",
@@ -4498,6 +4499,33 @@ export const en: TranslationTree = {
   "admin.outreach.copy": "Copy",
   "admin.outreach.copied": "Copied",
   "admin.outreach.openClaim": "Open",
+  "admin.outreach.template.title": "Prepare outreach",
+  "admin.outreach.template.body":
+    "Choose a language and contact format, then edit before copying.",
+  "admin.outreach.template.manualOnly": "Manual send only",
+  "admin.outreach.template.languageLabel": "Draft language",
+  "admin.outreach.template.formatLabel": "Contact format",
+  "admin.outreach.template.subjectLabel": "Subject",
+  "admin.outreach.template.messageLabel": "Message",
+  "admin.outreach.template.scriptLabel": "Conversation guide",
+  "admin.outreach.template.copySubject": "Copy subject",
+  "admin.outreach.template.copyMessage": "Copy message",
+  "admin.outreach.template.reset": "Reset draft",
+  "admin.outreach.template.openEmail": "Open email draft",
+  "admin.outreach.template.email.subject":
+    "Claim and manage {placeName} on Mirëbook",
+  "admin.outreach.template.email.message":
+    "Hello,\n\nWe have added a public-information listing for {placeName} to Mirëbook, an Albania-focused discovery and booking platform.\n\nIf you own or manage this business, you can claim the listing, review its details and choose whether to publish bookable services. Claiming is optional and does not publish anything automatically.\n\nClaim and review the listing:\n{claimUrl}\n\nView the current public information:\n{publicUrl}\n\nMirëbook",
+  "admin.outreach.template.social.message":
+    "Hello. We have added a public-information listing for {placeName} to Mirëbook, an Albania-focused discovery and booking platform. If you own or manage it, you can securely claim and review the listing here: {claimUrl}. Claiming is optional and does not publish booking services automatically.",
+  "admin.outreach.template.website.message":
+    "Hello. I am contacting you from Mirëbook about the public-information listing for {placeName}. If you own or manage the business, you can securely claim and review it here: {claimUrl}. Claiming is optional and nothing becomes bookable automatically. Current listing: {publicUrl}",
+  "admin.outreach.template.phone.message":
+    "Hello, I am calling from Mirëbook. We maintain a public-information listing for {placeName}. I would like to confirm whether you manage the business and explain how you can claim and review the listing. Claiming is optional, and nothing becomes bookable until the owner chooses to publish it. I can send the secure claim link: {claimUrl}",
+  "admin.outreach.template.inPerson.message":
+    "Hello, I am from Mirëbook. We maintain a public-information listing for {placeName}. If you manage the business, I can show you the listing and provide a secure link to claim and review it. Claiming is optional, and no booking services are published automatically. Claim link: {claimUrl}",
+  "admin.outreach.template.other.message":
+    "Hello. Mirëbook has a public-information listing for {placeName}. An authorised owner or manager can securely claim and review it here: {claimUrl}. Claiming is optional and does not automatically publish bookable services. Public listing: {publicUrl}",
   "admin.outreach.historyTitle": "Recent activity",
   "admin.outreach.historyEmpty":
     "No private outreach changes have been recorded.",
@@ -4513,9 +4541,21 @@ export const en: TranslationTree = {
   "admin.outreach.channel.inPerson": "In person",
   "admin.outreach.channel.other": "Other",
   "admin.outreach.followUpLabel": "Follow-up date",
+  "admin.outreach.quickFollowUp": "Quick follow-up dates",
+  "admin.outreach.tomorrow": "Tomorrow",
+  "admin.outreach.inDays.3": "+3 days",
+  "admin.outreach.inDays.7": "+7 days",
   "admin.outreach.noteLabel": "Private operator note",
   "admin.outreach.notePlaceholder":
     "Record what happened and the next useful step. Never add sensitive personal data.",
+  "admin.outreach.manualConfirmationTitle":
+    "Contact happened outside Mirëbook",
+  "admin.outreach.manualConfirmationBody":
+    "Confirm only after you personally sent the message or completed the conversation.",
+  "admin.outreach.handoffTitle": "Ready for ownership handoff",
+  "admin.outreach.handoffBody":
+    "Share the secure claim link. Once submitted, this place leaves Outreach and moves to Ownership claims.",
+  "admin.outreach.handoffAction": "Open claims",
   "admin.outreach.saving": "Saving...",
   "admin.outreach.save": "Save outreach update",
   "admin.outreach.updated": "Updated",
@@ -4528,6 +4568,8 @@ export const en: TranslationTree = {
   "admin.outreach.error.channel": "Choose how the business was contacted.",
   "admin.outreach.error.followUp": "Choose a follow-up date.",
   "admin.outreach.error.note": "Add a short private note for this outcome.",
+  "admin.outreach.error.manualConfirmation":
+    "Confirm that contact happened outside Mirëbook before saving this status.",
   "admin.outreach.controlKicker": "Owner conversion",
   "admin.outreach.controlTitle": "Outreach and follow-ups",
   "admin.outreach.controlBody":
