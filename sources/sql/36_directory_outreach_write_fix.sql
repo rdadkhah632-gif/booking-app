@@ -1,174 +1,30 @@
--- Stage 12 Batch 18: private owner-outreach tracking for reviewed directory
--- places.
+-- Stage 12 Batch 18 follow-up: repair the owner-outreach upsert conflict
+-- target used by SQL 35.
 --
--- Run manually after SQL 24 and SQL 30. This file creates no outreach rows,
--- sends no messages, changes no public listing and does not alter the
--- ownership-claim workflow. Only the service role can read the private
--- tracking tables, and updates must pass through the audited admin RPC.
+-- The RPC returns a column named `directory_place_id`, which is also the
+-- outreach table primary-key column. PostgreSQL therefore treated the
+-- original `on conflict (directory_place_id)` target as ambiguous when the
+-- function executed. Naming the primary-key constraint keeps the atomic
+-- upsert unchanged while removing that PL/pgSQL variable/column ambiguity.
+--
+-- This replacement creates no outreach rows, sends no messages, changes no
+-- directory or claim state, and does not alter RLS or table privileges.
 
 begin;
 
 do $$
 begin
-  if to_regclass('public.directory_places') is null
-    or to_regclass('public.business_claims') is null
+  if to_regclass('public.directory_place_outreach') is null
+    or to_regclass('public.directory_place_outreach_events') is null
+    or to_regprocedure(
+      'public.mirebook_update_directory_outreach(uuid,uuid,text,text,date,text)'
+    ) is null
   then
     raise exception
-      'SQL 35 requires the directory and ownership-claim foundation.';
+      'SQL 36 requires the owner-outreach pipeline from SQL 35.';
   end if;
 end;
 $$;
-
-create table if not exists public.directory_place_outreach (
-  directory_place_id uuid primary key
-    references public.directory_places(id) on delete cascade,
-  status text not null default 'not_started',
-  channel text,
-  follow_up_on date,
-  notes text,
-  first_contacted_at timestamptz,
-  last_contacted_at timestamptz,
-  updated_by uuid references auth.users(id) on delete set null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  check (
-    status in (
-      'not_started',
-      'planned',
-      'contacted',
-      'follow_up',
-      'interested',
-      'declined',
-      'unreachable'
-    )
-  ),
-  check (
-    channel is null
-    or channel in (
-      'email',
-      'phone',
-      'social',
-      'website',
-      'in_person',
-      'other'
-    )
-  ),
-  check (notes is null or length(notes) <= 2000),
-  check (
-    status not in (
-      'contacted',
-      'follow_up',
-      'interested',
-      'declined',
-      'unreachable'
-    )
-    or channel is not null
-  ),
-  check (status <> 'follow_up' or follow_up_on is not null),
-  check (
-    status not in ('declined', 'unreachable')
-    or notes is not null
-  )
-);
-
-create index if not exists directory_place_outreach_status_idx
-  on public.directory_place_outreach (status, updated_at desc);
-
-create index if not exists directory_place_outreach_follow_up_idx
-  on public.directory_place_outreach (follow_up_on, status)
-  where follow_up_on is not null;
-
-create table if not exists public.directory_place_outreach_events (
-  id uuid primary key default gen_random_uuid(),
-  directory_place_id uuid not null
-    references public.directory_places(id) on delete cascade,
-  actor_user_id uuid references auth.users(id) on delete set null,
-  from_status text,
-  to_status text not null,
-  channel text,
-  follow_up_on date,
-  notes text,
-  created_at timestamptz not null default now(),
-  check (
-    from_status is null
-    or from_status in (
-      'not_started',
-      'planned',
-      'contacted',
-      'follow_up',
-      'interested',
-      'declined',
-      'unreachable'
-    )
-  ),
-  check (
-    to_status in (
-      'not_started',
-      'planned',
-      'contacted',
-      'follow_up',
-      'interested',
-      'declined',
-      'unreachable'
-    )
-  ),
-  check (
-    channel is null
-    or channel in (
-      'email',
-      'phone',
-      'social',
-      'website',
-      'in_person',
-      'other'
-    )
-  ),
-  check (notes is null or length(notes) <= 2000)
-);
-
-create index if not exists directory_place_outreach_events_place_created_idx
-  on public.directory_place_outreach_events (
-    directory_place_id,
-    created_at desc
-  );
-
-alter table public.directory_place_outreach enable row level security;
-alter table public.directory_place_outreach_events enable row level security;
-
-do $$
-declare
-  policy_record record;
-begin
-  for policy_record in
-    select schemaname, tablename, policyname
-    from pg_policies
-    where schemaname = 'public'
-      and tablename in (
-        'directory_place_outreach',
-        'directory_place_outreach_events'
-      )
-  loop
-    execute format(
-      'drop policy if exists %I on %I.%I',
-      policy_record.policyname,
-      policy_record.schemaname,
-      policy_record.tablename
-    );
-  end loop;
-end;
-$$;
-
-revoke all on table public.directory_place_outreach from public;
-revoke all on table public.directory_place_outreach from anon;
-revoke all on table public.directory_place_outreach from authenticated;
-revoke all on table public.directory_place_outreach from service_role;
-grant select on table public.directory_place_outreach to service_role;
-
-revoke all on table public.directory_place_outreach_events from public;
-revoke all on table public.directory_place_outreach_events from anon;
-revoke all on table public.directory_place_outreach_events from authenticated;
-revoke all on table public.directory_place_outreach_events from service_role;
-grant select on table public.directory_place_outreach_events to service_role;
 
 create or replace function public.mirebook_update_directory_outreach(
   p_place_id uuid,
@@ -444,12 +300,6 @@ grant execute on function public.mirebook_update_directory_outreach(
   date,
   text
 ) to service_role;
-
-comment on table public.directory_place_outreach is
-  'Private current owner-outreach state for reviewed, unclaimed directory places.';
-
-comment on table public.directory_place_outreach_events is
-  'Append-only operator audit trail for directory outreach state changes.';
 
 comment on function public.mirebook_update_directory_outreach(
   uuid,

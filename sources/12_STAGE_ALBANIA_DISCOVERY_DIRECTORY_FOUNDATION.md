@@ -1319,6 +1319,20 @@ without opening the database.
 10. Verify EN/SQ at 1440x900 and 390x844 with no horizontal overflow, blank
     actions, raw provider errors or automatic outbound messages.
 
+### Batch 18 outreach-write follow-up
+
+The first deployed workflow QA found that Outreach loaded and remained private,
+but every save failed. A direct production RPC check isolated PostgreSQL error
+`42702`: the function's returned `directory_place_id` output variable made the
+original `on conflict (directory_place_id)` target ambiguous at execution time.
+
+SQL 36 replaces only the audited outreach function and targets the named
+`directory_place_outreach_pkey` constraint instead. SQL 35 carries the same
+correction for clean installs. No table, RLS, grant, candidate, claim,
+publication or outbound-message behavior changes. After SQL 36 is applied,
+rerun one controlled planned-state save, refresh persistence, due-count and
+single-event checks before continuing the outreach lifecycle.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
