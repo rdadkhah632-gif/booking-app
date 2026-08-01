@@ -1424,6 +1424,224 @@ stale QA-session recovery event rather than an Outreach runtime failure. A
 fresh authenticated admin tab loaded Outreach with zero console warnings or
 errors, so the shared role/auth foundation was not changed.
 
+The final production closure passed after a cache-bypassing reload on the
+deployment for commit `a29252c`. Social, Phone and In-person drafts each
+contained the exact Business claim URL and current public-place URL in both EN
+and SQ. The fresh admin session produced no refresh-token or auth console
+warning. The controlled candidate remained `not_started` with its two existing
+audit events, and no outreach event, email, notification, claim or public state
+change occurred. Batch 19 is closed.
+
+## Batch 20 - Controlled Founding-Business Conversion
+
+Batch 20 turns the completed Outreach workspace into a focused first-owner
+launch pilot without adding bulk contact or changing any owner state. The
+private admin API derives a deterministic ten-place shortlist from the current
+eligible queue. Existing planned, contacted, follow-up and interested
+candidates remain ahead of new candidates; remaining places are ranked by
+direct contact routes, reviewed bilingual content, reusable imagery and how
+naturally the category converts to appointments, lessons, sessions, rentals or
+reservations. New candidates are balanced across cities and categories before
+any remaining pilot spaces are filled, so the first outreach set can test more
+than one local market without displacing work already in progress.
+
+The pilot is guidance rather than a database decision:
+
+- shortlist membership and rank are derived read-only and write no record
+- declined and unreachable candidates are excluded from the pilot
+- the full Outreach queue remains available beside the pilot view
+- each candidate shows its recommended first contact route and the factual
+  readiness signals used by the ranking
+- no score or readiness signal is exposed through a public API
+- changing outreach status still uses the existing audited manual save
+- owner interest still moves through the existing ownership-claim review
+- no directory place, business, service, billing flag or publication state is
+  changed automatically
+
+Drafts gain an optional early-partner paragraph. It is off by default and is
+generated in EN or SQ only when the operator chooses it. The paragraph matches
+the current public early-partner position: no customer booking commission
+during the early-partner period, optional setup help and no compulsory
+participation. It does not promise a price, permanent discount, publication,
+customer demand or automatic founding-business eligibility.
+
+### Batch 20 deployment QA
+
+1. Open `/admin/outreach` as an admin and confirm All candidates and Launch
+   pilot are separate, keyboard-operable views. The pilot must contain at most
+   ten candidates and write no outreach event when opened.
+2. Confirm candidates already in planned/contacted/follow-up/interested states
+   remain ahead of new candidates. Declined and unreachable candidates must
+   not enter the pilot.
+3. Sample at least three pilot candidates. Confirm rank, launch-fit label,
+   recommended first channel and readiness signals match their private contact
+   routes and reviewed profile content.
+4. Switch between the full queue, pilot, statuses, search, city and category.
+   Confirm counts, selection and pagination remain coherent with no loading
+   loop or stale candidate detail.
+5. Toggle the early-partner paragraph in EN and SQ for email, social and one
+   conversation format. Confirm it is off by default, appends once, resets with
+   the selected template and makes no external request.
+6. Confirm every draft still retains the exact Business claim URL and public
+   place URL. Do not open or send a real message during QA.
+7. Confirm the optional offer copy makes no price, permanent-discount,
+   publication or customer-demand promise and remains clearly labelled Manual
+   send only.
+8. Confirm anonymous, customer, owner and staff roles remain denied from the
+   page and private API, while public directory payloads contain no pilot
+   score, rank, readiness reason or outreach field.
+9. Check EN/SQ at 1440x900 and 390x844 for clipped metrics, crowded candidate
+   rows, horizontal overflow, raw keys and console errors.
+10. Finish with every candidate in its original outreach state and no email,
+    notification, claim, business link, billing or publication change.
+
+## Batch 21 - Marketplace Visual Refinement And Catalogue Hold
+
+Batch 21 returns the launch priority to customer discovery. The Outreach
+workspace remains available for later owner conversion, but no real contact is
+required until the public catalogue, responsive presentation and booking
+handoff are considered launch-ready.
+
+The public Places list now uses a denser visual marketplace grid:
+
+- three cards across on wide desktop, two on medium screens and one on phones
+- licensed reviewed photos remain the primary media where available
+- every image-less record receives category-specific artwork rather than a
+  blank or generic database-looking strip
+- directory cards expose only the two browsing actions needed in the result
+  list: Details and Map
+- website, directions, report and ownership actions remain on the full detail
+  page, reducing repeated controls across long result sets
+- place-detail pages also render category artwork when no licensed image is
+  available, keeping every reviewed record visually complete
+- bookable business cards use the same vertical media rhythm so All results do
+  not split into two unrelated visual systems once businesses publish
+
+No rating, review count, opening status, availability claim or owner
+endorsement is invented. Directory records remain non-bookable until the
+reviewed claim and business-publication handoff is complete. This batch changes
+presentation only and does not approve, import, claim, publish or contact a
+place.
+
+Catalogue growth continues as a separate review process. New private
+candidates should prioritise customer-useful density, direct owner contact and
+categories still thin in each launch city. Food, drink and accommodation may
+be imported into `needs_review`, but they must not become public until their
+facts, rights-safe imagery and customer value pass the same individual review
+gate as the existing 40 records.
+
+### Batch 21 deployment QA
+
+1. Test `/explore?kind=places` with the full reviewed catalogue at 1440x900,
+   1280x720, 768x1024 and 390x844. Confirm three/two/one-column transitions,
+   equal readable cards and no horizontal overflow.
+2. Sample at least four photographed records and four image-less records across
+   different categories. Confirm photographs load with credit and fallbacks
+   use distinct, relevant category artwork without broken-image gaps.
+3. Confirm every result card contains Details and Map, but no repeated Website,
+   Report or Claim action. Open the detail page and confirm those relevant
+   actions remain available there.
+4. Open image-less and photographed detail pages in EN and SQ. Confirm the
+   first viewport remains useful, media is correctly framed and photo credit is
+   shown exactly once only when a photo exists.
+5. Test All, Bookable and Places in List and Map. Confirm directory places never
+   become bookable, business/directory identity does not duplicate, and a map
+   marker opens the exact matching result.
+6. Exercise search, city, category, sort, clear, Near me and browser back/forward.
+   Confirm URL state, results and selected controls remain synchronized.
+7. Confirm no rating, review count, live availability or owner endorsement is
+   displayed without an authoritative source.
+8. Check anonymous and signed-in customer navigation, EN/SQ copy, keyboard
+   focus, raw keys, console errors and loading/error/zero-result states.
+9. Confirm the public APIs still expose only reviewed public fields and coarse
+   map positions. No outreach rank, notes, evidence, exact coordinates or
+   private contact workflow data may appear.
+10. Finish with zero directory approvals, imports, outreach events, emails,
+    claims, bookings, business publication or billing changes.
+
+Batch 21 deployment closure passed on 31 July 2026 against production commit
+`017df0c`. The Places list rendered three, two, two and one columns at
+1440x900, 1280x720, 768x1024 and 390x844 respectively, with document width
+matching viewport width at every breakpoint. All 40 reviewed place cards
+exposed only Details and Map, while website, directions, report and ownership
+actions remained on the full detail page. Nine reviewed photographs and 31
+category-artwork fallbacks rendered without broken or poorly framed media.
+The compact Operator menu passed at tablet and phone widths and the browser
+console remained clean. The QA run changed no record or application state.
+Albanian profile-state switching and full keyboard traversal were not repeated
+in that final session, but earlier localization checks and the final semantic
+DOM inspection found no regression. Batch 21 is closed.
+
+## Batch 22 - Grooming Catalogue Expansion
+
+Batch 22 addresses the launch catalogue's thin barber, hair, beauty and tattoo
+coverage while keeping real owner outreach paused. A fresh Overture Maps June
+2026 export produced 223 Albania grooming candidates. Twenty-six candidates
+were selected for direct contactability, useful geographic coverage and clear
+barber, hair-salon, beauty-salon or tattoo/piercing classification.
+
+The importer dry-run validated all 26 records, then the normal service-only
+review importer inserted them with run ID
+`db4d89af-aefe-4813-9b6b-79715d0f7158`. The import reported 26 processed, 26
+inserted, zero updated and zero public listings. Every imported row remains
+`needs_review` and therefore private.
+
+SQL 37 prepares the strongest twenty candidates for individual operator review:
+
+- 4 in Tiranë
+- 3 in Durrës
+- 3 in Vlorë
+- 2 each in Sarandë, Korçë and Elbasan
+- 1 each in Shkodër, Gjirokastër, Fier and Lezhë
+
+The reviewed set spans tattoo/piercing studios, barbers, hair salons and beauty
+studios. Facts and bilingual descriptions are stored separately from the
+imported source record. No image is added because reusable rights were not
+verified; the category artwork remains the deliberate public fallback. The six
+weaker or ambiguous imported candidates remain untouched in the private queue.
+
+SQL 37 does not approve a record. It refuses to run if any target is no longer
+private, unclaimed and unlinked, and verifies the same boundary again before
+commit. Each place must still be inspected and approved individually through
+Admin Directory before it can appear publicly.
+
+### Batch 22 review QA
+
+1. Run SQL 37 and confirm exactly 20 rows return as `needs_review`, `unclaimed`
+   and `public_facts_reviewed = true`.
+2. Confirm Admin Directory totals increase only in Needs review; public Explore
+   must remain at its pre-batch count before any approval.
+3. Review every candidate individually. Confirm identity, city, address,
+   telephone, evidence link and EN/SQ description agree with the source; reject
+   or leave private if any fact is doubtful.
+4. Approve no more than 15 in the first wave. Keep city/category balance and do
+   not approve two records that appear to represent the same business.
+5. Sample tattoo, barber, hair and beauty records in EN/SQ after approval.
+   Confirm each is a non-bookable Local place with Details, Map, directions,
+   report and Business claim actions, but no invented rating or availability.
+6. Confirm records without licensed imagery use the grooming category artwork
+   and never show a broken image, copied social photograph or fake storefront.
+7. Confirm List and Map counts agree, every approved marker opens its exact
+   matching place, Bookable contains no directory records and no identity is
+   duplicated.
+8. Recheck public payloads for coarse `approximately_1km` map positions only.
+   Evidence URLs, review notes, source IDs, exact geometry, email and outreach
+   data must remain private.
+9. Verify EN/SQ at 1440x900 and 390x844 with no overflow, clipped card copy,
+   raw keys, raw database errors or console errors.
+10. Record every approval by name and finish with no claim, booking, owner
+    contact, email, business publication or billing change.
+
+Batch 22 closed on 1 August 2026 after the twenty SQL 37 records were reviewed
+and approved individually. Final Admin Directory totals were 60 Approved, 23
+Needs review and 1 Hidden. Public Places List and Map both represented all 60
+reviewed places, while Bookable contained zero directory records. The six
+deliberately unprepared imports remained private: Number 13 Tattoo Studio,
+Royal Esthetic Center, Gabriel's Salon, Beauty Salon Nicol, Tattoo studio klodi
+ardi and Parukeri Eneida. The approval run found no P0, P1 or P2 issue and
+changed no claim, business, booking, billing or configuration state. Batch 22
+is closed.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner
