@@ -4406,6 +4406,21 @@ export const sq: TranslationTree = {
   "admin.directory.coverage.unavailable":
     "Ekzekuto SQL 26 për të aktivizuar totalet e sakta të mbulimit. Radha e shqyrtimit mbetet e disponueshme.",
   "admin.directory.coverage.loading": "Po ngarkohet mbulimi për lançim...",
+  "admin.directory.media.kicker": "Katalogu vizual",
+  "admin.directory.media.title": "Fotot në katalog",
+  "admin.directory.media.body":
+    "Fotot e shqyrtuara e bëjnë zbulimin më tërheqës. Vendet pa foto mbajnë ilustrimin e kategorisë derisa të konfirmohen të drejtat e përshtatshme të imazhit.",
+  "admin.directory.media.loading": "Po ngarkohet mbulimi me foto...",
+  "admin.directory.media.of": "nga",
+  "admin.directory.media.coverage":
+    "vende të miratuara kanë një foto të shqyrtuar",
+  "admin.directory.media.progressLabel":
+    "Mbulimi me foto i vendeve të miratuara",
+  "admin.directory.media.all": "Të gjitha të miratuarat",
+  "admin.directory.media.withPhoto": "Me foto",
+  "admin.directory.media.missing": "Nevojiten foto",
+  "admin.directory.media.photo": "Foto",
+  "admin.directory.media.photoNeeded": "Nevojitet foto",
   "admin.directory.statusSummary": "Përmbledhja e gjendjeve të direktorisë",
   "admin.directory.loadingSummary": "Po ngarkohet përmbledhja e direktorisë...",
   "admin.directory.status.needsReview": "Për shqyrtim",
@@ -4434,6 +4449,8 @@ export const sq: TranslationTree = {
   "admin.directory.filter.allCategories": "Të gjitha kategoritë",
   "admin.directory.filter.city": "Qyteti",
   "admin.directory.filter.cityPlaceholder": "Qyteti i saktë",
+  "admin.directory.filter.media": "Foto",
+  "admin.directory.filter.allMedia": "Çdo gjendje e fotos",
   "admin.directory.filter.apply": "Zbato filtrat",
   "admin.directory.results": "rezultate",
   "admin.directory.loading": "Po ngarkohen vendet e direktorisë...",

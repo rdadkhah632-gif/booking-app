@@ -21,6 +21,7 @@ const ACTIONS = [
   "return_to_review",
   "mark_duplicate",
 ] as const;
+const MEDIA_FILTERS = ["with_photo", "missing_photo"] as const;
 const CATEGORY_KEYS = [
   "beauty_grooming",
   "dental_health",
@@ -47,6 +48,7 @@ const LAUNCH_CITIES = [
 
 type DirectoryStatus = (typeof STATUSES)[number];
 type DirectoryAction = (typeof ACTIONS)[number];
+type MediaFilter = (typeof MEDIA_FILTERS)[number];
 
 type CoverageGroupRow = {
   city: string;
@@ -59,6 +61,13 @@ type CoverageItem = {
   key: string;
   approved: number;
   needsReview: number;
+};
+
+type MediaCoverage = {
+  available: boolean;
+  total: number;
+  withPhoto: number;
+  missingPhoto: number;
 };
 
 type DirectoryPlaceRow = {
@@ -253,9 +262,7 @@ function numberQuery(
 }
 
 function isMissingDirectorySchema(error: { code?: string } | null) {
-  return ["42P01", "42703", "PGRST202", "PGRST205"].includes(
-    error?.code || "",
-  );
+  return ["42P01", "42703", "PGRST202", "PGRST205"].includes(error?.code || "");
 }
 
 async function requireAdmin(request: NextApiRequest) {
@@ -334,12 +341,46 @@ async function launchCoverage(
     cities: LAUNCH_CITIES.map((city) =>
       totalsFor(
         city,
-        (row) => row.city.localeCompare(city, "sq", { sensitivity: "base" }) === 0,
+        (row) =>
+          row.city.localeCompare(city, "sq", { sensitivity: "base" }) === 0,
       ),
     ),
     categories: CATEGORY_KEYS.map((category) =>
       totalsFor(category, (row) => row.category_key === category),
     ),
+  };
+}
+
+async function approvedMediaCoverage(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+): Promise<MediaCoverage> {
+  const [totalResult, withPhotoResult] = await Promise.all([
+    supabase
+      .from("directory_places")
+      .select("id", { count: "exact", head: true })
+      .eq("listing_status", "active"),
+    supabase
+      .from("directory_places")
+      .select("id", { count: "exact", head: true })
+      .eq("listing_status", "active")
+      .not("image_url", "is", null),
+  ]);
+
+  if (totalResult.error || withPhotoResult.error) {
+    const error = totalResult.error || withPhotoResult.error;
+    if (isMissingDirectorySchema(error)) {
+      return { available: false, total: 0, withPhoto: 0, missingPhoto: 0 };
+    }
+    throw error;
+  }
+
+  const total = totalResult.count || 0;
+  const withPhoto = withPhotoResult.count || 0;
+  return {
+    available: true,
+    total,
+    withPhoto,
+    missingPhoto: Math.max(0, total - withPhoto),
   };
 }
 
@@ -355,6 +396,10 @@ async function handleList(
   const category = cleanQuery(request.query.category, 50);
   const city = cleanQuery(request.query.city, 80);
   const search = cleanQuery(request.query.search, 100).replace(/[%_]/g, "");
+  const requestedMedia = cleanQuery(request.query.media, 30);
+  const media = MEDIA_FILTERS.includes(requestedMedia as MediaFilter)
+    ? (requestedMedia as MediaFilter)
+    : "";
   const limit = numberQuery(request.query.limit, 50, 1, 100);
   const offset = numberQuery(request.query.offset, 0, 0, 10_000);
 
@@ -363,11 +408,16 @@ async function handleList(
     .select(PLACE_SELECT, { count: "exact" })
     .eq("listing_status", status);
 
-  if (category && CATEGORY_KEYS.includes(category as (typeof CATEGORY_KEYS)[number])) {
+  if (
+    category &&
+    CATEGORY_KEYS.includes(category as (typeof CATEGORY_KEYS)[number])
+  ) {
     query = query.eq("category_key", category);
   }
   if (city) query = query.ilike("city", city);
   if (search) query = query.ilike("name", `%${search}%`);
+  if (media === "with_photo") query = query.not("image_url", "is", null);
+  if (media === "missing_photo") query = query.is("image_url", null);
 
   const { data, error, count } = await query
     .order("source_confidence", { ascending: false, nullsFirst: false })
@@ -394,10 +444,7 @@ async function handleList(
   let latestReviewByPlace: Record<string, ReviewRow> = {};
   let contentEditingAvailable = true;
   let factsEditingAvailable = true;
-  let editorialContentByPlace: Record<
-    string,
-    Partial<DirectoryPlaceRow>
-  > = {};
+  let editorialContentByPlace: Record<string, Partial<DirectoryPlaceRow>> = {};
   let publicFactsByPlace: Record<string, Partial<DirectoryPlaceRow>> = {};
 
   const contentQuery = admin.supabase
@@ -432,12 +479,14 @@ async function handleList(
     { data: reviews, error: reviewError },
     counts,
     coverage,
+    mediaCoverage,
   ] = await Promise.all([
     editorialRequest,
     publicFactsRequest,
     reviewRequest,
     statusCounts(admin.supabase),
     launchCoverage(admin.supabase),
+    approvedMediaCoverage(admin.supabase),
   ]);
 
   if (editorialError) {
@@ -490,6 +539,7 @@ async function handleList(
     })),
     counts,
     coverage,
+    mediaCoverage,
     contentEditingAvailable,
     factsEditingAvailable,
     pagination: { total: count || 0, limit, offset },
@@ -507,7 +557,9 @@ async function handleMapPreview(
 
   if (error) {
     if (isMissingDirectorySchema(error)) {
-      response.status(503).json({ error: "Directory map review is not ready." });
+      response
+        .status(503)
+        .json({ error: "Directory map review is not ready." });
       return;
     }
     throw error;
@@ -547,7 +599,9 @@ async function handleAction(
   const duplicateOfPlaceId = cleanBodyText(body.duplicateOfPlaceId, 50);
 
   if (!UUID_PATTERN.test(placeId)) {
-    response.status(400).json({ error: "A valid directory place is required." });
+    response
+      .status(400)
+      .json({ error: "A valid directory place is required." });
     return;
   }
 
@@ -760,7 +814,10 @@ async function handleAction(
     response.status(400).json({ error: "Add a short review note." });
     return;
   }
-  if (reviewAction === "mark_duplicate" && !UUID_PATTERN.test(duplicateOfPlaceId)) {
+  if (
+    reviewAction === "mark_duplicate" &&
+    !UUID_PATTERN.test(duplicateOfPlaceId)
+  ) {
     response.status(400).json({ error: "Choose a canonical directory place." });
     return;
   }
@@ -779,7 +836,9 @@ async function handleAction(
 
   if (error) {
     if (isMissingDirectorySchema(error)) {
-      response.status(503).json({ error: "Directory review SQL is not ready." });
+      response
+        .status(503)
+        .json({ error: "Directory review SQL is not ready." });
       return;
     }
     if (["22023", "23505", "42501", "P0002"].includes(error.code || "")) {
@@ -825,6 +884,8 @@ export default async function handler(
         ? String(error.code)
         : "unknown";
     console.error("[admin-directory] Request failed", code);
-    response.status(500).json({ error: "Directory review is temporarily unavailable." });
+    response
+      .status(500)
+      .json({ error: "Directory review is temporarily unavailable." });
   }
 }
