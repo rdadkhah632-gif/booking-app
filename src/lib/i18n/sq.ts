@@ -3251,8 +3251,12 @@ export const sq: TranslationTree = {
   "support.messages.totalConversationsBody":
     "Të gjitha kërkesat për suport që ke dërguar",
   "support.messages.startFromSupport": "Fillo nga Suporti",
-  "support.messages.startFromSupportBody":
-    "Zgjidh suport për klient, staf ose biznes për të dërguar një mesazh të ri.",
+  "support.messages.startFromCustomerSupportBody":
+    "Dërgo një kërkesë te suporti i klientit kur të duhet ndihmë me llogarinë ose rezervimet.",
+  "support.messages.startFromBusinessSupportBody":
+    "Dërgo një kërkesë te suporti i biznesit kur të duhet ndihmë me hapësirën e punës.",
+  "support.messages.startFromStaffSupportBody":
+    "Dërgo një kërkesë te suporti i stafit kur të duhet ndihmë me hapësirën e punës.",
   "support.messages.emptyTitle": "Ende nuk ka biseda suporti",
   "support.messages.emptyBody":
     "Kur dërgon një kërkesë për suport, përgjigjet nga suporti i Mirëbook do të shfaqen këtu.",
@@ -4324,6 +4328,8 @@ export const sq: TranslationTree = {
     "Po vendosen {count} vende dhe biznese të shqyrtuara...",
   "explore.map.loadingBody":
     "Po ngarkohen qytetet, vendet dhe kontrollet e hartës...",
+  "explore.map.resultsPanel": "Rezultatet në hartë",
+  "explore.map.resultsHint": "Zgjidh një vend për ta gjetur në hartë.",
   "explore.map.closeSelection": "Mbyll vendin e zgjedhur",
   "explore.map.empty":
     "Nuk ka ende vende në hartë që përputhen me këta filtra.",

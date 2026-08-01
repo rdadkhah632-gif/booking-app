@@ -489,13 +489,58 @@ export default function ExploreDiscoveryMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    layoutMapMarkers(
-      map,
-      markerRefs.current,
-      selectedId,
-      expandedClusterKeyRef.current,
-      getClusterLabel,
+
+    const revealSelectedMarker = () => {
+      layoutMapMarkers(
+        map,
+        markerRefs.current,
+        selectedId,
+        expandedClusterKeyRef.current,
+        getClusterLabel,
+      );
+
+      if (!selectedId) return;
+      const containingCluster = markerRefs.current.find(({ button }) =>
+        (button.dataset.clusterIds || "").split("|").includes(selectedId),
+      );
+      if (containingCluster?.button.dataset.clusterIds) {
+        expandedClusterKeyRef.current =
+          containingCluster.button.dataset.clusterIds;
+        layoutMapMarkers(
+          map,
+          markerRefs.current,
+          selectedId,
+          expandedClusterKeyRef.current,
+          getClusterLabel,
+        );
+      }
+    };
+
+    const selectedMarker = markerRefs.current.find(
+      (entry) => entry.id === selectedId,
     );
+    if (selectedMarker) {
+      const markerElement = selectedMarker.marker.getElement();
+      const markerIsClustered =
+        markerElement.style.display === "none" ||
+        markerElement.classList.contains("is-cluster");
+      expandedClusterKeyRef.current = "";
+      map.once("moveend", revealSelectedMarker);
+      map.easeTo({
+        center: [selectedMarker.longitude, selectedMarker.latitude],
+        zoom: markerIsClustered
+          ? Math.max(map.getZoom(), 11.25)
+          : map.getZoom(),
+        offset: [0, -Math.min(72, map.getContainer().clientHeight * 0.1)],
+        duration: 420,
+      });
+    } else {
+      revealSelectedMarker();
+    }
+
+    return () => {
+      map.off("moveend", revealSelectedMarker);
+    };
   }, [getClusterLabel, ready, selectedId]);
 
   if (!accessToken || mapError) {

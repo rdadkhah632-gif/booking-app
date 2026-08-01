@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { ArrowRight, MapPin, X } from "lucide-react";
+import {
+  ArrowRight,
+  List,
+  LoaderCircle,
+  LocateFixed,
+  Map as MapIcon,
+  MapPin,
+  X,
+} from "lucide-react";
 import AuthNav from "@/components/AuthNav";
 import MarketplaceSurfaceStyles from "@/components/MarketplaceSurfaceStyles";
 import ExploreBusinessCard from "@/components/explore/ExploreBusinessCard";
@@ -10,6 +18,7 @@ import ExploreDiscoveryMap from "@/components/explore/ExploreDiscoveryMap";
 import ExploreEmptyState from "@/components/explore/ExploreEmptyState";
 import ExploreFilters from "@/components/explore/ExploreFilters";
 import ExploreHero from "@/components/explore/ExploreHero";
+import ExploreMapResultList from "@/components/explore/ExploreMapResultList";
 import ExploreViewControls, {
   LocationState,
 } from "@/components/explore/ExploreViewControls";
@@ -796,72 +805,148 @@ export default function Explore() {
 
             {!loading && listItems.length > 0 && view === "map" && (
               <div className="explore-map-layout">
-                <ExploreDiscoveryMap
+                <ExploreMapResultList
                   items={mapItems}
                   selectedId={selectedMapId}
-                  userLocation={userLocation}
                   onSelect={setSelectedMapId}
                 />
 
-                {selectedMapItem && (
-                  <aside
-                    className={`map-selection is-${selectedMapItem.resultType}`}
-                    aria-live="polite"
-                  >
+                <div className="map-canvas-panel">
+                  <ExploreDiscoveryMap
+                    items={mapItems}
+                    selectedId={selectedMapId}
+                    userLocation={userLocation}
+                    onSelect={setSelectedMapId}
+                  />
+
+                  <div className="map-mobile-controls">
+                    <div
+                      className="map-mobile-view-switch"
+                      role="group"
+                      aria-label={t("explore.view.label", "Result view")}
+                    >
+                      <button
+                        type="button"
+                        aria-pressed={false}
+                        onClick={() => changeView("list")}
+                      >
+                        <List size={17} aria-hidden="true" />
+                        {t("explore.view.list", "List")}
+                      </button>
+                      <button
+                        type="button"
+                        className="is-active"
+                        aria-pressed={true}
+                      >
+                        <MapIcon size={17} aria-hidden="true" />
+                        {t("explore.view.map", "Map")}
+                      </button>
+                    </div>
+
                     <button
                       type="button"
-                      className="map-selection-close"
-                      onClick={() => setSelectedMapId("")}
-                      aria-label={t(
-                        "explore.map.closeSelection",
-                        "Close selected place",
-                      )}
+                      className={`map-mobile-location ${
+                        locationState === "active" ? "is-active" : ""
+                      }`}
+                      onClick={
+                        locationState === "active"
+                          ? clearCurrentLocation
+                          : useCurrentLocation
+                      }
+                      disabled={locationState === "loading"}
+                      aria-label={
+                        locationState === "loading"
+                          ? t("explore.location.finding", "Finding you...")
+                          : locationState === "active"
+                            ? t("explore.location.clear", "Clear nearby")
+                            : t("explore.location.use", "Use my location")
+                      }
+                      title={
+                        locationState === "loading"
+                          ? t("explore.location.finding", "Finding you...")
+                          : locationState === "active"
+                            ? t("explore.location.clear", "Clear nearby")
+                            : t("explore.location.use", "Use my location")
+                      }
                     >
-                      <X size={18} aria-hidden="true" />
-                    </button>
-                    <div className="map-selection-media" aria-hidden="true">
-                      {selectedMapItem.imageUrl ? (
-                        <img src={selectedMapItem.imageUrl} alt="" />
+                      {locationState === "loading" ? (
+                        <LoaderCircle
+                          className="location-spinner"
+                          size={20}
+                          aria-hidden="true"
+                        />
+                      ) : locationState === "active" ? (
+                        <X size={20} aria-hidden="true" />
                       ) : (
-                        <MapPin size={23} />
+                        <LocateFixed size={20} aria-hidden="true" />
                       )}
-                    </div>
-                    <div className="map-selection-copy">
-                      <span className="map-selection-type">
-                        {selectedMapItem.resultType === "business"
-                          ? t(
-                              "directory.map.bookableBusiness",
-                              "Bookable business",
-                            )
-                          : t("directory.card.type", "Local place")}
-                      </span>
-                      <strong>{selectedMapItem.name}</strong>
-                      <span>{selectedMapItem.category}</span>
-                      <span className="map-selection-location">
-                        <MapPin size={14} aria-hidden="true" />
-                        {selectedMapItem.locationLabel}
-                      </span>
-                    </div>
-                    {selectedMapItem.href ? (
-                      <Link
-                        href={selectedMapItem.href}
-                        className="btn btn-accent"
-                      >
-                        {selectedMapItem.resultType === "business"
-                          ? t("explore.card.viewTimes", "View times")
-                          : t("directory.card.details", "Details")}
-                        <ArrowRight size={16} aria-hidden="true" />
-                      </Link>
-                    ) : (
-                      <span className="map-selection-note">
-                        {t(
-                          "directory.card.notBookable",
-                          "Not bookable on Mirëbook yet",
+                    </button>
+                  </div>
+
+                  {selectedMapItem && (
+                    <aside
+                      className={`map-selection is-${selectedMapItem.resultType}`}
+                      aria-live="polite"
+                    >
+                      <span
+                        className="map-selection-handle"
+                        aria-hidden="true"
+                      />
+                      <button
+                        type="button"
+                        className="map-selection-close"
+                        onClick={() => setSelectedMapId("")}
+                        aria-label={t(
+                          "explore.map.closeSelection",
+                          "Close selected place",
                         )}
-                      </span>
-                    )}
-                  </aside>
-                )}
+                      >
+                        <X size={18} aria-hidden="true" />
+                      </button>
+                      <div className="map-selection-media" aria-hidden="true">
+                        {selectedMapItem.imageUrl ? (
+                          <img src={selectedMapItem.imageUrl} alt="" />
+                        ) : (
+                          <MapPin size={23} />
+                        )}
+                      </div>
+                      <div className="map-selection-copy">
+                        <span className="map-selection-type">
+                          {selectedMapItem.resultType === "business"
+                            ? t(
+                                "directory.map.bookableBusiness",
+                                "Bookable business",
+                              )
+                            : t("directory.card.type", "Local place")}
+                        </span>
+                        <strong>{selectedMapItem.name}</strong>
+                        <span>{selectedMapItem.category}</span>
+                        <span className="map-selection-location">
+                          <MapPin size={14} aria-hidden="true" />
+                          {selectedMapItem.locationLabel}
+                        </span>
+                      </div>
+                      {selectedMapItem.href ? (
+                        <Link
+                          href={selectedMapItem.href}
+                          className="btn btn-accent"
+                        >
+                          {selectedMapItem.resultType === "business"
+                            ? t("explore.card.viewTimes", "View times")
+                            : t("directory.card.details", "Details")}
+                          <ArrowRight size={16} aria-hidden="true" />
+                        </Link>
+                      ) : (
+                        <span className="map-selection-note">
+                          {t(
+                            "directory.card.notBookable",
+                            "Not bookable on Mirëbook yet",
+                          )}
+                        </span>
+                      )}
+                    </aside>
+                  )}
+                </div>
               </div>
             )}
           </section>
@@ -870,7 +955,7 @@ export default function Explore() {
 
       <style jsx>{`
         :global(.explore-marketplace) {
-          --max-w: 1280px;
+          --max-w: 1480px;
           --content-pad: 28px;
         }
 
@@ -881,8 +966,14 @@ export default function Explore() {
 
         .explore-results-section,
         .explore-results-grid,
-        .explore-map-layout {
+        .explore-map-layout,
+        .map-canvas-panel {
           min-width: 0;
+        }
+
+        .is-map-view :global(.explore-hero-compact),
+        .is-map-view :global(.explore-view-controls .kind-note) {
+          display: none;
         }
 
         .explore-results-grid {
@@ -923,25 +1014,51 @@ export default function Explore() {
 
         .explore-map-layout {
           display: grid;
-          gap: 0.7rem;
+          grid-template-columns: minmax(390px, 0.78fr) minmax(0, 1.22fr);
+          gap: 0.8rem;
+          height: min(70vh, 740px);
+          min-height: 560px;
+        }
+
+        .map-canvas-panel {
+          position: relative;
+          min-height: 0;
+        }
+
+        .map-canvas-panel :global(.discovery-map-shell) {
+          width: 100%;
+          height: 100%;
+          min-height: 0;
+        }
+
+        .map-mobile-controls {
+          display: none;
         }
 
         .map-selection {
-          position: relative;
+          position: absolute;
+          right: 0.85rem;
+          bottom: 0.85rem;
+          left: 0.85rem;
+          z-index: 8;
           display: grid;
-          grid-template-columns: 72px minmax(0, 1fr) auto;
+          grid-template-columns: 80px minmax(0, 1fr);
           align-items: center;
           gap: 0.85rem;
           min-width: 0;
-          padding: 0.75rem;
+          max-width: min(460px, calc(100% - 1.7rem));
+          padding: 0.75rem 3.85rem 0.75rem 0.75rem;
           border: 1px solid var(--border);
           border-radius: 8px;
           background: #ffffff;
-          box-shadow: 0 10px 24px rgba(20, 24, 32, 0.07);
+          box-shadow: 0 16px 36px rgba(20, 24, 32, 0.2);
         }
 
         .map-selection-close {
-          display: none;
+          position: absolute;
+          top: 0.72rem;
+          right: 0.72rem;
+          display: inline-flex;
           width: 44px;
           height: 44px;
           padding: 0;
@@ -953,10 +1070,14 @@ export default function Explore() {
           justify-content: center;
         }
 
+        .map-selection-handle {
+          display: none;
+        }
+
         .map-selection-media {
           display: grid;
-          width: 72px;
-          height: 72px;
+          width: 80px;
+          height: 80px;
           place-items: center;
           overflow: hidden;
           border-radius: 6px;
@@ -977,8 +1098,11 @@ export default function Explore() {
         }
 
         .map-selection-copy > span:not(.map-selection-type) {
+          overflow: hidden;
           color: var(--text-muted);
           font-size: 0.8rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .map-selection-type {
@@ -1002,9 +1126,17 @@ export default function Explore() {
         }
 
         .map-selection-note {
+          grid-column: 1 / -1;
           color: var(--text-muted);
           font-size: 0.78rem;
-          text-align: right;
+          text-align: left;
+        }
+
+        .map-selection :global(.btn) {
+          grid-column: 1 / -1;
+          width: 100%;
+          min-height: 44px;
+          justify-content: center;
         }
 
         :global(.explore-empty-actions) {
@@ -1017,6 +1149,14 @@ export default function Explore() {
         @media (max-width: 1320px) {
           .explore-results-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 1120px) {
+          .explore-map-layout {
+            grid-template-columns: minmax(0, 1fr);
+            height: min(70vh, 700px);
+            min-height: 540px;
           }
         }
 
@@ -1038,32 +1178,107 @@ export default function Explore() {
 
           .explore-page.is-map-view {
             padding-top: 14px;
-          }
-
-          .is-map-view :global(.explore-hero-compact) {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.6rem;
-          }
-
-          .is-map-view :global(.explore-hero-compact > div) {
-            min-width: 0;
-          }
-
-          .is-map-view :global(.explore-hero-compact .page-title) {
-            margin: 0;
-            font-size: 1.45rem;
-          }
-
-          .is-map-view :global(.explore-hero-compact .page-sub),
-          .is-map-view :global(.explore-view-controls .kind-note) {
-            display: none;
+            padding-bottom: 0;
           }
 
           .is-map-view :global(.explore-view-controls) {
-            margin-bottom: 0.65rem;
-            padding-bottom: 0.65rem;
+            margin-bottom: 0.55rem;
+            padding-bottom: 0.55rem;
+            border-bottom: 0;
+          }
+
+          .is-map-view :global(.explore-view-controls .explore-view-segment),
+          .is-map-view :global(.explore-view-controls .location-button) {
+            display: none;
+          }
+
+          .is-map-view .explore-results-section {
+            margin-right: calc(var(--content-pad) * -1);
+            margin-left: calc(var(--content-pad) * -1);
+          }
+
+          .explore-map-layout {
+            height: max(540px, calc(100dvh - 250px));
+            min-height: 540px;
+            gap: 0;
+          }
+
+          .map-canvas-panel :global(.discovery-map-shell) {
+            border-width: 1px 0 0;
+            border-radius: 0;
+          }
+
+          .map-mobile-controls {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            left: 0.75rem;
+            z-index: 8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            pointer-events: none;
+          }
+
+          .map-mobile-view-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            padding: 3px;
+            border: 1px solid rgba(17, 24, 39, 0.14);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 8px 22px rgba(17, 24, 39, 0.15);
+            pointer-events: auto;
+          }
+
+          .map-mobile-view-switch button {
+            display: inline-flex;
+            min-width: 84px;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.65rem;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 800;
+          }
+
+          .map-mobile-view-switch button.is-active {
+            background: var(--text);
+            color: #ffffff;
+          }
+
+          .map-mobile-location {
+            position: absolute;
+            right: 0;
+            display: inline-flex;
+            width: 48px;
+            height: 48px;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 1px solid rgba(17, 24, 39, 0.14);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 8px 22px rgba(17, 24, 39, 0.15);
+            color: var(--text);
+            pointer-events: auto;
+          }
+
+          .map-mobile-location.is-active {
+            background: var(--text);
+            color: #ffffff;
+          }
+
+          .map-canvas-panel :global(.discovery-map .mapboxgl-ctrl-top-right) {
+            top: 4.4rem;
           }
 
           :global(.explore-business-card),
@@ -1083,34 +1298,48 @@ export default function Explore() {
 
           .map-selection {
             position: fixed;
-            right: 0.75rem;
-            bottom: calc(0.75rem + env(safe-area-inset-bottom));
-            left: 0.75rem;
+            right: 0;
+            bottom: 0;
+            left: 0;
             z-index: 55;
             display: grid;
-            grid-template-columns: 72px minmax(0, 1fr) 44px;
-            gap: 0.65rem;
-            max-height: min(52vh, 24rem);
+            grid-template-columns: 104px minmax(0, 1fr);
+            gap: 0.75rem;
+            max-width: none;
+            max-height: min(58vh, 27rem);
             overflow-y: auto;
-            padding: 0.85rem;
-            border-color: var(--border);
-            box-shadow: 0 1rem 2.5rem rgba(20, 24, 32, 0.22);
+            padding: 1.2rem 1rem calc(1rem + env(safe-area-inset-bottom));
+            border: 0;
+            border-top: 1px solid var(--border);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 -1rem 2.5rem rgba(20, 24, 32, 0.2);
           }
 
           .map-selection-close {
-            display: inline-flex;
-            grid-column: 3;
-            grid-row: 1;
+            top: 1rem;
+            right: 0.85rem;
+          }
+
+          .map-selection-handle {
+            position: absolute;
+            top: 0.45rem;
+            left: 50%;
+            display: block;
+            width: 2.4rem;
+            height: 4px;
+            transform: translateX(-50%);
+            border-radius: 999px;
+            background: var(--border-2);
           }
 
           .map-selection-media {
-            grid-column: 1;
-            grid-row: 1;
+            width: 104px;
+            height: 104px;
           }
 
           .map-selection-copy {
-            grid-column: 2;
-            grid-row: 1;
+            align-self: center;
+            padding-right: 2.8rem;
           }
 
           .map-selection :global(.btn) {
@@ -1132,6 +1361,17 @@ export default function Explore() {
           :global(.explore-empty-actions a) {
             width: 100%;
             justify-content: center;
+          }
+        }
+
+        @media (max-width: 400px) {
+          .map-selection {
+            grid-template-columns: 88px minmax(0, 1fr);
+          }
+
+          .map-selection-media {
+            width: 88px;
+            height: 88px;
           }
         }
       `}</style>

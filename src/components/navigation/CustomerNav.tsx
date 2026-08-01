@@ -114,8 +114,8 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           padding: 0.45rem;
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          background: rgba(24, 23, 34, 0.98);
-          box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.32);
+          background: var(--surface);
+          box-shadow: 0 1rem 2.5rem rgba(20, 24, 32, 0.16);
         }
 
         .customer-nav-account-menu:not([open])
@@ -131,6 +131,22 @@ export default function CustomerNav({ notificationCount }: NavProps) {
         .customer-nav-account-menu-panel :global(a),
         .customer-nav-account-menu-panel button {
           width: 100%;
+        }
+
+        .customer-nav-account-menu-panel :global(a) {
+          display: flex;
+          min-height: 2.75rem;
+          align-items: center;
+          padding: 0.62rem 0.72rem;
+          border-radius: 6px;
+          color: var(--text);
+          font-weight: 800;
+          text-decoration: none;
+        }
+
+        .customer-nav-account-menu-panel :global(a:hover),
+        .customer-nav-account-menu-panel :global(a:focus-visible) {
+          background: var(--surface-2);
         }
 
         @media (max-width: 540px) {

@@ -3163,8 +3163,12 @@ export const en: TranslationTree = {
   "support.messages.totalConversationsBody":
     "All support requests you have sent",
   "support.messages.startFromSupport": "Start from Support",
-  "support.messages.startFromSupportBody":
-    "Choose customer, staff or business support to send a new message.",
+  "support.messages.startFromCustomerSupportBody":
+    "Send a customer support request when you need help with your account or bookings.",
+  "support.messages.startFromBusinessSupportBody":
+    "Send a business support request when you need help with your workspace.",
+  "support.messages.startFromStaffSupportBody":
+    "Send a staff support request when you need help with your workspace.",
   "support.messages.emptyTitle": "No support conversations yet",
   "support.messages.emptyBody":
     "When you send a support request, replies from Mirëbook support will appear here.",
@@ -4221,6 +4225,8 @@ export const en: TranslationTree = {
   "explore.map.loadingCount":
     "Positioning {count} reviewed places and businesses...",
   "explore.map.loadingBody": "Loading cities, places and map controls...",
+  "explore.map.resultsPanel": "Map results",
+  "explore.map.resultsHint": "Select a place to find it on the map.",
   "explore.map.closeSelection": "Close selected place",
   "explore.map.empty": "No mapped places match these filters yet.",
   "explore.map.clusterLabel":

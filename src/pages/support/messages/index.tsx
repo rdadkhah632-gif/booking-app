@@ -130,6 +130,21 @@ export default function SupportMessagesPage() {
     supportContext === "business" || supportContext === "staff"
       ? t("dashboardLayout.nav.inbox", "Inbox")
       : t("nav.myBookings", "My bookings");
+  const startFromSupportBody =
+    supportContext === "business"
+      ? t(
+          "support.messages.startFromBusinessSupportBody",
+          "Send a business support request when you need help with your workspace.",
+        )
+      : supportContext === "staff"
+        ? t(
+            "support.messages.startFromStaffSupportBody",
+            "Send a staff support request when you need help with your workspace.",
+          )
+        : t(
+            "support.messages.startFromCustomerSupportBody",
+            "Send a customer support request when you need help with your account or bookings.",
+          );
   return (
     <main className="marketplace-surface customer-portal-surface">
       <CustomerPortalStyles />
@@ -233,12 +248,7 @@ export default function SupportMessagesPage() {
                       "Start from Support",
                     )}
                   </h2>
-                  <p className="small muted">
-                    {t(
-                      "support.messages.startFromSupportBody",
-                      "Choose customer, staff or business support to send a new message.",
-                    )}
-                  </p>
+                  <p className="small muted">{startFromSupportBody}</p>
                 </div>
               </div>
 
