@@ -95,7 +95,7 @@ export const en: TranslationTree = {
   "terms.subtitle":
     "The rules for using Mirëbook as a customer, business owner or staff member.",
   "terms.importantBody":
-    "These terms are written for launch readiness and should be reviewed before wider commercial rollout.",
+    "By using Mirëbook, you agree to these terms. Please read them before creating an account or making a booking.",
   "terms.section1.title": "1. About Mirëbook",
   "terms.section1.body":
     "Mirëbook helps customers discover businesses and book appointments. Businesses use Mirëbook to manage services, staff, availability, booking requests, confirmations and customer updates.",
@@ -147,7 +147,7 @@ export const en: TranslationTree = {
   "privacy.subtitle":
     "How Mirëbook handles account, booking, business and support information.",
   "privacy.importantBody":
-    "This privacy policy is written for launch readiness and should be reviewed before wider commercial rollout.",
+    "This policy explains how Mirëbook uses and protects your information and the choices available to you.",
   "privacy.section1.title": "1. Information we collect",
   "privacy.section1.body":
     "We collect the information needed to run Mirëbook, including account details, contact details, booking details, business profile information, staff records, support messages and notification preferences.",
@@ -314,7 +314,7 @@ export const en: TranslationTree = {
   "home.discovery.cityLabel": "Where",
   "home.discovery.cityPlaceholder": "City or area",
   "home.discovery.search": "Search",
-  "home.discovery.bookable": "Bookable now",
+  "home.discovery.bookable": "Explore Albania",
   "home.discovery.map": "Explore the map",
   "home.discovery.browseKicker": "Start exploring",
   "home.discovery.browseTitle": "What are you looking for?",
@@ -498,7 +498,7 @@ export const en: TranslationTree = {
   "explore.sort.services": "Most services",
   "explore.search.placeholder": "Search Mirëbook",
   "explore.category.placeholder": "Barber, nails, salon...",
-  "explore.city.placeholder": "Tirana, Coventry, Milan...",
+  "explore.city.placeholder": "Tiranë, Durrës, Vlorë...",
   "explore.results.kicker": "Mirëbook marketplace",
   "explore.results.title": "Bookable businesses",
   "explore.results.loading": "Loading businesses...",
@@ -1468,11 +1468,26 @@ export const en: TranslationTree = {
   "dashboardBusinesses.saveSetup": "Save setup",
   "dashboardBusinesses.save.success": "setup saved.",
   "dashboardBusinesses.missing.profile": "profile details",
+  "dashboardBusinesses.missing.requiredProfile":
+    "business name, category and city",
+  "dashboardBusinesses.missing.description": "description",
+  "dashboardBusinesses.missing.phone": "phone number",
+  "dashboardBusinesses.missing.address": "address",
   "dashboardBusinesses.missing.image": "business image",
   "dashboardBusinesses.missing.services": "active services",
   "dashboardBusinesses.missing.staff": "active staff",
   "dashboardBusinesses.missing.assignments": "staff-service assignments",
   "dashboardBusinesses.missing.hours": "working hours",
+  "dashboardBusinesses.requiredProfileComplete": "Required details ready",
+  "dashboardBusinesses.requiredProfileIncomplete": "Add required details",
+  "dashboardBusinesses.profile.requiredTitle": "Required to publish",
+  "dashboardBusinesses.profile.requiredBody":
+    "Business name, category and city",
+  "dashboardBusinesses.profile.recommendedTitle":
+    "Recommended for customer trust",
+  "dashboardBusinesses.profile.addRecommended": "Add",
+  "dashboardBusinesses.profile.recommendedComplete":
+    "Customer-facing details are complete",
   "dashboardBusinesses.publish.completeFirst": "Complete",
   "dashboardBusinesses.publish.beforePublishing":
     "before publishing this business to Mirëbook.",
@@ -3042,6 +3057,45 @@ export const en: TranslationTree = {
     "This creates a staff support conversation. Replies from Mirëbook support will appear in your support messages.",
   "support.staff.myMessagesBody":
     "Read support replies and continue staff support conversations.",
+  "support.staff.heroTitle": "Get help with your staff account",
+  "support.staff.heroBody":
+    "Contact support about staff access, availability, bookings, notifications or your linked business profile.",
+  "support.staff.loginRequired":
+    "You need to be logged in as staff to contact staff support.",
+  "support.staff.loading": "Loading staff support...",
+  "support.staff.success": "Your support message has been sent.",
+  "support.staff.formTitle": "Send a message to support",
+  "support.staff.namePlaceholder": "Your name",
+  "support.staff.emailPlaceholder": "Your email",
+  "support.staff.subject.access": "Account access or login issue",
+  "support.staff.subject.availability": "Availability or working hours",
+  "support.staff.subject.schedule": "Schedule or booking question",
+  "support.staff.subject.wrongBusiness": "Wrong business or staff profile",
+  "support.staff.subject.email": "Email or profile details",
+  "support.staff.subject.notifications": "Notifications issue",
+  "support.staff.subject.other": "Other staff support request",
+  "support.staff.subjectLabel": "Subject",
+  "support.staff.messageLabel": "Message",
+  "support.staff.messagePlaceholder": "Tell us what you need help with...",
+  "support.staff.linkedProfile": "Linked staff profile",
+  "support.staff.memberFallback": "Staff member",
+  "support.staff.roleFallback": "Staff role",
+  "support.staff.businessFallback": "Business not shown",
+  "support.staff.status.active": "Active",
+  "support.staff.status.hidden": "Hidden",
+  "support.staff.noProfile": "No linked staff profile",
+  "support.staff.noProfileTitle":
+    "Your account is not linked to a staff profile yet",
+  "support.staff.noProfileBody":
+    "Ask the business owner to add your exact email address to their staff list, then log in again.",
+  "support.staff.sending": "Sending...",
+  "support.staff.sendButton": "Send support message",
+  "support.staff.quickActions": "Staff actions",
+  "support.staff.schedule": "Schedule",
+  "support.staff.scheduleBody": "View your upcoming staff bookings.",
+  "support.staff.availability": "Availability",
+  "support.staff.availabilityBody": "Update your working days and hours.",
+  "support.staff.accountBody": "Update your personal account details.",
   "support.customer.heroTitle": "Customer support",
   "support.customer.heroBody":
     "Message Mirëbook support about a booking, account or notification issue.",
@@ -3158,7 +3212,7 @@ export const en: TranslationTree = {
     "Some businesses use manual approval. Your booking request has been sent to the business and is not confirmed until they accept it. You can track it from My Bookings or Notifications.",
   "support.faq.paymentsTitle": "Can customers pay through Mirëbook?",
   "support.faq.paymentsBody":
-    "Not currently. Customers use Mirëbook to book and manage appointments. The first commercial billing model is business subscription billing, where businesses pay a monthly fee to use the platform.",
+    "Appointment payment is arranged directly with the business unless it states otherwise. Mirëbook does not currently collect customer appointment payments.",
   "support.faq.businessReadyTitle":
     "How does a business get ready for customers?",
   "support.faq.businessReadyBody":
@@ -3169,10 +3223,12 @@ export const en: TranslationTree = {
   "support.faq.countriesTitle":
     "Will Mirëbook support Albania and other countries?",
   "support.faq.countriesBody":
-    "Yes. Mirëbook is being prepared for Albanian and international markets. Region, currency and language support will expand as the platform moves closer to launch.",
+    "Mirëbook supports English and Albanian, with regional language, currency and timezone settings for customers and businesses.",
   "support.faq.mobileAppTitle": "Will there be a mobile app?",
   "support.faq.mobileAppBody":
-    "The current product is being built as a web platform first, with future app-store readiness in mind. The goal is to make the routes, layout, account flow and settings suitable for a later app version.",
+    "Mirëbook is available on the web. Use only official Mirëbook app-store links when dedicated mobile apps are offered.",
+  "support.work.kicker": "Using Mirëbook for work?",
+  "support.work.title": "Business and staff help",
   "notifications.types.bookingAccepted.title": "Confirmed",
   "notifications.types.bookingAccepted.message": "Your booking is confirmed.",
   "notifications.types.bookingDeclined.title": "Booking declined",
@@ -3495,9 +3551,16 @@ export const en: TranslationTree = {
   "dashboardStaff.card.bookableActive": "Bookable",
   "dashboardStaff.card.bookableDisabled": "Hidden from bookings",
   "dashboardStaff.card.bookableActiveBody":
-    "This staff profile can be used for new customer bookings once services and availability are set.",
+    "This staff profile has an assigned service and open working hours.",
   "dashboardStaff.card.bookableDisabledBody":
     "This staff profile is saved but hidden from new customer bookings.",
+  "dashboardStaff.card.bookableIncomplete": "Not bookable yet",
+  "dashboardStaff.card.bookableIncompleteBody":
+    "Assign a service and set working hours before customers can book this person.",
+  "dashboardStaff.card.bookableMissingServicesBody":
+    "Assign at least one active service before customers can book this person.",
+  "dashboardStaff.card.bookableMissingHoursBody":
+    "Set at least one open working day before customers can book this person.",
   "dashboardStaff.card.setupStatus": "Setup status",
   "dashboardStaff.card.setup": "Setup",
   "dashboardStaff.list.accountSummary": "Account links:",
@@ -4019,10 +4082,13 @@ export const en: TranslationTree = {
   "dashboardHome.today.nextCalendarCta": "Open today",
   "dashboardHome.today.nextSetupBody":
     "Finish this setup step so customers can book with confidence.",
+  "dashboardHome.today.nextPublishBody":
+    "Required booking setup is complete. Review your customer profile, then publish when it is ready.",
   "dashboardHome.today.nextReady": "Ready to take bookings",
   "dashboardHome.today.nextReadyBody":
     "Your core setup is complete. Preview the customer profile or open Calendar.",
   "dashboardHome.status.ready": "Ready to take bookings",
+  "dashboardHome.status.readyToPublish": "Ready to publish",
   "dashboardHome.status.hidden": "Hidden from Explore",
   "dashboardHome.status.setupNeeded": "Setup needed",
   "dashboardHome.setup.title": "Get ready to take bookings",
@@ -4033,11 +4099,38 @@ export const en: TranslationTree = {
   "dashboardHome.setup.servicesCta": "Add service",
   "dashboardHome.setup.team": "Team",
   "dashboardHome.setup.teamCta": "Add staff",
+  "dashboardHome.setup.teamAssignCta": "Assign services",
   "dashboardHome.setup.hours": "Working hours",
   "dashboardHome.setup.hoursCta": "Set hours",
   "dashboardHome.setup.publish": "Customer profile",
   "dashboardHome.setup.publishCta": "Review profile",
   "dashboardHome.setup.preview": "See what customers see",
+  "dashboardNotifications.claim.placeFallback": "this place",
+  "dashboardNotifications.claim.submittedTitle": "Ownership claim received",
+  "dashboardNotifications.claim.submittedBody":
+    "Mirëbook is reviewing your ownership request for {place}.",
+  "dashboardNotifications.claim.moreInfoTitle": "Ownership information needed",
+  "dashboardNotifications.claim.moreInfoBody":
+    "Open the ownership request for {place} and add the information from the review note.",
+  "dashboardNotifications.claim.approvedTitle": "Ownership claim approved",
+  "dashboardNotifications.claim.approvedBody":
+    "{place} is linked to your business. Complete Setup before publishing.",
+  "dashboardNotifications.claim.rejectedTitle": "Ownership claim not approved",
+  "dashboardNotifications.claim.rejectedBody":
+    "Open the ownership request for {place} to review the decision.",
+  "dashboardNotifications.actions.openSetup": "Open setup",
+  "dashboardNotifications.actions.openOwnershipRequest":
+    "Open ownership request",
+  "adminNotifications.search.minimum":
+    "Type at least 2 characters to see matches.",
+  "adminNotifications.search.chooseUser": "Choose a matching user",
+  "adminNotifications.search.chooseBusiness": "Choose a matching business",
+  "adminNotifications.search.noUsers": "No matching users found.",
+  "adminNotifications.search.noBusinesses": "No matching businesses found.",
+  "admin.operations.mobileOverview": "Overview and operator tools",
+  "admin.operations.users": "Users",
+  "admin.operations.notifications": "Notifications",
+  "admin.operations.support": "Support",
   "dashboardLayout.nav.services": "Services",
   "dashboardLayout.nav.availability": "Availability",
   "dashboardLayout.nav.settings": "Settings",
@@ -4071,8 +4164,7 @@ export const en: TranslationTree = {
   "explore.discovery.emptyBody":
     "Reviewed places and bookable businesses will appear here as they are added.",
   "explore.discovery.noResultsTitle": "No places match these filters",
-  "explore.discovery.noResultsBody":
-    "Try another category, city or search.",
+  "explore.discovery.noResultsBody": "Try another category, city or search.",
   "explore.category.all": "All categories",
   "explore.sort.recommended": "Recommended",
   "explore.sort.distance": "Nearest first",
@@ -4080,14 +4172,25 @@ export const en: TranslationTree = {
   "explore.view.list": "List",
   "explore.view.map": "Map",
   "explore.kind.label": "Result type",
-  "explore.kind.all": "All",
-  "explore.kind.bookable": "Bookable",
-  "explore.kind.places": "Places",
+  "explore.kind.all": "Everything",
+  "explore.kind.bookable": "Book now",
+  "explore.kind.places": "Local places",
+  "explore.kind.allHelp":
+    "Bookable businesses and reviewed local places together.",
+  "explore.kind.bookableHelp":
+    "Businesses with live appointment times on Mirëbook.",
+  "explore.kind.placesHelp":
+    "Reviewed local places to discover, including places not yet bookable.",
+  "explore.discovery.oneResult": "1 result",
+  "explore.discovery.resultCount": "{count} results",
+  "explore.discovery.noBookableTitle": "Online bookings are opening soon",
+  "explore.discovery.noBookableBody":
+    "There are no businesses taking Mirëbook appointments in this search yet. You can still discover reviewed local places.",
+  "explore.discovery.showPlaces": "Explore local places",
   "explore.location.finding": "Finding you...",
   "explore.location.clear": "Clear nearby",
   "explore.location.use": "Near me",
-  "explore.location.denied":
-    "Location was not shared. Search by city instead.",
+  "explore.location.denied": "Location was not shared. Search by city instead.",
   "explore.location.unavailable":
     "Location is unavailable. Search by city instead.",
   "explore.map.yourLocation": "Your approximate location",
@@ -4096,6 +4199,11 @@ export const en: TranslationTree = {
     "Use the list and city filters while the map is being prepared.",
   "explore.map.label": "Discovery map",
   "explore.map.loading": "Loading map...",
+  "explore.map.loadingTitle": "Preparing the Albania map",
+  "explore.map.loadingCount":
+    "Positioning {count} reviewed places and businesses...",
+  "explore.map.loadingBody": "Loading cities, places and map controls...",
+  "explore.map.closeSelection": "Close selected place",
   "explore.map.empty": "No mapped places match these filters yet.",
   "explore.map.clusterLabel":
     "{count} nearby places. Activate to separate them.",
@@ -4258,8 +4366,7 @@ export const en: TranslationTree = {
   "admin.directory.content.creditPlaceholder":
     "Photographer, owner or image source",
   "admin.directory.content.creditUrl": "Credit or licence URL (optional)",
-  "admin.directory.content.rightsNote":
-    "Private permission or licence note",
+  "admin.directory.content.rightsNote": "Private permission or licence note",
   "admin.directory.content.rightsPlaceholder":
     "Record who supplied the image or the licence that allows publication.",
   "admin.directory.content.rightsConfirm":
@@ -4294,8 +4401,7 @@ export const en: TranslationTree = {
   "admin.directory.facts.website": "Public website",
   "admin.directory.facts.sourceUrl": "Private verification source",
   "admin.directory.facts.note": "Private verification note",
-  "admin.directory.facts.notePlaceholder":
-    "Record what was checked and when.",
+  "admin.directory.facts.notePlaceholder": "Record what was checked and when.",
   "admin.directory.facts.saving": "Saving reviewed details...",
   "admin.directory.facts.save": "Save reviewed details",
   "admin.directory.facts.restore": "Use imported details",
@@ -4319,16 +4425,19 @@ export const en: TranslationTree = {
   "directory.profile.back": "Back to Explore",
   "directory.profile.loading": "Loading place details...",
   "directory.profile.notFound": "Place not found",
-  "directory.profile.notFoundBody": "This place is no longer available in Mirëbook discovery.",
+  "directory.profile.notFoundBody":
+    "This place is no longer available in Mirëbook discovery.",
   "directory.profile.handoffTitle": "This business is ready to book",
   "directory.profile.handoffBody":
     "Opening its live Mirëbook profile with services and available times.",
   "directory.profile.handoffAction": "View services and book",
   "directory.profile.directions": "Get directions",
   "directory.profile.ownerTitle": "Is this your business?",
-  "directory.profile.ownerBody": "Claim this listing with a Mirëbook Business account. Mirëbook reviews every request before linking it.",
+  "directory.profile.ownerBody":
+    "Claim this listing with a Mirëbook Business account. Mirëbook reviews every request before linking it.",
   "directory.profile.claimedTitle": "Ownership recorded",
-  "directory.profile.claimedBody": "This listing already has an ownership record. Booking remains unavailable until its Mirëbook business profile is ready and published.",
+  "directory.profile.claimedBody":
+    "This listing already has an ownership record. Booking remains unavailable until its Mirëbook business profile is ready and published.",
   "directory.profile.claim": "Claim this place",
   "directory.profile.source": "Place data",
   "directory.claim.metaTitle": "Claim a place | Mirëbook Business",
@@ -4336,19 +4445,27 @@ export const en: TranslationTree = {
   "directory.claim.unavailable": "This place is not available to claim.",
   "directory.claim.kicker": "Business ownership",
   "directory.claim.title": "Claim this place",
-  "directory.claim.subtitle": "Connect a reviewed directory listing to the Mirëbook business you own.",
+  "directory.claim.subtitle":
+    "Connect a reviewed directory listing to the Mirëbook business you own.",
   "directory.claim.safetyTitle": "Every claim is reviewed",
-  "directory.claim.safetyBody": "Matching names or addresses only help you choose a profile. They never approve ownership automatically.",
-  "directory.claim.error.load": "This ownership claim could not be loaded. Return to Explore and try again.",
-  "directory.claim.error.submit": "The claim could not be submitted. Check the details and try again.",
-  "directory.claim.error.switchAccount": "This account could not be signed out. Try again from Account.",
-  "directory.claim.success": "Claim submitted. Mirëbook will review the ownership evidence before linking anything.",
+  "directory.claim.safetyBody":
+    "Matching names or addresses only help you choose a profile. They never approve ownership automatically.",
+  "directory.claim.error.load":
+    "This ownership claim could not be loaded. Return to Explore and try again.",
+  "directory.claim.error.submit":
+    "The claim could not be submitted. Check the details and try again.",
+  "directory.claim.error.switchAccount":
+    "This account could not be signed out. Try again from Account.",
+  "directory.claim.success":
+    "Claim submitted. Mirëbook will review the ownership evidence before linking anything.",
   "directory.claim.authTitle": "Continue with Mirëbook Business",
-  "directory.claim.authBody": "Sign in to an existing Business account, or create one. This place will stay attached to the return journey.",
+  "directory.claim.authBody":
+    "Sign in to an existing Business account, or create one. This place will stay attached to the return journey.",
   "directory.claim.signIn": "Business sign in",
   "directory.claim.create": "Create Business account",
   "directory.claim.noBusinessTitle": "A Business profile is required",
-  "directory.claim.noBusinessBody": "This signed-in account does not own a Mirëbook business. Use a Business account or start business setup first.",
+  "directory.claim.noBusinessBody":
+    "This signed-in account does not own a Mirëbook business. Use a Business account or start business setup first.",
   "directory.claim.openSetup": "Open Business setup",
   "directory.claim.switchAccount": "Use another account",
   "directory.claim.status.pending": "Under review",
@@ -4356,16 +4473,21 @@ export const en: TranslationTree = {
   "directory.claim.status.approved": "Ownership approved",
   "directory.claim.status.rejected": "Not approved",
   "directory.claim.status.withdrawn": "Withdrawn",
-  "directory.claim.approvedBody": "The directory place is linked to your business. Finish or review your existing setup before publishing it for bookings.",
+  "directory.claim.approvedBody":
+    "The directory place is linked to your business. Finish or review your existing setup before publishing it for bookings.",
   "directory.claim.continueSetup": "Continue in Setup",
-  "directory.claim.pendingBody": "Mirëbook has your request. The listing remains unchanged while the operator checks the evidence.",
-  "directory.claim.rejectedBody": "The evidence did not confirm ownership. You may submit a new request with clearer information.",
+  "directory.claim.pendingBody":
+    "Mirëbook has your request. The listing remains unchanged while the operator checks the evidence.",
+  "directory.claim.rejectedBody":
+    "The evidence did not confirm ownership. You may submit a new request with clearer information.",
   "directory.claim.businessTitle": "Choose your business",
-  "directory.claim.businessBody": "Suggestions are based on basic similarities only. Select the profile you actually own.",
+  "directory.claim.businessBody":
+    "Suggestions are based on basic similarities only. Select the profile you actually own.",
   "directory.claim.match.name": "Similar name",
   "directory.claim.match.city": "Same city",
   "directory.claim.match.phone": "Matching phone",
-  "directory.claim.noMatch": "No obvious match was found. You can still submit evidence for manual review.",
+  "directory.claim.noMatch":
+    "No obvious match was found. You can still submit evidence for manual review.",
   "directory.claim.evidenceTitle": "Show your connection",
   "directory.claim.evidenceLabel": "Evidence type",
   "directory.claim.evidence.email": "Business email domain",
@@ -4373,10 +4495,13 @@ export const en: TranslationTree = {
   "directory.claim.evidence.document": "Business document",
   "directory.claim.evidence.other": "Other evidence",
   "directory.claim.phoneLabel": "Business phone number",
-  "directory.claim.phonePrivacy": "Only the final four digits are stored in the claim record.",
+  "directory.claim.phonePrivacy":
+    "Only the final four digits are stored in the claim record.",
   "directory.claim.messageLabel": "How are you connected to this business?",
-  "directory.claim.messagePlaceholder": "Explain your role and what Mirëbook can check.",
-  "directory.claim.confirm": "I confirm that I am authorised to represent this business and that the information is accurate.",
+  "directory.claim.messagePlaceholder":
+    "Explain your role and what Mirëbook can check.",
+  "directory.claim.confirm":
+    "I confirm that I am authorised to represent this business and that the information is accurate.",
   "directory.claim.submit": "Submit for review",
   "directory.claim.resubmit": "Send additional information",
   "directory.claim.submitting": "Submitting...",
@@ -4400,9 +4525,11 @@ export const en: TranslationTree = {
   "admin.claims.metaTitle": "Ownership claims | Mirëbook",
   "admin.claims.kicker": "Marketplace ownership",
   "admin.claims.title": "Ownership claims",
-  "admin.claims.subtitle": "Review evidence before linking a directory place to an owner-managed Mirëbook business.",
+  "admin.claims.subtitle":
+    "Review evidence before linking a directory place to an owner-managed Mirëbook business.",
   "admin.claims.directory": "Directory review",
-  "admin.claims.safety": "Approval links records only. It does not publish the business, make it bookable or bypass Setup readiness.",
+  "admin.claims.safety":
+    "Approval links records only. It does not publish the business, make it bookable or bypass Setup readiness.",
   "admin.claims.statuses": "Claim statuses",
   "admin.claims.status.pending": "Pending",
   "admin.claims.status.moreInfo": "More information",
@@ -4440,7 +4567,8 @@ export const en: TranslationTree = {
   "admin.claims.error.save": "The review decision could not be saved.",
   "admin.claims.controlKicker": "Ownership review",
   "admin.claims.controlTitle": "Directory ownership claims",
-  "admin.claims.controlBody": "Review evidence before linking a directory place to a Mirëbook business.",
+  "admin.claims.controlBody":
+    "Review evidence before linking a directory place to a Mirëbook business.",
   "nav.outreach": "Outreach",
   "admin.outreach.metaTitle": "Owner outreach | Mirëbook",
   "admin.outreach.adminOnlyTitle": "Admin only",
@@ -4485,8 +4613,7 @@ export const en: TranslationTree = {
   "admin.outreach.pilot.reason.bilingual": "EN/SQ profile",
   "admin.outreach.pilot.reason.image": "Reviewed photo",
   "admin.outreach.pilot.reason.booking": "Booking-friendly",
-  "admin.outreach.pilot.recommended":
-    "Recommended first contact: {channel}",
+  "admin.outreach.pilot.recommended": "Recommended first contact: {channel}",
   "admin.outreach.statuses": "Outreach statuses",
   "admin.outreach.status.all": "All",
   "admin.outreach.status.notStarted": "Not started",
@@ -4542,8 +4669,7 @@ export const en: TranslationTree = {
   "admin.outreach.template.copyMessage": "Copy message",
   "admin.outreach.template.reset": "Reset draft",
   "admin.outreach.template.openEmail": "Open email draft",
-  "admin.outreach.template.includeOffer":
-    "Include early-partner invitation",
+  "admin.outreach.template.includeOffer": "Include early-partner invitation",
   "admin.outreach.template.includeOfferBody":
     "Adds the current no-customer-booking-commission and setup-support message. Use only when offering the launch pilot.",
   "admin.outreach.template.offer.message":
@@ -4584,8 +4710,7 @@ export const en: TranslationTree = {
   "admin.outreach.noteLabel": "Private operator note",
   "admin.outreach.notePlaceholder":
     "Record what happened and the next useful step. Never add sensitive personal data.",
-  "admin.outreach.manualConfirmationTitle":
-    "Contact happened outside Mirëbook",
+  "admin.outreach.manualConfirmationTitle": "Contact happened outside Mirëbook",
   "admin.outreach.manualConfirmationBody":
     "Confirm only after you personally sent the message or completed the conversation.",
   "admin.outreach.handoffTitle": "Ready for ownership handoff",

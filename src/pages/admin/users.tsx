@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
 
 type ProfileRow = {
   id: string;
@@ -245,9 +246,7 @@ export default function AdminUsersPage() {
     setSuccess(null);
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const session = await getStableBrowserSession();
 
       if (!session) {
         router.replace("/login?redirectTo=/admin/users");

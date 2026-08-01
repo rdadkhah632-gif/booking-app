@@ -103,12 +103,18 @@ export default function ExploreViewControls({
 
       <button
         type="button"
-        className={locationActive ? "location-button is-active" : "location-button"}
+        className={
+          locationActive ? "location-button is-active" : "location-button"
+        }
         onClick={locationActive ? onClearLocation : onUseLocation}
         disabled={locationState === "loading"}
       >
         {locationState === "loading" ? (
-          <LoaderCircle className="location-spinner" size={17} aria-hidden="true" />
+          <LoaderCircle
+            className="location-spinner"
+            size={17}
+            aria-hidden="true"
+          />
         ) : locationActive ? (
           <X size={17} aria-hidden="true" />
         ) : (
@@ -134,6 +140,23 @@ export default function ExploreViewControls({
               )}
         </span>
       )}
+
+      <p className="kind-note">
+        {kind === "bookable"
+          ? t(
+              "explore.kind.bookableHelp",
+              "Businesses with live appointment times on Mirëbook.",
+            )
+          : kind === "places"
+            ? t(
+                "explore.kind.placesHelp",
+                "Reviewed local places to discover, including places not yet bookable.",
+              )
+            : t(
+                "explore.kind.allHelp",
+                "Bookable businesses and reviewed local places together.",
+              )}
+      </p>
 
       <style jsx>{`
         .explore-view-controls {
@@ -164,7 +187,7 @@ export default function ExploreViewControls({
         .explore-view-segment button,
         .explore-kind-segment button,
         .location-button {
-          min-height: 38px;
+          min-height: 44px;
           border: 0;
           border-radius: 6px;
           background: transparent;
@@ -212,6 +235,14 @@ export default function ExploreViewControls({
           flex: 1 1 240px;
           color: var(--text-muted);
           font-size: 0.78rem;
+        }
+
+        .kind-note {
+          flex: 1 0 100%;
+          margin: -0.15rem 0 0;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          line-height: 1.45;
         }
 
         :global(.location-spinner) {

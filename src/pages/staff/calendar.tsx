@@ -551,10 +551,10 @@ export default function StaffCalendarPage() {
             }))}
             selectedDayKey={selectedGroup.dateString}
             selectedDayLabel={formatLocalizedDate(selectedGroup.date, locale, {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
             appointments={mobileAppointments}
             selectedAppointmentId={selectedBookingId}
             startHour={mobileWindow.startHour}
@@ -1782,6 +1782,34 @@ export default function StaffCalendarPage() {
           border: 1px solid var(--border);
           border-radius: calc(var(--radius) - 4px);
           background: rgba(255, 255, 255, 0.03);
+        }
+
+        @media (max-width: 900px) {
+          .staff-week-calendar,
+          :global(.staff-week-calendar) {
+            grid-template-rows: minmax(0, 1fr);
+            padding: 0;
+            gap: 0;
+            border-radius: 8px;
+            background: transparent;
+            box-shadow: none;
+          }
+
+          .staff-week-scroll,
+          :global(.staff-week-scroll),
+          .staff-week-summary,
+          :global(.staff-week-summary) {
+            display: none;
+          }
+
+          .staff-selected-appointment {
+            top: auto;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            left: 0.75rem;
+            width: auto;
+            max-height: min(70vh, 36rem);
+          }
         }
 
         @media (max-width: 760px) {

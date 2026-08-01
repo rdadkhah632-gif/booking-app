@@ -67,7 +67,9 @@ export default function Home() {
   return (
     <main className="discovery-home">
       <Head>
-        <title>{t("home.discovery.metaTitle", "Explore and book Albania | Mirëbook")}</title>
+        <title>
+          {t("home.discovery.metaTitle", "Explore and book Albania | Mirëbook")}
+        </title>
         <meta
           name="description"
           content={t(
@@ -139,9 +141,9 @@ export default function Home() {
             </form>
 
             <div className="discovery-hero-actions">
-              <Link href="/explore?kind=bookable" className="hero-secondary-action">
+              <Link href="/explore" className="hero-secondary-action">
                 <CalendarCheck size={18} aria-hidden="true" />
-                {t("home.discovery.bookable", "Bookable now")}
+                {t("home.discovery.bookable", "Explore Albania")}
               </Link>
               <Link href="/explore?view=map" className="hero-secondary-action">
                 <Map size={18} aria-hidden="true" />
@@ -157,7 +159,9 @@ export default function Home() {
           <header className="home-band-heading">
             <div>
               <span>{t("home.discovery.browseKicker", "Start exploring")}</span>
-              <h2>{t("home.discovery.browseTitle", "What are you looking for?")}</h2>
+              <h2>
+                {t("home.discovery.browseTitle", "What are you looking for?")}
+              </h2>
             </div>
             <Link href="/explore" className="home-inline-link">
               {t("home.discovery.viewAll", "View everything")}
@@ -179,7 +183,10 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="home-city-row" aria-label={t("home.discovery.cities", "Explore by city")}>
+          <div
+            className="home-city-row"
+            aria-label={t("home.discovery.cities", "Explore by city")}
+          >
             <strong>{t("home.discovery.cities", "Explore by city")}</strong>
             {cityShortcuts.map((item) => (
               <Link
@@ -198,7 +205,9 @@ export default function Home() {
           <div>
             <CalendarCheck size={24} aria-hidden="true" />
             <span>
-              <strong>{t("home.discovery.bookTitle", "Book on Mirëbook")}</strong>
+              <strong>
+                {t("home.discovery.bookTitle", "Book on Mirëbook")}
+              </strong>
               <small>
                 {t(
                   "home.discovery.bookBody",
@@ -210,7 +219,9 @@ export default function Home() {
           <div>
             <MapPin size={24} aria-hidden="true" />
             <span>
-              <strong>{t("home.discovery.placeTitle", "Discover local places")}</strong>
+              <strong>
+                {t("home.discovery.placeTitle", "Discover local places")}
+              </strong>
               <small>
                 {t(
                   "home.discovery.placeBody",
@@ -226,7 +237,12 @@ export default function Home() {
         <div className="container home-business-band-inner">
           <div>
             <span>{t("home.business.kicker", "For businesses")}</span>
-            <h2>{t("home.discovery.businessTitle", "Bring your business onto Mirëbook")}</h2>
+            <h2>
+              {t(
+                "home.discovery.businessTitle",
+                "Bring your business onto Mirëbook",
+              )}
+            </h2>
             <p>
               {t(
                 "home.discovery.businessBody",
@@ -454,7 +470,9 @@ export default function Home() {
           color: #17151d;
           font-weight: 800;
           text-decoration: none;
-          transition: border-color 0.16s ease, transform 0.16s ease;
+          transition:
+            border-color 0.16s ease,
+            transform 0.16s ease;
         }
 
         .home-category-link:hover {

@@ -147,10 +147,10 @@ export default function SupportPage() {
                 </p>
               </div>
 
-              <div className="support-route-grid">
+              <div className="support-customer-route">
                 <Link
                   href="/support/customer"
-                  className="card support-route-card"
+                  className="card support-route-card support-route-primary"
                 >
                   <p className="small muted">
                     {t("support.customer.kicker", "Customers")}
@@ -163,36 +163,33 @@ export default function SupportPage() {
                     {t("nav.customerSupport")} <span aria-hidden="true">→</span>
                   </span>
                 </Link>
-
-                <Link
-                  href="/support/business"
-                  className="card support-route-card"
-                >
-                  <p className="small muted">
-                    {t("support.business.kicker", "Businesses")}
-                  </p>
-                  <h2>{t("support.business.title")}</h2>
-                  <p className="muted small" style={{ marginTop: "0.5rem" }}>
-                    {t("support.business.body")}
-                  </p>
-                  <span className="support-route-cta">
-                    {t("nav.businessSupport")} <span aria-hidden="true">→</span>
-                  </span>
-                </Link>
-
-                <Link href="/support/staff" className="card support-route-card">
-                  <p className="small muted">
-                    {t("support.staff.kicker", "Staff")}
-                  </p>
-                  <h2>{t("support.staff.title")}</h2>
-                  <p className="muted small" style={{ marginTop: "0.5rem" }}>
-                    {t("support.staff.body")}
-                  </p>
-                  <span className="support-route-cta">
-                    {t("support.staff.title")} <span aria-hidden="true">→</span>
-                  </span>
-                </Link>
               </div>
+
+              <section className="support-work-routes">
+                <div>
+                  <p className="small muted">
+                    {t("support.work.kicker", "Using Mirëbook for work?")}
+                  </p>
+                  <h2>{t("support.work.title", "Business and staff help")}</h2>
+                </div>
+                <div className="support-work-grid">
+                  <Link href="/support/business" className="support-work-link">
+                    <span>
+                      <strong>{t("support.business.title")}</strong>
+                      <small>{t("support.business.body")}</small>
+                    </span>
+                    <span aria-hidden="true">→</span>
+                  </Link>
+
+                  <Link href="/support/staff" className="support-work-link">
+                    <span>
+                      <strong>{t("support.staff.title")}</strong>
+                      <small>{t("support.staff.body")}</small>
+                    </span>
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              </section>
 
               <div className="grid-2">
                 <div className="card support-content">
@@ -345,37 +342,7 @@ export default function SupportPage() {
                     <p>
                       {t(
                         "support.faq.paymentsBody",
-                        "Not currently. Customers use Mirëbook to book and manage appointments. The first commercial billing model is business subscription billing, where businesses pay a monthly fee to use the platform.",
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="support-faq-item">
-                    <h3>
-                      {t(
-                        "support.faq.businessReadyTitle",
-                        "How does a business get ready for customers?",
-                      )}
-                    </h3>
-                    <p>
-                      {t(
-                        "support.faq.businessReadyBody",
-                        "A business should complete its profile, add services, assign staff, set working hours and choose booking settings before publishing. The setup hub shows what still needs attention.",
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="support-faq-item">
-                    <h3>
-                      {t(
-                        "support.faq.staffAccessTitle",
-                        "How does staff access work?",
-                      )}
-                    </h3>
-                    <p>
-                      {t(
-                        "support.faq.staffAccessBody",
-                        "A business owner adds a staff member and their email. When that person registers or logs in with the same email, Mirëbook can link their account to the staff profile.",
+                        "Appointment payment is arranged directly with the business unless it states otherwise. Mirëbook does not currently collect customer appointment payments.",
                       )}
                     </p>
                   </div>
@@ -390,7 +357,7 @@ export default function SupportPage() {
                     <p>
                       {t(
                         "support.faq.countriesBody",
-                        "Yes. Mirëbook is being prepared for Albanian and international markets. Region, currency and language support will expand as the platform moves closer to launch.",
+                        "Mirëbook supports English and Albanian, with regional language, currency and timezone settings for customers and businesses.",
                       )}
                     </p>
                   </div>
@@ -405,7 +372,7 @@ export default function SupportPage() {
                     <p>
                       {t(
                         "support.faq.mobileAppBody",
-                        "The current product is being built as a web platform first, with future app-store readiness in mind. The goal is to make the routes, layout, account flow and settings suitable for a later app version.",
+                        "Mirëbook is available on the web. Use only official Mirëbook app-store links when dedicated mobile apps are offered.",
                       )}
                     </p>
                   </div>
@@ -465,10 +432,8 @@ export default function SupportPage() {
           background: rgba(255, 190, 11, 0.06);
         }
 
-        .support-route-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 1rem;
+        .support-customer-route {
+          min-width: 0;
         }
 
         .support-route-card {
@@ -478,6 +443,48 @@ export default function SupportPage() {
           transition:
             transform 0.2s,
             border-color 0.2s;
+        }
+
+        .support-route-primary {
+          min-height: 190px;
+          border-color: rgba(255, 107, 53, 0.28);
+          background: rgba(255, 107, 53, 0.06);
+        }
+
+        .support-work-routes {
+          display: grid;
+          gap: 0.75rem;
+          padding-top: 0.25rem;
+        }
+
+        .support-work-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .support-work-link {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          align-items: center;
+          min-height: 72px;
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+          color: var(--text);
+        }
+
+        .support-work-link > span:first-child {
+          display: grid;
+          gap: 0.25rem;
+          min-width: 0;
+        }
+
+        .support-work-link small {
+          color: var(--text-muted);
+          line-height: 1.45;
         }
 
         .support-route-card:hover {
@@ -568,7 +575,7 @@ export default function SupportPage() {
         }
 
         @media (max-width: 860px) {
-          .support-route-grid {
+          .support-work-grid {
             grid-template-columns: 1fr;
           }
 

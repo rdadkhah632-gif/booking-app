@@ -167,10 +167,13 @@ export default function BusinessProfileCard({
               }}
             >
               {readiness.profileComplete
-                ? t("dashboardBusinesses.profileComplete", "Profile ready")
+                ? t(
+                    "dashboardBusinesses.requiredProfileComplete",
+                    "Required details ready",
+                  )
                 : t(
-                    "dashboardBusinesses.profileNeedsPolish",
-                    "Add profile details",
+                    "dashboardBusinesses.requiredProfileIncomplete",
+                    "Add required details",
                   )}
             </span>
           </div>
@@ -213,6 +216,39 @@ export default function BusinessProfileCard({
               "These details appear on the public page customers use to decide and book.",
             )}
           </p>
+
+          <div className="profile-requirements">
+            <div>
+              <strong>
+                {t(
+                  "dashboardBusinesses.profile.requiredTitle",
+                  "Required to publish",
+                )}
+              </strong>
+              <span>
+                {t(
+                  "dashboardBusinesses.profile.requiredBody",
+                  "Business name, category and city",
+                )}
+              </span>
+            </div>
+            <div>
+              <strong>
+                {t(
+                  "dashboardBusinesses.profile.recommendedTitle",
+                  "Recommended for customer trust",
+                )}
+              </strong>
+              <span>
+                {readiness.profileMissingItems.length > 0
+                  ? `${t("dashboardBusinesses.profile.addRecommended", "Add")}: ${readiness.profileMissingItems.join(", ")}`
+                  : t(
+                      "dashboardBusinesses.profile.recommendedComplete",
+                      "Customer-facing details are complete",
+                    )}
+              </span>
+            </div>
+          </div>
 
           <div className="business-profile-input-grid">
             <label className="business-profile-field">
@@ -448,6 +484,28 @@ export default function BusinessProfileCard({
           margin-top: 1rem;
         }
 
+        .profile-requirements {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.65rem;
+          margin-top: 0.8rem;
+        }
+
+        .profile-requirements > div {
+          display: grid;
+          gap: 0.2rem;
+          padding: 0.7rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface);
+        }
+
+        .profile-requirements span {
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          line-height: 1.4;
+        }
+
         .business-profile-field {
           display: grid;
           gap: 0.42rem;
@@ -488,6 +546,10 @@ export default function BusinessProfileCard({
         }
 
         @media (max-width: 640px) {
+          .profile-requirements {
+            grid-template-columns: 1fr;
+          }
+
           .business-profile-actions,
           .business-profile-actions :global(.btn),
           .business-profile-actions a,

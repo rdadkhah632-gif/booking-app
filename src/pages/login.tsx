@@ -99,6 +99,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (safeRedirectTo?.startsWith("/admin") && capabilities.canUseAdmin) {
+      router.replace(safeRedirectTo);
+      return;
+    }
+
     if (capabilities.defaultRoute === "/my-bookings") {
       router.replace(safeRedirectTo || "/my-bookings");
       return;
@@ -211,7 +216,8 @@ export default function LoginPage() {
     );
     if (
       redirectTo?.startsWith("/staff/invite?token=") ||
-      (isBusinessEntry && redirectTo?.startsWith("/claim/"))
+      (isBusinessEntry && redirectTo?.startsWith("/claim/")) ||
+      redirectTo?.startsWith("/admin")
     ) {
       verificationRedirect.searchParams.set("redirectTo", redirectTo);
     }

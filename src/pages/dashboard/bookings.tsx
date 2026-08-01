@@ -3419,6 +3419,22 @@ export default function Bookings() {
           }
         }
 
+        @media (max-width: 900px) {
+          :global(.week-calendar) {
+            grid-template-rows: minmax(0, 1fr);
+            padding: 0;
+            gap: 0;
+            border-radius: 8px;
+            background: transparent;
+            box-shadow: none;
+          }
+
+          :global(.week-calendar-scroll),
+          :global(.week-calendar-summary) {
+            display: none;
+          }
+        }
+
         @media (max-width: 700px) {
           .calendar-workspace {
             height: calc(100dvh - 11rem);

@@ -940,7 +940,8 @@ select option {
   .auth-wrap {
     min-height: calc(100vh - 96px);
     min-height: calc(100dvh - 96px);
-    padding: 32px 14px;
+    align-items: flex-start;
+    padding: 18px 14px 32px;
   }
 
   .auth-card {

@@ -1,95 +1,100 @@
 export type Business = {
-  id: string
-  name: string
-  published: boolean
-  category?: string | null
-  city?: string | null
-  timezone?: string | null
-}
+  id: string;
+  name: string;
+  published: boolean;
+  category?: string | null;
+  city?: string | null;
+  timezone?: string | null;
+};
 
 export type Booking = {
-  id: string
-  business_id: string
-  customer_name: string
-  start_at: string
-  duration_minutes: number
-  service_id?: string | null
-  status: string
-  created_at?: string
+  id: string;
+  business_id: string;
+  customer_name: string;
+  start_at: string;
+  duration_minutes: number;
+  service_id?: string | null;
+  status: string;
+  created_at?: string;
   businesses?: {
-    name: string
-  } | null
+    name: string;
+  } | null;
   services?: {
-    id?: string
-    name: string
-    price?: number | null
-  } | null
+    id?: string;
+    name: string;
+    price?: number | null;
+  } | null;
   staff_members?: {
-    name: string
-    role_title?: string | null
-  } | null
-}
+    name: string;
+    role_title?: string | null;
+  } | null;
+};
 
 export type BookingRequest = {
-  id: string
-  booking_id: string
-  business_id: string
-  status: string
-  created_at: string
-}
+  id: string;
+  booking_id: string;
+  business_id: string;
+  status: string;
+  created_at: string;
+};
 
 export type Service = {
-  id: string
-  business_id: string
-  active: boolean
-}
+  id: string;
+  business_id: string;
+  active: boolean;
+};
 
 export type StaffMember = {
-  id: string
-  business_id: string
-  active: boolean
-}
+  id: string;
+  business_id: string;
+  active: boolean;
+};
+
+export type StaffServiceAssignment = {
+  staff_member_id: string;
+  service_id: string;
+};
 
 export type AvailabilityRow = {
-  id: string
-  business_id: string
-  is_closed?: boolean | null
-}
+  id: string;
+  business_id: string;
+  is_closed?: boolean | null;
+};
 
 export type ScheduleDay = {
-  date: Date
-  dateString: string
-  label: string
-  shortLabel: string
-  bookings: Booking[]
-}
+  date: Date;
+  dateString: string;
+  label: string;
+  shortLabel: string;
+  bookings: Booking[];
+};
 
 export type SetupWarning = {
-  title: string
-  body: string
-  href: string
-  cta: string
-}
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+};
 
 export type SetupStep = {
-  key: string
-  complete: boolean
-  label: string
-  href: string
-  cta: string
-}
+  key: string;
+  complete: boolean;
+  label: string;
+  href: string;
+  cta: string;
+};
 
 export type DashboardAnalytics = {
-  recentBookings: Booking[]
-  recentCompleted: Booking[]
-  recentConfirmed: Booking[]
-  recentCancelled: Booking[]
-  estimatedRevenue: number
-  estimatedUpcomingValue: number
+  recentBookings: Booking[];
+  recentCompleted: Booking[];
+  recentConfirmed: Booking[];
+  recentCancelled: Booking[];
+  estimatedRevenue: number;
+  estimatedUpcomingValue: number;
   topServices: {
-    name: string
-    count: number
-    value: number
-  }[]
-  averageBookingValue: number
-}
+    name: string;
+    count: number;
+    value: number;
+  }[];
+  averageBookingValue: number;
+};

@@ -257,8 +257,8 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         .directory-card-actions :global(.btn) {
-          min-height: 34px;
-          padding: 0.42rem 0.6rem;
+          min-height: 44px;
+          padding: 0.52rem 0.68rem;
           gap: 0.35rem;
           font-size: 0.76rem;
         }
@@ -267,12 +267,17 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           display: flex;
           flex-wrap: wrap;
           gap: 0.2rem 0.65rem;
-          margin-top: 0.05rem;
+          margin-top: 0.2rem;
+          padding-top: 0.45rem;
+          border-top: 1px solid var(--border);
+          opacity: 0.78;
         }
 
         .directory-attribution {
           width: fit-content;
           text-decoration: none;
+          font-size: 0.66rem;
+          line-height: 1.35;
         }
 
         .directory-attribution[href]:hover {
@@ -300,9 +305,9 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           }
 
           .directory-card-actions :global(.btn) {
-            min-height: 32px;
-            padding: 0.38rem 0.5rem;
-            font-size: 0.72rem;
+            min-height: 44px;
+            padding: 0.5rem 0.62rem;
+            font-size: 0.74rem;
           }
 
           .directory-card-content {

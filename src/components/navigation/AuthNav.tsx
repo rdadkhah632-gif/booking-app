@@ -483,8 +483,14 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
             max-width: none;
             justify-content: center;
             white-space: nowrap;
-            min-height: 2.25rem;
+            min-height: 2.75rem;
             padding: 0.58rem 0.78rem;
+          }
+
+          :global(.language-pill) {
+            min-width: 2.75rem;
+            height: 2.75rem;
+            padding-inline: 0.45rem;
           }
 
           .logo {

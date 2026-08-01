@@ -11,6 +11,7 @@ import {
   Service,
   SetupStep,
   StaffMember,
+  StaffServiceAssignment,
 } from "@/components/dashboard-home/dashboardHomeTypes";
 import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
@@ -26,6 +27,9 @@ export default function DashboardHome() {
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
+  const [staffServices, setStaffServices] = useState<StaffServiceAssignment[]>(
+    [],
+  );
   const [availabilityRows, setAvailabilityRows] = useState<AvailabilityRow[]>(
     [],
   );
@@ -78,6 +82,7 @@ export default function DashboardHome() {
       setRequests([]);
       setServices([]);
       setStaffMembers([]);
+      setStaffServices([]);
       setAvailabilityRows([]);
       setLoading(false);
       return;
@@ -163,6 +168,28 @@ export default function DashboardHome() {
     }
 
     setStaffMembers(staffData || []);
+
+    const activeStaffIds = (staffData || [])
+      .filter((staff) => staff.active)
+      .map((staff) => staff.id);
+
+    if (activeStaffIds.length > 0) {
+      const { data: staffServiceData, error: staffServiceError } =
+        await supabase
+          .from("staff_services")
+          .select("staff_member_id, service_id")
+          .in("staff_member_id", activeStaffIds);
+
+      if (staffServiceError) {
+        setError(staffServiceError.message);
+        setLoading(false);
+        return;
+      }
+
+      setStaffServices(staffServiceData || []);
+    } else {
+      setStaffServices([]);
+    }
 
     const { data: availabilityData, error: availabilityError } = await supabase
       .from("availability")
@@ -259,31 +286,51 @@ export default function DashboardHome() {
   const nextAppointment = upcomingBookings[0] || null;
   const primaryBusinessId = businesses[0]?.id;
   const primaryBusiness = businesses[0];
-  const publishedCount = businesses.filter(
-    (business) => business.published,
+  const activeServiceIds = new Set(
+    services
+      .filter(
+        (service) =>
+          service.business_id === primaryBusinessId && service.active,
+      )
+      .map((service) => service.id),
+  );
+  const activeStaffIds = new Set(
+    staffMembers
+      .filter(
+        (staff) => staff.business_id === primaryBusinessId && staff.active,
+      )
+      .map((staff) => staff.id),
+  );
+  const activeServices = activeServiceIds.size;
+  const activeStaff = activeStaffIds.size;
+  const activeAssignments = staffServices.filter(
+    (assignment) =>
+      activeStaffIds.has(assignment.staff_member_id) &&
+      activeServiceIds.has(assignment.service_id),
   ).length;
-  const activeServices = services.filter((service) => service.active).length;
-  const activeStaff = staffMembers.filter((staff) => staff.active).length;
   const openWorkingDays = availabilityRows.filter(
-    (row) => row.is_closed !== true,
+    (row) => row.business_id === primaryBusinessId && row.is_closed !== true,
   ).length;
   const hasProfileBasics = Boolean(
     primaryBusiness?.name?.trim() &&
-    (primaryBusiness.category?.trim() || primaryBusiness.city?.trim()),
+      primaryBusiness.category?.trim() &&
+      primaryBusiness.city?.trim(),
   );
+  const isPublished = Boolean(primaryBusiness?.published);
   const publicPreviewHref = primaryBusinessId
     ? `/explore/${primaryBusinessId}`
     : undefined;
-  const readyToTakeBookings =
+  const bookingSetupReady =
     hasProfileBasics &&
     activeServices > 0 &&
     activeStaff > 0 &&
-    openWorkingDays > 0 &&
-    publishedCount > 0;
+    activeAssignments > 0 &&
+    openWorkingDays > 0;
+  const readyToTakeBookings = bookingSetupReady && isPublished;
   const todayStatusLabel = readyToTakeBookings
     ? t("dashboardHome.status.ready", "Ready to take bookings")
-    : publishedCount > 0
-      ? t("dashboardHome.status.hidden", "Hidden from Explore")
+    : bookingSetupReady
+      ? t("dashboardHome.status.readyToPublish", "Ready to publish")
       : t("dashboardHome.status.setupNeeded", "Setup needed");
 
   const setupSteps = useMemo<SetupStep[]>(() => {
@@ -304,10 +351,13 @@ export default function DashboardHome() {
       },
       {
         key: "team",
-        complete: activeStaff > 0,
+        complete: activeStaff > 0 && activeAssignments > 0,
         label: t("dashboardHome.setup.team", "Team"),
         href: "/dashboard/staff",
-        cta: t("dashboardHome.setup.teamCta", "Add staff"),
+        cta:
+          activeStaff > 0
+            ? t("dashboardHome.setup.teamAssignCta", "Assign services")
+            : t("dashboardHome.setup.teamCta", "Add staff"),
       },
       {
         key: "hours",
@@ -318,7 +368,7 @@ export default function DashboardHome() {
       },
       {
         key: "publish",
-        complete: publishedCount > 0,
+        complete: isPublished,
         label: t("dashboardHome.setup.publish", "Customer profile"),
         href: "/dashboard/businesses",
         cta: t("dashboardHome.setup.publishCta", "Review profile"),
@@ -329,8 +379,9 @@ export default function DashboardHome() {
     hasProfileBasics,
     activeServices,
     activeStaff,
+    activeAssignments,
     openWorkingDays,
-    publishedCount,
+    isPublished,
     t,
   ]);
 
@@ -366,10 +417,16 @@ export default function DashboardHome() {
       : nextSetupStep
         ? {
             title: nextSetupStep.label,
-            body: t(
-              "dashboardHome.today.nextSetupBody",
-              "Finish this setup step so customers can book with confidence.",
-            ),
+            body:
+              nextSetupStep.key === "publish" && bookingSetupReady
+                ? t(
+                    "dashboardHome.today.nextPublishBody",
+                    "Required booking setup is complete. Review your customer profile, then publish when it is ready.",
+                  )
+                : t(
+                    "dashboardHome.today.nextSetupBody",
+                    "Finish this setup step so customers can book with confidence.",
+                  ),
             href: nextSetupStep.href,
             cta: nextSetupStep.cta,
           }
@@ -463,22 +520,18 @@ export default function DashboardHome() {
               {nextAppointment ? (
                 <>
                   <div className="today-appointment-time">
-                    {formatLocalizedDate(nextAppointment.start_at, locale,
-                      {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                        timeZone: timeZoneForBooking(nextAppointment),
-                      },
-                    )}
+                    {formatLocalizedDate(nextAppointment.start_at, locale, {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                      timeZone: timeZoneForBooking(nextAppointment),
+                    })}
                     <strong>
-                      {formatLocalizedDate(nextAppointment.start_at, locale,
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          timeZone: timeZoneForBooking(nextAppointment),
-                        },
-                      )}
+                      {formatLocalizedDate(nextAppointment.start_at, locale, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZone: timeZoneForBooking(nextAppointment),
+                      })}
                     </strong>
                   </div>
                   <div className="today-appointment-copy">

@@ -1,14 +1,5 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import type {
-  Map as MapboxMap,
-  Marker as MapboxMarker,
-} from "mapbox-gl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { MapPin } from "lucide-react";
 import { useI18n } from "@/lib/useI18n";
 import { DiscoveryMapItem } from "./exploreTypes";
@@ -55,7 +46,7 @@ function layoutMapMarkers(
   }));
   const container = map.getContainer();
   const grouped = new Set<number>();
-  const groups: typeof projected[] = [];
+  const groups: (typeof projected)[] = [];
 
   markers.forEach((entry) => {
     const element = entry.marker.getElement();
@@ -84,8 +75,7 @@ function layoutMapMarkers(
         if (
           Math.abs(candidate.point.x - currentPoint.x) <
             MARKER_CLUSTER_DISTANCE &&
-          Math.abs(candidate.point.y - currentPoint.y) <
-            MARKER_CLUSTER_DISTANCE
+          Math.abs(candidate.point.y - currentPoint.y) < MARKER_CLUSTER_DISTANCE
         ) {
           grouped.add(candidateIndex);
           queue.push(candidateIndex);
@@ -103,12 +93,8 @@ function layoutMapMarkers(
     const entries = group.map(({ entry }) => entry);
     const clusterKey = markerClusterKey(entries);
     const center = {
-      x:
-        group.reduce((total, { point }) => total + point.x, 0) /
-        group.length,
-      y:
-        group.reduce((total, { point }) => total + point.y, 0) /
-        group.length,
+      x: group.reduce((total, { point }) => total + point.x, 0) / group.length,
+      y: group.reduce((total, { point }) => total + point.y, 0) / group.length,
     };
 
     if (clusterKey === expandedClusterKey) {
@@ -132,11 +118,9 @@ function layoutMapMarkers(
         const column = index % columns;
         const row = Math.floor(index / columns);
         const targetX =
-          centerX +
-          (column - (columns - 1) / 2) * MARKER_EXPANDED_SPACING;
+          centerX + (column - (columns - 1) / 2) * MARKER_EXPANDED_SPACING;
         const targetY =
-          centerY +
-          (row - (rows - 1) / 2) * MARKER_EXPANDED_SPACING;
+          centerY + (row - (rows - 1) / 2) * MARKER_EXPANDED_SPACING;
         entry.marker.setOffset([
           Math.round(targetX - point.x),
           Math.round(targetY - point.y),
@@ -202,8 +186,7 @@ export default function ExploreDiscoveryMap({
     "{count} nearby places. Activate to separate them.",
   );
   const getClusterLabel = useCallback(
-    (count: number) =>
-      clusterLabelTemplate.replace("{count}", String(count)),
+    (count: number) => clusterLabelTemplate.replace("{count}", String(count)),
     [clusterLabelTemplate],
   );
   const mapLocale = useMemo(
@@ -237,14 +220,8 @@ export default function ExploreDiscoveryMap({
         "explore.map.control.resetBearing",
         "Reset bearing to north",
       ),
-      "NavigationControl.ZoomIn": t(
-        "explore.map.control.zoomIn",
-        "Zoom in",
-      ),
-      "NavigationControl.ZoomOut": t(
-        "explore.map.control.zoomOut",
-        "Zoom out",
-      ),
+      "NavigationControl.ZoomIn": t("explore.map.control.zoomIn", "Zoom in"),
+      "NavigationControl.ZoomOut": t("explore.map.control.zoomOut", "Zoom out"),
       "ScrollZoomBlocker.CtrlMessage": t(
         "explore.map.control.ctrlZoom",
         "Use ctrl + scroll to zoom the map",
@@ -411,8 +388,7 @@ export default function ExploreDiscoveryMap({
                 getClusterLabel,
               );
               const focusTarget = clusterEntries.find(
-                ({ marker }) =>
-                  marker.getElement().style.display !== "none",
+                ({ marker }) => marker.getElement().style.display !== "none",
               );
               focusTarget?.button.focus({ preventScroll: true });
             };
@@ -526,7 +502,9 @@ export default function ExploreDiscoveryMap({
     return (
       <div className="discovery-map-fallback">
         <MapPin size={26} aria-hidden="true" />
-        <strong>{t("explore.map.unavailableTitle", "Map view is unavailable")}</strong>
+        <strong>
+          {t("explore.map.unavailableTitle", "Map view is unavailable")}
+        </strong>
         <span>
           {t(
             "explore.map.unavailableBody",
@@ -554,18 +532,33 @@ export default function ExploreDiscoveryMap({
 
   return (
     <div className="discovery-map-shell">
-      <div ref={containerRef} className="discovery-map" aria-label={t("explore.map.label", "Discovery map")} />
+      <div
+        ref={containerRef}
+        className="discovery-map"
+        aria-label={t("explore.map.label", "Discovery map")}
+      />
       {!ready && (
-        <div className="discovery-map-loading">
-          {t("explore.map.loading", "Loading map...")}
+        <div className="discovery-map-loading" role="status">
+          <MapPin size={28} aria-hidden="true" />
+          <strong>
+            {t("explore.map.loadingTitle", "Preparing the Albania map")}
+          </strong>
+          <span>
+            {items.length > 0
+              ? t(
+                  "explore.map.loadingCount",
+                  "Positioning {count} reviewed places and businesses...",
+                ).replace("{count}", String(items.length))
+              : t(
+                  "explore.map.loadingBody",
+                  "Loading cities, places and map controls...",
+                )}
+          </span>
         </div>
       )}
       {ready && items.length === 0 && (
         <div className="discovery-map-empty" role="status">
-          {t(
-            "explore.map.empty",
-            "No mapped places match these filters yet.",
-          )}
+          {t("explore.map.empty", "No mapped places match these filters yet.")}
         </div>
       )}
 
@@ -589,9 +582,23 @@ export default function ExploreDiscoveryMap({
           position: absolute;
           inset: 0;
           display: grid;
-          place-items: center;
+          place-content: center;
+          justify-items: center;
+          gap: 0.45rem;
           background: var(--surface);
           color: var(--text-muted);
+          padding: 1.25rem;
+          text-align: center;
+        }
+
+        .discovery-map-loading strong {
+          color: var(--text);
+        }
+
+        .discovery-map-loading span {
+          max-width: 28rem;
+          font-size: 0.82rem;
+          line-height: 1.5;
         }
 
         .discovery-map-empty {
@@ -647,11 +654,15 @@ export default function ExploreDiscoveryMap({
           display: none;
         }
 
-        :global(.discovery-map-marker-shell.is-cluster .discovery-map-marker-pin) {
+        :global(
+          .discovery-map-marker-shell.is-cluster .discovery-map-marker-pin
+        ) {
           display: none;
         }
 
-        :global(.discovery-map-marker-shell.is-cluster .discovery-map-marker-count) {
+        :global(
+          .discovery-map-marker-shell.is-cluster .discovery-map-marker-count
+        ) {
           position: absolute;
           inset: 3px;
           display: grid;
@@ -669,11 +680,15 @@ export default function ExploreDiscoveryMap({
             box-shadow 0.15s ease;
         }
 
-        :global(.discovery-map-marker-shell.is-business .discovery-map-marker-pin) {
+        :global(
+          .discovery-map-marker-shell.is-business .discovery-map-marker-pin
+        ) {
           background: #ff6b35;
         }
 
-        :global(.discovery-map-marker-shell.is-directory .discovery-map-marker-pin) {
+        :global(
+          .discovery-map-marker-shell.is-directory .discovery-map-marker-pin
+        ) {
           background: #14b8a6;
         }
 
@@ -684,15 +699,28 @@ export default function ExploreDiscoveryMap({
         }
 
         :global(.discovery-map-marker-shell:hover .discovery-map-marker-pin),
-        :global(.discovery-map-marker-shell:focus-within .discovery-map-marker-pin),
-        :global(.discovery-map-marker-shell.is-selected .discovery-map-marker-pin) {
+        :global(
+          .discovery-map-marker-shell:focus-within .discovery-map-marker-pin
+        ),
+        :global(
+          .discovery-map-marker-shell.is-selected .discovery-map-marker-pin
+        ) {
           transform: rotate(-45deg) scale(1.2);
           box-shadow: 0 4px 18px rgba(11, 18, 32, 0.42);
         }
 
-        :global(.discovery-map-marker-shell.is-cluster:hover .discovery-map-marker-count),
-        :global(.discovery-map-marker-shell.is-cluster:focus-within .discovery-map-marker-count),
-        :global(.discovery-map-marker-shell.is-cluster.is-selected .discovery-map-marker-count) {
+        :global(
+          .discovery-map-marker-shell.is-cluster:hover
+            .discovery-map-marker-count
+        ),
+        :global(
+          .discovery-map-marker-shell.is-cluster:focus-within
+            .discovery-map-marker-count
+        ),
+        :global(
+          .discovery-map-marker-shell.is-cluster.is-selected
+            .discovery-map-marker-count
+        ) {
           transform: scale(1.12);
           box-shadow: 0 4px 18px rgba(11, 18, 32, 0.42);
         }

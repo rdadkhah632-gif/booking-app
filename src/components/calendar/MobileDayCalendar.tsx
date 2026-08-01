@@ -285,7 +285,7 @@ export default function MobileDayCalendar({
           display: none;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 900px) {
           .mobile-day-calendar {
             display: grid;
             grid-template-rows: auto auto minmax(0, 1fr);

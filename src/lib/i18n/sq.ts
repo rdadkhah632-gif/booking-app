@@ -142,7 +142,7 @@ export const sq: TranslationTree = {
   "terms.subtitle":
     "Rregullat për përdorimin e Mirëbook si klient, pronar biznesi ose staf.",
   "terms.importantBody":
-    "Këto kushte janë shkruar për gatishmëri lançimi dhe duhet të rishikohen para zgjerimit më të gjerë komercial.",
+    "Duke përdorur Mirëbook, ti pranon këto kushte. Lexoji para se të krijosh një llogari ose të bësh një rezervim.",
   "terms.section1.title": "1. Rreth Mirëbook",
   "terms.section1.body":
     "Mirëbook ndihmon klientët të gjejnë biznese dhe të rezervojnë takime. Bizneset përdorin Mirëbook për të menaxhuar shërbime, staf, disponueshmëri, kërkesa rezervimi, konfirmime dhe përditësime për klientët.",
@@ -194,7 +194,7 @@ export const sq: TranslationTree = {
   "privacy.subtitle":
     "Si i trajton Mirëbook informacionet e llogarisë, rezervimeve, biznesit dhe mbështetjes.",
   "privacy.importantBody":
-    "Kjo politikë privatësie është shkruar për gatishmëri lançimi dhe duhet të rishikohet para zgjerimit më të gjerë komercial.",
+    "Kjo politikë shpjegon si Mirëbook përdor dhe mbron informacionin tënd dhe zgjedhjet që ke në dispozicion.",
   "privacy.section1.title": "1. Informacionet që mbledhim",
   "privacy.section1.body":
     "Ne mbledhim informacionin e nevojshëm për të operuar Mirëbook, duke përfshirë detaje llogarie, kontakte, detaje rezervimi, informacion profili biznesi, të dhëna stafi, mesazhe mbështetjeje dhe preferenca njoftimesh.",
@@ -355,7 +355,8 @@ export const sq: TranslationTree = {
   "home.discovery.metaDescription":
     "Zbulo shërbime, aktivitete dhe vende lokale në Shqipëri, pastaj rezervo bizneset pjesëmarrëse përmes Mirëbook.",
   "home.discovery.kicker": "Zbulo Shqipërinë",
-  "home.discovery.title": "Gjej vende për të shkuar dhe shërbime për të rezervuar.",
+  "home.discovery.title":
+    "Gjej vende për të shkuar dhe shërbime për të rezervuar.",
   "home.discovery.subtitle":
     "Eksploro vende lokale, aktivitete dhe biznese të rezervueshme në të gjithë Shqipërinë.",
   "home.discovery.searchLabel": "Çfarë",
@@ -363,7 +364,7 @@ export const sq: TranslationTree = {
   "home.discovery.cityLabel": "Ku",
   "home.discovery.cityPlaceholder": "Qyteti ose zona",
   "home.discovery.search": "Kërko",
-  "home.discovery.bookable": "Rezervo tani",
+  "home.discovery.bookable": "Eksploro Shqipërinë",
   "home.discovery.map": "Eksploro hartën",
   "home.discovery.browseKicker": "Fillo të eksplorosh",
   "home.discovery.browseTitle": "Çfarë po kërkon?",
@@ -547,7 +548,7 @@ export const sq: TranslationTree = {
   "explore.sort.services": "Më shumë shërbime",
   "explore.search.placeholder": "Kërko në Mirëbook",
   "explore.category.placeholder": "Berber, thonj, sallon...",
-  "explore.city.placeholder": "Tiranë, Coventry, Milano...",
+  "explore.city.placeholder": "Tiranë, Durrës, Vlorë...",
   "explore.results.kicker": "Tregu Mirëbook",
   "explore.results.title": "Biznese të rezervueshme",
   "explore.results.loading": "Duke ngarkuar bizneset...",
@@ -1453,11 +1454,27 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.saveSetup": "Ruaj konfigurimin",
   "dashboardBusinesses.save.success": "konfigurimi u ruajt.",
   "dashboardBusinesses.missing.profile": "detajet e profilit",
+  "dashboardBusinesses.missing.requiredProfile":
+    "emri i biznesit, kategoria dhe qyteti",
+  "dashboardBusinesses.missing.description": "përshkrimin",
+  "dashboardBusinesses.missing.phone": "numrin e telefonit",
+  "dashboardBusinesses.missing.address": "adresën",
   "dashboardBusinesses.missing.image": "imazhi i biznesit",
   "dashboardBusinesses.missing.services": "shërbimet aktive",
   "dashboardBusinesses.missing.staff": "stafi aktiv",
   "dashboardBusinesses.missing.assignments": "caktimet staf-shërbim",
   "dashboardBusinesses.missing.hours": "orari i punës",
+  "dashboardBusinesses.requiredProfileComplete":
+    "Detajet e detyrueshme janë gati",
+  "dashboardBusinesses.requiredProfileIncomplete": "Shto detajet e detyrueshme",
+  "dashboardBusinesses.profile.requiredTitle": "Kërkohet për publikim",
+  "dashboardBusinesses.profile.requiredBody":
+    "Emri i biznesit, kategoria dhe qyteti",
+  "dashboardBusinesses.profile.recommendedTitle":
+    "Rekomandohet për besimin e klientëve",
+  "dashboardBusinesses.profile.addRecommended": "Shto",
+  "dashboardBusinesses.profile.recommendedComplete":
+    "Detajet për klientët janë të plota",
   "dashboardBusinesses.publish.completeFirst": "Plotëso",
   "dashboardBusinesses.publish.beforePublishing":
     "para se ta publikosh këtë biznes në Mirëbook.",
@@ -3127,6 +3144,45 @@ export const sq: TranslationTree = {
     "Kjo krijon një bisedë suporti për stafin. Përgjigjet nga suporti i Mirëbook do të shfaqen te mesazhet e suportit.",
   "support.staff.myMessagesBody":
     "Lexo përgjigjet e suportit dhe vazhdo bisedat e suportit të stafit.",
+  "support.staff.heroTitle": "Merr ndihmë për llogarinë e stafit",
+  "support.staff.heroBody":
+    "Kontakto suportin për aksesin e stafit, oraret, rezervimet, njoftimet ose profilin e lidhur të biznesit.",
+  "support.staff.loginRequired":
+    "Duhet të hysh si staf për të kontaktuar suportin e stafit.",
+  "support.staff.loading": "Po ngarkohet suporti për stafin...",
+  "support.staff.success": "Mesazhi yt për suportin u dërgua.",
+  "support.staff.formTitle": "Dërgo një mesazh te suporti",
+  "support.staff.namePlaceholder": "Emri yt",
+  "support.staff.emailPlaceholder": "Email-i yt",
+  "support.staff.subject.access": "Problem me hyrjen ose aksesin e llogarisë",
+  "support.staff.subject.availability": "Disponueshmëria ose orari i punës",
+  "support.staff.subject.schedule": "Pyetje për kalendarin ose rezervimin",
+  "support.staff.subject.wrongBusiness": "Biznes ose profil stafi i gabuar",
+  "support.staff.subject.email": "Email-i ose të dhënat e profilit",
+  "support.staff.subject.notifications": "Problem me njoftimet",
+  "support.staff.subject.other": "Kërkesë tjetër për suportin e stafit",
+  "support.staff.subjectLabel": "Subjekti",
+  "support.staff.messageLabel": "Mesazhi",
+  "support.staff.messagePlaceholder": "Na trego me çfarë të duhet ndihmë...",
+  "support.staff.linkedProfile": "Profili i lidhur i stafit",
+  "support.staff.memberFallback": "Anëtar stafi",
+  "support.staff.roleFallback": "Roli i stafit",
+  "support.staff.businessFallback": "Biznesi nuk shfaqet",
+  "support.staff.status.active": "Aktiv",
+  "support.staff.status.hidden": "I fshehur",
+  "support.staff.noProfile": "Nuk ka profil stafi të lidhur",
+  "support.staff.noProfileTitle":
+    "Llogaria jote nuk është lidhur ende me një profil stafi",
+  "support.staff.noProfileBody":
+    "Kërkoji pronarit të biznesit të shtojë email-in tënd të saktë te lista e stafit, pastaj hyr përsëri.",
+  "support.staff.sending": "Po dërgohet...",
+  "support.staff.sendButton": "Dërgo mesazhin",
+  "support.staff.quickActions": "Veprimet e stafit",
+  "support.staff.schedule": "Orari",
+  "support.staff.scheduleBody": "Shiko rezervimet e ardhshme të stafit.",
+  "support.staff.availability": "Disponueshmëria",
+  "support.staff.availabilityBody": "Përditëso ditët dhe oraret e punës.",
+  "support.staff.accountBody": "Përditëso të dhënat personale të llogarisë.",
   "support.customer.heroTitle": "Ndihmë për klientët",
   "support.customer.heroBody":
     "Dërgo mesazh për një rezervim, llogari ose njoftim.",
@@ -3247,7 +3303,7 @@ export const sq: TranslationTree = {
     "Disa biznese përdorin miratim manual. Kërkesa jote i është dërguar biznesit dhe nuk konfirmohet derisa ata ta pranojnë. Mund ta ndjekësh te Rezervimet e mia ose Njoftimet.",
   "support.faq.paymentsTitle": "A mund të paguajnë klientët përmes Mirëbook?",
   "support.faq.paymentsBody":
-    "Jo aktualisht. Klientët përdorin Mirëbook për të rezervuar dhe menaxhuar takime. Modeli i parë komercial është abonimi i bizneseve, ku bizneset paguajnë një tarifë mujore për platformën.",
+    "Pagesa e takimit rregullohet drejtpërdrejt me biznesin, përveç rasteve kur biznesi thotë ndryshe. Mirëbook aktualisht nuk mbledh pagesa për takimet e klientëve.",
   "support.faq.businessReadyTitle": "Si bëhet gati një biznes për klientët?",
   "support.faq.businessReadyBody":
     "Një biznes duhet të plotësojë profilin, të shtojë shërbimet, ekipin, oraret dhe rregullat e rezervimit para publikimit. Konfigurimi tregon çfarë mungon ende.",
@@ -3257,10 +3313,12 @@ export const sq: TranslationTree = {
   "support.faq.countriesTitle":
     "A do të mbështesë Mirëbook Shqipërinë dhe vende të tjera?",
   "support.faq.countriesBody":
-    "Po. Mirëbook po përgatitet për tregun shqiptar dhe tregje ndërkombëtare. Mbështetja për rajonin, monedhën dhe gjuhën do të zgjerohet ndërsa platforma afrohet me lançimin.",
+    "Mirëbook mbështet anglishten dhe shqipen, me cilësime rajonale për gjuhën, monedhën dhe zonën kohore të klientëve dhe bizneseve.",
   "support.faq.mobileAppTitle": "A do të ketë aplikacion mobil?",
   "support.faq.mobileAppBody":
-    "Produkti aktual po ndërtohet fillimisht si platformë web, me gatishmëri për aplikacion në të ardhmen. Qëllimi është që rrugët, faqosja, rrjedha e llogarisë dhe cilësimet të jenë të përshtatshme për një version aplikacioni më vonë.",
+    "Mirëbook është i disponueshëm në web. Përdor vetëm lidhjet zyrtare të Mirëbook në dyqanet e aplikacioneve kur ofrohen aplikacione të dedikuara.",
+  "support.work.kicker": "E përdor Mirëbook për punë?",
+  "support.work.title": "Ndihmë për biznesin dhe stafin",
   "notifications.types.bookingAccepted.title": "Konfirmuar",
   "notifications.types.bookingAccepted.message":
     "Rezervimi yt është konfirmuar.",
@@ -3573,9 +3631,16 @@ export const sq: TranslationTree = {
   "dashboardStaff.card.bookableActive": "I rezervueshëm",
   "dashboardStaff.card.bookableDisabled": "I fshehur nga rezervimet",
   "dashboardStaff.card.bookableActiveBody":
-    "Ky profil stafi mund të përdoret për rezervime të reja të klientëve pasi të caktohen shërbimet dhe disponueshmëria.",
+    "Ky profil stafi ka një shërbim të caktuar dhe orar pune të hapur.",
   "dashboardStaff.card.bookableDisabledBody":
     "Ky profil stafi është ruajtur, por është i fshehur nga rezervimet e reja të klientëve.",
+  "dashboardStaff.card.bookableIncomplete": "Ende jo i rezervueshëm",
+  "dashboardStaff.card.bookableIncompleteBody":
+    "Cakto një shërbim dhe vendos orarin e punës para se klientët ta rezervojnë këtë person.",
+  "dashboardStaff.card.bookableMissingServicesBody":
+    "Cakto të paktën një shërbim aktiv para se klientët ta rezervojnë këtë person.",
+  "dashboardStaff.card.bookableMissingHoursBody":
+    "Vendos të paktën një ditë pune të hapur para se klientët ta rezervojnë këtë person.",
   "dashboardStaff.card.setupStatus": "Statusi i konfigurimit",
   "dashboardStaff.card.setup": "Konfigurimi",
   "dashboardStaff.list.accountSummary": "Lidhjet e llogarive:",
@@ -4116,10 +4181,13 @@ export const sq: TranslationTree = {
   "dashboardHome.today.nextCalendarCta": "Hap ditën e sotme",
   "dashboardHome.today.nextSetupBody":
     "Përfundo këtë hap që klientët të rezervojnë me besim.",
+  "dashboardHome.today.nextPublishBody":
+    "Konfigurimi i detyrueshëm për rezervime është gati. Kontrollo profilin për klientët dhe publikoje kur të jetë gati.",
   "dashboardHome.today.nextReady": "Gati për rezervime",
   "dashboardHome.today.nextReadyBody":
     "Konfigurimi kryesor është gati. Shiko profilin e klientit ose hap Kalendarin.",
   "dashboardHome.status.ready": "Gati për rezervime",
+  "dashboardHome.status.readyToPublish": "Gati për publikim",
   "dashboardHome.status.hidden": "I fshehur nga Explore",
   "dashboardHome.status.setupNeeded": "Duhet konfigurim",
   "dashboardHome.setup.title": "Bëhu gati për rezervime",
@@ -4131,11 +4199,40 @@ export const sq: TranslationTree = {
   "dashboardHome.setup.servicesCta": "Shto shërbim",
   "dashboardHome.setup.team": "Ekipi",
   "dashboardHome.setup.teamCta": "Shto staf",
+  "dashboardHome.setup.teamAssignCta": "Cakto shërbimet",
   "dashboardHome.setup.hours": "Orari i punës",
   "dashboardHome.setup.hoursCta": "Vendos orarin",
   "dashboardHome.setup.publish": "Profili për klientët",
   "dashboardHome.setup.publishCta": "Shqyrto profilin",
   "dashboardHome.setup.preview": "Shiko çfarë shohin klientët",
+  "dashboardNotifications.claim.placeFallback": "këtë vend",
+  "dashboardNotifications.claim.submittedTitle": "Pretendimi i pronësisë u mor",
+  "dashboardNotifications.claim.submittedBody":
+    "Mirëbook po shqyrton kërkesën tënde të pronësisë për {place}.",
+  "dashboardNotifications.claim.moreInfoTitle": "Nevojiten të dhëna pronësie",
+  "dashboardNotifications.claim.moreInfoBody":
+    "Hap kërkesën e pronësisë për {place} dhe shto të dhënat nga shënimi i shqyrtimit.",
+  "dashboardNotifications.claim.approvedTitle":
+    "Pretendimi i pronësisë u miratua",
+  "dashboardNotifications.claim.approvedBody":
+    "{place} është lidhur me biznesin tënd. Përfundo Konfigurimin përpara publikimit.",
+  "dashboardNotifications.claim.rejectedTitle":
+    "Pretendimi i pronësisë nuk u miratua",
+  "dashboardNotifications.claim.rejectedBody":
+    "Hap kërkesën e pronësisë për {place} për të parë vendimin.",
+  "dashboardNotifications.actions.openSetup": "Hap konfigurimin",
+  "dashboardNotifications.actions.openOwnershipRequest":
+    "Hap kërkesën e pronësisë",
+  "adminNotifications.search.minimum":
+    "Shkruaj të paktën 2 karaktere për të parë përputhjet.",
+  "adminNotifications.search.chooseUser": "Zgjidh një përdorues",
+  "adminNotifications.search.chooseBusiness": "Zgjidh një biznes",
+  "adminNotifications.search.noUsers": "Nuk u gjet asnjë përdorues.",
+  "adminNotifications.search.noBusinesses": "Nuk u gjet asnjë biznes.",
+  "admin.operations.mobileOverview": "Përmbledhja dhe mjetet e operatorit",
+  "admin.operations.users": "Përdoruesit",
+  "admin.operations.notifications": "Njoftimet",
+  "admin.operations.support": "Suporti",
   "dashboardLayout.nav.services": "Shërbime",
   "dashboardLayout.nav.availability": "Disponueshmëria",
   "dashboardLayout.nav.settings": "Cilësimet",
@@ -4168,8 +4265,7 @@ export const sq: TranslationTree = {
   "explore.discovery.emptyTitle": "Më shumë nga Shqipëria po vjen",
   "explore.discovery.emptyBody":
     "Vendet e shqyrtuara dhe bizneset e rezervueshme do të shfaqen këtu sapo të shtohen.",
-  "explore.discovery.noResultsTitle":
-    "Asnjë vend nuk përputhet me këta filtra",
+  "explore.discovery.noResultsTitle": "Asnjë vend nuk përputhet me këta filtra",
   "explore.discovery.noResultsBody":
     "Provo një kategori, qytet ose kërkim tjetër.",
   "explore.category.all": "Të gjitha kategoritë",
@@ -4179,14 +4275,24 @@ export const sq: TranslationTree = {
   "explore.view.list": "Listë",
   "explore.view.map": "Hartë",
   "explore.kind.label": "Lloji i rezultateve",
-  "explore.kind.all": "Të gjitha",
-  "explore.kind.bookable": "Rezervo",
-  "explore.kind.places": "Vende",
+  "explore.kind.all": "Gjithçka",
+  "explore.kind.bookable": "Rezervo tani",
+  "explore.kind.places": "Vende lokale",
+  "explore.kind.allHelp":
+    "Biznese të rezervueshme dhe vende lokale të shqyrtuara së bashku.",
+  "explore.kind.bookableHelp": "Biznese me orare takimesh aktive në Mirëbook.",
+  "explore.kind.placesHelp":
+    "Vende lokale të shqyrtuara për t'u zbuluar, përfshirë vende që ende nuk rezervohen.",
+  "explore.discovery.oneResult": "1 rezultat",
+  "explore.discovery.resultCount": "{count} rezultate",
+  "explore.discovery.noBookableTitle": "Rezervimet online po hapen së shpejti",
+  "explore.discovery.noBookableBody":
+    "Ende nuk ka biznese që pranojnë takime në Mirëbook për këtë kërkim. Mund të zbulosh gjithsesi vende lokale të shqyrtuara.",
+  "explore.discovery.showPlaces": "Eksploro vende lokale",
   "explore.location.finding": "Po gjej vendndodhjen...",
   "explore.location.clear": "Hiq kërkimin pranë",
   "explore.location.use": "Pranë meje",
-  "explore.location.denied":
-    "Vendndodhja nuk u nda. Kërko sipas qytetit.",
+  "explore.location.denied": "Vendndodhja nuk u nda. Kërko sipas qytetit.",
   "explore.location.unavailable":
     "Vendndodhja nuk është e disponueshme. Kërko sipas qytetit.",
   "explore.map.yourLocation": "Vendndodhja jote e përafërt",
@@ -4195,6 +4301,12 @@ export const sq: TranslationTree = {
     "Përdor listën dhe filtrin e qytetit ndërsa harta po përgatitet.",
   "explore.map.label": "Harta e zbulimit",
   "explore.map.loading": "Po ngarkohet harta...",
+  "explore.map.loadingTitle": "Po përgatitet harta e Shqipërisë",
+  "explore.map.loadingCount":
+    "Po vendosen {count} vende dhe biznese të shqyrtuara...",
+  "explore.map.loadingBody":
+    "Po ngarkohen qytetet, vendet dhe kontrollet e hartës...",
+  "explore.map.closeSelection": "Mbyll vendin e zgjedhur",
   "explore.map.empty":
     "Nuk ka ende vende në hartë që përputhen me këta filtra.",
   "explore.map.clusterLabel":
@@ -4215,8 +4327,7 @@ export const sq: TranslationTree = {
     "Mbaj Ctrl dhe lëviz rrotën për të zmadhuar hartën",
   "explore.map.control.commandZoom":
     "Mbaj ⌘ dhe lëviz rrotën për të zmadhuar hartën",
-  "explore.map.control.touchPan":
-    "Përdor dy gishta për të lëvizur hartën",
+  "explore.map.control.touchPan": "Përdor dy gishta për të lëvizur hartën",
   "directory.category.beauty_grooming": "Bukuri dhe kujdes personal",
   "directory.category.dental_health": "Shëndet dentar",
   "directory.category.wellness_fitness": "Mirëqenie dhe palestër",
@@ -4266,8 +4377,7 @@ export const sq: TranslationTree = {
     "Ekzekuto SQL 26 për të aktivizuar totalet e sakta të mbulimit. Radha e shqyrtimit mbetet e disponueshme.",
   "admin.directory.coverage.loading": "Po ngarkohet mbulimi për lançim...",
   "admin.directory.statusSummary": "Përmbledhja e gjendjeve të direktorisë",
-  "admin.directory.loadingSummary":
-    "Po ngarkohet përmbledhja e direktorisë...",
+  "admin.directory.loadingSummary": "Po ngarkohet përmbledhja e direktorisë...",
   "admin.directory.status.needsReview": "Për shqyrtim",
   "admin.directory.status.active": "Miratuar",
   "admin.directory.status.hidden": "Fshehur",
@@ -4364,8 +4474,7 @@ export const sq: TranslationTree = {
     "Fotografi, pronari ose burimi i imazhit",
   "admin.directory.content.creditUrl":
     "URL-ja e kreditit ose licencës (opsionale)",
-  "admin.directory.content.rightsNote":
-    "Shënim privat për lejen ose licencën",
+  "admin.directory.content.rightsNote": "Shënim privat për lejen ose licencën",
   "admin.directory.content.rightsPlaceholder":
     "Regjistro kush e dha imazhin ose licencën që lejon publikimin.",
   "admin.directory.content.rightsConfirm":
@@ -4374,12 +4483,10 @@ export const sq: TranslationTree = {
   "admin.directory.content.save": "Ruaj përmbajtjen publike",
   "admin.directory.content.uploadReady":
     "Fotografia u ngarkua. Shto kreditin dhe të dhënat e lejes, pastaj ruaje.",
-  "admin.directory.content.uploadError":
-    "Fotografia nuk mund të ngarkohej.",
+  "admin.directory.content.uploadError": "Fotografia nuk mund të ngarkohej.",
   "admin.directory.content.saved":
     "Përshkrimi publik dhe të dhënat e fotografisë u ruajtën.",
-  "admin.directory.content.saveError":
-    "Përmbajtja publike nuk mund të ruhej.",
+  "admin.directory.content.saveError": "Përmbajtja publike nuk mund të ruhej.",
   "admin.directory.content.incomplete":
     "Shto përshkrimin e imazhit, kreditin publik dhe shënimin privat për lejen ose licencën.",
   "admin.directory.content.invalidUrl":
@@ -4402,14 +4509,11 @@ export const sq: TranslationTree = {
   "admin.directory.facts.website": "Faqja publike",
   "admin.directory.facts.sourceUrl": "Burimi privat i verifikimit",
   "admin.directory.facts.note": "Shënim privat verifikimi",
-  "admin.directory.facts.notePlaceholder":
-    "Shëno çfarë u kontrollua dhe kur.",
-  "admin.directory.facts.saving":
-    "Po ruhen të dhënat e verifikuara...",
+  "admin.directory.facts.notePlaceholder": "Shëno çfarë u kontrollua dhe kur.",
+  "admin.directory.facts.saving": "Po ruhen të dhënat e verifikuara...",
   "admin.directory.facts.save": "Ruaj të dhënat e verifikuara",
   "admin.directory.facts.restore": "Përdor të dhënat e importuara",
-  "admin.directory.facts.saved":
-    "Të dhënat publike të verifikuara u ruajtën.",
+  "admin.directory.facts.saved": "Të dhënat publike të verifikuara u ruajtën.",
   "admin.directory.facts.sourceRestored":
     "Të dhënat publike tani përdorin përsëri burimin e importuar.",
   "admin.directory.facts.saveError":
@@ -4429,36 +4533,48 @@ export const sq: TranslationTree = {
   "directory.profile.back": "Kthehu te Eksploro",
   "directory.profile.loading": "Po ngarkohen detajet e vendit...",
   "directory.profile.notFound": "Vendi nuk u gjet",
-  "directory.profile.notFoundBody": "Ky vend nuk është më i disponueshëm në kërkimin e Mirëbook.",
+  "directory.profile.notFoundBody":
+    "Ky vend nuk është më i disponueshëm në kërkimin e Mirëbook.",
   "directory.profile.handoffTitle": "Ky biznes është gati për rezervime",
   "directory.profile.handoffBody":
     "Po hapet profili i tij aktiv në Mirëbook me shërbimet dhe oraret e lira.",
   "directory.profile.handoffAction": "Shiko shërbimet dhe rezervo",
   "directory.profile.directions": "Merr udhëzime",
   "directory.profile.ownerTitle": "A është ky biznesi yt?",
-  "directory.profile.ownerBody": "Pretendo këtë listim me një llogari Mirëbook Business. Mirëbook shqyrton çdo kërkesë përpara lidhjes.",
+  "directory.profile.ownerBody":
+    "Pretendo këtë listim me një llogari Mirëbook Business. Mirëbook shqyrton çdo kërkesë përpara lidhjes.",
   "directory.profile.claimedTitle": "Pronësia është regjistruar",
-  "directory.profile.claimedBody": "Ky listim ka tashmë një regjistrim pronësie. Rezervimi mbetet i padisponueshëm derisa profili i biznesit në Mirëbook të jetë gati dhe i publikuar.",
+  "directory.profile.claimedBody":
+    "Ky listim ka tashmë një regjistrim pronësie. Rezervimi mbetet i padisponueshëm derisa profili i biznesit në Mirëbook të jetë gati dhe i publikuar.",
   "directory.profile.claim": "Pretendo këtë vend",
   "directory.profile.source": "Të dhënat e vendit",
   "directory.claim.metaTitle": "Pretendo një vend | Mirëbook Business",
   "directory.claim.loading": "Po ngarkohet kërkesa e pronësisë...",
-  "directory.claim.unavailable": "Ky vend nuk është i disponueshëm për pretendim.",
+  "directory.claim.unavailable":
+    "Ky vend nuk është i disponueshëm për pretendim.",
   "directory.claim.kicker": "Pronësia e biznesit",
   "directory.claim.title": "Pretendo këtë vend",
-  "directory.claim.subtitle": "Lidh një listim të shqyrtuar të direktorisë me biznesin Mirëbook që zotëron.",
+  "directory.claim.subtitle":
+    "Lidh një listim të shqyrtuar të direktorisë me biznesin Mirëbook që zotëron.",
   "directory.claim.safetyTitle": "Çdo pretendim shqyrtohet",
-  "directory.claim.safetyBody": "Emrat ose adresat e ngjashme të ndihmojnë vetëm të zgjedhësh profilin. Ato nuk e miratojnë kurrë automatikisht pronësinë.",
-  "directory.claim.error.load": "Kërkesa e pronësisë nuk mund të ngarkohej. Kthehu te Eksploro dhe provo përsëri.",
-  "directory.claim.error.submit": "Pretendimi nuk mund të dërgohej. Kontrollo të dhënat dhe provo përsëri.",
-  "directory.claim.error.switchAccount": "Nuk mund të dilje nga kjo llogari. Provo përsëri nga Llogaria.",
-  "directory.claim.success": "Pretendimi u dërgua. Mirëbook do të shqyrtojë provat e pronësisë përpara çdo lidhjeje.",
+  "directory.claim.safetyBody":
+    "Emrat ose adresat e ngjashme të ndihmojnë vetëm të zgjedhësh profilin. Ato nuk e miratojnë kurrë automatikisht pronësinë.",
+  "directory.claim.error.load":
+    "Kërkesa e pronësisë nuk mund të ngarkohej. Kthehu te Eksploro dhe provo përsëri.",
+  "directory.claim.error.submit":
+    "Pretendimi nuk mund të dërgohej. Kontrollo të dhënat dhe provo përsëri.",
+  "directory.claim.error.switchAccount":
+    "Nuk mund të dilje nga kjo llogari. Provo përsëri nga Llogaria.",
+  "directory.claim.success":
+    "Pretendimi u dërgua. Mirëbook do të shqyrtojë provat e pronësisë përpara çdo lidhjeje.",
   "directory.claim.authTitle": "Vazhdo me Mirëbook Business",
-  "directory.claim.authBody": "Hyr në një llogari ekzistuese Business ose krijo një të re. Ky vend do të ruhet gjatë kthimit.",
+  "directory.claim.authBody":
+    "Hyr në një llogari ekzistuese Business ose krijo një të re. Ky vend do të ruhet gjatë kthimit.",
   "directory.claim.signIn": "Hyr si biznes",
   "directory.claim.create": "Krijo llogari Business",
   "directory.claim.noBusinessTitle": "Kërkohet një profil Business",
-  "directory.claim.noBusinessBody": "Kjo llogari nuk zotëron një biznes në Mirëbook. Përdor një llogari Business ose nis konfigurimin e biznesit.",
+  "directory.claim.noBusinessBody":
+    "Kjo llogari nuk zotëron një biznes në Mirëbook. Përdor një llogari Business ose nis konfigurimin e biznesit.",
   "directory.claim.openSetup": "Hap konfigurimin e biznesit",
   "directory.claim.switchAccount": "Përdor një llogari tjetër",
   "directory.claim.status.pending": "Në shqyrtim",
@@ -4466,16 +4582,21 @@ export const sq: TranslationTree = {
   "directory.claim.status.approved": "Pronësia u miratua",
   "directory.claim.status.rejected": "Nuk u miratua",
   "directory.claim.status.withdrawn": "U tërhoq",
-  "directory.claim.approvedBody": "Vendi i direktorisë është lidhur me biznesin tënd. Përfundo ose kontrollo konfigurimin ekzistues përpara publikimit për rezervime.",
+  "directory.claim.approvedBody":
+    "Vendi i direktorisë është lidhur me biznesin tënd. Përfundo ose kontrollo konfigurimin ekzistues përpara publikimit për rezervime.",
   "directory.claim.continueSetup": "Vazhdo te Konfigurimi",
-  "directory.claim.pendingBody": "Mirëbook e ka marrë kërkesën. Listimi mbetet i pandryshuar ndërsa operatori kontrollon provat.",
-  "directory.claim.rejectedBody": "Provat nuk e konfirmuan pronësinë. Mund të dërgosh një kërkesë të re me të dhëna më të qarta.",
+  "directory.claim.pendingBody":
+    "Mirëbook e ka marrë kërkesën. Listimi mbetet i pandryshuar ndërsa operatori kontrollon provat.",
+  "directory.claim.rejectedBody":
+    "Provat nuk e konfirmuan pronësinë. Mund të dërgosh një kërkesë të re me të dhëna më të qarta.",
   "directory.claim.businessTitle": "Zgjidh biznesin tënd",
-  "directory.claim.businessBody": "Sugjerimet bazohen vetëm në ngjashmëri bazë. Zgjidh profilin që zotëron vërtet.",
+  "directory.claim.businessBody":
+    "Sugjerimet bazohen vetëm në ngjashmëri bazë. Zgjidh profilin që zotëron vërtet.",
   "directory.claim.match.name": "Emër i ngjashëm",
   "directory.claim.match.city": "I njëjti qytet",
   "directory.claim.match.phone": "Telefon i njëjtë",
-  "directory.claim.noMatch": "Nuk u gjet një përputhje e dukshme. Mund të dërgosh sërish prova për shqyrtim manual.",
+  "directory.claim.noMatch":
+    "Nuk u gjet një përputhje e dukshme. Mund të dërgosh sërish prova për shqyrtim manual.",
   "directory.claim.evidenceTitle": "Trego lidhjen tënde",
   "directory.claim.evidenceLabel": "Lloji i provës",
   "directory.claim.evidence.email": "Domeni i emailit të biznesit",
@@ -4483,10 +4604,13 @@ export const sq: TranslationTree = {
   "directory.claim.evidence.document": "Dokument biznesi",
   "directory.claim.evidence.other": "Provë tjetër",
   "directory.claim.phoneLabel": "Numri i telefonit të biznesit",
-  "directory.claim.phonePrivacy": "Vetëm katër shifrat e fundit ruhen në regjistrimin e pretendimit.",
+  "directory.claim.phonePrivacy":
+    "Vetëm katër shifrat e fundit ruhen në regjistrimin e pretendimit.",
   "directory.claim.messageLabel": "Si je i lidhur me këtë biznes?",
-  "directory.claim.messagePlaceholder": "Shpjego rolin tënd dhe çfarë mund të kontrollojë Mirëbook.",
-  "directory.claim.confirm": "Konfirmoj se jam i autorizuar të përfaqësoj këtë biznes dhe se të dhënat janë të sakta.",
+  "directory.claim.messagePlaceholder":
+    "Shpjego rolin tënd dhe çfarë mund të kontrollojë Mirëbook.",
+  "directory.claim.confirm":
+    "Konfirmoj se jam i autorizuar të përfaqësoj këtë biznes dhe se të dhënat janë të sakta.",
   "directory.claim.submit": "Dërgo për shqyrtim",
   "directory.claim.resubmit": "Dërgo të dhëna shtesë",
   "directory.claim.submitting": "Po dërgohet...",
@@ -4495,8 +4619,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.claim.pendingBody":
     "Mirëbook po kontrollon të dhënat e pronësisë.",
   "dashboardBusinesses.claim.view": "Shiko kërkesën",
-  "dashboardBusinesses.claim.moreInfo":
-    "Nevojiten më shumë të dhëna pronësie",
+  "dashboardBusinesses.claim.moreInfo": "Nevojiten më shumë të dhëna pronësie",
   "dashboardBusinesses.claim.moreInfoBody":
     "Lexo shënimin e shqyrtimit dhe dërgo prova më të qarta.",
   "dashboardBusinesses.claim.addInfo": "Shto të dhëna",
@@ -4511,9 +4634,11 @@ export const sq: TranslationTree = {
   "admin.claims.metaTitle": "Pretendimet e pronësisë | Mirëbook",
   "admin.claims.kicker": "Pronësia në treg",
   "admin.claims.title": "Pretendimet e pronësisë",
-  "admin.claims.subtitle": "Shqyrto provat përpara lidhjes së një vendi të direktorisë me një biznes Mirëbook të menaxhuar nga pronari.",
+  "admin.claims.subtitle":
+    "Shqyrto provat përpara lidhjes së një vendi të direktorisë me një biznes Mirëbook të menaxhuar nga pronari.",
   "admin.claims.directory": "Shqyrtimi i direktorisë",
-  "admin.claims.safety": "Miratimi vetëm lidh regjistrimet. Nuk e publikon biznesin, nuk e bën të rezervueshëm dhe nuk anashkalon gatishmërinë e Konfigurimit.",
+  "admin.claims.safety":
+    "Miratimi vetëm lidh regjistrimet. Nuk e publikon biznesin, nuk e bën të rezervueshëm dhe nuk anashkalon gatishmërinë e Konfigurimit.",
   "admin.claims.statuses": "Gjendjet e pretendimeve",
   "admin.claims.status.pending": "Në pritje",
   "admin.claims.status.moreInfo": "Më shumë të dhëna",
@@ -4546,12 +4671,14 @@ export const sq: TranslationTree = {
   "admin.claims.confirm": "Konfirmo vendimin",
   "admin.claims.saving": "Po ruhet...",
   "admin.claims.success": "Shqyrtimi i pretendimit u ruajt.",
-  "admin.claims.error.load": "Pretendimet e pronësisë nuk mund të ngarkoheshin.",
+  "admin.claims.error.load":
+    "Pretendimet e pronësisë nuk mund të ngarkoheshin.",
   "admin.claims.error.note": "Shto një shënim për pronarin e biznesit.",
   "admin.claims.error.save": "Vendimi i shqyrtimit nuk mund të ruhej.",
   "admin.claims.controlKicker": "Shqyrtimi i pronësisë",
   "admin.claims.controlTitle": "Pretendimet e pronësisë së direktorisë",
-  "admin.claims.controlBody": "Shqyrto provat përpara lidhjes së një vendi të direktorisë me një biznes Mirëbook.",
+  "admin.claims.controlBody":
+    "Shqyrto provat përpara lidhjes së një vendi të direktorisë me një biznes Mirëbook.",
   "nav.outreach": "Kontakti",
   "admin.outreach.metaTitle": "Kontakti me pronarët | Mirëbook",
   "admin.outreach.adminOnlyTitle": "Vetëm për administratorin",
@@ -4696,8 +4823,7 @@ export const sq: TranslationTree = {
   "admin.outreach.noteLabel": "Shënim privat i operatorit",
   "admin.outreach.notePlaceholder":
     "Regjistro çfarë ndodhi dhe hapin e dobishëm të radhës. Mos shto të dhëna personale delikate.",
-  "admin.outreach.manualConfirmationTitle":
-    "Kontakti ndodhi jashtë Mirëbook",
+  "admin.outreach.manualConfirmationTitle": "Kontakti ndodhi jashtë Mirëbook",
   "admin.outreach.manualConfirmationBody":
     "Konfirmo vetëm pasi ta kesh dërguar vetë mesazhin ose ta kesh kryer bisedën.",
   "admin.outreach.handoffTitle": "Gati për kalimin e pronësisë",
@@ -4715,7 +4841,8 @@ export const sq: TranslationTree = {
     "Ky vend nuk është më i disponueshëm në radhën e kontaktit.",
   "admin.outreach.error.channel": "Zgjidh si u kontaktua biznesi.",
   "admin.outreach.error.followUp": "Zgjidh një datë ndjekjeje.",
-  "admin.outreach.error.note": "Shto një shënim të shkurtër privat për këtë rezultat.",
+  "admin.outreach.error.note":
+    "Shto një shënim të shkurtër privat për këtë rezultat.",
   "admin.outreach.error.manualConfirmation":
     "Konfirmo se kontakti ndodhi jashtë Mirëbook përpara se të ruash këtë gjendje.",
   "admin.outreach.controlKicker": "Konvertimi i pronarëve",

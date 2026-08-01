@@ -88,7 +88,6 @@ export default function RegisterPage() {
         : ""
     }`,
   );
-  const staffRegisterUrl = getBusinessAppUrl("/register?accountType=staff");
   const customerRegisterUrl = getCustomerAppUrl("/register");
   const isBusinessRegistrationSurface =
     isBusinessHostname || role === "business" || role === "staff";
@@ -689,40 +688,7 @@ export default function RegisterPage() {
                 </Link>
               </p>
             </>
-          ) : (
-              !isCustomerAppointmentReturn && (
-                <div className="register-business-split-card">
-                  <div>
-                    <strong>
-                      {t(
-                        "register.businessSplit.title",
-                        "Registering a business?",
-                      )}
-                    </strong>
-                    <p className="small muted">
-                      {t(
-                        "register.businessSplit.body",
-                        "Mirëbook Business has a separate setup flow for owners and invited staff.",
-                      )}
-                    </p>
-                  </div>
-                  <div className="register-business-split-actions">
-                    <Link href={businessRegisterUrl} className="btn btn-ghost">
-                      {t(
-                        "register.businessSplit.businessCta",
-                        "List your business",
-                      )}
-                    </Link>
-                    <Link href={staffRegisterUrl} className="btn btn-ghost">
-                      {t(
-                        "register.businessSplit.staffCta",
-                        "Joining as staff?",
-                      )}
-                    </Link>
-                  </div>
-                </div>
-              )
-          )}
+          ) : null}
 
           {role === "staff" && (
             <div className="card register-staff-notice">
@@ -1089,6 +1055,17 @@ export default function RegisterPage() {
                 {t("register.loginLink", "Login")}
               </Link>
             </p>
+            {!isBusinessRegistrationSurface && !isCustomerAppointmentReturn && (
+              <p className="small muted register-business-link">
+                {t("register.businessSplit.title", "Using Mirëbook for work?")}{" "}
+                <Link href={businessRegisterUrl}>
+                  {t(
+                    "register.businessSplit.businessCta",
+                    "Open Mirëbook Business",
+                  )}
+                </Link>
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -1122,28 +1099,8 @@ export default function RegisterPage() {
           margin: 0 0 0.65rem;
         }
 
-        .register-business-split-card {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 1rem;
-          align-items: center;
-          margin-bottom: 1.25rem;
-          padding: 0.95rem;
-          border: 1px solid rgba(255, 107, 53, 0.2);
-          border-radius: var(--radius);
-          background: rgba(255, 107, 53, 0.06);
-        }
-
-        .register-business-split-card p,
         .register-customer-return {
           margin: 0.35rem 0 0;
-        }
-
-        .register-business-split-actions {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-          justify-content: flex-end;
         }
 
         .register-customer-return {
@@ -1151,6 +1108,15 @@ export default function RegisterPage() {
         }
 
         .register-customer-return :global(a) {
+          color: var(--accent);
+          font-weight: 800;
+        }
+
+        .register-business-link {
+          margin-top: 0.55rem;
+        }
+
+        .register-business-link :global(a) {
           color: var(--accent);
           font-weight: 800;
         }
@@ -1316,19 +1282,6 @@ export default function RegisterPage() {
 
           .register-role-mobile {
             display: block;
-          }
-
-          .register-business-split-card {
-            grid-template-columns: 1fr;
-          }
-
-          .register-business-split-actions {
-            justify-content: stretch;
-          }
-
-          .register-business-split-actions :global(.btn) {
-            width: 100%;
-            justify-content: center;
           }
 
           .register-role-explainer,

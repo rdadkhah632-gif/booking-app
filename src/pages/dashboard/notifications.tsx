@@ -142,12 +142,88 @@ function requestedStaffName(
   return `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`;
 }
 
+function claimPlaceName(notification: NotificationRow) {
+  const message = notification.message?.trim() || "";
+  const patterns: RegExp[] = [
+    /reviewing your ownership request for (.+)\.$/i,
+    /kërkesën tënde të pronësisë për (.+)\.$/i,
+    /open your (.+) request and add/i,
+    /hap kërkesën për (.+) dhe shto/i,
+    /^(.+) is linked to your business/i,
+    /^(.+) është lidhur me biznesin tënd/i,
+    /open the (.+) request to review/i,
+    /hap kërkesën për (.+) për të parë/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match?.[1]) return match[1].trim();
+  }
+
+  return null;
+}
+
 function businessNotificationText(
   notification: NotificationRow,
   t: (key: string, fallback?: string) => string,
   currentBookingStatus?: string | null,
 ) {
   const type = String(notification.type || "");
+
+  if (type.startsWith("directory_claim_")) {
+    const placeName =
+      claimPlaceName(notification) ||
+      t("dashboardNotifications.claim.placeFallback", "this place");
+    const copy = {
+      directory_claim_submitted: {
+        title: t(
+          "dashboardNotifications.claim.submittedTitle",
+          "Ownership claim received",
+        ),
+        message: t(
+          "dashboardNotifications.claim.submittedBody",
+          "Mirëbook is reviewing your ownership request for {place}.",
+        ),
+      },
+      directory_claim_needs_more_info: {
+        title: t(
+          "dashboardNotifications.claim.moreInfoTitle",
+          "Ownership information needed",
+        ),
+        message: t(
+          "dashboardNotifications.claim.moreInfoBody",
+          "Open the ownership request for {place} and add the information from the review note.",
+        ),
+      },
+      directory_claim_approved: {
+        title: t(
+          "dashboardNotifications.claim.approvedTitle",
+          "Ownership claim approved",
+        ),
+        message: t(
+          "dashboardNotifications.claim.approvedBody",
+          "{place} is linked to your business. Complete Setup before publishing.",
+        ),
+      },
+      directory_claim_rejected: {
+        title: t(
+          "dashboardNotifications.claim.rejectedTitle",
+          "Ownership claim not approved",
+        ),
+        message: t(
+          "dashboardNotifications.claim.rejectedBody",
+          "Open the ownership request for {place} to review the decision.",
+        ),
+      },
+    }[type];
+
+    if (copy) {
+      return {
+        title: copy.title,
+        message: copy.message.replace("{place}", placeName),
+      };
+    }
+  }
 
   if (
     type === "booking_created" ||
@@ -307,6 +383,15 @@ function businessNotificationActionLabel(
   t: (key: string, fallback?: string) => string,
 ) {
   const type = String(notification.type || "");
+
+  if (type.startsWith("directory_claim_")) {
+    return type === "directory_claim_approved"
+      ? t("dashboardNotifications.actions.openSetup", "Open setup")
+      : t(
+          "dashboardNotifications.actions.openOwnershipRequest",
+          "Open ownership request",
+        );
+  }
 
   if (
     currentBookingStatus === "pending" &&

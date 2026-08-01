@@ -76,6 +76,8 @@ export default function StaffProfileCard({
   const openDayCount = availabilityRows.filter(
     (row) => row.staff_member_id === staff.id && row.is_closed !== true,
   ).length;
+  const isBookable =
+    staff.active && activeAssignedCount > 0 && openDayCount > 0;
 
   const normalisedInviteStatus = (staff.invite_status || "").toLowerCase();
   const isLinked = Boolean(staff.user_id);
@@ -118,27 +120,42 @@ export default function StaffProfileCard({
     ? t("dashboardStaff.card.currentUserName", "You")
     : staff.name || t("dashboardStaff.card.untitled", "Untitled staff member");
 
-  const bookableStatusLabel = staff.active
-    ? t("dashboardStaff.card.bookableActive", "Bookable: active")
-    : t("dashboardStaff.card.bookableDisabled", "Bookable: disabled");
-  const bookableStatusBody = staff.active
+  const bookableStatusLabel = !staff.active
+    ? t("dashboardStaff.card.bookableDisabled", "Hidden from bookings")
+    : isBookable
+      ? t("dashboardStaff.card.bookableActive", "Bookable")
+      : t("dashboardStaff.card.bookableIncomplete", "Not bookable yet");
+  const bookableStatusBody = !staff.active
     ? t(
-        "dashboardStaff.card.bookableActiveBody",
-        "This staff profile can be used for new customer bookings once services and availability are set.",
-      )
-    : t(
         "dashboardStaff.card.bookableDisabledBody",
         "This staff profile is saved but hidden from new customer bookings.",
-      );
+      )
+    : isBookable
+      ? t(
+          "dashboardStaff.card.bookableActiveBody",
+          "This staff profile has an assigned service and open working hours.",
+        )
+      : activeAssignedCount === 0 && openDayCount === 0
+        ? t(
+            "dashboardStaff.card.bookableIncompleteBody",
+            "Assign a service and set working hours before customers can book this person.",
+          )
+        : activeAssignedCount === 0
+          ? t(
+              "dashboardStaff.card.bookableMissingServicesBody",
+              "Assign at least one active service before customers can book this person.",
+            )
+          : t(
+              "dashboardStaff.card.bookableMissingHoursBody",
+              "Set at least one open working day before customers can book this person.",
+            );
   return (
     <div
       className="card staff-profile-card"
       style={{
-        borderColor: !staff.active
-          ? "rgba(255,190,11,0.25)"
-          : activeAssignedCount === 0
-            ? "rgba(255,190,11,0.35)"
-            : "rgba(45,212,191,0.18)",
+        borderColor: isBookable
+          ? "rgba(45,212,191,0.18)"
+          : "rgba(255,190,11,0.3)",
       }}
     >
       <div className="staff-card-top">
@@ -166,7 +183,7 @@ export default function StaffProfileCard({
             </span>
 
             <span
-              className={`small staff-status-pill ${staff.active ? "staff-status-success" : "staff-status-warning"}`}
+              className={`small staff-status-pill ${isBookable ? "staff-status-success" : staff.active ? "staff-status-warning" : "staff-status-muted"}`}
               title={t("dashboardStaff.card.bookableStatus", "Bookable status")}
             >
               {bookableStatusLabel}

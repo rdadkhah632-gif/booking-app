@@ -5,6 +5,7 @@ import AuthNav from "@/components/AuthNav";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
 
 type DirectoryStatus =
   | "needs_review"
@@ -238,8 +239,14 @@ export default function AdminDirectoryPage() {
     cities: [],
     categories: [],
   });
-  const [pagination, setPagination] = useState({ total: 0, limit: 50, offset: 0 });
-  const [pendingAction, setPendingAction] = useState<DirectoryAction | null>(null);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    limit: 50,
+    offset: 0,
+  });
+  const [pendingAction, setPendingAction] = useState<DirectoryAction | null>(
+    null,
+  );
   const [reviewNotes, setReviewNotes] = useState("");
   const [duplicateOfPlaceId, setDuplicateOfPlaceId] = useState("");
   const [mapImage, setMapImage] = useState("");
@@ -267,8 +274,7 @@ export default function AdminDirectoryPage() {
             imageUrl: selectedPlace.image_url || "",
             imageAltEn: selectedPlace.image_alt_en || "",
             imageAltSq: selectedPlace.image_alt_sq || "",
-            imageAttributionLabel:
-              selectedPlace.image_attribution_label || "",
+            imageAttributionLabel: selectedPlace.image_attribution_label || "",
             imageAttributionUrl: selectedPlace.image_attribution_url || "",
             imageRightsNote: selectedPlace.image_rights_note || "",
           }
@@ -300,8 +306,7 @@ export default function AdminDirectoryPage() {
             publicWebsite: selectedPlace.public_facts_reviewed
               ? selectedPlace.public_website || ""
               : selectedPlace.website || "",
-            publicFactsSourceUrl:
-              selectedPlace.public_facts_source_url || "",
+            publicFactsSourceUrl: selectedPlace.public_facts_source_url || "",
             publicFactsNote: selectedPlace.public_facts_note || "",
           }
         : EMPTY_PUBLIC_FACTS_DRAFT,
@@ -314,9 +319,7 @@ export default function AdminDirectoryPage() {
 
     async function authenticate() {
       setLoading(true);
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const session = await getStableBrowserSession();
 
       if (!session) {
         router.replace("/login?redirectTo=/admin/directory");
@@ -361,7 +364,9 @@ export default function AdminDirectoryPage() {
   function categoryLabel(value: string) {
     return t(
       `admin.directory.category.${value}`,
-      value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+      value
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase()),
     );
   }
 
@@ -445,12 +450,15 @@ export default function AdminDirectoryPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Directory could not be loaded.");
+      if (!response.ok)
+        throw new Error(payload.error || "Directory could not be loaded.");
 
       const next = payload as DirectoryResponse;
       setPlaces(next.places);
       setCounts(next.counts);
-      setCoverage(next.coverage || { available: false, cities: [], categories: [] });
+      setCoverage(
+        next.coverage || { available: false, cities: [], categories: [] },
+      );
       setContentEditingAvailable(next.contentEditingAvailable !== false);
       setFactsEditingAvailable(next.factsEditingAvailable !== false);
       setPagination(next.pagination);
@@ -480,10 +488,7 @@ export default function AdminDirectoryPage() {
     loadDirectory(0);
   }
 
-  function openCoverage(
-    item: CoverageItem,
-    filterType: "city" | "category",
-  ) {
+  function openCoverage(item: CoverageItem, filterType: "city" | "category") {
     const nextStatus: DirectoryStatus =
       item.needsReview > 0 ? "needs_review" : "active";
     const nextCategory = filterType === "category" ? item.key : "";
@@ -541,10 +546,14 @@ export default function AdminDirectoryPage() {
         }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Review could not be saved.");
+      if (!response.ok)
+        throw new Error(payload.error || "Review could not be saved.");
 
       setSuccess(
-        t("admin.directory.success.review", "Review saved. Public results remain controlled by status."),
+        t(
+          "admin.directory.success.review",
+          "Review saved. Public results remain controlled by status.",
+        ),
       );
       setPendingAction(null);
       setReviewNotes("");
@@ -575,10 +584,14 @@ export default function AdminDirectoryPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ placeId: selectedPlace.id, action: "map_preview" }),
+        body: JSON.stringify({
+          placeId: selectedPlace.id,
+          action: "map_preview",
+        }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Map preview is unavailable.");
+      if (!response.ok)
+        throw new Error(payload.error || "Map preview is unavailable.");
       setMapImage(payload.mapImage || "");
     } catch (mapError) {
       setError(
@@ -591,10 +604,7 @@ export default function AdminDirectoryPage() {
     }
   }
 
-  function updateEditorialDraft(
-    field: keyof EditorialDraft,
-    value: string,
-  ) {
+  function updateEditorialDraft(field: keyof EditorialDraft, value: string) {
     setEditorialDraft((current) => ({ ...current, [field]: value }));
     setSuccess("");
   }
@@ -799,10 +809,7 @@ export default function AdminDirectoryPage() {
 
       setSuccess(
         publicFactsDraft.factsReviewed
-          ? t(
-              "admin.directory.facts.saved",
-              "Reviewed public details saved.",
-            )
+          ? t("admin.directory.facts.saved", "Reviewed public details saved.")
           : t(
               "admin.directory.facts.sourceRestored",
               "Public details now use the imported source again.",
@@ -865,7 +872,9 @@ export default function AdminDirectoryPage() {
             <p className="small directory-kicker">
               {t("admin.directory.kicker", "Marketplace data")}
             </p>
-            <h1 className="page-title">{t("admin.directory.title", "Directory review")}</h1>
+            <h1 className="page-title">
+              {t("admin.directory.title", "Directory review")}
+            </h1>
             <p className="page-sub">
               {t(
                 "admin.directory.subtitle",
@@ -877,14 +886,20 @@ export default function AdminDirectoryPage() {
             <Link href="/admin" className="btn btn-ghost">
               {t("admin.directory.overview", "Operator overview")}
             </Link>
-            <button type="button" className="btn btn-ghost" onClick={() => loadDirectory(0)}>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => loadDirectory(0)}
+            >
               {t("admin.directory.refresh", "Refresh")}
             </button>
           </div>
         </header>
 
         <div className="directory-safety">
-          <strong>{t("admin.directory.safetyTitle", "Approval is the public gate")}</strong>
+          <strong>
+            {t("admin.directory.safetyTitle", "Approval is the public gate")}
+          </strong>
           <span>
             {t(
               "admin.directory.safetyBody",
@@ -943,7 +958,10 @@ export default function AdminDirectoryPage() {
           </div>
         )}
 
-        <section className="directory-coverage" aria-labelledby="directory-coverage-title">
+        <section
+          className="directory-coverage"
+          aria-labelledby="directory-coverage-title"
+        >
           <div className="directory-coverage-heading">
             <div>
               <p className="small directory-kicker">
@@ -986,12 +1004,18 @@ export default function AdminDirectoryPage() {
                 [
                   {
                     key: "cities",
-                    title: t("admin.directory.coverage.cities", "Priority cities"),
+                    title: t(
+                      "admin.directory.coverage.cities",
+                      "Priority cities",
+                    ),
                     items: coverage.cities,
                   },
                   {
                     key: "categories",
-                    title: t("admin.directory.coverage.categories", "Categories"),
+                    title: t(
+                      "admin.directory.coverage.categories",
+                      "Categories",
+                    ),
                     items: coverage.categories,
                   },
                 ] as const
@@ -1001,8 +1025,11 @@ export default function AdminDirectoryPage() {
                   <div className="directory-coverage-rows">
                     {group.items.map((item) => {
                       const label =
-                        group.key === "categories" ? categoryLabel(item.key) : item.key;
-                      const isEmpty = item.approved === 0 && item.needsReview === 0;
+                        group.key === "categories"
+                          ? categoryLabel(item.key)
+                          : item.key;
+                      const isEmpty =
+                        item.approved === 0 && item.needsReview === 0;
                       return (
                         <button
                           key={item.key}
@@ -1026,17 +1053,26 @@ export default function AdminDirectoryPage() {
                           <span>{label}</span>
                           {isEmpty ? (
                             <small>
-                              {t("admin.directory.coverage.empty", "No candidates")}
+                              {t(
+                                "admin.directory.coverage.empty",
+                                "No candidates",
+                              )}
                             </small>
                           ) : (
                             <span className="directory-coverage-totals">
                               <small className="is-approved">
                                 {item.approved}{" "}
-                                {t("admin.directory.coverage.approvedShort", "approved")}
+                                {t(
+                                  "admin.directory.coverage.approvedShort",
+                                  "approved",
+                                )}
                               </small>
                               <small className="is-review">
                                 {item.needsReview}{" "}
-                                {t("admin.directory.coverage.review", "to review")}
+                                {t(
+                                  "admin.directory.coverage.review",
+                                  "to review",
+                                )}
                               </small>
                             </span>
                           )}
@@ -1063,13 +1099,21 @@ export default function AdminDirectoryPage() {
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={t("admin.directory.filter.searchPlaceholder", "Search names")}
+              placeholder={t(
+                "admin.directory.filter.searchPlaceholder",
+                "Search names",
+              )}
             />
           </label>
           <label>
             <span>{t("admin.directory.filter.category", "Category")}</span>
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
-              <option value="">{t("admin.directory.filter.allCategories", "All categories")}</option>
+            <select
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+            >
+              <option value="">
+                {t("admin.directory.filter.allCategories", "All categories")}
+              </option>
               {CATEGORIES.map((value) => (
                 <option key={value} value={value}>
                   {categoryLabel(value)}
@@ -1082,7 +1126,10 @@ export default function AdminDirectoryPage() {
             <input
               value={city}
               onChange={(event) => setCity(event.target.value)}
-              placeholder={t("admin.directory.filter.cityPlaceholder", "Exact city")}
+              placeholder={t(
+                "admin.directory.filter.cityPlaceholder",
+                "Exact city",
+              )}
             />
           </label>
           <button className="btn btn-accent" type="submit">
@@ -1091,7 +1138,9 @@ export default function AdminDirectoryPage() {
         </form>
 
         {error && <div className="directory-message is-error">{error}</div>}
-        {success && <div className="directory-message is-success">{success}</div>}
+        {success && (
+          <div className="directory-message is-success">{success}</div>
+        )}
 
         <div className="directory-workspace">
           <section className="directory-list card">
@@ -1105,11 +1154,20 @@ export default function AdminDirectoryPage() {
             </div>
 
             {loading ? (
-              <div className="directory-empty">{t("admin.directory.loading", "Loading directory places...")}</div>
+              <div className="directory-empty">
+                {t("admin.directory.loading", "Loading directory places...")}
+              </div>
             ) : places.length === 0 ? (
               <div className="directory-empty">
-                <strong>{t("admin.directory.emptyTitle", "No places in this view")}</strong>
-                <span>{t("admin.directory.emptyBody", "Change the status or filters to review another group.")}</span>
+                <strong>
+                  {t("admin.directory.emptyTitle", "No places in this view")}
+                </strong>
+                <span>
+                  {t(
+                    "admin.directory.emptyBody",
+                    "Change the status or filters to review another group.",
+                  )}
+                </span>
               </div>
             ) : (
               <div className="directory-rows">
@@ -1117,18 +1175,27 @@ export default function AdminDirectoryPage() {
                   <button
                     key={place.id}
                     type="button"
-                    className={selectedId === place.id ? "directory-row is-selected" : "directory-row"}
+                    className={
+                      selectedId === place.id
+                        ? "directory-row is-selected"
+                        : "directory-row"
+                    }
                     onClick={() => choosePlace(place.id)}
                   >
                     <span className="directory-row-main">
                       <strong>{place.name}</strong>
                       <span>
-                        {[categoryLabel(place.category_key), place.city || place.region]
+                        {[
+                          categoryLabel(place.category_key),
+                          place.city || place.region,
+                        ]
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
                     </span>
-                    <span className={`directory-pill is-${place.listing_status}`}>
+                    <span
+                      className={`directory-pill is-${place.listing_status}`}
+                    >
                       {statusLabel(place.listing_status)}
                     </span>
                   </button>
@@ -1141,19 +1208,31 @@ export default function AdminDirectoryPage() {
                 type="button"
                 className="btn btn-ghost"
                 disabled={pagination.offset === 0 || loading}
-                onClick={() => loadDirectory(Math.max(0, pagination.offset - pagination.limit))}
+                onClick={() =>
+                  loadDirectory(
+                    Math.max(0, pagination.offset - pagination.limit),
+                  )
+                }
               >
                 {t("admin.directory.previous", "Previous")}
               </button>
               <span className="small muted">
                 {pagination.total === 0 ? 0 : pagination.offset + 1}–
-                {Math.min(pagination.offset + pagination.limit, pagination.total)}
+                {Math.min(
+                  pagination.offset + pagination.limit,
+                  pagination.total,
+                )}
               </span>
               <button
                 type="button"
                 className="btn btn-ghost"
-                disabled={pagination.offset + pagination.limit >= pagination.total || loading}
-                onClick={() => loadDirectory(pagination.offset + pagination.limit)}
+                disabled={
+                  pagination.offset + pagination.limit >= pagination.total ||
+                  loading
+                }
+                onClick={() =>
+                  loadDirectory(pagination.offset + pagination.limit)
+                }
               >
                 {t("admin.directory.next", "Next")}
               </button>
@@ -1163,8 +1242,15 @@ export default function AdminDirectoryPage() {
           <section className="directory-detail card">
             {!selectedPlace ? (
               <div className="directory-empty">
-                <strong>{t("admin.directory.selectTitle", "Select a place")}</strong>
-                <span>{t("admin.directory.selectBody", "Choose a row to inspect source data and make a review decision.")}</span>
+                <strong>
+                  {t("admin.directory.selectTitle", "Select a place")}
+                </strong>
+                <span>
+                  {t(
+                    "admin.directory.selectBody",
+                    "Choose a row to inspect source data and make a review decision.",
+                  )}
+                </span>
               </div>
             ) : (
               <>
@@ -1172,17 +1258,28 @@ export default function AdminDirectoryPage() {
                   <div>
                     <div className="directory-title-line">
                       <h2>{selectedPlace.name}</h2>
-                      <span className={`directory-pill is-${selectedPlace.listing_status}`}>
+                      <span
+                        className={`directory-pill is-${selectedPlace.listing_status}`}
+                      >
                         {statusLabel(selectedPlace.listing_status)}
                       </span>
                     </div>
                     <p className="muted">
-                      {[categoryLabel(selectedPlace.category_key), selectedPlace.city, selectedPlace.country_code]
+                      {[
+                        categoryLabel(selectedPlace.category_key),
+                        selectedPlace.city,
+                        selectedPlace.country_code,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
                   </div>
-                  <button type="button" className="btn btn-ghost" onClick={loadMapPreview} disabled={mapLoading}>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={loadMapPreview}
+                    disabled={mapLoading}
+                  >
                     {mapLoading
                       ? t("admin.directory.mapLoading", "Loading map...")
                       : t("admin.directory.map", "Preview map")}
@@ -1191,7 +1288,13 @@ export default function AdminDirectoryPage() {
 
                 {mapImage && (
                   <div className="directory-map">
-                    <img src={mapImage} alt={t("admin.directory.mapAlt", "Map preview for this directory place")} />
+                    <img
+                      src={mapImage}
+                      alt={t(
+                        "admin.directory.mapAlt",
+                        "Map preview for this directory place",
+                      )}
+                    />
                   </div>
                 )}
 
@@ -1202,10 +1305,7 @@ export default function AdminDirectoryPage() {
                   <div className="directory-content-heading">
                     <div>
                       <p className="small muted">
-                        {t(
-                          "admin.directory.facts.kicker",
-                          "Public accuracy",
-                        )}
+                        {t("admin.directory.facts.kicker", "Public accuracy")}
                       </p>
                       <h3 id="directory-public-facts">
                         {t(
@@ -1270,10 +1370,7 @@ export default function AdminDirectoryPage() {
                       <div className="directory-content-fields">
                         <label>
                           <span>
-                            {t(
-                              "admin.directory.facts.name",
-                              "Public name",
-                            )}
+                            {t("admin.directory.facts.name", "Public name")}
                           </span>
                           <input
                             maxLength={180}
@@ -1359,10 +1456,7 @@ export default function AdminDirectoryPage() {
                         </label>
                         <label>
                           <span>
-                            {t(
-                              "admin.directory.facts.phone",
-                              "Public phone",
-                            )}
+                            {t("admin.directory.facts.phone", "Public phone")}
                           </span>
                           <input
                             maxLength={80}
@@ -1505,10 +1599,7 @@ export default function AdminDirectoryPage() {
                     </div>
                     {selectedPlace.content_updated_at && (
                       <span className="small muted">
-                        {t(
-                          "admin.directory.content.updated",
-                          "Updated",
-                        )}{" "}
+                        {t("admin.directory.content.updated", "Updated")}{" "}
                         {formatDate(selectedPlace.content_updated_at, locale)}
                       </span>
                     )}
@@ -1815,20 +1906,33 @@ export default function AdminDirectoryPage() {
                   <div>
                     <dt>{t("admin.directory.address", "Address")}</dt>
                     <dd>
-                      {[selectedPlace.address, selectedPlace.city, selectedPlace.region, selectedPlace.postcode]
+                      {[
+                        selectedPlace.address,
+                        selectedPlace.city,
+                        selectedPlace.region,
+                        selectedPlace.postcode,
+                      ]
                         .filter(Boolean)
                         .join(", ") || "—"}
                     </dd>
                   </div>
                   <div>
                     <dt>{t("admin.directory.contact", "Source contact")}</dt>
-                    <dd>{[selectedPlace.phone, selectedPlace.email].filter(Boolean).join(" · ") || "—"}</dd>
+                    <dd>
+                      {[selectedPlace.phone, selectedPlace.email]
+                        .filter(Boolean)
+                        .join(" · ") || "—"}
+                    </dd>
                   </div>
                   <div>
                     <dt>{t("admin.directory.website", "Website")}</dt>
                     <dd>
                       {safeWebsite(selectedPlace.website) ? (
-                        <a href={safeWebsite(selectedPlace.website) || "#"} target="_blank" rel="noreferrer">
+                        <a
+                          href={safeWebsite(selectedPlace.website) || "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           {selectedPlace.website}
                         </a>
                       ) : (
@@ -1837,17 +1941,22 @@ export default function AdminDirectoryPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt>{t("admin.directory.sourceCategory", "Source category")}</dt>
+                    <dt>
+                      {t("admin.directory.sourceCategory", "Source category")}
+                    </dt>
                     <dd>{selectedPlace.source_category || "—"}</dd>
                   </div>
                   <div>
                     <dt>{t("admin.directory.source", "Source")}</dt>
                     <dd>
-                      {selectedPlace.source} · {selectedPlace.source_version || "—"}
+                      {selectedPlace.source} ·{" "}
+                      {selectedPlace.source_version || "—"}
                     </dd>
                   </div>
                   <div>
-                    <dt>{t("admin.directory.confidence", "Source confidence")}</dt>
+                    <dt>
+                      {t("admin.directory.confidence", "Source confidence")}
+                    </dt>
                     <dd>
                       {typeof selectedPlace.source_confidence === "number"
                         ? `${Math.round(selectedPlace.source_confidence * 100)}%`
@@ -1855,58 +1964,105 @@ export default function AdminDirectoryPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt>{t("admin.directory.operatingStatus", "Source operating status")}</dt>
-                    <dd>{operatingStatusLabel(selectedPlace.source_operating_status)}</dd>
+                    <dt>
+                      {t(
+                        "admin.directory.operatingStatus",
+                        "Source operating status",
+                      )}
+                    </dt>
+                    <dd>
+                      {operatingStatusLabel(
+                        selectedPlace.source_operating_status,
+                      )}
+                    </dd>
                   </div>
                   <div>
                     <dt>{t("admin.directory.claimStatus", "Claim status")}</dt>
                     <dd>{claimStatusLabel(selectedPlace.claim_status)}</dd>
                   </div>
                   <div>
-                    <dt>{t("admin.directory.sourceUpdated", "Source updated")}</dt>
-                    <dd>{formatDate(selectedPlace.source_updated_at, locale)}</dd>
+                    <dt>
+                      {t("admin.directory.sourceUpdated", "Source updated")}
+                    </dt>
+                    <dd>
+                      {formatDate(selectedPlace.source_updated_at, locale)}
+                    </dd>
                   </div>
                   <div>
-                    <dt>{t("admin.directory.lastImported", "Last imported")}</dt>
-                    <dd>{formatDate(selectedPlace.last_imported_at, locale)}</dd>
+                    <dt>
+                      {t("admin.directory.lastImported", "Last imported")}
+                    </dt>
+                    <dd>
+                      {formatDate(selectedPlace.last_imported_at, locale)}
+                    </dd>
                   </div>
                 </dl>
 
                 {sourceDatasets.length > 0 && (
                   <div className="directory-source-note">
-                    <strong>{t("admin.directory.provenance", "Source provenance")}</strong>
+                    <strong>
+                      {t("admin.directory.provenance", "Source provenance")}
+                    </strong>
                     <span>{sourceDatasets.join(" · ")}</span>
                   </div>
                 )}
 
                 {selectedPlace.latestReview && (
                   <div className="directory-review-history">
-                    <strong>{t("admin.directory.latestReview", "Latest review")}</strong>
+                    <strong>
+                      {t("admin.directory.latestReview", "Latest review")}
+                    </strong>
                     <span>
-                      {actionLabel(selectedPlace.latestReview.action)} · {formatDate(selectedPlace.latestReview.created_at, locale)}
+                      {actionLabel(selectedPlace.latestReview.action)} ·{" "}
+                      {formatDate(
+                        selectedPlace.latestReview.created_at,
+                        locale,
+                      )}
                     </span>
-                    {selectedPlace.latestReview.notes && <p>{selectedPlace.latestReview.notes}</p>}
+                    {selectedPlace.latestReview.notes && (
+                      <p>{selectedPlace.latestReview.notes}</p>
+                    )}
                   </div>
                 )}
 
                 <div className="directory-actions">
                   {selectedPlace.listing_status !== "active" && (
-                    <button type="button" className="btn btn-accent" onClick={() => beginAction("approve")}>
+                    <button
+                      type="button"
+                      className="btn btn-accent"
+                      onClick={() => beginAction("approve")}
+                    >
                       {actionLabel("approve")}
                     </button>
                   )}
                   {selectedPlace.listing_status !== "needs_review" && (
-                    <button type="button" className="btn btn-ghost" onClick={() => beginAction("return_to_review")}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => beginAction("return_to_review")}
+                    >
                       {actionLabel("return_to_review")}
                     </button>
                   )}
-                  <button type="button" className="btn btn-ghost" onClick={() => beginAction("hide")}>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => beginAction("hide")}
+                  >
                     {actionLabel("hide")}
                   </button>
-                  <button type="button" className="btn btn-ghost" onClick={() => beginAction("close")}>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => beginAction("close")}
+                  >
                     {actionLabel("close")}
                   </button>
-                  <button type="button" className="btn btn-ghost" onClick={() => beginAction("mark_duplicate")}>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => beginAction("mark_duplicate")}
+                  >
                     {actionLabel("mark_duplicate")}
                   </button>
                 </div>
@@ -1914,15 +2070,24 @@ export default function AdminDirectoryPage() {
                 {pendingAction && (
                   <div className="directory-confirmation">
                     <div>
-                      <p className="small muted">{t("admin.directory.reviewDecision", "Review decision")}</p>
+                      <p className="small muted">
+                        {t("admin.directory.reviewDecision", "Review decision")}
+                      </p>
                       <h3>{actionLabel(pendingAction)}</h3>
                     </div>
                     {pendingAction === "mark_duplicate" && (
                       <label>
-                        <span>{t("admin.directory.canonicalId", "Canonical place ID")}</span>
+                        <span>
+                          {t(
+                            "admin.directory.canonicalId",
+                            "Canonical place ID",
+                          )}
+                        </span>
                         <input
                           value={duplicateOfPlaceId}
-                          onChange={(event) => setDuplicateOfPlaceId(event.target.value)}
+                          onChange={(event) =>
+                            setDuplicateOfPlaceId(event.target.value)
+                          }
                           placeholder="00000000-0000-0000-0000-000000000000"
                         />
                       </label>
@@ -1930,10 +2095,12 @@ export default function AdminDirectoryPage() {
                     <label>
                       <span>
                         {t(
-                          pendingAction === "approve" || pendingAction === "return_to_review"
+                          pendingAction === "approve" ||
+                            pendingAction === "return_to_review"
                             ? "admin.directory.notesOptional"
                             : "admin.directory.notesRequired",
-                          pendingAction === "approve" || pendingAction === "return_to_review"
+                          pendingAction === "approve" ||
+                            pendingAction === "return_to_review"
                             ? "Review note (optional)"
                             : "Review note",
                         )}
@@ -1942,14 +2109,29 @@ export default function AdminDirectoryPage() {
                         rows={3}
                         value={reviewNotes}
                         onChange={(event) => setReviewNotes(event.target.value)}
-                        placeholder={t("admin.directory.notesPlaceholder", "Record what you checked or why this state is appropriate.")}
+                        placeholder={t(
+                          "admin.directory.notesPlaceholder",
+                          "Record what you checked or why this state is appropriate.",
+                        )}
                       />
                     </label>
                     <div className="directory-confirm-actions">
-                      <button type="button" className="btn btn-accent" onClick={submitAction} disabled={saving}>
-                        {saving ? t("admin.directory.saving", "Saving...") : t("admin.directory.confirm", "Confirm decision")}
+                      <button
+                        type="button"
+                        className="btn btn-accent"
+                        onClick={submitAction}
+                        disabled={saving}
+                      >
+                        {saving
+                          ? t("admin.directory.saving", "Saving...")
+                          : t("admin.directory.confirm", "Confirm decision")}
                       </button>
-                      <button type="button" className="btn btn-ghost" onClick={() => setPendingAction(null)} disabled={saving}>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setPendingAction(null)}
+                        disabled={saving}
+                      >
                         {t("common.cancel", "Cancel")}
                       </button>
                     </div>
@@ -2214,7 +2396,10 @@ export default function AdminDirectoryPage() {
           margin-top: 1rem;
           padding: 0.9rem;
           display: grid;
-          grid-template-columns: minmax(180px, 1.2fr) minmax(170px, 1fr) minmax(150px, 0.8fr) auto;
+          grid-template-columns: minmax(180px, 1.2fr) minmax(170px, 1fr) minmax(
+              150px,
+              0.8fr
+            ) auto;
           gap: 0.75rem;
           align-items: end;
           border: 1px solid var(--border);

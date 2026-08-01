@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, MapPin, X } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
 import ExploreBusinessCard from "@/components/explore/ExploreBusinessCard";
 import ExploreDirectoryCard from "@/components/explore/ExploreDirectoryCard";
@@ -194,11 +194,7 @@ export default function Explore() {
       city: appliedFilters.city,
       category: appliedFilters.category,
     }),
-    [
-      appliedFilters.category,
-      appliedFilters.city,
-      appliedFilters.query,
-    ],
+    [appliedFilters.category, appliedFilters.city, appliedFilters.query],
   );
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -246,10 +242,7 @@ export default function Explore() {
       if (filters.query) directoryParams.set("q", filters.query);
       if (filters.city) directoryParams.set("city", filters.city);
 
-      const directoryCategory = directoryCategoryFromLabel(
-        filters.category,
-        t,
-      );
+      const directoryCategory = directoryCategoryFromLabel(filters.category, t);
       if (directoryCategory) {
         directoryParams.set("category", directoryCategory);
       }
@@ -356,11 +349,12 @@ export default function Explore() {
       t,
     );
     return businesses.filter((business) => {
-      const searchText = `${business.name || ""} ${business.description || ""} ${
-        business.category || ""
-      } ${business.city || ""} ${business.country || ""} ${
-        business.address || ""
-      }`.toLocaleLowerCase();
+      const searchText =
+        `${business.name || ""} ${business.description || ""} ${
+          business.category || ""
+        } ${business.city || ""} ${business.country || ""} ${
+          business.address || ""
+        }`.toLocaleLowerCase();
       const matchesSearch = appliedFilters.query
         ? searchText.includes(appliedFilters.query.toLocaleLowerCase())
         : true;
@@ -411,10 +405,13 @@ export default function Explore() {
   }, [appliedFilters, directoryPlaces, t]);
 
   const visibleDirectoryPlaces = useMemo(() => {
-    const visibleBusinessIds = new Set(businesses.map((business) => business.id));
+    const visibleBusinessIds = new Set(
+      businesses.map((business) => business.id),
+    );
     return filteredDirectoryPlaces.filter(
       (place) =>
-        !place.linkedBusinessId || !visibleBusinessIds.has(place.linkedBusinessId),
+        !place.linkedBusinessId ||
+        !visibleBusinessIds.has(place.linkedBusinessId),
     );
   }, [businesses, filteredDirectoryPlaces]);
 
@@ -487,12 +484,15 @@ export default function Explore() {
       );
     }
     if (appliedFilters.sort === "name") {
-      return visibleItems.sort((left, right) => left.name.localeCompare(right.name));
+      return visibleItems.sort((left, right) =>
+        left.name.localeCompare(right.name),
+      );
     }
     if (appliedFilters.sort === "city") {
       return visibleItems.sort(
         (left, right) =>
-          left.city.localeCompare(right.city) || left.name.localeCompare(right.name),
+          left.city.localeCompare(right.city) ||
+          left.name.localeCompare(right.name),
       );
     }
     if (appliedFilters.sort === "services") {
@@ -510,39 +510,45 @@ export default function Explore() {
   ]);
 
   const mapItems = useMemo<DiscoveryMapItem[]>(() => {
-    const businessItems = appliedFilters.kind === "places" ? [] : filteredBusinesses.flatMap((business) => {
-      const mapPosition =
-        business.location ||
-        linkedPlaceByBusinessId.get(business.id)?.mapPosition ||
-        null;
-      if (!mapPosition) return [];
-      return [
-        {
-          id: `business:${business.id}`,
-          resultType: "business" as const,
-          name: business.name,
-          category: business.category || t("common.business", "Business"),
-          locationLabel: locationLabel(business),
-          latitude: mapPosition.latitude,
-          longitude: mapPosition.longitude,
-          distanceMeters: business.distanceMeters ?? null,
-          href: `/explore/${business.id}`,
-        },
-      ];
-    });
-    const directoryItems = appliedFilters.kind === "bookable" ? [] : visibleDirectoryPlaces.map((place) => ({
-      id: `directory:${place.id}`,
-      resultType: "directory_place" as const,
-      name: place.name,
-      category: directoryCategoryLabel(place.categoryKey, t),
-      locationLabel:
-        [place.city, place.region].filter(Boolean).join(", ") ||
-        t("directory.card.albania", "Albania"),
-      latitude: place.mapPosition.latitude,
-      longitude: place.mapPosition.longitude,
-      distanceMeters: place.distanceMeters ?? null,
-      href: `/places/${place.id}`,
-    }));
+    const businessItems =
+      appliedFilters.kind === "places"
+        ? []
+        : filteredBusinesses.flatMap((business) => {
+            const mapPosition =
+              business.location ||
+              linkedPlaceByBusinessId.get(business.id)?.mapPosition ||
+              null;
+            if (!mapPosition) return [];
+            return [
+              {
+                id: `business:${business.id}`,
+                resultType: "business" as const,
+                name: business.name,
+                category: business.category || t("common.business", "Business"),
+                locationLabel: locationLabel(business),
+                latitude: mapPosition.latitude,
+                longitude: mapPosition.longitude,
+                distanceMeters: business.distanceMeters ?? null,
+                href: `/explore/${business.id}`,
+              },
+            ];
+          });
+    const directoryItems =
+      appliedFilters.kind === "bookable"
+        ? []
+        : visibleDirectoryPlaces.map((place) => ({
+            id: `directory:${place.id}`,
+            resultType: "directory_place" as const,
+            name: place.name,
+            category: directoryCategoryLabel(place.categoryKey, t),
+            locationLabel:
+              [place.city, place.region].filter(Boolean).join(", ") ||
+              t("directory.card.albania", "Albania"),
+            latitude: place.mapPosition.latitude,
+            longitude: place.mapPosition.longitude,
+            distanceMeters: place.distanceMeters ?? null,
+            href: `/places/${place.id}`,
+          }));
     return [...businessItems, ...directoryItems];
   }, [
     appliedFilters.kind,
@@ -613,7 +619,13 @@ export default function Explore() {
     setCategory("");
     setSortBy(nextSort);
     setKind("all");
-    pushFilters({ query: "", city: "", category: "", sort: nextSort, kind: "all" });
+    pushFilters({
+      query: "",
+      city: "",
+      category: "",
+      sort: nextSort,
+      kind: "all",
+    });
   }
 
   function changeView(nextView: ExploreView) {
@@ -677,7 +689,8 @@ export default function Explore() {
   function clearCurrentLocation() {
     setUserLocation(null);
     setLocationState("idle");
-    const nextSort = appliedFilters.sort === "distance" ? "newest" : appliedFilters.sort;
+    const nextSort =
+      appliedFilters.sort === "distance" ? "newest" : appliedFilters.sort;
     setSortBy(nextSort);
     pushFilters({
       query: appliedFilters.query,
@@ -763,6 +776,8 @@ export default function Explore() {
               <ExploreEmptyState
                 type="no-results"
                 onClearFilters={clearFilters}
+                kind={kind}
+                onShowPlaces={() => changeKind("places")}
               />
             )}
 
@@ -799,10 +814,24 @@ export default function Explore() {
 
                 {selectedMapItem && (
                   <aside className="map-selection" aria-live="polite">
+                    <button
+                      type="button"
+                      className="map-selection-close"
+                      onClick={() => setSelectedMapId("")}
+                      aria-label={t(
+                        "explore.map.closeSelection",
+                        "Close selected place",
+                      )}
+                    >
+                      <X size={18} aria-hidden="true" />
+                    </button>
                     <div className="map-selection-copy">
                       <span className="map-selection-type">
                         {selectedMapItem.resultType === "business"
-                          ? t("directory.map.bookableBusiness", "Bookable business")
+                          ? t(
+                              "directory.map.bookableBusiness",
+                              "Bookable business",
+                            )
                           : t("directory.card.type", "Local place")}
                       </span>
                       <strong>{selectedMapItem.name}</strong>
@@ -813,7 +842,10 @@ export default function Explore() {
                       </span>
                     </div>
                     {selectedMapItem.href ? (
-                      <Link href={selectedMapItem.href} className="btn btn-accent">
+                      <Link
+                        href={selectedMapItem.href}
+                        className="btn btn-accent"
+                      >
                         {selectedMapItem.resultType === "business"
                           ? t("explore.card.viewTimes", "View times")
                           : t("directory.card.details", "Details")}
@@ -894,6 +926,7 @@ export default function Explore() {
         }
 
         .map-selection {
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -903,6 +936,19 @@ export default function Explore() {
           border: 1px solid var(--border);
           border-radius: 8px;
           background: var(--surface);
+        }
+
+        .map-selection-close {
+          display: none;
+          width: 44px;
+          height: 44px;
+          padding: 0;
+          border: 1px solid var(--border);
+          border-radius: 50%;
+          background: var(--surface-2);
+          color: var(--text);
+          align-items: center;
+          justify-content: center;
         }
 
         .map-selection-copy {
@@ -979,10 +1025,34 @@ export default function Explore() {
           }
 
           .map-selection {
+            position: fixed;
+            right: 0.75rem;
+            bottom: calc(0.75rem + env(safe-area-inset-bottom));
+            left: 0.75rem;
+            z-index: 55;
             display: grid;
+            grid-template-columns: minmax(0, 1fr) 44px;
+            gap: 0.65rem;
+            max-height: min(48vh, 22rem);
+            overflow-y: auto;
+            padding: 0.85rem;
+            border-color: rgba(255, 107, 53, 0.28);
+            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.42);
+          }
+
+          .map-selection-close {
+            display: inline-flex;
+            grid-column: 2;
+            grid-row: 1;
+          }
+
+          .map-selection-copy {
+            grid-column: 1;
+            grid-row: 1;
           }
 
           .map-selection :global(.btn) {
+            grid-column: 1 / -1;
             width: 100%;
             justify-content: center;
           }

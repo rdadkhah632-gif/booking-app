@@ -390,18 +390,22 @@ export default function Businesses() {
       .filter((staff) => staff.business_id === business.id && staff.active)
       .map((staff) => staff.id);
 
-    const staffServiceAssignments = staffServices.filter(
+    const activeStaffServiceAssignments = staffServices.filter(
       (assignment) =>
         activeStaffIds.includes(assignment.staff_member_id) &&
         activeServiceIds.includes(assignment.service_id),
-    ).length;
+    );
+    const staffServiceAssignments = activeStaffServiceAssignments.length;
+    const bookableStaff = new Set(
+      activeStaffServiceAssignments.map(
+        (assignment) => assignment.staff_member_id,
+      ),
+    ).size;
 
     const profileComplete = Boolean(
       business.name?.trim() &&
-      business.category?.trim() &&
-      business.city?.trim() &&
-      business.description?.trim() &&
-      business.phone?.trim(),
+        business.category?.trim() &&
+        business.city?.trim(),
     );
 
     const hasActiveServices = activeServices > 0;
@@ -412,13 +416,28 @@ export default function Businesses() {
     const missingItems: string[] = [];
     const profileMissingItems: string[] = [];
 
-    if (!profileComplete)
+    if (!business.description?.trim())
       profileMissingItems.push(
-        t("dashboardBusinesses.missing.profile", "profile details"),
+        t("dashboardBusinesses.missing.description", "description"),
+      );
+    if (!business.phone?.trim())
+      profileMissingItems.push(
+        t("dashboardBusinesses.missing.phone", "phone number"),
+      );
+    if (!business.address?.trim())
+      profileMissingItems.push(
+        t("dashboardBusinesses.missing.address", "address"),
       );
     if (!hasBusinessImage)
       profileMissingItems.push(
         t("dashboardBusinesses.missing.image", "business image"),
+      );
+    if (!profileComplete)
+      missingItems.push(
+        t(
+          "dashboardBusinesses.missing.requiredProfile",
+          "business name, category and city",
+        ),
       );
     if (!hasActiveServices)
       missingItems.push(
@@ -439,6 +458,7 @@ export default function Businesses() {
       );
 
     const bookingReady =
+      profileComplete &&
       hasActiveServices &&
       hasActiveStaff &&
       hasStaffServiceAssignments &&
@@ -455,6 +475,7 @@ export default function Businesses() {
       hasBusinessImage,
       activeServices,
       activeStaff,
+      bookableStaff,
       staffServiceAssignments,
       workingDays,
       missingItems,
@@ -487,8 +508,7 @@ export default function Businesses() {
     ? getReadiness(primaryBusiness)
     : null;
   const primaryProfileBasicsComplete = Boolean(
-    primaryBusiness?.name?.trim() &&
-    (primaryBusiness.category?.trim() || primaryBusiness.city?.trim()),
+    primaryReadiness?.profileComplete,
   );
   const ownerStaffProfile = primaryBusiness
     ? ownerStaffProfileForBusiness(primaryBusiness.id)
@@ -526,12 +546,14 @@ export default function Businesses() {
           },
           {
             key: "team",
-            complete: primaryReadiness.hasActiveStaff,
+            complete:
+              primaryReadiness.hasActiveStaff &&
+              primaryReadiness.hasStaffServiceAssignments,
             href: "/dashboard/staff",
             label: t("dashboardBusinesses.setup.team", "Provider or team"),
             helper: t(
               "dashboardBusinesses.setup.teamBody",
-              "Add yourself or a team member customers can book.",
+              "Add a provider and assign at least one service customers can book.",
             ),
             action: t("dashboardBusinesses.setup.teamAction", "Manage team"),
           },
@@ -606,8 +628,8 @@ export default function Businesses() {
       : "";
   const canPublishPrimaryBusiness = Boolean(
     primaryBusiness &&
-    primaryReadiness?.bookingReady &&
-    !primaryBusiness.published,
+      primaryReadiness?.bookingReady &&
+      !primaryBusiness.published,
   );
 
   function shouldOpenProfileDetails(href: string) {
@@ -917,7 +939,7 @@ export default function Businesses() {
                   )}
                 </span>
                 <span>
-                  {primaryReadiness.activeStaff}{" "}
+                  {primaryReadiness.bookableStaff}{" "}
                   {t(
                     "dashboardBusinesses.setup.previewTeam",
                     "bookable people",
@@ -979,38 +1001,38 @@ export default function Businesses() {
                 >
                   {t("dashboardLayout.nav.help", "Help")}
                 </Link>
-              </div>
-            </details>
-            {!ownerStaffProfile && (
-              <div className="setup-owner-note">
-                <span className="small muted">
-                  {t(
-                    "dashboardBusinesses.ownerStaff.body",
-                    "Add yourself only if customers can book appointments with you.",
-                  )}
-                </span>
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  aria-label={t(
-                    "staff.ownerSetup.addSelf",
-                    "Add myself as bookable staff",
-                  )}
-                  onClick={() => addOwnerAsStaff(primaryBusiness)}
-                  disabled={creatingOwnerStaffId === primaryBusiness.id}
-                >
-                  {creatingOwnerStaffId === primaryBusiness.id
-                    ? t(
-                        "dashboardBusinesses.ownerStaff.creating",
-                        "Adding you as staff...",
-                      )
-                    : t(
+                {!ownerStaffProfile && (
+                  <div className="setup-owner-note">
+                    <span className="small muted">
+                      {t(
+                        "dashboardBusinesses.ownerStaff.body",
+                        "Add yourself only if customers can book appointments with you.",
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      aria-label={t(
                         "staff.ownerSetup.addSelf",
                         "Add myself as bookable staff",
                       )}
-                </button>
+                      onClick={() => addOwnerAsStaff(primaryBusiness)}
+                      disabled={creatingOwnerStaffId === primaryBusiness.id}
+                    >
+                      {creatingOwnerStaffId === primaryBusiness.id
+                        ? t(
+                            "dashboardBusinesses.ownerStaff.creating",
+                            "Adding you as staff...",
+                          )
+                        : t(
+                            "staff.ownerSetup.addSelf",
+                            "Add myself as bookable staff",
+                          )}
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+            </details>
           </div>
         </section>
       )}
