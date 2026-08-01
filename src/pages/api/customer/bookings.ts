@@ -34,6 +34,13 @@ type BusinessRow = {
   city?: string | null;
   country?: string | null;
   phone?: string | null;
+  booking_interval_minutes?: number | null;
+  min_notice_minutes?: number | null;
+  max_advance_days?: number | null;
+  buffer_before_minutes?: number | null;
+  buffer_after_minutes?: number | null;
+  cancellation_policy?: string | null;
+  reschedule_policy?: string | null;
 };
 
 type ServiceRow = {
@@ -271,7 +278,7 @@ async function loadBusinesses(
   const { data, error } = await supabaseAdmin
     .from("businesses")
     .select(
-      "id, user_id, name, currency, timezone, address, city, country, phone",
+      "id, user_id, name, currency, timezone, address, city, country, phone, booking_interval_minutes, min_notice_minutes, max_advance_days, buffer_before_minutes, buffer_after_minutes, cancellation_policy, reschedule_policy",
     )
     .in("id", ids);
 

@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "verify:customer-ios-production": "node scripts/verify-customer-ios-production.mjs",
     "directory:export:albania": "python3 scripts/directory/export-overture-albania.py",
     "directory:shortlist": "node scripts/directory/curate-launch-shortlist.mjs",
     "directory:import": "node scripts/directory/import-places.mjs"

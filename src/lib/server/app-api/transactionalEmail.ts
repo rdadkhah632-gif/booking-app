@@ -27,3 +27,55 @@ export async function requestBookingStatusEmail(
     return "failed";
   }
 }
+
+export async function requestBookingCreatedEmail(
+  req: NextApiRequest,
+  bookingId: string,
+) {
+  const appBaseUrl = getAppBaseUrl();
+  const token = bearerToken(req);
+  if (!appBaseUrl || !token) return "skipped";
+
+  try {
+    const response = await fetch(`${appBaseUrl}/api/email/transactional`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event: "booking_created",
+        bookingId,
+      }),
+    });
+    return response.ok ? "requested" : "failed";
+  } catch {
+    return "failed";
+  }
+}
+
+export async function requestBookingCustomerCancelledEmail(
+  req: NextApiRequest,
+  bookingId: string,
+) {
+  const appBaseUrl = getAppBaseUrl();
+  const token = bearerToken(req);
+  if (!appBaseUrl || !token) return "skipped";
+
+  try {
+    const response = await fetch(`${appBaseUrl}/api/email/transactional`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event: "booking_customer_cancelled",
+        bookingId,
+      }),
+    });
+    return response.ok ? "requested" : "failed";
+  } catch {
+    return "failed";
+  }
+}
