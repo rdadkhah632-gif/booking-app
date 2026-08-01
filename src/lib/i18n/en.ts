@@ -306,9 +306,9 @@ export const en: TranslationTree = {
   "home.discovery.metaDescription":
     "Discover local services, activities and places across Albania, then book participating businesses through Mirëbook.",
   "home.discovery.kicker": "Discover Albania",
-  "home.discovery.title": "Find places to go and services to book.",
+  "home.discovery.title": "Find your next place in Albania.",
   "home.discovery.subtitle":
-    "Explore local favourites, activities and bookable businesses across Albania.",
+    "Discover local favourites, activities and services, then book participating businesses.",
   "home.discovery.searchLabel": "What",
   "home.discovery.searchPlaceholder": "Services, activities or places",
   "home.discovery.cityLabel": "Where",
@@ -614,6 +614,7 @@ export const en: TranslationTree = {
   "publicBusiness.availability.noAssignedStaff":
     "No active staff are assigned to this service yet. Choose another service or contact the business.",
   "publicBusiness.summary.title": "Booking summary",
+  "publicBusiness.summary.step": "Step 4",
   "publicBusiness.summary.nextStep": "After submit",
   "publicBusiness.summary.emptyTitle": "Your appointment",
   "publicBusiness.summary.reviewTitle": "Review appointment",
@@ -658,6 +659,19 @@ export const en: TranslationTree = {
   "support.customer.title": "Booking support",
   "support.customer.body":
     "Get help with booking requests, confirmations, cancellations, reschedules, notifications and account issues as a customer.",
+  "support.entry.customerBody":
+    "Get help with bookings, changes, notifications and your customer account.",
+  "support.entry.businessBody":
+    "Get help with setup, bookings, services, your team and membership.",
+  "support.entry.staffBody":
+    "Get help with your schedule, working hours, account link and assigned bookings.",
+  "legacyBook.kicker": "Mirëbook booking",
+  "legacyBook.title": "Opening the booking page",
+  "legacyBook.body":
+    "You will be taken to the business profile to choose a service, staff member and available time.",
+  "legacyBook.continue": "Continue to business",
+  "legacyBook.browse": "Explore Mirëbook",
+  "logout.waitBody": "Your Mirëbook session is being closed securely.",
   "support.business.title": "Business support",
   "support.business.body":
     "Get help with business setup, publishing, services, staff, working hours, booking approval, trials and subscription access.",
@@ -3993,6 +4007,7 @@ export const en: TranslationTree = {
   "reschedule.requested.anyAvailableStaff": "Any available staff",
   "reschedule.requested.staffAvailable": "staff available",
   "reschedule.form.title": "New appointment time",
+  "reschedule.form.guidance": "Choose a date, time and available staff member.",
   "reschedule.form.calendar": "Available dates",
   "reschedule.form.noAssignedStaff":
     "This booking cannot be rescheduled yet because no active staff are assigned to this service.",
@@ -4022,6 +4037,8 @@ export const en: TranslationTree = {
   "reschedule.success.customer":
     "Reschedule request sent to the business for approval.",
   "reschedule.calendar.currentMonth": "Back to this month",
+  "reschedule.calendar.previousMonth": "Previous month",
+  "reschedule.calendar.nextMonth": "Next month",
   "reschedule.calendar.staffFilter": "Optional staff filter",
   "reschedule.calendar.anyStaff": "Any staff",
   "reschedule.calendar.allDays": "Show all bookable days",
@@ -4159,6 +4176,7 @@ export const en: TranslationTree = {
   "explore.discovery.searchPlaceholder": "Services, activities or places",
   "explore.discovery.cityPlaceholder": "Tiranë, Durrës, Sarandë...",
   "explore.discovery.searchButton": "Search",
+  "explore.filters.open": "Filters",
   "explore.discovery.loading": "Finding places...",
   "explore.discovery.emptyTitle": "More of Albania is coming",
   "explore.discovery.emptyBody":

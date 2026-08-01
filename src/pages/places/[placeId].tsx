@@ -13,6 +13,7 @@ import {
   Phone,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
+import MarketplaceSurfaceStyles from "@/components/MarketplaceSurfaceStyles";
 import DirectoryCategoryArtwork from "@/components/explore/DirectoryCategoryArtwork";
 import {
   directoryCategoryLabel,
@@ -53,6 +54,7 @@ export default function DirectoryPlacePage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [bookingBusinessId, setBookingBusinessId] = useState("");
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
     if (!router.isReady || typeof router.query.placeId !== "string") return;
@@ -62,6 +64,7 @@ export default function DirectoryPlacePage() {
       setLoading(true);
       setNotFound(false);
       setBookingBusinessId("");
+      setImageFailed(false);
       try {
         const response = await fetch(
           `/api/public/directory-place?id=${encodeURIComponent(String(router.query.placeId))}&locale=${locale}`,
@@ -111,7 +114,8 @@ export default function DirectoryPlacePage() {
     : getBusinessAppUrl();
 
   return (
-    <main className="place-page">
+    <main className="marketplace-surface place-page">
+      <MarketplaceSurfaceStyles />
       <Head>
         <title>
           {place
@@ -146,10 +150,7 @@ export default function DirectoryPlacePage() {
               href={`/explore/${bookingBusinessId}`}
               className="btn btn-accent"
             >
-              {t(
-                "directory.profile.handoffAction",
-                "View services and book",
-              )}
+              {t("directory.profile.handoffAction", "View services and book")}
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>
@@ -161,7 +162,12 @@ export default function DirectoryPlacePage() {
           <div className="place-state">
             <Building2 size={30} aria-hidden="true" />
             <h1>{t("directory.profile.notFound", "Place not found")}</h1>
-            <p>{t("directory.profile.notFoundBody", "This place is no longer available in Mirëbook discovery.")}</p>
+            <p>
+              {t(
+                "directory.profile.notFoundBody",
+                "This place is no longer available in Mirëbook discovery.",
+              )}
+            </p>
           </div>
         ) : (
           <>
@@ -176,19 +182,23 @@ export default function DirectoryPlacePage() {
                 </p>
               </div>
               <span className="place-status">
-                {t("directory.card.notBookable", "Not bookable on Mirëbook yet")}
+                {t(
+                  "directory.card.notBookable",
+                  "Not bookable on Mirëbook yet",
+                )}
               </span>
             </header>
 
             <figure
-              className={`place-media ${place.image ? "has-image" : "no-image"}`}
+              className={`place-media ${place.image && !imageFailed ? "has-image" : "no-image"}`}
             >
-              {place.image ? (
+              {place.image && !imageFailed ? (
                 <>
                   <img
                     src={place.image.url}
                     alt={place.image.alt}
                     decoding="async"
+                    onError={() => setImageFailed(true)}
                   />
                   <figcaption>
                     {t("directory.card.photo", "Photo")}:{" "}
@@ -215,34 +225,62 @@ export default function DirectoryPlacePage() {
 
             <div className="place-grid">
               <section className="place-main">
-                {place.description && <p className="place-description">{place.description}</p>}
+                {place.description && (
+                  <p className="place-description">{place.description}</p>
+                )}
 
                 <dl className="place-facts">
                   <div>
-                    <dt><MapPin size={18} aria-hidden="true" /></dt>
-                    <dd>{location || t("directory.card.albania", "Albania")}</dd>
+                    <dt>
+                      <MapPin size={18} aria-hidden="true" />
+                    </dt>
+                    <dd>
+                      {location || t("directory.card.albania", "Albania")}
+                    </dd>
                   </div>
                   {place.phone && (
                     <div>
-                      <dt><Phone size={18} aria-hidden="true" /></dt>
-                      <dd><a href={`tel:${place.phone}`}>{place.phone}</a></dd>
+                      <dt>
+                        <Phone size={18} aria-hidden="true" />
+                      </dt>
+                      <dd>
+                        <a href={`tel:${place.phone}`}>{place.phone}</a>
+                      </dd>
                     </div>
                   )}
                   {place.website && (
                     <div>
-                      <dt><Globe size={18} aria-hidden="true" /></dt>
-                      <dd><a href={place.website} target="_blank" rel="noreferrer">{t("directory.card.website", "Website")}</a></dd>
+                      <dt>
+                        <Globe size={18} aria-hidden="true" />
+                      </dt>
+                      <dd>
+                        <a
+                          href={place.website}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {t("directory.card.website", "Website")}
+                        </a>
+                      </dd>
                     </div>
                   )}
                 </dl>
 
                 <div className="place-actions">
-                  <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn btn-accent">
+                  <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-accent"
+                  >
                     <MapPin size={17} aria-hidden="true" />
                     {t("directory.profile.directions", "Get directions")}
                   </a>
                   <Link
-                    href={{ pathname: "/support/customer", query: { reportPlace: place.name, placeId: place.id } }}
+                    href={{
+                      pathname: "/support/customer",
+                      query: { reportPlace: place.name, placeId: place.id },
+                    }}
                     className="btn btn-ghost"
                   >
                     <Flag size={17} aria-hidden="true" />
@@ -255,13 +293,22 @@ export default function DirectoryPlacePage() {
                 <Building2 size={24} aria-hidden="true" />
                 <h2>
                   {place.claimable
-                    ? t("directory.profile.ownerTitle", "Is this your business?")
+                    ? t(
+                        "directory.profile.ownerTitle",
+                        "Is this your business?",
+                      )
                     : t("directory.profile.claimedTitle", "Ownership recorded")}
                 </h2>
                 <p>
                   {place.claimable
-                    ? t("directory.profile.ownerBody", "Claim this listing with a Mirëbook Business account. Mirëbook reviews every request before linking it.")
-                    : t("directory.profile.claimedBody", "This listing already has an ownership record. Booking remains unavailable until its Mirëbook business profile is ready and published.")}
+                    ? t(
+                        "directory.profile.ownerBody",
+                        "Claim this listing with a Mirëbook Business account. Mirëbook reviews every request before linking it.",
+                      )
+                    : t(
+                        "directory.profile.claimedBody",
+                        "This listing already has an ownership record. Booking remains unavailable until its Mirëbook business profile is ready and published.",
+                      )}
                 </p>
                 {place.claimable && (
                   <a href={claimUrl} className="btn btn-ghost">
@@ -275,7 +322,13 @@ export default function DirectoryPlacePage() {
             <footer className="place-attribution">
               <span>{t("directory.profile.source", "Place data")}</span>
               {place.attribution.url ? (
-                <a href={place.attribution.url} target="_blank" rel="noreferrer">{place.attribution.label}</a>
+                <a
+                  href={place.attribution.url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {place.attribution.label}
+                </a>
               ) : (
                 <span>{place.attribution.label}</span>
               )}
@@ -285,47 +338,291 @@ export default function DirectoryPlacePage() {
       </section>
 
       <style jsx>{`
-        .place-shell { padding-top: 2rem; padding-bottom: 4rem; }
-        .place-back { display: inline-flex; align-items: center; gap: .45rem; color: var(--text-muted); text-decoration: none; margin-bottom: 1.5rem; }
-        .place-back:hover { color: var(--text); }
-        .place-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; padding-bottom: 1.4rem; border-bottom: 1px solid var(--border); }
-        .place-header h1 { margin: .22rem 0; max-width: 18ch; font-size: clamp(2rem, 5vw, 3.8rem); line-height: 1; }
-        .place-type { color: var(--success); font-size: .76rem; font-weight: 800; text-transform: uppercase; }
-        .place-category, .place-status, .place-description, .place-owner-panel p, .place-attribution { color: var(--text-muted); }
-        .place-status { padding: .5rem .7rem; border: 1px solid var(--border); border-radius: 999px; font-size: .78rem; white-space: nowrap; }
-        .place-media { position: relative; overflow: hidden; margin: 1.25rem 0 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
-        .place-media img { display: block; width: 100%; max-height: 440px; aspect-ratio: 16 / 7; object-fit: cover; }
-        .place-media.no-image { height: 280px; }
-        .place-media.no-image :global(.directory-category-artwork span) { width: 5.5rem; height: 5.5rem; }
-        .place-media figcaption { position: absolute; right: .65rem; bottom: .65rem; max-width: calc(100% - 1.3rem); padding: .3rem .48rem; border-radius: 4px; background: rgba(11, 18, 32, .82); color: #fff; font-size: .68rem; }
-        .place-media figcaption a { color: inherit; }
-        .place-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .75fr); gap: 2.5rem; padding: 2rem 0; }
-        .place-main { min-width: 0; }
-        .place-description { max-width: 66ch; margin: 0 0 1.5rem; font-size: 1.05rem; }
-        .place-facts { display: grid; gap: 0; margin: 0; }
-        .place-facts div { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: .65rem; padding: .85rem 0; border-bottom: 1px solid var(--border); }
-        .place-facts dt { color: var(--accent); }
-        .place-facts dd { margin: 0; overflow-wrap: anywhere; }
-        .place-facts a { color: var(--text); }
-        .place-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.4rem; }
-        .place-actions :global(.btn), .place-owner-panel :global(.btn) { display: inline-flex; align-items: center; gap: .45rem; }
-        .place-owner-panel { align-self: start; padding: 1.1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
-        .place-owner-panel > :global(svg) { color: var(--accent); }
-        .place-owner-panel h2 { margin: .75rem 0 .45rem; font-size: 1.15rem; }
-        .place-owner-panel p { margin: 0 0 1rem; font-size: .9rem; }
-        .place-attribution { display: flex; flex-wrap: wrap; gap: .45rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .75rem; }
-        .place-attribution a { color: var(--text-muted); }
-        .place-state { min-height: 45vh; display: grid; place-content: center; justify-items: center; gap: .6rem; text-align: center; color: var(--text-muted); }
-        .place-state h1, .place-state p { margin: 0; }
+        .place-shell {
+          max-width: 1180px;
+          padding-top: 1.5rem;
+          padding-bottom: 5rem;
+        }
+
+        .place-back {
+          display: inline-flex;
+          min-height: 44px;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 1.25rem;
+          color: var(--text-muted);
+          font-size: 0.9rem;
+          font-weight: 700;
+          text-decoration: none;
+        }
+
+        .place-back:hover {
+          color: var(--text);
+        }
+
+        .place-header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 2rem;
+          padding-bottom: 1.4rem;
+        }
+
+        .place-header h1 {
+          max-width: 22ch;
+          margin: 0.35rem 0 0.4rem;
+          font-family: var(--font-body);
+          font-size: clamp(2rem, 5vw, 3.25rem);
+          font-weight: 850;
+          line-height: 1.02;
+          letter-spacing: 0;
+        }
+
+        .place-type {
+          color: var(--success);
+          font-size: 0.75rem;
+          font-weight: 850;
+          text-transform: uppercase;
+        }
+
+        .place-category,
+        .place-status,
+        .place-description,
+        .place-owner-panel p,
+        .place-attribution {
+          color: var(--text-muted);
+        }
+
+        .place-category {
+          margin: 0;
+          font-size: 1rem;
+        }
+
+        .place-status {
+          max-width: 18rem;
+          padding: 0.55rem 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          background: var(--surface-2);
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-align: center;
+        }
+
+        .place-media {
+          position: relative;
+          overflow: hidden;
+          margin: 0;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .place-media img {
+          display: block;
+          width: 100%;
+          max-height: 420px;
+          aspect-ratio: 16 / 6;
+          object-fit: cover;
+        }
+
+        .place-media.no-image {
+          height: 320px;
+        }
+
+        .place-media.no-image :global(.directory-category-artwork span) {
+          width: 5.5rem;
+          height: 5.5rem;
+        }
+
+        .place-media figcaption {
+          position: absolute;
+          right: 0.75rem;
+          bottom: 0.75rem;
+          max-width: calc(100% - 1.5rem);
+          padding: 0.35rem 0.5rem;
+          border-radius: 4px;
+          background: rgba(20, 22, 25, 0.82);
+          color: #fff;
+          font-size: 0.68rem;
+          backdrop-filter: blur(8px);
+        }
+
+        .place-media figcaption a {
+          color: inherit;
+        }
+
+        .place-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.65fr);
+          gap: clamp(2rem, 5vw, 4.5rem);
+          padding: 2.25rem 0 2.75rem;
+        }
+
+        .place-main {
+          min-width: 0;
+        }
+
+        .place-description {
+          max-width: 68ch;
+          margin: 0 0 1.5rem;
+          font-size: 1.08rem;
+          line-height: 1.72;
+        }
+
+        .place-facts {
+          display: grid;
+          gap: 0;
+          margin: 0;
+          border-top: 1px solid var(--border);
+        }
+
+        .place-facts div {
+          display: grid;
+          grid-template-columns: 28px minmax(0, 1fr);
+          gap: 0.75rem;
+          padding: 1rem 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .place-facts dt {
+          color: var(--accent);
+        }
+
+        .place-facts dd {
+          margin: 0;
+          overflow-wrap: anywhere;
+        }
+
+        .place-facts a {
+          color: var(--text);
+          font-weight: 700;
+        }
+
+        .place-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.65rem;
+          margin-top: 1.5rem;
+        }
+
+        .place-actions :global(.btn),
+        .place-owner-panel :global(.btn) {
+          display: inline-flex;
+          min-height: 44px;
+          align-items: center;
+          gap: 0.45rem;
+        }
+
+        .place-owner-panel {
+          position: sticky;
+          top: 96px;
+          align-self: start;
+          padding: 1.25rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface);
+          box-shadow: var(--shadow-card);
+        }
+
+        .place-owner-panel > :global(svg) {
+          color: var(--accent);
+        }
+
+        .place-owner-panel h2 {
+          margin: 0.8rem 0 0.5rem;
+          font-family: var(--font-body);
+          font-size: 1.15rem;
+        }
+
+        .place-owner-panel p {
+          margin: 0 0 1rem;
+          font-size: 0.9rem;
+          line-height: 1.6;
+        }
+
+        .place-attribution {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.45rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+          font-size: 0.75rem;
+        }
+
+        .place-attribution a {
+          color: var(--text-muted);
+        }
+
+        .place-state {
+          display: grid;
+          min-height: 52vh;
+          place-content: center;
+          justify-items: center;
+          gap: 0.75rem;
+          color: var(--text-muted);
+          text-align: center;
+        }
+
+        .place-state h1,
+        .place-state p {
+          margin: 0;
+        }
+
+        .place-state h1 {
+          font-family: var(--font-body);
+        }
+
         @media (max-width: 720px) {
-          .place-shell { padding-top: 1.25rem; }
-          .place-header, .place-grid { display: grid; }
-          .place-status { width: fit-content; white-space: normal; }
-          .place-grid { grid-template-columns: 1fr; gap: 1.5rem; padding-top: 1.4rem; }
-          .place-header h1 { font-size: 2.25rem; }
-          .place-media img { aspect-ratio: 4 / 3; }
-          .place-media.no-image { height: 210px; }
-          .place-actions :global(.btn) { flex: 1 1 140px; }
+          .place-shell {
+            padding-top: 0.9rem;
+          }
+
+          .place-back {
+            margin-bottom: 0.75rem;
+          }
+
+          .place-header,
+          .place-grid {
+            display: grid;
+          }
+
+          .place-header {
+            gap: 0.8rem;
+            padding-bottom: 1rem;
+          }
+
+          .place-status {
+            width: fit-content;
+          }
+
+          .place-grid {
+            grid-template-columns: 1fr;
+            gap: 1.75rem;
+            padding-top: 1.5rem;
+          }
+
+          .place-header h1 {
+            font-size: 2.2rem;
+          }
+
+          .place-media img {
+            aspect-ratio: 4 / 3;
+          }
+
+          .place-media.no-image {
+            height: 220px;
+          }
+
+          .place-owner-panel {
+            position: static;
+            box-shadow: none;
+          }
+
+          .place-actions :global(.btn) {
+            flex: 1 1 140px;
+            justify-content: center;
+          }
         }
       `}</style>
     </main>

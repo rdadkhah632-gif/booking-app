@@ -262,7 +262,7 @@ export default function ExploreDiscoveryMap({
         containerRef.current.replaceChildren();
         const map = new mapboxgl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/streets-v12",
+          style: "mapbox://styles/mapbox/light-v11",
           center: ALBANIA_CENTER,
           zoom: 6.35,
           attributionControl: true,
@@ -565,12 +565,12 @@ export default function ExploreDiscoveryMap({
       <style jsx>{`
         .discovery-map-shell {
           position: relative;
-          min-height: 520px;
-          height: min(68vh, 720px);
+          min-height: 540px;
+          height: min(70vh, 740px);
           overflow: hidden;
           border: 1px solid var(--border);
           border-radius: 8px;
-          background: var(--surface-2);
+          background: #eef1f2;
         }
 
         .discovery-map {
@@ -637,17 +637,24 @@ export default function ExploreDiscoveryMap({
 
         :global(.discovery-map-marker-pin) {
           position: absolute;
-          top: 10px;
+          top: 8px;
           left: 8px;
           width: 28px;
           height: 28px;
           border: 3px solid #ffffff;
-          border-radius: 50% 50% 50% 4px;
+          border-radius: 50%;
           box-shadow: 0 3px 12px rgba(11, 18, 32, 0.3);
-          transform: rotate(-45deg);
           transition:
             transform 0.15s ease,
             box-shadow 0.15s ease;
+        }
+
+        :global(.discovery-map-marker-pin::after) {
+          position: absolute;
+          inset: 7px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.92);
+          content: "";
         }
 
         :global(.discovery-map-marker-count) {
@@ -705,7 +712,7 @@ export default function ExploreDiscoveryMap({
         :global(
           .discovery-map-marker-shell.is-selected .discovery-map-marker-pin
         ) {
-          transform: rotate(-45deg) scale(1.2);
+          transform: scale(1.18);
           box-shadow: 0 4px 18px rgba(11, 18, 32, 0.42);
         }
 
@@ -743,11 +750,10 @@ export default function ExploreDiscoveryMap({
 
         @media (max-width: 700px) {
           .discovery-map-shell {
-            min-height: 440px;
-            height: 58vh;
-            border-radius: 0;
-            margin-inline: -24px;
-            border-inline: 0;
+            min-height: 480px;
+            height: 62dvh;
+            border-radius: 8px;
+            margin-inline: 0;
           }
 
           :global(.discovery-map .mapboxgl-scroll-zoom-blocker) {

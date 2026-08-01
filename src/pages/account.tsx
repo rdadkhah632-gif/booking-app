@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import { useI18n } from "@/lib/useI18n";
 import { Locale } from "@/lib/i18n";
 import {
@@ -401,10 +402,11 @@ export default function AccountPage() {
   const emailIsUnverified = emailVerificationState === "unverified";
 
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
 
-      <section className="container" style={{ padding: "30px 24px 72px" }}>
+      <section className="container customer-page-container">
         {loading && (
           <div className="card">
             <p className="muted">

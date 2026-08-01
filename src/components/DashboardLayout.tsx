@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import WorkspaceSurfaceStyles from "@/components/WorkspaceSurfaceStyles";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
@@ -218,6 +219,7 @@ export default function DashboardLayout({
   if (checkingAccess) {
     return (
       <main className="dashboard-layout">
+        <WorkspaceSurfaceStyles />
         <section className="dashboard-main">
           <div className="card">
             <p className="muted">{t("common.loading", "Loading...")}</p>
@@ -229,6 +231,7 @@ export default function DashboardLayout({
 
   return (
     <main className="dashboard-layout">
+      <WorkspaceSurfaceStyles />
       <aside className="sidebar">
         <div className="sidebar-logo">
           <Link
@@ -605,7 +608,7 @@ export default function DashboardLayout({
           }
 
           .sidebar-mobile-account summary {
-            min-height: 2rem;
+            min-height: 2.75rem;
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
@@ -740,7 +743,7 @@ export default function DashboardLayout({
           }
 
           .sidebar-mobile-account summary {
-            min-height: 2rem;
+            min-height: 2.75rem;
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
@@ -897,7 +900,7 @@ export default function DashboardLayout({
           .sidebar-link {
             width: 100%;
             min-width: 0;
-            min-height: 2.4rem;
+            min-height: 2.75rem;
             justify-content: center;
             padding: 0.4rem 0.25rem;
             border-radius: 7px;
@@ -914,7 +917,7 @@ export default function DashboardLayout({
           }
 
           .sidebar-mobile-account summary {
-            min-height: 2.4rem;
+            min-height: 2.75rem;
             padding: 0.38rem 0.55rem;
             border-radius: 7px;
           }
@@ -930,7 +933,7 @@ export default function DashboardLayout({
           .sidebar-account-actions-menu a,
           .sidebar-account-actions-menu button {
             width: 100%;
-            min-height: 2.1rem;
+            min-height: 2.75rem;
             justify-content: flex-start;
             border-radius: 0.7rem;
             background: transparent;

@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
+import CustomerAuthStyles from "@/components/CustomerAuthStyles";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import {
@@ -166,7 +167,8 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main>
+    <main className="marketplace-surface customer-auth-surface">
+      <CustomerAuthStyles />
       <AuthNav />
       <section className="auth-wrap">
         <div className="auth-card password-auth-card">

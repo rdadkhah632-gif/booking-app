@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import {
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  UserRound,
+} from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
 type Booking = {
@@ -870,11 +879,26 @@ export default function RescheduleBooking() {
     isSameStartAsCurrentBooking(requestedStartIso) &&
     (selectedStaffChoice === "any" ||
       requestedStaffMemberId === booking?.staff_member_id);
+  const useCustomerSurface = role !== "business";
+
   return (
-    <main>
+    <main
+      className={
+        useCustomerSurface
+          ? "marketplace-surface customer-portal-surface"
+          : undefined
+      }
+    >
+      {useCustomerSurface && <CustomerPortalStyles />}
       <AuthNav />
 
-      <section className="container" style={{ padding: "42px 24px 128px" }}>
+      <section
+        className={
+          useCustomerSurface
+            ? "container customer-page-container"
+            : "container reschedule-business-container"
+        }
+      >
         {loading && (
           <div className="card">
             <p className="muted">
@@ -920,16 +944,9 @@ export default function RescheduleBooking() {
         )}
 
         {!loading && !error && booking && (
-          <div
-            style={{
-              maxWidth: 900,
-              margin: "0 auto",
-              display: "grid",
-              gap: "1rem",
-            }}
-          >
-            <div>
-              <p className="small muted">
+          <div className="reschedule-shell">
+            <header className="reschedule-intro">
+              <p className="reschedule-kicker">
                 {role === "business"
                   ? t("reschedule.kicker.business", "Business reschedule")
                   : t(
@@ -940,7 +957,7 @@ export default function RescheduleBooking() {
               <h1 className="page-title">
                 {t("reschedule.title", "Reschedule booking")}
               </h1>
-              <p className="page-sub" style={{ marginTop: "0.5rem" }}>
+              <p className="page-sub">
                 {role === "business"
                   ? t(
                       "reschedule.subtitle.business",
@@ -951,54 +968,45 @@ export default function RescheduleBooking() {
                       "Choose an available date, time and staff member. Your original appointment stays confirmed until the business approves the change.",
                     )}
               </p>
-            </div>
+            </header>
 
             <div
-              className="card"
-              style={{
-                borderColor:
-                  role === "business"
-                    ? "rgba(45,212,191,0.28)"
-                    : "rgba(255,107,53,0.28)",
-                background:
-                  role === "business"
-                    ? "rgba(45,212,191,0.06)"
-                    : "var(--accent-dim)",
-              }}
+              className={`reschedule-mode-banner ${
+                role === "business" ? "is-direct" : "is-approval"
+              }`}
             >
-              <p
-                className="small"
-                style={{
-                  color:
-                    role === "business" ? "var(--success)" : "var(--accent)",
-                }}
-              >
-                {role === "business"
-                  ? t("reschedule.mode.direct", "Direct reschedule")
-                  : t("reschedule.mode.approval", "Approval required")}
-              </p>
-              <strong>
-                {role === "business"
-                  ? t(
-                      "reschedule.mode.businessBody",
-                      "Saving here immediately changes the customer booking.",
-                    )
-                  : t(
-                      "reschedule.mode.customerBody",
-                      "Your original appointment stays confirmed until the business accepts your new requested time.",
-                    )}
-              </strong>
-              <p className="small muted" style={{ marginTop: "0.45rem" }}>
-                {role === "business"
-                  ? t(
-                      "reschedule.mode.businessNotification",
-                      "Mirëbook will notify the customer after you save the new appointment time.",
-                    )
-                  : t(
-                      "reschedule.mode.customerNotification",
-                      "Mirëbook will notify the business when you send or update a reschedule request.",
-                    )}
-              </p>
+              <span className="reschedule-mode-icon" aria-hidden="true">
+                <Check size={18} strokeWidth={2.5} />
+              </span>
+              <div>
+                <p className="reschedule-mode-label">
+                  {role === "business"
+                    ? t("reschedule.mode.direct", "Direct reschedule")
+                    : t("reschedule.mode.approval", "Approval required")}
+                </p>
+                <strong>
+                  {role === "business"
+                    ? t(
+                        "reschedule.mode.businessBody",
+                        "Saving here immediately changes the customer booking.",
+                      )
+                    : t(
+                        "reschedule.mode.customerBody",
+                        "Your original appointment stays confirmed until the business accepts your new requested time.",
+                      )}
+                </strong>
+                <p className="small muted">
+                  {role === "business"
+                    ? t(
+                        "reschedule.mode.businessNotification",
+                        "Mirëbook will notify the customer after you save the new appointment time.",
+                      )
+                    : t(
+                        "reschedule.mode.customerNotification",
+                        "Mirëbook will notify the business when you send or update a reschedule request.",
+                      )}
+                </p>
+              </div>
             </div>
 
             {success && (
@@ -1015,18 +1023,16 @@ export default function RescheduleBooking() {
               </div>
             )}
 
-            <div className="card">
-              <h2
-                style={{
-                  fontFamily: "var(--font-display)",
-                  marginBottom: "1rem",
-                }}
-              >
-                {t("reschedule.current.title", "Current booking")}
-              </h2>
+            <section className="card reschedule-current-card">
+              <div className="reschedule-section-heading">
+                <span className="reschedule-section-icon" aria-hidden="true">
+                  <CalendarDays size={19} />
+                </span>
+                <h2>{t("reschedule.current.title", "Current booking")}</h2>
+              </div>
 
-              <div style={{ display: "grid", gap: "0.75rem" }}>
-                <div>
+              <div className="reschedule-current-grid">
+                <div className="reschedule-current-item">
                   <p className="small muted">
                     {t("common.business", "Business")}
                   </p>
@@ -1036,7 +1042,7 @@ export default function RescheduleBooking() {
                   </strong>
                 </div>
 
-                <div>
+                <div className="reschedule-current-item">
                   <p className="small muted">
                     {t("common.service", "Service")}
                   </p>
@@ -1045,7 +1051,7 @@ export default function RescheduleBooking() {
                   </strong>
                 </div>
 
-                <div>
+                <div className="reschedule-current-item">
                   <p className="small muted">
                     {t("reschedule.current.staff", "Current staff member")}
                   </p>
@@ -1058,19 +1064,19 @@ export default function RescheduleBooking() {
                   </strong>
                 </div>
 
-                <div>
+                <div className="reschedule-current-item">
                   <p className="small muted">
                     {t("reschedule.current.time", "Current time")}
                   </p>
                   <strong>{appointmentDateTime(booking.start_at)}</strong>
                 </div>
 
-                <div>
+                <div className="reschedule-current-item">
                   <p className="small muted">{t("common.status", "Status")}</p>
                   <strong>{bookingStatusLabel(booking.status)}</strong>
                 </div>
 
-                <div>
+                <div className="reschedule-current-item">
                   <p className="small muted">
                     {t("common.customer", "Customer")}
                   </p>
@@ -1078,53 +1084,72 @@ export default function RescheduleBooking() {
                   <p className="small muted">{booking.customer_email}</p>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className="card" style={{ background: "var(--surface-2)" }}>
-              <p className="small muted">
-                {t("reschedule.requested.title", "New requested appointment")}
-              </p>
-              <h3 style={{ marginTop: "0.25rem" }}>
-                {requestedStart
-                  ? `${appointmentDateTime(requestedStart.toISOString())}${requestedEnd ? ` - ${formatLocalizedDate(requestedEnd, locale, { hour: "2-digit", minute: "2-digit" })}` : ""}`
-                  : t(
-                      "reschedule.requested.chooseDateTime",
-                      "Choose a new date and time",
-                    )}
-              </h3>
-              <p className="small muted" style={{ marginTop: "0.45rem" }}>
-                {selectedTime
-                  ? selectedStaff
-                    ? `${t("reschedule.requested.staffPrefix", "Staff")}: ${selectedStaff.name}${selectedStaff.role_title ? ` — ${selectedStaff.role_title}` : ""}`
-                    : availableStaffForSelectedTime.length === 1
-                      ? `${t("reschedule.requested.assignedAutomatically", "Assigned automatically")}: ${availableStaffForSelectedTime[0].name}`
-                      : `${t("reschedule.requested.anyAvailableStaff", "Any available staff")} · ${availableStaffForSelectedTime.length} ${t("reschedule.requested.staffAvailable", "staff available")}`
-                  : t(
-                      "reschedule.requested.chooseStaff",
-                      "Choose a time, then select any available staff member or a specific person.",
-                    )}
-              </p>
-              <p className="small muted">
-                {booking.services?.name || t("common.service", "Service")} ·{" "}
-                {newDuration} {t("common.minutes", "minutes")}
-              </p>
-            </div>
+            <section
+              className={`reschedule-selection-summary ${
+                requestedStart ? "has-selection" : ""
+              }`}
+              aria-live="polite"
+            >
+              <span className="reschedule-selection-icon" aria-hidden="true">
+                <Clock3 size={21} />
+              </span>
+              <div>
+                <p className="small muted">
+                  {t("reschedule.requested.title", "New requested appointment")}
+                </p>
+                <h2>
+                  {requestedStart
+                    ? `${appointmentDateTime(requestedStart.toISOString())}${requestedEnd ? ` - ${formatLocalizedDate(requestedEnd, locale, { hour: "2-digit", minute: "2-digit" })}` : ""}`
+                    : t(
+                        "reschedule.requested.chooseDateTime",
+                        "Choose a new date and time",
+                      )}
+                </h2>
+                <p className="small muted">
+                  {selectedTime
+                    ? selectedStaff
+                      ? `${t("reschedule.requested.staffPrefix", "Staff")}: ${selectedStaff.name}${selectedStaff.role_title ? ` — ${selectedStaff.role_title}` : ""}`
+                      : availableStaffForSelectedTime.length === 1
+                        ? `${t("reschedule.requested.assignedAutomatically", "Assigned automatically")}: ${availableStaffForSelectedTime[0].name}`
+                        : `${t("reschedule.requested.anyAvailableStaff", "Any available staff")} · ${availableStaffForSelectedTime.length} ${t("reschedule.requested.staffAvailable", "staff available")}`
+                    : t(
+                        "reschedule.requested.chooseStaff",
+                        "Choose a time, then select any available staff member or a specific person.",
+                      )}
+                </p>
+                <p className="reschedule-selection-service">
+                  {booking.services?.name || t("common.service", "Service")} ·{" "}
+                  {newDuration} {t("common.minutes", "minutes")}
+                </p>
+              </div>
+            </section>
 
             <form
               onSubmit={saveReschedule}
               className="card reschedule-form-card"
             >
-              <h2 style={{ fontFamily: "var(--font-display)" }}>
-                {t("reschedule.form.title", "New appointment time")}
-              </h2>
+              <div className="reschedule-form-heading">
+                <h2>{t("reschedule.form.title", "New appointment time")}</h2>
+                <p className="small muted">
+                  {t(
+                    "reschedule.form.guidance",
+                    "Choose a date, time and available staff member.",
+                  )}
+                </p>
+              </div>
 
-              <div>
-                <label className="small muted">
-                  {t("reschedule.form.calendar", "Available dates")}
-                </label>
+              <section className="reschedule-form-section">
+                <div className="reschedule-form-section-title">
+                  <CalendarDays size={18} aria-hidden="true" />
+                  <label>
+                    {t("reschedule.form.calendar", "Available dates")}
+                  </label>
+                </div>
 
                 {selectableStaff.length === 0 && (
-                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                  <p className="reschedule-empty-note small muted">
                     {t(
                       "reschedule.form.noAssignedStaff",
                       "This booking cannot be rescheduled yet because no active staff are assigned to this service.",
@@ -1133,33 +1158,21 @@ export default function RescheduleBooking() {
                 )}
 
                 {selectableStaff.length > 0 && (
-                  <div
-                    className="card reschedule-calendar-card"
-                    style={{
-                      background: "var(--surface-2)",
-                      padding: "0.9rem",
-                      marginTop: "0.5rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "0.75rem",
-                        alignItems: "center",
-                        marginBottom: "0.75rem",
-                      }}
-                    >
+                  <div className="reschedule-calendar-card">
+                    <div className="reschedule-calendar-toolbar">
                       <button
                         type="button"
                         onClick={() => moveCalendarMonth(-1)}
-                        className="btn btn-ghost"
-                        style={{ padding: "0.5rem 0.7rem" }}
+                        className="reschedule-icon-button"
+                        aria-label={t(
+                          "reschedule.calendar.previousMonth",
+                          "Previous month",
+                        )}
                       >
-                        ←
+                        <ChevronLeft size={20} aria-hidden="true" />
                       </button>
 
-                      <div style={{ textAlign: "center" }}>
+                      <div className="reschedule-calendar-month-copy">
                         <strong>{monthLabel(calendarMonth)}</strong>
                         <p className="small muted">
                           {t(
@@ -1172,25 +1185,21 @@ export default function RescheduleBooking() {
                       <button
                         type="button"
                         onClick={() => moveCalendarMonth(1)}
-                        className="btn btn-ghost"
-                        style={{ padding: "0.5rem 0.7rem" }}
+                        className="reschedule-icon-button"
+                        aria-label={t(
+                          "reschedule.calendar.nextMonth",
+                          "Next month",
+                        )}
                       >
-                        →
+                        <ChevronRight size={20} aria-hidden="true" />
                       </button>
                     </div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        marginBottom: "0.75rem",
-                      }}
-                    >
+                    <div className="reschedule-calendar-return">
                       <button
                         type="button"
                         onClick={resetCalendarToToday}
                         className="btn btn-ghost"
-                        style={{ padding: "0.45rem 0.75rem" }}
                       >
                         {t(
                           "reschedule.calendar.currentMonth",
@@ -1199,44 +1208,25 @@ export default function RescheduleBooking() {
                       </button>
                     </div>
 
-                    <div style={{ marginBottom: "0.85rem" }}>
+                    <div className="reschedule-staff-filter">
                       <label className="small muted">
                         {t(
                           "reschedule.calendar.staffFilter",
                           "Optional staff filter",
                         )}
                       </label>
-                      <div
-                        className="reschedule-staff-filter-grid"
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fit, minmax(130px, 1fr))",
-                          gap: "0.5rem",
-                          marginTop: "0.45rem",
-                        }}
-                      >
+                      <div className="reschedule-staff-filter-grid">
                         <button
                           type="button"
+                          className={`reschedule-choice-card ${
+                            staffFilter === "any" ? "is-selected" : ""
+                          }`}
+                          aria-pressed={staffFilter === "any"}
                           onClick={() => {
                             setStaffFilter("any");
                             setSelectedDate("");
                             setSelectedTime("");
                             setSelectedStaffChoice("any");
-                          }}
-                          style={{
-                            textAlign: "left",
-                            padding: "0.7rem",
-                            borderRadius: 14,
-                            border:
-                              staffFilter === "any"
-                                ? "1px solid rgba(255,107,53,0.55)"
-                                : "1px solid var(--border)",
-                            background:
-                              staffFilter === "any"
-                                ? "var(--accent-dim)"
-                                : "var(--surface)",
-                            color: "var(--text)",
                           }}
                         >
                           <strong>
@@ -1254,25 +1244,15 @@ export default function RescheduleBooking() {
                           <button
                             key={staff.id}
                             type="button"
+                            className={`reschedule-choice-card ${
+                              staffFilter === staff.id ? "is-selected" : ""
+                            }`}
+                            aria-pressed={staffFilter === staff.id}
                             onClick={() => {
                               setStaffFilter(staff.id);
                               setSelectedDate("");
                               setSelectedTime("");
                               setSelectedStaffChoice("any");
-                            }}
-                            style={{
-                              textAlign: "left",
-                              padding: "0.7rem",
-                              borderRadius: 14,
-                              border:
-                                staffFilter === staff.id
-                                  ? "1px solid rgba(255,107,53,0.55)"
-                                  : "1px solid var(--border)",
-                              background:
-                                staffFilter === staff.id
-                                  ? "var(--accent-dim)"
-                                  : "var(--surface)",
-                              color: "var(--text)",
                             }}
                           >
                             <strong>{staff.name}</strong>
@@ -1285,15 +1265,7 @@ export default function RescheduleBooking() {
                       </div>
                     </div>
 
-                    <div
-                      className="reschedule-calendar-weekdays"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(7, 1fr)",
-                        gap: "0.35rem",
-                        marginBottom: "0.35rem",
-                      }}
-                    >
+                    <div className="reschedule-calendar-weekdays">
                       {[
                         t("calendar.weekdays.sun", "Sun"),
                         t("calendar.weekdays.mon", "Mon"),
@@ -1303,24 +1275,13 @@ export default function RescheduleBooking() {
                         t("calendar.weekdays.fri", "Fri"),
                         t("calendar.weekdays.sat", "Sat"),
                       ].map((day) => (
-                        <p
-                          key={day}
-                          className="small muted"
-                          style={{ textAlign: "center", fontWeight: 700 }}
-                        >
+                        <p key={day} className="small muted">
                           {day}
                         </p>
                       ))}
                     </div>
 
-                    <div
-                      className="reschedule-calendar-grid"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-                        gap: "0.35rem",
-                      }}
-                    >
+                    <div className="reschedule-calendar-grid">
                       {calendarDays.map((day) => {
                         const isSelected = selectedDate === day.dateString;
                         const isDisabled = day.isPast || !day.isBookable;
@@ -1330,6 +1291,15 @@ export default function RescheduleBooking() {
                             key={day.dateString}
                             type="button"
                             disabled={isDisabled}
+                            aria-pressed={isSelected}
+                            className={[
+                              "reschedule-calendar-day",
+                              isSelected ? "is-selected" : "",
+                              day.isToday ? "is-today" : "",
+                              !day.isCurrentMonth ? "is-outside" : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
                             onClick={() => {
                               setSelectedDate(day.dateString);
                               setSelectedTime("");
@@ -1340,32 +1310,6 @@ export default function RescheduleBooking() {
                                 ? `${day.label} · ${day.availableSlotCount} ${t("reschedule.calendar.slots", "slots")}`
                                 : `${day.label} · ${t("reschedule.calendar.unavailable", "unavailable")}`
                             }
-                            style={{
-                              minHeight: 46,
-                              borderRadius: 12,
-                              border: isSelected
-                                ? "1px solid rgba(255,107,53,0.65)"
-                                : day.isToday
-                                  ? "1px solid rgba(45,212,191,0.45)"
-                                  : "1px solid var(--border)",
-                              background: isSelected
-                                ? "var(--accent)"
-                                : day.isBookable
-                                  ? "var(--surface)"
-                                  : "rgba(148,163,184,0.08)",
-                              color: isSelected
-                                ? "var(--bg)"
-                                : day.isCurrentMonth
-                                  ? "var(--text)"
-                                  : "var(--text-muted)",
-                              opacity: isDisabled
-                                ? 0.32
-                                : day.isCurrentMonth
-                                  ? 1
-                                  : 0.55,
-                              cursor: isDisabled ? "not-allowed" : "pointer",
-                              fontWeight: isSelected || day.isToday ? 800 : 500,
-                            }}
                           >
                             <span>{day.shortLabel}</span>
                           </button>
@@ -1374,14 +1318,9 @@ export default function RescheduleBooking() {
                     </div>
 
                     {selectedDateLabel && (
-                      <p
-                        className="small muted"
-                        style={{ marginTop: "0.75rem" }}
-                      >
+                      <p className="reschedule-selected-date small muted">
                         {t("reschedule.calendar.selected", "Selected")}:{" "}
-                        <strong style={{ color: "var(--text)" }}>
-                          {selectedDateLabel}
-                        </strong>
+                        <strong>{selectedDateLabel}</strong>
                         {staffFilter !== "any" && selectedFilterStaff
                           ? ` · ${t("reschedule.calendar.filteredTo", "filtered to")} ${selectedFilterStaff.name}`
                           : ""}
@@ -1389,15 +1328,18 @@ export default function RescheduleBooking() {
                     )}
                   </div>
                 )}
-              </div>
+              </section>
 
-              <div>
-                <label className="small muted">
-                  {t("reschedule.times.title", "Available times")}
-                </label>
+              <section className="reschedule-form-section">
+                <div className="reschedule-form-section-title">
+                  <Clock3 size={18} aria-hidden="true" />
+                  <label>
+                    {t("reschedule.times.title", "Available times")}
+                  </label>
+                </div>
 
                 {!selectedDate && (
-                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                  <p className="reschedule-empty-note small muted">
                     {t(
                       "reschedule.times.chooseDate",
                       "Choose an available date first.",
@@ -1406,7 +1348,7 @@ export default function RescheduleBooking() {
                 )}
 
                 {selectedDate && timeSlots.length === 0 && (
-                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                  <p className="reschedule-empty-note small muted">
                     {t(
                       "reschedule.times.empty",
                       "No free times are available for this service on the selected date.",
@@ -1419,58 +1361,41 @@ export default function RescheduleBooking() {
                     <button
                       key={slot.time}
                       type="button"
+                      className={`reschedule-time-button ${
+                        selectedTime === slot.time ? "is-selected" : ""
+                      }`}
+                      aria-pressed={selectedTime === slot.time}
                       onClick={() => {
                         setSelectedTime(slot.time);
                         setSelectedStaffChoice("any");
                       }}
-                      style={{
-                        padding: "0.65rem",
-                        borderRadius: 999,
-                        border:
-                          selectedTime === slot.time
-                            ? "1px solid rgba(255,107,53,0.5)"
-                            : "1px solid var(--border)",
-                        background:
-                          selectedTime === slot.time
-                            ? "var(--accent)"
-                            : "var(--surface-2)",
-                        color:
-                          selectedTime === slot.time
-                            ? "var(--bg)"
-                            : "var(--text)",
-                      }}
                     >
                       <span>{slot.time}</span>
                       {slot.staffIds.length > 1 && (
-                        <span
-                          style={{
-                            display: "block",
-                            fontSize: "0.68rem",
-                            opacity: 0.8,
-                          }}
-                        >
+                        <small>
                           {slot.staffIds.length}{" "}
                           {t("reschedule.times.available", "available")}
-                        </span>
+                        </small>
                       )}
                     </button>
                   ))}
                 </div>
-              </div>
+              </section>
 
-              <div>
-                <label className="small muted">
-                  {t("reschedule.staff.title", "Staff choice")}
-                </label>
+              <section className="reschedule-form-section">
+                <div className="reschedule-form-section-title">
+                  <UserRound size={18} aria-hidden="true" />
+                  <label>{t("reschedule.staff.title", "Staff choice")}</label>
+                </div>
 
                 {!selectedDate && (
-                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                  <p className="reschedule-empty-note small muted">
                     {t("reschedule.staff.chooseDate", "Select a date first.")}
                   </p>
                 )}
 
                 {selectedDate && !selectedTime && (
-                  <p className="small muted" style={{ marginTop: "0.5rem" }}>
+                  <p className="reschedule-empty-note small muted">
                     {t(
                       "reschedule.staff.chooseTime",
                       "Choose a time first, then select any available staff member or a specific person.",
@@ -1479,20 +1404,8 @@ export default function RescheduleBooking() {
                 )}
 
                 {selectedDate && selectedTime && (
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: "0.75rem",
-                      marginTop: "0.5rem",
-                    }}
-                  >
-                    <div
-                      className="card"
-                      style={{
-                        background: "var(--surface-2)",
-                        padding: "0.85rem",
-                      }}
-                    >
+                  <div className="reschedule-staff-choices">
+                    <div className="reschedule-availability-note">
                       <p className="small muted">
                         {t("reschedule.staff.availableFor", "Available for")}{" "}
                         {selectedTime}
@@ -1506,37 +1419,36 @@ export default function RescheduleBooking() {
 
                     <button
                       type="button"
+                      className={`reschedule-staff-choice ${
+                        selectedStaffChoice === "any" ? "is-selected" : ""
+                      }`}
+                      aria-pressed={selectedStaffChoice === "any"}
                       onClick={() => setSelectedStaffChoice("any")}
-                      style={{
-                        textAlign: "left",
-                        padding: "0.85rem",
-                        borderRadius: "var(--radius)",
-                        border:
-                          selectedStaffChoice === "any"
-                            ? "1px solid rgba(255,107,53,0.55)"
-                            : "1px solid var(--border)",
-                        background:
-                          selectedStaffChoice === "any"
-                            ? "var(--accent-dim)"
-                            : "var(--surface-2)",
-                        color: "var(--text)",
-                      }}
                     >
-                      <strong>
-                        {t(
-                          "publicBusiness.staff.anyAvailable",
-                          "Any available staff",
-                        )}
-                      </strong>
-                      <p
-                        className="small muted"
-                        style={{ marginTop: "0.25rem" }}
-                      >
-                        {t(
-                          "reschedule.staff.autoAssign",
-                          "Mirëbook will assign one of the available staff members for this exact time.",
-                        )}
-                      </p>
+                      <span className="reschedule-staff-choice-icon">
+                        <UserRound size={18} aria-hidden="true" />
+                      </span>
+                      <span>
+                        <strong>
+                          {t(
+                            "publicBusiness.staff.anyAvailable",
+                            "Any available staff",
+                          )}
+                        </strong>
+                        <small className="muted">
+                          {t(
+                            "reschedule.staff.autoAssign",
+                            "Mirëbook will assign one of the available staff members for this exact time.",
+                          )}
+                        </small>
+                      </span>
+                      {selectedStaffChoice === "any" && (
+                        <Check
+                          className="reschedule-choice-check"
+                          size={18}
+                          aria-hidden="true"
+                        />
+                      )}
                     </button>
 
                     {availableStaffForSelectedTime.map((staff) => {
@@ -1546,41 +1458,36 @@ export default function RescheduleBooking() {
                         <button
                           key={staff.id}
                           type="button"
+                          className={`reschedule-staff-choice ${
+                            isSelected ? "is-selected" : ""
+                          }`}
+                          aria-pressed={isSelected}
                           onClick={() => setSelectedStaffChoice(staff.id)}
-                          style={{
-                            textAlign: "left",
-                            padding: "0.85rem",
-                            borderRadius: "var(--radius)",
-                            border: isSelected
-                              ? "1px solid rgba(255,107,53,0.55)"
-                              : "1px solid var(--border)",
-                            background: isSelected
-                              ? "var(--accent-dim)"
-                              : "var(--surface-2)",
-                            color: "var(--text)",
-                          }}
                         >
-                          <strong>{staff.name}</strong>
-                          <p className="small muted">
-                            {staff.role_title ||
-                              t("staff.fallback.member", "Staff member")}
-                          </p>
-                          <p
-                            className="small"
-                            style={{
-                              color: "var(--success)",
-                              marginTop: "0.25rem",
-                            }}
-                          >
-                            {t("reschedule.availableAt", "Available at")}{" "}
-                            {selectedTime}
-                          </p>
+                          <span className="reschedule-staff-choice-icon">
+                            <UserRound size={18} aria-hidden="true" />
+                          </span>
+                          <span>
+                            <strong>{staff.name}</strong>
+                            <small className="muted">
+                              {staff.role_title ||
+                                t("staff.fallback.member", "Staff member")}
+                              {` · ${t("reschedule.availableAt", "Available at")} ${selectedTime}`}
+                            </small>
+                          </span>
+                          {isSelected && (
+                            <Check
+                              className="reschedule-choice-check"
+                              size={18}
+                              aria-hidden="true"
+                            />
+                          )}
                         </button>
                       );
                     })}
                   </div>
                 )}
-              </div>
+              </section>
 
               <button
                 type="submit"
@@ -1591,7 +1498,7 @@ export default function RescheduleBooking() {
                   !selectedStaffChoice ||
                   noChangeSelected
                 }
-                className="btn btn-accent"
+                className="btn btn-accent reschedule-submit"
               >
                 {saving
                   ? role === "customer"
@@ -1617,14 +1524,7 @@ export default function RescheduleBooking() {
               )}
             </form>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "0.75rem",
-                flexWrap: "wrap",
-              }}
-            >
+            <div className="reschedule-back-actions">
               {role === "business" ? (
                 <Link
                   href={`/dashboard/bookings?businessId=${booking.business_id}`}
@@ -1646,20 +1546,570 @@ export default function RescheduleBooking() {
       </section>
 
       <style jsx>{`
-        .reschedule-form-card {
+        .reschedule-business-container {
+          padding: 30px 24px 72px;
+        }
+
+        .reschedule-shell {
+          width: min(100%, 940px);
+          margin: 0 auto;
           display: grid;
           gap: 1rem;
+        }
+
+        .reschedule-intro {
+          display: grid;
+          gap: 0.55rem;
+          padding: 0.35rem 0 0.75rem;
+        }
+
+        .reschedule-intro :global(.page-sub) {
+          margin: 0;
+        }
+
+        .reschedule-kicker {
+          margin: 0;
+          color: var(--accent);
+          font-size: 0.78rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .reschedule-mode-banner {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 0.8rem;
+          align-items: flex-start;
+          padding: 0.95rem 1rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .reschedule-mode-banner.is-direct {
+          border-color: rgba(20, 125, 112, 0.24);
+          background: rgba(20, 125, 112, 0.06);
+        }
+
+        .reschedule-mode-banner.is-approval {
+          border-color: rgba(237, 90, 42, 0.22);
+          background: rgba(237, 90, 42, 0.05);
+        }
+
+        .reschedule-mode-banner p,
+        .reschedule-mode-banner strong {
+          margin: 0;
+        }
+
+        .reschedule-mode-banner .muted {
+          margin-top: 0.32rem;
+          line-height: 1.5;
+        }
+
+        .reschedule-mode-icon,
+        .reschedule-section-icon,
+        .reschedule-selection-icon,
+        .reschedule-staff-choice-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+        }
+
+        .reschedule-mode-icon {
+          width: 2rem;
+          height: 2rem;
+          border-radius: 50%;
+          background: var(--surface);
+          color: var(--accent);
+        }
+
+        .is-direct .reschedule-mode-icon {
+          color: var(--success);
+        }
+
+        .reschedule-mode-label {
+          margin-bottom: 0.2rem !important;
+          color: var(--accent);
+          font-size: 0.74rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .is-direct .reschedule-mode-label {
+          color: var(--success);
+        }
+
+        .reschedule-current-card {
+          padding: 1rem;
+        }
+
+        .reschedule-section-heading,
+        .reschedule-form-section-title {
+          display: flex;
+          gap: 0.55rem;
+          align-items: center;
+        }
+
+        .reschedule-section-heading {
+          margin-bottom: 0.85rem;
+        }
+
+        .reschedule-section-heading h2,
+        .reschedule-form-heading h2,
+        .reschedule-selection-summary h2 {
+          margin: 0;
+          font-family: var(--font-body);
+          letter-spacing: 0;
+        }
+
+        .reschedule-section-heading h2,
+        .reschedule-form-heading h2 {
+          font-size: 1.2rem;
+        }
+
+        .reschedule-section-icon {
+          width: 2rem;
+          height: 2rem;
+          border-radius: 7px;
+          background: var(--surface-2);
+          color: var(--accent);
+        }
+
+        .reschedule-current-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          border-top: 1px solid var(--border);
+          border-left: 1px solid var(--border);
+        }
+
+        .reschedule-current-item {
+          min-width: 0;
+          padding: 0.75rem;
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .reschedule-current-item p,
+        .reschedule-current-item strong {
+          margin: 0;
+          overflow-wrap: anywhere;
+        }
+
+        .reschedule-current-item strong {
+          display: block;
+          margin-top: 0.2rem;
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+
+        .reschedule-selection-summary {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 0.85rem;
+          align-items: flex-start;
+          padding: 1rem;
+          border: 1px dashed var(--border-2);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .reschedule-selection-summary.has-selection {
+          border-style: solid;
+          border-color: rgba(237, 90, 42, 0.28);
+          background: rgba(237, 90, 42, 0.05);
+        }
+
+        .reschedule-selection-icon {
+          width: 2.5rem;
+          height: 2.5rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface);
+          color: var(--accent);
+        }
+
+        .reschedule-selection-summary p,
+        .reschedule-selection-summary h2 {
+          margin: 0;
+        }
+
+        .reschedule-selection-summary h2 {
+          margin-top: 0.16rem;
+          font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+          line-height: 1.25;
+        }
+
+        .reschedule-selection-summary .muted {
+          margin-top: 0.28rem;
+        }
+
+        .reschedule-selection-service {
+          margin-top: 0.42rem !important;
+          color: var(--text);
+          font-size: 0.78rem;
+          font-weight: 750;
+        }
+
+        .reschedule-form-card {
+          display: grid;
+          gap: 0;
+          padding: 1rem;
           margin-bottom: 2rem;
+        }
+
+        .reschedule-form-heading {
+          display: grid;
+          gap: 0.22rem;
+          padding-bottom: 1rem;
+        }
+
+        .reschedule-form-heading p {
+          margin: 0;
+        }
+
+        .reschedule-form-section {
+          display: grid;
+          gap: 0.75rem;
+          padding: 1rem 0;
+          border-top: 1px solid var(--border);
+        }
+
+        .reschedule-form-section-title {
+          color: var(--text);
+        }
+
+        .reschedule-form-section-title :global(svg) {
+          color: var(--accent);
+        }
+
+        .reschedule-form-section-title label {
+          font-size: 0.95rem;
+          font-weight: 800;
+        }
+
+        .reschedule-empty-note {
+          margin: 0;
+          padding: 0.8rem;
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .reschedule-calendar-card {
+          display: grid;
+          gap: 0.85rem;
+          padding: 0.9rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .reschedule-calendar-toolbar {
+          display: grid;
+          grid-template-columns: 44px minmax(0, 1fr) 44px;
+          gap: 0.6rem;
+          align-items: center;
+        }
+
+        .reschedule-icon-button {
+          display: inline-flex;
+          width: 44px;
+          height: 44px;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          border: 1px solid var(--border);
+          border-radius: 7px;
+          background: var(--surface);
+          color: var(--text);
+          cursor: pointer;
+        }
+
+        .reschedule-calendar-month-copy {
+          min-width: 0;
+          text-align: center;
+        }
+
+        .reschedule-calendar-month-copy strong,
+        .reschedule-calendar-month-copy p {
+          margin: 0;
+        }
+
+        .reschedule-calendar-month-copy p {
+          margin-top: 0.16rem;
+          line-height: 1.35;
+        }
+
+        .reschedule-calendar-return {
+          display: flex;
+          justify-content: center;
+        }
+
+        .reschedule-calendar-return :global(.btn) {
+          min-height: 40px;
+          padding: 0.45rem 0.75rem;
+        }
+
+        .reschedule-staff-filter {
+          display: grid;
+          gap: 0.45rem;
+          padding: 0.85rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .reschedule-staff-filter-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 0.5rem;
+        }
+
+        .reschedule-choice-card {
+          min-height: 64px;
+          padding: 0.65rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface);
+          color: var(--text);
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .reschedule-choice-card.is-selected {
+          border-color: rgba(237, 90, 42, 0.5);
+          background: var(--accent-dim);
+          box-shadow: inset 3px 0 0 var(--accent);
+        }
+
+        .reschedule-choice-card strong,
+        .reschedule-choice-card p {
+          display: block;
+          margin: 0;
+          line-height: 1.35;
+        }
+
+        .reschedule-choice-card p {
+          margin-top: 0.15rem;
+        }
+
+        .reschedule-calendar-weekdays,
+        .reschedule-calendar-grid {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+          gap: 0.35rem;
+        }
+
+        .reschedule-calendar-weekdays p {
+          margin: 0;
+          text-align: center;
+          font-weight: 750;
+        }
+
+        .reschedule-calendar-day {
+          min-width: 0;
+          min-height: 48px;
+          padding: 0.25rem;
+          border: 1px solid var(--border);
+          border-radius: 7px;
+          background: var(--surface);
+          color: var(--text);
+          font-weight: 650;
+          cursor: pointer;
+        }
+
+        .reschedule-calendar-day.is-today {
+          border-color: rgba(20, 125, 112, 0.45);
+        }
+
+        .reschedule-calendar-day.is-outside {
+          color: var(--text-muted);
+          opacity: 0.55;
+        }
+
+        .reschedule-calendar-day.is-selected {
+          border-color: var(--accent);
+          background: var(--accent);
+          color: #fff;
+          font-weight: 850;
+          opacity: 1;
+        }
+
+        .reschedule-calendar-day:disabled {
+          background: transparent;
+          color: var(--text-faint);
+          opacity: 0.34;
+          cursor: not-allowed;
+        }
+
+        .reschedule-selected-date {
+          margin: 0;
+          padding-top: 0.1rem;
+        }
+
+        .reschedule-selected-date strong {
+          color: var(--text);
         }
 
         .reschedule-time-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
           gap: 0.5rem;
-          margin-top: 0.75rem;
+        }
+
+        .reschedule-time-button {
+          display: grid;
+          min-height: 48px;
+          place-items: center;
+          padding: 0.5rem;
+          border: 1px solid var(--border);
+          border-radius: 7px;
+          background: var(--surface-2);
+          color: var(--text);
+          font: inherit;
+          font-weight: 750;
+          cursor: pointer;
+        }
+
+        .reschedule-time-button small {
+          display: block;
+          font-size: 0.68rem;
+          font-weight: 650;
+          opacity: 0.76;
+        }
+
+        .reschedule-time-button.is-selected {
+          border-color: var(--accent);
+          background: var(--accent);
+          color: #fff;
+        }
+
+        .reschedule-staff-choices {
+          display: grid;
+          gap: 0.55rem;
+        }
+
+        .reschedule-availability-note {
+          padding: 0.75rem 0.85rem;
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .reschedule-availability-note p,
+        .reschedule-availability-note strong {
+          margin: 0;
+        }
+
+        .reschedule-availability-note strong {
+          display: block;
+          margin-top: 0.14rem;
+        }
+
+        .reschedule-staff-choice {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          gap: 0.7rem;
+          align-items: center;
+          min-height: 68px;
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface);
+          color: var(--text);
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .reschedule-staff-choice.is-selected {
+          border-color: rgba(237, 90, 42, 0.5);
+          background: var(--accent-dim);
+        }
+
+        .reschedule-staff-choice-icon {
+          width: 2.3rem;
+          height: 2.3rem;
+          border-radius: 50%;
+          background: var(--surface-2);
+          color: var(--text-muted);
+        }
+
+        .reschedule-staff-choice > span:nth-child(2) {
+          display: grid;
+          gap: 0.15rem;
+          min-width: 0;
+        }
+
+        .reschedule-staff-choice strong,
+        .reschedule-staff-choice small {
+          overflow-wrap: anywhere;
+        }
+
+        .reschedule-staff-choice :global(.reschedule-choice-check) {
+          color: var(--accent);
+        }
+
+        .reschedule-submit {
+          justify-self: flex-start;
+          min-width: 220px;
+          margin-top: 1rem;
+        }
+
+        .reschedule-back-actions {
+          display: flex;
+          justify-content: center;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .reschedule-icon-button:hover,
+        .reschedule-choice-card:hover,
+        .reschedule-calendar-day:not(:disabled):hover,
+        .reschedule-time-button:hover,
+        .reschedule-staff-choice:hover {
+          border-color: var(--border-2);
+        }
+
+        .reschedule-icon-button:focus-visible,
+        .reschedule-choice-card:focus-visible,
+        .reschedule-calendar-day:focus-visible,
+        .reschedule-time-button:focus-visible,
+        .reschedule-staff-choice:focus-visible {
+          outline: 3px solid rgba(237, 90, 42, 0.2);
+          outline-offset: 2px;
+        }
+
+        @media (max-width: 700px) {
+          .reschedule-business-container {
+            padding: 22px 14px 64px;
+          }
+
+          .reschedule-current-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .reschedule-form-card,
+          .reschedule-current-card {
+            padding: 0.9rem;
+          }
+
+          .reschedule-staff-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
         }
 
         @media (max-width: 520px) {
+          .reschedule-intro {
+            padding-top: 0;
+          }
+
+          .reschedule-mode-banner,
+          .reschedule-selection-summary {
+            padding: 0.85rem;
+          }
+
+          .reschedule-current-grid {
+            grid-template-columns: 1fr;
+          }
+
           .reschedule-calendar-card {
             padding: 0.65rem !important;
           }
@@ -1674,13 +2124,23 @@ export default function RescheduleBooking() {
           }
 
           .reschedule-calendar-grid button {
-            min-height: 40px !important;
-            border-radius: 10px !important;
+            min-height: 42px !important;
+            border-radius: 6px !important;
             padding: 0.15rem !important;
+          }
+
+          .reschedule-calendar-month-copy p {
+            display: none;
           }
 
           .reschedule-time-grid {
             grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+          }
+
+          .reschedule-submit,
+          .reschedule-back-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

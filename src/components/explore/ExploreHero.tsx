@@ -36,7 +36,7 @@ export default function ExploreHero({ marketplaceStats }: Props) {
           justify-content: space-between;
           gap: 1rem;
           align-items: end;
-          margin-bottom: 0.85rem;
+          margin-bottom: 1.1rem;
         }
 
         .explore-hero-compact h1,
@@ -44,11 +44,27 @@ export default function ExploreHero({ marketplaceStats }: Props) {
           margin-top: 0;
         }
 
+        .explore-hero-compact :global(.page-title) {
+          margin-bottom: 0.2rem;
+          font-family: var(--font-body);
+          font-size: 2.25rem;
+          font-weight: 700;
+          letter-spacing: 0;
+        }
+
+        .explore-hero-compact :global(.page-sub) {
+          font-weight: 400;
+        }
+
         @media (max-width: 700px) {
           .explore-hero-compact {
             display: grid;
             gap: 0.35rem;
-            margin-bottom: 0.7rem;
+            margin-bottom: 0.9rem;
+          }
+
+          .explore-hero-compact :global(.page-title) {
+            font-size: 1.75rem;
           }
         }
       `}</style>

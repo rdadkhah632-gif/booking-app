@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { Service } from "./publicBusinessTypes";
 import { useI18n } from "@/lib/useI18n";
 
@@ -23,11 +24,16 @@ export default function PublicBusinessServices({
   const { t } = useI18n();
 
   return (
-    <div className="card">
+    <section className="public-business-section public-business-services-section">
       <div className="public-business-section-head">
-        <h2 style={{ fontFamily: "var(--font-display)" }}>
-          {t("publicBusiness.services.title")}
-        </h2>
+        <div className="public-business-section-heading-copy">
+          <div>
+            <p className="public-business-step-kicker">
+              {t("publicBusiness.services.step", "Step 1")}
+            </p>
+            <h2>{t("publicBusiness.services.title")}</h2>
+          </div>
+        </div>
         {bookableServiceCount > 0 && (
           <span className="small public-business-pill-muted">
             {bookableServiceCount}{" "}
@@ -40,7 +46,7 @@ export default function PublicBusinessServices({
 
       <div className="public-business-service-list">
         {services.length === 0 && (
-          <div className="card" style={{ background: "var(--surface-2)" }}>
+          <div className="public-business-empty-state">
             <p className="muted">{t("publicBusiness.services.none")}</p>
           </div>
         )}
@@ -53,15 +59,8 @@ export default function PublicBusinessServices({
               key={service.id}
               type="button"
               onClick={() => onSelectService(service.id)}
-              className="public-business-service-card"
-              style={{
-                borderColor: selected
-                  ? "rgba(255,107,53,0.55)"
-                  : "var(--border)",
-                background: selected
-                  ? "rgba(255,107,53,0.08)"
-                  : "var(--surface-2)",
-              }}
+              className={`public-business-service-card${selected ? " selected" : ""}`}
+              aria-pressed={selected}
             >
               <div
                 className={
@@ -97,16 +96,17 @@ export default function PublicBusinessServices({
               <span
                 className={
                   selected
-                    ? "btn btn-accent public-business-service-action"
-                    : "btn btn-ghost public-business-service-action"
+                    ? "public-business-service-action selected"
+                    : "public-business-service-action"
                 }
               >
+                {selected && <Check size={15} aria-hidden="true" />}
                 {selected ? t("common.selected") : t("common.choose")}
               </span>
             </button>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

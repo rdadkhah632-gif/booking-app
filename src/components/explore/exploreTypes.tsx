@@ -81,6 +81,7 @@ export type DiscoveryMapItem = {
   name: string
   category: string
   locationLabel: string
+  imageUrl?: string | null
   latitude: number
   longitude: number
   distanceMeters?: number | null

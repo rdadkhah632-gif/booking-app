@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
@@ -190,13 +191,11 @@ export default function BusinessSupportPage() {
   }
 
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
 
-      <section
-        className="container"
-        style={{ paddingTop: 24, paddingBottom: 56 }}
-      >
+      <section className="container customer-page-container">
         <div className="support-shell">
           <div className="card support-hero">
             <h1 className="page-title">{t("support.business.heroTitle")}</h1>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
@@ -129,10 +130,7 @@ export default function BookingConfirmation() {
       if (!response.ok || !payload.booking) {
         setError(
           response.status === 404
-            ? t(
-                "bookingConfirmation.error.notFound",
-                "Booking not found.",
-              )
+            ? t("bookingConfirmation.error.notFound", "Booking not found.")
             : t(
                 "bookingConfirmation.error.noPermission",
                 "You do not have permission to view this booking.",
@@ -316,10 +314,11 @@ export default function BookingConfirmation() {
   }
 
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
 
-      <section className="container" style={{ padding: "42px 24px 80px" }}>
+      <section className="container customer-page-container">
         {loading && (
           <div className="card">
             <p className="muted">

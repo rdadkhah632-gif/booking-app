@@ -12,11 +12,7 @@ import { useI18n } from "@/lib/useI18n";
 import type { DiscoveryKind, ExploreView } from "./exploreTypes";
 
 export type LocationState =
-  | "idle"
-  | "loading"
-  | "active"
-  | "denied"
-  | "unavailable";
+  "idle" | "loading" | "active" | "denied" | "unavailable";
 
 type Props = {
   view: ExploreView;
@@ -162,26 +158,27 @@ export default function ExploreViewControls({
         .explore-view-controls {
           display: flex;
           align-items: center;
-          gap: 0.65rem;
+          gap: 0.7rem;
           flex-wrap: wrap;
-          margin-bottom: 0.85rem;
+          margin-bottom: 1rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid var(--border);
         }
 
-        .explore-view-segment,
         .explore-kind-segment {
-          display: inline-grid;
-          padding: 3px;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          background: var(--surface);
+          display: inline-flex;
+          align-items: stretch;
+          border-bottom: 1px solid var(--border);
         }
 
         .explore-view-segment {
+          display: inline-grid;
           grid-template-columns: 1fr 1fr;
-        }
-
-        .explore-kind-segment {
-          grid-template-columns: repeat(3, 1fr);
+          margin-left: auto;
+          padding: 3px;
+          border: 1px solid var(--border);
+          border-radius: 7px;
+          background: #ffffff;
         }
 
         .explore-view-segment button,
@@ -197,27 +194,55 @@ export default function ExploreViewControls({
           justify-content: center;
           gap: 0.42rem;
           font: inherit;
-          font-size: 0.84rem;
+          font-size: 0.86rem;
           font-weight: 700;
           cursor: pointer;
         }
 
-        .explore-view-segment button,
-        .explore-kind-segment button {
+        .explore-view-segment button {
           padding: 0.45rem 0.8rem;
         }
 
-        .explore-view-segment button.is-active,
+        .explore-kind-segment button {
+          position: relative;
+          padding: 0.45rem 1rem;
+          border-radius: 0;
+        }
+
+        .explore-kind-segment button::after {
+          position: absolute;
+          right: 0.7rem;
+          bottom: -1px;
+          left: 0.7rem;
+          height: 2px;
+          background: transparent;
+          content: "";
+        }
+
         .explore-kind-segment button.is-active {
+          color: var(--text);
+        }
+
+        .explore-kind-segment button.is-active::after {
+          background: var(--accent);
+        }
+
+        .explore-kind-segment button.is-active {
+          background: transparent;
+          box-shadow: none;
+        }
+
+        .explore-view-segment button.is-active {
           background: var(--surface-2);
           color: var(--text);
-          box-shadow: inset 0 0 0 1px var(--border-2);
+          box-shadow: inset 0 0 0 1px var(--border);
         }
 
         .location-button {
           padding: 0.45rem 0.75rem;
           border: 1px solid var(--border);
-          background: var(--surface);
+          border-radius: 7px;
+          background: #ffffff;
         }
 
         .location-button:hover,
@@ -239,7 +264,7 @@ export default function ExploreViewControls({
 
         .kind-note {
           flex: 1 0 100%;
-          margin: -0.15rem 0 0;
+          margin: 0;
           color: var(--text-muted);
           font-size: 0.78rem;
           line-height: 1.45;
@@ -259,11 +284,23 @@ export default function ExploreViewControls({
           .explore-kind-segment {
             flex: 1 0 100%;
             width: 100%;
+            justify-content: space-between;
           }
 
-          .explore-view-segment,
-          .location-button {
+          .explore-kind-segment button {
             flex: 1 1 0;
+            min-width: 0;
+            padding-inline: 0.4rem;
+            font-size: 0.79rem;
+          }
+
+          .explore-view-segment {
+            flex: 1 1 auto;
+            margin-left: 0;
+          }
+
+          .location-button {
+            flex: 0 0 auto;
           }
 
           .location-button {
@@ -272,6 +309,10 @@ export default function ExploreViewControls({
 
           .location-note {
             flex-basis: 100%;
+          }
+
+          .kind-note {
+            order: 4;
           }
         }
       `}</style>

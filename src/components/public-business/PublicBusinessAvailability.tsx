@@ -64,13 +64,25 @@ export default function PublicBusinessAvailability({
   );
 
   return (
-    <div className="card">
-      <div>
-        <h2 style={{ fontFamily: "var(--font-display)" }}>
-          {t("publicBusiness.availability.title", "Choose a time")}
-        </h2>
+    <section className="public-business-section public-business-availability-section">
+      <div className="public-business-section-heading-copy">
+        <div>
+          <p className="public-business-step-kicker">
+            {t("publicBusiness.availability.step", "Step 3")}
+          </p>
+          <h2>{t("publicBusiness.availability.title", "Choose a time")}</h2>
+          <p className="small muted public-business-section-subtitle">
+            {t(
+              "publicBusiness.availability.subtitle",
+              "Only available booking slots are shown.",
+            )}
+          </p>
+        </div>
+      </div>
+
+      <div className="public-business-selection-context">
         {(selectedServiceName || selectedStaffLabel) && (
-          <p className="small muted" style={{ marginTop: "0.35rem" }}>
+          <p className="small muted">
             {[selectedServiceName, selectedStaffLabel]
               .filter(Boolean)
               .join(" · ")}
@@ -134,10 +146,7 @@ export default function PublicBusinessAvailability({
         )}
 
         {!loadingSlots && availableSlots.length === 0 && (
-          <div
-            className="card"
-            style={{ background: "var(--surface-2)", gridColumn: "1 / -1" }}
-          >
+          <div className="public-business-empty-state">
             <p className="muted">
               {noSlotsMessage ||
                 t(
@@ -170,7 +179,6 @@ export default function PublicBusinessAvailability({
         .public-business-date-picker {
           display: grid;
           gap: 0.65rem;
-          margin-top: 1rem;
         }
 
         .public-business-date-strip {
@@ -185,8 +193,8 @@ export default function PublicBusinessAvailability({
           min-height: 4.15rem;
           padding: 0.7rem 0.55rem;
           border: 1px solid var(--border);
-          border-radius: 14px;
-          background: var(--surface-2);
+          border-radius: 8px;
+          background: #fff;
           color: var(--text);
           text-align: left;
           cursor: pointer;
@@ -203,9 +211,9 @@ export default function PublicBusinessAvailability({
         }
 
         .public-business-date-option.selected {
-          border-color: rgba(255, 107, 53, 0.7);
-          background: rgba(255, 107, 53, 0.12);
-          box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.18);
+          border-color: var(--accent);
+          background: var(--accent-dim);
+          box-shadow: 0 0 0 1px rgba(237, 90, 42, 0.14);
         }
 
         .public-business-date-option:disabled,
@@ -239,6 +247,6 @@ export default function PublicBusinessAvailability({
           }
         }
       `}</style>
-    </div>
+    </section>
   );
 }

@@ -60,18 +60,19 @@ export default function DirectoryCategoryArtwork({
           background: var(--art-surface);
           box-shadow:
             inset 0 -5px 0 color-mix(in srgb, var(--art-color) 42%, transparent),
-            inset 0 0 0 1px color-mix(in srgb, var(--art-color) 12%, transparent);
+            inset 0 0 0 1px
+              color-mix(in srgb, var(--art-color) 12%, transparent);
         }
 
         .directory-category-artwork span {
           display: grid;
-          width: 4rem;
-          height: 4rem;
+          width: 4.25rem;
+          height: 3.25rem;
           place-items: center;
-          border: 1px solid color-mix(in srgb, var(--art-color) 32%, transparent);
-          border-radius: 50%;
-          background: color-mix(in srgb, var(--surface) 82%, transparent);
-          box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.16);
+          border: 1px solid
+            color-mix(in srgb, var(--art-color) 32%, transparent);
+          border-radius: 8px;
+          background: #fff;
         }
 
         .is-beauty_grooming {

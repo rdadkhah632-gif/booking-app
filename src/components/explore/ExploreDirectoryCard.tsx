@@ -1,5 +1,6 @@
 import { ArrowRight, MapPin } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/useI18n";
 import DirectoryCategoryArtwork from "./DirectoryCategoryArtwork";
 import {
@@ -32,24 +33,30 @@ function distanceLabel(
 
 export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
   const { t } = useI18n();
+  const [imageFailed, setImageFailed] = useState(false);
   const location = [place.city, place.region].filter(Boolean).join(", ");
   const distance = distanceLabel(place.distanceMeters, t);
+  const hasImage = Boolean(place.image && !imageFailed);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [place.image?.url]);
 
   return (
     <article className="explore-directory-card">
       <div
-        className={`directory-card-media ${place.image ? "has-image" : "no-image"}`}
-        aria-hidden={place.image ? undefined : "true"}
+        className={`directory-card-media ${hasImage ? "has-image" : "no-image"}`}
+        aria-hidden={hasImage ? undefined : "true"}
       >
-        {place.image ? (
+        <DirectoryCategoryArtwork category={place.categoryKey} />
+        {hasImage && place.image && (
           <img
             src={place.image.url}
             alt={place.image.alt}
             loading="lazy"
             decoding="async"
+            onError={() => setImageFailed(true)}
           />
-        ) : (
-          <DirectoryCategoryArtwork category={place.categoryKey} />
         )}
       </div>
       <div className="directory-card-content">
@@ -97,7 +104,8 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         </div>
 
         <div className="directory-credits">
-          {place.image &&
+          {hasImage &&
+            place.image &&
             (place.image.attribution.url ? (
               <a
                 className="directory-attribution"
@@ -135,15 +143,28 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         .explore-directory-card {
           min-width: 0;
           display: grid;
-          grid-template-rows: 142px minmax(0, 1fr);
+          grid-template-rows: auto minmax(0, 1fr);
           border: 1px solid var(--border);
           border-radius: 8px;
           overflow: hidden;
-          background: var(--surface);
+          background: #ffffff;
+          box-shadow: 0 3px 14px rgba(20, 24, 32, 0.04);
+          transition:
+            border-color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+        }
+
+        .explore-directory-card:hover {
+          border-color: var(--border-2);
+          box-shadow: 0 12px 28px rgba(20, 24, 32, 0.09);
+          transform: translateY(-2px);
         }
 
         .directory-card-media {
-          min-height: 142px;
+          position: relative;
+          min-height: 0;
+          aspect-ratio: 16 / 10;
           display: grid;
           place-items: center;
           background: var(--surface-2);
@@ -151,18 +172,30 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           overflow: hidden;
         }
 
+        .directory-card-media.no-image {
+          aspect-ratio: 16 / 5;
+          min-height: 148px;
+        }
+
         .directory-card-media img {
+          position: relative;
+          z-index: 1;
           width: 100%;
           height: 100%;
           object-fit: cover;
         }
 
+        .directory-card-media :global(.directory-category-artwork) {
+          position: absolute;
+          inset: 0;
+        }
+
         .directory-card-content {
           min-width: 0;
-          padding: 0.8rem;
+          padding: 0.95rem;
           display: flex;
           flex-direction: column;
-          gap: 0.42rem;
+          gap: 0.48rem;
         }
 
         .directory-card-heading,
@@ -182,8 +215,8 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
         .directory-card-heading h2 {
           margin: 0.15rem 0 0;
-          font-size: 1rem;
-          line-height: 1.2;
+          font-size: 1.08rem;
+          line-height: 1.25;
           overflow-wrap: anywhere;
         }
 
@@ -206,7 +239,6 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         .directory-type {
           color: var(--success);
           font-weight: 700;
-          text-transform: uppercase;
         }
 
         .directory-distance {
@@ -229,7 +261,7 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
           font-size: 0.78rem;
-          line-height: 1.4;
+          line-height: 1.45;
         }
 
         .directory-location {
@@ -248,7 +280,8 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           align-self: end;
           width: 100%;
           margin-top: auto;
-          padding-top: 0.25rem;
+          padding-top: 0.5rem;
+          border-top: 1px solid var(--border);
         }
 
         .directory-card-actions {
@@ -263,13 +296,17 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           font-size: 0.76rem;
         }
 
+        .directory-card-actions :global(.btn-accent) {
+          background: var(--success);
+          color: #ffffff;
+        }
+
         .directory-credits {
           display: flex;
           flex-wrap: wrap;
           gap: 0.2rem 0.65rem;
           margin-top: 0.2rem;
           padding-top: 0.45rem;
-          border-top: 1px solid var(--border);
           opacity: 0.78;
         }
 
@@ -284,13 +321,22 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           color: var(--text);
         }
 
-        @media (max-width: 640px) {
-          .explore-directory-card {
-            grid-template-rows: 118px minmax(0, 1fr);
+        @media (max-width: 900px) {
+          .directory-card-footer {
+            display: grid;
+            gap: 0.5rem;
+            justify-content: stretch;
           }
 
-          .directory-card-media {
-            min-height: 118px;
+          .directory-card-actions {
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .explore-directory-card {
+            grid-template-rows: auto minmax(0, 1fr);
           }
 
           .directory-card-heading,
@@ -312,7 +358,12 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
           .directory-card-content {
             gap: 0.35rem;
-            padding: 0.7rem;
+            padding: 0.85rem;
+          }
+
+          .directory-card-media.no-image {
+            min-height: 0;
+            aspect-ratio: 16 / 7;
           }
 
           .directory-attribution {

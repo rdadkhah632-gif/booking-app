@@ -355,10 +355,9 @@ export const sq: TranslationTree = {
   "home.discovery.metaDescription":
     "Zbulo shërbime, aktivitete dhe vende lokale në Shqipëri, pastaj rezervo bizneset pjesëmarrëse përmes Mirëbook.",
   "home.discovery.kicker": "Zbulo Shqipërinë",
-  "home.discovery.title":
-    "Gjej vende për të shkuar dhe shërbime për të rezervuar.",
+  "home.discovery.title": "Gjej vendin tënd të radhës në Shqipëri.",
   "home.discovery.subtitle":
-    "Eksploro vende lokale, aktivitete dhe biznese të rezervueshme në të gjithë Shqipërinë.",
+    "Zbulo vende të preferuara lokale, aktivitete dhe shërbime, pastaj rezervo te bizneset pjesëmarrëse.",
   "home.discovery.searchLabel": "Çfarë",
   "home.discovery.searchPlaceholder": "Shërbime, aktivitete ose vende",
   "home.discovery.cityLabel": "Ku",
@@ -657,6 +656,7 @@ export const sq: TranslationTree = {
   "publicBusiness.availability.noAssignedStaff":
     "Nuk ka staf aktiv të caktuar te ky shërbim. Zgjidh një shërbim tjetër ose kontakto biznesin.",
   "publicBusiness.summary.title": "Përmbledhja e rezervimit",
+  "publicBusiness.summary.step": "Hapi 4",
   "publicBusiness.summary.nextStep": "Pas dërgimit",
   "publicBusiness.summary.emptyTitle": "Takimi yt",
   "publicBusiness.summary.reviewTitle": "Rishiko takimin",
@@ -700,6 +700,19 @@ export const sq: TranslationTree = {
   "support.customer.title": "Ndihmë për rezervime",
   "support.customer.body":
     "Merrni ndihmë për kërkesa rezervimi, konfirmime, anulime, ndryshime orari, njoftime dhe probleme të llogarisë si klient.",
+  "support.entry.customerBody":
+    "Merr ndihmë me rezervimet, ndryshimet, njoftimet dhe llogarinë tënde si klient.",
+  "support.entry.businessBody":
+    "Merr ndihmë me konfigurimin, rezervimet, shërbimet, ekipin dhe anëtarësimin.",
+  "support.entry.staffBody":
+    "Merr ndihmë me orarin, oraret e punës, lidhjen e llogarisë dhe rezervimet e caktuara.",
+  "legacyBook.kicker": "Rezervimi në Mirëbook",
+  "legacyBook.title": "Po hapet faqja e rezervimit",
+  "legacyBook.body":
+    "Do të kalosh te profili i biznesit për të zgjedhur shërbimin, anëtarin e stafit dhe orarin e lirë.",
+  "legacyBook.continue": "Vazhdo te biznesi",
+  "legacyBook.browse": "Eksploro Mirëbook",
+  "logout.waitBody": "Sesioni yt në Mirëbook po mbyllet në mënyrë të sigurt.",
   "support.business.title": "Ndihmë për biznes",
   "support.business.body":
     "Merrni ndihmë për konfigurimin e biznesit, publikimin, shërbimet, stafin, oraret, miratimin e rezervimeve, provat falas dhe aksesin në abonim.",
@@ -4091,6 +4104,8 @@ export const sq: TranslationTree = {
   "reschedule.requested.anyAvailableStaff": "Çdo staf i disponueshëm",
   "reschedule.requested.staffAvailable": "anëtarë stafi të disponueshëm",
   "reschedule.form.title": "Orari i ri i takimit",
+  "reschedule.form.guidance":
+    "Zgjidh një datë, orë dhe anëtar stafi të disponueshëm.",
   "reschedule.form.calendar": "Datat e disponueshme",
   "reschedule.form.noAssignedStaff":
     "Ky rezervim nuk mund të ndryshohet ende sepse nuk ka staf aktiv të caktuar për këtë shërbim.",
@@ -4122,6 +4137,8 @@ export const sq: TranslationTree = {
   "reschedule.success.customer":
     "Kërkesa për ndryshim iu dërgua biznesit për miratim.",
   "reschedule.calendar.currentMonth": "Kthehu te ky muaj",
+  "reschedule.calendar.previousMonth": "Muaji i kaluar",
+  "reschedule.calendar.nextMonth": "Muaji tjetër",
   "reschedule.calendar.staffFilter": "Filtër opsional i stafit",
   "reschedule.calendar.anyStaff": "Çdo staf",
   "reschedule.calendar.allDays": "Shfaq të gjitha ditët e rezervueshme",
@@ -4261,6 +4278,7 @@ export const sq: TranslationTree = {
   "explore.discovery.searchPlaceholder": "Shërbime, aktivitete ose vende",
   "explore.discovery.cityPlaceholder": "Tiranë, Durrës, Sarandë...",
   "explore.discovery.searchButton": "Kërko",
+  "explore.filters.open": "Filtrat",
   "explore.discovery.loading": "Po kërkohen vende...",
   "explore.discovery.emptyTitle": "Më shumë nga Shqipëria po vjen",
   "explore.discovery.emptyBody":

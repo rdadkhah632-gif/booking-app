@@ -2637,7 +2637,7 @@ export default function Bookings() {
 
         .calendar-step-button,
         .calendar-today-button {
-          min-height: 2.55rem;
+          min-height: 2.75rem;
           border: 0;
           background: transparent;
           color: var(--text);
@@ -2647,7 +2647,8 @@ export default function Bookings() {
         }
 
         .calendar-step-button {
-          width: 2.55rem;
+          width: 2.75rem;
+          min-width: 2.75rem;
           padding: 0;
           font-size: 1.35rem;
           line-height: 1;
@@ -2675,7 +2676,7 @@ export default function Bookings() {
         }
 
         .calendar-date-controls input {
-          min-height: 2.55rem;
+          min-height: 2.75rem;
           max-width: 9.5rem;
           border: 1px solid var(--border);
           background: var(--surface-2);
@@ -2690,10 +2691,10 @@ export default function Bookings() {
 
         .calendar-staff-filter {
           display: inline-flex;
-          min-height: 2.55rem;
+          min-height: 2.75rem;
           align-items: center;
           gap: 0.45rem;
-          padding: 0.18rem 0.28rem 0.18rem 0.7rem;
+          padding: 0 0.28rem 0 0.7rem;
           border: 1px solid var(--border);
           border-radius: 999px;
           background: var(--surface-2);
@@ -2704,7 +2705,7 @@ export default function Bookings() {
 
         .calendar-staff-filter select {
           max-width: 13.5rem;
-          min-height: 1.9rem;
+          min-height: 2.75rem;
           border: 0;
           border-radius: 999px;
           background: rgba(255, 255, 255, 0.04);
@@ -2716,7 +2717,7 @@ export default function Bookings() {
         }
 
         .calendar-add-button {
-          min-height: 2.55rem;
+          min-height: 2.75rem;
           padding: 0.55rem 0.95rem;
           white-space: nowrap;
         }

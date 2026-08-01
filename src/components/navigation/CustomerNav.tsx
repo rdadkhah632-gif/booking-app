@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogOut } from "lucide-react";
 import LanguageToggle from "./LanguageToggle";
 import { useI18n } from "@/lib/useI18n";
 import { NavProps, notificationLabel } from "./navTypes";
@@ -37,6 +38,7 @@ export default function CustomerNav({ notificationCount }: NavProps) {
       <a
         href="/logout"
         className="btn btn-ghost customer-nav-logout"
+        title={t("nav.logout")}
         onPointerDown={(event) => {
           if (event.button !== 0 || typeof window === "undefined") return;
           event.preventDefault();
@@ -48,7 +50,8 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           window.location.assign("/logout");
         }}
       >
-        {t("nav.logout")}
+        <LogOut size={17} aria-hidden="true" />
+        <span className="customer-nav-logout-label">{t("nav.logout")}</span>
       </a>
 
       <style jsx>{`
@@ -58,6 +61,9 @@ export default function CustomerNav({ notificationCount }: NavProps) {
         }
 
         .customer-nav-logout {
+          display: inline-flex;
+          gap: 0.42rem;
+          align-items: center;
           min-height: 2.25rem;
         }
 
@@ -139,7 +145,6 @@ export default function CustomerNav({ notificationCount }: NavProps) {
 
           .customer-nav-primary,
           .customer-nav-account-menu,
-          .customer-nav-logout,
           .customer-nav-account-menu summary {
             width: auto;
             min-width: 0;
@@ -149,12 +154,33 @@ export default function CustomerNav({ notificationCount }: NavProps) {
           }
 
           .customer-nav-primary,
-          .customer-nav-logout,
           .customer-nav-account-menu summary {
             min-height: 1.9rem;
             padding: 0.38rem 0.42rem;
             font-size: 0.78rem;
             line-height: 1.1;
+          }
+
+          .customer-nav-logout {
+            width: 2.75rem;
+            height: 2.75rem;
+            min-width: 2.75rem;
+            min-height: 2.75rem;
+            padding: 0;
+            border-radius: 50%;
+            justify-content: center;
+          }
+
+          .customer-nav-logout-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
           }
 
           .customer-nav-account-menu[open] {

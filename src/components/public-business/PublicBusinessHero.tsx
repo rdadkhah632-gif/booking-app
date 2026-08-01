@@ -1,3 +1,4 @@
+import { MapPin, Phone } from "lucide-react";
 import { useI18n } from "@/lib/useI18n";
 import { Business } from "./publicBusinessTypes";
 
@@ -27,7 +28,7 @@ export default function PublicBusinessHero({
   const backgroundImage = heroBackgroundImage();
 
   return (
-    <div className="card public-business-hero">
+    <header className="public-business-hero">
       <div
         className="public-business-hero-image"
         style={{
@@ -63,10 +64,18 @@ export default function PublicBusinessHero({
         )}
 
         <div className="public-business-contact-row">
-          <span>{locationLabel()}</span>
-          {business.phone && <span>{business.phone}</span>}
+          <span>
+            <MapPin size={16} aria-hidden="true" />
+            {locationLabel()}
+          </span>
+          {business.phone && (
+            <span>
+              <Phone size={16} aria-hidden="true" />
+              {business.phone}
+            </span>
+          )}
         </div>
       </div>
-    </div>
+    </header>
   );
 }

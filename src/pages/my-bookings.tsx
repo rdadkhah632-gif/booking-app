@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import MyBookingsHeader from "@/components/my-bookings/MyBookingsHeader";
 import MyBookingsStats from "@/components/my-bookings/MyBookingsStats";
 import MyBookingsEmptyState from "@/components/my-bookings/MyBookingsEmptyState";
@@ -290,48 +291,43 @@ export default function MyBookings() {
   ) {
     if (status === "pending") {
       return {
-        border: "rgba(255,107,53,0.45)",
-        background:
-          "linear-gradient(135deg, rgba(255,107,53,0.12), rgba(255,107,53,0.04))",
+        border: "rgba(237,90,42,0.38)",
+        background: "rgba(237,90,42,0.05)",
       };
     }
 
     if (hasPendingRequest && status === "confirmed") {
       return {
-        border: "rgba(255,107,53,0.45)",
-        background:
-          "linear-gradient(135deg, rgba(255,107,53,0.10), rgba(31,28,44,0.85))",
+        border: "rgba(237,90,42,0.38)",
+        background: "rgba(237,90,42,0.05)",
       };
     }
 
     if (status === "completed") {
       return {
-        border: "rgba(45,212,191,0.22)",
-        background:
-          "linear-gradient(135deg, rgba(45,212,191,0.08), rgba(31,28,44,0.72))",
+        border: "rgba(20,125,112,0.22)",
+        background: "rgba(20,125,112,0.04)",
       };
     }
 
     if (status === "declined") {
       return {
-        border: "rgba(255,190,11,0.22)",
-        background:
-          "linear-gradient(135deg, rgba(255,190,11,0.07), rgba(31,28,44,0.66))",
+        border: "rgba(180,122,7,0.22)",
+        background: "rgba(180,122,7,0.04)",
       };
     }
 
     if (status === "cancelled") {
       return {
-        border: "rgba(255,190,11,0.22)",
-        background:
-          "linear-gradient(135deg, rgba(255,190,11,0.07), rgba(31,28,44,0.66))",
+        border: "rgba(180,122,7,0.22)",
+        background: "rgba(180,122,7,0.04)",
       };
     }
 
     if (mode === "history") {
       return {
-        border: "rgba(255,255,255,0.08)",
-        background: "rgba(31,28,44,0.62)",
+        border: "var(--border)",
+        background: "var(--surface-2)",
       };
     }
 
@@ -510,10 +506,8 @@ export default function MyBookings() {
       width: "100%",
       textAlign: "left" as const,
       cursor: isActive ? "pointer" : "default",
-      borderColor: isActive ? "rgba(255,107,53,0.35)" : "var(--border)",
-      background: isActive
-        ? "linear-gradient(135deg, rgba(255,107,53,0.10), rgba(31,28,44,0.72))"
-        : "var(--surface)",
+      borderColor: isActive ? "rgba(237,90,42,0.28)" : "var(--border)",
+      background: isActive ? "rgba(237,90,42,0.04)" : "var(--surface)",
       color: "var(--text)",
     };
   }
@@ -547,10 +541,11 @@ export default function MyBookings() {
   }
 
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
 
-      <section className="container" style={{ padding: "36px 24px 70px" }}>
+      <section className="container customer-page-container">
         <MyBookingsHeader
           loading={loading}
           showExploreAction={!loading && bookings.length > 0}

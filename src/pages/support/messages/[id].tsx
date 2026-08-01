@@ -1,4 +1,5 @@
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -52,13 +53,20 @@ function statusLabel(
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function formatDate(value: string | null | undefined, fallback: string) {
+function formatDate(
+  value: string | null | undefined,
+  fallback: string,
+  locale: "en" | "sq",
+) {
   if (!value) return fallback;
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString(locale === "sq" ? "sq-AL" : "en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }
 
 export default function SupportThreadPage() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const router = useRouter();
   const { id } = router.query;
 
@@ -148,7 +156,6 @@ export default function SupportThreadPage() {
       : supportContext === "staff"
         ? "/support/staff"
         : "/support/customer";
-
   async function sendReply() {
     if (!ticket || !replyBody.trim()) return;
 
@@ -210,12 +217,10 @@ export default function SupportThreadPage() {
 
   if (loading) {
     return (
-      <main>
+      <main className="marketplace-surface customer-portal-surface">
+        <CustomerPortalStyles />
         <AuthNav />
-        <section
-          className="container"
-          style={{ paddingTop: 42, paddingBottom: 72 }}
-        >
+        <section className="container customer-page-container">
           <div className="card">
             <p className="muted">
               {t("support.thread.loading", "Loading support conversation...")}
@@ -227,13 +232,11 @@ export default function SupportThreadPage() {
   }
 
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
 
-      <section
-        className="container"
-        style={{ paddingTop: 42, paddingBottom: 72 }}
-      >
+      <section className="container customer-page-container">
         <div className="support-thread-shell">
           <div className="support-thread-header">
             <div>
@@ -303,7 +306,9 @@ export default function SupportThreadPage() {
                   <p className="small muted">
                     {t("support.messages.created", "Created")}
                   </p>
-                  <strong>{formatDate(ticket.created_at, unknownDate)}</strong>
+                  <strong>
+                    {formatDate(ticket.created_at, unknownDate, locale)}
+                  </strong>
                 </div>
                 <div>
                   <p className="small muted">
@@ -313,6 +318,7 @@ export default function SupportThreadPage() {
                     {formatDate(
                       ticket.updated_at || ticket.created_at,
                       unknownDate,
+                      locale,
                     )}
                   </strong>
                 </div>
@@ -325,7 +331,7 @@ export default function SupportThreadPage() {
                       "support.thread.originalMessage",
                       "Your original message",
                     )}{" "}
-                    · {formatDate(ticket.created_at, unknownDate)}
+                    · {formatDate(ticket.created_at, unknownDate, locale)}
                   </p>
                   <p>
                     {ticket.message ||
@@ -352,7 +358,7 @@ export default function SupportThreadPage() {
                             "Mirëbook support",
                           )
                         : t("support.thread.you", "You")}{" "}
-                      · {formatDate(reply.created_at, unknownDate)}
+                      · {formatDate(reply.created_at, unknownDate, locale)}
                     </p>
                     <p>{reply.message}</p>
                   </div>

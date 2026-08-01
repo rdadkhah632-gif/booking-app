@@ -3,13 +3,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { ArrowRight, MapPin, X } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
+import MarketplaceSurfaceStyles from "@/components/MarketplaceSurfaceStyles";
 import ExploreBusinessCard from "@/components/explore/ExploreBusinessCard";
 import ExploreDirectoryCard from "@/components/explore/ExploreDirectoryCard";
 import ExploreDiscoveryMap from "@/components/explore/ExploreDiscoveryMap";
 import ExploreEmptyState from "@/components/explore/ExploreEmptyState";
 import ExploreFilters from "@/components/explore/ExploreFilters";
 import ExploreHero from "@/components/explore/ExploreHero";
-import ExploreResultsHeader from "@/components/explore/ExploreResultsHeader";
 import ExploreViewControls, {
   LocationState,
 } from "@/components/explore/ExploreViewControls";
@@ -337,7 +337,7 @@ export default function Explore() {
 
   function imageBackground(business: Business) {
     if (!business.image_url) {
-      return "radial-gradient(circle at 25% 20%, rgba(255,107,53,0.24), transparent 36%), linear-gradient(135deg, rgba(255,107,53,0.16), rgba(45,212,191,0.08)), rgba(24,23,34,0.9)";
+      return "linear-gradient(135deg, rgba(237,90,42,0.12), rgba(20,125,112,0.09)), #f4f5f6";
     }
 
     return `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.68)), url("${business.image_url}")`;
@@ -526,6 +526,7 @@ export default function Explore() {
                 name: business.name,
                 category: business.category || t("common.business", "Business"),
                 locationLabel: locationLabel(business),
+                imageUrl: business.image_url || null,
                 latitude: mapPosition.latitude,
                 longitude: mapPosition.longitude,
                 distanceMeters: business.distanceMeters ?? null,
@@ -542,8 +543,9 @@ export default function Explore() {
             name: place.name,
             category: directoryCategoryLabel(place.categoryKey, t),
             locationLabel:
-              [place.city, place.region].filter(Boolean).join(", ") ||
+              [place.address, place.city].filter(Boolean).join(", ") ||
               t("directory.card.albania", "Albania"),
+            imageUrl: place.image?.url || null,
             latitude: place.mapPosition.latitude,
             longitude: place.mapPosition.longitude,
             distanceMeters: place.distanceMeters ?? null,
@@ -700,20 +702,17 @@ export default function Explore() {
     });
   }
 
-  const hasFilters = Boolean(
-    appliedFilters.query ||
-      appliedFilters.city ||
-      appliedFilters.category ||
-      appliedFilters.kind !== "all",
-  );
   const hasAnyResults =
     businesses.length > 0 || visibleDirectoryPlaces.length > 0;
 
   return (
-    <main>
+    <main className="marketplace-surface explore-marketplace">
       <AuthNav />
+      <MarketplaceSurfaceStyles />
 
-      <section className="container explore-page">
+      <section
+        className={`container explore-page ${view === "map" ? "is-map-view" : ""}`}
+      >
         <ExploreHero marketplaceStats={marketplaceStats} />
 
         <ExploreFilters
@@ -753,12 +752,6 @@ export default function Explore() {
 
         {!error && (
           <section className="explore-results-section">
-            <ExploreResultsHeader
-              loading={loading}
-              filteredCount={listItems.length}
-              hasFilters={hasFilters}
-            />
-
             {loading && (
               <div className="card explore-loading-state" role="status">
                 <p className="muted">
@@ -811,7 +804,10 @@ export default function Explore() {
                 />
 
                 {selectedMapItem && (
-                  <aside className="map-selection" aria-live="polite">
+                  <aside
+                    className={`map-selection is-${selectedMapItem.resultType}`}
+                    aria-live="polite"
+                  >
                     <button
                       type="button"
                       className="map-selection-close"
@@ -823,6 +819,13 @@ export default function Explore() {
                     >
                       <X size={18} aria-hidden="true" />
                     </button>
+                    <div className="map-selection-media" aria-hidden="true">
+                      {selectedMapItem.imageUrl ? (
+                        <img src={selectedMapItem.imageUrl} alt="" />
+                      ) : (
+                        <MapPin size={23} />
+                      )}
+                    </div>
                     <div className="map-selection-copy">
                       <span className="map-selection-type">
                         {selectedMapItem.resultType === "business"
@@ -866,8 +869,14 @@ export default function Explore() {
       </section>
 
       <style jsx>{`
+        :global(.explore-marketplace) {
+          --max-w: 1280px;
+          --content-pad: 28px;
+        }
+
         .explore-page {
-          padding: 32px 24px 70px;
+          padding-top: 34px;
+          padding-bottom: 72px;
         }
 
         .explore-results-section,
@@ -876,46 +885,40 @@ export default function Explore() {
           min-width: 0;
         }
 
-        :global(.explore-results-header) {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 0.7rem;
-          flex-wrap: wrap;
-        }
-
         .explore-results-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.75rem;
+          gap: 1rem;
         }
 
         :global(.explore-business-card) {
           display: grid;
-          grid-template-rows: 142px minmax(0, 1fr);
+          grid-template-rows: auto minmax(0, 1fr);
           align-items: stretch;
-          min-height: 320px;
+          min-height: 360px;
           overflow: hidden;
           padding: 0;
           color: var(--text);
           text-decoration: none;
+          box-shadow: 0 3px 14px rgba(20, 24, 32, 0.04);
           transition:
-            border-color 0.16s ease,
-            transform 0.16s ease;
+            border-color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
         }
 
         :global(.explore-business-card:hover),
         :global(.explore-business-card:focus-visible) {
-          border-color: rgba(255, 107, 53, 0.32);
-          transform: translateY(-1px);
+          border-color: var(--border-2);
+          box-shadow: 0 12px 28px rgba(20, 24, 32, 0.09);
+          transform: translateY(-2px);
         }
 
         :global(.explore-business-content) {
           display: grid;
-          gap: 0.45rem;
+          gap: 0.5rem;
           min-width: 0;
-          padding: 0.8rem;
+          padding: 0.95rem;
         }
 
         .explore-map-layout {
@@ -925,15 +928,16 @@ export default function Explore() {
 
         .map-selection {
           position: relative;
-          display: flex;
+          display: grid;
+          grid-template-columns: 72px minmax(0, 1fr) auto;
           align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
+          gap: 0.85rem;
           min-width: 0;
-          padding: 0.8rem;
+          padding: 0.75rem;
           border: 1px solid var(--border);
           border-radius: 8px;
-          background: var(--surface);
+          background: #ffffff;
+          box-shadow: 0 10px 24px rgba(20, 24, 32, 0.07);
         }
 
         .map-selection-close {
@@ -947,6 +951,23 @@ export default function Explore() {
           color: var(--text);
           align-items: center;
           justify-content: center;
+        }
+
+        .map-selection-media {
+          display: grid;
+          width: 72px;
+          height: 72px;
+          place-items: center;
+          overflow: hidden;
+          border-radius: 6px;
+          background: var(--success-dim);
+          color: var(--success);
+        }
+
+        .map-selection-media img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
         .map-selection-copy {
@@ -964,7 +985,14 @@ export default function Explore() {
           color: var(--accent);
           font-size: 0.7rem;
           font-weight: 800;
-          text-transform: uppercase;
+        }
+
+        .map-selection.is-directory_place .map-selection-type {
+          color: var(--success);
+        }
+
+        .map-selection.is-directory_place :global(.btn-accent) {
+          background: var(--success);
         }
 
         .map-selection-location {
@@ -999,8 +1027,43 @@ export default function Explore() {
         }
 
         @media (max-width: 700px) {
+          :global(.explore-marketplace) {
+            --content-pad: 20px;
+          }
+
           .explore-page {
-            padding: 24px 24px 56px;
+            padding-top: 22px;
+            padding-bottom: 52px;
+          }
+
+          .explore-page.is-map-view {
+            padding-top: 14px;
+          }
+
+          .is-map-view :global(.explore-hero-compact) {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.6rem;
+          }
+
+          .is-map-view :global(.explore-hero-compact > div) {
+            min-width: 0;
+          }
+
+          .is-map-view :global(.explore-hero-compact .page-title) {
+            margin: 0;
+            font-size: 1.45rem;
+          }
+
+          .is-map-view :global(.explore-hero-compact .page-sub),
+          .is-map-view :global(.explore-view-controls .kind-note) {
+            display: none;
+          }
+
+          .is-map-view :global(.explore-view-controls) {
+            margin-bottom: 0.65rem;
+            padding-bottom: 0.65rem;
           }
 
           :global(.explore-business-card),
@@ -1010,16 +1073,12 @@ export default function Explore() {
           }
 
           :global(.explore-business-card) {
-            grid-template-rows: 118px minmax(0, 1fr);
-            min-height: 286px;
-          }
-
-          :global(.explore-business-image) {
-            min-height: 118px !important;
+            grid-template-rows: auto minmax(0, 1fr);
+            min-height: 330px;
           }
 
           :global(.explore-business-content) {
-            padding: 0.7rem;
+            padding: 0.85rem;
           }
 
           .map-selection {
@@ -1029,23 +1088,28 @@ export default function Explore() {
             left: 0.75rem;
             z-index: 55;
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 44px;
+            grid-template-columns: 72px minmax(0, 1fr) 44px;
             gap: 0.65rem;
-            max-height: min(48vh, 22rem);
+            max-height: min(52vh, 24rem);
             overflow-y: auto;
             padding: 0.85rem;
-            border-color: rgba(255, 107, 53, 0.28);
-            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.42);
+            border-color: var(--border);
+            box-shadow: 0 1rem 2.5rem rgba(20, 24, 32, 0.22);
           }
 
           .map-selection-close {
             display: inline-flex;
-            grid-column: 2;
+            grid-column: 3;
+            grid-row: 1;
+          }
+
+          .map-selection-media {
+            grid-column: 1;
             grid-row: 1;
           }
 
           .map-selection-copy {
-            grid-column: 1;
+            grid-column: 2;
             grid-row: 1;
           }
 

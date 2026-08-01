@@ -1,4 +1,5 @@
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -37,13 +38,20 @@ function statusLabel(
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function formatDate(value: string | null | undefined, fallback: string) {
+function formatDate(
+  value: string | null | undefined,
+  fallback: string,
+  locale: "en" | "sq",
+) {
   if (!value) return fallback;
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString(locale === "sq" ? "sq-AL" : "en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }
 
 export default function SupportMessagesPage() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,15 +130,12 @@ export default function SupportMessagesPage() {
     supportContext === "business" || supportContext === "staff"
       ? t("dashboardLayout.nav.inbox", "Inbox")
       : t("nav.myBookings", "My bookings");
-
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
 
-      <section
-        className="container"
-        style={{ paddingTop: 42, paddingBottom: 72 }}
-      >
+      <section className="container customer-page-container">
         <div className="support-messages-shell">
           <div className="support-messages-header">
             <div>
@@ -296,10 +301,10 @@ export default function SupportMessagesPage() {
                           style={{ marginTop: "0.4rem" }}
                         >
                           {t("support.messages.created", "Created")}{" "}
-                          {formatDate(message.created_at, unknownDate)}
+                          {formatDate(message.created_at, unknownDate, locale)}
                           {message.updated_at &&
                           message.updated_at !== message.created_at
-                            ? ` · ${t("support.messages.updated", "Updated")} ${formatDate(message.updated_at, unknownDate)}`
+                            ? ` · ${t("support.messages.updated", "Updated")} ${formatDate(message.updated_at, unknownDate, locale)}`
                             : ""}
                         </p>
                       </div>

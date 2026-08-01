@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  CircleHelp,
+  UsersRound,
+} from "lucide-react";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
+import SupportEntryStyles from "@/components/SupportEntryStyles";
 import { useI18n } from "@/lib/useI18n";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -34,13 +42,26 @@ export default function SupportPage() {
     setCheckingAdmin(false);
   }
 
+  const showCustomerSupportHub = !checkingAdmin && !isAdmin;
+
   return (
-    <main>
+    <main
+      className={
+        showCustomerSupportHub
+          ? "marketplace-surface customer-portal-surface support-entry-surface"
+          : undefined
+      }
+    >
+      {showCustomerSupportHub && <CustomerPortalStyles />}
+      <SupportEntryStyles />
       <AuthNav />
 
       <section
-        className="container"
-        style={{ paddingTop: 42, paddingBottom: 72 }}
+        className={
+          showCustomerSupportHub
+            ? "container customer-page-container"
+            : "container support-operator-container"
+        }
       >
         <div className="support-shell">
           {checkingAdmin && (
@@ -134,250 +155,107 @@ export default function SupportPage() {
 
           {!checkingAdmin && !isAdmin && (
             <>
-              <div className="card support-hero">
-                <p className="small" style={{ color: "var(--accent)" }}>
+              <header className="support-entry-header">
+                <p className="support-entry-kicker">
                   {t("support.kicker", "Mirëbook support")}
                 </p>
                 <h1 className="page-title">{t("support.title")}</h1>
-                <p className="page-sub" style={{ marginTop: "0.6rem" }}>
+                <p className="page-sub">
                   {t(
                     "support.stage8.subtitle",
                     "Choose the help route that matches what you are doing.",
                   )}
                 </p>
-              </div>
+              </header>
 
-              <div className="support-customer-route">
+              <div className="support-entry-layout">
                 <Link
                   href="/support/customer"
-                  className="card support-route-card support-route-primary"
+                  className="support-primary-route"
                 >
-                  <p className="small muted">
-                    {t("support.customer.kicker", "Customers")}
-                  </p>
-                  <h2>{t("support.customer.title")}</h2>
-                  <p className="muted small" style={{ marginTop: "0.5rem" }}>
-                    {t("support.customer.body")}
-                  </p>
+                  <span className="support-route-icon support-route-icon-primary">
+                    <CircleHelp aria-hidden="true" size={24} strokeWidth={2} />
+                  </span>
+                  <span className="support-primary-copy">
+                    <span className="support-route-eyebrow">
+                      {t("support.customer.kicker", "Customers")}
+                    </span>
+                    <strong>{t("support.customer.title")}</strong>
+                    <span>
+                      {t(
+                        "support.entry.customerBody",
+                        "Get help with bookings, changes, notifications and your customer account.",
+                      )}
+                    </span>
+                  </span>
                   <span className="support-route-cta">
-                    {t("nav.customerSupport")} <span aria-hidden="true">→</span>
+                    {t("nav.customerSupport")}
+                    <ArrowRight aria-hidden="true" size={18} />
                   </span>
                 </Link>
-              </div>
 
-              <section className="support-work-routes">
-                <div>
-                  <p className="small muted">
-                    {t("support.work.kicker", "Using Mirëbook for work?")}
-                  </p>
-                  <h2>{t("support.work.title", "Business and staff help")}</h2>
-                </div>
-                <div className="support-work-grid">
-                  <Link href="/support/business" className="support-work-link">
-                    <span>
-                      <strong>{t("support.business.title")}</strong>
-                      <small>{t("support.business.body")}</small>
-                    </span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-
-                  <Link href="/support/staff" className="support-work-link">
-                    <span>
-                      <strong>{t("support.staff.title")}</strong>
-                      <small>{t("support.staff.body")}</small>
-                    </span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-                </div>
-              </section>
-
-              <div className="grid-2">
-                <div className="card support-content">
-                  <div>
-                    <p className="small muted">
-                      {t("support.quickLinks.kicker", "Common account routes")}
-                    </p>
-                    <h2>{t("support.quickLinks.title", "Quick links")}</h2>
-                  </div>
-
-                  <div className="support-link-list">
-                    <Link href="/my-bookings" className="support-link-row">
-                      <span className="support-link-copy">
-                        <strong>{t("nav.myBookings")}</strong>
-                        <small>
-                          {t(
-                            "support.quickLinks.myBookingsBody",
-                            "Track customer appointments, pending requests and reschedules.",
-                          )}
-                        </small>
-                      </span>
-                      <span aria-hidden="true">→</span>
-                    </Link>
-
-                    <Link
-                      href="/dashboard/businesses"
-                      className="support-link-row"
-                    >
-                      <span className="support-link-copy">
-                        <strong>
-                          {t(
-                            "support.quickLinks.businessSetup",
-                            "Business setup",
-                          )}
-                        </strong>
-                        <small>
-                          {t(
-                            "support.quickLinks.businessSetupBody",
-                            "Manage business profile, services, staff, hours and publishing.",
-                          )}
-                        </small>
-                      </span>
-                      <span aria-hidden="true">→</span>
-                    </Link>
-
-                    <Link href="/staff" className="support-link-row">
-                      <span className="support-link-copy">
-                        <strong>
-                          {t(
-                            "support.quickLinks.staffWorkspace",
-                            "Staff workspace",
-                          )}
-                        </strong>
-                        <small>
-                          {t(
-                            "support.quickLinks.staffWorkspaceBody",
-                            "View staff schedule and access staff availability tools.",
-                          )}
-                        </small>
-                      </span>
-                      <span aria-hidden="true">→</span>
-                    </Link>
-
-                    <Link href="/account" className="support-link-row">
-                      <span className="support-link-copy">
-                        <strong>{t("nav.account")}</strong>
-                        <small>
-                          {t(
-                            "support.quickLinks.accountBody",
-                            "Update name, phone and open your connected workspaces.",
-                          )}
-                        </small>
-                      </span>
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="card support-content">
-                  <div>
-                    <p className="small muted">
-                      {t("support.inboxStatus.kicker", "How support works")}
+                <section className="support-work-routes">
+                  <header>
+                    <p className="support-route-eyebrow">
+                      {t("support.work.kicker", "Using Mirëbook for work?")}
                     </p>
                     <h2>
-                      {t(
-                        "support.inboxStatus.title",
-                        "Your conversations stay connected",
-                      )}
+                      {t("support.work.title", "Business and staff help")}
                     </h2>
-                  </div>
+                  </header>
 
-                  <div className="support-note-box">
-                    <p>
-                      {t(
-                        "support.inboxStatus.body",
-                        "Mirëbook support is split into role-specific flows. New support forms create tickets that can be reviewed, replied to and closed from the admin area.",
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="support-contact-actions">
-                    <Link href="/privacy" className="btn btn-ghost">
-                      {t("common.privacy")}
+                  <div className="support-work-grid">
+                    <Link
+                      href="/support/business"
+                      className="support-work-link"
+                    >
+                      <span className="support-route-icon">
+                        <BriefcaseBusiness
+                          aria-hidden="true"
+                          size={20}
+                          strokeWidth={2}
+                        />
+                      </span>
+                      <span className="support-work-copy">
+                        <strong>{t("support.business.title")}</strong>
+                        <small>
+                          {t(
+                            "support.entry.businessBody",
+                            "Get help with setup, bookings, services, your team and membership.",
+                          )}
+                        </small>
+                      </span>
+                      <ArrowRight aria-hidden="true" size={18} />
                     </Link>
 
-                    <Link href="/terms" className="btn btn-ghost">
-                      {t("common.terms")}
-                    </Link>
-
-                    <Link href="/explore" className="btn btn-accent">
-                      {t("home.cta.explore")}
+                    <Link href="/support/staff" className="support-work-link">
+                      <span className="support-route-icon">
+                        <UsersRound
+                          aria-hidden="true"
+                          size={20}
+                          strokeWidth={2}
+                        />
+                      </span>
+                      <span className="support-work-copy">
+                        <strong>{t("support.staff.title")}</strong>
+                        <small>
+                          {t(
+                            "support.entry.staffBody",
+                            "Get help with your schedule, working hours, account link and assigned bookings.",
+                          )}
+                        </small>
+                      </span>
+                      <ArrowRight aria-hidden="true" size={18} />
                     </Link>
                   </div>
-                </div>
+                </section>
               </div>
 
-              <div className="card support-faq-card">
-                <div>
-                  <p className="small muted">
-                    {t("support.faq.kicker", "Common questions")}
-                  </p>
-                  <h2>
-                    {t("support.faq.title", "Frequently asked questions")}
-                  </h2>
-                </div>
-
-                <div className="support-faq-list">
-                  <div className="support-faq-item">
-                    <h3>
-                      {t(
-                        "support.faq.pendingTitle",
-                        "My booking is pending. What does that mean?",
-                      )}
-                    </h3>
-                    <p>
-                      {t(
-                        "support.faq.pendingBody",
-                        "Some businesses use manual approval. Your booking request has been sent to the business and is not confirmed until they accept it. You can track it from My Bookings or Notifications.",
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="support-faq-item">
-                    <h3>
-                      {t(
-                        "support.faq.paymentsTitle",
-                        "Can customers pay through Mirëbook?",
-                      )}
-                    </h3>
-                    <p>
-                      {t(
-                        "support.faq.paymentsBody",
-                        "Appointment payment is arranged directly with the business unless it states otherwise. Mirëbook does not currently collect customer appointment payments.",
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="support-faq-item">
-                    <h3>
-                      {t(
-                        "support.faq.countriesTitle",
-                        "Will Mirëbook support Albania and other countries?",
-                      )}
-                    </h3>
-                    <p>
-                      {t(
-                        "support.faq.countriesBody",
-                        "Mirëbook supports English and Albanian, with regional language, currency and timezone settings for customers and businesses.",
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="support-faq-item">
-                    <h3>
-                      {t(
-                        "support.faq.mobileAppTitle",
-                        "Will there be a mobile app?",
-                      )}
-                    </h3>
-                    <p>
-                      {t(
-                        "support.faq.mobileAppBody",
-                        "Mirëbook is available on the web. Use only official Mirëbook app-store links when dedicated mobile apps are offered.",
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <footer className="support-entry-footer">
+                <Link href="/privacy">{t("common.privacy")}</Link>
+                <Link href="/terms">{t("common.terms")}</Link>
+                <Link href="/explore">{t("home.cta.explore")}</Link>
+              </footer>
             </>
           )}
         </div>
@@ -389,15 +267,6 @@ export default function SupportPage() {
           margin: 0 auto;
           display: grid;
           gap: 1rem;
-        }
-
-        .support-hero {
-          padding: 1.25rem;
-        }
-
-        .support-shell > .grid-2,
-        .support-faq-card {
-          display: none;
         }
 
         .support-operator-hero {
@@ -432,169 +301,10 @@ export default function SupportPage() {
           background: rgba(255, 190, 11, 0.06);
         }
 
-        .support-customer-route {
-          min-width: 0;
-        }
-
-        .support-route-card {
-          display: flex;
-          flex-direction: column;
-          min-height: 240px;
-          transition:
-            transform 0.2s,
-            border-color 0.2s;
-        }
-
-        .support-route-primary {
-          min-height: 190px;
-          border-color: rgba(255, 107, 53, 0.28);
-          background: rgba(255, 107, 53, 0.06);
-        }
-
-        .support-work-routes {
-          display: grid;
-          gap: 0.75rem;
-          padding-top: 0.25rem;
-        }
-
-        .support-work-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.75rem;
-        }
-
-        .support-work-link {
-          display: flex;
-          justify-content: space-between;
-          gap: 0.75rem;
-          align-items: center;
-          min-height: 72px;
-          padding: 0.85rem;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          background: var(--surface-2);
-          color: var(--text);
-        }
-
-        .support-work-link > span:first-child {
-          display: grid;
-          gap: 0.25rem;
-          min-width: 0;
-        }
-
-        .support-work-link small {
-          color: var(--text-muted);
-          line-height: 1.45;
-        }
-
-        .support-route-card:hover {
-          transform: translateY(-2px);
-          border-color: rgba(255, 107, 53, 0.35);
-        }
-
-        .support-route-cta {
-          display: inline-flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 0.75rem;
-          margin-top: auto;
-          padding-top: 1rem;
-          color: var(--accent);
-          font-weight: 800;
-        }
-
-        .support-content,
-        .support-faq-card {
-          display: grid;
-          gap: 1rem;
-        }
-
-        .support-link-list {
-          display: grid;
-          gap: 0.75rem;
-        }
-
-        .support-link-row {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          align-items: center;
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          border-radius: var(--radius);
-          padding: 0.9rem;
-        }
-
-        .support-link-copy {
-          display: flex;
-          flex: 1;
-          flex-direction: column;
-          gap: 0.28rem;
-          min-width: 0;
-          text-align: left;
-        }
-
-        .support-link-copy strong {
-          display: block;
-          line-height: 1.2;
-        }
-
-        .support-link-copy small {
-          display: block;
-          color: var(--text-muted);
-          line-height: 1.5;
-        }
-
-        .support-note-box,
-        .support-faq-item {
-          background: var(--surface-2);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 1rem;
-        }
-
-        .support-note-box p,
-        .support-faq-item p {
-          color: var(--text-muted);
-          line-height: 1.65;
-        }
-
-        .support-faq-list {
-          display: grid;
-          gap: 0.85rem;
-        }
-
-        .support-faq-item h3 {
-          margin-bottom: 0.4rem;
-        }
-
-        .support-contact-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-
-        @media (max-width: 860px) {
-          .support-work-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .support-route-card {
-            min-height: auto;
-          }
-
-          .support-link-row {
-            width: 100%;
-          }
-        }
-
         @media (max-width: 640px) {
           .support-operator-actions,
           .support-operator-actions :global(.btn),
-          .support-operator-actions a,
-          .support-contact-actions,
-          .support-contact-actions :global(.btn),
-          .support-contact-actions a {
+          .support-operator-actions a {
             width: 100%;
             justify-content: center;
           }

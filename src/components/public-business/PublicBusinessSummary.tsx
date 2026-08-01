@@ -70,12 +70,10 @@ export default function PublicBusinessSummary({
   return (
     <aside className="card booking-summary-panel">
       <div className="booking-summary-heading">
-        {!hasAppointmentSelection && (
-          <p className="small muted">
-            {t("publicBusiness.summary.title", "Booking summary")}
-          </p>
-        )}
-        <h2 style={{ fontFamily: "var(--font-display)" }}>
+        <p className="public-business-step-kicker">
+          {t("publicBusiness.summary.step", "Step 4")}
+        </p>
+        <h2>
           {hasAppointmentSelection
             ? t("publicBusiness.summary.reviewTitle", "Review appointment")
             : t("publicBusiness.summary.emptyTitle", "Your appointment")}
@@ -89,6 +87,19 @@ export default function PublicBusinessSummary({
           </p>
         )}
       </div>
+
+      {!hasSelectedService && (
+        <div className="booking-summary-empty">
+          <span>1</span>
+          <p className="small muted">
+            {t("publicBusiness.summary.chooseService", "Choose a service")}
+          </p>
+          <span>2</span>
+          <p className="small muted">
+            {t("publicBusiness.summary.chooseTime", "Choose a time")}
+          </p>
+        </div>
+      )}
 
       {hasSelectedService && (
         <div className="public-business-summary-box booking-summary-details">
@@ -147,13 +158,7 @@ export default function PublicBusinessSummary({
       )}
 
       {hasAppointmentSelection && !customerUserId && (
-        <div
-          className="public-business-summary-box"
-          style={{
-            borderColor: "rgba(255,107,53,0.28)",
-            background: "rgba(255,107,53,0.06)",
-          }}
-        >
+        <div className="public-business-summary-box booking-summary-auth">
           <p className="small" style={{ color: "var(--accent)" }}>
             {t("publicBusiness.summary.loginRequired", "Login required")}
           </p>
@@ -178,13 +183,7 @@ export default function PublicBusinessSummary({
       )}
 
       {hasAppointmentSelection && blockedByRole && (
-        <div
-          className="public-business-summary-box"
-          style={{
-            borderColor: "rgba(255,190,11,0.28)",
-            background: "rgba(255,190,11,0.06)",
-          }}
-        >
+        <div className="public-business-summary-box booking-summary-role">
           <p className="small" style={{ color: "var(--warning)" }}>
             {isOwnerPreview
               ? t("publicBusiness.summary.ownerPreview", "Your business page")
@@ -297,14 +296,7 @@ export default function PublicBusinessSummary({
           </label>
 
           {error && (
-            <div
-              className="card"
-              style={{
-                borderColor: "rgba(255,77,109,0.35)",
-                background: "rgba(255,77,109,0.05)",
-                padding: "0.85rem",
-              }}
-            >
+            <div className="booking-summary-error">
               <p className="small" style={{ color: "var(--danger)" }}>
                 {error}
               </p>

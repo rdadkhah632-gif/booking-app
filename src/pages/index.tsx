@@ -17,6 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
+import MarketplaceSurfaceStyles from "@/components/MarketplaceSurfaceStyles";
 import { directoryCategoryLabel } from "@/components/explore/directoryCategories";
 import type { DirectoryCategoryKey } from "@/components/explore/exploreTypes";
 import { getBusinessAppUrl } from "@/lib/appUrls";
@@ -65,7 +66,7 @@ export default function Home() {
   }
 
   return (
-    <main className="discovery-home">
+    <main className="marketplace-surface discovery-home">
       <Head>
         <title>
           {t("home.discovery.metaTitle", "Explore and book Albania | Mirëbook")}
@@ -85,23 +86,18 @@ export default function Home() {
       </Head>
 
       <AuthNav />
+      <MarketplaceSurfaceStyles />
 
       <section className="discovery-home-hero">
         <div className="container discovery-hero-inner">
           <div className="discovery-hero-copy">
-            <span className="discovery-kicker">
-              {t("home.discovery.kicker", "Discover Albania")}
-            </span>
             <h1>
-              {t(
-                "home.discovery.title",
-                "Find places to go and services to book.",
-              )}
+              {t("home.discovery.title", "Find your next place in Albania.")}
             </h1>
             <p>
               {t(
                 "home.discovery.subtitle",
-                "Explore local favourites, activities and bookable businesses across Albania.",
+                "Discover local favourites, activities and services, then book participating businesses.",
               )}
             </p>
 
@@ -158,7 +154,6 @@ export default function Home() {
         <div className="container">
           <header className="home-band-heading">
             <div>
-              <span>{t("home.discovery.browseKicker", "Start exploring")}</span>
               <h2>
                 {t("home.discovery.browseTitle", "What are you looking for?")}
               </h2>
@@ -178,7 +173,6 @@ export default function Home() {
               >
                 <Icon size={23} aria-hidden="true" />
                 <span>{directoryCategoryLabel(key, t)}</span>
-                <ArrowRight size={16} aria-hidden="true" />
               </Link>
             ))}
           </div>
@@ -264,11 +258,11 @@ export default function Home() {
       <style jsx>{`
         .discovery-home-hero {
           position: relative;
-          height: clamp(540px, calc(100dvh - 96px), 680px);
-          min-height: 540px;
+          height: min(600px, calc(100dvh - 160px));
+          min-height: 440px;
           overflow: hidden;
           background-image: url("/mirebook-customer-discovery-hero.jpg");
-          background-position: center;
+          background-position: 54% center;
           background-size: cover;
           color: #ffffff;
         }
@@ -276,7 +270,12 @@ export default function Home() {
         .discovery-home-hero::before {
           position: absolute;
           inset: 0;
-          background: rgba(8, 10, 15, 0.58);
+          background: linear-gradient(
+            90deg,
+            rgba(11, 18, 24, 0.78) 0%,
+            rgba(11, 18, 24, 0.5) 42%,
+            rgba(11, 18, 24, 0.08) 74%
+          );
           content: "";
         }
 
@@ -289,10 +288,9 @@ export default function Home() {
         }
 
         .discovery-hero-copy {
-          width: min(100%, 900px);
+          width: min(100%, 940px);
         }
 
-        .discovery-kicker,
         .home-band-heading span,
         .home-business-band > :global(.container) > div:first-child > span {
           font-size: 0.76rem;
@@ -300,54 +298,52 @@ export default function Home() {
           text-transform: uppercase;
         }
 
-        .discovery-kicker {
-          display: inline-block;
-          margin-bottom: 0.8rem;
-          color: #ff8a5f;
-        }
-
         .discovery-hero-copy h1 {
-          max-width: 780px;
+          max-width: 720px;
           margin: 0;
-          font-family: var(--font-display);
-          font-size: 4rem;
-          line-height: 1.03;
+          font-family: var(--font-body);
+          font-size: 3.75rem;
+          font-weight: 700;
+          line-height: 1.04;
           letter-spacing: 0;
-          text-shadow: 0 3px 24px rgba(0, 0, 0, 0.34);
+          text-shadow: 0 2px 22px rgba(0, 0, 0, 0.28);
         }
 
         .discovery-hero-copy > p {
-          max-width: 650px;
-          margin: 1rem 0 1.35rem;
-          color: rgba(255, 255, 255, 0.88);
+          max-width: 620px;
+          margin: 1rem 0 1.5rem;
+          color: rgba(255, 255, 255, 0.94);
           font-size: 1.08rem;
           line-height: 1.55;
         }
 
         .discovery-search {
           display: grid;
-          grid-template-columns: minmax(220px, 1.25fr) minmax(180px, 0.8fr) auto;
-          gap: 0.5rem;
+          grid-template-columns:
+            minmax(220px, 1.25fr) minmax(180px, 0.8fr)
+            auto;
+          gap: 0;
           max-width: 880px;
-          padding: 0.55rem;
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          padding: 0.45rem;
+          border: 1px solid rgba(17, 24, 39, 0.12);
           border-radius: 8px;
-          background: rgba(15, 14, 23, 0.88);
-          box-shadow: 0 18px 46px rgba(0, 0, 0, 0.24);
+          background: #ffffff;
+          box-shadow: 0 18px 46px rgba(17, 24, 39, 0.22);
         }
 
         .discovery-search-field {
           min-width: 0;
-          padding: 0.45rem 0.7rem;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          border-radius: 6px;
-          background: rgba(255, 255, 255, 0.06);
+          padding: 0.42rem 0.85rem;
+          border: 0;
+          border-right: 1px solid #e2e4e7;
+          border-radius: 0;
+          background: #ffffff;
         }
 
         .discovery-search-field > span {
           display: block;
           margin-bottom: 0.08rem;
-          color: rgba(255, 255, 255, 0.66);
+          color: #62666d;
           font-size: 0.68rem;
           font-weight: 800;
           text-transform: uppercase;
@@ -362,7 +358,7 @@ export default function Home() {
 
         .discovery-search-field :global(svg) {
           flex: 0 0 auto;
-          color: #ff8a5f;
+          color: #73777f;
         }
 
         .discovery-search-field input {
@@ -374,27 +370,29 @@ export default function Home() {
           border-radius: 0;
           outline: 0;
           background: transparent;
-          color: #ffffff;
+          color: #19191b;
+          box-shadow: none;
         }
 
         .discovery-search-field input::placeholder {
-          color: rgba(255, 255, 255, 0.58);
+          color: #8a8f98;
         }
 
         .discovery-search > :global(.btn) {
           min-width: 126px;
           justify-content: center;
           border-radius: 6px;
+          color: #ffffff;
         }
 
         .discovery-hero-actions {
           display: flex;
           flex-wrap: wrap;
           gap: 1.1rem;
-          margin-top: 1rem;
+          margin-top: 1.1rem;
         }
 
-        .hero-secondary-action {
+        :global(.hero-secondary-action) {
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
@@ -402,15 +400,18 @@ export default function Home() {
           font-size: 0.88rem;
           font-weight: 800;
           text-decoration: none;
+          text-shadow: 0 1px 10px rgba(0, 0, 0, 0.25);
         }
 
-        .hero-secondary-action:hover {
-          color: #ff8a5f;
+        :global(.hero-secondary-action:hover) {
+          color: #ffffff;
+          text-decoration: underline;
+          text-underline-offset: 0.25rem;
         }
 
         .home-browse-band {
           padding: 3rem 0;
-          background: #f7f8fa;
+          background: #ffffff;
           color: #17151d;
         }
 
@@ -427,7 +428,7 @@ export default function Home() {
         }
 
         .home-band-heading span {
-          color: #d94b19;
+          color: #c9471c;
         }
 
         .home-band-heading h2,
@@ -440,7 +441,7 @@ export default function Home() {
           font-size: 1.8rem;
         }
 
-        .home-inline-link {
+        :global(.home-inline-link) {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
@@ -452,40 +453,42 @@ export default function Home() {
 
         .home-category-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.65rem;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          border-block: 1px solid #e2e4e7;
         }
 
-        .home-category-link {
+        :global(.home-category-link) {
           min-width: 0;
-          min-height: 76px;
-          display: grid;
-          grid-template-columns: auto minmax(0, 1fr) auto;
-          align-items: center;
-          gap: 0.7rem;
-          padding: 0.85rem;
-          border: 1px solid #dde0e5;
-          border-radius: 8px;
+          min-height: 104px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 0.65rem;
+          padding: 1rem;
+          border-right: 1px solid #e2e4e7;
+          border-radius: 0;
           background: #ffffff;
           color: #17151d;
-          font-weight: 800;
+          font-size: 0.88rem;
+          font-weight: 700;
           text-decoration: none;
           transition:
-            border-color 0.16s ease,
-            transform 0.16s ease;
+            background-color 0.16s ease,
+            color 0.16s ease;
         }
 
-        .home-category-link:hover {
-          border-color: rgba(217, 75, 25, 0.48);
-          transform: translateY(-1px);
+        :global(.home-category-link:last-child) {
+          border-right: 0;
         }
 
-        .home-category-link :global(svg:first-child) {
-          color: #d94b19;
+        :global(.home-category-link:hover) {
+          background: #f7f8f9;
+          color: #c9471c;
         }
 
-        .home-category-link :global(svg:last-child) {
-          color: #69707c;
+        :global(.home-category-link svg:first-child) {
+          color: #c9471c;
         }
 
         .home-city-row {
@@ -495,27 +498,27 @@ export default function Home() {
           gap: 0.7rem 1rem;
           margin-top: 1.3rem;
           padding-top: 1.1rem;
-          border-top: 1px solid #dde0e5;
+          border-top: 0;
         }
 
         .home-city-row strong {
           margin-right: 0.25rem;
         }
 
-        .home-city-row a {
+        .home-city-row :global(a) {
           color: #4c5360;
           font-weight: 700;
           text-decoration: none;
         }
 
-        .home-city-row a:hover {
+        .home-city-row :global(a:hover) {
           color: #d94b19;
         }
 
         .home-result-guide {
-          padding: 1.35rem 0;
-          border-block: 1px solid var(--border);
-          background: #ffffff;
+          padding: 1.5rem 0;
+          border-block: 1px solid #e2e4e7;
+          background: #f8f9fa;
           color: #17151d;
         }
 
@@ -533,7 +536,7 @@ export default function Home() {
 
         .home-result-guide-inner :global(svg) {
           flex: 0 0 auto;
-          color: #d94b19;
+          color: #147d70;
         }
 
         .home-result-guide-inner span {
@@ -549,7 +552,7 @@ export default function Home() {
 
         .home-business-band {
           padding: 2.4rem 0;
-          background: var(--surface);
+          background: #ffffff;
         }
 
         .home-business-band-inner {
@@ -561,8 +564,9 @@ export default function Home() {
         }
 
         .home-business-band h2 {
-          font-family: var(--font-display);
+          font-family: var(--font-body);
           font-size: 1.8rem;
+          font-weight: 700;
         }
 
         .home-business-band p {
@@ -583,7 +587,7 @@ export default function Home() {
           .discovery-home-hero {
             height: auto;
             min-height: 620px;
-            background-position: 58% center;
+            background-position: 62% center;
           }
 
           .discovery-hero-inner {
@@ -602,6 +606,13 @@ export default function Home() {
 
           .discovery-search {
             grid-template-columns: 1fr;
+            gap: 0;
+          }
+
+          .discovery-search-field {
+            padding-block: 0.65rem;
+            border-right: 0;
+            border-bottom: 1px solid #e2e4e7;
           }
 
           .discovery-search > :global(.btn) {
@@ -619,16 +630,12 @@ export default function Home() {
           }
 
           .home-category-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
           }
 
-          .home-category-link {
-            min-height: 92px;
-            grid-template-columns: 1fr auto;
-          }
-
-          .home-category-link :global(svg:first-child) {
-            grid-column: 1 / -1;
+          :global(.home-category-link) {
+            min-height: 100px;
+            border-bottom: 1px solid #e2e4e7;
           }
 
           .home-result-guide-inner {
@@ -652,16 +659,11 @@ export default function Home() {
           }
 
           .home-category-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 
-          .home-category-link {
-            min-height: 70px;
-            grid-template-columns: auto minmax(0, 1fr) auto;
-          }
-
-          .home-category-link :global(svg:first-child) {
-            grid-column: auto;
+          :global(.home-category-link) {
+            min-height: 96px;
           }
         }
       `}</style>

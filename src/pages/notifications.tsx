@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import { useI18n } from "@/lib/useI18n";
 import NotificationsHeader from "@/components/notifications/NotificationsHeader";
 import NotificationEmptyState from "@/components/notifications/NotificationEmptyState";
@@ -174,10 +175,11 @@ export default function CustomerNotifications() {
   const recentNotifications = notifications.slice(0, 12);
 
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
 
-      <section className="container" style={{ padding: "36px 24px 70px" }}>
+      <section className="container customer-page-container">
         <NotificationsHeader
           loading={loading}
           markingRead={markingRead}

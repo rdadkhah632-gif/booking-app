@@ -120,11 +120,17 @@ export default function ExploreBusinessCard({
 
       <style jsx>{`
         .explore-business-image {
-          min-height: 142px;
+          min-height: 0;
+          aspect-ratio: 16 / 10;
           border-bottom: 1px solid var(--border);
           display: grid;
           place-items: center;
           overflow: hidden;
+        }
+
+        .explore-business-image.no-image {
+          aspect-ratio: 16 / 5;
+          min-height: 148px;
         }
 
         .explore-business-fallback-mark {
@@ -132,13 +138,20 @@ export default function ExploreBusinessCard({
           width: 3.6rem;
           height: 3.6rem;
           place-items: center;
-          border: 1px solid rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(237, 90, 42, 0.22);
           border-radius: 50%;
-          background: rgba(15, 14, 23, 0.62);
-          color: #fff7ed;
-          box-shadow: 0 0.85rem 2rem rgba(0, 0, 0, 0.24);
+          background: #ffffff;
+          color: var(--accent);
+          box-shadow: 0 0.85rem 2rem rgba(20, 24, 32, 0.12);
           font-size: 1rem;
           font-weight: 900;
+        }
+
+        @media (max-width: 640px) {
+          .explore-business-image.no-image {
+            min-height: 0;
+            aspect-ratio: 16 / 7;
+          }
         }
 
         .explore-card-topline {
@@ -155,7 +168,6 @@ export default function ExploreBusinessCard({
           font-size: 0.72rem;
           font-weight: 800;
           text-overflow: ellipsis;
-          text-transform: uppercase;
           white-space: nowrap;
         }
 
@@ -184,7 +196,7 @@ export default function ExploreBusinessCard({
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
           font-size: 1.05rem;
-          line-height: 1.2;
+          line-height: 1.25;
         }
 
         .explore-card-description {
@@ -236,8 +248,8 @@ export default function ExploreBusinessCard({
           align-items: center;
           margin-top: auto;
           color: var(--accent);
-          font-size: 0.78rem;
-          font-weight: 900;
+          font-size: 0.82rem;
+          font-weight: 800;
         }
 
         .explore-card-cta span {

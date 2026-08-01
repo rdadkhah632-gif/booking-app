@@ -15,9 +15,7 @@ export default function BookingApprovalSettings({
   return (
     <div className="card settings-card settings-approval-card">
       <div className="settings-card-heading">
-        <h2 style={{ fontFamily: "var(--font-display)", marginTop: "0.25rem" }}>
-          {t("dashboardSettings.approval.title", "Confirmation mode")}
-        </h2>
+        <h2>{t("dashboardSettings.approval.title", "Confirmation mode")}</h2>
       </div>
 
       <div

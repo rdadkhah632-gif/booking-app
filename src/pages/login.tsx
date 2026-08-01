@@ -1,4 +1,5 @@
 import AuthNav from "@/components/AuthNav";
+import CustomerAuthStyles from "@/components/CustomerAuthStyles";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -252,7 +253,8 @@ export default function LoginPage() {
 
   if (checkingSession) {
     return (
-      <main>
+      <main className="marketplace-surface customer-auth-surface">
+        <CustomerAuthStyles />
         <AuthNav />
         <section className="auth-wrap">
           <div className="card">
@@ -266,7 +268,8 @@ export default function LoginPage() {
   }
 
   return (
-    <main>
+    <main className="marketplace-surface customer-auth-surface">
+      <CustomerAuthStyles />
       <AuthNav />
 
       <section className="auth-wrap">

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
+import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 
@@ -16,7 +17,8 @@ export default function StaffInvitePage() {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const token = typeof router.query.token === "string" ? router.query.token : "";
+  const token =
+    typeof router.query.token === "string" ? router.query.token : "";
   const returnPath = token
     ? `/staff/invite?token=${encodeURIComponent(token)}`
     : "/staff/invite";
@@ -97,12 +99,10 @@ export default function StaffInvitePage() {
   }
 
   return (
-    <main>
+    <main className="marketplace-surface customer-portal-surface">
+      <CustomerPortalStyles />
       <AuthNav />
-      <section
-        className="container"
-        style={{ paddingTop: 48, paddingBottom: 72 }}
-      >
+      <section className="container customer-page-container">
         <div className="card" style={{ maxWidth: 680, margin: "0 auto" }}>
           <p className="small muted">
             {t("staffInvite.kicker", "Staff invitation")}

@@ -1,3 +1,4 @@
+import { UsersRound } from "lucide-react";
 import { StaffMember } from "./publicBusinessTypes";
 import { useI18n } from "@/lib/useI18n";
 import { publicStaffInitial, publicStaffName } from "./publicStaffDisplay";
@@ -17,32 +18,43 @@ export default function PublicBusinessStaffPicker({
 }: Props) {
   const { t } = useI18n();
   return (
-    <div className="public-business-staff-step">
-      <p className="small muted public-business-step-label">
-        {t("common.staff", "Staff")}
-      </p>
+    <section className="public-business-section public-business-staff-step">
+      <div className="public-business-section-heading-copy">
+        <div>
+          <p className="public-business-step-kicker">
+            {t("publicBusiness.staff.step", "Step 2")}
+          </p>
+          <h2>{t("publicBusiness.staff.title", "Choose staff")}</h2>
+          <p className="small muted public-business-section-subtitle">
+            {t(
+              "publicBusiness.staff.subtitle",
+              "Choose Any available staff or select a specific person.",
+            )}
+          </p>
+        </div>
+      </div>
 
       <div className="public-business-staff-list">
         {availableStaffForSelectedService.length > 0 && (
           <button
             type="button"
             onClick={() => onSelectStaff("any")}
-            className="public-business-staff-card"
-            style={{
-              borderColor:
-                selectedStaffId === "any"
-                  ? "rgba(255,107,53,0.55)"
-                  : "var(--border)",
-              background:
-                selectedStaffId === "any"
-                  ? "rgba(255,107,53,0.08)"
-                  : "var(--surface-2)",
-            }}
+            className={`public-business-staff-card${selectedStaffId === "any" ? " selected" : ""}`}
+            aria-pressed={selectedStaffId === "any"}
           >
+            <div className="public-business-staff-avatar any-staff">
+              <UsersRound size={20} aria-hidden="true" />
+            </div>
             <div>
               <strong>
                 {t("publicBusiness.staff.any", "Any available staff")}
               </strong>
+              <p className="small muted">
+                {t(
+                  "publicBusiness.staff.anyBody",
+                  "Mirëbook will show slots for anyone who can perform the selected service.",
+                )}
+              </p>
             </div>
           </button>
         )}
@@ -58,17 +70,8 @@ export default function PublicBusinessStaffPicker({
               key={staff.id}
               type="button"
               onClick={() => onSelectStaff(staff.id)}
-              className="public-business-staff-card"
-              style={{
-                borderColor:
-                  selectedStaffId === staff.id
-                    ? "rgba(255,107,53,0.55)"
-                    : "var(--border)",
-                background:
-                  selectedStaffId === staff.id
-                    ? "rgba(255,107,53,0.08)"
-                    : "var(--surface-2)",
-              }}
+              className={`public-business-staff-card${selectedStaffId === staff.id ? " selected" : ""}`}
+              aria-pressed={selectedStaffId === staff.id}
             >
               <div className="public-business-staff-avatar">
                 {staff.image_url ? (
@@ -92,7 +95,7 @@ export default function PublicBusinessStaffPicker({
         })}
 
         {availableStaffForSelectedService.length === 0 && (
-          <div className="card" style={{ background: "var(--surface-2)" }}>
+          <div className="public-business-empty-state">
             <p className="small muted">
               {staffMembers.length === 0
                 ? t(
@@ -110,14 +113,9 @@ export default function PublicBusinessStaffPicker({
       <style jsx>{`
         .public-business-staff-step {
           display: grid;
-          gap: 0.45rem;
-          margin-top: 0.9rem;
-        }
-
-        .public-business-step-label {
-          margin: 0;
+          gap: 1rem;
         }
       `}</style>
-    </div>
+    </section>
   );
 }
