@@ -330,6 +330,12 @@ export const en: TranslationTree = {
   "home.discovery.businessBody":
     "Claim an existing place or create a profile, then manage bookings through Mirëbook Business.",
   "home.discovery.businessCta": "Claim or list your business",
+  "home.featured.kicker": "Across Albania",
+  "home.featured.title": "Places worth a closer look",
+  "home.featured.body":
+    "Discover services, activities and local favourites in cities across the country.",
+  "home.featured.viewAll": "Explore all places",
+  "home.featured.loading": "Loading local places",
 
   "businessHome.metaTitle":
     "Mirëbook Business | Bookings, staff and availability",

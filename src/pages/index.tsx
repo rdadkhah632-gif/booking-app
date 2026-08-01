@@ -20,6 +20,7 @@ import AuthNav from "@/components/AuthNav";
 import MarketplaceSurfaceStyles from "@/components/MarketplaceSurfaceStyles";
 import { directoryCategoryLabel } from "@/components/explore/directoryCategories";
 import type { DirectoryCategoryKey } from "@/components/explore/exploreTypes";
+import HomeFeaturedPlaces from "@/components/home/HomeFeaturedPlaces";
 import { getBusinessAppUrl } from "@/lib/appUrls";
 import { useI18n } from "@/lib/useI18n";
 
@@ -193,6 +194,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <HomeFeaturedPlaces />
 
       <section className="home-result-guide">
         <div className="container home-result-guide-inner">

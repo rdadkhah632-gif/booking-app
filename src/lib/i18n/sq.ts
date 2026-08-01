@@ -379,6 +379,12 @@ export const sq: TranslationTree = {
   "home.discovery.businessBody":
     "Pretendo një vend ekzistues ose krijo një profil, pastaj menaxho rezervimet përmes Mirëbook Biznes.",
   "home.discovery.businessCta": "Pretendo ose listo biznesin tënd",
+  "home.featured.kicker": "Në të gjithë Shqipërinë",
+  "home.featured.title": "Vende që ia vlen t'i shikosh më nga afër",
+  "home.featured.body":
+    "Zbulo shërbime, aktivitete dhe vende lokale në qytete anembanë vendit.",
+  "home.featured.viewAll": "Eksploro të gjitha vendet",
+  "home.featured.loading": "Po ngarkohen vendet lokale",
 
   "businessHome.metaTitle":
     "Mirëbook Biznes | Rezervime, staf dhe disponueshmëri",
