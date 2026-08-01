@@ -396,6 +396,8 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
+          min-height: 44px;
+          padding: 0.55rem 0.15rem;
           color: #ffffff;
           font-size: 0.88rem;
           font-weight: 800;
