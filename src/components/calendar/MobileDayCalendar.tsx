@@ -424,6 +424,10 @@ export default function MobileDayCalendar({
             font-weight: 700;
           }
 
+          .mobile-day-time-rail span:first-child {
+            transform: translateY(0.4rem);
+          }
+
           .mobile-day-lane {
             overflow: hidden;
             background: rgba(20, 19, 31, 0.58);

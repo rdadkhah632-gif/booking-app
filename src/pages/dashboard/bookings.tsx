@@ -2991,6 +2991,10 @@ export default function Bookings() {
           white-space: nowrap;
         }
 
+        :global(.week-time-rail span:first-child) {
+          transform: translateY(0.4rem);
+        }
+
         :global(.week-day-lane) {
           border-right: 1px solid rgba(148, 163, 184, 0.12);
           overflow: hidden;

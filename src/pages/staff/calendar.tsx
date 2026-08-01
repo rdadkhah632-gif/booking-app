@@ -1328,6 +1328,10 @@ export default function StaffCalendarPage() {
           white-space: nowrap;
         }
 
+        .staff-week-time-rail span:first-child {
+          transform: translateY(0.4rem);
+        }
+
         :global(.staff-week-time-rail span) {
           position: absolute;
           right: 0.45rem;
@@ -1336,6 +1340,10 @@ export default function StaffCalendarPage() {
           font-size: 0.72rem;
           font-weight: 800;
           white-space: nowrap;
+        }
+
+        :global(.staff-week-time-rail span:first-child) {
+          transform: translateY(0.4rem);
         }
 
         .staff-week-lane {
