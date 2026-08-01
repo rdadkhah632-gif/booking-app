@@ -5,6 +5,7 @@ import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
+import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 
 type ProfileRow = {
   id: string;
@@ -137,6 +138,40 @@ export default function AdminUsersPage() {
     },
   );
 
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const requestedRole =
+      typeof router.query.role === "string" ? router.query.role : "";
+    const requestedAccount =
+      typeof router.query.account === "string" ? router.query.account : "";
+    const requestedAttention =
+      typeof router.query.attention === "string" ? router.query.attention : "";
+    const validRoles = new Set(["customer", "business"]);
+    const validAccounts = new Set([
+      "admin",
+      "normal",
+      "business_owner",
+      "staff",
+      "has_bookings",
+      "needs_attention",
+    ]);
+
+    setRoleFilter(validRoles.has(requestedRole) ? requestedRole : "all");
+    setAccountFilter(
+      requestedAttention === "attention"
+        ? "needs_attention"
+        : validAccounts.has(requestedAccount)
+          ? requestedAccount
+          : "all",
+    );
+  }, [
+    router.isReady,
+    router.query.account,
+    router.query.attention,
+    router.query.role,
+  ]);
+
   const filteredProfiles = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
@@ -249,7 +284,7 @@ export default function AdminUsersPage() {
       const session = await getStableBrowserSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/admin/users");
+        router.replace(getAdminLoginHref(router.asPath, "/admin/users"));
         return;
       }
 
@@ -584,7 +619,7 @@ export default function AdminUsersPage() {
     } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      router.replace("/login?redirectTo=/admin/users");
+      router.replace(getAdminLoginHref(router.asPath, "/admin/users"));
       setSavingProfile(false);
       return;
     }
@@ -654,7 +689,7 @@ export default function AdminUsersPage() {
     } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      router.replace("/login?redirectTo=/admin/users");
+      router.replace(getAdminLoginHref(router.asPath, "/admin/users"));
       setSavingAccess(false);
       return;
     }

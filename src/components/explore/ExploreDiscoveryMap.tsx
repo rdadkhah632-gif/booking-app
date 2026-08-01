@@ -749,6 +749,10 @@ export default function ExploreDiscoveryMap({
             margin-inline: -24px;
             border-inline: 0;
           }
+
+          :global(.discovery-map .mapboxgl-scroll-zoom-blocker) {
+            display: none !important;
+          }
         }
       `}</style>
     </div>

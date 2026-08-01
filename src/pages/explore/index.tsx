@@ -757,7 +757,6 @@ export default function Explore() {
               loading={loading}
               filteredCount={listItems.length}
               hasFilters={hasFilters}
-              onClearFilters={clearFilters}
             />
 
             {loading && (
@@ -775,7 +774,6 @@ export default function Explore() {
             {!loading && hasAnyResults && listItems.length === 0 && (
               <ExploreEmptyState
                 type="no-results"
-                onClearFilters={clearFilters}
                 kind={kind}
                 onShowPlaces={() => changeKind("places")}
               />

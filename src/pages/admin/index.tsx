@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
+import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 
 type AdminProfile = {
   id: string;
@@ -253,7 +254,7 @@ export default function AdminIndexPage() {
       const session = await getStableBrowserSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/admin");
+        router.replace(getAdminLoginHref(router.asPath, "/admin"));
         return;
       }
 

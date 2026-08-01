@@ -320,19 +320,6 @@ export default function DashboardHome() {
   const publicPreviewHref = primaryBusinessId
     ? `/explore/${primaryBusinessId}`
     : undefined;
-  const bookingSetupReady =
-    hasProfileBasics &&
-    activeServices > 0 &&
-    activeStaff > 0 &&
-    activeAssignments > 0 &&
-    openWorkingDays > 0;
-  const readyToTakeBookings = bookingSetupReady && isPublished;
-  const todayStatusLabel = readyToTakeBookings
-    ? t("dashboardHome.status.ready", "Ready to take bookings")
-    : bookingSetupReady
-      ? t("dashboardHome.status.readyToPublish", "Ready to publish")
-      : t("dashboardHome.status.setupNeeded", "Setup needed");
-
   const setupSteps = useMemo<SetupStep[]>(() => {
     return [
       {
@@ -386,6 +373,15 @@ export default function DashboardHome() {
   ]);
 
   const nextSetupStep = setupSteps.find((step) => !step.complete) || null;
+  const requiredSetupReady = setupSteps.every(
+    (step) => step.key === "publish" || step.complete,
+  );
+  const readyToTakeBookings = requiredSetupReady && isPublished;
+  const todayStatusLabel = readyToTakeBookings
+    ? t("dashboardHome.status.ready", "Ready to take bookings")
+    : requiredSetupReady
+      ? t("dashboardHome.status.readyToPublish", "Ready to publish")
+      : t("dashboardHome.status.setupNeeded", "Setup needed");
   const primaryNextAction = pendingActionCount
     ? {
         title: t(
@@ -418,7 +414,7 @@ export default function DashboardHome() {
         ? {
             title: nextSetupStep.label,
             body:
-              nextSetupStep.key === "publish" && bookingSetupReady
+              nextSetupStep.key === "publish" && requiredSetupReady
                 ? t(
                     "dashboardHome.today.nextPublishBody",
                     "Required booking setup is complete. Review your customer profile, then publish when it is ready.",

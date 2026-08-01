@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
+import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 import { useI18n } from "@/lib/useI18n";
 
 type AdminProfile = {
@@ -234,7 +235,9 @@ export default function AdminNotificationsPage() {
       const session = await getStableBrowserSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/admin/notifications");
+        router.replace(
+          getAdminLoginHref(router.asPath, "/admin/notifications"),
+        );
         return;
       }
 

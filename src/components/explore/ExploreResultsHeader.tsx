@@ -4,14 +4,12 @@ type Props = {
   loading: boolean;
   filteredCount: number;
   hasFilters: boolean;
-  onClearFilters: () => void;
 };
 
 export default function ExploreResultsHeader({
   loading,
   filteredCount,
   hasFilters,
-  onClearFilters,
 }: Props) {
   const { t } = useI18n();
 
@@ -31,16 +29,6 @@ export default function ExploreResultsHeader({
                 )}
         </p>
       </div>
-
-      {hasFilters && (
-        <button
-          type="button"
-          onClick={onClearFilters}
-          className="btn btn-ghost"
-        >
-          {t("explore.results.clearCurrent")}
-        </button>
-      )}
     </div>
   );
 }

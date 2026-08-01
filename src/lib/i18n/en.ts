@@ -195,7 +195,7 @@ export const en: TranslationTree = {
     "Discover local service businesses, compare real availability and choose a time that works. Each business clearly shows whether your appointment is confirmed instantly or sent as a booking request.",
   "home.search.servicePlaceholder":
     "Haircut, nails, dental checkup, massage...",
-  "home.search.cityPlaceholder": "Tirana, Coventry, London...",
+  "home.search.cityPlaceholder": "Tiranë, Coventry, London...",
   "home.search.button": "Search Mirëbook",
   "home.cta.explore": "Explore Mirëbook",
   "home.cta.myBookings": "My bookings",
@@ -4157,7 +4157,7 @@ export const en: TranslationTree = {
   "explore.discovery.resultLabel": "results",
   "explore.discovery.searchTitle": "Search Albania",
   "explore.discovery.searchPlaceholder": "Services, activities or places",
-  "explore.discovery.cityPlaceholder": "Tirana, Durrës, Sarandë...",
+  "explore.discovery.cityPlaceholder": "Tiranë, Durrës, Sarandë...",
   "explore.discovery.searchButton": "Search",
   "explore.discovery.loading": "Finding places...",
   "explore.discovery.emptyTitle": "More of Albania is coming",

@@ -20,6 +20,7 @@ import OutreachDraftPanel from "@/components/admin/OutreachDraftPanel";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 
 const STATUSES = [
   "not_started",
@@ -187,7 +188,9 @@ function dateAfterDays(days: number) {
   return date.toISOString().slice(0, 10);
 }
 
-function preferredOutreachChannel(candidate: OutreachCandidate): OutreachChannel {
+function preferredOutreachChannel(
+  candidate: OutreachCandidate,
+): OutreachChannel {
   if (candidate.email) return "email";
   if (candidate.socialUrls.length > 0) return "social";
   if (candidate.phone) return "phone";
@@ -290,7 +293,7 @@ export default function AdminOutreachPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/admin/outreach");
+        router.replace(getAdminLoginHref(router.asPath, "/admin/outreach"));
         return;
       }
 
@@ -408,15 +411,17 @@ export default function AdminOutreachPage() {
     return labels[value];
   }
 
-  async function loadCandidates(params: {
-    token?: string;
-    nextOffset?: number;
-    nextStatus?: StatusFilter;
-    nextSearch?: string;
-    nextCity?: string;
-    nextCategory?: string;
-    nextPilotOnly?: boolean;
-  } = {}) {
+  async function loadCandidates(
+    params: {
+      token?: string;
+      nextOffset?: number;
+      nextStatus?: StatusFilter;
+      nextSearch?: string;
+      nextCity?: string;
+      nextCategory?: string;
+      nextPilotOnly?: boolean;
+    } = {},
+  ) {
     setLoading(true);
     setError("");
     setSuccess("");
@@ -427,7 +432,7 @@ export default function AdminOutreachPage() {
       } = await supabase.auth.getSession();
       const token = params.token || session?.access_token;
       if (!token) {
-        router.replace("/login?redirectTo=/admin/outreach");
+        router.replace(getAdminLoginHref(router.asPath, "/admin/outreach"));
         return;
       }
 
@@ -513,10 +518,7 @@ export default function AdminOutreachPage() {
 
   async function saveOutreach() {
     if (!selectedCandidate || !trackingAvailable) return;
-    if (
-      CONTACT_RECORDED_STATUSES.includes(draft.status) &&
-      !draft.channel
-    ) {
+    if (CONTACT_RECORDED_STATUSES.includes(draft.status) && !draft.channel) {
       setError(
         t(
           "admin.outreach.error.channel",
@@ -538,9 +540,7 @@ export default function AdminOutreachPage() {
       return;
     }
     if (draft.status === "follow_up" && !draft.followUpOn) {
-      setError(
-        t("admin.outreach.error.followUp", "Choose a follow-up date."),
-      );
+      setError(t("admin.outreach.error.followUp", "Choose a follow-up date."));
       return;
     }
     if (
@@ -598,12 +598,11 @@ export default function AdminOutreachPage() {
       }
 
       await loadCandidates();
-      setSuccess(
-        t("admin.outreach.success", "Private outreach update saved."),
-      );
+      setSuccess(t("admin.outreach.success", "Private outreach update saved."));
     } catch (saveError) {
       setError(
-        saveError instanceof Error && saveError.message === "candidate_unavailable"
+        saveError instanceof Error &&
+          saveError.message === "candidate_unavailable"
           ? t(
               "admin.outreach.error.unavailable",
               "This place is no longer available in the outreach queue.",
@@ -620,10 +619,10 @@ export default function AdminOutreachPage() {
                   "admin.outreach.error.manualConfirmation",
                   "Confirm that contact happened outside Mirëbook before saving this status.",
                 )
-            : t(
-                "admin.outreach.error.save",
-                "The outreach update could not be saved.",
-              ),
+              : t(
+                  "admin.outreach.error.save",
+                  "The outreach update could not be saved.",
+                ),
       );
     } finally {
       setSaving(false);
@@ -720,15 +719,15 @@ export default function AdminOutreachPage() {
           </div>
         </div>
 
-        <section className="outreach-pilot" aria-labelledby="launch-pilot-title">
+        <section
+          className="outreach-pilot"
+          aria-labelledby="launch-pilot-title"
+        >
           <div className="outreach-pilot-copy">
             <Rocket size={22} aria-hidden="true" />
             <div>
               <strong id="launch-pilot-title">
-                {t(
-                  "admin.outreach.pilot.title",
-                  "First-owner launch pilot",
-                )}
+                {t("admin.outreach.pilot.title", "First-owner launch pilot")}
               </strong>
               <span>
                 {t(
@@ -738,10 +737,13 @@ export default function AdminOutreachPage() {
               </span>
             </div>
           </div>
-          <div className="outreach-pilot-metrics" aria-label={t(
-            "admin.outreach.pilot.progress",
-            "Launch pilot progress",
-          )}>
+          <div
+            className="outreach-pilot-metrics"
+            aria-label={t(
+              "admin.outreach.pilot.progress",
+              "Launch pilot progress",
+            )}
+          >
             <span>
               <strong>{pilotSummary.ready}</strong>
               {t("admin.outreach.pilot.ready", "ready")}
@@ -755,10 +757,11 @@ export default function AdminOutreachPage() {
               {t("admin.outreach.pilot.interested", "interested")}
             </span>
           </div>
-          <div className="outreach-pilot-switch" role="group" aria-label={t(
-            "admin.outreach.pilot.viewLabel",
-            "Candidate view",
-          )}>
+          <div
+            className="outreach-pilot-switch"
+            role="group"
+            aria-label={t("admin.outreach.pilot.viewLabel", "Candidate view")}
+          >
             <button
               type="button"
               aria-pressed={!pilotOnly}
@@ -773,7 +776,8 @@ export default function AdminOutreachPage() {
               className={pilotOnly ? "is-active" : ""}
               onClick={() => changePilotMode(true)}
             >
-              {t("admin.outreach.pilot.shortlist", "Launch pilot")} · {pilotSummary.selected}
+              {t("admin.outreach.pilot.shortlist", "Launch pilot")} ·{" "}
+              {pilotSummary.selected}
             </button>
           </div>
         </section>
@@ -787,7 +791,9 @@ export default function AdminOutreachPage() {
           </div>
         )}
         {error && <div className="outreach-message is-error">{error}</div>}
-        {success && <div className="outreach-message is-success">{success}</div>}
+        {success && (
+          <div className="outreach-message is-success">{success}</div>
+        )}
 
         <div
           className="outreach-statuses"
@@ -842,7 +848,10 @@ export default function AdminOutreachPage() {
           </label>
           <label>
             <span>{t("admin.outreach.filter.city", "City")}</span>
-            <select value={city} onChange={(event) => setCity(event.target.value)}>
+            <select
+              value={city}
+              onChange={(event) => setCity(event.target.value)}
+            >
               <option value="">
                 {t("admin.outreach.filter.allCities", "All cities")}
               </option>
@@ -880,8 +889,7 @@ export default function AdminOutreachPage() {
               <div>
                 <strong>{statusLabel(statusFilter)}</strong>
                 <span>
-                  {pagination.total}{" "}
-                  {t("admin.outreach.results", "candidates")}
+                  {pagination.total} {t("admin.outreach.results", "candidates")}
                 </span>
               </div>
               {loading && (
@@ -893,10 +901,7 @@ export default function AdminOutreachPage() {
               <div className="outreach-empty">
                 <UserRoundSearch size={30} aria-hidden="true" />
                 <strong>
-                  {t(
-                    "admin.outreach.emptyTitle",
-                    "No candidates in this view",
-                  )}
+                  {t("admin.outreach.emptyTitle", "No candidates in this view")}
                 </strong>
                 <span>
                   {t(
@@ -934,15 +939,23 @@ export default function AdminOutreachPage() {
                       </small>
                       {candidate.launchPilot.rank && (
                         <small className="outreach-pilot-rank">
-                          {t("admin.outreach.pilot.rank", "Pilot #{rank}").replace(
+                          {t(
+                            "admin.outreach.pilot.rank",
+                            "Pilot #{rank}",
+                          ).replace(
                             "{rank}",
                             String(candidate.launchPilot.rank),
                           )}{" "}
-                          · {channelLabel(candidate.launchPilot.recommendedChannel)}
+                          ·{" "}
+                          {channelLabel(
+                            candidate.launchPilot.recommendedChannel,
+                          )}
                         </small>
                       )}
                     </span>
-                    <span className={`outreach-pill is-${candidate.outreach.status}`}>
+                    <span
+                      className={`outreach-pill is-${candidate.outreach.status}`}
+                    >
                       {statusLabel(candidate.outreach.status)}
                     </span>
                   </button>
@@ -1012,12 +1025,17 @@ export default function AdminOutreachPage() {
               <>
                 <header className="outreach-detail-header">
                   <div>
-                    <span className={`outreach-pill is-${selectedCandidate.outreach.status}`}>
+                    <span
+                      className={`outreach-pill is-${selectedCandidate.outreach.status}`}
+                    >
                       {statusLabel(selectedCandidate.outreach.status)}
                     </span>
                     <h2>{selectedCandidate.name}</h2>
                     <p>
-                      {[categoryLabel(selectedCandidate.categoryKey), selectedCandidate.city]
+                      {[
+                        categoryLabel(selectedCandidate.categoryKey),
+                        selectedCandidate.city,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
@@ -1136,7 +1154,9 @@ export default function AdminOutreachPage() {
                     email={selectedCandidate.email}
                     claimLink={claimLink}
                     publicPlaceLink={publicPlaceLink}
-                    preferredChannel={preferredOutreachChannel(selectedCandidate)}
+                    preferredChannel={preferredOutreachChannel(
+                      selectedCandidate,
+                    )}
                     uiLocale={locale}
                     t={t}
                   />
@@ -1209,15 +1229,16 @@ export default function AdminOutreachPage() {
                                   followUpOn: "",
                                   notes: "",
                                 }
-                              : CONTACT_RECORDED_STATUSES.includes(nextStatus) &&
-                                  !current.channel
+                              : CONTACT_RECORDED_STATUSES.includes(
+                                    nextStatus,
+                                  ) && !current.channel
                                 ? {
                                     channel:
                                       preferredOutreachChannel(
                                         selectedCandidate,
                                       ),
                                   }
-                              : {}),
+                                : {}),
                           }));
                         }}
                         disabled={!trackingAvailable}
@@ -1236,9 +1257,7 @@ export default function AdminOutreachPage() {
                         onChange={(event) =>
                           setDraft((current) => ({
                             ...current,
-                            channel: event.target.value as
-                              | OutreachChannel
-                              | "",
+                            channel: event.target.value as OutreachChannel | "",
                           }))
                         }
                         disabled={
@@ -1246,10 +1265,7 @@ export default function AdminOutreachPage() {
                         }
                       >
                         <option value="">
-                          {t(
-                            "admin.outreach.channel.choose",
-                            "Choose channel",
-                          )}
+                          {t("admin.outreach.channel.choose", "Choose channel")}
                         </option>
                         {CHANNELS.map((value) => (
                           <option key={value} value={value}>
@@ -1371,7 +1387,9 @@ export default function AdminOutreachPage() {
                     </button>
                     <span>
                       {selectedCandidate.outreach.updated_at &&
-                      new Date(selectedCandidate.outreach.updated_at).getTime() > 0
+                      new Date(
+                        selectedCandidate.outreach.updated_at,
+                      ).getTime() > 0
                         ? `${t("admin.outreach.updated", "Updated")} ${formatDate(
                             selectedCandidate.outreach.updated_at,
                             locale,
@@ -1400,7 +1418,10 @@ export default function AdminOutreachPage() {
                         )}
                       </span>
                     </div>
-                    <Link href="/admin/directory-claims" className="btn btn-ghost">
+                    <Link
+                      href="/admin/directory-claims"
+                      className="btn btn-ghost"
+                    >
                       {t("admin.outreach.handoffAction", "Open claims")}
                     </Link>
                   </div>
@@ -1641,7 +1662,10 @@ export default function AdminOutreachPage() {
 
         .outreach-filters {
           display: grid;
-          grid-template-columns: minmax(220px, 1.4fr) minmax(150px, 0.8fr) minmax(180px, 1fr) auto;
+          grid-template-columns: minmax(220px, 1.4fr) minmax(
+              150px,
+              0.8fr
+            ) minmax(180px, 1fr) auto;
           gap: 0.75rem;
           align-items: end;
           padding: 0.8rem;

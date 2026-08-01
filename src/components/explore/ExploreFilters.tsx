@@ -93,7 +93,7 @@ export default function ExploreFilters({
             onChange={(e) => onCityChange(e.target.value)}
             placeholder={t(
               "explore.discovery.cityPlaceholder",
-              "Tirana, Durrës, Sarandë...",
+              "Tiranë, Durrës, Sarandë...",
             )}
             list="city-options"
             style={{ width: "100%", marginTop: "0.4rem" }}

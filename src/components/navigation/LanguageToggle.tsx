@@ -44,6 +44,11 @@ export default function LanguageToggle() {
         }
 
         .language-switcher button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 2.75rem;
+          min-height: 2.75rem;
           border: 0;
           background: transparent;
           color: var(--text-muted);
@@ -71,7 +76,7 @@ export default function LanguageToggle() {
           }
 
           .language-switcher button {
-            padding: 0.22rem 0.34rem;
+            padding: 0.22rem;
             font-size: 0.72rem;
           }
         }

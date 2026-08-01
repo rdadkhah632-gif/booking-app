@@ -5,6 +5,7 @@ import AuthNav from '@/components/AuthNav'
 import { supabase } from '@/lib/supabaseClient'
 import { useI18n } from '@/lib/useI18n'
 import { requestTransactionalEmail } from '@/lib/email/client'
+import { getAdminLoginHref } from '@/lib/auth/getAdminLoginHref'
 
 type SupportMessage = {
   id: string
@@ -104,7 +105,7 @@ export default function AdminSupportPage() {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      await router.replace('/login?redirectTo=/admin/support')
+      await router.replace(getAdminLoginHref(router.asPath, '/admin/support'))
       return null
     }
 

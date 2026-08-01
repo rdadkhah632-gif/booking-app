@@ -13,6 +13,7 @@ import AuthNav from "@/components/AuthNav";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
+import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 
 const STATUSES = [
   "pending",
@@ -126,7 +127,9 @@ export default function AdminDirectoryClaimsPage() {
     try {
       const session = await getStableBrowserSession();
       if (!session) {
-        router.replace("/login?redirectTo=/admin/directory-claims");
+        router.replace(
+          getAdminLoginHref(router.asPath, "/admin/directory-claims"),
+        );
         return;
       }
       const response = await fetch(

@@ -6,6 +6,7 @@ import { uploadMirebookImage } from "@/lib/imageUpload";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
+import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 
 type DirectoryStatus =
   | "needs_review"
@@ -322,7 +323,7 @@ export default function AdminDirectoryPage() {
       const session = await getStableBrowserSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/admin/directory");
+        router.replace(getAdminLoginHref(router.asPath, "/admin/directory"));
         return;
       }
 
@@ -411,7 +412,7 @@ export default function AdminDirectoryPage() {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
-      router.replace("/login?redirectTo=/admin/directory");
+      router.replace(getAdminLoginHref(router.asPath, "/admin/directory"));
       return null;
     }
     return session.access_token;
@@ -2396,10 +2397,9 @@ export default function AdminDirectoryPage() {
           margin-top: 1rem;
           padding: 0.9rem;
           display: grid;
-          grid-template-columns: minmax(180px, 1.2fr) minmax(170px, 1fr) minmax(
-              150px,
-              0.8fr
-            ) auto;
+          grid-template-columns:
+            minmax(180px, 1.2fr) minmax(170px, 1fr) minmax(150px, 0.8fr)
+            auto;
           gap: 0.75rem;
           align-items: end;
           border: 1px solid var(--border);

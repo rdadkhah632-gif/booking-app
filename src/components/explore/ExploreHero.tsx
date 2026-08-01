@@ -22,8 +22,12 @@ export default function ExploreHero({ marketplaceStats }: Props) {
       </div>
       {marketplaceStats.visible > 0 && (
         <p className="small muted">
-          {marketplaceStats.visible}{" "}
-          {t("explore.discovery.resultLabel", "results")}
+          {marketplaceStats.visible === 1
+            ? t("explore.discovery.oneResult", "1 result")
+            : t("explore.discovery.resultCount", "{count} results").replace(
+                "{count}",
+                String(marketplaceStats.visible),
+              )}
         </p>
       )}
       <style jsx>{`

@@ -11,6 +11,7 @@ import {
 } from '@/lib/billing'
 import { supabase } from '@/lib/supabaseClient'
 import { useI18n } from '@/lib/useI18n'
+import { getAdminLoginHref } from '@/lib/auth/getAdminLoginHref'
 
 type AdminProfile = {
   id: string
@@ -379,7 +380,7 @@ export default function AdminBusinessesPage() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        router.replace('/login?redirectTo=/admin/businesses')
+        router.replace(getAdminLoginHref(router.asPath, '/admin/businesses'))
         return
       }
 
@@ -625,7 +626,7 @@ export default function AdminBusinessesPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        router.replace('/login?redirectTo=/admin/businesses')
+        router.replace(getAdminLoginHref(router.asPath, '/admin/businesses'))
         return
       }
 
@@ -666,7 +667,7 @@ export default function AdminBusinessesPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        router.replace('/login?redirectTo=/admin/businesses')
+        router.replace(getAdminLoginHref(router.asPath, '/admin/businesses'))
         return
       }
 
@@ -717,7 +718,7 @@ export default function AdminBusinessesPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        router.replace('/login?redirectTo=/admin/businesses')
+        router.replace(getAdminLoginHref(router.asPath, '/admin/businesses'))
         return
       }
 
@@ -861,7 +862,7 @@ export default function AdminBusinessesPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        router.replace('/login?redirectTo=/admin/businesses')
+        router.replace(getAdminLoginHref(router.asPath, '/admin/businesses'))
         return
       }
 
