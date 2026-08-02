@@ -714,11 +714,10 @@ export default function ExploreDiscoveryMap({
           position: absolute;
           top: 7px;
           left: 42px;
-          display: flex;
+          display: none;
           width: max-content;
           max-width: 190px;
-          min-height: 30px;
-          align-items: center;
+          height: 30px;
           overflow: hidden;
           padding: 0.34rem 0.62rem;
           border: 1px solid rgba(17, 24, 39, 0.13);
@@ -728,15 +727,9 @@ export default function ExploreDiscoveryMap({
           color: #111827;
           font-size: 0.72rem;
           font-weight: 750;
-          line-height: 1.15;
-          opacity: 0;
+          line-height: 1rem;
           pointer-events: none;
           text-overflow: ellipsis;
-          transform: translateX(-4px);
-          transition:
-            opacity 0.15s ease,
-            transform 0.15s ease;
-          visibility: hidden;
           white-space: nowrap;
         }
 
@@ -835,9 +828,7 @@ export default function ExploreDiscoveryMap({
             .discovery-map-marker-shell:not(.is-cluster).is-selected
               .discovery-map-marker-label
           ) {
-            opacity: 1;
-            transform: translateX(0);
-            visibility: visible;
+            display: block;
           }
         }
 

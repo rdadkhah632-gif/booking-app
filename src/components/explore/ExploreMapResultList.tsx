@@ -52,11 +52,13 @@ export default function ExploreMapResultList({
       <div className="map-results-list">
         {items.map((item) => {
           const selected = item.id === selectedId;
+          const resultClass =
+            item.resultType === "business" ? "is-business" : "is-directory";
           return (
             <article
               key={item.id}
               ref={selected ? selectedRowRef : undefined}
-              className={`map-result-row is-${item.resultType} ${
+              className={`map-result-row ${resultClass} ${
                 selected ? "is-selected" : ""
               }`}
             >
@@ -161,21 +163,33 @@ export default function ExploreMapResultList({
           border-bottom: 0;
         }
 
-        .map-result-row:hover,
-        .map-result-row.is-selected {
+        .map-result-row:hover {
           background: #f7faf9;
         }
 
-        .map-result-row.is-selected {
-          box-shadow: inset 4px 0 0 var(--success);
+        .map-result-row.is-directory.is-selected {
+          background: #f1faf8;
+          box-shadow: inset 4px 0 0 #0f8f83;
+        }
+
+        .map-result-row.is-directory.is-selected
+          .map-result-select:focus-visible {
+          outline: 2px solid #0f8f83;
+          outline-offset: -2px;
         }
 
         .map-result-row.is-business.is-selected {
           background: #fff8f4;
-          box-shadow: inset 4px 0 0 var(--accent);
+          box-shadow: inset 4px 0 0 #ff6b35;
         }
 
-        .map-result-row.is-selected .map-result-media {
+        .map-result-row.is-business.is-selected
+          .map-result-select:focus-visible {
+          outline: 2px solid #ff6b35;
+          outline-offset: -2px;
+        }
+
+        .map-result-row.is-directory.is-selected .map-result-media {
           border-color: rgba(20, 184, 166, 0.35);
           box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.08);
         }
