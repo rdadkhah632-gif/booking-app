@@ -56,7 +56,9 @@ export default function ExploreMapResultList({
             <article
               key={item.id}
               ref={selected ? selectedRowRef : undefined}
-              className={`map-result-row ${selected ? "is-selected" : ""}`}
+              className={`map-result-row is-${item.resultType} ${
+                selected ? "is-selected" : ""
+              }`}
             >
               <button
                 type="button"
@@ -161,11 +163,26 @@ export default function ExploreMapResultList({
 
         .map-result-row:hover,
         .map-result-row.is-selected {
-          background: var(--surface-2);
+          background: #f7faf9;
         }
 
         .map-result-row.is-selected {
-          box-shadow: inset 3px 0 0 var(--accent);
+          box-shadow: inset 4px 0 0 var(--success);
+        }
+
+        .map-result-row.is-business.is-selected {
+          background: #fff8f4;
+          box-shadow: inset 4px 0 0 var(--accent);
+        }
+
+        .map-result-row.is-selected .map-result-media {
+          border-color: rgba(20, 184, 166, 0.35);
+          box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.08);
+        }
+
+        .map-result-row.is-business.is-selected .map-result-media {
+          border-color: rgba(255, 107, 53, 0.35);
+          box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.08);
         }
 
         .map-result-select {

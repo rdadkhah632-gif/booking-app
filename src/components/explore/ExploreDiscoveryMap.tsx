@@ -368,7 +368,11 @@ export default function ExploreDiscoveryMap({
         const clusterCount = document.createElement("span");
         clusterCount.className = "discovery-map-marker-count";
         clusterCount.setAttribute("aria-hidden", "true");
-        button.append(pin, clusterCount);
+        const placeName = document.createElement("span");
+        placeName.className = "discovery-map-marker-label";
+        placeName.textContent = item.name;
+        placeName.setAttribute("aria-hidden", "true");
+        button.append(pin, clusterCount, placeName);
         const activateMarker = () => {
           const clusterIds = (button.dataset.clusterIds || "")
             .split("|")
@@ -706,6 +710,36 @@ export default function ExploreDiscoveryMap({
           display: none;
         }
 
+        :global(.discovery-map-marker-label) {
+          position: absolute;
+          top: 7px;
+          left: 42px;
+          display: flex;
+          width: max-content;
+          max-width: 190px;
+          min-height: 30px;
+          align-items: center;
+          overflow: hidden;
+          padding: 0.34rem 0.62rem;
+          border: 1px solid rgba(17, 24, 39, 0.13);
+          border-radius: 7px;
+          background: rgba(255, 255, 255, 0.98);
+          box-shadow: 0 5px 16px rgba(11, 18, 32, 0.16);
+          color: #111827;
+          font-size: 0.72rem;
+          font-weight: 750;
+          line-height: 1.15;
+          opacity: 0;
+          pointer-events: none;
+          text-overflow: ellipsis;
+          transform: translateX(-4px);
+          transition:
+            opacity 0.15s ease,
+            transform 0.15s ease;
+          visibility: hidden;
+          white-space: nowrap;
+        }
+
         :global(
           .discovery-map-marker-shell.is-cluster .discovery-map-marker-pin
         ) {
@@ -730,6 +764,12 @@ export default function ExploreDiscoveryMap({
           transition:
             transform 0.15s ease,
             box-shadow 0.15s ease;
+        }
+
+        :global(
+          .discovery-map-marker-shell.is-cluster .discovery-map-marker-label
+        ) {
+          display: none;
         }
 
         :global(
@@ -780,6 +820,25 @@ export default function ExploreDiscoveryMap({
         :global(.discovery-map-marker-button:focus-visible) {
           outline: 2px solid rgba(255, 107, 53, 0.4);
           outline-offset: 2px;
+        }
+
+        @media (min-width: 701px) {
+          :global(
+            .discovery-map-marker-shell:not(.is-cluster):hover
+              .discovery-map-marker-label
+          ),
+          :global(
+            .discovery-map-marker-shell:not(.is-cluster):focus-within
+              .discovery-map-marker-label
+          ),
+          :global(
+            .discovery-map-marker-shell:not(.is-cluster).is-selected
+              .discovery-map-marker-label
+          ) {
+            opacity: 1;
+            transform: translateX(0);
+            visibility: visible;
+          }
         }
 
         :global(.discovery-user-marker) {
