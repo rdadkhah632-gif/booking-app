@@ -67,6 +67,10 @@ export default function ExploreMapResultList({
                 className="map-result-select"
                 onClick={() => onSelect(item.id)}
                 aria-pressed={selected}
+                style={{
+                  outlineColor:
+                    item.resultType === "business" ? "#ff6b35" : "#0f8f83",
+                }}
               >
                 <span className="map-result-media" aria-hidden="true">
                   {item.imageUrl ? (
