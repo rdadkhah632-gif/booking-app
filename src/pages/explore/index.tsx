@@ -346,10 +346,10 @@ export default function Explore() {
 
   function imageBackground(business: Business) {
     if (!business.image_url) {
-      return "linear-gradient(135deg, rgba(237,90,42,0.12), rgba(20,125,112,0.09)), #f4f5f6";
+      return "#f7ebe6";
     }
 
-    return `linear-gradient(rgba(11,18,32,0.05), rgba(11,18,32,0.68)), url("${business.image_url}")`;
+    return `url("${business.image_url}")`;
   }
 
   const filteredBusinesses = useMemo(() => {

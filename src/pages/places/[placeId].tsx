@@ -172,13 +172,23 @@ export default function DirectoryPlacePage() {
         ) : (
           <>
             <header className="place-header">
-              <div>
-                <span className="place-type">
-                  {t("directory.card.type", "Local place")}
-                </span>
+              <div className="place-heading">
+                <div className="place-eyebrow">
+                  <span className="place-type">
+                    {t("directory.card.type", "Local place")}
+                  </span>
+                  <span aria-hidden="true">·</span>
+                  <span className="place-category">
+                    {directoryCategoryLabel(place.categoryKey, t)}
+                  </span>
+                </div>
                 <h1>{place.name}</h1>
-                <p className="place-category">
-                  {directoryCategoryLabel(place.categoryKey, t)}
+                <p className="place-heading-location">
+                  <MapPin size={17} aria-hidden="true" />
+                  <span>
+                    {[place.city, place.region].filter(Boolean).join(", ") ||
+                      t("directory.card.albania", "Albania")}
+                  </span>
                 </p>
               </div>
               <span className="place-status">
@@ -225,14 +235,24 @@ export default function DirectoryPlacePage() {
 
             <div className="place-grid">
               <section className="place-main">
+                <h2 className="place-section-title">
+                  {t("directory.profile.about", "About this place")}
+                </h2>
                 {place.description && (
                   <p className="place-description">{place.description}</p>
                 )}
 
+                <h2 className="place-section-title place-contact-title">
+                  {t(
+                    "directory.profile.contactLocation",
+                    "Contact and location",
+                  )}
+                </h2>
                 <dl className="place-facts">
                   <div>
                     <dt>
                       <MapPin size={18} aria-hidden="true" />
+                      <span>{t("directory.profile.address", "Address")}</span>
                     </dt>
                     <dd>
                       {location || t("directory.card.albania", "Albania")}
@@ -242,6 +262,7 @@ export default function DirectoryPlacePage() {
                     <div>
                       <dt>
                         <Phone size={18} aria-hidden="true" />
+                        <span>{t("directory.profile.phone", "Phone")}</span>
                       </dt>
                       <dd>
                         <a href={`tel:${place.phone}`}>{place.phone}</a>
@@ -252,6 +273,7 @@ export default function DirectoryPlacePage() {
                     <div>
                       <dt>
                         <Globe size={18} aria-hidden="true" />
+                        <span>{t("directory.card.website", "Website")}</span>
                       </dt>
                       <dd>
                         <a
@@ -290,7 +312,9 @@ export default function DirectoryPlacePage() {
               </section>
 
               <aside className="place-owner-panel">
-                <Building2 size={24} aria-hidden="true" />
+                <span className="place-owner-icon" aria-hidden="true">
+                  <Building2 size={22} />
+                </span>
                 <h2>
                   {place.claimable
                     ? t(
@@ -339,7 +363,7 @@ export default function DirectoryPlacePage() {
 
       <style jsx>{`
         .place-shell {
-          max-width: 1180px;
+          max-width: 1240px;
           padding-top: 1.5rem;
           padding-bottom: 5rem;
         }
@@ -357,30 +381,42 @@ export default function DirectoryPlacePage() {
         }
 
         .place-back:hover {
-          color: var(--text);
+          color: var(--success);
         }
 
         .place-header {
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: space-between;
           gap: 2rem;
-          padding-bottom: 1.4rem;
+          padding-bottom: 1.5rem;
         }
 
         .place-header h1 {
-          max-width: 22ch;
-          margin: 0.35rem 0 0.4rem;
+          max-width: 24ch;
+          margin: 0.4rem 0 0.55rem;
           font-family: var(--font-body);
-          font-size: clamp(2rem, 5vw, 3.25rem);
+          font-size: clamp(2.15rem, 4.4vw, 3.35rem);
           font-weight: 850;
-          line-height: 1.02;
+          line-height: 1.05;
           letter-spacing: 0;
+        }
+
+        .place-eyebrow,
+        .place-heading-location {
+          display: flex;
+          align-items: center;
+        }
+
+        .place-eyebrow {
+          gap: 0.4rem;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          font-weight: 750;
         }
 
         .place-type {
           color: var(--success);
-          font-size: 0.75rem;
           font-weight: 850;
           text-transform: uppercase;
         }
@@ -394,18 +430,30 @@ export default function DirectoryPlacePage() {
         }
 
         .place-category {
+          color: var(--text-muted);
+        }
+
+        .place-heading-location {
+          gap: 0.4rem;
           margin: 0;
-          font-size: 1rem;
+          color: var(--text-muted);
+          font-size: 0.92rem;
+        }
+
+        .place-heading-location :global(svg) {
+          flex: 0 0 auto;
+          color: var(--success);
         }
 
         .place-status {
           max-width: 18rem;
           padding: 0.55rem 0.75rem;
-          border: 1px solid var(--border);
+          border: 1px solid rgba(20, 125, 112, 0.22);
           border-radius: 6px;
-          background: var(--surface-2);
+          background: var(--success-dim);
+          color: var(--success);
           font-size: 0.78rem;
-          font-weight: 700;
+          font-weight: 800;
           text-align: center;
         }
 
@@ -421,8 +469,8 @@ export default function DirectoryPlacePage() {
         .place-media img {
           display: block;
           width: 100%;
-          max-height: 420px;
-          aspect-ratio: 16 / 6;
+          max-height: 470px;
+          aspect-ratio: 16 / 6.4;
           object-fit: cover;
         }
 
@@ -454,20 +502,32 @@ export default function DirectoryPlacePage() {
 
         .place-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.65fr);
-          gap: clamp(2rem, 5vw, 4.5rem);
-          padding: 2.25rem 0 2.75rem;
+          grid-template-columns: minmax(0, 1.6fr) minmax(290px, 0.68fr);
+          gap: clamp(2.25rem, 5vw, 4.25rem);
+          padding: 2.4rem 0 2.75rem;
         }
 
         .place-main {
           min-width: 0;
         }
 
+        .place-section-title {
+          margin: 0 0 0.7rem;
+          font-family: var(--font-body);
+          font-size: 1.2rem;
+          font-weight: 820;
+          letter-spacing: 0;
+        }
+
+        .place-contact-title {
+          margin-top: 2rem;
+        }
+
         .place-description {
           max-width: 68ch;
-          margin: 0 0 1.5rem;
-          font-size: 1.08rem;
-          line-height: 1.72;
+          margin: 0;
+          font-size: 1.05rem;
+          line-height: 1.7;
         }
 
         .place-facts {
@@ -479,14 +539,23 @@ export default function DirectoryPlacePage() {
 
         .place-facts div {
           display: grid;
-          grid-template-columns: 28px minmax(0, 1fr);
-          gap: 0.75rem;
+          grid-template-columns: minmax(125px, 0.38fr) minmax(0, 1fr);
+          gap: 1rem;
           padding: 1rem 0;
           border-bottom: 1px solid var(--border);
         }
 
         .place-facts dt {
-          color: var(--accent);
+          display: flex;
+          align-items: center;
+          gap: 0.55rem;
+          color: var(--text-muted);
+          font-size: 0.82rem;
+          font-weight: 800;
+        }
+
+        .place-facts dt :global(svg) {
+          color: var(--success);
         }
 
         .place-facts dd {
@@ -514,18 +583,28 @@ export default function DirectoryPlacePage() {
           gap: 0.45rem;
         }
 
+        .place-actions :global(.btn-accent) {
+          background: var(--success);
+          color: #ffffff;
+        }
+
         .place-owner-panel {
           position: sticky;
           top: 96px;
           align-self: start;
-          padding: 1.25rem;
-          border: 1px solid var(--border);
+          padding: 1.35rem;
+          border: 1px solid rgba(237, 90, 42, 0.28);
           border-radius: 8px;
           background: var(--surface);
-          box-shadow: var(--shadow-card);
         }
 
-        .place-owner-panel > :global(svg) {
+        .place-owner-icon {
+          display: grid;
+          width: 2.75rem;
+          height: 2.75rem;
+          place-items: center;
+          border-radius: 8px;
+          background: var(--accent-dim);
           color: var(--accent);
         }
 
@@ -539,6 +618,11 @@ export default function DirectoryPlacePage() {
           margin: 0 0 1rem;
           font-size: 0.9rem;
           line-height: 1.6;
+        }
+
+        .place-owner-panel :global(.btn-ghost) {
+          border-color: rgba(237, 90, 42, 0.28);
+          color: #c9471c;
         }
 
         .place-attribution {
@@ -616,7 +700,11 @@ export default function DirectoryPlacePage() {
 
           .place-owner-panel {
             position: static;
-            box-shadow: none;
+          }
+
+          .place-facts div {
+            grid-template-columns: 1fr;
+            gap: 0.4rem;
           }
 
           .place-actions :global(.btn) {

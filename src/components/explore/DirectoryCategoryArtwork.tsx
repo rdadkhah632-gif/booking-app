@@ -51,28 +51,56 @@ export default function DirectoryCategoryArtwork({
         .directory-category-artwork {
           --art-color: #2dd4bf;
           --art-surface: rgba(45, 212, 191, 0.13);
+          position: relative;
           width: 100%;
           height: 100%;
           min-height: inherit;
           display: grid;
           place-items: center;
+          overflow: hidden;
           color: var(--art-color);
           background: var(--art-surface);
-          box-shadow:
-            inset 0 -5px 0 color-mix(in srgb, var(--art-color) 42%, transparent),
-            inset 0 0 0 1px
-              color-mix(in srgb, var(--art-color) 12%, transparent);
+          box-shadow: inset 0 0 0 1px
+            color-mix(in srgb, var(--art-color) 12%, transparent);
+        }
+
+        .directory-category-artwork::before {
+          position: absolute;
+          width: 58%;
+          height: 72%;
+          border: 1px solid
+            color-mix(in srgb, var(--art-color) 26%, transparent);
+          border-radius: 8px;
+          content: "";
+          transform: rotate(-7deg);
+        }
+
+        .directory-category-artwork::after {
+          position: absolute;
+          right: 8%;
+          bottom: 11%;
+          width: 28%;
+          height: 8%;
+          border-top: 2px solid
+            color-mix(in srgb, var(--art-color) 28%, transparent);
+          border-bottom: 2px solid
+            color-mix(in srgb, var(--art-color) 28%, transparent);
+          content: "";
         }
 
         .directory-category-artwork span {
+          position: relative;
+          z-index: 1;
           display: grid;
-          width: 4.25rem;
-          height: 3.25rem;
+          width: 4.5rem;
+          height: 4.5rem;
           place-items: center;
           border: 1px solid
             color-mix(in srgb, var(--art-color) 32%, transparent);
           border-radius: 8px;
-          background: #fff;
+          background: rgba(255, 255, 255, 0.94);
+          box-shadow: 8px 8px 0
+            color-mix(in srgb, var(--art-color) 14%, transparent);
         }
 
         .is-beauty_grooming {

@@ -4476,6 +4476,10 @@ export const en: TranslationTree = {
   "directory.profile.handoffBody":
     "Opening its live Mirëbook profile with services and available times.",
   "directory.profile.handoffAction": "View services and book",
+  "directory.profile.about": "About this place",
+  "directory.profile.contactLocation": "Contact and location",
+  "directory.profile.address": "Address",
+  "directory.profile.phone": "Phone",
   "directory.profile.directions": "Get directions",
   "directory.profile.ownerTitle": "Is this your business?",
   "directory.profile.ownerBody":

@@ -44,37 +44,40 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
   return (
     <article className="explore-directory-card">
-      <div
-        className={`directory-card-media ${hasImage ? "has-image" : "no-image"}`}
-        aria-hidden={hasImage ? undefined : "true"}
+      <Link
+        href={`/places/${place.id}`}
+        className="directory-card-media-link"
+        aria-label={`${place.name}. ${t("directory.card.type", "Local place")}`}
       >
-        <DirectoryCategoryArtwork category={place.categoryKey} />
-        {hasImage && place.image && (
-          <img
-            src={place.image.url}
-            alt={place.image.alt}
-            loading="lazy"
-            decoding="async"
-            onError={() => setImageFailed(true)}
-          />
-        )}
-      </div>
+        <div
+          className={`directory-card-media ${hasImage ? "has-image" : "no-image"}`}
+        >
+          <DirectoryCategoryArtwork category={place.categoryKey} />
+          {hasImage && place.image && (
+            <img
+              src={place.image.url}
+              alt={place.image.alt}
+              loading="lazy"
+              decoding="async"
+              onError={() => setImageFailed(true)}
+            />
+          )}
+          <span className="directory-type">
+            {t("directory.card.type", "Local place")}
+          </span>
+        </div>
+      </Link>
       <div className="directory-card-content">
-        <div className="directory-card-heading">
-          <div>
-            <span className="directory-type">
-              {t("directory.card.type", "Local place")}
-            </span>
-            <h2>
-              <Link href={`/places/${place.id}`}>{place.name}</Link>
-            </h2>
-          </div>
+        <div className="directory-card-meta">
+          <span className="directory-category">
+            {directoryCategoryLabel(place.categoryKey, t)}
+          </span>
           {distance && <span className="directory-distance">{distance}</span>}
         </div>
 
-        <p className="directory-category">
-          {directoryCategoryLabel(place.categoryKey, t)}
-        </p>
+        <h2>
+          <Link href={`/places/${place.id}`}>{place.name}</Link>
+        </h2>
         {place.description && (
           <p className="directory-description">{place.description}</p>
         )}
@@ -84,11 +87,11 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         </p>
 
         <div className="directory-card-footer">
-          <span className="directory-booking-note">
-            {t("directory.card.notBookable", "Not bookable on Mirëbook yet")}
-          </span>
           <div className="directory-card-actions">
-            <Link href={`/places/${place.id}`} className="btn btn-accent">
+            <Link
+              href={`/places/${place.id}`}
+              className="btn btn-ghost directory-details-action"
+            >
               {t("directory.card.details", "Details")}
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
@@ -163,8 +166,8 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
         .directory-card-media {
           position: relative;
-          min-height: 0;
-          aspect-ratio: 16 / 10;
+          width: 100%;
+          aspect-ratio: 16 / 9;
           display: grid;
           place-items: center;
           background: var(--surface-2);
@@ -173,16 +176,35 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         .directory-card-media.no-image {
-          aspect-ratio: 16 / 5;
-          min-height: 148px;
+          aspect-ratio: 16 / 9;
+        }
+
+        :global(.directory-card-media-link) {
+          display: block;
+          color: inherit;
+          text-decoration: none;
+        }
+
+        :global(.directory-card-media-link:focus-visible) {
+          outline: 3px solid var(--success);
+          outline-offset: -3px;
         }
 
         .directory-card-media img {
-          position: relative;
+          position: absolute;
+          inset: 0;
           z-index: 1;
           width: 100%;
           height: 100%;
           object-fit: cover;
+          transition: transform 0.24s ease;
+        }
+
+        .explore-directory-card:hover .directory-card-media img,
+        :global(.directory-card-media-link:focus-visible)
+          .directory-card-media
+          img {
+          transform: scale(1.025);
         }
 
         .directory-card-media :global(.directory-category-artwork) {
@@ -192,13 +214,14 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
         .directory-card-content {
           min-width: 0;
-          padding: 0.95rem;
+          min-height: 235px;
+          padding: 1rem;
           display: flex;
           flex-direction: column;
-          gap: 0.48rem;
+          gap: 0.52rem;
         }
 
-        .directory-card-heading,
+        .directory-card-meta,
         .directory-card-footer,
         .directory-card-actions,
         .directory-location {
@@ -207,38 +230,52 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           gap: 0.55rem;
         }
 
-        .directory-card-heading,
+        .directory-card-meta,
         .directory-card-footer {
           justify-content: space-between;
-          align-items: flex-start;
         }
 
-        .directory-card-heading h2 {
-          margin: 0.15rem 0 0;
-          font-size: 1.08rem;
+        .directory-card-content h2 {
+          display: -webkit-box;
+          overflow: hidden;
+          margin: 0;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          font-family: var(--font-body);
+          font-size: 1.12rem;
+          font-weight: 820;
           line-height: 1.25;
           overflow-wrap: anywhere;
         }
 
-        .directory-card-heading h2 a {
+        .directory-card-content h2 a {
           color: inherit;
           text-decoration: none;
         }
 
-        .directory-card-heading h2 a:hover {
-          color: var(--accent);
+        .directory-card-content h2 a:hover {
+          color: var(--success);
         }
 
         .directory-type,
         .directory-distance,
-        .directory-booking-note,
         .directory-attribution {
           font-size: 0.72rem;
         }
 
         .directory-type {
-          color: var(--success);
-          font-weight: 700;
+          position: absolute;
+          top: 0.75rem;
+          left: 0.75rem;
+          z-index: 2;
+          padding: 0.38rem 0.55rem;
+          border-radius: 4px;
+          background: rgba(13, 104, 94, 0.94);
+          color: #ffffff;
+          font-size: 0.68rem;
+          font-weight: 850;
+          text-transform: uppercase;
+          box-shadow: 0 4px 14px rgba(20, 24, 32, 0.15);
         }
 
         .directory-distance {
@@ -249,9 +286,16 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         .directory-category,
         .directory-description,
         .directory-location,
-        .directory-booking-note,
         .directory-attribution {
           color: var(--text-muted);
+        }
+
+        .directory-category {
+          overflow: hidden;
+          font-size: 0.76rem;
+          font-weight: 750;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .directory-description {
@@ -280,7 +324,7 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           align-self: end;
           width: 100%;
           margin-top: auto;
-          padding-top: 0.5rem;
+          padding-top: 0.65rem;
           border-top: 1px solid var(--border);
         }
 
@@ -291,14 +335,15 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
         .directory-card-actions :global(.btn) {
           min-height: 44px;
-          padding: 0.52rem 0.68rem;
+          padding: 0.52rem 0.72rem;
           gap: 0.35rem;
           font-size: 0.76rem;
         }
 
-        .directory-card-actions :global(.btn-accent) {
-          background: var(--success);
-          color: #ffffff;
+        .directory-card-actions :global(.directory-details-action) {
+          border-color: rgba(20, 125, 112, 0.25);
+          background: var(--success-dim);
+          color: var(--success);
         }
 
         .directory-credits {
@@ -322,12 +367,6 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         @media (max-width: 900px) {
-          .directory-card-footer {
-            display: grid;
-            gap: 0.5rem;
-            justify-content: stretch;
-          }
-
           .directory-card-actions {
             flex-wrap: nowrap;
             justify-content: flex-start;
@@ -335,17 +374,6 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         @media (max-width: 640px) {
-          .explore-directory-card {
-            grid-template-rows: auto minmax(0, 1fr);
-          }
-
-          .directory-card-heading,
-          .directory-card-footer {
-            display: grid;
-            gap: 0.4rem;
-            justify-content: stretch;
-          }
-
           .directory-card-actions {
             justify-content: flex-start;
           }
@@ -357,13 +385,9 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           }
 
           .directory-card-content {
-            gap: 0.35rem;
-            padding: 0.85rem;
-          }
-
-          .directory-card-media.no-image {
-            min-height: 0;
-            aspect-ratio: 16 / 7;
+            min-height: 220px;
+            gap: 0.4rem;
+            padding: 0.9rem;
           }
 
           .directory-attribution {

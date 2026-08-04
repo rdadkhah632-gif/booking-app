@@ -75,25 +75,23 @@ export default function ExploreBusinessCard({
             {businessInitials(business.name) || "M"}
           </span>
         )}
+        <span
+          className={
+            business.auto_accept_bookings === false
+              ? "explore-booking-mode request"
+              : "explore-booking-mode instant"
+          }
+        >
+          {business.auto_accept_bookings === false
+            ? t("explore.card.requestAppointment", "Request appointment")
+            : t("explore.card.bookInstantly", "Book instantly")}
+        </span>
       </div>
 
       <div className="explore-business-content">
-        <div className="explore-card-topline">
-          <span className="explore-card-category">
-            {business.category || t("common.business", "Business")}
-          </span>
-          <span
-            className={
-              business.auto_accept_bookings === false
-                ? "explore-booking-mode request"
-                : "explore-booking-mode instant"
-            }
-          >
-            {business.auto_accept_bookings === false
-              ? t("explore.card.requestAppointment", "Request appointment")
-              : t("explore.card.bookInstantly", "Book instantly")}
-          </span>
-        </div>
+        <span className="explore-card-category">
+          {business.category || t("common.business", "Business")}
+        </span>
 
         <h3>{business.name}</h3>
 
@@ -120,8 +118,9 @@ export default function ExploreBusinessCard({
 
       <style jsx>{`
         .explore-business-image {
+          position: relative;
           min-height: 0;
-          aspect-ratio: 16 / 10;
+          aspect-ratio: 16 / 9;
           border-bottom: 1px solid var(--border);
           display: grid;
           place-items: center;
@@ -129,8 +128,7 @@ export default function ExploreBusinessCard({
         }
 
         .explore-business-image.no-image {
-          aspect-ratio: 16 / 5;
-          min-height: 148px;
+          aspect-ratio: 16 / 9;
         }
 
         .explore-business-fallback-mark {
@@ -139,27 +137,12 @@ export default function ExploreBusinessCard({
           height: 3.6rem;
           place-items: center;
           border: 1px solid rgba(237, 90, 42, 0.22);
-          border-radius: 50%;
+          border-radius: 8px;
           background: #ffffff;
           color: var(--accent);
-          box-shadow: 0 0.85rem 2rem rgba(20, 24, 32, 0.12);
-          font-size: 1rem;
+          box-shadow: 8px 8px 0 rgba(237, 90, 42, 0.1);
+          font-size: 1.05rem;
           font-weight: 900;
-        }
-
-        @media (max-width: 640px) {
-          .explore-business-image.no-image {
-            min-height: 0;
-            aspect-ratio: 16 / 7;
-          }
-        }
-
-        .explore-card-topline {
-          display: flex;
-          gap: 0.45rem;
-          align-items: center;
-          justify-content: space-between;
-          min-width: 0;
         }
 
         .explore-card-category {
@@ -172,21 +155,25 @@ export default function ExploreBusinessCard({
         }
 
         .explore-booking-mode {
-          flex: 0 0 auto;
-          padding: 0.2rem 0.5rem;
-          border-radius: 999px;
-          font-size: 0.7rem;
-          font-weight: 800;
+          position: absolute;
+          top: 0.75rem;
+          left: 0.75rem;
+          z-index: 1;
+          padding: 0.38rem 0.55rem;
+          border-radius: 4px;
+          color: #ffffff;
+          font-size: 0.68rem;
+          font-weight: 850;
+          text-transform: uppercase;
+          box-shadow: 0 4px 14px rgba(20, 24, 32, 0.15);
         }
 
         .explore-booking-mode.instant {
-          background: rgba(45, 212, 191, 0.1);
-          color: var(--success);
+          background: rgba(237, 90, 42, 0.94);
         }
 
         .explore-booking-mode.request {
-          background: var(--accent-dim);
-          color: var(--accent);
+          background: rgba(192, 68, 28, 0.94);
         }
 
         .explore-business-content h3 {

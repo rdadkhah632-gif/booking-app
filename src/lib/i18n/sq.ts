@@ -4586,6 +4586,10 @@ export const sq: TranslationTree = {
   "directory.profile.handoffBody":
     "Po hapet profili i tij aktiv në Mirëbook me shërbimet dhe oraret e lira.",
   "directory.profile.handoffAction": "Shiko shërbimet dhe rezervo",
+  "directory.profile.about": "Rreth këtij vendi",
+  "directory.profile.contactLocation": "Kontakti dhe vendndodhja",
+  "directory.profile.address": "Adresa",
+  "directory.profile.phone": "Telefoni",
   "directory.profile.directions": "Merr udhëzime",
   "directory.profile.ownerTitle": "A është ky biznesi yt?",
   "directory.profile.ownerBody":
