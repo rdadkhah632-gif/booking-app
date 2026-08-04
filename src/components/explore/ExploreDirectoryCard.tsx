@@ -44,13 +44,14 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
 
   return (
     <article className="explore-directory-card">
-      <Link
-        href={`/places/${place.id}`}
-        className="directory-card-media-link"
-        aria-label={`${place.name}. ${t("directory.card.type", "Local place")}`}
+      <div
+        className={`directory-card-media ${hasImage ? "has-image" : "no-image"}`}
       >
-        <div
-          className={`directory-card-media ${hasImage ? "has-image" : "no-image"}`}
+        <Link
+          href={`/places/${place.id}`}
+          className="directory-card-media-link"
+          data-testid={`directory-place-media-${place.id}`}
+          aria-label={`${place.name}. ${t("directory.card.type", "Local place")}`}
         >
           <DirectoryCategoryArtwork category={place.categoryKey} />
           {hasImage && place.image && (
@@ -65,8 +66,8 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           <span className="directory-type">
             {t("directory.card.type", "Local place")}
           </span>
-        </div>
-      </Link>
+        </Link>
+      </div>
       <div className="directory-card-content">
         <div className="directory-card-meta">
           <span className="directory-category">
@@ -180,7 +181,11 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
         }
 
         :global(.directory-card-media-link) {
-          display: block;
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          display: grid;
+          place-items: center;
           color: inherit;
           text-decoration: none;
         }

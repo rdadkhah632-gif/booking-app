@@ -293,7 +293,7 @@ export default function DirectoryPlacePage() {
                     href={directionsUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn btn-accent"
+                    className="btn place-directions-action"
                   >
                     <MapPin size={17} aria-hidden="true" />
                     {t("directory.profile.directions", "Get directions")}
@@ -583,9 +583,15 @@ export default function DirectoryPlacePage() {
           gap: 0.45rem;
         }
 
-        .place-actions :global(.btn-accent) {
+        .place-actions :global(.place-directions-action) {
+          border: 1px solid var(--success);
           background: var(--success);
           color: #ffffff;
+        }
+
+        .place-actions :global(.place-directions-action:hover) {
+          border-color: #0f685e;
+          background: #0f685e;
         }
 
         .place-owner-panel {
