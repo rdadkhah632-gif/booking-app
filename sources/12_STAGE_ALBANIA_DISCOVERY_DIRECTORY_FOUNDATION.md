@@ -1703,6 +1703,74 @@ database write.
 10. Finish with zero image uploads, directory edits, approvals, contacts,
     claims, bookings, business publication, billing or environment changes.
 
+## Batch 24 - Rights-Cleared Photo Acquisition Pilot
+
+Batch 24 turns the private photo shortlist into a practical, rights-safe
+acquisition workflow. Approved places that still use category artwork now have
+an operator-only photo request kit inside Admin Directory. The first six places
+from the deterministic balanced shortlist are clearly marked as the priority
+pilot, while the same workflow remains available for later approved photo gaps.
+
+The kit provides:
+
+- editable-by-selection English and Albanian request drafts containing the
+  exact public place URL
+- a separate owner permission statement covering display, cropping, Mirëbook
+  apps, social media and launch marketing
+- concise requirements for 2-4 genuine landscape photos, at least 1600x900,
+  supplied as JPG, PNG or WEBP
+- available private operator contact routes from the reviewed/source record
+- copy controls with a visible selectable-text fallback when browser clipboard
+  access is unavailable
+- explicit safety copy that preparing or copying a kit sends nothing, records
+  no outreach state, creates no claim and changes no public listing
+
+The category illustration remains the public fallback until a real image,
+public credit and private permission evidence are reviewed and saved through
+the existing photo editor. Operators must not copy photographs from social
+media or another website merely because they are publicly visible.
+
+### Batch 24 deployment QA
+
+1. Open `/admin/directory` as an admin and select each of the six rows in Next
+   balanced photo set. Confirm each opens an approved record with Photo needed
+   and shows Priority photo pilot in the request kit.
+2. Confirm the six names are Klinika Orkiderma, Commando Arena, Joland Tattoo,
+   Adi Barber Shop, Royal Glam Studio and City Dental Clinic, unless the
+   deterministic production shortlist has legitimately changed because a
+   reviewed photo was added.
+3. On at least three pilot records, confirm the displayed email, phone and/or
+   website agree with the private record. A missing route must show a clean
+   no-contact state rather than inventing contact details.
+4. Switch the kit between EN and SQ without changing the operator account
+   language. Both drafts must contain the exact place name and
+   `https://mirebook.com/places/{id}` URL.
+5. Confirm both languages request 2-4 landscape photos, describe the minimum
+   size and ask the supplier to own the images or have permission to share
+   them. Neither draft may imply ownership, endorsement or bookability.
+6. Confirm the separate permission text covers non-exclusive Mirëbook website,
+   app, social and launch-marketing use, cropping and the ability to request
+   removal.
+7. Copy both fields. When clipboard access is allowed, pasted text must match
+   exactly. When it is blocked, the matching readonly field must receive focus
+   and select its complete text.
+8. Confirm preparing and copying the kit causes no API write, outreach event,
+   email, notification, claim, approval, publication or image upload. Refresh
+   must leave every record and public count unchanged.
+9. Verify an approved place with an existing photo does not show the request
+   kit. A needs-review or hidden record must not be presented as part of the
+   active photo pilot.
+10. Verify EN and SQ at 1440x900 and 390x844. Language and copy controls must be
+    at least 44px high where tapped, long URLs and Albanian copy must wrap, and
+    there must be no horizontal overflow, raw keys or console errors.
+11. As anonymous, customer, owner and staff users, confirm Admin Directory and
+    its API remain admin-only. Recheck the public directory API contains no
+    request drafts, contact email, permission text, priority badge or rights
+    evidence.
+12. Finish with no contact sent and no production record changed. Record which
+    pilot places have a usable contact route so real outreach can be scheduled
+    separately and deliberately.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

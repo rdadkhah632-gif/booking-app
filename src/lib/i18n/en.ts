@@ -4450,6 +4450,33 @@ export const en: TranslationTree = {
     "Add image alt text, a public credit and a private permission or licence note.",
   "admin.directory.content.invalidUrl":
     "Use a secure HTTPS credit or licence URL.",
+  "admin.directory.acquisition.kicker": "Rights-safe sourcing",
+  "admin.directory.acquisition.title": "Photo request kit",
+  "admin.directory.acquisition.body":
+    "Prepare a bilingual request for real owner-supplied imagery. Fallback artwork stays public until the photo and permission evidence are reviewed.",
+  "admin.directory.acquisition.pilot": "Priority photo pilot",
+  "admin.directory.acquisition.manual": "Manual contact only",
+  "admin.directory.acquisition.specsLabel": "Requested photo specification",
+  "admin.directory.acquisition.spec.count": "2–4 landscape photos",
+  "admin.directory.acquisition.spec.size": "1600×900 minimum",
+  "admin.directory.acquisition.spec.format": "JPG, PNG or WEBP",
+  "admin.directory.acquisition.spec.subject": "Real premises, team or service",
+  "admin.directory.acquisition.contact": "Available contact routes",
+  "admin.directory.acquisition.website": "Website",
+  "admin.directory.acquisition.noContact":
+    "No direct contact route is recorded.",
+  "admin.directory.acquisition.language": "Request language",
+  "admin.directory.acquisition.request": "Photo request",
+  "admin.directory.acquisition.permission": "Permission statement",
+  "admin.directory.acquisition.copyRequest": "Copy request",
+  "admin.directory.acquisition.copyPermission": "Copy permission",
+  "admin.directory.acquisition.copied": "Copied",
+  "admin.directory.acquisition.safety":
+    "Preparing or copying this kit records nothing and sends nothing. Contact happens outside Mirëbook; upload only after the supplier and permission evidence have been checked.",
+  "admin.directory.acquisition.requestTemplate":
+    "Hello {name}, Mirëbook is building a reviewed guide to places and services across Albania. Your public listing currently appears here: {url}. We would like to replace its category illustration with real photos supplied by you. Please send 2–4 landscape photos of your premises, team or service that you own or have permission to share, ideally 1600×900 or larger. Please also reply with the permission statement below. This does not create or claim a business account and does not make the listing bookable. You can request removal of the photos at any time. Thank you, Mirëbook.",
+  "admin.directory.acquisition.permissionTemplate":
+    "I confirm that I own these images or have authority to grant permission. I give Mirëbook non-exclusive, royalty-free permission to display and crop them on Mirëbook websites, apps, social media and launch marketing for {name}. I can request their removal. I understand this does not create a business account or make the place bookable.",
   "admin.directory.facts.kicker": "Public accuracy",
   "admin.directory.facts.title": "Reviewed public details",
   "admin.directory.facts.reviewed": "Reviewed details",

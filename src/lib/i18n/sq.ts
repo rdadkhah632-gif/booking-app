@@ -4560,6 +4560,33 @@ export const sq: TranslationTree = {
     "Shto përshkrimin e imazhit, kreditin publik dhe shënimin privat për lejen ose licencën.",
   "admin.directory.content.invalidUrl":
     "Përdor një URL të sigurt HTTPS për kreditin ose licencën.",
+  "admin.directory.acquisition.kicker": "Sigurimi i fotove me të drejta",
+  "admin.directory.acquisition.title": "Paketa e kërkesës për foto",
+  "admin.directory.acquisition.body":
+    "Përgatit një kërkesë dygjuhëshe për fotografi reale të dhëna nga pronari. Ilustrimi i kategorisë mbetet publik derisa fotografia dhe prova e lejes të shqyrtohen.",
+  "admin.directory.acquisition.pilot": "Pilot prioritar i fotografive",
+  "admin.directory.acquisition.manual": "Vetëm kontakt manual",
+  "admin.directory.acquisition.specsLabel": "Kërkesat për fotografitë",
+  "admin.directory.acquisition.spec.count": "2–4 fotografi horizontale",
+  "admin.directory.acquisition.spec.size": "Minimumi 1600×900",
+  "admin.directory.acquisition.spec.format": "JPG, PNG ose WEBP",
+  "admin.directory.acquisition.spec.subject": "Ambient, ekip ose shërbim real",
+  "admin.directory.acquisition.contact": "Mënyrat e disponueshme të kontaktit",
+  "admin.directory.acquisition.website": "Faqja e internetit",
+  "admin.directory.acquisition.noContact":
+    "Nuk është regjistruar asnjë mënyrë e drejtpërdrejtë kontakti.",
+  "admin.directory.acquisition.language": "Gjuha e kërkesës",
+  "admin.directory.acquisition.request": "Kërkesa për fotografi",
+  "admin.directory.acquisition.permission": "Deklarata e lejes",
+  "admin.directory.acquisition.copyRequest": "Kopjo kërkesën",
+  "admin.directory.acquisition.copyPermission": "Kopjo lejen",
+  "admin.directory.acquisition.copied": "U kopjua",
+  "admin.directory.acquisition.safety":
+    "Përgatitja ose kopjimi i kësaj pakete nuk regjistron dhe nuk dërgon asgjë. Kontakti bëhet jashtë Mirëbook; ngarko vetëm pasi të jenë kontrolluar furnizuesi dhe prova e lejes.",
+  "admin.directory.acquisition.requestTemplate":
+    "Përshëndetje {name}, Mirëbook po ndërton një guidë të shqyrtuar për vende dhe shërbime në Shqipëri. Regjistrimi juaj publik shfaqet aktualisht këtu: {url}. Do të dëshironim ta zëvendësonim ilustrimin e kategorisë me fotografi reale të ofruara nga ju. Ju lutemi dërgoni 2–4 fotografi horizontale të ambientit, ekipit ose shërbimit tuaj, për të cilat zotëroni të drejtat ose keni leje t’i ndani, mundësisht 1600×900 ose më të mëdha. Ju lutemi përgjigjuni gjithashtu me deklaratën e lejes më poshtë. Kjo nuk krijon ose pretendon një llogari biznesi dhe nuk e bën regjistrimin të rezervueshëm. Mund të kërkoni heqjen e fotografive në çdo kohë. Faleminderit, Mirëbook.",
+  "admin.directory.acquisition.permissionTemplate":
+    "Konfirmoj se i zotëroj këto fotografi ose kam autorizimin për të dhënë leje. I jap Mirëbook leje joekskluzive dhe pa pagesë për t’i shfaqur dhe prerë ato në faqet e internetit, aplikacionet, rrjetet sociale dhe materialet e marketingut të lançimit të Mirëbook për {name}. Mund të kërkoj heqjen e tyre. E kuptoj se kjo nuk krijon një llogari biznesi dhe nuk e bën vendin të rezervueshëm.",
   "admin.directory.facts.kicker": "Saktësia publike",
   "admin.directory.facts.title": "Të dhëna publike të verifikuara",
   "admin.directory.facts.reviewed": "Të dhëna të verifikuara",

@@ -9,6 +9,7 @@ import {
   MapPin,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
+import DirectoryPhotoRequestKit from "@/components/admin/DirectoryPhotoRequestKit";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
@@ -336,6 +337,11 @@ export default function AdminDirectoryPage() {
         )
         .slice(0, 5),
     [mediaCoverage.categories],
+  );
+
+  const priorityPhotoPilotIds = useMemo(
+    () => new Set(mediaCoverage.priority.slice(0, 6).map((item) => item.id)),
+    [mediaCoverage.priority],
   );
 
   useEffect(() => {
@@ -2451,6 +2457,23 @@ export default function AdminDirectoryPage() {
                     </>
                   )}
                 </section>
+
+                {selectedPlace.listing_status === "active" &&
+                  !selectedPlace.image_url && (
+                    <DirectoryPhotoRequestKit
+                      key={selectedPlace.id}
+                      placeId={selectedPlace.id}
+                      placeName={
+                        selectedPlace.public_name || selectedPlace.name
+                      }
+                      phone={selectedPlace.public_phone || selectedPlace.phone}
+                      email={selectedPlace.email}
+                      website={
+                        selectedPlace.public_website || selectedPlace.website
+                      }
+                      isPilot={priorityPhotoPilotIds.has(selectedPlace.id)}
+                    />
+                  )}
 
                 <dl className="directory-facts">
                   <div>
