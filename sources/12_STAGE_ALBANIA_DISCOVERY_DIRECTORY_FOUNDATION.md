@@ -1642,6 +1642,67 @@ ardi and Parukeri Eneida. The approval run found no P0, P1 or P2 issue and
 changed no claim, business, booking, billing or configuration state. Batch 22
 is closed.
 
+## Batch 23 - Launch Photo Coverage Workbench
+
+Batch 23 turns marketplace photography into a controlled launch-curation
+workflow. A read-only production snapshot on 4 August 2026 found 60 approved
+directory places: 9 with reviewed photos and 51 using category artwork. The
+largest gaps were beauty and grooming, dental health, wellness, rentals and
+several launch cities with no photographed place.
+
+The private Admin Directory now provides:
+
+- exact approved-photo coverage without displaying false totals while loading
+- missing-photo breakdowns by city and public category
+- a deterministic balanced shortlist that favours thin cities, booking-relevant
+  categories, usable contact routes, bilingual editorial copy and stronger
+  source confidence
+- one-action filtering from a coverage gap or shortlisted place into the
+  approved records that still need photography
+- a 16:9 public-card crop preview, public-page preview and per-place readiness
+  checks for the image, EN/SQ alt text, public credit and private rights note
+
+The shortlist is operational guidance only. It does not contact an owner,
+upload an image, approve a place, publish a business or change public ranking.
+Social-media photographs must not be copied without permission. Appointment
+businesses should preferentially receive owner-supplied premises, team or
+service images; destination imagery must be owned, supplied with permission or
+published under a compatible licence with complete attribution.
+
+`npm run directory:photo-coverage -- --limit=18` provides the same read-only
+coverage and balanced shortlist for launch planning. Its output intentionally
+omits private review notes, source IDs and exact coordinates, and performs no
+database write.
+
+### Batch 23 deployment QA
+
+1. Open `/admin/directory` as an admin and confirm Marketplace photos settles
+   to the real approved total, photographed total and missing-photo total. No
+   false zero state or migration guidance should flash while data loads.
+2. Confirm city and category coverage rows show accurate photographed/total
+   values. Select at least one of each and verify the queue changes to Approved
+   plus Photos needed with the matching city or category filter.
+3. Confirm the balanced shortlist contains distinct places across more than
+   one city and category. Select three rows and verify each opens the exact
+   approved missing-photo record rather than changing any record.
+4. Run the photo-coverage command twice. Ignore `generatedAt`; coverage totals,
+   ordering, scores, reasons and asset guidance must match between runs.
+5. Open one photographed and one fallback-artwork place. Confirm the photo
+   status, 16:9 crop preview, public-page action and readiness checks are clear.
+6. Confirm incomplete photo metadata remains visibly incomplete and cannot be
+   presented as ready. Do not upload or save an image during this read-only QA.
+7. Verify EN and SQ at 1440x900 and 390x844. Controls must be labelled, at least
+   44px high where tapped, readable without clipping and free of horizontal
+   document overflow.
+8. As anonymous, customer, owner and staff users, confirm Admin Directory and
+   its API remain admin-only with clean localized denial and `no-store` cache
+   behavior.
+9. Recheck `/api/public/directory-places` and public Explore. Coverage totals,
+   priority scores, reasons, rights notes and other operator fields must not be
+   exposed; public counts and listing states must remain unchanged.
+10. Finish with zero image uploads, directory edits, approvals, contacts,
+    claims, bookings, business publication, billing or environment changes.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

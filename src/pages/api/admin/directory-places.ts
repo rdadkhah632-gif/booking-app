@@ -68,6 +68,45 @@ type MediaCoverage = {
   total: number;
   withPhoto: number;
   missingPhoto: number;
+  cities: MediaCoverageItem[];
+  categories: MediaCoverageItem[];
+  priority: MediaPriorityItem[];
+};
+
+type MediaCoverageItem = {
+  key: string;
+  total: number;
+  withPhoto: number;
+  missingPhoto: number;
+};
+
+type MediaPriorityReason =
+  | "city_gap"
+  | "category_gap"
+  | "booking_category"
+  | "contact_ready"
+  | "high_confidence";
+
+type MediaPriorityItem = {
+  id: string;
+  name: string;
+  city: string;
+  categoryKey: string;
+  score: number;
+  reasons: MediaPriorityReason[];
+};
+
+type MediaCoverageRow = {
+  id: string;
+  name: string;
+  city?: string | null;
+  category_key: string;
+  image_url?: string | null;
+  editorial_description_en?: string | null;
+  editorial_description_sq?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  source_confidence?: number | null;
 };
 
 type DirectoryPlaceRow = {
@@ -354,33 +393,158 @@ async function launchCoverage(
 async function approvedMediaCoverage(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
 ): Promise<MediaCoverage> {
-  const [totalResult, withPhotoResult] = await Promise.all([
-    supabase
-      .from("directory_places")
-      .select("id", { count: "exact", head: true })
-      .eq("listing_status", "active"),
-    supabase
-      .from("directory_places")
-      .select("id", { count: "exact", head: true })
-      .eq("listing_status", "active")
-      .not("image_url", "is", null),
-  ]);
+  const { data, error } = await supabase
+    .from("directory_places")
+    .select(
+      "id, name, city, category_key, image_url, editorial_description_en, editorial_description_sq, phone, website, source_confidence",
+    )
+    .eq("listing_status", "active")
+    .returns<MediaCoverageRow[]>();
 
-  if (totalResult.error || withPhotoResult.error) {
-    const error = totalResult.error || withPhotoResult.error;
+  if (error) {
     if (isMissingDirectorySchema(error)) {
-      return { available: false, total: 0, withPhoto: 0, missingPhoto: 0 };
+      return {
+        available: false,
+        total: 0,
+        withPhoto: 0,
+        missingPhoto: 0,
+        cities: [],
+        categories: [],
+        priority: [],
+      };
     }
     throw error;
   }
 
-  const total = totalResult.count || 0;
-  const withPhoto = withPhotoResult.count || 0;
+  const rows = data || [];
+  const coverageFor = (
+    keys: string[],
+    keyFor: (row: MediaCoverageRow) => string,
+  ) =>
+    keys.map<MediaCoverageItem>((key) => {
+      const matchingRows = rows.filter((row) => keyFor(row) === key);
+      const withPhoto = matchingRows.filter((row) => row.image_url).length;
+      return {
+        key,
+        total: matchingRows.length,
+        withPhoto,
+        missingPhoto: matchingRows.length - withPhoto,
+      };
+    });
+
+  const cityKeys = Array.from(
+    new Set(rows.flatMap((row) => (row.city ? [row.city] : []))),
+  ).sort((left, right) => left.localeCompare(right, "sq"));
+  const cities = coverageFor(cityKeys, (row) => row.city || "");
+  const categories = coverageFor(
+    [...CATEGORY_KEYS],
+    (row) => row.category_key,
+  );
+  const cityCoverage = Object.fromEntries(
+    cities.map((item) => [item.key, item]),
+  );
+  const categoryCoverage = Object.fromEntries(
+    categories.map((item) => [item.key, item]),
+  );
+  const appointmentFriendlyCategories = new Set([
+    "beauty_grooming",
+    "dental_health",
+    "wellness_fitness",
+    "learning_lessons",
+    "tours_activities",
+    "rentals",
+    "events",
+  ]);
+
+  const ranked = rows
+    .filter((row) => !row.image_url)
+    .map((row) => {
+      const city = row.city || "Albania";
+      const cityItem = cityCoverage[city];
+      const categoryItem = categoryCoverage[row.category_key];
+      const cityGap = cityItem
+        ? cityItem.missingPhoto / Math.max(1, cityItem.total)
+        : 1;
+      const categoryGap = categoryItem
+        ? categoryItem.missingPhoto / Math.max(1, categoryItem.total)
+        : 1;
+      const reasons: MediaPriorityReason[] = [];
+
+      if (!cityItem || cityItem.withPhoto === 0 || cityGap >= 0.8) {
+        reasons.push("city_gap");
+      }
+      if (
+        !categoryItem ||
+        categoryItem.withPhoto === 0 ||
+        categoryGap >= 0.8
+      ) {
+        reasons.push("category_gap");
+      }
+      if (appointmentFriendlyCategories.has(row.category_key)) {
+        reasons.push("booking_category");
+      }
+      if (row.phone || row.website) reasons.push("contact_ready");
+      if ((row.source_confidence || 0) >= 0.9) {
+        reasons.push("high_confidence");
+      }
+
+      const score = Math.round(
+        cityGap * 30 +
+          categoryGap * 25 +
+          (appointmentFriendlyCategories.has(row.category_key) ? 15 : 0) +
+          (row.phone || row.website ? 10 : 0) +
+          (row.editorial_description_en && row.editorial_description_sq
+            ? 8
+            : 0) +
+          (row.source_confidence || 0) * 12,
+      );
+
+      return {
+        id: row.id,
+        name: row.name,
+        city,
+        categoryKey: row.category_key,
+        score,
+        reasons: reasons.slice(0, 3),
+      } satisfies MediaPriorityItem;
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        left.name.localeCompare(right.name, "sq"),
+    );
+
+  const priority: MediaPriorityItem[] = [];
+  const citySelections = new Map<string, number>();
+  const categorySelections = new Map<string, number>();
+  for (const place of ranked) {
+    if (priority.length >= 12) break;
+    if ((citySelections.get(place.city) || 0) >= 2) continue;
+    if ((categorySelections.get(place.categoryKey) || 0) >= 4) continue;
+    priority.push(place);
+    citySelections.set(place.city, (citySelections.get(place.city) || 0) + 1);
+    categorySelections.set(
+      place.categoryKey,
+      (categorySelections.get(place.categoryKey) || 0) + 1,
+    );
+  }
+
+  for (const place of ranked) {
+    if (priority.length >= 12) break;
+    if (priority.some((item) => item.id === place.id)) continue;
+    priority.push(place);
+  }
+
+  const total = rows.length;
+  const withPhoto = rows.filter((row) => row.image_url).length;
   return {
     available: true,
     total,
     withPhoto,
     missingPhoto: Math.max(0, total - withPhoto),
+    cities,
+    categories,
+    priority,
   };
 }
 

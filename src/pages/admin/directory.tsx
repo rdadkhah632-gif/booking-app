@@ -1,7 +1,13 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Image as ImageIcon, ImageOff } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Image as ImageIcon,
+  ImageOff,
+  MapPin,
+} from "lucide-react";
 import AuthNav from "@/components/AuthNav";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 import { supabase } from "@/lib/supabaseClient";
@@ -100,6 +106,32 @@ type MediaCoverage = {
   total: number;
   withPhoto: number;
   missingPhoto: number;
+  cities: MediaCoverageItem[];
+  categories: MediaCoverageItem[];
+  priority: MediaPriorityItem[];
+};
+
+type MediaCoverageItem = {
+  key: string;
+  total: number;
+  withPhoto: number;
+  missingPhoto: number;
+};
+
+type MediaPriorityReason =
+  | "city_gap"
+  | "category_gap"
+  | "booking_category"
+  | "contact_ready"
+  | "high_confidence";
+
+type MediaPriorityItem = {
+  id: string;
+  name: string;
+  city: string;
+  categoryKey: string;
+  score: number;
+  reasons: MediaPriorityReason[];
 };
 
 type DirectoryResponse = {
@@ -250,6 +282,9 @@ export default function AdminDirectoryPage() {
     total: 0,
     withPhoto: 0,
     missingPhoto: 0,
+    cities: [],
+    categories: [],
+    priority: [],
   });
   const [pagination, setPagination] = useState({
     total: 0,
@@ -275,6 +310,32 @@ export default function AdminDirectoryPage() {
   const selectedPlace = useMemo(
     () => places.find((place) => place.id === selectedId) || null,
     [places, selectedId],
+  );
+
+  const cityMediaGaps = useMemo(
+    () =>
+      [...mediaCoverage.cities]
+        .filter((item) => item.missingPhoto > 0)
+        .sort(
+          (left, right) =>
+            right.missingPhoto - left.missingPhoto ||
+            left.key.localeCompare(right.key, "sq"),
+        )
+        .slice(0, 5),
+    [mediaCoverage.cities],
+  );
+
+  const categoryMediaGaps = useMemo(
+    () =>
+      [...mediaCoverage.categories]
+        .filter((item) => item.missingPhoto > 0)
+        .sort(
+          (left, right) =>
+            right.missingPhoto - left.missingPhoto ||
+            left.key.localeCompare(right.key, "en"),
+        )
+        .slice(0, 5),
+    [mediaCoverage.categories],
   );
 
   useEffect(() => {
@@ -382,6 +443,29 @@ export default function AdminDirectoryPage() {
     );
   }
 
+  function mediaPriorityReasonLabel(value: MediaPriorityReason) {
+    const labels: Record<MediaPriorityReason, string> = {
+      city_gap: t("admin.directory.media.reason.city", "City coverage gap"),
+      category_gap: t(
+        "admin.directory.media.reason.category",
+        "Category coverage gap",
+      ),
+      booking_category: t(
+        "admin.directory.media.reason.booking",
+        "Strong booking fit",
+      ),
+      contact_ready: t(
+        "admin.directory.media.reason.contact",
+        "Contact route available",
+      ),
+      high_confidence: t(
+        "admin.directory.media.reason.confidence",
+        "High-confidence record",
+      ),
+    };
+    return labels[value];
+  }
+
   function actionLabel(value: DirectoryAction) {
     const labels: Record<DirectoryAction, string> = {
       approve: t("admin.directory.action.approve", "Approve for discovery"),
@@ -473,14 +557,15 @@ export default function AdminDirectoryPage() {
       setCoverage(
         next.coverage || { available: false, cities: [], categories: [] },
       );
-      setMediaCoverage(
-        next.mediaCoverage || {
-          available: false,
-          total: 0,
-          withPhoto: 0,
-          missingPhoto: 0,
-        },
-      );
+      setMediaCoverage({
+        available: next.mediaCoverage?.available === true,
+        total: next.mediaCoverage?.total || 0,
+        withPhoto: next.mediaCoverage?.withPhoto || 0,
+        missingPhoto: next.mediaCoverage?.missingPhoto || 0,
+        cities: next.mediaCoverage?.cities || [],
+        categories: next.mediaCoverage?.categories || [],
+        priority: next.mediaCoverage?.priority || [],
+      });
       setContentEditingAvailable(next.contentEditingAvailable !== false);
       setFactsEditingAvailable(next.factsEditingAvailable !== false);
       setPagination(next.pagination);
@@ -540,6 +625,40 @@ export default function AdminDirectoryPage() {
       city: "",
       search: "",
       media: nextMedia,
+    });
+  }
+
+  function openMediaGap(
+    item: MediaCoverageItem,
+    filterType: "city" | "category",
+  ) {
+    const nextCategory = filterType === "category" ? item.key : "";
+    const nextCity = filterType === "city" ? item.key : "";
+
+    setStatus("active");
+    setCategory(nextCategory);
+    setCity(nextCity);
+    setSearch("");
+    setMedia("missing_photo");
+    loadDirectory(0, undefined, "active", false, {
+      category: nextCategory,
+      city: nextCity,
+      search: "",
+      media: "missing_photo",
+    });
+  }
+
+  function openMediaPriority(item: MediaPriorityItem) {
+    setStatus("active");
+    setCategory("");
+    setCity("");
+    setSearch(item.name);
+    setMedia("missing_photo");
+    loadDirectory(0, undefined, "active", false, {
+      category: "",
+      city: "",
+      search: item.name,
+      media: "missing_photo",
     });
   }
 
@@ -1114,6 +1233,125 @@ export default function AdminDirectoryPage() {
                     {t("admin.directory.media.missing", "Photos needed")}
                   </span>
                 </button>
+              </div>
+
+              <div className="directory-media-plan">
+                <div className="directory-media-gaps">
+                  <div className="directory-media-section-heading">
+                    <div>
+                      <h3>
+                        {t(
+                          "admin.directory.media.gapsTitle",
+                          "Coverage gaps",
+                        )}
+                      </h3>
+                      <p className="small muted">
+                        {t(
+                          "admin.directory.media.gapsBody",
+                          "Open a thin city or category to see only approved places still using fallback artwork.",
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="directory-media-gap-groups">
+                    <div>
+                      <h4>
+                        {t("admin.directory.media.byCity", "By city")}
+                      </h4>
+                      <div className="directory-media-gap-rows">
+                        {cityMediaGaps.map((item) => (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => openMediaGap(item, "city")}
+                          >
+                            <span>{item.key}</span>
+                            <strong>
+                              {item.withPhoto}/{item.total}
+                            </strong>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4>
+                        {t(
+                          "admin.directory.media.byCategory",
+                          "By category",
+                        )}
+                      </h4>
+                      <div className="directory-media-gap-rows">
+                        {categoryMediaGaps.map((item) => (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => openMediaGap(item, "category")}
+                          >
+                            <span>{categoryLabel(item.key)}</span>
+                            <strong>
+                              {item.withPhoto}/{item.total}
+                            </strong>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="directory-media-priority">
+                  <div className="directory-media-section-heading">
+                    <div>
+                      <h3>
+                        {t(
+                          "admin.directory.media.priorityTitle",
+                          "Next balanced photo set",
+                        )}
+                      </h3>
+                      <p className="small muted">
+                        {t(
+                          "admin.directory.media.priorityBody",
+                          "A private shortlist balancing city gaps, booking relevance, contact routes and source confidence.",
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => openMediaCoverage("missing_photo")}
+                    >
+                      {t(
+                        "admin.directory.media.openQueue",
+                        "Open full photo queue",
+                      )}
+                    </button>
+                  </div>
+                  <div className="directory-media-priority-rows">
+                    {mediaCoverage.priority.slice(0, 6).map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="directory-media-priority-row"
+                        onClick={() => openMediaPriority(item)}
+                      >
+                        <span className="directory-media-priority-main">
+                          <strong>{item.name}</strong>
+                          <span className="directory-media-priority-location">
+                            <MapPin size={14} aria-hidden="true" />
+                            {item.city} · {categoryLabel(item.categoryKey)}
+                          </span>
+                          <span className="directory-media-reasons">
+                            {item.reasons.map((reason) => (
+                              <small key={reason}>
+                                {mediaPriorityReasonLabel(reason)}
+                              </small>
+                            ))}
+                          </span>
+                        </span>
+                        <ArrowRight size={18} aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </>
           ) : null}
@@ -1796,12 +2034,49 @@ export default function AdminDirectoryPage() {
                         )}
                       </h3>
                     </div>
-                    {selectedPlace.content_updated_at && (
-                      <span className="small muted">
-                        {t("admin.directory.content.updated", "Updated")}{" "}
-                        {formatDate(selectedPlace.content_updated_at, locale)}
+                    <div className="directory-content-heading-actions">
+                      <span
+                        className={
+                          selectedPlace.image_url
+                            ? "directory-media-pill has-photo"
+                            : "directory-media-pill needs-photo"
+                        }
+                      >
+                        {selectedPlace.image_url ? (
+                          <ImageIcon size={14} aria-hidden="true" />
+                        ) : (
+                          <ImageOff size={14} aria-hidden="true" />
+                        )}
+                        {selectedPlace.image_url
+                          ? t("admin.directory.media.photo", "Photo")
+                          : t(
+                              "admin.directory.media.photoNeeded",
+                              "Photo needed",
+                            )}
                       </span>
-                    )}
+                      {selectedPlace.listing_status === "active" && (
+                        <Link
+                          href={`/places/${selectedPlace.id}`}
+                          className="btn btn-ghost directory-public-preview"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {t(
+                            "admin.directory.content.publicPreview",
+                            "View public page",
+                          )}
+                        </Link>
+                      )}
+                      {selectedPlace.content_updated_at && (
+                        <span className="small muted">
+                          {t("admin.directory.content.updated", "Updated")}{" "}
+                          {formatDate(
+                            selectedPlace.content_updated_at,
+                            locale,
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {!contentEditingAvailable ? (
@@ -1883,6 +2158,12 @@ export default function AdminDirectoryPage() {
 
                       <div className="directory-image-workspace">
                         <div className="directory-image-preview">
+                          <span className="directory-image-preview-label">
+                            {t(
+                              "admin.directory.content.publicCrop",
+                              "Public card crop · 16:9",
+                            )}
+                          </span>
                           {editorialDraft.imageUrl ? (
                             <img
                               src={editorialDraft.imageUrl}
@@ -1928,6 +2209,76 @@ export default function AdminDirectoryPage() {
                               "Use an owned, permitted or appropriately licensed image. JPG, PNG, WEBP or GIF up to 5MB.",
                             )}
                           </p>
+                          <div
+                            className="directory-media-readiness"
+                            aria-label={t(
+                              "admin.directory.content.readiness",
+                              "Photo readiness",
+                            )}
+                          >
+                            {[
+                              {
+                                key: "photo",
+                                ready: Boolean(editorialDraft.imageUrl),
+                                label: t(
+                                  "admin.directory.content.check.photo",
+                                  "Reviewed image",
+                                ),
+                              },
+                              {
+                                key: "alt-en",
+                                ready: Boolean(
+                                  editorialDraft.imageAltEn.trim(),
+                                ),
+                                label: t(
+                                  "admin.directory.content.check.altEn",
+                                  "English image description",
+                                ),
+                              },
+                              {
+                                key: "alt-sq",
+                                ready: Boolean(
+                                  editorialDraft.imageAltSq.trim(),
+                                ),
+                                label: t(
+                                  "admin.directory.content.check.altSq",
+                                  "Albanian image description",
+                                ),
+                              },
+                              {
+                                key: "credit",
+                                ready: Boolean(
+                                  editorialDraft.imageAttributionLabel.trim(),
+                                ),
+                                label: t(
+                                  "admin.directory.content.check.credit",
+                                  "Public credit",
+                                ),
+                              },
+                              {
+                                key: "rights",
+                                ready: Boolean(
+                                  editorialDraft.imageRightsNote.trim(),
+                                ),
+                                label: t(
+                                  "admin.directory.content.check.rights",
+                                  "Private rights record",
+                                ),
+                              },
+                            ].map((check) => (
+                              <span
+                                key={check.key}
+                                className={check.ready ? "is-ready" : ""}
+                              >
+                                {check.ready ? (
+                                  <CheckCircle2 size={14} aria-hidden="true" />
+                                ) : (
+                                  <i aria-hidden="true" />
+                                )}
+                                {check.label}
+                              </span>
+                            ))}
+                          </div>
                           {imageUploading && (
                             <p className="small muted" role="status">
                               {t(
@@ -2553,6 +2904,155 @@ export default function AdminDirectoryPage() {
           font-size: 1rem;
         }
 
+        .directory-media-plan {
+          display: grid;
+          grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.25fr);
+          gap: 1rem 1.5rem;
+          margin-top: 1rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .directory-media-section-heading {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 0.75rem;
+        }
+
+        .directory-media-section-heading h3,
+        .directory-media-section-heading p,
+        .directory-media-gap-groups h4 {
+          margin: 0;
+        }
+
+        .directory-media-section-heading h3 {
+          font-family: var(--font-body);
+          font-size: 0.96rem;
+        }
+
+        .directory-media-section-heading :global(.btn) {
+          flex: 0 0 auto;
+          min-height: 44px;
+        }
+
+        .directory-media-gap-groups {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.9rem;
+          margin-top: 0.75rem;
+        }
+
+        .directory-media-gap-groups h4 {
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          text-transform: uppercase;
+        }
+
+        .directory-media-gap-rows,
+        .directory-media-priority-rows {
+          display: grid;
+          margin-top: 0.35rem;
+        }
+
+        .directory-media-gap-rows button,
+        .directory-media-priority-row {
+          width: 100%;
+          min-width: 0;
+          border: 0;
+          border-bottom: 1px solid var(--border);
+          border-radius: 0;
+          background: transparent;
+          color: var(--text);
+          text-align: left;
+        }
+
+        .directory-media-gap-rows button {
+          min-height: 44px;
+          padding: 0.4rem 0.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+        }
+
+        .directory-media-gap-rows button:hover,
+        .directory-media-priority-row:hover {
+          background: var(--surface-2);
+        }
+
+        .directory-media-gap-rows button span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .directory-media-gap-rows button strong {
+          flex: 0 0 auto;
+          color: var(--text-muted);
+          font-size: 0.75rem;
+        }
+
+        .directory-media-priority-rows {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0 0.85rem;
+          margin-top: 0.55rem;
+        }
+
+        .directory-media-priority-row {
+          min-height: 92px;
+          padding: 0.65rem 0.35rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.65rem;
+        }
+
+        .directory-media-priority-row > :global(svg) {
+          flex: 0 0 auto;
+          color: var(--text-muted);
+        }
+
+        .directory-media-priority-main {
+          min-width: 0;
+          display: grid;
+          gap: 0.25rem;
+        }
+
+        .directory-media-priority-main strong {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 0.84rem;
+        }
+
+        .directory-media-priority-location {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          overflow: hidden;
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .directory-media-priority-location :global(svg) {
+          flex: 0 0 auto;
+        }
+
+        .directory-media-reasons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.18rem 0.4rem;
+        }
+
+        .directory-media-reasons small {
+          color: var(--success);
+          font-size: 0.64rem;
+        }
+
         .directory-media-loading {
           min-height: 88px;
           display: flex;
@@ -2904,6 +3404,20 @@ export default function AdminDirectoryPage() {
           gap: 1rem;
         }
 
+        .directory-content-heading-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          flex-wrap: wrap;
+          gap: 0.45rem;
+        }
+
+        .directory-content-heading-actions :global(.directory-public-preview) {
+          min-height: 44px;
+          padding: 0.42rem 0.65rem;
+          font-size: 0.75rem;
+        }
+
         .directory-content-heading h3,
         .directory-content-heading p,
         .directory-facts-editor > p,
@@ -2959,7 +3473,9 @@ export default function AdminDirectoryPage() {
         }
 
         .directory-image-preview {
-          min-height: 130px;
+          position: relative;
+          min-height: 0;
+          aspect-ratio: 16 / 9;
           overflow: hidden;
           border: 1px solid var(--border);
           border-radius: 8px;
@@ -2971,10 +3487,24 @@ export default function AdminDirectoryPage() {
         }
 
         .directory-image-preview img {
+          position: absolute;
+          inset: 0;
           width: 100%;
           height: 100%;
-          min-height: 130px;
           object-fit: cover;
+        }
+
+        .directory-image-preview-label {
+          position: absolute;
+          top: 0.55rem;
+          left: 0.55rem;
+          z-index: 1;
+          padding: 0.28rem 0.42rem;
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.92);
+          color: var(--text-muted);
+          font-size: 0.65rem;
+          font-weight: 750;
         }
 
         .directory-image-controls {
@@ -2986,6 +3516,34 @@ export default function AdminDirectoryPage() {
 
         .directory-image-controls p {
           margin: 0;
+        }
+
+        .directory-media-readiness {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.3rem 0.7rem;
+          padding: 0.55rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .directory-media-readiness span {
+          display: flex;
+          align-items: center;
+          gap: 0.28rem;
+          color: var(--text-muted);
+          font-size: 0.7rem;
+        }
+
+        .directory-media-readiness span.is-ready {
+          color: var(--success);
+        }
+
+        .directory-media-readiness i {
+          width: 12px;
+          height: 12px;
+          border: 1px solid var(--border-2);
+          border-radius: 50%;
         }
 
         .directory-rights-confirmation {
@@ -3086,6 +3644,10 @@ export default function AdminDirectoryPage() {
             align-items: start;
           }
 
+          .directory-media-plan {
+            grid-template-columns: 1fr;
+          }
+
           .directory-workspace {
             grid-template-columns: 1fr;
           }
@@ -3103,7 +3665,8 @@ export default function AdminDirectoryPage() {
           .directory-header,
           .directory-detail-header,
           .directory-coverage-heading,
-          .directory-media-heading {
+          .directory-media-heading,
+          .directory-media-section-heading {
             display: grid;
           }
 
@@ -3125,7 +3688,9 @@ export default function AdminDirectoryPage() {
           .directory-facts,
           .directory-content-fields,
           .directory-image-workspace,
-          .directory-coverage-groups {
+          .directory-coverage-groups,
+          .directory-media-gap-groups,
+          .directory-media-priority-rows {
             grid-template-columns: 1fr;
           }
 
@@ -3135,6 +3700,15 @@ export default function AdminDirectoryPage() {
 
           .directory-content-heading {
             display: grid;
+          }
+
+          .directory-content-heading-actions {
+            justify-content: flex-start;
+          }
+
+          .directory-media-section-heading :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
 
           .directory-content-save,
