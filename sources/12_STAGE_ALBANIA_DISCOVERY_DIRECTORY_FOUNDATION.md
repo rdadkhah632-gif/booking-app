@@ -1771,6 +1771,93 @@ media or another website merely because they are publicly visible.
     pilot places have a usable contact route so real outreach can be scheduled
     separately and deliberately.
 
+## Batch 25 - Customer Place Sharing
+
+Batch 25 adds a real Share action to reviewed place details. Supported mobile
+browsers use the native share sheet; other browsers copy the canonical customer
+URL. If clipboard access is unavailable, the exact link remains visible,
+focused and selected for manual copying. Sharing creates no Mirëbook record and
+does not imply that a directory place is claimed or bookable.
+
+## Batch 26 - Nearby Discovery Continuity
+
+Batch 26 prevents public place details from becoming dead ends. A compact,
+image-led related-place rail prefers other reviewed places in the same city and
+then fills any remaining positions from the same category. It shows at most
+three distinct public records, never repeats the current place, retains photo
+credits and deliberate category artwork, and links back to a filtered Places
+view. The rail reads only the existing public-safe directory API. Server route
+payloads and client locale refreshes are synchronized separately so quick
+nearby navigation and Browser Back cannot strand the original place in a
+loading state.
+
+## Batch 27 - Server-Rendered Place Presentation
+
+Batch 27 makes shared place links useful before client JavaScript loads. The
+approved-only directory read now lives in one server helper used by both the
+public API and the place page. Place pages render the reviewed name,
+description, canonical URL and licensed image metadata on the server, while
+retaining locale refreshes in the browser.
+
+The boundary remains unchanged:
+
+- hidden, closed, duplicate and needs-review records return a real 404
+- missing and temporarily unavailable routes are `noindex` and do not publish
+  a canonical or Open Graph URL for a non-public place identifier
+- a linked ready business redirects to its single bookable profile
+- server and API reads remain private/no-store so hide and publish transitions
+  are not masked by public page caching
+- exact coordinates, evidence, source IDs, confidence, outreach and private
+  rights notes remain absent
+- provider/configuration failures show a retryable unavailable state rather
+  than being mislabelled as a missing place
+
+Generic SEO metadata moved from the static document into the shared Next Head
+layer so page-specific metadata can replace it without duplicate generic title
+or description tags.
+
+### Batches 25-27 combined deployment QA
+
+1. Inspect a photographed place and a fallback-artwork place by loading their
+   direct URLs in a fresh logged-out tab with JavaScript initially disabled or
+   by inspecting the first HTML response. The reviewed place name,
+   description, canonical URL and localized page metadata must be present.
+2. Confirm the canonical URL uses `https://mirebook.com/places/{id}` and that
+   title, description, Open Graph and Twitter metadata contain no admin,
+   evidence, outreach or rights-note text.
+3. On a place with a licensed image, confirm `og:image`, image alt text and
+   `summary_large_image` use only the reviewed image. A fallback-artwork place
+   must not invent an image URL and should use the normal summary card.
+4. Exercise Share on iOS/mobile and desktop. The native share sheet should open
+   where supported; otherwise Link copied should appear and pasted text must be
+   the exact canonical URL. Simulate blocked clipboard access and confirm the
+   visible link field receives focus and selects the full URL.
+5. Confirm cancelling the native share sheet produces no error state. Sharing
+   or copying must create no API write, notification, support item, claim,
+   outreach event or analytics-looking production record.
+6. Confirm More in {city} shows no more than three distinct reviewed places,
+   excludes the current place, uses real photo or deliberate category artwork,
+   and preserves a single localized photo credit when applicable.
+7. Open every nearby card by media and title. Browser Back must return to the
+   original place. View all must open Places with the correct city filter; a
+   sparse city may use same-category records to complete the rail.
+8. Switch EN/SQ while remaining on the same place. Main copy, share feedback,
+   nearby heading, categories, loading text and photo prefixes must localize
+   without a full-page loading flash or stale place identity.
+9. Test a hidden fixture direct URL: first response and public API must return
+   404 with `private, no-store` and no place name, contact, metadata or nearby
+   rail. Test a genuine place as the positive control.
+10. If a controlled claimed-place/business handoff is available, publish its
+    fully ready hidden QA business and confirm the direct place route redirects
+    server-side to the single `/explore/{businessId}` profile, then restore all
+    QA state immediately.
+11. Verify EN/SQ at 1440x900, 768x1024 and 390x844. Check 44px Share/View-all
+    controls, independent mobile rail scrolling, next-card peek, long names,
+    photo framing, no horizontal document overflow and no console errors.
+12. Recheck the public API payload. It must remain customer-safe and contain no
+    new private fields. Finish with no directory, business, claim, booking,
+    account, billing or environment change.
+
 ### Batch 11 deployment QA
 
 1. Use one disposable active directory place and one disposable Business owner

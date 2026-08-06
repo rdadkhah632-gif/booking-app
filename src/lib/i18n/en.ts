@@ -4521,6 +4521,13 @@ export const en: TranslationTree = {
   "directory.profile.notFound": "Place not found",
   "directory.profile.notFoundBody":
     "This place is no longer available in Mirëbook discovery.",
+  "directory.profile.unavailable": "Place details are temporarily unavailable",
+  "directory.profile.unavailableBody":
+    "Try again in a moment or return to Explore.",
+  "directory.profile.metaDescription":
+    "Explore {name}, contact the place and get directions with Mirëbook.",
+  "directory.profile.metaDescriptionFallback":
+    "Explore reviewed local places across Albania with Mirëbook.",
   "directory.profile.handoffTitle": "This business is ready to book",
   "directory.profile.handoffBody":
     "Opening its live Mirëbook profile with services and available times.",
@@ -4530,6 +4537,14 @@ export const en: TranslationTree = {
   "directory.profile.address": "Address",
   "directory.profile.phone": "Phone",
   "directory.profile.directions": "Get directions",
+  "directory.profile.share": "Share",
+  "directory.profile.shared": "Shared",
+  "directory.profile.linkCopied": "Link copied",
+  "directory.profile.sharedStatus": "Place shared.",
+  "directory.profile.linkCopiedStatus": "Place link copied.",
+  "directory.profile.copyFallback": "Copy this place link",
+  "directory.profile.shareText":
+    "Take a closer look at this local place on Mirëbook.",
   "directory.profile.ownerTitle": "Is this your business?",
   "directory.profile.ownerBody":
     "Claim this listing with a Mirëbook Business account. Mirëbook reviews every request before linking it.",
@@ -4538,6 +4553,12 @@ export const en: TranslationTree = {
     "This listing already has an ownership record. Booking remains unavailable until its Mirëbook business profile is ready and published.",
   "directory.profile.claim": "Claim this place",
   "directory.profile.source": "Place data",
+  "directory.related.titleCity": "More in {city}",
+  "directory.related.title": "More places to explore",
+  "directory.related.body":
+    "Continue discovering reviewed local places across Albania.",
+  "directory.related.viewAll": "View all",
+  "directory.related.loading": "Loading more places",
   "directory.claim.metaTitle": "Claim a place | Mirëbook Business",
   "directory.claim.loading": "Loading ownership claim...",
   "directory.claim.unavailable": "This place is not available to claim.",

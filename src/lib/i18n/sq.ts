@@ -4434,7 +4434,8 @@ export const sq: TranslationTree = {
   "admin.directory.media.reason.category": "Mungesë mbulimi në kategori",
   "admin.directory.media.reason.booking": "Përshtatje e fortë për rezervime",
   "admin.directory.media.reason.contact": "Rrugë kontakti e disponueshme",
-  "admin.directory.media.reason.confidence": "Regjistër me besueshmëri të lartë",
+  "admin.directory.media.reason.confidence":
+    "Regjistër me besueshmëri të lartë",
   "admin.directory.statusSummary": "Përmbledhja e gjendjeve të direktorisë",
   "admin.directory.loadingSummary": "Po ngarkohet përmbledhja e direktorisë...",
   "admin.directory.status.needsReview": "Për shqyrtim",
@@ -4631,6 +4632,14 @@ export const sq: TranslationTree = {
   "directory.profile.notFound": "Vendi nuk u gjet",
   "directory.profile.notFoundBody":
     "Ky vend nuk është më i disponueshëm në kërkimin e Mirëbook.",
+  "directory.profile.unavailable":
+    "Të dhënat e vendit nuk janë përkohësisht të disponueshme",
+  "directory.profile.unavailableBody":
+    "Provo përsëri pas pak ose kthehu te Eksploro.",
+  "directory.profile.metaDescription":
+    "Eksploro {name}, kontakto vendin dhe merr udhëzime me Mirëbook.",
+  "directory.profile.metaDescriptionFallback":
+    "Eksploro vende lokale të shqyrtuara në të gjithë Shqipërinë me Mirëbook.",
   "directory.profile.handoffTitle": "Ky biznes është gati për rezervime",
   "directory.profile.handoffBody":
     "Po hapet profili i tij aktiv në Mirëbook me shërbimet dhe oraret e lira.",
@@ -4640,6 +4649,14 @@ export const sq: TranslationTree = {
   "directory.profile.address": "Adresa",
   "directory.profile.phone": "Telefoni",
   "directory.profile.directions": "Merr udhëzime",
+  "directory.profile.share": "Ndaje",
+  "directory.profile.shared": "U nda",
+  "directory.profile.linkCopied": "Lidhja u kopjua",
+  "directory.profile.sharedStatus": "Vendi u nda.",
+  "directory.profile.linkCopiedStatus": "Lidhja e vendit u kopjua.",
+  "directory.profile.copyFallback": "Kopjo lidhjen e këtij vendi",
+  "directory.profile.shareText":
+    "Shiko më nga afër këtë vend lokal në Mirëbook.",
   "directory.profile.ownerTitle": "A është ky biznesi yt?",
   "directory.profile.ownerBody":
     "Pretendo këtë listim me një llogari Mirëbook Business. Mirëbook shqyrton çdo kërkesë përpara lidhjes.",
@@ -4648,6 +4665,12 @@ export const sq: TranslationTree = {
     "Ky listim ka tashmë një regjistrim pronësie. Rezervimi mbetet i padisponueshëm derisa profili i biznesit në Mirëbook të jetë gati dhe i publikuar.",
   "directory.profile.claim": "Pretendo këtë vend",
   "directory.profile.source": "Të dhënat e vendit",
+  "directory.related.titleCity": "Më shumë në {city}",
+  "directory.related.title": "Më shumë vende për të eksploruar",
+  "directory.related.body":
+    "Vazhdo të zbulosh vende lokale të shqyrtuara në të gjithë Shqipërinë.",
+  "directory.related.viewAll": "Shiko të gjitha",
+  "directory.related.loading": "Po ngarkohen vende të tjera",
   "directory.claim.metaTitle": "Pretendo një vend | Mirëbook Business",
   "directory.claim.loading": "Po ngarkohet kërkesa e pronësisë...",
   "directory.claim.unavailable":

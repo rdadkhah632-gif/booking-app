@@ -1,32 +1,29 @@
-import { Html, Head, Main, NextScript } from 'next/document'
+import Document, {
+  DocumentContext,
+  DocumentInitialProps,
+  Head,
+  Html,
+  Main,
+  NextScript,
+} from "next/document";
 
-export default function Document() {
+type MirebookDocumentProps = DocumentInitialProps & {
+  initialLocale: "en" | "sq";
+};
+
+export default function MirebookDocument({
+  initialLocale,
+}: MirebookDocumentProps) {
   return (
-    <Html lang="en">
+    <Html lang={initialLocale}>
       <Head>
         <meta name="application-name" content="Mirëbook" />
-        <meta
-          name="description"
-          content="Mirëbook helps customers discover and book local services with real availability, staff selection and appointment management."
-        />
         <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="#0f0e17" />
         <meta name="msapplication-TileColor" content="#0f0e17" />
 
         <meta property="og:site_name" content="Mirëbook" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Mirëbook — Book local services" />
-        <meta
-          property="og:description"
-          content="Discover businesses, choose services, pick available times and manage bookings through Mirëbook."
-        />
-
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Mirëbook — Book local services" />
-        <meta
-          name="twitter:description"
-          content="Discover businesses, choose services, pick available times and manage bookings through Mirëbook."
-        />
 
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/mirebook-mark.svg" type="image/svg+xml" />
@@ -44,5 +41,25 @@ export default function Document() {
         <NextScript />
       </body>
     </Html>
-  )
+  );
 }
+
+MirebookDocument.getInitialProps = async (
+  context: DocumentContext,
+): Promise<MirebookDocumentProps> => {
+  const initialProps = await Document.getInitialProps(context);
+  const queryLocale = Array.isArray(context.query.locale)
+    ? context.query.locale[0]
+    : context.query.locale;
+  const acceptedLanguages = String(
+    context.req?.headers["accept-language"] || "",
+  ).toLowerCase();
+
+  return {
+    ...initialProps,
+    initialLocale:
+      queryLocale === "sq" || (!queryLocale && acceptedLanguages.includes("sq"))
+        ? "sq"
+        : "en",
+  };
+};

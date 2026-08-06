@@ -1,3 +1,4 @@
+import type { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -15,54 +16,88 @@ import {
 import AuthNav from "@/components/AuthNav";
 import MarketplaceSurfaceStyles from "@/components/MarketplaceSurfaceStyles";
 import DirectoryCategoryArtwork from "@/components/explore/DirectoryCategoryArtwork";
+import PlaceNearbyRail from "@/components/places/PlaceNearbyRail";
+import PlaceShareAction from "@/components/places/PlaceShareAction";
 import {
   directoryCategoryLabel,
   directoryImageCredit,
 } from "@/components/explore/directoryCategories";
 import type { DirectoryCategoryKey } from "@/components/explore/exploreTypes";
-import { getBusinessAppUrl } from "@/lib/appUrls";
+import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
+import type { PublicDirectoryPlace } from "@/lib/server/publicDirectoryPlace";
 import { useI18n } from "@/lib/useI18n";
 
-type PlaceDetail = {
-  id: string;
-  name: string;
+type PlaceDetail = PublicDirectoryPlace & {
   categoryKey: DirectoryCategoryKey;
-  description?: string | null;
-  address?: string | null;
-  city?: string | null;
-  region?: string | null;
-  countryCode: string;
-  postcode?: string | null;
-  phone?: string | null;
-  website?: string | null;
-  bookable: boolean;
-  bookingBusinessId?: string | null;
-  claimable: boolean;
-  linkedBusinessId?: string | null;
-  image?: {
-    url: string;
-    alt: string;
-    attribution: { label: string; url?: string | null };
-  } | null;
-  attribution: { label: string; url?: string | null };
 };
 
-export default function DirectoryPlacePage() {
+type DirectoryPlacePageProps = {
+  initialPlaceId: string;
+  initialPlace: PlaceDetail | null;
+  initialLocale: "en" | "sq";
+  initialNotFound: boolean;
+  initialUnavailable: boolean;
+  canonicalUrl: string;
+};
+
+function absoluteCustomerUrl(path: string) {
+  const configured = getCustomerAppUrl(path);
+  return configured.startsWith("http")
+    ? configured
+    : `https://mirebook.com${configured}`;
+}
+
+function metaDescription(place: PlaceDetail | null, fallback: string) {
+  const source = place?.description?.trim() || fallback;
+  if (source.length <= 180) return source;
+  return `${source.slice(0, 177).trimEnd()}...`;
+}
+
+export default function DirectoryPlacePage({
+  initialPlaceId,
+  initialPlace,
+  initialLocale,
+  initialNotFound,
+  initialUnavailable,
+  canonicalUrl,
+}: DirectoryPlacePageProps) {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const [place, setPlace] = useState<PlaceDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const serverStateKey = `${initialPlaceId}:${initialLocale}`;
+  const [place, setPlace] = useState<PlaceDetail | null>(initialPlace);
+  const [loadedKey, setLoadedKey] = useState(serverStateKey);
+  const [loading, setLoading] = useState(
+    !initialPlace && !initialNotFound && !initialUnavailable,
+  );
+  const [notFound, setNotFound] = useState(initialNotFound);
+  const [unavailable, setUnavailable] = useState(initialUnavailable);
   const [bookingBusinessId, setBookingBusinessId] = useState("");
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
+    setPlace(initialPlace);
+    setLoadedKey(serverStateKey);
+    setLoading(!initialPlace && !initialNotFound && !initialUnavailable);
+    setNotFound(initialNotFound);
+    setUnavailable(initialUnavailable);
+    setBookingBusinessId("");
+    setImageFailed(false);
+  }, [initialNotFound, initialPlace, initialUnavailable, serverStateKey]);
+
+  useEffect(() => {
     if (!router.isReady || typeof router.query.placeId !== "string") return;
+    const requestKey = `${router.query.placeId}:${locale}`;
+    if (serverStateKey === requestKey) return;
+    if (loadedKey === requestKey) return;
     let cancelled = false;
 
     async function loadPlace() {
-      setLoading(true);
+      if (!place || place.id !== router.query.placeId) {
+        setPlace(null);
+        setLoading(true);
+      }
       setNotFound(false);
+      setUnavailable(false);
       setBookingBusinessId("");
       setImageFailed(false);
       try {
@@ -71,7 +106,12 @@ export default function DirectoryPlacePage() {
           { cache: "no-store" },
         );
         if (!response.ok) {
-          if (!cancelled) setNotFound(true);
+          if (!cancelled) {
+            setPlace(null);
+            setNotFound(response.status === 404);
+            setUnavailable(response.status !== 404);
+            setLoadedKey(requestKey);
+          }
           return;
         }
         const payload = (await response.json()) as { place?: PlaceDetail };
@@ -85,9 +125,14 @@ export default function DirectoryPlacePage() {
           void router.replace(`/explore/${nextPlace.bookingBusinessId}`);
           return;
         }
-        setPlace(nextPlace);
+        setPlace(nextPlace as PlaceDetail | null);
+        setLoadedKey(requestKey);
       } catch {
-        if (!cancelled) setNotFound(true);
+        if (!cancelled) {
+          setPlace(null);
+          setUnavailable(true);
+          setLoadedKey(requestKey);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -97,7 +142,14 @@ export default function DirectoryPlacePage() {
     return () => {
       cancelled = true;
     };
-  }, [locale, router.isReady, router.query.placeId]);
+  }, [
+    loadedKey,
+    locale,
+    place,
+    router.isReady,
+    router.query.placeId,
+    serverStateKey,
+  ]);
 
   const location = place
     ? [place.address, place.city, place.region, place.postcode]
@@ -112,6 +164,16 @@ export default function DirectoryPlacePage() {
   const claimUrl = place
     ? getBusinessAppUrl(`/claim/${encodeURIComponent(place.id)}`)
     : getBusinessAppUrl();
+  const fallbackMetaDescription = place
+    ? t(
+        "directory.profile.metaDescription",
+        "Explore {name}, contact the place and get directions with Mirëbook.",
+      ).replace("{name}", place.name)
+    : t(
+        "directory.profile.metaDescriptionFallback",
+        "Explore reviewed local places across Albania with Mirëbook.",
+      );
+  const pageDescription = metaDescription(place, fallbackMetaDescription);
 
   return (
     <main className="marketplace-surface place-page">
@@ -122,6 +184,70 @@ export default function DirectoryPlacePage() {
             ? `${place.name} | Mirëbook`
             : t("directory.profile.metaTitle", "Local place | Mirëbook")}
         </title>
+        {place ? (
+          <>
+            <meta
+              key="description"
+              name="description"
+              content={pageDescription}
+            />
+            <link key="canonical" rel="canonical" href={canonicalUrl} />
+            <meta
+              key="og-title"
+              property="og:title"
+              content={`${place.name} | Mirëbook`}
+            />
+            <meta
+              key="og-description"
+              property="og:description"
+              content={pageDescription}
+            />
+            <meta key="og-url" property="og:url" content={canonicalUrl} />
+            <meta
+              key="og-locale"
+              property="og:locale"
+              content={locale === "sq" ? "sq_AL" : "en_GB"}
+            />
+            {place.image && (
+              <>
+                <meta
+                  key="og-image"
+                  property="og:image"
+                  content={place.image.url}
+                />
+                <meta
+                  key="og-image-alt"
+                  property="og:image:alt"
+                  content={place.image.alt}
+                />
+              </>
+            )}
+            <meta
+              key="twitter-card"
+              name="twitter:card"
+              content={place.image ? "summary_large_image" : "summary"}
+            />
+            <meta
+              key="twitter-title"
+              name="twitter:title"
+              content={`${place.name} | Mirëbook`}
+            />
+            <meta
+              key="twitter-description"
+              name="twitter:description"
+              content={pageDescription}
+            />
+            {place.image && (
+              <meta
+                key="twitter-image"
+                name="twitter:image"
+                content={place.image.url}
+              />
+            )}
+          </>
+        ) : (
+          <meta key="robots" name="robots" content="noindex, nofollow" />
+        )}
       </Head>
       <AuthNav />
 
@@ -157,6 +283,29 @@ export default function DirectoryPlacePage() {
         ) : loading ? (
           <div className="place-state">
             {t("directory.profile.loading", "Loading place details...")}
+          </div>
+        ) : unavailable ? (
+          <div className="place-state" role="status">
+            <Building2 size={30} aria-hidden="true" />
+            <h1>
+              {t(
+                "directory.profile.unavailable",
+                "Place details are temporarily unavailable",
+              )}
+            </h1>
+            <p>
+              {t(
+                "directory.profile.unavailableBody",
+                "Try again in a moment or return to Explore.",
+              )}
+            </p>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => window.location.reload()}
+            >
+              {t("common.retry", "Retry")}
+            </button>
           </div>
         ) : notFound || !place ? (
           <div className="place-state">
@@ -308,6 +457,11 @@ export default function DirectoryPlacePage() {
                     <Flag size={17} aria-hidden="true" />
                     {t("directory.card.report", "Report")}
                   </Link>
+                  <PlaceShareAction
+                    name={place.name}
+                    description={place.description}
+                    url={canonicalUrl}
+                  />
                 </div>
               </section>
 
@@ -342,6 +496,12 @@ export default function DirectoryPlacePage() {
                 )}
               </aside>
             </div>
+
+            <PlaceNearbyRail
+              placeId={place.id}
+              city={place.city}
+              categoryKey={place.categoryKey}
+            />
 
             <footer className="place-attribution">
               <span>{t("directory.profile.source", "Place data")}</span>
@@ -722,3 +882,103 @@ export default function DirectoryPlacePage() {
     </main>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<
+  DirectoryPlacePageProps
+> = async (context) => {
+  context.res.setHeader("Cache-Control", "private, no-store");
+
+  const placeId = Array.isArray(context.params?.placeId)
+    ? context.params?.placeId[0] || ""
+    : context.params?.placeId || "";
+  const queryLocale = Array.isArray(context.query.locale)
+    ? context.query.locale[0]
+    : context.query.locale;
+  const browserLanguages = String(
+    context.req.headers["accept-language"] || "",
+  ).toLowerCase();
+  const initialLocale: "en" | "sq" =
+    queryLocale === "sq" || (!queryLocale && browserLanguages.includes("sq"))
+      ? "sq"
+      : "en";
+  const canonicalUrl = absoluteCustomerUrl(
+    `/places/${encodeURIComponent(placeId)}`,
+  );
+
+  const {
+    getPublicDirectoryPlace,
+    isPublicDirectoryPlaceId,
+    PublicDirectoryUnavailableError,
+  } = await import("@/lib/server/publicDirectoryPlace");
+
+  if (!isPublicDirectoryPlaceId(placeId)) {
+    context.res.statusCode = 404;
+    return {
+      props: {
+        initialPlaceId: placeId,
+        initialPlace: null,
+        initialLocale,
+        initialNotFound: true,
+        initialUnavailable: false,
+        canonicalUrl,
+      },
+    };
+  }
+
+  try {
+    const place = await getPublicDirectoryPlace(placeId, initialLocale);
+    if (!place) {
+      context.res.statusCode = 404;
+      return {
+        props: {
+          initialPlaceId: placeId,
+          initialPlace: null,
+          initialLocale,
+          initialNotFound: true,
+          initialUnavailable: false,
+          canonicalUrl,
+        },
+      };
+    }
+
+    if (place.bookable && place.bookingBusinessId) {
+      return {
+        redirect: {
+          destination: `/explore/${place.bookingBusinessId}`,
+          permanent: false,
+        },
+      };
+    }
+
+    return {
+      props: {
+        initialPlaceId: placeId,
+        initialPlace: place as PlaceDetail,
+        initialLocale,
+        initialNotFound: false,
+        initialUnavailable: false,
+        canonicalUrl,
+      },
+    };
+  } catch (error) {
+    context.res.statusCode = 503;
+    if (!(error instanceof PublicDirectoryUnavailableError)) {
+      const code =
+        typeof error === "object" && error && "code" in error
+          ? String(error.code)
+          : "unknown";
+      console.error("[directory-place-page] Server render failed", code);
+    }
+
+    return {
+      props: {
+        initialPlaceId: placeId,
+        initialPlace: null,
+        initialLocale,
+        initialNotFound: false,
+        initialUnavailable: true,
+        canonicalUrl,
+      },
+    };
+  }
+};
