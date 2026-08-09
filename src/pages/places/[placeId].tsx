@@ -209,18 +209,18 @@ export default function DirectoryPlacePage({
               content={locale === "sq" ? "sq_AL" : "en_GB"}
             />
             {place.image && (
-              <>
-                <meta
-                  key="og-image"
-                  property="og:image"
-                  content={place.image.url}
-                />
-                <meta
-                  key="og-image-alt"
-                  property="og:image:alt"
-                  content={place.image.alt}
-                />
-              </>
+              <meta
+                key="og-image"
+                property="og:image"
+                content={place.image.url}
+              />
+            )}
+            {place.image && (
+              <meta
+                key="og-image-alt"
+                property="og:image:alt"
+                content={place.image.alt}
+              />
             )}
             <meta
               key="twitter-card"

@@ -6,3 +6,9 @@ __pycache__/
 *.pyc
 ios/MirebookBusiness/Config/Local.xcconfig
 ios/MirebookCustomer/Config/Local.xcconfig
+.vercel
+.env*
+ios/**/.derivedData/
+ios/**/.derived-data-*/
+ios/**/build/
+*.xcresult
