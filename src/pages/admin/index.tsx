@@ -614,6 +614,9 @@ export default function AdminIndexPage() {
               <Link href="/admin/outreach" className="btn btn-ghost">
                 {t("nav.outreach", "Outreach")}
               </Link>
+              <Link href="/admin/onboarding" className="btn btn-ghost">
+                {t("nav.onboarding", "Onboarding")}
+              </Link>
 
               <Link href="/admin/notifications" className="btn btn-ghost">
                 Notifications
@@ -928,6 +931,24 @@ export default function AdminIndexPage() {
                 {t(
                   "admin.outreach.controlBody",
                   "Prioritise claim-ready places, record conversations and share the reviewed Business ownership path.",
+                )}
+              </p>
+            </Link>
+
+            <Link href="/admin/onboarding" className="card admin-control-card">
+              <p className="small muted">
+                {t("admin.onboarding.controlKicker", "Assisted setup")}
+              </p>
+              <h3>
+                {t(
+                  "admin.onboarding.controlTitle",
+                  "Launch partner onboarding",
+                )}
+              </h3>
+              <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                {t(
+                  "admin.onboarding.controlBody",
+                  "Match existing records, prepare owner details and track a private handoff without creating duplicate businesses.",
                 )}
               </p>
             </Link>

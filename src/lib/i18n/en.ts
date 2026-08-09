@@ -4866,6 +4866,182 @@ export const en: TranslationTree = {
   "admin.outreach.controlTitle": "Outreach and follow-ups",
   "admin.outreach.controlBody":
     "Prioritise claim-ready places, record conversations and share the reviewed Business ownership path.",
+  "nav.onboarding": "Onboarding",
+  "admin.onboarding.metaTitle": "Assisted onboarding | Mirëbook",
+  "admin.onboarding.kicker": "Launch partners",
+  "admin.onboarding.title": "Assisted onboarding",
+  "admin.onboarding.subtitle":
+    "Find the business first, then prepare one clear path from discovery to an owner-managed profile.",
+  "admin.onboarding.searchTitle": "Search before creating anything",
+  "admin.onboarding.searchBody":
+    "Match public places, Mirëbook businesses, owner details and existing onboarding cases.",
+  "admin.onboarding.search.label": "Business search",
+  "admin.onboarding.search.placeholder":
+    "Name, city, address, phone or owner email",
+  "admin.onboarding.search.hint":
+    "Suggestions appear after two characters. Use the existing record whenever it matches.",
+  "admin.onboarding.search.searching": "Finding possible matches...",
+  "admin.onboarding.search.noMatches": "No existing match found.",
+  "admin.onboarding.search.directory": "Local place",
+  "admin.onboarding.search.business": "Mirëbook business",
+  "admin.onboarding.search.onboarding": "Onboarding case",
+  "admin.onboarding.search.existingCase": "Case in progress",
+  "admin.onboarding.search.published": "Published",
+  "admin.onboarding.search.draft": "Draft",
+  "admin.onboarding.search.newProspect": "Start a new prospect",
+  "admin.onboarding.search.clear": "Clear selection",
+  "admin.onboarding.storage.title": "Assisted onboarding storage is not ready",
+  "admin.onboarding.storage.body":
+    "Run SQL 38 to enable private cases. Smart search remains read-only until then.",
+  "admin.onboarding.summary": "Onboarding summary",
+  "admin.onboarding.total": "Total cases",
+  "admin.onboarding.active": "In progress",
+  "admin.onboarding.readyCount": "Claimed or ready",
+  "admin.onboarding.liveCount": "Live",
+  "admin.onboarding.queue.kicker": "Private queue",
+  "admin.onboarding.queue.title": "Onboarding cases",
+  "admin.onboarding.queue.emptyTitle": "No cases here yet",
+  "admin.onboarding.queue.emptyBody":
+    "Use the smart search above to attach a place, business or new prospect.",
+  "admin.onboarding.loading": "Loading onboarding cases...",
+  "admin.onboarding.filterStatus": "Filter by status",
+  "admin.onboarding.status.all": "All statuses",
+  "admin.onboarding.status.new": "New",
+  "admin.onboarding.status.contacted": "Contacted",
+  "admin.onboarding.status.interested": "Interested",
+  "admin.onboarding.status.assetsRequested": "Assets requested",
+  "admin.onboarding.status.assetsReceived": "Assets received",
+  "admin.onboarding.status.draftPrepared": "Draft prepared",
+  "admin.onboarding.status.inviteSent": "Invite sent",
+  "admin.onboarding.status.claimed": "Claimed",
+  "admin.onboarding.status.ready": "Ready to publish",
+  "admin.onboarding.status.live": "Live",
+  "admin.onboarding.status.paused": "Paused",
+  "admin.onboarding.status.declined": "Declined",
+  "admin.onboarding.assets.notRequested": "Not requested",
+  "admin.onboarding.assets.requested": "Requested",
+  "admin.onboarding.assets.partial": "Part received",
+  "admin.onboarding.assets.received": "Received",
+  "admin.onboarding.assets.reviewed": "Reviewed",
+  "admin.onboarding.linkedBusiness": "Business linked",
+  "admin.onboarding.linkedPlace": "Place linked",
+  "admin.onboarding.editor.emptyTitle": "Choose the right record",
+  "admin.onboarding.editor.emptyBody":
+    "Search first or open a case from the queue. Nothing is created or published until you deliberately save and complete the owner handoff.",
+  "admin.onboarding.editor.existing": "Existing case",
+  "admin.onboarding.editor.new": "New private case",
+  "admin.onboarding.record.title": "Business record",
+  "admin.onboarding.record.body":
+    "Keep the working details accurate before an owner reviews them.",
+  "admin.onboarding.name": "Business name",
+  "admin.onboarding.category": "Category",
+  "admin.onboarding.category.choose": "Choose category",
+  "admin.onboarding.city": "City",
+  "admin.onboarding.address": "Address",
+  "admin.onboarding.website": "Website",
+  "admin.onboarding.social": "Social profile",
+  "admin.onboarding.owner.title": "Owner contact",
+  "admin.onboarding.owner.body":
+    "Private contact details for assisted setup and handoff.",
+  "admin.onboarding.ownerName": "Owner or manager",
+  "admin.onboarding.ownerEmail": "Email",
+  "admin.onboarding.ownerPhone": "Phone",
+  "admin.onboarding.language": "Preferred language",
+  "admin.onboarding.goal.title": "Onboarding goals",
+  "admin.onboarding.goal.body":
+    "Record only what the business is interested in.",
+  "admin.onboarding.goal.listing": "Discovery listing",
+  "admin.onboarding.goal.listingBody":
+    "Public details that help customers find the place.",
+  "admin.onboarding.goal.booking": "Online bookings",
+  "admin.onboarding.goal.bookingBody":
+    "Services, staff and availability for customer booking.",
+  "admin.onboarding.goal.app": "Mirëbook Business app",
+  "admin.onboarding.goal.appBody":
+    "Mobile calendar and day-to-day business management.",
+  "admin.onboarding.statusLabel": "Case status",
+  "admin.onboarding.assetsLabel": "Profile assets",
+  "admin.onboarding.nextAction": "Suggested next action",
+  "admin.onboarding.next.new":
+    "Verify a contact route and make the first approach.",
+  "admin.onboarding.next.contacted":
+    "Record their interest and agree the next useful step.",
+  "admin.onboarding.next.interested":
+    "Request services, hours and permitted profile media.",
+  "admin.onboarding.next.assetsRequested":
+    "Follow up for the missing profile details or media.",
+  "admin.onboarding.next.assetsReceived":
+    "Review the supplied material and prepare the profile.",
+  "admin.onboarding.next.draftPrepared":
+    "Review the draft with the owner before handoff.",
+  "admin.onboarding.next.inviteSent":
+    "Wait for the owner to link their account, then assist setup.",
+  "admin.onboarding.next.claimed":
+    "Help complete services, staff and availability.",
+  "admin.onboarding.next.ready":
+    "Perform the final owner-approved publication check.",
+  "admin.onboarding.next.live":
+    "Confirm the live profile and monitor the first bookings.",
+  "admin.onboarding.next.paused":
+    "Keep the case private until a new follow-up is agreed.",
+  "admin.onboarding.next.declined":
+    "Keep the outcome recorded and do not continue contact.",
+  "admin.onboarding.permission.title": "Media permission",
+  "admin.onboarding.permission.body":
+    "Profile use and Mirëbook marketing are separate permissions. Never infer one from the other.",
+  "admin.onboarding.permission.profile": "Use on the business profile",
+  "admin.onboarding.permission.profileBody":
+    "Photos may appear on the business or service profile.",
+  "admin.onboarding.permission.marketing": "Use in Mirëbook promotion",
+  "admin.onboarding.permission.marketingBody":
+    "Photos may appear in Mirëbook social or promotional content.",
+  "admin.onboarding.permission.source": "Permission received via",
+  "admin.onboarding.permission.chooseSource": "Choose source",
+  "admin.onboarding.permission.source.email": "Email",
+  "admin.onboarding.permission.source.social_message": "Social message",
+  "admin.onboarding.permission.source.written_form": "Written form",
+  "admin.onboarding.permission.source.phone": "Phone",
+  "admin.onboarding.permission.source.in_person": "In person",
+  "admin.onboarding.permission.source.other": "Other",
+  "admin.onboarding.permission.grantedBy": "Permission granted by",
+  "admin.onboarding.permission.date": "Confirmed on",
+  "admin.onboarding.permission.note": "Permission note",
+  "admin.onboarding.permission.notePlaceholder":
+    "What was agreed and where the evidence is kept",
+  "admin.onboarding.permission.confirm":
+    "I have evidence of this permission and selected only the uses that were explicitly approved.",
+  "admin.onboarding.notes": "Private preparation notes",
+  "admin.onboarding.notesPlaceholder":
+    "Record the next step, missing setup details and owner preferences. Do not add sensitive data.",
+  "admin.onboarding.context": "Existing Mirëbook context",
+  "admin.onboarding.openDirectory": "Directory record",
+  "admin.onboarding.openPublic": "Public place",
+  "admin.onboarding.openBusiness": "Business profile",
+  "admin.onboarding.openOutreach": "Open outreach",
+  "admin.onboarding.history": "Recent private activity",
+  "admin.onboarding.safety":
+    "Saving records private preparation only. It does not create an account, send a message, publish a listing or change bookings.",
+  "admin.onboarding.save": "Save private case",
+  "admin.onboarding.saving": "Saving...",
+  "admin.onboarding.success": "Private onboarding case saved.",
+  "admin.onboarding.error.load":
+    "The assisted onboarding workspace could not be loaded.",
+  "admin.onboarding.error.save": "The onboarding case could not be saved.",
+  "admin.onboarding.error.case": "Choose a valid onboarding case.",
+  "admin.onboarding.error.place": "Choose a valid directory place.",
+  "admin.onboarding.error.business": "Choose a valid business profile.",
+  "admin.onboarding.error.name": "Add the business or prospect name.",
+  "admin.onboarding.error.website": "Use a secure HTTPS website URL.",
+  "admin.onboarding.error.social": "Use a secure HTTPS social URL.",
+  "admin.onboarding.error.email": "Enter a valid owner email.",
+  "admin.onboarding.error.goal": "Choose at least one onboarding goal.",
+  "admin.onboarding.error.permission":
+    "Confirm who granted media permission and how it was received.",
+  "admin.onboarding.error.permissionDate": "Choose a valid permission date.",
+  "admin.onboarding.controlKicker": "Assisted setup",
+  "admin.onboarding.controlTitle": "Launch partner onboarding",
+  "admin.onboarding.controlBody":
+    "Match existing records, prepare owner details and track a private handoff without creating duplicate businesses.",
   "customerApp.lifecycle.cancelled.businessTitle": "Customer cancelled booking",
   "customerApp.lifecycle.cancelled.staffTitle": "Booking cancelled",
   "customerApp.lifecycle.cancelled.businessMessage":

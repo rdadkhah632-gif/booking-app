@@ -4984,6 +4984,186 @@ export const sq: TranslationTree = {
   "admin.outreach.controlTitle": "Kontaktet dhe ndjekjet",
   "admin.outreach.controlBody":
     "Jepu përparësi vendeve gati për pretendim, regjistro bisedat dhe ndaj rrugën e shqyrtuar të pronësisë në Business.",
+  "nav.onboarding": "Regjistrimi",
+  "admin.onboarding.metaTitle": "Regjistrim i asistuar | Mirëbook",
+  "admin.onboarding.kicker": "Partnerët e nisjes",
+  "admin.onboarding.title": "Regjistrim i asistuar",
+  "admin.onboarding.subtitle":
+    "Gjej fillimisht biznesin, pastaj përgatit një rrugë të qartë nga zbulimi te profili i menaxhuar nga pronari.",
+  "admin.onboarding.searchTitle": "Kërko përpara se të krijosh diçka",
+  "admin.onboarding.searchBody":
+    "Përputh vende publike, biznese Mirëbook, të dhëna pronari dhe raste ekzistuese regjistrimi.",
+  "admin.onboarding.search.label": "Kërkimi i biznesit",
+  "admin.onboarding.search.placeholder":
+    "Emër, qytet, adresë, telefon ose email i pronarit",
+  "admin.onboarding.search.hint":
+    "Sugjerimet shfaqen pas dy shkronjash. Përdor regjistrimin ekzistues kur përputhet.",
+  "admin.onboarding.search.searching": "Po kërkohen përputhje të mundshme...",
+  "admin.onboarding.search.noMatches": "Nuk u gjet përputhje ekzistuese.",
+  "admin.onboarding.search.directory": "Vend lokal",
+  "admin.onboarding.search.business": "Biznes Mirëbook",
+  "admin.onboarding.search.onboarding": "Rast regjistrimi",
+  "admin.onboarding.search.existingCase": "Rast në proces",
+  "admin.onboarding.search.published": "Publikuar",
+  "admin.onboarding.search.draft": "Draft",
+  "admin.onboarding.search.newProspect": "Nis një biznes të ri të mundshëm",
+  "admin.onboarding.search.clear": "Pastro zgjedhjen",
+  "admin.onboarding.storage.title":
+    "Ruajtja e regjistrimit të asistuar nuk është gati",
+  "admin.onboarding.storage.body":
+    "Ekzekuto SQL 38 për të aktivizuar rastet private. Deri atëherë kërkimi inteligjent mbetet vetëm për lexim.",
+  "admin.onboarding.summary": "Përmbledhja e regjistrimit",
+  "admin.onboarding.total": "Raste gjithsej",
+  "admin.onboarding.active": "Në proces",
+  "admin.onboarding.readyCount": "Pretenduar ose gati",
+  "admin.onboarding.liveCount": "Aktiv",
+  "admin.onboarding.queue.kicker": "Radhë private",
+  "admin.onboarding.queue.title": "Rastet e regjistrimit",
+  "admin.onboarding.queue.emptyTitle": "Nuk ka ende raste këtu",
+  "admin.onboarding.queue.emptyBody":
+    "Përdor kërkimin inteligjent sipër për të lidhur një vend, biznes ose biznes të ri të mundshëm.",
+  "admin.onboarding.loading": "Po ngarkohen rastet e regjistrimit...",
+  "admin.onboarding.filterStatus": "Filtro sipas gjendjes",
+  "admin.onboarding.status.all": "Të gjitha gjendjet",
+  "admin.onboarding.status.new": "I ri",
+  "admin.onboarding.status.contacted": "Kontaktuar",
+  "admin.onboarding.status.interested": "I interesuar",
+  "admin.onboarding.status.assetsRequested": "Materialet u kërkuan",
+  "admin.onboarding.status.assetsReceived": "Materialet u morën",
+  "admin.onboarding.status.draftPrepared": "Drafti u përgatit",
+  "admin.onboarding.status.inviteSent": "Ftesa u dërgua",
+  "admin.onboarding.status.claimed": "Pretenduar",
+  "admin.onboarding.status.ready": "Gati për publikim",
+  "admin.onboarding.status.live": "Aktiv",
+  "admin.onboarding.status.paused": "Në pritje",
+  "admin.onboarding.status.declined": "Refuzoi",
+  "admin.onboarding.assets.notRequested": "Nuk janë kërkuar",
+  "admin.onboarding.assets.requested": "U kërkuan",
+  "admin.onboarding.assets.partial": "U morën pjesërisht",
+  "admin.onboarding.assets.received": "U morën",
+  "admin.onboarding.assets.reviewed": "U shqyrtuan",
+  "admin.onboarding.linkedBusiness": "Biznesi është lidhur",
+  "admin.onboarding.linkedPlace": "Vendi është lidhur",
+  "admin.onboarding.editor.emptyTitle": "Zgjidh regjistrimin e duhur",
+  "admin.onboarding.editor.emptyBody":
+    "Kërko fillimisht ose hap një rast nga radha. Asgjë nuk krijohet apo publikohet derisa ta ruash me qëllim dhe të përfundosh kalimin te pronari.",
+  "admin.onboarding.editor.existing": "Rast ekzistues",
+  "admin.onboarding.editor.new": "Rast i ri privat",
+  "admin.onboarding.record.title": "Regjistrimi i biznesit",
+  "admin.onboarding.record.body":
+    "Mbaji të sakta të dhënat e punës përpara se t'i shqyrtojë pronari.",
+  "admin.onboarding.name": "Emri i biznesit",
+  "admin.onboarding.category": "Kategoria",
+  "admin.onboarding.category.choose": "Zgjidh kategorinë",
+  "admin.onboarding.city": "Qyteti",
+  "admin.onboarding.address": "Adresa",
+  "admin.onboarding.website": "Faqja",
+  "admin.onboarding.social": "Profili social",
+  "admin.onboarding.owner.title": "Kontakti i pronarit",
+  "admin.onboarding.owner.body":
+    "Të dhëna private kontakti për konfigurimin e asistuar dhe kalimin te pronari.",
+  "admin.onboarding.ownerName": "Pronari ose menaxheri",
+  "admin.onboarding.ownerEmail": "Email",
+  "admin.onboarding.ownerPhone": "Telefon",
+  "admin.onboarding.language": "Gjuha e preferuar",
+  "admin.onboarding.goal.title": "Qëllimet e regjistrimit",
+  "admin.onboarding.goal.body":
+    "Regjistro vetëm ato për të cilat interesohet biznesi.",
+  "admin.onboarding.goal.listing": "Listim për zbulim",
+  "admin.onboarding.goal.listingBody":
+    "Të dhëna publike që i ndihmojnë klientët ta gjejnë vendin.",
+  "admin.onboarding.goal.booking": "Rezervime online",
+  "admin.onboarding.goal.bookingBody":
+    "Shërbime, staf dhe orare për rezervime nga klientët.",
+  "admin.onboarding.goal.app": "Aplikacioni Mirëbook Business",
+  "admin.onboarding.goal.appBody":
+    "Kalendari në celular dhe menaxhimi i përditshëm i biznesit.",
+  "admin.onboarding.statusLabel": "Gjendja e rastit",
+  "admin.onboarding.assetsLabel": "Materialet e profilit",
+  "admin.onboarding.nextAction": "Hapi i sugjeruar",
+  "admin.onboarding.next.new":
+    "Verifiko një mënyrë kontakti dhe bëj qasjen e parë.",
+  "admin.onboarding.next.contacted":
+    "Regjistro interesin dhe dakordëso hapin e dobishëm të radhës.",
+  "admin.onboarding.next.interested":
+    "Kërko shërbimet, oraret dhe materialet e lejuara për profilin.",
+  "admin.onboarding.next.assetsRequested":
+    "Ndiq të dhënat ose materialet që mungojnë për profilin.",
+  "admin.onboarding.next.assetsReceived":
+    "Shqyrto materialet e marra dhe përgatit profilin.",
+  "admin.onboarding.next.draftPrepared":
+    "Shqyrto draftin me pronarin përpara kalimit.",
+  "admin.onboarding.next.inviteSent":
+    "Prit lidhjen e llogarisë nga pronari, pastaj ndihmo me konfigurimin.",
+  "admin.onboarding.next.claimed":
+    "Ndihmo me përfundimin e shërbimeve, stafit dhe orareve.",
+  "admin.onboarding.next.ready":
+    "Kryej kontrollin përfundimtar të publikimit të miratuar nga pronari.",
+  "admin.onboarding.next.live":
+    "Konfirmo profilin aktiv dhe ndiq rezervimet e para.",
+  "admin.onboarding.next.paused":
+    "Mbaje rastin privat derisa të dakordësohet një ndjekje e re.",
+  "admin.onboarding.next.declined":
+    "Mbaje rezultatin të regjistruar dhe mos vazhdo kontaktin.",
+  "admin.onboarding.permission.title": "Leja për materiale mediatike",
+  "admin.onboarding.permission.body":
+    "Përdorimi në profil dhe marketingu i Mirëbook janë leje të ndara. Mos e nënkupto kurrë njërën nga tjetra.",
+  "admin.onboarding.permission.profile": "Përdorim në profilin e biznesit",
+  "admin.onboarding.permission.profileBody":
+    "Fotot mund të shfaqen në profilin e biznesit ose shërbimit.",
+  "admin.onboarding.permission.marketing": "Përdorim në promovimin e Mirëbook",
+  "admin.onboarding.permission.marketingBody":
+    "Fotot mund të shfaqen në rrjetet sociale ose materialet promovuese të Mirëbook.",
+  "admin.onboarding.permission.source": "Leja u mor përmes",
+  "admin.onboarding.permission.chooseSource": "Zgjidh burimin",
+  "admin.onboarding.permission.source.email": "Email",
+  "admin.onboarding.permission.source.social_message": "Mesazh social",
+  "admin.onboarding.permission.source.written_form": "Formular me shkrim",
+  "admin.onboarding.permission.source.phone": "Telefon",
+  "admin.onboarding.permission.source.in_person": "Fizikisht",
+  "admin.onboarding.permission.source.other": "Tjetër",
+  "admin.onboarding.permission.grantedBy": "Leja u dha nga",
+  "admin.onboarding.permission.date": "U konfirmua më",
+  "admin.onboarding.permission.note": "Shënim për lejen",
+  "admin.onboarding.permission.notePlaceholder":
+    "Çfarë u dakordësua dhe ku ruhet prova",
+  "admin.onboarding.permission.confirm":
+    "Kam provë për këtë leje dhe kam zgjedhur vetëm përdorimet që u miratuan shprehimisht.",
+  "admin.onboarding.notes": "Shënime private për përgatitjen",
+  "admin.onboarding.notesPlaceholder":
+    "Regjistro hapin e radhës, të dhënat që mungojnë dhe preferencat e pronarit. Mos shto të dhëna delikate.",
+  "admin.onboarding.context": "Konteksti ekzistues në Mirëbook",
+  "admin.onboarding.openDirectory": "Regjistrimi në direktori",
+  "admin.onboarding.openPublic": "Vendi publik",
+  "admin.onboarding.openBusiness": "Profili i biznesit",
+  "admin.onboarding.openOutreach": "Hap kontaktet",
+  "admin.onboarding.history": "Aktiviteti i fundit privat",
+  "admin.onboarding.safety":
+    "Ruajtja regjistron vetëm përgatitjen private. Nuk krijon llogari, nuk dërgon mesazh, nuk publikon listim dhe nuk ndryshon rezervime.",
+  "admin.onboarding.save": "Ruaj rastin privat",
+  "admin.onboarding.saving": "Po ruhet...",
+  "admin.onboarding.success": "Rasti privat i regjistrimit u ruajt.",
+  "admin.onboarding.error.load":
+    "Hapësira e regjistrimit të asistuar nuk mund të ngarkohej.",
+  "admin.onboarding.error.save": "Rasti i regjistrimit nuk mund të ruhej.",
+  "admin.onboarding.error.case": "Zgjidh një rast të vlefshëm regjistrimi.",
+  "admin.onboarding.error.place": "Zgjidh një vend të vlefshëm nga direktoria.",
+  "admin.onboarding.error.business": "Zgjidh një profil të vlefshëm biznesi.",
+  "admin.onboarding.error.name": "Shto emrin e biznesit ose kandidatit.",
+  "admin.onboarding.error.website":
+    "Përdor një adresë të sigurt HTTPS për faqen.",
+  "admin.onboarding.error.social":
+    "Përdor një adresë të sigurt HTTPS për rrjetin social.",
+  "admin.onboarding.error.email": "Vendos një email të vlefshëm të pronarit.",
+  "admin.onboarding.error.goal": "Zgjidh të paktën një qëllim regjistrimi.",
+  "admin.onboarding.error.permission":
+    "Konfirmo kush e dha lejen për media dhe si u mor ajo.",
+  "admin.onboarding.error.permissionDate":
+    "Zgjidh një datë të vlefshme për lejen.",
+  "admin.onboarding.controlKicker": "Konfigurim i asistuar",
+  "admin.onboarding.controlTitle": "Regjistrimi i partnerëve të nisjes",
+  "admin.onboarding.controlBody":
+    "Përputh regjistrimet ekzistuese, përgatit të dhënat e pronarit dhe ndiq një kalim privat pa krijuar biznese të dyfishta.",
   "customerApp.lifecycle.cancelled.businessTitle": "Klienti anuloi rezervimin",
   "customerApp.lifecycle.cancelled.staffTitle": "Rezervimi u anulua",
   "customerApp.lifecycle.cancelled.businessMessage":

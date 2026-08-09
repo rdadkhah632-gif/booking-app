@@ -471,6 +471,20 @@ or billing behavior.
 7. Publish the first reviewed genuine business.
 8. Run one final customer booking against that genuine listing.
 
+## Assisted Business Onboarding
+
+Before using the new launch-partner workbench, run:
+
+`sources/sql/38_assisted_business_onboarding.sql`
+
+Then deploy the matching website build and open `/admin/onboarding`. Search for
+the business before starting a new prospect. The workbench may prepare owner
+details, goals, assets and explicit media permissions, but saving a case must
+not create credentials, send outreach, approve a claim, publish a business or
+alter booking/billing state. Continue to use Directory for reviewed place
+content, Outreach for manually completed contact, Claims for owner evidence and
+the Business workspace for owner-approved setup and publication.
+
 ## UI Position And Next Batch
 
 No active P0/P1/P2 interface finding remains from the latest targeted business,

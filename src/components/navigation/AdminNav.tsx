@@ -28,6 +28,10 @@ export default function AdminNav({
         {t("nav.outreach", "Outreach")}
       </Link>
 
+      <Link href="/admin/onboarding" className="muted">
+        {t("nav.onboarding", "Onboarding")}
+      </Link>
+
       <Link href="/admin/directory-claims" className="muted">
         {t("nav.claims", "Claims")}
       </Link>

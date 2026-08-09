@@ -418,7 +418,23 @@ export default function AdminDirectoryPage() {
       }
 
       setAdminReady(true);
-      await loadDirectory(0, session.access_token);
+      const requestedSearch =
+        typeof router.query.search === "string"
+          ? router.query.search.slice(0, 120)
+          : "";
+      const requestedStatus = STATUSES.includes(
+        router.query.status as DirectoryStatus,
+      )
+        ? (router.query.status as DirectoryStatus)
+        : status;
+      setSearch(requestedSearch);
+      setStatus(requestedStatus);
+      await loadDirectory(0, session.access_token, requestedStatus, false, {
+        category: "",
+        city: "",
+        search: requestedSearch,
+        media: "",
+      });
     }
 
     authenticate();
@@ -1246,10 +1262,7 @@ export default function AdminDirectoryPage() {
                   <div className="directory-media-section-heading">
                     <div>
                       <h3>
-                        {t(
-                          "admin.directory.media.gapsTitle",
-                          "Coverage gaps",
-                        )}
+                        {t("admin.directory.media.gapsTitle", "Coverage gaps")}
                       </h3>
                       <p className="small muted">
                         {t(
@@ -1261,9 +1274,7 @@ export default function AdminDirectoryPage() {
                   </div>
                   <div className="directory-media-gap-groups">
                     <div>
-                      <h4>
-                        {t("admin.directory.media.byCity", "By city")}
-                      </h4>
+                      <h4>{t("admin.directory.media.byCity", "By city")}</h4>
                       <div className="directory-media-gap-rows">
                         {cityMediaGaps.map((item) => (
                           <button
@@ -1281,10 +1292,7 @@ export default function AdminDirectoryPage() {
                     </div>
                     <div>
                       <h4>
-                        {t(
-                          "admin.directory.media.byCategory",
-                          "By category",
-                        )}
+                        {t("admin.directory.media.byCategory", "By category")}
                       </h4>
                       <div className="directory-media-gap-rows">
                         {categoryMediaGaps.map((item) => (
@@ -2076,10 +2084,7 @@ export default function AdminDirectoryPage() {
                       {selectedPlace.content_updated_at && (
                         <span className="small muted">
                           {t("admin.directory.content.updated", "Updated")}{" "}
-                          {formatDate(
-                            selectedPlace.content_updated_at,
-                            locale,
-                          )}
+                          {formatDate(selectedPlace.content_updated_at, locale)}
                         </span>
                       )}
                     </div>

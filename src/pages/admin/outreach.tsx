@@ -310,11 +310,17 @@ export default function AdminOutreachPage() {
       }
 
       setAdminReady(true);
+      const requestedSearch =
+        typeof router.query.search === "string"
+          ? router.query.search.slice(0, 120)
+          : "";
+      setSearch(requestedSearch);
+      setAppliedSearch(requestedSearch);
       await loadCandidates({
         token: session.access_token,
         nextOffset: 0,
         nextStatus: statusFilter,
-        nextSearch: appliedSearch,
+        nextSearch: requestedSearch,
         nextCity: appliedCity,
         nextCategory: appliedCategory,
       });
@@ -1662,10 +1668,9 @@ export default function AdminOutreachPage() {
 
         .outreach-filters {
           display: grid;
-          grid-template-columns: minmax(220px, 1.4fr) minmax(
-              150px,
-              0.8fr
-            ) minmax(180px, 1fr) auto;
+          grid-template-columns:
+            minmax(220px, 1.4fr) minmax(150px, 0.8fr)
+            minmax(180px, 1fr) auto;
           gap: 0.75rem;
           align-items: end;
           padding: 0.8rem;

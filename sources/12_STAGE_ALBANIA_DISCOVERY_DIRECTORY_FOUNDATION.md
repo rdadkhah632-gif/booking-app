@@ -1946,6 +1946,90 @@ live discovery, authentication and booking state.
 10. Finish with no horizontal overflow, framework overlay, raw translation key
     or relevant console warning/error.
 
+## Batch 29 - Assisted Business Onboarding
+
+Batch 29 gives the operator one private workbench for turning a promising
+place or direct business conversation into a clean owner handoff. It extends
+the existing Directory, Outreach, Claims and Business tools rather than
+creating a second business-registration system.
+
+The workbench starts with a smart, keyboard-accessible search across:
+
+- reviewed and private directory-place names, cities, addresses and contacts
+- existing Mirëbook businesses and their owner profile name, email or phone
+- standalone onboarding prospects and cases already in progress
+
+Suggestions identify their source and current state before the operator can
+start a new prospect. Selecting an existing record prefills its public/business
+details and attaches one private case, preventing a separate onboarding record
+from quietly duplicating the same place or business.
+
+Private cases can track:
+
+- owner or manager contact and preferred EN/SQ language
+- interest in discovery, online bookings and the Mirëbook Business app
+- a structured progression from first contact through assets, owner handoff,
+  publication readiness and live follow-up
+- profile-material readiness and the next suggested operator action
+- separate permission for business-profile media and Mirëbook promotional
+  media, including who granted it, how, when and a private evidence note
+- private preparation notes and an append-only status/permission audit snapshot
+
+SQL 38 creates the two private tables and the admin-only audited save RPC. RLS
+allows no browser role to read or write either table. The admin API uses the
+service role only after verifying the signed-in profile is an administrator.
+Saving a case creates no Auth user, directory place, business, claim, message,
+email, notification, publication, booking or billing change.
+
+### Batch 29 deployment QA
+
+Use **High effort** for this QA because it spans duplicate prevention, private
+data boundaries, keyboard interaction, EN/SQ and responsive operator UI.
+
+1. Run `sources/sql/38_assisted_business_onboarding.sql`, deploy the matching
+   web build, then open `/admin/onboarding` as an administrator. Confirm the
+   SQL guidance is absent, all totals settle from a neutral loading state and
+   Onboarding appears in the desktop and compact mobile operator navigation.
+2. Search a known directory place by partial name, city, address and phone.
+   Search an existing Mirëbook business by business name and owner email. Each
+   result must identify Local place, Mirëbook business or Onboarding case and
+   show useful state without exposing a raw UUID as its label.
+3. Use Arrow Up/Down, Enter and Escape in the search. Confirm focus remains in
+   the combobox, the active option is announced, selection prefills the right
+   record and Clear selection returns to a neutral state.
+4. Select the same directory place twice and the same business twice. Save
+   each only once using controlled QA records. Confirm the second lookup opens
+   the existing case rather than creating a duplicate. Verify the unique
+   place/business boundary in the private table or API result.
+5. Search an intentionally unmatched disposable name and choose Start a new
+   prospect. Confirm the visible search text prefills the name, no directory or
+   business ID is invented, and saving creates only one private case.
+6. Exercise the goals, status, asset state, owner contact and EN/SQ preference.
+   Refresh and confirm all values persist. The suggested next action must
+   update with status and remain concise on desktop/mobile.
+7. Confirm profile-media and Mirëbook-marketing permissions are independent.
+   Saving either permission must require source, grantor, date and explicit
+   confirmation. Remove both and confirm permission evidence is cleared rather
+   than left attached to an unapproved use.
+8. Confirm invalid email, non-HTTPS website/social links, zero selected goals
+   and incomplete permission evidence show friendly localized validation with
+   no raw provider, SQL, RLS or stack-trace text.
+9. From an attached case, open Directory record, Public place, Business profile
+   and Outreach where applicable. Customer-facing place links must use
+   `mirebook.com`; operator/business links must remain on the business origin.
+10. Verify anonymous, customer, owner and staff sessions cannot open the page
+    or call `/api/admin/onboarding`. Direct browser reads/writes to both SQL 38
+    tables must be denied. Admin API responses must use `private, no-store`.
+11. Inspect the public directory, public business and customer APIs. They must
+    expose no onboarding status, contacts, permissions, notes, actor IDs or
+    events, and no public counts or listings should change.
+12. Verify EN and SQ at 1440x900, 768x1024 and 390x844. Check combobox wrapping,
+    44px controls, queue/editor stacking, permission fields, long Albanian text,
+    no horizontal overflow and no console errors.
+13. Finish by deleting no real record and sending no contact. Report the exact
+    disposable case IDs created, then leave them paused or remove them only
+    through an explicitly approved cleanup step.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls
