@@ -1249,7 +1249,12 @@ export default function Explore() {
           }
 
           .explore-load-more {
-            padding-bottom: calc(var(--mobile-customer-dock-space, 0px) + 1rem);
+            padding-bottom: calc(var(--mobile-customer-dock-space, 0px) + 2rem);
+          }
+
+          .explore-results-grid > :global(*) {
+            content-visibility: visible;
+            contain-intrinsic-size: none;
           }
 
           .is-map-view :global(.explore-view-controls) {
