@@ -88,6 +88,11 @@ function queryText(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function positiveIntegerQuery(value: string | string[] | undefined) {
+  const parsed = Number.parseInt(queryText(value), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
 function businessStats(business: Business): BusinessCardStats {
   const activeStaffIds = new Set(
     (business.staff_members || [])
@@ -220,7 +225,7 @@ export default function Explore() {
   const [locationState, setLocationState] = useState<LocationState>("idle");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [visibleListCount, setVisibleListCount] = useState(LIST_PAGE_SIZE);
+  const listPage = positiveIntegerQuery(router.query.page);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -572,19 +577,20 @@ export default function Explore() {
   ]);
 
   const visibleListItems = useMemo(
-    () => listItems.slice(0, visibleListCount),
-    [listItems, visibleListCount],
+    () => listItems.slice(0, listPage * LIST_PAGE_SIZE),
+    [listItems, listPage],
   );
 
-  useEffect(() => {
-    setVisibleListCount(LIST_PAGE_SIZE);
-  }, [
-    appliedFilters.category,
-    appliedFilters.city,
-    appliedFilters.kind,
-    appliedFilters.query,
-    appliedFilters.sort,
-  ]);
+  const nextListPageHref = useMemo(
+    () => ({
+      pathname: "/explore",
+      query: {
+        ...router.query,
+        page: String(listPage + 1),
+      },
+    }),
+    [listPage, router.query],
+  );
 
   const selectedMapItem = useMemo(
     () => mapItems.find((item) => item.id === selectedMapId) || null,
@@ -832,18 +838,10 @@ export default function Explore() {
                       .replace("{shown}", String(visibleListItems.length))
                       .replace("{total}", String(listItems.length))}
                   </p>
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() =>
-                      setVisibleListCount((current) =>
-                        Math.min(current + LIST_PAGE_SIZE, listItems.length),
-                      )
-                    }
-                  >
+                  <Link href={nextListPageHref} className="btn btn-ghost">
                     {t("explore.discovery.showMore", "Show more places")}
                     <ArrowRight size={16} aria-hidden="true" />
-                  </button>
+                  </Link>
                 </div>
               )}
 

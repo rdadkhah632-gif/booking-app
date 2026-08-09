@@ -1913,8 +1913,10 @@ live discovery, authentication and booking state.
 
 ### Batch 28 deployment QA
 
-1. At 390x844, open Home, Explore List, Explore Map, one public place, Login,
-   My Bookings and Account. Confirm the dock appears only for anonymous or
+1. At 390x844, first prove the session is anonymous by confirming the public
+   header shows Login and does not show Operator, Business or Staff navigation.
+   Then open Home, Explore List, Explore Map, one public place, Login, My
+   Bookings and Account. Confirm the dock appears only for anonymous or
    customer context and each item is at least 44px high.
 2. Confirm the active dock item follows List, Map, booking, notification,
    account/auth and public-place routes. Protected anonymous actions must use
@@ -1923,8 +1925,11 @@ live discovery, authentication and booking state.
    remain reachable; an authenticated customer Account menu must still provide
    language, Account and Log out.
 4. Explore Places must report the complete public total while initially
-   rendering twelve cards. Show more must render the next twelve and update the
-   translated visible-count message without changing filters or URL state.
+   rendering twelve cards. Show more must navigate to the URL-backed next page,
+   render the next twelve and update the translated visible-count message while
+   preserving filters. Browser Back must restore the previous twelve-card
+   state. If an automation-layer click does not navigate, repeat once with a
+   physical coordinate/touch click before classifying a product defect.
 5. Switch List to Map from the dock. The Map must still represent the complete
    filtered catalogue, retain clustering and keep a selected-place sheet fully
    above the customer dock.
