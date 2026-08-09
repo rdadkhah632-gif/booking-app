@@ -12,6 +12,7 @@ import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { getBusinessAppUrl } from "@/lib/appUrls";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
 import { Role } from "./navTypes";
+import MobileCustomerDock from "./MobileCustomerDock";
 
 type AuthNavProps = {
   contextRole?: Exclude<Role, null>;
@@ -282,256 +283,273 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
   }, [isPublicBusinessEntry, role, t]);
 
   return (
-    <nav
-      className={[
-        "nav-simple",
-        role ? `nav-role-${role}` : "",
-        role === "admin" ? "nav-operator" : "",
-        !role && isPublicBusinessEntry ? "nav-public-business" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <div className="nav-simple-inner">
-        <Link href={logoHref} className="logo">
-          Mirë<span>book</span>
-          {roleBadge && <em className="product-role-badge">{roleBadge}</em>}
-        </Link>
+    <>
+      <nav
+        className={[
+          "nav-simple",
+          role ? `nav-role-${role}` : "",
+          !role ? "nav-role-public" : "",
+          role === "admin" ? "nav-operator" : "",
+          !role && isPublicBusinessEntry ? "nav-public-business" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        <div className="nav-simple-inner">
+          <Link href={logoHref} className="logo">
+            Mirë<span>book</span>
+            {roleBadge && <em className="product-role-badge">{roleBadge}</em>}
+          </Link>
 
-        <div className="auth-nav-links">
-          {loading && (
-            <span className="muted small">
-              {t("nav.checkingAccount", "Checking account...")}
-            </span>
-          )}
+          <div className="auth-nav-links">
+            {loading && (
+              <span className="muted small">
+                {t("nav.checkingAccount", "Checking account...")}
+              </span>
+            )}
 
-          {!loading && !role && <PublicNav />}
+            {!loading && !role && <PublicNav />}
 
-          {!loading && role === "admin" && (
-            <AdminNav
-              notificationCount={notificationCount}
-              primaryBusinessId={primaryBusinessId}
-              onLogout={logout}
-              t={t}
-            />
-          )}
+            {!loading && role === "admin" && (
+              <AdminNav
+                notificationCount={notificationCount}
+                primaryBusinessId={primaryBusinessId}
+                onLogout={logout}
+                t={t}
+              />
+            )}
 
-          {!loading && role === "customer" && (
-            <CustomerNav
-              notificationCount={notificationCount}
-              primaryBusinessId={primaryBusinessId}
-              onLogout={logout}
-              t={t}
-            />
-          )}
+            {!loading && role === "customer" && (
+              <CustomerNav
+                notificationCount={notificationCount}
+                primaryBusinessId={primaryBusinessId}
+                onLogout={logout}
+                t={t}
+              />
+            )}
 
-          {!loading && role === "business" && (
-            <BusinessNav
-              notificationCount={notificationCount}
-              primaryBusinessId={primaryBusinessId}
-              onLogout={logout}
-              t={t}
-            />
-          )}
+            {!loading && role === "business" && (
+              <BusinessNav
+                notificationCount={notificationCount}
+                primaryBusinessId={primaryBusinessId}
+                onLogout={logout}
+                t={t}
+              />
+            )}
 
-          {!loading && role === "staff" && (
-            <StaffNav
-              notificationCount={notificationCount}
-              primaryBusinessId={primaryBusinessId}
-              onLogout={logout}
-              t={t}
-            />
-          )}
+            {!loading && role === "staff" && (
+              <StaffNav
+                notificationCount={notificationCount}
+                primaryBusinessId={primaryBusinessId}
+                onLogout={logout}
+                t={t}
+              />
+            )}
+          </div>
         </div>
-      </div>
 
-      <style jsx>{`
-        .auth-nav-links {
-          display: flex;
-          gap: 1rem;
-          align-items: center;
-          flex-wrap: nowrap;
-          justify-content: flex-end;
-          min-width: 0;
-        }
-
-        .auth-nav-links :global(a),
-        .auth-nav-links button {
-          flex-shrink: 0;
-        }
-
-        .logo {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-        }
-
-        .product-role-badge {
-          font-style: normal;
-          font-size: 0.7rem;
-          line-height: 1;
-          padding: 0.22rem 0.45rem;
-          border-radius: 999px;
-          color: var(--accent);
-          background: var(--accent-dim);
-          border: 1px solid rgba(255, 107, 53, 0.24);
-        }
-
-        .nav-operator {
-          border-bottom-color: rgba(255, 107, 53, 0.24);
-          background: linear-gradient(
-            180deg,
-            rgba(255, 107, 53, 0.07),
-            rgba(11, 18, 32, 0)
-          );
-        }
-
-        :global(.nav-simple) {
-          position: sticky;
-          top: 0;
-          z-index: 40;
-          backdrop-filter: blur(14px);
-        }
-
-        :global(.language-pill) {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 2.2rem;
-          height: 2rem;
-          padding: 0 0.6rem;
-          border-radius: 999px;
-          border: 1px solid var(--border);
-          background: var(--surface-2);
-          color: var(--text-muted);
-          font-size: 0.8rem;
-          font-weight: 700;
-        }
-
-        @media (max-width: 860px) {
-          :global(.nav-simple) {
-            overflow: visible;
-          }
-
-          :global(.nav-simple-inner) {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 0.6rem 0.75rem;
+        <style jsx>{`
+          .auth-nav-links {
+            display: flex;
+            gap: 1rem;
             align-items: center;
-          }
-
-          .auth-nav-links {
-            width: auto;
-            justify-content: flex-end;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            overflow: visible;
-            padding: 0;
-          }
-
-          :global(.nav-wide-only) {
-            display: none;
-          }
-
-          .product-role-badge {
-            font-size: 0.66rem;
-            padding: 0.18rem 0.4rem;
-          }
-        }
-
-        @media (max-width: 540px) {
-          .auth-nav-links {
-            grid-column: 1 / -1;
-            justify-content: flex-start;
             flex-wrap: nowrap;
-            overflow-x: auto;
-            overflow-y: visible;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-          }
-
-          :global(.nav-role-customer .auth-nav-links) {
-            flex-wrap: wrap;
-            overflow: visible;
-          }
-
-          .auth-nav-links::-webkit-scrollbar {
-            display: none;
-          }
-
-          :global(.nav-role-business .auth-nav-links),
-          :global(.nav-role-admin .auth-nav-links) {
-            grid-column: 2;
-            grid-row: 1;
             justify-content: flex-end;
-            overflow: visible;
-          }
-
-          :global(.nav-mobile-optional),
-          :global(.public-register-link) {
-            display: none;
-          }
-
-          :global(.nav-public-business .public-explore-link),
-          :global(.nav-public-business .public-business-link) {
-            display: none;
+            min-width: 0;
           }
 
           .auth-nav-links :global(a),
           .auth-nav-links button {
-            width: auto;
-            max-width: none;
-            justify-content: center;
-            white-space: nowrap;
-            min-height: 2.75rem;
-            padding: 0.58rem 0.78rem;
-          }
-
-          :global(.language-pill) {
-            min-width: 2.75rem;
-            height: 2.75rem;
-            padding-inline: 0.45rem;
+            flex-shrink: 0;
           }
 
           .logo {
-            font-size: 1.35rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
           }
 
           .product-role-badge {
-            display: none;
+            font-style: normal;
+            font-size: 0.7rem;
+            line-height: 1;
+            padding: 0.22rem 0.45rem;
+            border-radius: 999px;
+            color: var(--accent);
+            background: var(--accent-dim);
+            border: 1px solid rgba(255, 107, 53, 0.24);
           }
 
-          :global(.language-toggle),
-          :global(.account-mode-pill) {
-            width: auto;
-            flex: 0 0 auto;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .auth-nav-links {
-            gap: 0.3rem;
+          .nav-operator {
+            border-bottom-color: rgba(255, 107, 53, 0.24);
+            background: linear-gradient(
+              180deg,
+              rgba(255, 107, 53, 0.07),
+              rgba(11, 18, 32, 0)
+            );
           }
 
-          .auth-nav-links :global(a),
-          .auth-nav-links button {
+          :global(.nav-simple) {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(14px);
+          }
+
+          :global(.language-pill) {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.2rem;
+            height: 2rem;
+            padding: 0 0.6rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text-muted);
             font-size: 0.8rem;
+            font-weight: 700;
           }
 
-          .auth-nav-links :global(.btn) {
-            padding-inline: 0.55rem;
+          @media (max-width: 860px) {
+            :global(.nav-simple) {
+              overflow: visible;
+            }
+
+            :global(.nav-simple-inner) {
+              display: grid;
+              grid-template-columns: minmax(0, 1fr) auto;
+              gap: 0.6rem 0.75rem;
+              align-items: center;
+            }
+
+            .auth-nav-links {
+              width: auto;
+              justify-content: flex-end;
+              gap: 0.5rem;
+              flex-wrap: wrap;
+              overflow: visible;
+              padding: 0;
+            }
+
+            :global(.nav-wide-only) {
+              display: none;
+            }
+
+            .product-role-badge {
+              font-size: 0.66rem;
+              padding: 0.18rem 0.4rem;
+            }
           }
 
-          .auth-nav-links :global(.language-switcher) {
-            gap: 0.15rem;
-            padding-inline: 0.2rem;
+          @media (max-width: 540px) {
+            .auth-nav-links {
+              grid-column: 1 / -1;
+              justify-content: flex-start;
+              flex-wrap: nowrap;
+              overflow-x: auto;
+              overflow-y: visible;
+              scrollbar-width: none;
+              -webkit-overflow-scrolling: touch;
+            }
+
+            :global(.nav-role-public .auth-nav-links),
+            :global(.nav-role-customer .auth-nav-links) {
+              grid-column: 2;
+              grid-row: 1;
+              justify-content: flex-end;
+              flex-wrap: nowrap;
+              overflow: visible;
+            }
+
+            .auth-nav-links::-webkit-scrollbar {
+              display: none;
+            }
+
+            :global(.nav-role-business .auth-nav-links),
+            :global(.nav-role-admin .auth-nav-links) {
+              grid-column: 2;
+              grid-row: 1;
+              justify-content: flex-end;
+              overflow: visible;
+            }
+
+            :global(.nav-mobile-optional),
+            :global(.public-register-link),
+            :global(.nav-role-public .public-business-link),
+            :global(.nav-role-public .public-login-link),
+            :global(.nav-role-customer .customer-nav-primary),
+            :global(.nav-role-customer .customer-nav-logout) {
+              display: none;
+            }
+
+            :global(.nav-public-business .public-explore-link),
+            :global(.nav-public-business .public-business-link) {
+              display: none;
+            }
+
+            .auth-nav-links :global(a),
+            .auth-nav-links button {
+              width: auto;
+              max-width: none;
+              justify-content: center;
+              white-space: nowrap;
+              min-height: 2.75rem;
+              padding: 0.58rem 0.78rem;
+            }
+
+            :global(.language-pill) {
+              min-width: 2.75rem;
+              height: 2.75rem;
+              padding-inline: 0.45rem;
+            }
+
+            .logo {
+              font-size: 1.35rem;
+            }
+
+            .product-role-badge {
+              display: none;
+            }
+
+            :global(.language-toggle),
+            :global(.account-mode-pill) {
+              width: auto;
+              flex: 0 0 auto;
+            }
           }
 
-          .auth-nav-links :global(.language-switcher button) {
-            padding-inline: 0.3rem;
+          @media (max-width: 360px) {
+            .auth-nav-links {
+              gap: 0.3rem;
+            }
+
+            .auth-nav-links :global(a),
+            .auth-nav-links button {
+              font-size: 0.8rem;
+            }
+
+            .auth-nav-links :global(.btn) {
+              padding-inline: 0.55rem;
+            }
+
+            .auth-nav-links :global(.language-switcher) {
+              gap: 0.15rem;
+              padding-inline: 0.2rem;
+            }
+
+            .auth-nav-links :global(.language-switcher button) {
+              padding-inline: 0.3rem;
+            }
           }
-        }
-      `}</style>
-    </nav>
+        `}</style>
+      </nav>
+
+      {!loading &&
+        !isPublicBusinessEntry &&
+        (role === null || role === "customer") && (
+          <MobileCustomerDock notificationCount={notificationCount} />
+        )}
+    </>
   );
 }

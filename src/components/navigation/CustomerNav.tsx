@@ -199,14 +199,11 @@ export default function CustomerNav({ notificationCount }: NavProps) {
             border: 0;
           }
 
-          .customer-nav-account-menu[open] {
-            flex: 1 0 100%;
-          }
-
           .customer-nav-account-menu-panel {
-            position: static;
-            margin-top: 0.45rem;
-            width: 100%;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.45rem);
+            width: min(19rem, calc(100vw - 1.5rem));
             max-width: none;
           }
         }

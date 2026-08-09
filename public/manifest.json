@@ -1,15 +1,35 @@
 {
   "name": "Mirëbook",
   "short_name": "Mirëbook",
-  "description": "Discover local businesses, choose services and manage bookings with real availability.",
+  "description": "Discover reviewed places and book local services across Albania with Mirëbook.",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/explore",
   "scope": "/",
-  "display": "browser",
+  "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f0e17",
-  "theme_color": "#0f0e17",
-  "categories": ["business", "productivity", "lifestyle"],
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "categories": ["travel", "lifestyle", "shopping"],
+  "shortcuts": [
+    {
+      "name": "Explore Albania",
+      "short_name": "Explore",
+      "url": "/explore",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Explore the map",
+      "short_name": "Map",
+      "url": "/explore?view=map",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My bookings",
+      "short_name": "Bookings",
+      "url": "/my-bookings",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

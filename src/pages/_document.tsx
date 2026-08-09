@@ -19,8 +19,7 @@ export default function MirebookDocument({
       <Head>
         <meta name="application-name" content="Mirëbook" />
         <meta name="format-detection" content="telephone=no" />
-        <meta name="theme-color" content="#0f0e17" />
-        <meta name="msapplication-TileColor" content="#0f0e17" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
 
         <meta property="og:site_name" content="Mirëbook" />
         <meta property="og:type" content="website" />

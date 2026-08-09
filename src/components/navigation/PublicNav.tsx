@@ -1,27 +1,27 @@
-import Link from 'next/link'
-import LanguageToggle from './LanguageToggle'
-import { useI18n } from '@/lib/useI18n'
-import { useRouter } from 'next/router'
-import { getBusinessAppUrl, getCustomerAppUrl } from '@/lib/appUrls'
+import Link from "next/link";
+import LanguageToggle from "./LanguageToggle";
+import { useI18n } from "@/lib/useI18n";
+import { useRouter } from "next/router";
+import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 
 export default function PublicNav() {
-  const { t } = useI18n()
-  const router = useRouter()
+  const { t } = useI18n();
+  const router = useRouter();
   const isBusinessEntry =
-    router.pathname === '/business' || router.pathname.startsWith('/claim/')
-  const businessHomeUrl = getBusinessAppUrl()
-  const businessLoginUrl = getBusinessAppUrl('/login?product=business')
+    router.pathname === "/business" || router.pathname.startsWith("/claim/");
+  const businessHomeUrl = getBusinessAppUrl();
+  const businessLoginUrl = getBusinessAppUrl("/login?product=business");
   const businessRegisterUrl = getBusinessAppUrl(
-    '/register?accountType=business',
-  )
-  const customerHomeUrl = getCustomerAppUrl()
+    "/register?accountType=business",
+  );
+  const customerHomeUrl = getCustomerAppUrl();
 
   return (
     <>
       {isBusinessEntry ? (
         <>
           <Link href={customerHomeUrl} className="muted public-customer-link">
-            {t('nav.customerProduct', 'Customer Mirëbook')}
+            {t("nav.customerProduct", "Customer Mirëbook")}
           </Link>
         </>
       ) : (
@@ -30,10 +30,10 @@ export default function PublicNav() {
             href="/explore"
             className="muted public-explore-link nav-mobile-optional"
           >
-            {t('nav.explore')}
+            {t("nav.explore")}
           </Link>
           <Link href={businessHomeUrl} className="muted public-business-link">
-            {t('nav.forBusinesses', 'For businesses')}
+            {t("nav.forBusinesses", "For businesses")}
           </Link>
         </>
       )}
@@ -41,24 +41,22 @@ export default function PublicNav() {
       <LanguageToggle />
 
       <Link
-        href={isBusinessEntry ? businessLoginUrl : '/login'}
-        className="muted"
+        href={isBusinessEntry ? businessLoginUrl : "/login"}
+        className="muted public-login-link"
       >
         {isBusinessEntry
-          ? t('nav.businessLogin', 'Business login')
-          : t('nav.login')}
+          ? t("nav.businessLogin", "Business login")
+          : t("nav.login")}
       </Link>
 
       <Link
-        href={
-          isBusinessEntry ? businessRegisterUrl : '/register'
-        }
+        href={isBusinessEntry ? businessRegisterUrl : "/register"}
         className="btn btn-accent public-register-link"
       >
         {isBusinessEntry
-          ? t('nav.startBusiness', 'Start business setup')
-          : t('nav.register')}
+          ? t("nav.startBusiness", "Start business setup")
+          : t("nav.register")}
       </Link>
     </>
-  )
+  );
 }

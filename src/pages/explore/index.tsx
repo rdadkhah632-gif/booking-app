@@ -82,6 +82,7 @@ const VALID_SORTS: SortOption[] = [
   "services",
 ];
 const VALID_KINDS: DiscoveryKind[] = ["all", "bookable", "places"];
+const LIST_PAGE_SIZE = 12;
 
 function queryText(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
@@ -219,6 +220,7 @@ export default function Explore() {
   const [locationState, setLocationState] = useState<LocationState>("idle");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visibleListCount, setVisibleListCount] = useState(LIST_PAGE_SIZE);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -569,6 +571,21 @@ export default function Explore() {
     t,
   ]);
 
+  const visibleListItems = useMemo(
+    () => listItems.slice(0, visibleListCount),
+    [listItems, visibleListCount],
+  );
+
+  useEffect(() => {
+    setVisibleListCount(LIST_PAGE_SIZE);
+  }, [
+    appliedFilters.category,
+    appliedFilters.city,
+    appliedFilters.kind,
+    appliedFilters.query,
+    appliedFilters.sort,
+  ]);
+
   const selectedMapItem = useMemo(
     () => mapItems.find((item) => item.id === selectedMapId) || null,
     [mapItems, selectedMapId],
@@ -783,7 +800,7 @@ export default function Explore() {
 
             {!loading && listItems.length > 0 && view === "list" && (
               <div className="explore-results-grid">
-                {listItems.map((item) =>
+                {visibleListItems.map((item) =>
                   item.resultType === "business" ? (
                     <ExploreBusinessCard
                       key={item.id}
@@ -802,6 +819,33 @@ export default function Explore() {
                 )}
               </div>
             )}
+
+            {!loading &&
+              view === "list" &&
+              visibleListItems.length < listItems.length && (
+                <div className="explore-load-more">
+                  <p aria-live="polite">
+                    {t(
+                      "explore.discovery.showingCount",
+                      "Showing {shown} of {total}",
+                    )
+                      .replace("{shown}", String(visibleListItems.length))
+                      .replace("{total}", String(listItems.length))}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() =>
+                      setVisibleListCount((current) =>
+                        Math.min(current + LIST_PAGE_SIZE, listItems.length),
+                      )
+                    }
+                  >
+                    {t("explore.discovery.showMore", "Show more places")}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </button>
+                </div>
+              )}
 
             {!loading && listItems.length > 0 && view === "map" && (
               <div className="explore-map-layout">
@@ -980,6 +1024,31 @@ export default function Explore() {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 1rem;
+        }
+
+        .explore-results-grid > :global(*) {
+          content-visibility: auto;
+          contain-intrinsic-size: 410px;
+        }
+
+        .explore-load-more {
+          display: grid;
+          justify-items: center;
+          gap: 0.7rem;
+          padding: 1.6rem 0 0.5rem;
+          text-align: center;
+        }
+
+        .explore-load-more p {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+        }
+
+        .explore-load-more :global(.btn) {
+          min-width: 190px;
+          border: 1px solid var(--border-2);
+          background: #ffffff;
+          color: var(--text);
         }
 
         :global(.explore-business-card) {
@@ -1181,6 +1250,10 @@ export default function Explore() {
             padding-bottom: 0;
           }
 
+          .explore-load-more {
+            padding-bottom: calc(var(--mobile-customer-dock-space, 0px) + 1rem);
+          }
+
           .is-map-view :global(.explore-view-controls) {
             margin-bottom: 0.55rem;
             padding-bottom: 0.55rem;
@@ -1299,7 +1372,7 @@ export default function Explore() {
           .map-selection {
             position: fixed;
             right: 0;
-            bottom: 0;
+            bottom: calc(var(--mobile-customer-dock-space, 0px) + 1px);
             left: 0;
             z-index: 55;
             display: grid;

@@ -17,6 +17,15 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <title>Mirëbook</title>
         <meta
+          key="viewport"
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        <meta key="theme-color" name="theme-color" content="#ffffff" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta
           key="description"
           name="description"
           content="Discover reviewed places and book local services across Albania with Mirëbook."

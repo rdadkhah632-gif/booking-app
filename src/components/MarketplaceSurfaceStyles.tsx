@@ -22,6 +22,7 @@ export default function MarketplaceSurfaceStyles() {
         min-height: 100dvh;
         background: #ffffff;
         color: var(--text);
+        color-scheme: light;
       }
 
       .marketplace-surface .nav-simple {
@@ -130,6 +131,12 @@ export default function MarketplaceSurfaceStyles() {
 
         .marketplace-surface .nav-simple-inner {
           row-gap: 0.45rem;
+        }
+
+        .marketplace-surface input,
+        .marketplace-surface select,
+        .marketplace-surface textarea {
+          font-size: 1rem;
         }
       }
     `}</style>

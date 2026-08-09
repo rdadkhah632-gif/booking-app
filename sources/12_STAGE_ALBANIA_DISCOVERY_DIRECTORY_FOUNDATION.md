@@ -1887,6 +1887,60 @@ or description tags.
 12. Verify EN/SQ at desktop and 390px, email subjects/body/CTA domains, no raw
     provider errors and no horizontal overflow.
 
+## Batch 28 - Customer Mobile Web Shell
+
+Batch 28 treats the customer website as the primary Android experience while
+the native apps progress separately. It does not change account capabilities,
+booking state, business publication, directory visibility or public API data.
+
+The customer/public mobile experience now includes:
+
+- a persistent five-item discovery dock for Explore, Map, Bookings, Updates
+  and Account on anonymous and customer surfaces only
+- a compact one-row phone header, with language selection retained and
+  business/staff/admin workspace navigation left unchanged
+- safe-area clearance for the dock and the selected-place map sheet
+- twelve initial List results with a translated progressive Show more control;
+  result totals and the complete Map catalogue remain unchanged
+- deferred rendering for off-screen result cards to reduce work on long lists
+- 16px mobile form controls to prevent disruptive browser zoom
+- a customer-first standalone web-app manifest, light browser chrome and
+  shortcuts for Explore, Map and My Bookings
+
+The manifest improves add-to-home-screen presentation but does not claim
+offline support. Public and customer routes continue to require the network for
+live discovery, authentication and booking state.
+
+### Batch 28 deployment QA
+
+1. At 390x844, open Home, Explore List, Explore Map, one public place, Login,
+   My Bookings and Account. Confirm the dock appears only for anonymous or
+   customer context and each item is at least 44px high.
+2. Confirm the active dock item follows List, Map, booking, notification,
+   account/auth and public-place routes. Protected anonymous actions must use
+   the existing customer login redirect behavior.
+3. Confirm mobile headers remain one row while closed. Language controls must
+   remain reachable; an authenticated customer Account menu must still provide
+   language, Account and Log out.
+4. Explore Places must report the complete public total while initially
+   rendering twelve cards. Show more must render the next twelve and update the
+   translated visible-count message without changing filters or URL state.
+5. Switch List to Map from the dock. The Map must still represent the complete
+   filtered catalogue, retain clustering and keep a selected-place sheet fully
+   above the customer dock.
+6. Check EN and SQ at 390x844 and 430x932. Labels must fit, inputs must not
+   trigger browser zoom, document width must match viewport width and no fixed
+   control may cover a primary action.
+7. At 768x1024 and 1280x720, confirm the mobile dock is hidden, existing
+   two-column layouts remain intact and Show more is keyboard accessible.
+8. Inspect `/manifest.json`: start URL `/explore`, standalone display, white
+   theme/background, 192px and 512px icons, and Explore/Map/Bookings shortcuts.
+9. Confirm business, staff and admin routes do not receive the customer dock or
+   altered role navigation. No auth, RLS, claim, booking or publication record
+   should change during this QA.
+10. Finish with no horizontal overflow, framework overlay, raw translation key
+    or relevant console warning/error.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls
