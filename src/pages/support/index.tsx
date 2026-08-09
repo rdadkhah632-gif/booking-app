@@ -252,6 +252,7 @@ export default function SupportPage() {
               </div>
 
               <footer className="support-entry-footer">
+                <span>{t("legal.copyright")}</span>
                 <Link href="/privacy">{t("common.privacy")}</Link>
                 <Link href="/terms">{t("common.terms")}</Link>
                 <Link href="/explore">{t("home.cta.explore")}</Link>

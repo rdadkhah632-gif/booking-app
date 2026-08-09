@@ -142,8 +142,12 @@ export const sq: TranslationTree = {
   "common.loading": "Duke u ngarkuar...",
   "common.needHelp": "Keni nevojë për ndihmë?",
   "legal.kicker": "Ligjore",
-  "legal.lastUpdated": "Përditësuar së fundmi: 7 korrik 2026",
+  "legal.lastUpdated": "Përditësuar së fundmi: 9 gusht 2026",
   "legal.important": "E rëndësishme",
+  "legal.owner":
+    "Mirëbook operohet dhe zotërohet nga Reza Dadkhah, me emrin tregtar Mirëbook.",
+  "legal.copyright":
+    "© 2026 Reza Dadkhah, me emrin tregtar Mirëbook. Të gjitha të drejtat e rezervuara.",
   "terms.title": "Kushtet e Shërbimit",
   "terms.subtitle":
     "Rregullat për përdorimin e Mirëbook si klient, pronar biznesi ose staf.",

@@ -95,8 +95,12 @@ export const en: TranslationTree = {
   "common.loading": "Loading...",
   "common.needHelp": "Need help?",
   "legal.kicker": "Legal",
-  "legal.lastUpdated": "Last updated: 7 July 2026",
+  "legal.lastUpdated": "Last updated: 9 August 2026",
   "legal.important": "Important",
+  "legal.owner":
+    "Mirëbook is operated and owned by Reza Dadkhah, trading as Mirëbook.",
+  "legal.copyright":
+    "© 2026 Reza Dadkhah, trading as Mirëbook. All rights reserved.",
   "terms.title": "Terms of Service",
   "terms.subtitle":
     "The rules for using Mirëbook as a customer, business owner or staff member.",

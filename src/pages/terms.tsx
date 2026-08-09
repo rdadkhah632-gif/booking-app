@@ -23,6 +23,9 @@ export default function TermsPage() {
             <p className="small muted" style={{ marginTop: "0.75rem" }}>
               {t("legal.lastUpdated")}
             </p>
+            <p className="small muted" style={{ marginTop: "0.35rem" }}>
+              {t("legal.owner")}
+            </p>
           </div>
 
           <div className="card legal-note">
@@ -91,6 +94,10 @@ export default function TermsPage() {
                 {t("home.cta.explore")}
               </Link>
             </div>
+
+            <p className="small muted" style={{ marginTop: "1.25rem" }}>
+              {t("legal.copyright")}
+            </p>
           </div>
         </div>
       </section>
