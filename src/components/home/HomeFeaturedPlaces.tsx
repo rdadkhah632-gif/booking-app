@@ -226,7 +226,11 @@ function FeaturedPlaceCard({ place }: { place: DirectoryPlace }) {
   );
 }
 
-export default function HomeFeaturedPlaces() {
+type Props = {
+  onPlacesLoaded?: (places: DirectoryPlace[]) => void;
+};
+
+export default function HomeFeaturedPlaces({ onPlacesLoaded }: Props) {
   const { locale, t } = useI18n();
   const [places, setPlaces] = useState<DirectoryPlace[]>([]);
   const [loading, setLoading] = useState(true);
@@ -247,10 +251,13 @@ export default function HomeFeaturedPlaces() {
         };
 
         if (!response.ok) throw new Error("Directory request failed");
-        setPlaces(payload.places || []);
+        const nextPlaces = payload.places || [];
+        setPlaces(nextPlaces);
+        onPlacesLoaded?.(nextPlaces);
       } catch (error) {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           setPlaces([]);
+          onPlacesLoaded?.([]);
         }
       } finally {
         if (!controller.signal.aborted) setLoading(false);
@@ -259,7 +266,7 @@ export default function HomeFeaturedPlaces() {
 
     void loadPlaces();
     return () => controller.abort();
-  }, [locale]);
+  }, [locale, onPlacesLoaded]);
 
   if (!loading && featuredPlaces.length === 0) return null;
 

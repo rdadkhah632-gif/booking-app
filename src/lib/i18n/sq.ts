@@ -389,6 +389,13 @@ export const sq: TranslationTree = {
   "home.discovery.businessBody":
     "Pretendo një vend ekzistues ose krijo një profil, pastaj menaxho rezervimet përmes Mirëbook Biznes.",
   "home.discovery.businessCta": "Pretendo ose listo biznesin tënd",
+  "appStore.kicker": "Tani në iPhone",
+  "appStore.title": "Merr Mirëbook me vete",
+  "appStore.body":
+    "Zbulo, menaxho dhe ndiq Mirëbook kudo që të jesh.",
+  "appStore.download": "Shkarko në",
+  "appStore.customer": "Aplikacioni Mirëbook për klientë",
+  "appStore.business": "Aplikacioni Mirëbook Biznes",
   "home.featured.kicker": "Në të gjithë Shqipërinë",
   "home.featured.title": "Vende që ia vlen t'i shikosh më nga afër",
   "home.featured.body":
@@ -4299,6 +4306,11 @@ export const sq: TranslationTree = {
   "explore.discovery.cityPlaceholder": "Tiranë, Durrës, Sarandë...",
   "explore.discovery.searchButton": "Kërko",
   "explore.filters.open": "Filtrat",
+  "explore.suggestions.city": "Qytet",
+  "explore.suggestions.category": "Kategori",
+  "explore.suggestions.bookable": "Biznes i rezervueshëm",
+  "explore.suggestions.place": "Vend lokal",
+  "explore.suggestions.none": "Nuk ka ende sugjerime",
   "explore.discovery.loading": "Po kërkohen vende...",
   "explore.discovery.emptyTitle": "Më shumë nga Shqipëria po vjen",
   "explore.discovery.emptyBody":
@@ -5164,6 +5176,61 @@ export const sq: TranslationTree = {
   "admin.onboarding.controlTitle": "Regjistrimi i partnerëve të nisjes",
   "admin.onboarding.controlBody":
     "Përputh regjistrimet ekzistuese, përgatit të dhënat e pronarit dhe ndiq një kalim privat pa krijuar biznese të dyfishta.",
+  "admin.onboarding.handoff.title": "Paketa e kalimit te pronari",
+  "admin.onboarding.handoff.body":
+    "Përgatit bisedën e radhës me pronarin pa dërguar, regjistruar ose publikuar asgjë automatikisht.",
+  "admin.onboarding.handoff.manual": "Vetëm manualisht",
+  "admin.onboarding.handoff.contactTitle": "Mënyra e kontaktit të pronarit",
+  "admin.onboarding.handoff.contactReady":
+    "Është regjistruar të paktën një mënyrë e drejtpërdrejtë kontakti.",
+  "admin.onboarding.handoff.contactMissing":
+    "Shto emailin, telefonin ose profilin social të pronarit përpara kontaktit.",
+  "admin.onboarding.handoff.ownerRouteTitle": "Rruga e kalimit te pronari",
+  "admin.onboarding.handoff.ownerRouteClaim":
+    "Lidhja e sigurt e pretendimit është gati për vendin e shqyrtuar.",
+  "admin.onboarding.handoff.ownerRouteBusiness":
+    "Ky rast është tashmë i lidhur me një biznes Mirëbook.",
+  "admin.onboarding.handoff.ownerRouteRegister":
+    "Përdor regjistrimin e Biznesit derisa të lidhet një vend i shqyrtuar ose biznes.",
+  "admin.onboarding.handoff.assetsTitle": "Materialet e profilit",
+  "admin.onboarding.handoff.assetsReady":
+    "Materialet e profilit janë marrë ose shqyrtuar.",
+  "admin.onboarding.handoff.assetsMissing":
+    "Paketa e profilit ka ende nevojë për materiale nga biznesi.",
+  "admin.onboarding.handoff.permissionTitle": "Leja për materiale mediatike",
+  "admin.onboarding.handoff.permissionReady":
+    "Përdorimet e zgjedhura kanë prova të plota të lejes.",
+  "admin.onboarding.handoff.permissionIncomplete":
+    "Plotëso provat e lejes përpara përdorimit të materialeve të marra.",
+  "admin.onboarding.handoff.permissionNone":
+    "Aktualisht nuk është miratuar përdorimi në profil ose promovim.",
+  "admin.onboarding.handoff.openClaim": "Hap rrugën e pretendimit",
+  "admin.onboarding.handoff.openRegistration": "Hap regjistrimin e Biznesit",
+  "admin.onboarding.handoff.openListing": "Hap listimin publik",
+  "admin.onboarding.handoff.openBusiness": "Hap biznesin e lidhur",
+  "admin.onboarding.handoff.requestTitle": "Çfarë të kërkohet më pas",
+  "admin.onboarding.handoff.requestBody":
+    "Kjo listë ndjek qëllimet e zgjedhura për rastin.",
+  "admin.onboarding.handoff.requestCopyLabel":
+    "Lista e kërkesave për konfigurimin",
+  "admin.onboarding.handoff.copyChecklist": "Kopjo listën",
+  "admin.onboarding.handoff.request.contact":
+    "Adresa e saktë e biznesit dhe të dhënat më të mira publike të kontaktit",
+  "admin.onboarding.handoff.request.profile":
+    "Një përshkrim i shkurtër i biznesit dhe tre deri në pesë foto të qarta",
+  "admin.onboarding.handoff.request.services":
+    "Shërbimet me çmime dhe kohëzgjatje",
+  "admin.onboarding.handoff.request.schedule":
+    "Emrat e stafit, oraret e punës dhe mënyra e preferuar e rezervimit",
+  "admin.onboarding.handoff.request.ownerAccount":
+    "Emaili i pronarit që do të menaxhojë llogarinë Mirëbook Business",
+  "admin.onboarding.handoff.request.permissions":
+    "Konfirmim i veçantë për fotot e profilit dhe promovimin nga Mirëbook",
+  "admin.onboarding.handoff.prospectTitle": "Prezantimi i biznesit",
+  "admin.onboarding.handoff.prospectBody":
+    "Përdor këtë draft të shkurtër kur nuk ka ende një vend të shqyrtuar për pretendim.",
+  "admin.onboarding.handoff.prospectMessage":
+    "Përshëndetje. Do të donim ta shtonim {placeName} në Mirëbook që njerëzit ta gjejnë më lehtë. Mund të krijoni një llogari Mirëbook Business për të kontrolluar profilin dhe, kur të dëshironi, të shtoni shërbime e të menaxhoni rezervimet. Mirëbook Business po vjen edhe në App Store. Nëse dëshironi të ndani foto, mund ta promovojmë biznesin pa kosto; përdorimi në profil dhe në promovime miratohet gjithmonë veçmas. Filloni këtu: {businessUrl}",
   "customerApp.lifecycle.cancelled.businessTitle": "Klienti anuloi rezervimin",
   "customerApp.lifecycle.cancelled.staffTitle": "Rezervimi u anulua",
   "customerApp.lifecycle.cancelled.businessMessage":

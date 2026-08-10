@@ -206,6 +206,12 @@ The customer-facing Map requires both Mapbox variables in Vercel:
 
 - `MAPBOX_ACCESS_TOKEN` for server-side geocoding and map previews
 - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` for the public Explore map
+- `NEXT_PUBLIC_SITE_URL` for canonical social-preview URLs, for example
+  `https://mirebook.com`
+- `NEXT_PUBLIC_CUSTOMER_APP_STORE_URL` for the live Mirëbook customer App Store
+  listing
+- `NEXT_PUBLIC_BUSINESS_APP_STORE_URL` for the live Mirëbook Business App Store
+  listing
 
 Both are configured for Preview and Production. After changing the public
 variable, rebuild a production deployment because `NEXT_PUBLIC_*` values are
@@ -484,6 +490,19 @@ not create credentials, send outreach, approve a claim, publish a business or
 alter booking/billing state. Continue to use Directory for reviewed place
 content, Outreach for manually completed contact, Claims for owner evidence and
 the Business workspace for owner-approved setup and publication.
+
+After a private case is saved, its Owner handoff pack may be used to copy a
+localized first message, secure claim or Business registration path and the
+goal-specific setup checklist. These controls remain manual-only. Profile-media
+permission and Mirëbook-marketing permission must be confirmed and evidenced
+separately before using supplied photos.
+
+Customer discovery search is now consistent between the homepage and Explore.
+Both surfaces can resolve common EN/SQ category terms, accent-insensitive city
+names and exact public place/business names. Exact results open their public
+detail route; city/category choices remain URL-backed Explore filters. This is a
+presentation and navigation aid only: it does not request location, persist
+search history, publish records or broaden public data access.
 
 ## UI Position And Next Batch
 

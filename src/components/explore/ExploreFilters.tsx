@@ -2,6 +2,12 @@ import { useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useI18n } from "@/lib/useI18n";
 import { SortOption } from "./exploreTypes";
+import ExploreSmartSearch from "./ExploreSmartSearch";
+import type {
+  ExploreSearchBusiness,
+  ExploreSearchPlace,
+  ExploreSearchSuggestion,
+} from "./ExploreSmartSearch";
 
 type Props = {
   search: string;
@@ -10,9 +16,13 @@ type Props = {
   sortBy: SortOption;
   cities: string[];
   categories: string[];
+  suggestionPlaces: ExploreSearchPlace[];
+  suggestionBusinesses: ExploreSearchBusiness[];
+  suggestionCategories: Array<{ key: string; label: string }>;
   resultCount: number;
   locationActive: boolean;
   onSearchChange: (value: string) => void;
+  onSearchSuggestionSelect: (suggestion: ExploreSearchSuggestion) => void;
   onCityChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onSortChange: (value: SortOption) => void;
@@ -27,9 +37,13 @@ export default function ExploreFilters({
   sortBy,
   cities,
   categories,
+  suggestionPlaces,
+  suggestionBusinesses,
+  suggestionCategories,
   resultCount,
   locationActive,
   onSearchChange,
+  onSearchSuggestionSelect,
   onCityChange,
   onCategoryChange,
   onSortChange,
@@ -54,20 +68,22 @@ export default function ExploreFilters({
     <aside className="explore-filter-panel">
       <form className="explore-filter-grid" onSubmit={submitFilters}>
         <div className="filter-primary">
-          <label className="filter-field filter-search-field">
+          <div className="filter-field filter-search-field">
             <span>{t("explore.filters.searchLabel", "Search")}</span>
-            <div className="filter-input-with-icon">
-              <Search size={18} aria-hidden="true" />
-              <input
-                value={search}
-                onChange={(event) => onSearchChange(event.target.value)}
-                placeholder={t(
-                  "explore.discovery.searchPlaceholder",
-                  "Services, activities or places",
-                )}
-              />
-            </div>
-          </label>
+            <ExploreSmartSearch
+              value={search}
+              placeholder={t(
+                "explore.discovery.searchPlaceholder",
+                "Services, activities or places",
+              )}
+              places={suggestionPlaces}
+              businesses={suggestionBusinesses}
+              cities={cities}
+              categories={suggestionCategories}
+              onChange={onSearchChange}
+              onSelect={onSearchSuggestionSelect}
+            />
+          </div>
 
           <button
             type="button"
@@ -214,17 +230,6 @@ export default function ExploreFilters({
           background: transparent;
           box-shadow: none;
           font-size: 0.88rem;
-        }
-
-        .filter-input-with-icon {
-          display: flex;
-          align-items: center;
-          gap: 0.55rem;
-          min-width: 0;
-        }
-
-        .filter-input-with-icon :global(svg) {
-          color: var(--text-muted);
         }
 
         .filter-search-field {

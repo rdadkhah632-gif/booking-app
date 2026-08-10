@@ -340,6 +340,13 @@ export const en: TranslationTree = {
   "home.discovery.businessBody":
     "Claim an existing place or create a profile, then manage bookings through Mirëbook Business.",
   "home.discovery.businessCta": "Claim or list your business",
+  "appStore.kicker": "Now on iPhone",
+  "appStore.title": "Take Mirëbook with you",
+  "appStore.body":
+    "Discover, manage and keep up with Mirëbook wherever you are.",
+  "appStore.download": "Download on the",
+  "appStore.customer": "Mirëbook customer app",
+  "appStore.business": "Mirëbook Business app",
   "home.featured.kicker": "Across Albania",
   "home.featured.title": "Places worth a closer look",
   "home.featured.body":
@@ -4197,6 +4204,11 @@ export const en: TranslationTree = {
   "explore.discovery.cityPlaceholder": "Tiranë, Durrës, Sarandë...",
   "explore.discovery.searchButton": "Search",
   "explore.filters.open": "Filters",
+  "explore.suggestions.city": "City",
+  "explore.suggestions.category": "Category",
+  "explore.suggestions.bookable": "Bookable business",
+  "explore.suggestions.place": "Local place",
+  "explore.suggestions.none": "No suggestions yet",
   "explore.discovery.loading": "Finding places...",
   "explore.discovery.emptyTitle": "More of Albania is coming",
   "explore.discovery.emptyBody":
@@ -5042,6 +5054,60 @@ export const en: TranslationTree = {
   "admin.onboarding.controlTitle": "Launch partner onboarding",
   "admin.onboarding.controlBody":
     "Match existing records, prepare owner details and track a private handoff without creating duplicate businesses.",
+  "admin.onboarding.handoff.title": "Owner handoff pack",
+  "admin.onboarding.handoff.body":
+    "Prepare the next owner conversation without sending, registering or publishing anything automatically.",
+  "admin.onboarding.handoff.manual": "Manual only",
+  "admin.onboarding.handoff.contactTitle": "Owner contact route",
+  "admin.onboarding.handoff.contactReady":
+    "At least one direct contact route is recorded.",
+  "admin.onboarding.handoff.contactMissing":
+    "Add an owner email, phone number or social profile before contact.",
+  "admin.onboarding.handoff.ownerRouteTitle": "Owner handoff route",
+  "admin.onboarding.handoff.ownerRouteClaim":
+    "A secure claim link is ready for the reviewed place.",
+  "admin.onboarding.handoff.ownerRouteBusiness":
+    "This case is already attached to a Mirëbook business.",
+  "admin.onboarding.handoff.ownerRouteRegister":
+    "Use Business registration until a reviewed place or business is attached.",
+  "admin.onboarding.handoff.assetsTitle": "Profile materials",
+  "admin.onboarding.handoff.assetsReady":
+    "Profile materials have been received or reviewed.",
+  "admin.onboarding.handoff.assetsMissing":
+    "The profile pack still needs material from the business.",
+  "admin.onboarding.handoff.permissionTitle": "Media permission",
+  "admin.onboarding.handoff.permissionReady":
+    "The selected media uses have complete permission evidence.",
+  "admin.onboarding.handoff.permissionIncomplete":
+    "Complete the permission evidence before using any supplied media.",
+  "admin.onboarding.handoff.permissionNone":
+    "No profile or promotional media use is currently approved.",
+  "admin.onboarding.handoff.openClaim": "Open claim path",
+  "admin.onboarding.handoff.openRegistration": "Open Business registration",
+  "admin.onboarding.handoff.openListing": "Open public listing",
+  "admin.onboarding.handoff.openBusiness": "Open linked business",
+  "admin.onboarding.handoff.requestTitle": "What to request next",
+  "admin.onboarding.handoff.requestBody":
+    "This list follows the goals selected for the case.",
+  "admin.onboarding.handoff.requestCopyLabel": "Setup request checklist",
+  "admin.onboarding.handoff.copyChecklist": "Copy checklist",
+  "admin.onboarding.handoff.request.contact":
+    "Exact business address and best public contact details",
+  "admin.onboarding.handoff.request.profile":
+    "A short business description and three to five clear photos",
+  "admin.onboarding.handoff.request.services":
+    "Services with prices and durations",
+  "admin.onboarding.handoff.request.schedule":
+    "Staff names, working hours and booking preference",
+  "admin.onboarding.handoff.request.ownerAccount":
+    "The owner email that will manage the Mirëbook Business account",
+  "admin.onboarding.handoff.request.permissions":
+    "Separate confirmation for profile-photo and Mirëbook-promotion use",
+  "admin.onboarding.handoff.prospectTitle": "Business introduction",
+  "admin.onboarding.handoff.prospectBody":
+    "Use this concise draft when there is no reviewed place to claim yet.",
+  "admin.onboarding.handoff.prospectMessage":
+    "Hello. We would like to add {placeName} to Mirëbook so people can discover it more easily. You can create a Mirëbook Business account to review the profile and, whenever you choose, add services and manage bookings. Mirëbook Business is also coming to the App Store. If you are happy to share photos, we can feature the business in Mirëbook promotion at no cost; profile and promotional use are always agreed separately. Start here: {businessUrl}",
   "customerApp.lifecycle.cancelled.businessTitle": "Customer cancelled booking",
   "customerApp.lifecycle.cancelled.staffTitle": "Booking cancelled",
   "customerApp.lifecycle.cancelled.businessMessage":

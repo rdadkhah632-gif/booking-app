@@ -21,9 +21,10 @@ import AuthNav from "@/components/AuthNav";
 import OnboardingEntitySearch, {
   OnboardingSuggestion,
 } from "@/components/admin/OnboardingEntitySearch";
+import OnboardingHandoffPanel from "@/components/admin/OnboardingHandoffPanel";
 import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
-import { getCustomerAppUrl } from "@/lib/appUrls";
+import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 import { useI18n } from "@/lib/useI18n";
 
 const STATUSES = [
@@ -1551,6 +1552,61 @@ export default function AdminOnboardingPage() {
                       </Link>
                     </div>
                   </section>
+                )}
+
+                {draft.caseId && (
+                  <OnboardingHandoffPanel
+                    key={draft.caseId}
+                    caseId={draft.caseId}
+                    placeName={draft.prospectName}
+                    directoryPlaceId={draft.directoryPlaceId}
+                    businessId={draft.businessId}
+                    ownerEmail={draft.ownerEmail}
+                    ownerPhone={draft.ownerPhone}
+                    socialUrl={draft.socialUrl}
+                    preferredLanguage={draft.preferredLanguage}
+                    listingInterest={draft.listingInterest}
+                    bookingInterest={draft.bookingInterest}
+                    businessAppInterest={draft.businessAppInterest}
+                    assetsStatus={draft.assetsStatus}
+                    profileMediaPermission={draft.profileMediaPermission}
+                    marketingMediaPermission={draft.marketingMediaPermission}
+                    permissionEvidenceComplete={Boolean(
+                      hasMediaPermission &&
+                        draft.permissionConfirmed &&
+                        draft.permissionSource &&
+                        draft.permissionGrantedBy.trim() &&
+                        draft.permissionGrantedAt,
+                    )}
+                    claimLink={
+                      draft.directoryPlaceId
+                        ? getBusinessAppUrl(
+                            `/claim/${encodeURIComponent(
+                              draft.directoryPlaceId,
+                            )}`,
+                          )
+                        : ""
+                    }
+                    publicPlaceLink={
+                      draft.directoryPlaceId
+                        ? getCustomerAppUrl(
+                            `/places/${encodeURIComponent(
+                              draft.directoryPlaceId,
+                            )}`,
+                          )
+                        : ""
+                    }
+                    businessEntryLink={getBusinessAppUrl("/register")}
+                    businessProfileLink={
+                      draft.businessId
+                        ? `/admin/businesses?businessId=${encodeURIComponent(
+                            draft.businessId,
+                          )}`
+                        : ""
+                    }
+                    uiLocale={locale}
+                    t={t}
+                  />
                 )}
 
                 {events.length > 0 && (

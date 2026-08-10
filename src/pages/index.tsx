@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Bike,
@@ -17,9 +17,19 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
+import AppStoreButtons from "@/components/AppStoreButtons";
 import MarketplaceSurfaceStyles from "@/components/MarketplaceSurfaceStyles";
-import { directoryCategoryLabel } from "@/components/explore/directoryCategories";
-import type { DirectoryCategoryKey } from "@/components/explore/exploreTypes";
+import ExploreSmartSearch from "@/components/explore/ExploreSmartSearch";
+import type { ExploreSearchSuggestion } from "@/components/explore/ExploreSmartSearch";
+import {
+  DIRECTORY_CATEGORIES,
+  directoryCategoryLabel,
+} from "@/components/explore/directoryCategories";
+import type {
+  Business,
+  DirectoryCategoryKey,
+  DirectoryPlace,
+} from "@/components/explore/exploreTypes";
 import HomeFeaturedPlaces from "@/components/home/HomeFeaturedPlaces";
 import { getBusinessAppUrl } from "@/lib/appUrls";
 import { useI18n } from "@/lib/useI18n";
@@ -45,15 +55,97 @@ const cityShortcuts = [
   "Berat",
 ] as const;
 
+function isBookableBusiness(business: Business) {
+  const activeStaffIds = new Set(
+    (business.staff_members || [])
+      .filter((staff) => staff.active)
+      .map((staff) => staff.id),
+  );
+  const hasAssignedService = (business.services || []).some(
+    (service) =>
+      service.active &&
+      (service.staff_services || []).some((assignment) =>
+        activeStaffIds.has(assignment.staff_member_id),
+      ),
+  );
+  const hasOpenDay = (business.availability || []).some(
+    (row) => row.is_closed !== true,
+  );
+
+  return activeStaffIds.size > 0 && hasAssignedService && hasOpenDay;
+}
+
 export default function Home() {
   const router = useRouter();
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
+  const [directoryPlaces, setDirectoryPlaces] = useState<DirectoryPlace[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const businessHomeUrl = getBusinessAppUrl();
   const businessRegisterUrl = getBusinessAppUrl(
     "/register?accountType=business",
   );
+
+  const suggestionCategories = useMemo(
+    () =>
+      DIRECTORY_CATEGORIES.map((key) => ({
+        key,
+        label: directoryCategoryLabel(key, t),
+      })),
+    [t],
+  );
+  const suggestionPlaces = useMemo(
+    () =>
+      directoryPlaces.map((place) => ({
+        id: place.id,
+        name: place.name,
+        city: place.city || "",
+        category: directoryCategoryLabel(place.categoryKey, t),
+      })),
+    [directoryPlaces, t],
+  );
+  const suggestionBusinesses = useMemo(
+    () =>
+      businesses.map((business) => ({
+        id: business.id,
+        name: business.name,
+        city: business.city || "",
+        category: business.category || "",
+      })),
+    [businesses],
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadBookableBusinesses() {
+      try {
+        const response = await fetch("/api/public/explore-businesses", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const payload = (await response.json()) as {
+          businesses?: Business[];
+        };
+        if (!response.ok) throw new Error("Business discovery request failed");
+
+        setBusinesses(
+          (payload.businesses || []).filter(
+            (business) =>
+              business.published === true && isBookableBusiness(business),
+          ),
+        );
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setBusinesses([]);
+        }
+      }
+    }
+
+    void loadBookableBusinesses();
+    return () => controller.abort();
+  }, []);
 
   function searchDiscovery(event: React.FormEvent) {
     event.preventDefault();
@@ -61,6 +153,34 @@ export default function Home() {
       pathname: "/explore",
       query: {
         ...(query.trim() ? { query: query.trim() } : {}),
+        ...(city.trim() ? { city: city.trim() } : {}),
+      },
+    });
+  }
+
+  function selectSearchSuggestion(suggestion: ExploreSearchSuggestion) {
+    if (suggestion.type === "directory_place") {
+      void router.push(`/places/${encodeURIComponent(suggestion.id)}`);
+      return;
+    }
+    if (suggestion.type === "business") {
+      void router.push(`/explore/${encodeURIComponent(suggestion.id)}`);
+      return;
+    }
+    if (suggestion.type === "city") {
+      const nextCity = suggestion.city || suggestion.label;
+      setQuery("");
+      setCity(nextCity);
+      void router.push({ pathname: "/explore", query: { city: nextCity } });
+      return;
+    }
+
+    const nextCategory = suggestion.category || suggestion.label;
+    setQuery("");
+    void router.push({
+      pathname: "/explore",
+      query: {
+        category: nextCategory,
         ...(city.trim() ? { city: city.trim() } : {}),
       },
     });
@@ -103,23 +223,25 @@ export default function Home() {
             </p>
 
             <form className="discovery-search" onSubmit={searchDiscovery}>
-              <label className="discovery-search-field">
+              <div className="discovery-search-field discovery-smart-field">
                 <span>{t("home.discovery.searchLabel", "What")}</span>
-                <div>
-                  <Search size={18} aria-hidden="true" />
-                  <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder={t(
-                      "home.discovery.searchPlaceholder",
-                      "Services, activities or places",
-                    )}
-                  />
-                </div>
-              </label>
+                <ExploreSmartSearch
+                  value={query}
+                  placeholder={t(
+                    "home.discovery.searchPlaceholder",
+                    "Services, activities or places",
+                  )}
+                  places={suggestionPlaces}
+                  businesses={suggestionBusinesses}
+                  cities={Array.from(cityShortcuts)}
+                  categories={suggestionCategories}
+                  onChange={setQuery}
+                  onSelect={selectSearchSuggestion}
+                />
+              </div>
               <label className="discovery-search-field">
                 <span>{t("home.discovery.cityLabel", "Where")}</span>
-                <div>
+                <div className="discovery-input-row">
                   <MapPin size={18} aria-hidden="true" />
                   <input
                     value={city}
@@ -195,7 +317,9 @@ export default function Home() {
         </div>
       </section>
 
-      <HomeFeaturedPlaces />
+      <HomeFeaturedPlaces onPlacesLoaded={setDirectoryPlaces} />
+
+      <AppStoreButtons />
 
       <section className="home-result-guide">
         <div className="container home-result-guide-inner">
@@ -263,7 +387,7 @@ export default function Home() {
           position: relative;
           height: min(600px, calc(100dvh - 160px));
           min-height: 440px;
-          overflow: hidden;
+          overflow: visible;
           background-image: url("/mirebook-customer-discovery-hero.jpg");
           background-position: 54% center;
           background-size: cover;
@@ -352,7 +476,7 @@ export default function Home() {
           text-transform: uppercase;
         }
 
-        .discovery-search-field > div {
+        .discovery-search-field > :global(.discovery-input-row) {
           display: flex;
           align-items: center;
           gap: 0.45rem;
@@ -386,6 +510,10 @@ export default function Home() {
           justify-content: center;
           border-radius: 6px;
           color: #ffffff;
+        }
+
+        .discovery-smart-field > :global(.smart-search) {
+          width: 100%;
         }
 
         .discovery-hero-actions {
@@ -527,6 +655,98 @@ export default function Home() {
           color: #17151d;
         }
 
+        .home-apps-band {
+          padding: 2.4rem 0;
+          border-block: 1px solid #e2e4e7;
+          background: #17151d;
+          color: #ffffff;
+        }
+
+        .home-apps-band-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 2rem;
+        }
+
+        .home-apps-kicker {
+          color: #9ed6cc;
+          font-size: 0.76rem;
+          font-weight: 850;
+          text-transform: uppercase;
+        }
+
+        .home-apps-band h2 {
+          margin: 0.2rem 0 0;
+          font-size: 1.8rem;
+          letter-spacing: 0;
+        }
+
+        .home-apps-band p {
+          max-width: 560px;
+          margin: 0.45rem 0 0;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .home-app-store-links {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 0.65rem;
+        }
+
+        :global(.app-store-button) {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+          min-width: 214px;
+          min-height: 64px;
+          padding: 0.65rem 0.8rem;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.08);
+          color: #ffffff;
+          text-decoration: none;
+          transition:
+            background-color 0.16s ease,
+            border-color 0.16s ease;
+        }
+
+        :global(.app-store-button:hover) {
+          border-color: rgba(255, 255, 255, 0.45);
+          background: rgba(255, 255, 255, 0.15);
+        }
+
+        :global(.app-store-button > span) {
+          display: grid;
+          min-width: 0;
+          line-height: 1.08;
+        }
+
+        :global(.app-store-button small),
+        :global(.app-store-button em) {
+          color: rgba(255, 255, 255, 0.68);
+          font-size: 0.65rem;
+          font-style: normal;
+        }
+
+        :global(.app-store-button strong) {
+          font-size: 1.05rem;
+          font-weight: 700;
+        }
+
+        :global(.app-store-button em) {
+          margin-top: 0.2rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        :global(.app-store-button > svg:last-child) {
+          margin-left: auto;
+          color: #9ed6cc;
+        }
+
         .home-result-guide-inner {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -645,6 +865,18 @@ export default function Home() {
 
           .home-result-guide-inner {
             grid-template-columns: 1fr;
+          }
+
+          .home-apps-band-inner {
+            display: grid;
+          }
+
+          .home-app-store-links {
+            justify-content: stretch;
+          }
+
+          :global(.app-store-button) {
+            width: 100%;
           }
 
           .home-business-actions {

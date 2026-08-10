@@ -6,8 +6,7 @@ Batch 5 is deployed and passed production QA on 19 July 2026. Batch 6 is
 deployed and passed production QA on 25 July 2026. Its deterministic shortlist,
 SQL 26 boundary, exact coverage matrix, mobile Operator navigation, localized
 access denial and public non-exposure checks all passed. Batch 7 imported the
-first controlled 57-place launch seed into the private review queue on 25 July
-2026. Batch 8 individually verified and approved the first eight public places
+first controlled 57-place launch seed into the private review queue on 25 July 2026. Batch 8 individually verified and approved the first eight public places
 on 25 July 2026. Public List, Map, detail, EN/SQ, mobile and non-bookable
 boundary checks passed; 49 candidates remain private. Batches 9 through 12
 closed the map privacy, ownership claim, claimed-business handoff and cache
@@ -708,16 +707,16 @@ reason to approve weak data.
 
 ### Approved places
 
-| Place | City | Category | Current source checked |
-| --- | --- | --- | --- |
-| City Dental Clinic | Tiranë | Dental health | Official clinic website |
-| Bunk'Art 2 | Tiranë | Attractions | Tirana Municipality and current museum information |
-| Geraldina Sposa | Tiranë | Events | Official business website |
-| Cimi Stil Unik | Durrës | Beauty and grooming | Official business website |
-| Balikci Dental | Vlorë | Dental health | Official clinic website |
-| Helen Doron English Vlorë | Vlorë | Learning and lessons | Official Helen Doron Albania centre page |
-| Kopliku Travel | Shkodër | Tours and activities | Official agency website |
-| Experience Gjirokaster | Gjirokastër | Tours and activities | Official agency website |
+| Place                     | City        | Category             | Current source checked                             |
+| ------------------------- | ----------- | -------------------- | -------------------------------------------------- |
+| City Dental Clinic        | Tiranë      | Dental health        | Official clinic website                            |
+| Bunk'Art 2                | Tiranë      | Attractions          | Tirana Municipality and current museum information |
+| Geraldina Sposa           | Tiranë      | Events               | Official business website                          |
+| Cimi Stil Unik            | Durrës      | Beauty and grooming  | Official business website                          |
+| Balikci Dental            | Vlorë       | Dental health        | Official clinic website                            |
+| Helen Doron English Vlorë | Vlorë       | Learning and lessons | Official Helen Doron Albania centre page           |
+| Kopliku Travel            | Shkodër     | Tours and activities | Official agency website                            |
+| Experience Gjirokaster    | Gjirokastër | Tours and activities | Official agency website                            |
 
 For each approval, the operator compared the imported name, category, current
 operation, address, contact details and map context with the current source,
@@ -2029,6 +2028,116 @@ data boundaries, keyboard interaction, EN/SQ and responsive operator UI.
 13. Finish by deleting no real record and sending no contact. Report the exact
     disposable case IDs created, then leave them paused or remove them only
     through an explicitly approved cleanup step.
+
+## Batch 30 - Assisted Owner Handoff Pack
+
+Batch 30 keeps the first owner conversation inside the private onboarding
+workbench without turning Mirëbook into an automatic outreach system. A saved
+case now produces one compact handoff pack with:
+
+- contact-route, owner-route, profile-material and media-permission readiness
+- the exact secure claim path for a linked directory place, or the normal
+  Business registration path for a new prospect
+- an EN/SQ manual outreach draft using the existing reviewed-place templates
+- a concise EN/SQ business introduction when no reviewed place exists yet
+- a copyable request checklist derived from discovery, booking and Business app
+  interests
+- separate visibility for profile-media and Mirëbook-marketing permission
+
+The handoff pack is derived from the private case and adds no database table or
+write. Copy and open-link actions do not send a message, create an Auth user,
+submit a claim, publish a listing, create a booking or change billing.
+
+### Batch 30 deployment QA
+
+Use **High effort** because this QA covers generated copy, exact cross-domain
+links, permission meaning and responsive operator UI.
+
+1. Complete the remaining Batch 29 save-flow proof with one explicitly
+   disposable case. Confirm a second lookup opens the same case rather than
+   creating a duplicate.
+2. Open the saved case and confirm Owner handoff pack appears only after the
+   case exists. It must show contact route, owner route, profile materials and
+   media permission as separate states.
+3. For a linked directory place, confirm Open claim uses
+   `business.mirebook.com/claim/{placeId}` and Open public listing uses
+   `mirebook.com/places/{placeId}`. Existing linked businesses must open only
+   the private admin business route.
+4. Switch outreach format and EN/SQ language. Confirm the place name, exact
+   claim URL and exact public URL remain in every generated format. Edit, copy
+   and reset the draft without any network write or audit event.
+5. For a standalone disposable prospect, confirm the concise business
+   introduction uses the Business registration origin, contains no claim URL
+   or invented directory ID, and explains profile versus promotional media use
+   separately.
+6. Toggle discovery, booking and Business app goals, save, reopen and inspect
+   the request checklist. It must add only the relevant description/photos,
+   service/price/duration, staff/hours and owner-account requests.
+7. Confirm media readiness never treats profile permission as marketing
+   permission. Incomplete evidence must remain visibly incomplete, and no media
+   use may be presented as approved when both permissions are off.
+8. Simulate unavailable clipboard access. The message or checklist field must
+   receive focus and select its complete value as a manual fallback.
+9. Verify anonymous, customer, owner and staff users still cannot open the
+   workbench or API. Inspect public directory/business payloads for absence of
+   onboarding contacts, drafts, checklist, permissions and status.
+10. Verify EN/SQ at 1440x900, 768x1024 and 390x844. Check 44px controls, long
+    Albanian copy, checklist stacking, no horizontal overflow and no console
+    errors.
+11. Finish with no message sent, no account created, no claim submitted, no
+    listing published and no real case changed. Report the disposable case ID
+    and leave it paused pending explicit cleanup approval.
+
+## Batch 31 - Smart Customer Discovery Search
+
+Batch 31 makes the main Explore search more forgiving without changing public
+ranking or adding another data source. The search now suggests:
+
+- exact reviewed local places already available to the public page
+- live bookable Mirëbook businesses already present in the result catalogue
+- translated directory categories, including common EN/SQ search aliases such
+  as barber, dentist, gym, tours, rentals and their Albanian equivalents
+- launch cities with accent-insensitive matching, so `Tirane`, `Durres` and
+  similar keyboard input can resolve to the correct public spelling
+
+Place and business suggestions open their exact customer detail route. City and
+category suggestions apply the existing URL-backed filters immediately. The
+combobox supports Arrow Up/Down, Enter and Escape, keeps native form submission
+when no suggestion is selected and uses only customer-safe catalogue fields
+already available to Explore.
+
+This batch does not request location, create search-history records, change
+publication, alter ranking or expose private directory/business data. Its QA is
+grouped with the next customer-discovery batches rather than run separately.
+
+## Batch 32 - Consistent Homepage Discovery Entry
+
+Batch 32 brings the same assisted search model to the customer homepage so the
+first search and the full Explore search no longer teach different behaviour.
+The hero search reuses the reviewed-place catalogue already loaded for the
+homepage showcase and the existing public bookable-business endpoint. It can
+suggest:
+
+- exact reviewed local places and live bookable businesses
+- translated categories with the shared EN/SQ aliases
+- launch cities with accent-insensitive matching
+
+Selecting a place or business opens its exact public route. Selecting a city or
+category opens Explore with that URL-backed filter applied, preserving a city
+already entered when a category is chosen. Free-text What and Where submission
+continues to open Explore as a fallback, so incomplete or novel searches remain
+usable. The shared combobox keeps Arrow Up/Down, Enter and Escape behaviour at
+the homepage entry point as well as on Explore.
+
+The homepage does not request location, store search history, alter public
+ranking, create records or expose private fields. Directory suggestions are
+derived from the homepage's existing customer-safe request; business
+suggestions are limited to published businesses that satisfy the same
+bookability readiness checks used by Explore.
+
+Batch 32 closes the grouped implementation run. Batches 29-32 should now receive
+one combined high-effort QA covering assisted onboarding, owner handoff safety,
+Explore suggestions and homepage-to-Explore/direct-detail routing.
 
 ### Later
 

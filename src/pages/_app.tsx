@@ -3,8 +3,14 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { I18nProvider } from "@/lib/useI18n";
+import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const publicSiteOrigin = getPublicSiteOrigin();
+  const socialPreview = publicSiteOrigin
+    ? `${publicSiteOrigin}/mirebook-customer-discovery-hero.jpg`
+    : null;
+
   const initialLocale =
     pageProps.initialLocale === "sq"
       ? "sq"
@@ -40,7 +46,11 @@ export default function App({ Component, pageProps }: AppProps) {
           property="og:description"
           content="Discover reviewed places and book local services across Albania with Mirëbook."
         />
-        <meta key="twitter-card" name="twitter:card" content="summary" />
+        <meta
+          key="twitter-card"
+          name="twitter:card"
+          content="summary_large_image"
+        />
         <meta
           key="twitter-title"
           name="twitter:title"
@@ -51,6 +61,22 @@ export default function App({ Component, pageProps }: AppProps) {
           name="twitter:description"
           content="Discover reviewed places and book local services across Albania with Mirëbook."
         />
+        {socialPreview ? (
+          <>
+            <meta key="og-image" property="og:image" content={socialPreview} />
+            <meta
+              key="og-image-width"
+              property="og:image:width"
+              content="1774"
+            />
+            <meta
+              key="og-image-height"
+              property="og:image:height"
+              content="887"
+            />
+            <meta key="twitter-image" name="twitter:image" content={socialPreview} />
+          </>
+        ) : null}
       </Head>
       <Component {...pageProps} />
     </I18nProvider>

@@ -19,6 +19,7 @@ import ExploreEmptyState from "@/components/explore/ExploreEmptyState";
 import ExploreFilters from "@/components/explore/ExploreFilters";
 import ExploreHero from "@/components/explore/ExploreHero";
 import ExploreMapResultList from "@/components/explore/ExploreMapResultList";
+import type { ExploreSearchSuggestion } from "@/components/explore/ExploreSmartSearch";
 import ExploreViewControls, {
   LocationState,
 } from "@/components/explore/ExploreViewControls";
@@ -178,6 +179,7 @@ export default function Explore() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const requestSequence = useRef(0);
+  const suggestionInventoryLocale = useRef("");
 
   const appliedFilters = useMemo<AppliedFilters>(() => {
     const sortValue = queryText(router.query.sort);
@@ -214,6 +216,9 @@ export default function Explore() {
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [directoryPlaces, setDirectoryPlaces] = useState<DirectoryPlace[]>([]);
+  const [searchDirectoryPlaces, setSearchDirectoryPlaces] = useState<
+    DirectoryPlace[]
+  >([]);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [category, setCategory] = useState("");
@@ -338,6 +343,54 @@ export default function Explore() {
   }, [discoveryQuery, loadDiscovery, router.isReady, userLocation]);
 
   useEffect(() => {
+    if (!router.isReady) return;
+    const hasServerFilter = Boolean(
+      appliedFilters.query || appliedFilters.city || appliedFilters.category,
+    );
+
+    if (!hasServerFilter) {
+      if (directoryPlaces.length > 0) {
+        setSearchDirectoryPlaces(directoryPlaces);
+        suggestionInventoryLocale.current = locale;
+      }
+      return;
+    }
+
+    if (
+      searchDirectoryPlaces.length > 0 &&
+      suggestionInventoryLocale.current === locale
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    suggestionInventoryLocale.current = locale;
+    const params = new URLSearchParams({ limit: "100", locale });
+    void fetchWithTimeout(`/api/public/directory-places?${params}`)
+      .then(({ response, payload }) => {
+        if (cancelled || !response.ok) return;
+        const places = (payload as { places?: DirectoryPlace[] } | null)
+          ?.places;
+        setSearchDirectoryPlaces(places || []);
+      })
+      .catch(() => {
+        if (!cancelled) suggestionInventoryLocale.current = "";
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    appliedFilters.category,
+    appliedFilters.city,
+    appliedFilters.query,
+    directoryPlaces,
+    locale,
+    router.isReady,
+    searchDirectoryPlaces.length,
+  ]);
+
+  useEffect(() => {
     return () => {
       requestSequence.current += 1;
     };
@@ -460,6 +513,37 @@ export default function Explore() {
     );
     return Array.from(unique).sort((left, right) => left.localeCompare(right));
   }, [businesses, t]);
+
+  const suggestionPlaces = useMemo(
+    () =>
+      searchDirectoryPlaces.map((place) => ({
+        id: place.id,
+        name: place.name,
+        city: place.city || "",
+        category: directoryCategoryLabel(place.categoryKey, t),
+      })),
+    [searchDirectoryPlaces, t],
+  );
+
+  const suggestionBusinesses = useMemo(
+    () =>
+      businesses.map((business) => ({
+        id: business.id,
+        name: business.name,
+        city: business.city || "",
+        category: business.category || t("common.business", "Business"),
+      })),
+    [businesses, t],
+  );
+
+  const suggestionCategories = useMemo(
+    () =>
+      DIRECTORY_CATEGORIES.map((categoryKey) => ({
+        key: categoryKey,
+        label: directoryCategoryLabel(categoryKey, t),
+      })),
+    [t],
+  );
 
   const listItems = useMemo<DiscoveryListItem[]>(() => {
     const items: DiscoveryListItem[] = [
@@ -646,6 +730,29 @@ export default function Explore() {
     pushFilters({ query: search, city, category, sort: sortBy });
   }
 
+  function selectSearchSuggestion(suggestion: ExploreSearchSuggestion) {
+    if (suggestion.type === "directory_place") {
+      void router.push(`/places/${encodeURIComponent(suggestion.id)}`);
+      return;
+    }
+    if (suggestion.type === "business") {
+      void router.push(`/explore/${encodeURIComponent(suggestion.id)}`);
+      return;
+    }
+    if (suggestion.type === "city") {
+      const nextCity = suggestion.city || suggestion.label;
+      setSearch("");
+      setCity(nextCity);
+      pushFilters({ query: "", city: nextCity, category, sort: sortBy });
+      return;
+    }
+
+    const nextCategory = suggestion.category || suggestion.label;
+    setSearch("");
+    setCategory(nextCategory);
+    pushFilters({ query: "", city, category: nextCategory, sort: sortBy });
+  }
+
   function clearFilters() {
     const nextSort: SortOption = userLocation ? "distance" : "newest";
     setSearch("");
@@ -754,9 +861,13 @@ export default function Explore() {
           sortBy={sortBy}
           cities={cities}
           categories={categories}
+          suggestionPlaces={suggestionPlaces}
+          suggestionBusinesses={suggestionBusinesses}
+          suggestionCategories={suggestionCategories}
           resultCount={listItems.length}
           locationActive={locationState === "active"}
           onSearchChange={setSearch}
+          onSearchSuggestionSelect={selectSearchSuggestion}
           onCityChange={setCity}
           onCategoryChange={setCategory}
           onSortChange={setSortBy}
