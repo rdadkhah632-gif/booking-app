@@ -73,6 +73,9 @@ export default function PrivacyPage() {
             <h2>{t("privacy.section11.title")}</h2>
             <p>{t("privacy.section11.body")}</p>
 
+            <h2>{t("privacy.section12.title")}</h2>
+            <p>{t("privacy.section12.body")}</p>
+
             <div className="legal-actions">
               <Link href="/support" className="btn btn-accent">
                 {t("account.contactSupport")}

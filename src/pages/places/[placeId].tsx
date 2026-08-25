@@ -2,7 +2,7 @@ import type { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -24,6 +24,7 @@ import {
 } from "@/components/explore/directoryCategories";
 import type { DirectoryCategoryKey } from "@/components/explore/exploreTypes";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
+import { recordSiteEvent } from "@/lib/siteAnalytics";
 import type { PublicDirectoryPlace } from "@/lib/server/publicDirectoryPlace";
 import { useI18n } from "@/lib/useI18n";
 
@@ -73,6 +74,7 @@ export default function DirectoryPlacePage({
   const [unavailable, setUnavailable] = useState(initialUnavailable);
   const [bookingBusinessId, setBookingBusinessId] = useState("");
   const [imageFailed, setImageFailed] = useState(false);
+  const trackedPlaceView = useRef("");
 
   useEffect(() => {
     setPlace(initialPlace);
@@ -174,6 +176,21 @@ export default function DirectoryPlacePage({
         "Explore reviewed local places across Albania with Mirëbook.",
       );
   const pageDescription = metaDescription(place, fallbackMetaDescription);
+
+  useEffect(() => {
+    if (!place?.id || trackedPlaceView.current === place.id) return;
+    trackedPlaceView.current = place.id;
+    recordSiteEvent("place_viewed", {
+      locale,
+      entityType: "directory_place",
+      entityId: place.id,
+      metadata: {
+        surface: "place",
+        city: place.city || null,
+        category: place.categoryKey,
+      },
+    });
+  }, [locale, place?.categoryKey, place?.city, place?.id]);
 
   return (
     <main className="marketplace-surface place-page">
@@ -429,6 +446,14 @@ export default function DirectoryPlacePage({
                           href={place.website}
                           target="_blank"
                           rel="noreferrer"
+                          onClick={() =>
+                            recordSiteEvent("place_website_opened", {
+                              locale,
+                              entityType: "directory_place",
+                              entityId: place.id,
+                              metadata: { surface: "place" },
+                            })
+                          }
                         >
                           {t("directory.card.website", "Website")}
                         </a>
@@ -443,6 +468,14 @@ export default function DirectoryPlacePage({
                     target="_blank"
                     rel="noreferrer"
                     className="btn place-directions-action"
+                    onClick={() =>
+                      recordSiteEvent("place_directions_opened", {
+                        locale,
+                        entityType: "directory_place",
+                        entityId: place.id,
+                        metadata: { surface: "place" },
+                      })
+                    }
                   >
                     <MapPin size={17} aria-hidden="true" />
                     {t("directory.profile.directions", "Get directions")}
@@ -489,7 +522,18 @@ export default function DirectoryPlacePage({
                       )}
                 </p>
                 {place.claimable && (
-                  <a href={claimUrl} className="btn btn-ghost">
+                  <a
+                    href={claimUrl}
+                    className="btn btn-ghost"
+                    onClick={() =>
+                      recordSiteEvent("place_claim_opened", {
+                        locale,
+                        entityType: "directory_place",
+                        entityId: place.id,
+                        metadata: { surface: "place" },
+                      })
+                    }
+                  >
                     {t("directory.profile.claim", "Claim this place")}
                     <ExternalLink size={16} aria-hidden="true" />
                   </a>

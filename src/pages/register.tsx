@@ -1,6 +1,6 @@
 import AuthNav from "@/components/AuthNav";
 import CustomerAuthStyles from "@/components/CustomerAuthStyles";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
@@ -15,6 +15,7 @@ import {
   isBusinessAppHostname,
 } from "@/lib/appUrls";
 import { detectRegionDefaults } from "@/lib/regionDefaults";
+import { recordSiteEvent } from "@/lib/siteAnalytics";
 
 const CURRENCY_OPTIONS = [
   { value: "ALL", labelKey: "currency.all", fallback: "ALL - Albanian lek" },
@@ -67,6 +68,7 @@ export default function RegisterPage() {
   const [isBusinessHostname, setIsBusinessHostname] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendingVerification, setResendingVerification] = useState(false);
+  const registrationViewTracked = useRef(false);
   const safeRedirectTo = router.isReady
     ? safeInternalRedirect(router.query.redirectTo)
     : null;
@@ -191,6 +193,15 @@ export default function RegisterPage() {
     }
   }, [locale, setLocale]);
 
+  useEffect(() => {
+    if (!router.isReady || registrationViewTracked.current) return;
+    registrationViewTracked.current = true;
+    recordSiteEvent("registration_viewed", {
+      locale,
+      metadata: { surface: "register" },
+    });
+  }, [locale, router.isReady]);
+
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
     await setLocale(preferredLanguage);
@@ -277,6 +288,14 @@ export default function RegisterPage() {
         return;
       }
     }
+
+    recordSiteEvent("registration_submitted", {
+      locale: preferredLanguage,
+      metadata: {
+        surface: "register",
+        role,
+      },
+    });
 
     const redirectTo = registrationRedirectForRole(
       safeInternalRedirect(router.query.redirectTo),

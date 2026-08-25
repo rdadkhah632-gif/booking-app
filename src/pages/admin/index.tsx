@@ -607,6 +607,10 @@ export default function AdminIndexPage() {
                 Users
               </Link>
 
+              <Link href="/admin/growth" className="btn btn-ghost">
+                {t("nav.growth", "Growth")}
+              </Link>
+
               <Link href="/admin/directory" className="btn btn-ghost">
                 {t("nav.directory", "Directory")}
               </Link>
@@ -677,6 +681,7 @@ export default function AdminIndexPage() {
               <Link href="/admin/users">
                 {t("admin.operations.users", "Users")}
               </Link>
+              <Link href="/admin/growth">{t("nav.growth", "Growth")}</Link>
               <Link href="/admin/directory">
                 {t("nav.directory", "Directory")}
               </Link>
@@ -860,6 +865,21 @@ export default function AdminIndexPage() {
               <p className="small muted" style={{ marginTop: "0.4rem" }}>
                 Search accounts, inspect linked businesses/bookings and safely
                 manage protected access controls.
+              </p>
+            </Link>
+
+            <Link href="/admin/growth" className="card admin-control-card">
+              <p className="small muted">
+                {t("admin.growth.controlKicker", "Launch signals")}
+              </p>
+              <h3>
+                {t("admin.growth.controlTitle", "Traffic and conversion")}
+              </h3>
+              <p className="small muted" style={{ marginTop: "0.4rem" }}>
+                {t(
+                  "admin.growth.controlBody",
+                  "See discovery interest, campaign activity, new accounts and bookings.",
+                )}
               </p>
             </Link>
 

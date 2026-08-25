@@ -2139,6 +2139,65 @@ Batch 32 closes the grouped implementation run. Batches 29-32 should now receive
 one combined high-effort QA covering assisted onboarding, owner handoff safety,
 Explore suggestions and homepage-to-Explore/direct-detail routing.
 
+## Batch 33 - Privacy-Safe Launch Analytics
+
+Batch 33 gives the operator a practical answer to whether outreach and social
+campaigns are bringing people into Mirëbook and whether that interest reaches
+registration or booking. It combines two deliberately separate sources:
+
+- Vercel Web Analytics for anonymous visitors, page views, referrers, countries
+  and device reporting
+- a private Mirëbook event table for a strict allowlist of product actions such
+  as search, map selection, place and business views, claim interest,
+  registration submission and booking submission
+
+The private `/admin/growth` workbench compares anonymous interactions with
+authoritative profile and booking rows. It includes acquisition sources,
+campaign labels, device mix, viewed places/businesses, a recent event stream and
+a 14-day trend. Tagged outreach links can use normal `utm_source`, `utm_medium`
+and `utm_campaign` values; attribution lasts only for the current browser tab
+session.
+
+This batch does not store a visitor name, email, phone number, IP address, exact
+location, account ID or persistent browser/session identifier. It does not
+attempt to identify a particular business owner who visited the site. Mirëbook
+events stop when the browser sends Do Not Track or Global Privacy Control. The
+public ingestion route accepts only same-origin, allowlisted, non-personal
+fields; the analytics table has RLS enabled with no browser policies and is
+available only through service-role ingestion and the authenticated admin API.
+
+Run `sources/sql/39_launch_site_analytics.sql`, enable Web Analytics for the
+production Vercel project and deploy the matching website build before relying
+on `/admin/growth`. Account and booking totals remain usable if the event table
+has not yet been installed, while the workbench clearly marks interaction
+reporting as inactive.
+
+### Batch 33 deployment QA
+
+Use **High effort** because this touches public interaction reporting, private
+admin data and legal disclosure.
+
+1. Run SQL 39 and deploy. Enable Vercel Web Analytics for the production project.
+2. Open a fresh anonymous tab with
+   `?utm_source=instagram&utm_medium=social&utm_campaign=launch_albania`.
+3. Exercise homepage search, Explore list/map, one reviewed place, Website,
+   Directions and Claim. Do not submit a claim, booking or account.
+4. Confirm public requests never contain names, email addresses, phone numbers,
+   account IDs, exact coordinates or persistent browser IDs.
+5. Sign in as admin and open `/admin/growth`. Confirm the selected campaign,
+   source, device, events and viewed place appear once per deliberate action.
+6. Confirm Vercel Analytics receives page views and referrer/device reporting.
+7. Confirm anonymous, customer, business and staff users receive a clean denial
+   from the Growth page and API.
+8. Inspect the analytics table through an anonymous Supabase REST request; it
+   must deny reads and writes.
+9. Check 7/30/90-day filters, EN/SQ, 1440x900, 768x1024 and 390x844 with no raw
+   errors, horizontal overflow or unreadable chart labels.
+10. Verify Privacy in EN/SQ states the anonymous analytics purpose, campaign
+    labels, excluded identifiers and privacy-signal behaviour.
+11. Finish with no business, listing, claim, booking, account or billing record
+    changed.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls

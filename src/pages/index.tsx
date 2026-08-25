@@ -32,6 +32,7 @@ import type {
 } from "@/components/explore/exploreTypes";
 import HomeFeaturedPlaces from "@/components/home/HomeFeaturedPlaces";
 import { getBusinessAppUrl } from "@/lib/appUrls";
+import { recordSiteEvent } from "@/lib/siteAnalytics";
 import { useI18n } from "@/lib/useI18n";
 
 const categoryShortcuts: Array<{
@@ -77,7 +78,7 @@ function isBookableBusiness(business: Business) {
 
 export default function Home() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
   const [directoryPlaces, setDirectoryPlaces] = useState<DirectoryPlace[]>([]);
@@ -149,6 +150,15 @@ export default function Home() {
 
   function searchDiscovery(event: React.FormEvent) {
     event.preventDefault();
+    recordSiteEvent("home_search_submitted", {
+      locale,
+      metadata: {
+        surface: "home",
+        selection: "free_text",
+        queryPresent: Boolean(query.trim()),
+        city: city.trim() || null,
+      },
+    });
     void router.push({
       pathname: "/explore",
       query: {
@@ -159,6 +169,25 @@ export default function Home() {
   }
 
   function selectSearchSuggestion(suggestion: ExploreSearchSuggestion) {
+    recordSiteEvent("home_suggestion_selected", {
+      locale,
+      entityType:
+        suggestion.type === "directory_place"
+          ? "directory_place"
+          : suggestion.type === "business"
+            ? "business"
+            : undefined,
+      entityId:
+        suggestion.type === "directory_place" || suggestion.type === "business"
+          ? suggestion.id
+          : undefined,
+      metadata: {
+        surface: "home",
+        selection: suggestion.type,
+        city: suggestion.city || null,
+        category: suggestion.category || null,
+      },
+    });
     if (suggestion.type === "directory_place") {
       void router.push(`/places/${encodeURIComponent(suggestion.id)}`);
       return;
@@ -264,7 +293,16 @@ export default function Home() {
                 <CalendarCheck size={18} aria-hidden="true" />
                 {t("home.discovery.bookable", "Explore Albania")}
               </Link>
-              <Link href="/explore?view=map" className="hero-secondary-action">
+              <Link
+                href="/explore?view=map"
+                className="hero-secondary-action"
+                onClick={() =>
+                  recordSiteEvent("home_map_opened", {
+                    locale,
+                    metadata: { surface: "home", view: "map" },
+                  })
+                }
+              >
                 <Map size={18} aria-hidden="true" />
                 {t("home.discovery.map", "Explore the map")}
               </Link>
@@ -372,10 +410,28 @@ export default function Home() {
             </p>
           </div>
           <div className="home-business-actions">
-            <Link href={businessRegisterUrl} className="btn btn-accent">
+            <Link
+              href={businessRegisterUrl}
+              className="btn btn-accent"
+              onClick={() =>
+                recordSiteEvent("business_entry_opened", {
+                  locale,
+                  metadata: { surface: "home", selection: "register" },
+                })
+              }
+            >
               {t("home.discovery.businessCta", "Claim or list your business")}
             </Link>
-            <Link href={businessHomeUrl} className="btn btn-ghost">
+            <Link
+              href={businessHomeUrl}
+              className="btn btn-ghost"
+              onClick={() =>
+                recordSiteEvent("business_entry_opened", {
+                  locale,
+                  metadata: { surface: "home", selection: "business_home" },
+                })
+              }
+            >
               {t("home.businessEntry.cta", "Visit Mirëbook Business")}
             </Link>
           </div>

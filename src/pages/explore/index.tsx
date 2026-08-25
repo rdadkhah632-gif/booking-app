@@ -39,6 +39,7 @@ import {
   SortOption,
 } from "@/components/explore/exploreTypes";
 import { useI18n } from "@/lib/useI18n";
+import { recordSiteEvent } from "@/lib/siteAnalytics";
 
 type Coordinates = {
   latitude: number;
@@ -727,10 +728,43 @@ export default function Explore() {
   }
 
   function applyFiltersToUrl() {
+    recordSiteEvent("explore_search_submitted", {
+      locale,
+      metadata: {
+        surface: "explore",
+        selection: "filters",
+        queryPresent: Boolean(search.trim()),
+        city: city.trim() || null,
+        category: category.trim() || null,
+        kind,
+        view,
+      },
+    });
     pushFilters({ query: search, city, category, sort: sortBy });
   }
 
   function selectSearchSuggestion(suggestion: ExploreSearchSuggestion) {
+    recordSiteEvent("explore_suggestion_selected", {
+      locale,
+      entityType:
+        suggestion.type === "directory_place"
+          ? "directory_place"
+          : suggestion.type === "business"
+            ? "business"
+            : undefined,
+      entityId:
+        suggestion.type === "directory_place" || suggestion.type === "business"
+          ? suggestion.id
+          : undefined,
+      metadata: {
+        surface: "explore",
+        selection: suggestion.type,
+        city: suggestion.city || null,
+        category: suggestion.category || null,
+        kind,
+        view,
+      },
+    });
     if (suggestion.type === "directory_place") {
       void router.push(`/places/${encodeURIComponent(suggestion.id)}`);
       return;
@@ -771,6 +805,10 @@ export default function Explore() {
 
   function changeView(nextView: ExploreView) {
     setView(nextView);
+    recordSiteEvent("explore_view_changed", {
+      locale,
+      metadata: { surface: "explore", view: nextView, kind },
+    });
     pushFilters({
       query: appliedFilters.query,
       city: appliedFilters.city,
@@ -783,6 +821,10 @@ export default function Explore() {
 
   function changeKind(nextKind: DiscoveryKind) {
     setKind(nextKind);
+    recordSiteEvent("explore_kind_changed", {
+      locale,
+      metadata: { surface: "explore", view, kind: nextKind },
+    });
     pushFilters({
       query: appliedFilters.query,
       city: appliedFilters.city,
@@ -794,13 +836,39 @@ export default function Explore() {
   }
 
   function showOnMap(placeId: string) {
-    setSelectedMapId(`directory:${placeId}`);
+    selectMapResult(`directory:${placeId}`);
     changeView("map");
   }
 
+  function selectMapResult(itemId: string) {
+    setSelectedMapId(itemId);
+    const item = mapItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    recordSiteEvent("explore_map_result_selected", {
+      locale,
+      entityType:
+        item.resultType === "business" ? "business" : "directory_place",
+      entityId: itemId.split(":")[1],
+      metadata: {
+        surface: "explore",
+        resultType: item.resultType,
+        view: "map",
+        kind,
+      },
+    });
+  }
+
   function useCurrentLocation() {
+    recordSiteEvent("explore_location_requested", {
+      locale,
+      metadata: { surface: "explore", view, kind },
+    });
     if (!navigator.geolocation) {
       setLocationState("unavailable");
+      recordSiteEvent("explore_location_resolved", {
+        locale,
+        metadata: { surface: "explore", locationOutcome: "unavailable" },
+      });
       return;
     }
 
@@ -812,6 +880,10 @@ export default function Explore() {
           longitude: approximateCoordinate(position.coords.longitude),
         });
         setLocationState("active");
+        recordSiteEvent("explore_location_resolved", {
+          locale,
+          metadata: { surface: "explore", locationOutcome: "active" },
+        });
         setSortBy("distance");
         pushFilters({
           query: appliedFilters.query,
@@ -821,7 +893,12 @@ export default function Explore() {
         });
       },
       (locationError) => {
-        setLocationState(locationError.code === 1 ? "denied" : "unavailable");
+        const outcome = locationError.code === 1 ? "denied" : "unavailable";
+        setLocationState(outcome);
+        recordSiteEvent("explore_location_resolved", {
+          locale,
+          metadata: { surface: "explore", locationOutcome: outcome },
+        });
       },
       { enableHighAccuracy: false, timeout: 8_000, maximumAge: 300_000 },
     );
@@ -949,7 +1026,20 @@ export default function Explore() {
                       .replace("{shown}", String(visibleListItems.length))
                       .replace("{total}", String(listItems.length))}
                   </p>
-                  <Link href={nextListPageHref} className="btn btn-ghost">
+                  <Link
+                    href={nextListPageHref}
+                    className="btn btn-ghost"
+                    onClick={() =>
+                      recordSiteEvent("explore_more_results", {
+                        locale,
+                        metadata: {
+                          surface: "explore",
+                          view: "list",
+                          kind,
+                        },
+                      })
+                    }
+                  >
                     {t("explore.discovery.showMore", "Show more places")}
                     <ArrowRight size={16} aria-hidden="true" />
                   </Link>
@@ -961,7 +1051,7 @@ export default function Explore() {
                 <ExploreMapResultList
                   items={mapItems}
                   selectedId={selectedMapId}
-                  onSelect={setSelectedMapId}
+                  onSelect={selectMapResult}
                 />
 
                 <div className="map-canvas-panel">
@@ -969,7 +1059,7 @@ export default function Explore() {
                     items={mapItems}
                     selectedId={selectedMapId}
                     userLocation={userLocation}
-                    onSelect={setSelectedMapId}
+                    onSelect={selectMapResult}
                   />
 
                   <div className="map-mobile-controls">

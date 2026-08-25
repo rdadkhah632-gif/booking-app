@@ -16,6 +16,7 @@ import { useI18n } from "@/lib/useI18n";
 import { formatCurrencyAmount } from "@/lib/currency";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
+import { recordSiteEvent } from "@/lib/siteAnalytics";
 
 type Service = {
   id: string;
@@ -159,6 +160,7 @@ export default function BusinessBookingPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingTakingLong, setLoadingTakingLong] = useState(false);
   const restoredBookingIntentRef = useRef(false);
+  const trackedBusinessViewRef = useRef("");
   const [error, setError] = useState<string | null>(null);
 
   async function loadBlockingBookings(
@@ -285,6 +287,35 @@ export default function BusinessBookingPage() {
   useEffect(() => {
     loadBookingPage();
   }, [businessId]);
+
+  useEffect(() => {
+    if (
+      !business?.id ||
+      isOwnerPreview ||
+      pageLoading ||
+      trackedBusinessViewRef.current === business.id
+    ) {
+      return;
+    }
+    trackedBusinessViewRef.current = business.id;
+    recordSiteEvent("business_viewed", {
+      locale,
+      entityType: "business",
+      entityId: business.id,
+      metadata: {
+        surface: "business",
+        city: business.city || null,
+        category: business.category || null,
+      },
+    });
+  }, [
+    business?.category,
+    business?.city,
+    business?.id,
+    isOwnerPreview,
+    locale,
+    pageLoading,
+  ]);
 
   useEffect(() => {
     if (!pageLoading) {
@@ -999,6 +1030,18 @@ export default function BusinessBookingPage() {
       );
       return;
     }
+
+    recordSiteEvent("booking_started", {
+      locale,
+      entityType: "business",
+      entityId: businessId,
+      metadata: {
+        surface: "business",
+        authenticated: true,
+        category: business?.category || null,
+        city: business?.city || null,
+      },
+    });
 
     setLoading(true);
     setError(null);

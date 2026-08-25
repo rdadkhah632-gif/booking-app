@@ -2,6 +2,7 @@ import "../styles/globals.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { Analytics } from "@vercel/analytics/next";
 import { I18nProvider } from "@/lib/useI18n";
 import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 
@@ -74,11 +75,16 @@ export default function App({ Component, pageProps }: AppProps) {
               property="og:image:height"
               content="887"
             />
-            <meta key="twitter-image" name="twitter:image" content={socialPreview} />
+            <meta
+              key="twitter-image"
+              name="twitter:image"
+              content={socialPreview}
+            />
           </>
         ) : null}
       </Head>
       <Component {...pageProps} />
+      <Analytics />
     </I18nProvider>
   );
 }

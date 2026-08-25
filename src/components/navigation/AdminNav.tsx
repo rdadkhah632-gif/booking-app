@@ -12,6 +12,10 @@ export default function AdminNav({
         {t("nav.operator", "Operator")}
       </Link>
 
+      <Link href="/admin/growth" className="muted">
+        {t("nav.growth", "Growth")}
+      </Link>
+
       <Link href="/admin/businesses" className="muted">
         {t("nav.businesses", "Businesses")}
       </Link>

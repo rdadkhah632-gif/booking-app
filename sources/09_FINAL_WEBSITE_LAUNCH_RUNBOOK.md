@@ -504,6 +504,28 @@ detail route; city/category choices remain URL-backed Explore filters. This is a
 presentation and navigation aid only: it does not request location, persist
 search history, publish records or broaden public data access.
 
+## Launch Analytics
+
+Before using the private Growth dashboard:
+
+1. Run `sources/sql/39_launch_site_analytics.sql` in the production Supabase SQL
+   editor.
+2. Enable Web Analytics in the production Mirëbook Vercel project.
+3. Deploy the matching website build.
+4. Open `/admin/growth` with the operator account and confirm Account and Booking
+   totals load before running any public interaction test.
+5. Use campaign-tagged links for outreach and social posts, for example:
+   `https://mirebook.com/explore?utm_source=instagram&utm_medium=social&utm_campaign=launch_albania`.
+6. Run the Batch 33 QA in
+   `sources/12_STAGE_ALBANIA_DISCOVERY_DIRECTORY_FOUNDATION.md`.
+
+Vercel remains the source for anonymous visitors, page views, referrers, country
+and device reporting. `/admin/growth` is the source for Mirëbook's allowlisted
+interaction funnel plus authoritative account and booking totals. Neither
+surface proves which named business owner visited; use campaign links and
+subsequent owner replies to measure outreach without trying to identify a
+person from anonymous traffic.
+
 ## UI Position And Next Batch
 
 No active P0/P1/P2 interface finding remains from the latest targeted business,
