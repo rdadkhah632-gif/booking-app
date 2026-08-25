@@ -624,19 +624,38 @@ export default function StaffAvailabilityPage() {
         }
 
         .staff-availability-summary {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0;
           margin-bottom: 1rem;
-          padding: 0.7rem 0;
+          padding: 0.45rem 0;
           border-top: 1px solid var(--border);
           border-bottom: 1px solid var(--border);
           color: var(--text-muted);
           font-size: 0.85rem;
         }
 
+        .staff-availability-summary span {
+          display: grid;
+          gap: 0.08rem;
+          min-width: 0;
+          padding: 0.3rem 0.75rem;
+          border-right: 1px solid var(--border);
+          line-height: 1.2;
+        }
+
+        .staff-availability-summary span:first-child {
+          padding-left: 0;
+        }
+
+        .staff-availability-summary span:last-child {
+          padding-right: 0;
+          border-right: 0;
+        }
+
         .staff-availability-summary strong {
           color: var(--text);
+          font-size: 1rem;
         }
 
         .staff-calendar-note {
@@ -744,6 +763,14 @@ export default function StaffAvailabilityPage() {
         }
 
         @media (max-width: 620px) {
+          .staff-availability-summary {
+            font-size: 0.72rem;
+          }
+
+          .staff-availability-summary span {
+            padding-inline: 0.45rem;
+          }
+
           .staff-template-header {
             display: grid;
           }

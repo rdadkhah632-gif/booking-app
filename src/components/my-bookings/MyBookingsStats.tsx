@@ -102,7 +102,10 @@ export default function MyBookingsStats({
 
         @media (max-width: 760px) {
           .my-bookings-summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(
+              auto-fit,
+              minmax(min(9rem, 100%), 1fr)
+            );
           }
         }
 

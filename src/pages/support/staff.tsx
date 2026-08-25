@@ -838,6 +838,12 @@ export default function StaffSupportPage() {
             justify-content: space-between;
           }
         }
+
+        @media (max-width: 700px) {
+          .support-hero-actions :global(a:not(:last-child)) {
+            display: none;
+          }
+        }
       `}</style>
     </main>
   );

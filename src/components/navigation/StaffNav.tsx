@@ -180,6 +180,12 @@ export default function StaffNav({
             width: 100%;
           }
         }
+
+        @media (max-width: 700px) {
+          .staff-nav-work {
+            display: none;
+          }
+        }
       `}</style>
     </>
   );

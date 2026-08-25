@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
+import MobileWorkspaceDock from "@/components/navigation/MobileWorkspaceDock";
 
 type Props = {
   children: React.ReactNode;
@@ -27,6 +28,9 @@ export default function DashboardLayout({
   const [hasBusinessWorkspace, setHasBusinessWorkspace] = useState(false);
   const [accountLabel, setAccountLabel] = useState("");
   const [workspaceLabel, setWorkspaceLabel] = useState("");
+  const isCalendarSurface =
+    router.pathname === "/dashboard/bookings" ||
+    router.pathname === "/staff/calendar";
 
   useEffect(() => {
     async function loadPendingNotifications() {
@@ -218,7 +222,9 @@ export default function DashboardLayout({
 
   if (checkingAccess) {
     return (
-      <main className="dashboard-layout">
+      <main
+        className={`dashboard-layout ${isCalendarSurface ? "dashboard-calendar-layout" : ""}`.trim()}
+      >
         <WorkspaceSurfaceStyles />
         <section className="dashboard-main">
           <div className="card">
@@ -230,7 +236,9 @@ export default function DashboardLayout({
   }
 
   return (
-    <main className="dashboard-layout">
+    <main
+      className={`dashboard-layout ${isCalendarSurface ? "dashboard-calendar-layout" : ""}`.trim()}
+    >
       <WorkspaceSurfaceStyles />
       <aside className="sidebar">
         <div className="sidebar-logo">
@@ -337,13 +345,7 @@ export default function DashboardLayout({
           <div className="dashboard-page-header">
             <div>
               {title && (
-                <h1
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "2rem",
-                    marginBottom: "0.25rem",
-                  }}
-                >
+                <h1 className="dashboard-page-title">
                   {title}
                 </h1>
               )}
@@ -355,6 +357,11 @@ export default function DashboardLayout({
           {children}
         </div>
       </section>
+      <MobileWorkspaceDock
+        workspace={workspace}
+        badgeCount={pendingCount}
+        badgeTarget={workspace === "business" ? "calendar" : "inbox"}
+      />
       <style jsx>{`
         .sidebar-nav {
           display: flex;
@@ -564,6 +571,12 @@ export default function DashboardLayout({
           flex-wrap: wrap;
         }
 
+        .dashboard-page-title {
+          margin: 0 0 0.25rem;
+          font-family: var(--font-display);
+          font-size: 2rem;
+        }
+
         @media (max-width: 720px) {
           .sidebar-nav {
             display: grid;
@@ -674,6 +687,10 @@ export default function DashboardLayout({
 
           .dashboard-page-header {
             display: grid;
+          }
+
+          .dashboard-page-title {
+            font-size: 1.65rem;
           }
         }
 
@@ -861,7 +878,7 @@ export default function DashboardLayout({
           .sidebar {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
-            grid-template-rows: auto auto;
+            grid-template-rows: auto;
             gap: 0.45rem 0.65rem;
             overflow: visible;
             padding: 0.6rem 0.7rem;
@@ -881,13 +898,7 @@ export default function DashboardLayout({
           }
 
           .sidebar-main-links {
-            grid-column: 1 / -1;
-            grid-row: 2;
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 0.25rem;
-            min-width: 0;
-            overflow: visible;
+            display: none;
           }
 
           .sidebar-account {
@@ -938,6 +949,14 @@ export default function DashboardLayout({
             border-radius: 0.7rem;
             background: transparent;
             text-align: left;
+          }
+
+          .dashboard-calendar-layout .dashboard-main {
+            padding-bottom: 0.5rem;
+          }
+
+          .dashboard-calendar-layout .dashboard-page-header {
+            margin-bottom: 0.65rem;
           }
         }
       `}</style>

@@ -13,6 +13,7 @@ import { getBusinessAppUrl } from "@/lib/appUrls";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
 import { Role } from "./navTypes";
 import MobileCustomerDock from "./MobileCustomerDock";
+import MobileWorkspaceDock from "./MobileWorkspaceDock";
 
 type AuthNavProps = {
   contextRole?: Exclude<Role, null>;
@@ -467,6 +468,7 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
             }
 
             :global(.nav-role-business .auth-nav-links),
+            :global(.nav-role-staff .auth-nav-links),
             :global(.nav-role-admin .auth-nav-links) {
               grid-column: 2;
               grid-row: 1;
@@ -517,6 +519,10 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
               width: auto;
               flex: 0 0 auto;
             }
+
+            :global(.nav-role-staff .staff-nav-work) {
+              display: none;
+            }
           }
 
           @media (max-width: 360px) {
@@ -550,6 +556,20 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
         (role === null || role === "customer") && (
           <MobileCustomerDock notificationCount={notificationCount} />
         )}
+      {!loading && !isPublicBusinessEntry && role === "business" && (
+        <MobileWorkspaceDock
+          workspace="business"
+          badgeCount={notificationCount}
+          badgeTarget="inbox"
+        />
+      )}
+      {!loading && !isPublicBusinessEntry && role === "staff" && (
+        <MobileWorkspaceDock
+          workspace="staff"
+          badgeCount={notificationCount}
+          badgeTarget="inbox"
+        />
+      )}
     </>
   );
 }

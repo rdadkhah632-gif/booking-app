@@ -3442,8 +3442,10 @@ export default function Bookings() {
 
         @media (max-width: 700px) {
           .calendar-workspace {
-            height: calc(100dvh - 11rem);
-            min-height: 32rem;
+            height: calc(
+              100dvh - 10.75rem - var(--mobile-workspace-dock-space, 0px)
+            );
+            min-height: 27rem;
           }
 
           .calendar-date-controls {
@@ -3515,7 +3517,7 @@ export default function Bookings() {
           }
 
           .calendar-week-stepper {
-            grid-column: 1;
+            grid-column: 1 / -1;
             width: 100%;
           }
 
@@ -3524,18 +3526,18 @@ export default function Bookings() {
           }
 
           .calendar-date-controls input {
-            grid-column: 2;
-            grid-row: 1;
-            width: 2.75rem;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            width: 100%;
             max-width: none;
             min-width: 0;
-            padding: 0.45rem;
-            color: transparent;
+            padding: 0.55rem 0.7rem;
+            color: var(--text);
           }
 
           .calendar-staff-filter {
             grid-column: 1;
-            grid-row: 2;
+            grid-row: 3;
             width: 100%;
             min-height: 2.75rem;
             padding-left: 0.25rem;
@@ -3554,7 +3556,7 @@ export default function Bookings() {
             width: 2.75rem;
             min-width: 2.75rem;
             grid-column: 2;
-            grid-row: 2;
+            grid-row: 3;
             justify-content: center;
             overflow: hidden;
             padding: 0;

@@ -1822,8 +1822,10 @@ export default function StaffCalendarPage() {
 
         @media (max-width: 760px) {
           .staff-workspace-page {
-            height: calc(100dvh - 11rem);
-            min-height: 32rem;
+            height: calc(
+              100dvh - 10.75rem - var(--mobile-workspace-dock-space, 0px)
+            );
+            min-height: 27rem;
           }
 
           .staff-calendar-toolbar,
@@ -1834,7 +1836,7 @@ export default function StaffCalendarPage() {
           }
 
           .staff-calendar-toolbar {
-            grid-template-columns: minmax(0, 1fr) 2.75rem;
+            grid-template-columns: minmax(0, 1fr);
             gap: 0.45rem;
             padding: 0.55rem;
           }
@@ -1845,13 +1847,15 @@ export default function StaffCalendarPage() {
 
           .staff-week-stepper button {
             flex: 1 1 0;
+            min-height: 2.75rem;
           }
 
           .staff-calendar-toolbar input {
-            width: 2.75rem;
-            min-width: 2.75rem;
-            padding: 0.45rem;
-            color: transparent;
+            width: 100%;
+            min-width: 0;
+            min-height: 2.75rem;
+            padding: 0.55rem 0.7rem;
+            color: var(--text);
           }
 
           .staff-week-label {
