@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { formatLocalizedDate } from "@/lib/i18n";
+import { DEFAULT_TIME_ZONE, dateKeyInTimeZone } from "@/lib/timezone";
 
 type StaffMember = {
   id: string;
@@ -24,11 +25,13 @@ type StaffMember = {
         name: string;
         city?: string | null;
         category?: string | null;
+        timezone?: string | null;
       }
     | {
         name: string;
         city?: string | null;
         category?: string | null;
+        timezone?: string | null;
       }[]
     | null;
 };
@@ -41,12 +44,8 @@ type Service = {
   active?: boolean | null;
 };
 
-function calendarDateValue(value: string) {
-  const date = new Date(value);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+function calendarDateValue(value: string, timeZone?: string | null) {
+  return dateKeyInTimeZone(new Date(value), timeZone);
 }
 
 type StaffService = {
@@ -60,21 +59,25 @@ type Booking = {
   customer_name: string;
   start_at: string;
   status: string;
+  is_departure?: boolean;
+  departure_id?: string | null;
+};
+
+type StaffDeparture = {
+  id: string;
+  start_at: string;
+  status: string;
+  service?: { name?: string | null } | null;
 };
 
 const CONFIRMED_STAFF_BOOKING_STATUS = "confirmed";
 const PENDING_STAFF_BOOKING_STATUS = "pending";
 
-function startOfDay(date: Date) {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
-
-function endOfDay(date: Date) {
-  const copy = new Date(date);
-  copy.setHours(23, 59, 59, 999);
-  return copy;
+function staffBusinessTimeZone(staff: StaffMember | null) {
+  if (!staff?.businesses) return DEFAULT_TIME_ZONE;
+  return Array.isArray(staff.businesses)
+    ? staff.businesses[0]?.timezone || DEFAULT_TIME_ZONE
+    : staff.businesses.timezone || DEFAULT_TIME_ZONE;
 }
 
 export default function StaffDashboardPage() {
@@ -145,7 +148,8 @@ export default function StaffDashboardPage() {
           businesses (
             name,
             city,
-            category
+            category,
+            timezone
           )
         `,
         )
@@ -165,11 +169,12 @@ export default function StaffDashboardPage() {
 
       setStaffProfile(linkedStaff as unknown as StaffMember);
 
-      const { data: assignedServiceData, error: assignedServiceError } =
-        await supabase
-          .from("staff_services")
-          .select(
-            `
+      const [assignedServiceResult, bookingResult, departureResult] =
+        await Promise.all([
+          supabase
+            .from("staff_services")
+            .select(
+              `
           staff_member_id,
           service_id,
           services (
@@ -179,13 +184,41 @@ export default function StaffDashboardPage() {
             price,
             active
           )
-        `,
+          `,
+            )
+            .eq("staff_member_id", linkedStaff.id),
+          supabase
+            .from("bookings")
+            .select(
+              `
+              id,
+              customer_name,
+              start_at,
+              status
+            `,
+            )
+            .eq("staff_member_id", linkedStaff.id)
+            .order("start_at", { ascending: true }),
+          fetch(
+            `/api/dashboard/departures?businessId=${linkedStaff.business_id}`,
+            {
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            },
           )
-          .eq("staff_member_id", linkedStaff.id);
+            .then(async (response) => {
+              if (!response.ok) return [] as StaffDeparture[];
+              const payload = (await response.json()) as {
+                departures?: StaffDeparture[];
+              };
+              return payload.departures || [];
+            })
+            .catch(() => [] as StaffDeparture[]),
+        ]);
 
-      if (assignedServiceError) throw assignedServiceError;
+      if (assignedServiceResult.error) throw assignedServiceResult.error;
+      if (bookingResult.error) throw bookingResult.error;
 
-      const normalisedAssignedServices = (assignedServiceData || [])
+      const normalisedAssignedServices = (assignedServiceResult.data || [])
         .map((row: any) =>
           Array.isArray(row.services) ? row.services[0] : row.services,
         )
@@ -193,22 +226,24 @@ export default function StaffDashboardPage() {
 
       setAssignedServices(normalisedAssignedServices as Service[]);
 
-      const { data: bookingData, error: bookingError } = await supabase
-        .from("bookings")
-        .select(
-          `
-          id,
-          customer_name,
-          start_at,
-          status
-        `,
-        )
-        .eq("staff_member_id", linkedStaff.id)
-        .order("start_at", { ascending: true });
+      const departureBookings = departureResult.map((departure) => ({
+        id: `departure:${departure.id}`,
+        departure_id: departure.id,
+        customer_name:
+          departure.service?.name ||
+          t("staffCalendar.departure", "Group departure"),
+        start_at: departure.start_at,
+        status:
+          departure.status === "scheduled"
+            ? CONFIRMED_STAFF_BOOKING_STATUS
+            : departure.status,
+        is_departure: true,
+      }));
 
-      if (bookingError) throw bookingError;
-
-      setBookings((bookingData || []) as unknown as Booking[]);
+      setBookings([
+        ...((bookingResult.data || []) as unknown as Booking[]),
+        ...departureBookings,
+      ]);
 
       setLoading(false);
     } catch (err: any) {
@@ -326,21 +361,20 @@ export default function StaffDashboardPage() {
     }
   }
 
+  const staffTimeZone = staffBusinessTimeZone(staffProfile);
   const now = useMemo(() => new Date(), [bookings]);
 
   const todayBookings = useMemo(() => {
-    const start = startOfDay(new Date());
-    const end = endOfDay(new Date());
+    const todayKey = dateKeyInTimeZone(new Date(), staffTimeZone);
 
     return bookings.filter((booking) => {
-      const startAt = new Date(booking.start_at);
       return (
         booking.status === CONFIRMED_STAFF_BOOKING_STATUS &&
-        startAt >= start &&
-        startAt <= end
+        dateKeyInTimeZone(new Date(booking.start_at), staffTimeZone) ===
+          todayKey
       );
     });
-  }, [bookings]);
+  }, [bookings, staffTimeZone]);
 
   const confirmedUpcomingBookings = useMemo(() => {
     return bookings.filter(
@@ -531,18 +565,20 @@ export default function StaffDashboardPage() {
                 <h2>
                   {todayBookings.length > 0
                     ? t(
-                        "staff.today.titleWithBookings",
-                        "You have appointments today",
+                        "staff.today.titleWithWork",
+                        "You have work scheduled today",
                       )
-                    : t("staff.today.titleEmpty", "No appointments today")}
+                    : t("staff.today.titleNoWork", "No work scheduled today")}
                 </h2>
                 {nextBooking ? (
                   <Link
-                    href={`/staff/calendar?date=${calendarDateValue(nextBooking.start_at)}&bookingId=${nextBooking.id}`}
+                    href={`/staff/calendar?date=${calendarDateValue(nextBooking.start_at, staffTimeZone)}&${nextBooking.is_departure ? `departureId=${nextBooking.departure_id}` : `bookingId=${nextBooking.id}`}`}
                     className="staff-next-appointment"
                   >
                     <span className="staff-next-label">
-                      {t("staff.today.nextPrefix", "Next appointment")}
+                      {nextBooking.is_departure
+                        ? t("staff.today.nextDeparture", "Next departure")
+                        : t("staff.today.nextPrefix", "Next appointment")}
                     </span>
                     <span className="staff-next-details">
                       <strong>
@@ -551,6 +587,7 @@ export default function StaffDashboardPage() {
                       </strong>
                       <span>
                         {formatLocalizedDate(nextBooking.start_at, locale, {
+                          timeZone: staffTimeZone,
                           weekday: "short",
                           day: "numeric",
                           month: "short",
@@ -563,8 +600,8 @@ export default function StaffDashboardPage() {
                 ) : (
                   <p className="muted small" style={{ marginTop: "0.35rem" }}>
                     {t(
-                      "staff.today.noUpcoming",
-                      "No assigned appointments coming up.",
+                      "staff.today.noUpcomingWork",
+                      "No assigned work coming up.",
                     )}
                   </p>
                 )}

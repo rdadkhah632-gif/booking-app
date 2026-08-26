@@ -7,12 +7,22 @@ import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import MobileDayCalendar from "@/components/calendar/MobileDayCalendar";
 import { formatLocalizedDate } from "@/lib/i18n";
+import {
+  DEFAULT_TIME_ZONE,
+  dateKeyInTimeZone,
+  formatTimeRangeInTimeZone,
+  minutesSinceMidnightInTimeZone,
+  zonedDateTimeToUtc,
+} from "@/lib/timezone";
 
 type StaffProfile = {
   id: string;
   business_id: string;
   name: string;
-  businesses?: { name?: string | null } | { name?: string | null }[] | null;
+  businesses?:
+    | { name?: string | null; timezone?: string | null }
+    | { name?: string | null; timezone?: string | null }[]
+    | null;
 };
 
 type Booking = {
@@ -97,10 +107,6 @@ function startOfWeek(date: Date) {
   return copy;
 }
 
-function minutesSinceMidnight(date: Date) {
-  return date.getHours() * 60 + date.getMinutes();
-}
-
 function timeInputForMinutes(totalMinutes: number) {
   const safeMinutes = Math.max(0, Math.min(23 * 60 + 59, totalMinutes));
   const hours = Math.floor(safeMinutes / 60);
@@ -126,6 +132,13 @@ function staffBusinessName(staff: StaffProfile | null, fallback: string) {
     : staff.businesses.name || fallback;
 }
 
+function staffBusinessTimeZone(staff: StaffProfile | null) {
+  if (!staff?.businesses) return DEFAULT_TIME_ZONE;
+  return Array.isArray(staff.businesses)
+    ? staff.businesses[0]?.timezone || DEFAULT_TIME_ZONE
+    : staff.businesses.timezone || DEFAULT_TIME_ZONE;
+}
+
 function statusColor(status: string) {
   if (status === "pending") return "var(--accent)";
   if (status === "confirmed") return "var(--success)";
@@ -147,7 +160,7 @@ export default function StaffCalendarPage() {
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState(
-    formatDateInputValue(new Date()),
+    dateKeyInTimeZone(new Date(), DEFAULT_TIME_ZONE),
   );
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
     null,
@@ -209,7 +222,8 @@ export default function StaffCalendarPage() {
         business_id,
         name,
         businesses (
-          name
+          name,
+          timezone
         )
       `,
       )
@@ -231,11 +245,29 @@ export default function StaffCalendarPage() {
     const normalisedStaff = staffData as unknown as StaffProfile;
     setStaffProfile(normalisedStaff);
 
+    const timeZone = staffBusinessTimeZone(normalisedStaff);
+    const requestedDate = dateQueryValue(router.query.date);
+    const businessToday = dateKeyInTimeZone(new Date(), timeZone);
+    if (!isDateInputValue(requestedDate) && selectedDate !== businessToday) {
+      setSelectedDate(businessToday);
+      setLoading(false);
+      return;
+    }
+
     const selectedDateObject = new Date(`${selectedDate}T12:00:00`);
     const weekStart = startOfWeek(selectedDateObject);
     const weekEnd = endOfDay(addDays(weekStart, 6));
-    const from = weekStart.toISOString();
-    const to = weekEnd.toISOString();
+    const from = zonedDateTimeToUtc(
+      formatDateInputValue(weekStart),
+      "00:00",
+      timeZone,
+    ).toISOString();
+    const endExclusive = zonedDateTimeToUtc(
+      formatDateInputValue(addDays(weekEnd, 1)),
+      "00:00",
+      timeZone,
+    );
+    const to = new Date(endExclusive.getTime() - 1).toISOString();
 
     const bookingResult = await supabase
       .from("bookings")
@@ -280,12 +312,18 @@ export default function StaffCalendarPage() {
         departureBookings = (payload.departures || []).map((departure) => ({
           id: `departure:${departure.id}`,
           business_id: departure.business_id,
-          customer_name: departure.service?.name || "Group departure",
+          customer_name:
+            departure.service?.name ||
+            t("staffCalendar.departure", "Group departure"),
           start_at: departure.start_at,
           duration_minutes: departure.duration_minutes,
           status:
             departure.status === "scheduled" ? "confirmed" : departure.status,
-          services: { name: departure.service?.name || "Group departure" },
+          services: {
+            name:
+              departure.service?.name ||
+              t("staffCalendar.departure", "Group departure"),
+          },
           is_departure: true,
           departure_id: departure.id,
           capacity: departure.capacity,
@@ -318,6 +356,7 @@ export default function StaffCalendarPage() {
     () => endOfDay(addDays(weekStartDate, 6)),
     [weekStartDate],
   );
+  const calendarTimeZone = staffBusinessTimeZone(staffProfile);
   const weekDays = useMemo(
     () =>
       Array.from({ length: 7 }, (_, index) => addDays(weekStartDate, index)),
@@ -326,20 +365,27 @@ export default function StaffCalendarPage() {
   const weekBookings = useMemo(() => {
     return bookings
       .filter((booking) => {
-        const bookingDate = new Date(booking.start_at);
-        return bookingDate >= weekStartDate && bookingDate <= weekEndDate;
+        const bookingDateKey = dateKeyInTimeZone(
+          new Date(booking.start_at),
+          calendarTimeZone,
+        );
+        return (
+          bookingDateKey >= formatDateInputValue(weekStartDate) &&
+          bookingDateKey <= formatDateInputValue(weekEndDate)
+        );
       })
       .sort(
         (a, b) =>
           new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
       );
-  }, [bookings, weekStartDate, weekEndDate]);
+  }, [bookings, calendarTimeZone, weekStartDate, weekEndDate]);
   const weekGroups = useMemo(() => {
     return weekDays.map((date) => {
       const dateString = formatDateInputValue(date);
       const dayBookings = weekBookings.filter(
         (booking) =>
-          formatDateInputValue(new Date(booking.start_at)) === dateString,
+          dateKeyInTimeZone(new Date(booking.start_at), calendarTimeZone) ===
+          dateString,
       );
 
       return {
@@ -352,7 +398,7 @@ export default function StaffCalendarPage() {
         bookings: dayBookings,
       };
     });
-  }, [locale, weekBookings, weekDays]);
+  }, [calendarTimeZone, locale, weekBookings, weekDays]);
   const selectedBooking = useMemo(
     () =>
       weekBookings.find((booking) => booking.id === selectedBookingId) || null,
@@ -405,13 +451,9 @@ export default function StaffCalendarPage() {
     return {
       start,
       end,
-      label: `${formatLocalizedDate(start, locale, {
-        hour: "2-digit",
-        minute: "2-digit",
-      })} - ${formatLocalizedDate(end, locale, {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`,
+      startMinutes: minutesSinceMidnightInTimeZone(start, calendarTimeZone),
+      endMinutes: minutesSinceMidnightInTimeZone(end, calendarTimeZone),
+      label: formatTimeRangeInTimeZone(start, end, calendarTimeZone),
     };
   }
 
@@ -423,11 +465,11 @@ export default function StaffCalendarPage() {
       };
     }
 
-    const startMinutes = dayBookings.map((booking) =>
-      minutesSinceMidnight(bookingTime(booking).start),
+    const startMinutes = dayBookings.map(
+      (booking) => bookingTime(booking).startMinutes,
     );
-    const endMinutes = dayBookings.map((booking) =>
-      minutesSinceMidnight(bookingTime(booking).end),
+    const endMinutes = dayBookings.map(
+      (booking) => bookingTime(booking).endMinutes,
     );
     const earliest = Math.min(...startMinutes);
     const latest = Math.max(...endMinutes);
@@ -468,7 +510,7 @@ export default function StaffCalendarPage() {
   }
 
   function goToToday() {
-    changeCalendarDate(formatDateInputValue(new Date()));
+    changeCalendarDate(dateKeyInTimeZone(new Date(), calendarTimeZone));
   }
 
   async function markBookingComplete(booking: Booking) {
@@ -501,7 +543,7 @@ export default function StaffCalendarPage() {
         audience: "customer",
         type: "booking_completed",
         title: t("staff.notification.completedTitle", "Appointment completed"),
-        message: `${t("staff.notification.completedStart", "Your appointment for")} ${serviceName(booking, t("staff.fallback.appointment", "your appointment"))} ${t("staff.notification.completedMiddle", "on")} ${formatLocalizedDate(booking.start_at, locale)} ${t("staff.notification.completedEnd", "has been marked as completed by staff.")}`,
+        message: `${t("staff.notification.completedStart", "Your appointment for")} ${serviceName(booking, t("staff.fallback.appointment", "your appointment"))} ${t("staff.notification.completedMiddle", "on")} ${formatLocalizedDate(booking.start_at, locale, { timeZone: calendarTimeZone })} ${t("staff.notification.completedEnd", "has been marked as completed by staff.")}`,
         action_url: "/my-bookings",
       });
     }
@@ -515,8 +557,8 @@ export default function StaffCalendarPage() {
 
   function renderCalendarBlock(booking: Booking, startHour: number) {
     const time = bookingTime(booking);
-    const startMinutes = minutesSinceMidnight(time.start);
-    const endMinutes = minutesSinceMidnight(time.end);
+    const startMinutes = time.startMinutes;
+    const endMinutes = time.endMinutes;
     const durationMinutes = Math.max(
       15,
       endMinutes - startMinutes || booking.duration_minutes,
@@ -542,7 +584,7 @@ export default function StaffCalendarPage() {
           height: `${blockHeight}px`,
         }}
         onClick={() => {
-          changeCalendarDate(formatDateInputValue(time.start));
+          changeCalendarDate(dateKeyInTimeZone(time.start, calendarTimeZone));
           setSelectedBookingId(booking.id);
         }}
         aria-label={`${time.label} ${
@@ -584,8 +626,11 @@ export default function StaffCalendarPage() {
     );
     const scheduleHeight = (endHour - startHour) * CALENDAR_HOUR_HEIGHT;
     const now = new Date();
-    const todayKey = formatDateInputValue(now);
-    const currentMinutes = minutesSinceMidnight(now);
+    const todayKey = dateKeyInTimeZone(now, calendarTimeZone);
+    const currentMinutes = minutesSinceMidnightInTimeZone(
+      now,
+      calendarTimeZone,
+    );
     const showCurrentTime =
       currentMinutes >= startHour * 60 && currentMinutes <= endHour * 60;
     const selectedGroup =
@@ -598,8 +643,8 @@ export default function StaffCalendarPage() {
 
         return {
           id: booking.id,
-          startMinutes: minutesSinceMidnight(time.start),
-          endMinutes: minutesSinceMidnight(time.end),
+          startMinutes: time.startMinutes,
+          endMinutes: time.endMinutes,
           timeLabel: time.label,
           title: booking.is_departure
             ? serviceName(
