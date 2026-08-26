@@ -2,6 +2,7 @@ export type TransactionalEmailEvent =
   | "booking_created"
   | "booking_status_changed"
   | "booking_customer_cancelled"
+  | "departure_status_changed"
   | "directory_claim_submitted"
   | "directory_claim_status_changed"
   | "support_created"
@@ -10,11 +11,7 @@ export type TransactionalEmailEvent =
   | "appointment_reminder";
 
 export type BookingEmailStatus =
-  | "pending"
-  | "confirmed"
-  | "declined"
-  | "cancelled"
-  | "completed";
+  "pending" | "confirmed" | "declined" | "cancelled" | "completed";
 
 export type TransactionalEmailRequest =
   | {
@@ -24,10 +21,15 @@ export type TransactionalEmailRequest =
   | {
       event: "booking_status_changed";
       bookingId: string;
+      audience?: "all" | "customer_only";
     }
   | {
       event: "booking_customer_cancelled";
       bookingId: string;
+    }
+  | {
+      event: "departure_status_changed";
+      departureId: string;
     }
   | {
       event: "support_created";

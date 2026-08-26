@@ -34,6 +34,15 @@ export default function Services() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [duration, setDuration] = useState(30);
   const [price, setPrice] = useState(0);
+  const [bookingType, setBookingType] = useState<"appointment" | "group">(
+    "appointment",
+  );
+  const [groupCapacity, setGroupCapacity] = useState(12);
+  const [privateBookingEnabled, setPrivateBookingEnabled] = useState(false);
+  const [privatePrice, setPrivatePrice] = useState(0);
+  const [departureCounts, setDepartureCounts] = useState<
+    Record<string, number>
+  >({});
   const [formExpanded, setFormExpanded] = useState(false);
 
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
@@ -49,7 +58,7 @@ export default function Services() {
   async function getBusinessContext(sessionUserId: string) {
     const { data: ownedBusinesses, error: businessesError } = await supabase
       .from("businesses")
-      .select("id, name, published, currency")
+      .select("id, name, published, category, currency")
       .eq("user_id", sessionUserId)
       .order("created_at", { ascending: false });
 
@@ -140,6 +149,35 @@ export default function Services() {
         setStaffServices([]);
       }
 
+      try {
+        const departureResponse = await fetch(
+          "/api/dashboard/departures?businessId=" + selectedBusiness.id,
+          {
+            headers: {
+              Authorization: "Bearer " + session.access_token,
+            },
+          },
+        );
+        if (departureResponse.ok) {
+          const payload = (await departureResponse.json()) as {
+            departures?: Array<{ service_id: string; status: string }>;
+          };
+          const counts = (payload.departures || []).reduce<
+            Record<string, number>
+          >((current, departure) => {
+            if (departure.status !== "scheduled") return current;
+            current[departure.service_id] =
+              (current[departure.service_id] || 0) + 1;
+            return current;
+          }, {});
+          setDepartureCounts(counts);
+        } else {
+          setDepartureCounts({});
+        }
+      } catch {
+        setDepartureCounts({});
+      }
+
       setPageLoading(false);
     } catch (err: any) {
       setError(
@@ -172,6 +210,10 @@ export default function Services() {
     setImagePreviewUrl("");
     setDuration(30);
     setPrice(0);
+    setBookingType("appointment");
+    setGroupCapacity(12);
+    setPrivateBookingEnabled(false);
+    setPrivatePrice(0);
   }
 
   function openCreateServiceForm() {
@@ -291,7 +333,14 @@ export default function Services() {
     setUploadingServiceId(null);
 
     if (error) {
-      setError(error.message);
+      setError(
+        error.message.includes("service_booking_type_locked")
+          ? t(
+              "dashboardServices.error.bookingTypeLocked",
+              "This service already has departure history. Keep it as a scheduled group service, or create a new appointment service.",
+            )
+          : error.message,
+      );
       return;
     }
 
@@ -329,6 +378,16 @@ export default function Services() {
       return;
     }
 
+    if (bookingType === "group" && (groupCapacity < 1 || groupCapacity > 200)) {
+      setError(
+        t(
+          "dashboardServices.error.capacityRange",
+          "Group capacity must be between 1 and 200.",
+        ),
+      );
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -352,6 +411,11 @@ export default function Services() {
       duration_minutes: duration,
       price,
       active: true,
+      booking_type: bookingType,
+      group_capacity: bookingType === "group" ? groupCapacity : null,
+      private_booking_enabled: bookingType === "group" && privateBookingEnabled,
+      private_price:
+        bookingType === "group" && privateBookingEnabled ? privatePrice : null,
     });
 
     if (error) {
@@ -363,10 +427,15 @@ export default function Services() {
     resetForm();
     setFormExpanded(false);
     setSuccess(
-      t(
-        "dashboardServices.create.success",
-        "Service added. Assign staff to this service so customers can book it on Mirëbook.",
-      ),
+      bookingType === "group"
+        ? t(
+            "dashboardServices.group.created",
+            "Group service added. Add its first departure so customers can reserve seats.",
+          )
+        : t(
+            "dashboardServices.create.success",
+            "Service added. Assign staff to this service so customers can book it on Mirëbook.",
+          ),
     );
 
     await loadData();
@@ -403,6 +472,20 @@ export default function Services() {
       return;
     }
 
+    if (
+      service.booking_type === "group" &&
+      (Number(service.group_capacity) < 1 ||
+        Number(service.group_capacity) > 200)
+    ) {
+      setError(
+        t(
+          "dashboardServices.error.capacityRange",
+          "Group capacity must be between 1 and 200.",
+        ),
+      );
+      return;
+    }
+
     setSavingServiceId(service.id);
     setError(null);
     setSuccess(null);
@@ -416,6 +499,18 @@ export default function Services() {
         duration_minutes: Number(service.duration_minutes),
         price: Number(service.price),
         active: service.active,
+        booking_type: service.booking_type || "appointment",
+        group_capacity:
+          service.booking_type === "group"
+            ? Number(service.group_capacity)
+            : null,
+        private_booking_enabled:
+          service.booking_type === "group" &&
+          Boolean(service.private_booking_enabled),
+        private_price:
+          service.booking_type === "group" && service.private_booking_enabled
+            ? Number(service.private_price || 0)
+            : null,
       })
       .eq("id", service.id);
 
@@ -439,7 +534,11 @@ export default function Services() {
 
     const assignedStaff = assignedStaffForService(service.id);
 
-    if (!service.active && assignedStaff.length === 0) {
+    if (
+      !service.active &&
+      service.booking_type !== "group" &&
+      assignedStaff.length === 0
+    ) {
       const confirmed = confirm(
         t(
           "dashboardServices.toggle.confirmNoStaff",
@@ -468,9 +567,31 @@ export default function Services() {
   }
 
   function serviceBookable(service: Service) {
+    if (service.booking_type === "group") {
+      return service.active && (departureCounts[service.id] || 0) > 0;
+    }
     return service.active && assignedStaffForService(service.id).length > 0;
   }
   function serviceReadinessText(service: Service) {
+    if (service.booking_type === "group") {
+      if (!service.active) {
+        return t(
+          "dashboardServices.group.hidden",
+          "Hidden from customers. Show it when its departures are ready.",
+        );
+      }
+      if ((departureCounts[service.id] || 0) === 0) {
+        return t(
+          "dashboardServices.group.needsDeparture",
+          "Add an upcoming departure before customers can reserve seats.",
+        );
+      }
+      return t(
+        "dashboardServices.group.ready",
+        "Customers can reserve seats on upcoming departures.",
+      );
+    }
+
     const assignedStaff = assignedStaffForService(service.id);
 
     if (!service.active && assignedStaff.length === 0) {
@@ -501,7 +622,7 @@ export default function Services() {
   }
 
   function durationOptions() {
-    return [15, 30, 45, 60, 75, 90, 120];
+    return [15, 30, 45, 60, 75, 90, 120, 180, 240, 300, 360, 480, 600];
   }
   return (
     <DashboardLayout
@@ -593,6 +714,11 @@ export default function Services() {
                 imageFile={imageFile}
                 duration={duration}
                 price={price}
+                bookingType={bookingType}
+                groupCapacity={groupCapacity}
+                privateBookingEnabled={privateBookingEnabled}
+                privatePrice={privatePrice}
+                businessCategory={business.category}
                 currency={business.currency}
                 durationOptions={durationOptions}
                 setFormExpanded={setFormExpanded}
@@ -600,6 +726,10 @@ export default function Services() {
                 setDescription={setDescription}
                 setDuration={setDuration}
                 setPrice={setPrice}
+                setBookingType={setBookingType}
+                setGroupCapacity={setGroupCapacity}
+                setPrivateBookingEnabled={setPrivateBookingEnabled}
+                setPrivatePrice={setPrivatePrice}
                 handleCreateImageChange={handleCreateImageChange}
                 uploadCreateImage={uploadCreateImage}
                 clearCreateImage={() => {
@@ -646,6 +776,7 @@ export default function Services() {
                 assignedStaff={assignedStaffForService(service.id)}
                 isEditing={editingServiceId === service.id}
                 isBookable={serviceBookable(service)}
+                departureCount={departureCounts[service.id] || 0}
                 savingServiceId={savingServiceId}
                 uploadingServiceId={uploadingServiceId}
                 durationOptions={durationOptions}

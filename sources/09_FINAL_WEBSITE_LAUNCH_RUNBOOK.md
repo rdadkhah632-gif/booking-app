@@ -526,6 +526,44 @@ surface proves which named business owner visited; use campaign links and
 subsequent owner replies to measure outreach without trying to identify a
 person from anonymous traffic.
 
+## Scheduled Group Services And Departures
+
+Before creating a boat tour, class or activity that accepts several customers
+on one fixed time, run:
+
+`sources/sql/40_scheduled_capacity_booking_foundation.sql`
+
+Then deploy the matching website build. Do not expose a scheduled group service
+until both steps are complete. Without SQL 40, the website must report that the
+capacity contract is not installed rather than falling back to ordinary
+appointment booking.
+
+Deployment order:
+
+1. Run SQL 40 in the production Supabase SQL editor and confirm it commits.
+2. Deploy the matching website build.
+3. Create a hidden disposable group service and departure.
+4. Run the Batch 34 capacity, concurrency, privacy and legacy-appointment QA in
+   `sources/12_STAGE_ALBANIA_DISCOVERY_DIRECTORY_FOUNDATION.md`.
+5. Hide the disposable business after QA.
+6. Confirm each real operator's sellable passenger capacity before publishing
+   departures. For Toni's Boat Trip, resolve the current 12-versus-14 capacity
+   ambiguity first.
+
+Shared reservations consume their selected guest count. A private reservation
+records the actual guest count but reserves the departure's whole capacity.
+This feature does not collect customer payments or deposits. Adult/child price
+bands and app support remain separate approved follow-ups; existing appointment
+services must remain unchanged.
+
+Booking format is selected per service, never per business. Existing services
+and new ordinary services default to standard one-customer appointments. The
+service form may suggest departures when its name or business category resembles
+a tour, trip, class or group activity, but it must never switch formats
+automatically. Capacity and private-trip controls appear only after the owner
+deliberately chooses departures and seats. Haircuts, treatments, consultations
+and other ordinary staff appointments must not inherit group-capacity behavior.
+
 ## UI Position And Next Batch
 
 No active P0/P1/P2 interface finding remains from the latest targeted business,

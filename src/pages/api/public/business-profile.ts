@@ -32,6 +32,26 @@ type ServiceRow = {
   price: number;
   description?: string | null;
   image_url?: string | null;
+  booking_type?: "appointment" | "group" | null;
+  group_capacity?: number | null;
+  private_booking_enabled?: boolean | null;
+  private_price?: number | null;
+};
+
+type DepartureRow = {
+  id: string;
+  service_id: string;
+  staff_member_id?: string | null;
+  start_at: string;
+  duration_minutes: number;
+  capacity: number;
+  meeting_point?: string | null;
+};
+
+type DepartureBookingRow = {
+  departure_id: string;
+  party_size?: number | null;
+  booking_option?: string | null;
 };
 
 type StaffRow = {
@@ -134,7 +154,9 @@ export default async function handler(
     ] = await Promise.all([
       supabaseAdmin
         .from("services")
-        .select("id, name, duration_minutes, price, description, image_url")
+        .select(
+          "id, name, duration_minutes, price, description, image_url, booking_type, group_capacity, private_booking_enabled, private_price",
+        )
         .eq("business_id", business.id)
         .eq("active", true)
         .order("created_at", { ascending: false })
@@ -159,6 +181,9 @@ export default async function handler(
 
     const staffIds = (staffMembers || []).map((staff) => staff.id);
     const serviceIds = new Set((services || []).map((service) => service.id));
+    const groupServiceIds = (services || [])
+      .filter((service) => service.booking_type === "group")
+      .map((service) => service.id);
 
     const [
       { data: staffServices, error: staffServiceError },
@@ -187,6 +212,66 @@ export default async function handler(
     if (staffServiceError) throw staffServiceError;
     if (staffAvailabilityError) throw staffAvailabilityError;
 
+    const departureWindowEnd = new Date();
+    departureWindowEnd.setDate(departureWindowEnd.getDate() + 365);
+    const { data: departures, error: departureError } =
+      groupServiceIds.length > 0
+        ? await supabaseAdmin
+            .from("service_departures")
+            .select(
+              "id, service_id, staff_member_id, start_at, duration_minutes, capacity, meeting_point",
+            )
+            .eq("business_id", business.id)
+            .eq("status", "scheduled")
+            .in("service_id", groupServiceIds)
+            .gte("start_at", new Date().toISOString())
+            .lte("start_at", departureWindowEnd.toISOString())
+            .order("start_at", { ascending: true })
+            .limit(250)
+            .returns<DepartureRow[]>()
+        : { data: [] as DepartureRow[], error: null };
+
+    if (departureError) throw departureError;
+
+    const departureIds = (departures || []).map((departure) => departure.id);
+    const { data: departureBookings, error: departureBookingError } =
+      departureIds.length > 0
+        ? await supabaseAdmin
+            .from("bookings")
+            .select("departure_id, party_size, booking_option")
+            .in("departure_id", departureIds)
+            .in("status", ["pending", "confirmed"])
+            .returns<DepartureBookingRow[]>()
+        : { data: [] as DepartureBookingRow[], error: null };
+
+    if (departureBookingError) throw departureBookingError;
+
+    const publicDepartures = (departures || [])
+      .map((departure) => {
+        const reservedSeats = (departureBookings || [])
+          .filter((booking) => booking.departure_id === departure.id)
+          .reduce(
+            (total, booking) =>
+              total +
+              (booking.booking_option === "private"
+                ? departure.capacity
+                : Math.max(Number(booking.party_size || 1), 1)),
+            0,
+          );
+
+        return {
+          id: departure.id,
+          service_id: departure.service_id,
+          staff_member_id: departure.staff_member_id || null,
+          start_at: departure.start_at,
+          duration_minutes: departure.duration_minutes,
+          capacity: departure.capacity,
+          remaining_seats: Math.max(departure.capacity - reservedSeats, 0),
+          meeting_point: departure.meeting_point || null,
+        };
+      })
+      .filter((departure) => departure.remaining_seats > 0);
+
     response.status(200).json({
       business: publicBusiness(business),
       services: services || [],
@@ -196,6 +281,7 @@ export default async function handler(
       ),
       staffAvailability: staffAvailability || [],
       availability: availability || [],
+      departures: publicDepartures,
       ownerPreview,
     });
   } catch (error) {

@@ -27,6 +27,7 @@ export default function MobileWorkspaceDock({
   const setupRoutes = [
     "/dashboard/businesses",
     "/dashboard/services",
+    "/dashboard/departures",
     "/dashboard/staff",
     "/dashboard/availability",
     "/dashboard/settings",
@@ -56,7 +57,8 @@ export default function MobileWorkspaceDock({
           icon: Settings2,
           active: setupRoutes.some(
             (path) =>
-              router.pathname === path || router.pathname.startsWith(`${path}/`),
+              router.pathname === path ||
+              router.pathname.startsWith(`${path}/`),
           ),
         },
         {
@@ -130,7 +132,10 @@ export default function MobileWorkspaceDock({
               <span className="mobile-workspace-dock-icon">
                 <Icon size={21} strokeWidth={item.active ? 2.4 : 1.9} />
                 {showBadge && (
-                  <span className="mobile-workspace-dock-badge" aria-hidden="true">
+                  <span
+                    className="mobile-workspace-dock-badge"
+                    aria-hidden="true"
+                  >
                     {Math.min(badgeCount, 9)}
                   </span>
                 )}

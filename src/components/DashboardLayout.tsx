@@ -185,6 +185,7 @@ export default function DashboardLayout({
   const myBusinessRoutes = [
     "/dashboard/businesses",
     "/dashboard/services",
+    "/dashboard/departures",
     "/dashboard/staff",
     "/dashboard/availability",
     "/dashboard/settings",
@@ -344,11 +345,7 @@ export default function DashboardLayout({
         <div className="dashboard-content">
           <div className="dashboard-page-header">
             <div>
-              {title && (
-                <h1 className="dashboard-page-title">
-                  {title}
-                </h1>
-              )}
+              {title && <h1 className="dashboard-page-title">{title}</h1>}
 
               {subtitle && <p className="muted">{subtitle}</p>}
             </div>

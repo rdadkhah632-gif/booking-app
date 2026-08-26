@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createSupabaseAdminClient } from "@/lib/server/supabaseAdmin";
 import {
   bookingEmailTemplate,
+  departureStatusEmailTemplate,
   supportEmailTemplate,
 } from "@/lib/email/templates";
 import { sendTransactionalEmail } from "@/lib/email/sendTransactionalEmail";
@@ -29,6 +30,20 @@ type BookingRow = {
   customer_name?: string | null;
   start_at: string;
   status: BookingEmailStatus;
+  departure_id?: string | null;
+  party_size?: number | null;
+  booking_option?: "appointment" | "shared" | "private" | null;
+  total_price?: number | null;
+};
+
+type DepartureRow = {
+  id: string;
+  business_id?: string | null;
+  service_id?: string | null;
+  staff_member_id?: string | null;
+  start_at?: string | null;
+  status?: string | null;
+  meeting_point?: string | null;
 };
 
 type EmailProfile = {
@@ -160,7 +175,7 @@ async function ensureStaffBookingNotification(params: {
     audience: "staff",
     type: notification.type,
     title: notification.title,
-    message: `${params.customerName}'s ${params.serviceName} appointment is ${notification.statusText} for ${appointmentTime}.`,
+    message: `${params.customerName}'s ${params.serviceName} booking is ${notification.statusText} for ${appointmentTime}.`,
     action_url: `/staff/calendar?date=${appointmentDate}&bookingId=${params.bookingId}`,
   });
 
@@ -193,12 +208,14 @@ export default async function handler(
   const supportEvent =
     request?.event === "support_created" ||
     request?.event === "support_replied";
+  const departureEvent = request?.event === "departure_status_changed";
 
   if (
-    (!bookingEvent && !supportEvent) ||
+    (!bookingEvent && !supportEvent && !departureEvent) ||
     (bookingEvent && !("bookingId" in request && request.bookingId)) ||
     (supportEvent &&
-      !("supportMessageId" in request && request.supportMessageId))
+      !("supportMessageId" in request && request.supportMessageId)) ||
+    (departureEvent && !("departureId" in request && request.departureId))
   ) {
     return res.status(400).json({ error: "Unsupported email event" });
   }
@@ -305,6 +322,116 @@ export default async function handler(
       });
     }
 
+    if (departureEvent && "departureId" in request) {
+      const { data: departure, error: departureError } = await supabaseAdmin
+        .from("service_departures")
+        .select(
+          "id, business_id, service_id, staff_member_id, start_at, status, meeting_point",
+        )
+        .eq("id", request.departureId)
+        .maybeSingle<DepartureRow>();
+
+      if (departureError || !departure?.business_id || !departure.start_at) {
+        return res.status(404).json({ error: "Departure not found" });
+      }
+
+      const [{ data: business }, { data: service }] = await Promise.all([
+        supabaseAdmin
+          .from("businesses")
+          .select("id, user_id, name, timezone")
+          .eq("id", departure.business_id)
+          .maybeSingle<{
+            id: string;
+            user_id?: string | null;
+            name?: string | null;
+            timezone?: string | null;
+          }>(),
+        departure.service_id
+          ? supabaseAdmin
+              .from("services")
+              .select("name")
+              .eq("id", departure.service_id)
+              .maybeSingle<{ name?: string | null }>()
+          : Promise.resolve({ data: null }),
+      ]);
+
+      if (!business || business.user_id !== user.id) {
+        return res.status(403).json({ error: "Email event not permitted" });
+      }
+      if (
+        departure.status !== "cancelled" &&
+        departure.status !== "completed"
+      ) {
+        return res.status(409).json({ error: "Departure is still active" });
+      }
+
+      const { data: staff } = departure.staff_member_id
+        ? await supabaseAdmin
+            .from("staff_members")
+            .select("name, email, user_id")
+            .eq("id", departure.staff_member_id)
+            .eq("business_id", departure.business_id)
+            .eq("active", true)
+            .maybeSingle<{
+              name?: string | null;
+              email?: string | null;
+              user_id?: string | null;
+            }>()
+        : { data: null };
+      const appUrl = getAppBaseUrl();
+      if (!appUrl) {
+        return res.status(200).json({
+          event: request.event,
+          delivery: [{ status: "failed", reason: "config_missing" }],
+          authoritativeChannel: "in_app_notifications",
+        });
+      }
+
+      const staffProfile = await profileForUser(supabaseAdmin, staff?.user_id);
+      const staffPreferences = await loadServerEmailPreferences(
+        supabaseAdmin,
+        staff?.user_id,
+      );
+      const staffEmail = staff?.email || staffProfile?.email;
+      const departureDate = dateKeyInTimeZone(
+        new Date(departure.start_at),
+        business.timezone,
+      );
+      const staffUrl = absoluteAppUrl(
+        `/staff/calendar?date=${departureDate}&departureId=${departure.id}`,
+        appUrl,
+        "business",
+      );
+      const delivery: TransactionalEmailResult[] = [];
+
+      if (staffEmail) {
+        delivery.push(
+          await sendTransactionalEmail(
+            departureStatusEmailTemplate({
+              recipientEmail: staffEmail,
+              businessName: business.name,
+              serviceName: service?.name,
+              staffName: staff?.name,
+              startAt: departure.start_at,
+              timeZone: business.timezone,
+              meetingPoint: departure.meeting_point,
+              status: departure.status,
+              actionUrl: staffUrl,
+              locale: localeFromProfile(staffProfile),
+              preferenceEnabled:
+                staffPreferences.preferences.email_staff_booking_changes,
+            }),
+          ),
+        );
+      }
+
+      return res.status(200).json({
+        event: request.event,
+        delivery,
+        authoritativeChannel: "in_app_notifications",
+      });
+    }
+
     if (!bookingEvent || !("bookingId" in request)) {
       return res.status(400).json({ error: "Unsupported email event" });
     }
@@ -312,7 +439,7 @@ export default async function handler(
     const { data: booking, error: bookingError } = await supabaseAdmin
       .from("bookings")
       .select(
-        "id, business_id, service_id, staff_member_id, customer_user_id, customer_email, customer_name, start_at, status",
+        "id, business_id, service_id, staff_member_id, customer_user_id, customer_email, customer_name, start_at, status, departure_id, party_size, booking_option, total_price",
       )
       .eq("id", request.bookingId)
       .single<BookingRow>();
@@ -321,37 +448,51 @@ export default async function handler(
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    const [{ data: business }, { data: service }, { data: staff }] =
+    const [{ data: business }, { data: service }, { data: departure }] =
       await Promise.all([
         supabaseAdmin
           .from("businesses")
-          .select("id, user_id, name, timezone")
+          .select("id, user_id, name, timezone, currency")
           .eq("id", booking.business_id)
           .single<{
             id: string;
             user_id?: string | null;
             name: string;
             timezone?: string | null;
+            currency?: string | null;
           }>(),
         booking.service_id
           ? supabaseAdmin
               .from("services")
-              .select("name")
+              .select("name, booking_type")
               .eq("id", booking.service_id)
-              .maybeSingle<{ name?: string | null }>()
-          : Promise.resolve({ data: null }),
-        booking.staff_member_id
-          ? supabaseAdmin
-              .from("staff_members")
-              .select("name, email, user_id")
-              .eq("id", booking.staff_member_id)
               .maybeSingle<{
                 name?: string | null;
-                email?: string | null;
-                user_id?: string | null;
+                booking_type?: "appointment" | "group" | null;
               }>()
           : Promise.resolve({ data: null }),
+        booking.departure_id
+          ? supabaseAdmin
+              .from("service_departures")
+              .select("id, staff_member_id, meeting_point")
+              .eq("id", booking.departure_id)
+              .maybeSingle<DepartureRow>()
+          : Promise.resolve({ data: null }),
       ]);
+
+    const assignedStaffMemberId =
+      booking.staff_member_id || departure?.staff_member_id || null;
+    const { data: staff } = assignedStaffMemberId
+      ? await supabaseAdmin
+          .from("staff_members")
+          .select("name, email, user_id")
+          .eq("id", assignedStaffMemberId)
+          .maybeSingle<{
+            name?: string | null;
+            email?: string | null;
+            user_id?: string | null;
+          }>()
+      : { data: null };
 
     if (!business) {
       return res.status(404).json({ error: "Business not found" });
@@ -360,6 +501,10 @@ export default async function handler(
     const isCustomer = booking.customer_user_id === user.id;
     const isBusinessOwner = business.user_id === user.id;
     const isAssignedStaff = staff?.user_id === user.id;
+    const customerOnly =
+      request.event === "booking_status_changed" &&
+      "audience" in request &&
+      request.audience === "customer_only";
 
     if (
       (request.event === "booking_created" && !isCustomer) ||
@@ -369,6 +514,9 @@ export default async function handler(
       (request.event === "booking_customer_cancelled" &&
         (!isCustomer || booking.status !== "cancelled"))
     ) {
+      return res.status(403).json({ error: "Email event not permitted" });
+    }
+    if (customerOnly && !isBusinessOwner) {
       return res.status(403).json({ error: "Email event not permitted" });
     }
 
@@ -408,12 +556,36 @@ export default async function handler(
       appUrl,
       "customer",
     );
+    const isGroupBooking =
+      service?.booking_type === "group" || Boolean(booking.departure_id);
+    const bookingDate = dateKeyInTimeZone(
+      new Date(booking.start_at),
+      business.timezone,
+    );
     const businessUrl = absoluteAppUrl(
-      `/dashboard/bookings?businessId=${booking.business_id}`,
+      isGroupBooking && booking.departure_id
+        ? `/dashboard/departures?businessId=${booking.business_id}&departureId=${booking.departure_id}`
+        : `/dashboard/bookings?businessId=${booking.business_id}&date=${bookingDate}&bookingId=${booking.id}`,
       appUrl,
       "business",
     );
-    const staffUrl = absoluteAppUrl("/staff/calendar", appUrl, "business");
+    const staffUrl = absoluteAppUrl(
+      isGroupBooking && booking.departure_id
+        ? `/staff/calendar?date=${bookingDate}&departureId=${booking.departure_id}`
+        : `/staff/calendar?date=${bookingDate}&bookingId=${booking.id}`,
+      appUrl,
+      "business",
+    );
+    const bookingTemplateDetails = {
+      bookingType: isGroupBooking
+        ? ("group" as const)
+        : ("appointment" as const),
+      partySize: booking.party_size,
+      bookingOption: booking.booking_option,
+      meetingPoint: departure?.meeting_point,
+      totalPrice: booking.total_price,
+      currency: business.currency,
+    };
     const messages = [];
 
     if (customerEmail) {
@@ -432,6 +604,7 @@ export default async function handler(
           actionUrl: bookingUrl,
           locale: localeFromProfile(customerProfile),
           customerAccountHint: !booking.customer_user_id,
+          ...bookingTemplateDetails,
           preferenceEnabled: customerPreference(
             customerPreferenceResult.preferences,
             booking.status,
@@ -455,6 +628,7 @@ export default async function handler(
           timeZone: business.timezone,
           actionUrl: businessUrl,
           locale: localeFromProfile(ownerProfile),
+          ...bookingTemplateDetails,
           preferenceEnabled:
             booking.status === "pending"
               ? ownerPreferenceResult.preferences.email_new_booking_requests
@@ -479,6 +653,7 @@ export default async function handler(
           timeZone: business.timezone,
           actionUrl: businessUrl,
           locale: localeFromProfile(ownerProfile),
+          ...bookingTemplateDetails,
           preferenceEnabled:
             ownerPreferenceResult.preferences.email_customer_cancellations,
         }),
@@ -486,6 +661,7 @@ export default async function handler(
     }
 
     if (
+      !customerOnly &&
       staffEmail &&
       ["confirmed", "cancelled", "declined", "completed"].includes(
         booking.status,
@@ -505,6 +681,7 @@ export default async function handler(
           timeZone: business.timezone,
           actionUrl: staffUrl,
           locale: localeFromProfile(staffProfile),
+          ...bookingTemplateDetails,
           preferenceEnabled:
             request.event === "booking_created" &&
             booking.status === "confirmed"
@@ -515,17 +692,19 @@ export default async function handler(
       );
     }
 
-    await ensureStaffBookingNotification({
-      supabaseAdmin,
-      staffUserId: staff?.user_id,
-      businessId: booking.business_id,
-      bookingId: booking.id,
-      status: booking.status,
-      serviceName: service?.name || "Appointment",
-      customerName: booking.customer_name || "Customer",
-      startAt: booking.start_at,
-      timeZone: business.timezone,
-    });
+    if (!customerOnly) {
+      await ensureStaffBookingNotification({
+        supabaseAdmin,
+        staffUserId: staff?.user_id,
+        businessId: booking.business_id,
+        bookingId: booking.id,
+        status: booking.status,
+        serviceName: service?.name || "Appointment",
+        customerName: booking.customer_name || "Customer",
+        startAt: booking.start_at,
+        timeZone: business.timezone,
+      });
+    }
 
     const results: TransactionalEmailResult[] = [];
     for (const message of messages) {

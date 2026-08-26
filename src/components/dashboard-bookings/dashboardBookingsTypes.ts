@@ -1,10 +1,5 @@
 export type RangeFilter =
-  | "today"
-  | "tomorrow"
-  | "week"
-  | "upcoming"
-  | "history"
-  | "custom";
+  "today" | "tomorrow" | "week" | "upcoming" | "history" | "custom";
 
 export type Business = {
   id: string;
@@ -16,6 +11,7 @@ export type Booking = {
   id: string;
   business_id: string;
   staff_member_id?: string | null;
+  departure_id?: string | null;
   customer_user_id?: string | null;
   customer_name: string;
   customer_email?: string | null;

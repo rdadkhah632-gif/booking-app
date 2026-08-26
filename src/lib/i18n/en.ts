@@ -1518,6 +1518,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.missing.staff": "active staff",
   "dashboardBusinesses.missing.assignments": "staff-service assignments",
   "dashboardBusinesses.missing.hours": "working hours",
+  "dashboardBusinesses.missing.departures": "an upcoming departure",
   "dashboardBusinesses.requiredProfileComplete": "Required details ready",
   "dashboardBusinesses.requiredProfileIncomplete": "Add required details",
   "dashboardBusinesses.profile.requiredTitle": "Required to publish",
@@ -2422,6 +2423,7 @@ export const en: TranslationTree = {
   "dashboardNotifications.labels.business": "Business",
   "dashboardNotifications.labels.businessFallback": "Business",
   "dashboardNotifications.labels.serviceFallback": "Service",
+  "dashboardNotifications.labels.guideInDeparture": "See departure details",
   "dashboardNotifications.labels.duration": "Duration",
   "dashboardNotifications.labels.notProvided": "Not provided",
   "dashboardNotifications.labels.notRecorded": "Not recorded",
@@ -3689,6 +3691,7 @@ export const en: TranslationTree = {
   "dashboardNotifications.actions.reviewRescheduleRequest":
     "Review reschedule request",
   "dashboardNotifications.actions.openBooking": "Open appointment",
+  "dashboardNotifications.actions.openDeparture": "Open departure",
   "dashboardNotifications.actions.openSupport": "Open support",
   "dashboardNotifications.actions.openUpdate": "Open update",
   "notifications.types.businessBookingDeclined.message":
@@ -5203,4 +5206,172 @@ export const en: TranslationTree = {
     "Reschedule request withdrawn",
   "customerApp.lifecycle.rescheduleCancelled.businessMessage":
     "{customer} withdrew their reschedule request at {business}.",
+  "bookingConfirmation.details.tripTitle": "Trip details",
+  "dashboardBookings.departures.open": "Group departures",
+  "dashboardBusinesses.setup.departures": "Departures",
+  "dashboardBusinesses.setup.departuresAction": "Add departures",
+  "dashboardBusinesses.setup.departuresBody":
+    "Add the fixed dates, times and seat capacity customers can book.",
+  "dashboardBusinesses.setup.guide": "Guide or operator",
+  "dashboardBusinesses.setup.guideAction": "Manage departures",
+  "dashboardBusinesses.setup.guideBody":
+    "Add a departure and optionally assign the guide running it.",
+  "dashboardServices.bookingType.label": "How customers book",
+  "dashboardServices.bookingType.appointment": "Appointment",
+  "dashboardServices.bookingType.appointmentHint":
+    "One customer reserves one staff time.",
+  "dashboardServices.bookingType.group": "Scheduled group",
+  "dashboardServices.bookingType.groupHint":
+    "Several customers reserve seats on one departure.",
+  "dashboardServices.bookingType.groupActive": "Scheduled service with seats",
+  "dashboardServices.bookingType.groupActiveHint":
+    "Customers choose a fixed departure and reserve one or more places.",
+  "dashboardServices.bookingType.useAppointment": "Use standard appointments",
+  "dashboardServices.bookingType.suggestionTitle":
+    "Will several people join the same time?",
+  "dashboardServices.bookingType.suggestionBody":
+    "This looks like a tour, class or group activity. Use departures only if customers share a fixed time and capacity.",
+  "dashboardServices.bookingType.useGroup": "Use departures and seats",
+  "dashboardServices.bookingType.optionalTitle": "Tour, class or shared trip?",
+  "dashboardServices.bookingType.optionalBody":
+    "Only use scheduled departures when several customers can reserve places on the same fixed time.",
+  "dashboardServices.bookingType.standardSummary":
+    "Booking format: standard appointment",
+  "dashboardServices.card.perGuest": "per guest",
+  "dashboardServices.card.scheduledGroup": "Scheduled group",
+  "dashboardServices.create.pricePerGuest": "Price per guest",
+  "dashboardServices.error.capacityRange":
+    "Group capacity must be between 1 and 200.",
+  "dashboardServices.error.bookingTypeLocked":
+    "This service already has departure history. Keep it as a scheduled group service, or create a new appointment service.",
+  "dashboardServices.group.capacity": "Default seats",
+  "dashboardServices.group.created":
+    "Group service added. Add its first departure so customers can reserve seats.",
+  "dashboardServices.group.hidden":
+    "Hidden from customers. Show it when its departures are ready.",
+  "dashboardServices.group.manageDepartures": "Manage departures",
+  "dashboardServices.group.needsDeparture":
+    "Add an upcoming departure before customers can reserve seats.",
+  "dashboardServices.group.privateEnabled": "Allow private trip booking",
+  "dashboardServices.group.privateHint":
+    "One customer reserves the whole departure.",
+  "dashboardServices.group.privatePrice": "Private trip price",
+  "dashboardServices.group.ready":
+    "Customers can reserve seats on upcoming departures.",
+  "dashboardServices.group.seats": "seats",
+  "dashboardServices.group.typeLocked":
+    "Booking type stays grouped once departures exist.",
+  "dashboardServices.group.upcomingDepartures": "upcoming departures",
+  "departures.pageTitle": "Departures",
+  "departures.pageSubtitle": "Scheduled group services",
+  "departures.loading": "Loading departures...",
+  "departures.emptyService.title": "Add a group service first",
+  "departures.emptyService.body":
+    "Create a Scheduled group service, then return here to add its dates and seat capacity.",
+  "departures.emptyService.cta": "Open services",
+  "departures.create.kicker": "New schedule",
+  "departures.create.title": "Add a departure",
+  "departures.createOne": "Add departure",
+  "departures.createMany": "Add departures",
+  "departures.field.service": "Group service",
+  "departures.field.date": "Date",
+  "departures.field.time": "Start time",
+  "departures.field.capacity": "Seats",
+  "departures.field.guide": "Guide or staff (optional)",
+  "departures.field.noGuide": "Assign later",
+  "departures.field.meetingPoint": "Meeting point",
+  "departures.field.meetingPlaceholder":
+    "Harbour, hotel, or exact meeting instructions",
+  "departures.field.repeat": "Daily departures",
+  "departures.perGuest": "per guest",
+  "departures.privateTrip": "Private trip",
+  "departures.guests": "guests",
+  "departures.upcoming.kicker": "Live operations",
+  "departures.upcoming.title": "Upcoming departures",
+  "departures.upcoming.empty": "No upcoming departures yet.",
+  "departures.seatsBooked": "seats booked",
+  "departures.detail.kicker": "Departure manifest",
+  "departures.detail.booked": "Booked",
+  "departures.detail.remaining": "Remaining",
+  "departures.detail.reservations": "Reservations",
+  "departures.detail.guests": "Guest list",
+  "departures.detail.noGuests": "No reservations yet.",
+  "departures.detail.notProvided": "Not provided",
+  "departures.detail.choose":
+    "Choose a departure to see its capacity and guest list.",
+  "departures.action.complete": "Mark complete",
+  "departures.action.cancel": "Cancel departure",
+  "departures.confirm.cancel":
+    "Cancel this departure and notify every active reservation? This cannot be undone.",
+  "departures.cancelled.final":
+    "Cancelled departures stay closed. Add a new departure if the trip is rescheduled.",
+  "departures.reservation.confirm": "Confirm",
+  "departures.reservation.decline": "Decline",
+  "departures.reservation.cancel": "Cancel",
+  "departures.error.load": "Could not load scheduled departures.",
+  "departures.error.chooseService": "Choose a group service first.",
+  "departures.error.create": "Could not add the departure.",
+  "departures.error.alreadyExists":
+    "A departure already exists for this service and time.",
+  "departures.error.futureOnly": "Choose a departure time in the future.",
+  "departures.error.notFinished":
+    "This departure cannot be completed before it finishes.",
+  "departures.error.update": "Could not update the departure.",
+  "departures.error.reservationUpdate": "Could not update the reservation.",
+  "departures.error.reservationChanged":
+    "This reservation changed while you were reviewing it. Refresh and try again.",
+  "departures.status.scheduled": "Scheduled",
+  "departures.success.createdOne": "Departure added.",
+  "departures.success.createdMany": "Departures added.",
+  "departures.success.updated": "Departure updated.",
+  "departures.success.reservationUpdated": "Reservation updated.",
+  "myBookings.group.departureTime": "Departure time",
+  "myBookings.group.guideLater": "Guide assigned by the business",
+  "myBookings.group.seatReservation": "Scheduled departure",
+  "myBookings.group.wholeDeparture": "Whole departure reserved",
+  "publicBusiness.bookingMode.instantBooking": "Book instantly",
+  "publicBusiness.bookingMode.requestBooking": "Request booking",
+  "publicBusiness.departures.step": "Step 2",
+  "publicBusiness.departures.title": "Choose a departure",
+  "publicBusiness.departures.upcoming": "upcoming",
+  "publicBusiness.departures.none":
+    "No upcoming departures are available for this trip yet.",
+  "publicBusiness.departures.seatLeft": "seat left",
+  "publicBusiness.departures.seatsLeft": "seats left",
+  "publicBusiness.departures.bookingType": "Booking type",
+  "publicBusiness.departures.shared": "Shared seats",
+  "publicBusiness.departures.private": "Private trip",
+  "publicBusiness.departures.wholeTrip": "whole trip",
+  "publicBusiness.departures.privateUnavailable":
+    "Unavailable after seats are reserved",
+  "publicBusiness.departures.guests": "Guests",
+  "publicBusiness.departures.guestHint": "Choose how many seats you need.",
+  "publicBusiness.departures.privateGuestHint":
+    "Tell the operator how many people are coming.",
+  "publicBusiness.departures.removeGuest": "Remove one guest",
+  "publicBusiness.departures.addGuest": "Add one guest",
+  "publicBusiness.departures.guide": "Guide",
+  "publicBusiness.departures.meetingPoint": "Meeting point",
+  "publicBusiness.departures.chooseFirst":
+    "Choose an available departure before booking.",
+  "publicBusiness.departures.partyUnavailable":
+    "Choose a guest count within the seats still available.",
+  "publicBusiness.departures.notEnoughSeats":
+    "Those seats were just reserved. Choose fewer guests or another departure.",
+  "publicBusiness.departures.noLongerAvailable":
+    "This departure is no longer available. Choose another one.",
+  "publicBusiness.departures.createFailed":
+    "Could not create this booking. Please try again.",
+  "publicBusiness.services.scheduledGroup": "Scheduled group trip",
+  "publicBusiness.services.perGuest": "per guest",
+  "publicBusiness.services.noDeparturesBody":
+    "This business has active services, but no upcoming departures or staff times are available yet.",
+  "publicBusiness.summary.emptyTrip": "Your trip",
+  "publicBusiness.summary.pickDepartureBody":
+    "Choose a departure and party size, then review your booking.",
+  "publicBusiness.summary.reviewTrip": "Review booking",
+  "staffCalendar.departure": "Group departure",
+  "staffCalendar.departure.kicker": "Assigned departure",
+  "staffCalendar.departure.ownerManifest":
+    "The business owner manages the customer manifest and booking decisions.",
 };

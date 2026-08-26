@@ -170,7 +170,9 @@ export default function MyBookings() {
       type,
       title,
       message,
-      action_url: "/dashboard/notifications",
+      action_url: booking.departure_id
+        ? `/dashboard/departures?departureId=${booking.departure_id}`
+        : "/dashboard/notifications",
     });
   }
 
@@ -364,12 +366,19 @@ export default function MyBookings() {
   }
 
   function servicePrice(booking: Booking) {
-    return Number(firstRelation(booking.services)?.price || 0);
+    return Number(
+      booking.total_price ?? firstRelation(booking.services)?.price ?? 0,
+    );
   }
 
   function staffName(booking: Booking) {
-    const staff = firstRelation(booking.staff_members);
+    const departure = firstRelation(booking.service_departures);
+    const staff =
+      firstRelation(booking.staff_members) ||
+      firstRelation(departure?.staff_members);
     const fallback = t("myBookings.fallback.staffMember", "Assigned staff");
+    if (!staff && booking.departure_id)
+      return t("myBookings.group.guideLater", "Guide assigned by the business");
     if (!staff)
       return t("dashboardBookings.card.noStaff", "Staff not recorded");
     const displayName = publicStaffName(staff, fallback);

@@ -30,6 +30,9 @@ export default function Businesses() {
   const [availabilityRows, setAvailabilityRows] = useState<AvailabilityRow[]>(
     [],
   );
+  const [scheduledDepartures, setScheduledDepartures] = useState<
+    { business_id: string; service_id: string }[]
+  >([]);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     email: string | null;
@@ -93,13 +96,14 @@ export default function Businesses() {
       setStaffMembers([]);
       setStaffServices([]);
       setAvailabilityRows([]);
+      setScheduledDepartures([]);
       setPageLoading(false);
       return;
     }
 
     const { data: serviceData, error: serviceError } = await supabase
       .from("services")
-      .select("id, business_id, active")
+      .select("id, business_id, active, booking_type")
       .in("business_id", businessIds);
 
     if (serviceError) {
@@ -156,6 +160,41 @@ export default function Businesses() {
     setStaffMembers(staffData || []);
     setStaffServices(staffServiceData);
     setAvailabilityRows(availabilityData || []);
+
+    const departureResponses = await Promise.all(
+      businessIds.map(async (ownedBusinessId) => {
+        try {
+          const response = await fetch(
+            `/api/dashboard/departures?businessId=${ownedBusinessId}`,
+            {
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            },
+          );
+          if (!response.ok) return [];
+          const payload = (await response.json()) as {
+            departures?: {
+              business_id: string;
+              service_id: string;
+              start_at: string;
+              status: string;
+            }[];
+          };
+          return (payload.departures || [])
+            .filter(
+              (departure) =>
+                departure.status === "scheduled" &&
+                new Date(departure.start_at) > new Date(),
+            )
+            .map((departure) => ({
+              business_id: departure.business_id,
+              service_id: departure.service_id,
+            }));
+        } catch {
+          return [];
+        }
+      }),
+    );
+    setScheduledDepartures(departureResponses.flat());
     setPageLoading(false);
   }
 
@@ -370,9 +409,10 @@ export default function Businesses() {
     await loadBusinesses();
   }
   function getReadiness(business: Business): Readiness {
-    const activeServices = services.filter(
+    const businessActiveServices = services.filter(
       (service) => service.business_id === business.id && service.active,
-    ).length;
+    );
+    const activeServices = businessActiveServices.length;
     const activeStaff = staffMembers.filter(
       (staff) => staff.business_id === business.id && staff.active,
     ).length;
@@ -385,6 +425,9 @@ export default function Businesses() {
         (service) => service.business_id === business.id && service.active,
       )
       .map((service) => service.id);
+    const activeAppointmentServiceIds = businessActiveServices
+      .filter((service) => service.booking_type !== "group")
+      .map((service) => service.id);
 
     const activeStaffIds = staffMembers
       .filter((staff) => staff.business_id === business.id && staff.active)
@@ -395,6 +438,10 @@ export default function Businesses() {
         activeStaffIds.includes(assignment.staff_member_id) &&
         activeServiceIds.includes(assignment.service_id),
     );
+    const activeAppointmentAssignments = activeStaffServiceAssignments.filter(
+      (assignment) =>
+        activeAppointmentServiceIds.includes(assignment.service_id),
+    );
     const staffServiceAssignments = activeStaffServiceAssignments.length;
     const bookableStaff = new Set(
       activeStaffServiceAssignments.map(
@@ -404,14 +451,35 @@ export default function Businesses() {
 
     const profileComplete = Boolean(
       business.name?.trim() &&
-        business.category?.trim() &&
-        business.city?.trim(),
+      business.category?.trim() &&
+      business.city?.trim(),
     );
 
     const hasActiveServices = activeServices > 0;
     const hasActiveStaff = activeStaff > 0;
     const hasStaffServiceAssignments = staffServiceAssignments > 0;
     const hasWorkingHours = workingDays > 0;
+    const groupServiceIds = new Set(
+      businessActiveServices
+        .filter((service) => service.booking_type === "group")
+        .map((service) => service.id),
+    );
+    const scheduledGroupDepartures = scheduledDepartures.filter(
+      (departure) =>
+        departure.business_id === business.id &&
+        groupServiceIds.has(departure.service_id),
+    ).length;
+    const hasScheduledDepartures = scheduledGroupDepartures > 0;
+    const hasBookableAppointments =
+      activeAppointmentServiceIds.length > 0 &&
+      hasActiveStaff &&
+      activeAppointmentAssignments.length > 0 &&
+      hasWorkingHours;
+    const usesOnlyGroupServices =
+      businessActiveServices.length > 0 &&
+      businessActiveServices.every(
+        (service) => service.booking_type === "group",
+      );
     const hasBusinessImage = Boolean(business.image_url?.trim());
     const missingItems: string[] = [];
     const profileMissingItems: string[] = [];
@@ -443,26 +511,32 @@ export default function Businesses() {
       missingItems.push(
         t("dashboardBusinesses.missing.services", "active services"),
       );
-    if (!hasActiveStaff)
+    if (!usesOnlyGroupServices && !hasActiveStaff && !hasScheduledDepartures)
       missingItems.push(t("dashboardBusinesses.missing.staff", "active staff"));
-    if (!hasStaffServiceAssignments)
+    if (
+      !usesOnlyGroupServices &&
+      activeAppointmentAssignments.length === 0 &&
+      !hasScheduledDepartures
+    )
       missingItems.push(
         t(
           "dashboardBusinesses.missing.assignments",
           "staff-service assignments",
         ),
       );
-    if (!hasWorkingHours)
+    if (!usesOnlyGroupServices && !hasWorkingHours && !hasScheduledDepartures)
       missingItems.push(
         t("dashboardBusinesses.missing.hours", "working hours"),
+      );
+    if (usesOnlyGroupServices && !hasScheduledDepartures)
+      missingItems.push(
+        t("dashboardBusinesses.missing.departures", "an upcoming departure"),
       );
 
     const bookingReady =
       profileComplete &&
       hasActiveServices &&
-      hasActiveStaff &&
-      hasStaffServiceAssignments &&
-      hasWorkingHours;
+      (hasBookableAppointments || hasScheduledDepartures);
 
     return {
       profileComplete,
@@ -472,12 +546,14 @@ export default function Businesses() {
       hasActiveStaff,
       hasStaffServiceAssignments,
       hasWorkingHours,
+      hasScheduledDepartures,
       hasBusinessImage,
       activeServices,
       activeStaff,
       bookableStaff,
       staffServiceAssignments,
       workingDays,
+      scheduledDepartures: scheduledGroupDepartures,
       missingItems,
       profileMissingItems,
     };
@@ -501,7 +577,14 @@ export default function Businesses() {
       ready,
       incompletePublished,
     };
-  }, [businesses, services, staffMembers, staffServices, availabilityRows]);
+  }, [
+    businesses,
+    services,
+    staffMembers,
+    staffServices,
+    availabilityRows,
+    scheduledDepartures,
+  ]);
 
   const primaryBusiness = businesses[0] || null;
   const primaryReadiness = primaryBusiness
@@ -513,6 +596,15 @@ export default function Businesses() {
   const ownerStaffProfile = primaryBusiness
     ? ownerStaffProfileForBusiness(primaryBusiness.id)
     : null;
+  const primaryActiveServices = primaryBusiness
+    ? services.filter(
+        (service) =>
+          service.business_id === primaryBusiness.id && service.active,
+      )
+    : [];
+  const primaryUsesGroupSchedule =
+    primaryActiveServices.length > 0 &&
+    primaryActiveServices.every((service) => service.booking_type === "group");
   const setupSteps =
     primaryBusiness && primaryReadiness
       ? [
@@ -546,27 +638,55 @@ export default function Businesses() {
           },
           {
             key: "team",
-            complete:
-              primaryReadiness.hasActiveStaff &&
-              primaryReadiness.hasStaffServiceAssignments,
-            href: "/dashboard/staff",
-            label: t("dashboardBusinesses.setup.team", "Provider or team"),
-            helper: t(
-              "dashboardBusinesses.setup.teamBody",
-              "Add a provider and assign at least one service customers can book.",
-            ),
-            action: t("dashboardBusinesses.setup.teamAction", "Manage team"),
+            complete: primaryUsesGroupSchedule
+              ? primaryReadiness.hasScheduledDepartures
+              : primaryReadiness.hasActiveStaff &&
+                primaryReadiness.hasStaffServiceAssignments,
+            href: primaryUsesGroupSchedule
+              ? "/dashboard/departures"
+              : "/dashboard/staff",
+            label: primaryUsesGroupSchedule
+              ? t("dashboardBusinesses.setup.guide", "Guide or operator")
+              : t("dashboardBusinesses.setup.team", "Provider or team"),
+            helper: primaryUsesGroupSchedule
+              ? t(
+                  "dashboardBusinesses.setup.guideBody",
+                  "Add a departure and optionally assign the guide running it.",
+                )
+              : t(
+                  "dashboardBusinesses.setup.teamBody",
+                  "Add a provider and assign at least one service customers can book.",
+                ),
+            action: primaryUsesGroupSchedule
+              ? t("dashboardBusinesses.setup.guideAction", "Manage departures")
+              : t("dashboardBusinesses.setup.teamAction", "Manage team"),
           },
           {
             key: "hours",
-            complete: primaryReadiness.hasWorkingHours,
-            href: "/dashboard/availability",
-            label: t("dashboardBusinesses.setup.hours", "Working hours"),
-            helper: t(
-              "dashboardBusinesses.setup.hoursBody",
-              "Set the days and times customers can book.",
-            ),
-            action: t("dashboardBusinesses.setup.hoursAction", "Set hours"),
+            complete: primaryUsesGroupSchedule
+              ? primaryReadiness.hasScheduledDepartures
+              : primaryReadiness.hasWorkingHours,
+            href: primaryUsesGroupSchedule
+              ? "/dashboard/departures"
+              : "/dashboard/availability",
+            label: primaryUsesGroupSchedule
+              ? t("dashboardBusinesses.setup.departures", "Departures")
+              : t("dashboardBusinesses.setup.hours", "Working hours"),
+            helper: primaryUsesGroupSchedule
+              ? t(
+                  "dashboardBusinesses.setup.departuresBody",
+                  "Add the fixed dates, times and seat capacity customers can book.",
+                )
+              : t(
+                  "dashboardBusinesses.setup.hoursBody",
+                  "Set the days and times customers can book.",
+                ),
+            action: primaryUsesGroupSchedule
+              ? t(
+                  "dashboardBusinesses.setup.departuresAction",
+                  "Add departures",
+                )
+              : t("dashboardBusinesses.setup.hoursAction", "Set hours"),
           },
           {
             key: "bookingMode",
@@ -628,8 +748,8 @@ export default function Businesses() {
       : "";
   const canPublishPrimaryBusiness = Boolean(
     primaryBusiness &&
-      primaryReadiness?.bookingReady &&
-      !primaryBusiness.published,
+    primaryReadiness?.bookingReady &&
+    !primaryBusiness.published,
   );
 
   function shouldOpenProfileDetails(href: string) {

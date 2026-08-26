@@ -15,6 +15,14 @@ type ReminderBooking = {
   customer_email?: string | null;
   start_at: string;
   status: string;
+  departure_id?: string | null;
+  party_size?: number | null;
+  booking_option?: "appointment" | "shared" | "private" | null;
+};
+
+type ReminderDeparture = {
+  staff_member_id?: string | null;
+  meeting_point?: string | null;
 };
 
 type ReminderCustomerProfile = {
@@ -139,7 +147,7 @@ export default async function handler(
   const { data, error } = await supabaseAdmin
     .from("bookings")
     .select(
-      "id, business_id, service_id, staff_member_id, customer_user_id, customer_email, start_at, status",
+      "id, business_id, service_id, staff_member_id, customer_user_id, customer_email, start_at, status, departure_id, party_size, booking_option",
     )
     .eq("status", "confirmed")
     .gte("start_at", windowStart.toISOString())
@@ -260,7 +268,7 @@ export default async function handler(
     const [
       { data: business },
       { data: service },
-      { data: staff },
+      { data: departure },
       { data: customerProfile },
     ] = await Promise.all([
       supabaseAdmin
@@ -271,16 +279,19 @@ export default async function handler(
       booking.service_id
         ? supabaseAdmin
             .from("services")
-            .select("name")
+            .select("name, booking_type")
             .eq("id", booking.service_id)
-            .maybeSingle<{ name?: string | null }>()
+            .maybeSingle<{
+              name?: string | null;
+              booking_type?: "appointment" | "group" | null;
+            }>()
         : Promise.resolve({ data: null }),
-      booking.staff_member_id
+      booking.departure_id
         ? supabaseAdmin
-            .from("staff_members")
-            .select("name")
-            .eq("id", booking.staff_member_id)
-            .maybeSingle<{ name?: string | null }>()
+            .from("service_departures")
+            .select("staff_member_id, meeting_point")
+            .eq("id", booking.departure_id)
+            .maybeSingle<ReminderDeparture>()
         : Promise.resolve({ data: null }),
       supabaseAdmin
         .from("profiles")
@@ -288,6 +299,16 @@ export default async function handler(
         .eq("id", booking.customer_user_id)
         .maybeSingle<ReminderCustomerProfile>(),
     ]);
+
+    const assignedStaffMemberId =
+      booking.staff_member_id || departure?.staff_member_id || null;
+    const { data: staff } = assignedStaffMemberId
+      ? await supabaseAdmin
+          .from("staff_members")
+          .select("name")
+          .eq("id", assignedStaffMemberId)
+          .maybeSingle<{ name?: string | null }>()
+      : { data: null };
 
     const recipientEmail =
       booking.customer_email || customerProfile?.email || "";
@@ -303,6 +324,13 @@ export default async function handler(
         actionUrl: `${appUrl}/booking-confirmation?id=${booking.id}`,
         locale: localeFromProfile(customerProfile),
         preferenceEnabled: preferences.email_booking_reminders,
+        bookingType:
+          service?.booking_type === "group" || booking.departure_id
+            ? "group"
+            : "appointment",
+        partySize: booking.party_size,
+        bookingOption: booking.booking_option,
+        meetingPoint: departure?.meeting_point,
       }),
     );
 

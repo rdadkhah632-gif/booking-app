@@ -23,6 +23,12 @@ type BookingTemplateInput = {
   locale?: EmailLocale;
   preferenceEnabled?: boolean;
   customerAccountHint?: boolean;
+  bookingType?: "appointment" | "group";
+  partySize?: number | null;
+  bookingOption?: "appointment" | "shared" | "private" | null;
+  meetingPoint?: string | null;
+  totalPrice?: number | null;
+  currency?: string | null;
 };
 
 type EmailDetail = {
@@ -46,7 +52,15 @@ type EmailCopy = {
   customerLabel: string;
   serviceLabel: string;
   staffLabel: string;
+  guideLabel: string;
   dateTimeLabel: string;
+  departureLabel: string;
+  guestsLabel: string;
+  bookingTypeLabel: string;
+  sharedSeatsLabel: string;
+  privateTripLabel: string;
+  meetingPointLabel: string;
+  totalLabel: string;
   businessFallback: string;
   customerFallback: string;
   appointmentFallback: string;
@@ -59,6 +73,15 @@ type EmailCopy = {
     Record<BookingEmailStatus | "default", BookingStatusCopy>
   >;
   reminder: {
+    subject: string;
+    preview: string;
+    eyebrow: string;
+    title: string;
+    intro: string;
+    actionLabel: string;
+    note: string;
+  };
+  groupReminder: {
     subject: string;
     preview: string;
     eyebrow: string;
@@ -111,7 +134,15 @@ const EMAIL_COPY: Record<EmailLocale, EmailCopy> = {
     customerLabel: "Customer",
     serviceLabel: "Service",
     staffLabel: "Staff",
+    guideLabel: "Guide",
     dateTimeLabel: "Date and time",
+    departureLabel: "Departure",
+    guestsLabel: "Guests",
+    bookingTypeLabel: "Booking type",
+    sharedSeatsLabel: "Shared seats",
+    privateTripLabel: "Private trip",
+    meetingPointLabel: "Meeting point",
+    totalLabel: "Total",
     businessFallback: "Business",
     customerFallback: "Customer",
     appointmentFallback: "Appointment",
@@ -128,7 +159,7 @@ const EMAIL_COPY: Record<EmailLocale, EmailCopy> = {
     bookingNote:
       "Open Mirëbook for the latest booking status and any available actions.",
     customerAccountNote:
-      "Use this customer email address to sign in or create a customer account. Once verified, this appointment will appear in My bookings.",
+      "Use this customer email address to sign in or create a customer account. Once verified, this booking will appear in My bookings.",
     status: {
       business: {
         pending: {
@@ -218,6 +249,15 @@ const EMAIL_COPY: Record<EmailLocale, EmailCopy> = {
       actionLabel: "View appointment",
       note: "If anything looks wrong, open Mirëbook and contact the business from your booking details.",
     },
+    groupReminder: {
+      subject: "Mirëbook: Trip reminder",
+      preview: "Your trip is coming up in about 24 hours.",
+      eyebrow: "Trip reminder",
+      title: "Your trip is coming up",
+      intro: "This is a reminder for your upcoming Mirëbook trip.",
+      actionLabel: "View trip booking",
+      note: "Check the departure and meeting point in Mirëbook before you travel.",
+    },
     invite: {
       subject: (businessName) =>
         `You've been invited to join ${businessName} on Mirëbook`,
@@ -276,7 +316,15 @@ The in-app support conversation remains the authoritative record.`,
     customerLabel: "Klienti",
     serviceLabel: "Shërbimi",
     staffLabel: "Stafi",
+    guideLabel: "Guida",
     dateTimeLabel: "Data dhe ora",
+    departureLabel: "Nisja",
+    guestsLabel: "Persona",
+    bookingTypeLabel: "Lloji i rezervimit",
+    sharedSeatsLabel: "Vende të përbashkëta",
+    privateTripLabel: "Udhëtim privat",
+    meetingPointLabel: "Pika e takimit",
+    totalLabel: "Totali",
     businessFallback: "Biznesi",
     customerFallback: "Klienti",
     appointmentFallback: "Takim",
@@ -293,7 +341,7 @@ The in-app support conversation remains the authoritative record.`,
     bookingNote:
       "Hap Mirëbook për statusin më të fundit të rezervimit dhe veprimet e disponueshme.",
     customerAccountNote:
-      "Përdor këtë adresë email-i klienti për të hyrë ose për të krijuar një llogari klienti. Pas verifikimit, ky takim do të shfaqet te Rezervimet e mia.",
+      "Përdor këtë adresë email-i klienti për të hyrë ose për të krijuar një llogari klienti. Pas verifikimit, ky rezervim do të shfaqet te Rezervimet e mia.",
     status: {
       business: {
         pending: {
@@ -383,6 +431,16 @@ The in-app support conversation remains the authoritative record.`,
       actionLabel: "Shiko takimin",
       note: "Nëse diçka nuk duket mirë, hap Mirëbook dhe kontakto biznesin nga detajet e rezervimit.",
     },
+    groupReminder: {
+      subject: "Mirëbook: Kujtesë udhëtimi",
+      preview: "Udhëtimi yt është pas rreth 24 orësh.",
+      eyebrow: "Kujtesë udhëtimi",
+      title: "Udhëtimi yt po afrohet",
+      intro:
+        "Kjo është një kujtesë për udhëtimin tënd të ardhshëm në Mirëbook.",
+      actionLabel: "Shiko rezervimin",
+      note: "Kontrollo nisjen dhe pikën e takimit në Mirëbook para udhëtimit.",
+    },
     invite: {
       subject: (businessName) =>
         `Je ftuar të bashkohesh me ${businessName} në Mirëbook`,
@@ -471,6 +529,24 @@ function formatDateTime(
     timeZone: safeEmailTimeZone(timeZone),
     timeZoneName: "short",
   }).format(new Date(value));
+}
+
+function formatMoney(
+  value: number | null | undefined,
+  currency: string | null | undefined,
+  copy: EmailCopy,
+) {
+  if (value == null || !Number.isFinite(Number(value))) return null;
+
+  try {
+    return new Intl.NumberFormat(copy.localeCode, {
+      style: "currency",
+      currency: currency || "ALL",
+      maximumFractionDigits: 2,
+    }).format(Number(value));
+  } catch {
+    return `${Number(value).toFixed(2)} ${currency || "ALL"}`;
+  }
 }
 
 function detailRows(details: EmailDetail[]) {
@@ -565,25 +641,46 @@ export function bookingEmailTemplate(
   const businessName = input.businessName || copy.businessFallback;
   const customerName = input.customerName || copy.customerFallback;
   const serviceName = input.serviceName || copy.appointmentFallback;
-  const appointmentTime = formatDateTime(
-    input.startAt,
-    copy,
-    input.timeZone,
-  );
+  const appointmentTime = formatDateTime(input.startAt, copy, input.timeZone);
   const bookingNote =
     input.recipientRole === "customer" && input.customerAccountHint
       ? copy.customerAccountNote
       : copy.bookingNote;
+  const isGroupBooking =
+    input.bookingType === "group" ||
+    input.bookingOption === "shared" ||
+    input.bookingOption === "private";
+  const staffLabel = isGroupBooking ? copy.guideLabel : copy.staffLabel;
+  const dateTimeLabel = isGroupBooking
+    ? copy.departureLabel
+    : copy.dateTimeLabel;
   const staffLine = input.staffName
-    ? `\n${copy.staffLabel}: ${input.staffName}`
+    ? `\n${staffLabel}: ${input.staffName}`
     : "";
+  const bookingOptionLabel = isGroupBooking
+    ? input.bookingOption === "private"
+      ? copy.privateTripLabel
+      : copy.sharedSeatsLabel
+    : null;
+  const bookingTypeLine = bookingOptionLabel
+    ? `\n${copy.bookingTypeLabel}: ${bookingOptionLabel}`
+    : "";
+  const guestsLine =
+    isGroupBooking && input.partySize
+      ? `\n${copy.guestsLabel}: ${input.partySize}`
+      : "";
+  const meetingPointLine = input.meetingPoint
+    ? `\n${copy.meetingPointLabel}: ${input.meetingPoint}`
+    : "";
+  const totalPrice = formatMoney(input.totalPrice, input.currency, copy);
+  const totalLine = totalPrice ? `\n${copy.totalLabel}: ${totalPrice}` : "";
 
   const text = `${status.intro}
 
 ${copy.businessLabel}: ${businessName}
 ${copy.customerLabel}: ${customerName}
-${copy.serviceLabel}: ${serviceName}${staffLine}
-${copy.dateTimeLabel}: ${appointmentTime}
+${copy.serviceLabel}: ${serviceName}${staffLine}${bookingTypeLine}${guestsLine}
+${dateTimeLabel}: ${appointmentTime}${meetingPointLine}${totalLine}
 
 ${copy.openMirebook}: ${input.actionUrl}
 
@@ -605,8 +702,18 @@ ${copy.sourceOfTruthBookings}`;
         { label: copy.businessLabel, value: businessName },
         { label: copy.customerLabel, value: customerName },
         { label: copy.serviceLabel, value: serviceName },
-        { label: copy.staffLabel, value: input.staffName },
-        { label: copy.dateTimeLabel, value: appointmentTime },
+        { label: staffLabel, value: input.staffName },
+        { label: copy.bookingTypeLabel, value: bookingOptionLabel },
+        {
+          label: copy.guestsLabel,
+          value:
+            isGroupBooking && input.partySize
+              ? String(input.partySize)
+              : null,
+        },
+        { label: dateTimeLabel, value: appointmentTime },
+        { label: copy.meetingPointLabel, value: input.meetingPoint },
+        { label: copy.totalLabel, value: totalPrice },
       ],
       actionLabel: copy.bookingActions[input.recipientRole],
       actionUrl: input.actionUrl,
@@ -627,46 +734,156 @@ export function appointmentReminderEmailTemplate(input: {
   actionUrl: string;
   locale?: EmailLocale;
   preferenceEnabled?: boolean;
+  bookingType?: "appointment" | "group";
+  partySize?: number | null;
+  bookingOption?: "appointment" | "shared" | "private" | null;
+  meetingPoint?: string | null;
 }): TransactionalEmailMessage {
   const copy = copyFor(input.locale);
+  const reminder =
+    input.bookingType === "group" ? copy.groupReminder : copy.reminder;
   const businessName = input.businessName || copy.businessFallback;
   const serviceName = input.serviceName || copy.appointmentFallback;
-  const appointmentTime = formatDateTime(
-    input.startAt,
-    copy,
-    input.timeZone,
-  );
+  const appointmentTime = formatDateTime(input.startAt, copy, input.timeZone);
+  const staffLabel =
+    input.bookingType === "group" ? copy.guideLabel : copy.staffLabel;
+  const dateTimeLabel =
+    input.bookingType === "group" ? copy.departureLabel : copy.dateTimeLabel;
   const staffLine = input.staffName
-    ? `\n${copy.staffLabel}: ${input.staffName}`
+    ? `\n${staffLabel}: ${input.staffName}`
+    : "";
+  const bookingOptionLabel =
+    input.bookingType === "group"
+      ? input.bookingOption === "private"
+        ? copy.privateTripLabel
+        : copy.sharedSeatsLabel
+      : null;
+  const bookingTypeLine = bookingOptionLabel
+    ? `${copy.bookingTypeLabel}: ${bookingOptionLabel}\n`
+    : "";
+  const guestsLine =
+    input.bookingType === "group" && input.partySize
+      ? `${copy.guestsLabel}: ${input.partySize}\n`
+      : "";
+  const meetingPointLine = input.meetingPoint
+    ? `${copy.meetingPointLabel}: ${input.meetingPoint}\n`
     : "";
 
   return {
     event: "appointment_reminder",
     to: input.recipientEmail,
-    subject: copy.reminder.subject,
-    text: `${copy.reminder.preview}
+    subject: reminder.subject,
+    text: `${reminder.preview}
 
 ${copy.businessLabel}: ${businessName}
 ${copy.serviceLabel}: ${serviceName}${staffLine}
-${copy.dateTimeLabel}: ${appointmentTime}
+${bookingTypeLine}${guestsLine}${dateTimeLabel}: ${appointmentTime}
+${meetingPointLine}
 
 ${copy.openMirebook}: ${input.actionUrl}
 
 ${copy.sourceOfTruthBookings}`,
     html: brandedEmailHtml({
-      preview: copy.reminder.preview,
-      eyebrow: copy.reminder.eyebrow,
-      title: copy.reminder.title,
-      intro: copy.reminder.intro,
+      preview: reminder.preview,
+      eyebrow: reminder.eyebrow,
+      title: reminder.title,
+      intro: reminder.intro,
       details: [
         { label: copy.businessLabel, value: businessName },
         { label: copy.serviceLabel, value: serviceName },
-        { label: copy.staffLabel, value: input.staffName },
-        { label: copy.dateTimeLabel, value: appointmentTime },
+        { label: staffLabel, value: input.staffName },
+        { label: copy.bookingTypeLabel, value: bookingOptionLabel },
+        {
+          label: copy.guestsLabel,
+          value:
+            input.bookingType === "group" && input.partySize
+              ? String(input.partySize)
+              : null,
+        },
+        { label: dateTimeLabel, value: appointmentTime },
+        { label: copy.meetingPointLabel, value: input.meetingPoint },
       ],
-      actionLabel: copy.reminder.actionLabel,
+      actionLabel: reminder.actionLabel,
       actionUrl: input.actionUrl,
-      note: copy.reminder.note,
+      note: reminder.note,
+      footer: copy.footer,
+    }),
+    preferenceEnabled: input.preferenceEnabled,
+  };
+}
+
+export function departureStatusEmailTemplate(input: {
+  recipientEmail: string;
+  businessName?: string | null;
+  serviceName?: string | null;
+  staffName?: string | null;
+  startAt: string;
+  timeZone?: string | null;
+  meetingPoint?: string | null;
+  status: "cancelled" | "completed";
+  actionUrl: string;
+  locale?: EmailLocale;
+  preferenceEnabled?: boolean;
+}): TransactionalEmailMessage {
+  const copy = copyFor(input.locale);
+  const albanian = input.locale === "sq";
+  const cancelled = input.status === "cancelled";
+  const subject = cancelled
+    ? albanian
+      ? "Nisja u anulua"
+      : "Departure cancelled"
+    : albanian
+      ? "Nisja u përfundua"
+      : "Departure completed";
+  const intro = cancelled
+    ? albanian
+      ? "Biznesi anuloi një nisje të caktuar në orarin tënd."
+      : "The business cancelled a departure assigned to your schedule."
+    : albanian
+      ? "Një nisje e caktuar në orarin tënd u shënua si e përfunduar."
+      : "A departure assigned to your schedule was marked as completed.";
+  const businessName = input.businessName || copy.businessFallback;
+  const serviceName = input.serviceName || copy.appointmentFallback;
+  const departureTime = formatDateTime(input.startAt, copy, input.timeZone);
+  const staffLine = input.staffName
+    ? `\n${copy.guideLabel}: ${input.staffName}`
+    : "";
+  const meetingPointLine = input.meetingPoint
+    ? `\n${copy.meetingPointLabel}: ${input.meetingPoint}`
+    : "";
+
+  return {
+    event: "departure_status_changed",
+    to: input.recipientEmail,
+    subject: `Mirëbook: ${subject}`,
+    text: `${intro}
+
+${copy.businessLabel}: ${businessName}
+${copy.serviceLabel}: ${serviceName}${staffLine}
+${copy.departureLabel}: ${departureTime}${meetingPointLine}
+
+${copy.openMirebook}: ${input.actionUrl}
+
+${copy.sourceOfTruthBookings}`,
+    html: brandedEmailHtml({
+      preview: intro,
+      eyebrow: copy.bookingEyebrows.staff,
+      title: subject,
+      intro,
+      details: [
+        { label: copy.businessLabel, value: businessName },
+        { label: copy.serviceLabel, value: serviceName },
+        { label: copy.guideLabel, value: input.staffName },
+        { label: copy.departureLabel, value: departureTime },
+        { label: copy.meetingPointLabel, value: input.meetingPoint },
+      ],
+      actionLabel: copy.bookingActions.staff,
+      actionUrl: input.actionUrl,
+      note: cancelled
+        ? albanian
+          ? "Nisja është mbyllur dhe nuk pranon më rezervime."
+          : "The departure is closed and no longer accepts reservations."
+        : copy.bookingNote,
       footer: copy.footer,
     }),
     preferenceEnabled: input.preferenceEnabled,
@@ -754,10 +971,7 @@ export function supportEmailTemplate(input: {
 }
 
 type OwnershipClaimStatus =
-  | "submitted"
-  | "needs_more_info"
-  | "approved"
-  | "rejected";
+  "submitted" | "needs_more_info" | "approved" | "rejected";
 
 const OWNERSHIP_CLAIM_COPY: Record<
   EmailLocale,
@@ -800,8 +1014,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
       intro: (businessName, placeName) =>
         `${businessName} submitted an ownership claim for ${placeName}.`,
       action: "Review claim",
-      note:
-        "Review the evidence before linking any directory place to a Mirëbook business.",
+      note: "Review the evidence before linking any directory place to a Mirëbook business.",
     },
     owner: {
       submitted: {
@@ -811,8 +1024,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `We received your ownership request for ${placeName}.`,
         action: "View request",
-        note:
-          "The directory listing stays unchanged while Mirëbook reviews the evidence.",
+        note: "The directory listing stays unchanged while Mirëbook reviews the evidence.",
       },
       needs_more_info: {
         subject: "Mirëbook: More ownership information needed",
@@ -821,8 +1033,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `Mirëbook needs more information for your ownership request for ${placeName}.`,
         action: "Add information",
-        note:
-          "Open the request to read the review note and submit clearer evidence.",
+        note: "Open the request to read the review note and submit clearer evidence.",
       },
       approved: {
         subject: "Mirëbook: Ownership claim approved",
@@ -831,8 +1042,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `${placeName} is now linked to your Mirëbook business.`,
         action: "Continue business setup",
-        note:
-          "Approval does not publish the business. Complete Setup and publish only when you are ready.",
+        note: "Approval does not publish the business. Complete Setup and publish only when you are ready.",
       },
       rejected: {
         subject: "Mirëbook: Ownership claim not approved",
@@ -841,8 +1051,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `The ownership request for ${placeName} was not approved.`,
         action: "Review decision",
-        note:
-          "Open the request to read the review note before submitting new evidence.",
+        note: "Open the request to read the review note before submitting new evidence.",
       },
     },
   },
@@ -859,8 +1068,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
       intro: (businessName, placeName) =>
         `${businessName} dërgoi një pretendim pronësie për ${placeName}.`,
       action: "Shqyrto pretendimin",
-      note:
-        "Kontrollo provat përpara se të lidhësh një vend të direktorisë me një biznes në Mirëbook.",
+      note: "Kontrollo provat përpara se të lidhësh një vend të direktorisë me një biznes në Mirëbook.",
     },
     owner: {
       submitted: {
@@ -870,8 +1078,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `Morëm kërkesën tënde të pronësisë për ${placeName}.`,
         action: "Shiko kërkesën",
-        note:
-          "Listimi në direktori mbetet i pandryshuar ndërsa Mirëbook shqyrton provat.",
+        note: "Listimi në direktori mbetet i pandryshuar ndërsa Mirëbook shqyrton provat.",
       },
       needs_more_info: {
         subject: "Mirëbook: Nevojiten më shumë të dhëna pronësie",
@@ -880,8 +1087,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `Mirëbook ka nevojë për më shumë të dhëna për kërkesën e pronësisë për ${placeName}.`,
         action: "Shto të dhëna",
-        note:
-          "Hap kërkesën për të lexuar shënimin e shqyrtimit dhe dërgo prova më të qarta.",
+        note: "Hap kërkesën për të lexuar shënimin e shqyrtimit dhe dërgo prova më të qarta.",
       },
       approved: {
         subject: "Mirëbook: Pretendimi i pronësisë u miratua",
@@ -890,8 +1096,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `${placeName} tani është lidhur me biznesin tënd në Mirëbook.`,
         action: "Vazhdo konfigurimin e biznesit",
-        note:
-          "Miratimi nuk e publikon biznesin. Përfundo Konfigurimin dhe publikoje vetëm kur të jesh gati.",
+        note: "Miratimi nuk e publikon biznesin. Përfundo Konfigurimin dhe publikoje vetëm kur të jesh gati.",
       },
       rejected: {
         subject: "Mirëbook: Pretendimi i pronësisë nuk u miratua",
@@ -900,8 +1105,7 @@ const OWNERSHIP_CLAIM_COPY: Record<
         intro: (placeName) =>
           `Kërkesa e pronësisë për ${placeName} nuk u miratua.`,
         action: "Shiko vendimin",
-        note:
-          "Hap kërkesën për të lexuar shënimin përpara se të dërgosh prova të reja.",
+        note: "Hap kërkesën për të lexuar shënimin përpara se të dërgosh prova të reja.",
       },
     },
   },

@@ -72,6 +72,7 @@ type ManualBookingService = {
   name: string;
   duration_minutes: number;
   active: boolean;
+  booking_type?: "appointment" | "group" | null;
 };
 
 type ManualBookingStaff = {
@@ -167,6 +168,7 @@ export default function Bookings() {
   const [manualStaffServices, setManualStaffServices] = useState<
     ManualStaffService[]
   >([]);
+  const [hasGroupServices, setHasGroupServices] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(() =>
     toDateInputValue(new Date()),
@@ -290,6 +292,7 @@ export default function Bookings() {
         setManualServices([]);
         setManualStaff([]);
         setManualStaffServices([]);
+        setHasGroupServices(false);
         setPageLoading(false);
         return;
       }
@@ -308,6 +311,7 @@ export default function Bookings() {
             id,
             business_id,
             staff_member_id,
+            departure_id,
             customer_user_id,
             customer_name,
             customer_email,
@@ -333,7 +337,9 @@ export default function Bookings() {
           .order("start_at", { ascending: true }),
         supabase
           .from("services")
-          .select("id, business_id, name, duration_minutes, active")
+          .select(
+            "id, business_id, name, duration_minutes, active, booking_type",
+          )
           .eq("business_id", selectedBusiness.id)
           .eq("active", true)
           .order("name", { ascending: true }),
@@ -349,7 +355,14 @@ export default function Bookings() {
       if (serviceError) throw serviceError;
       if (staffError) throw staffError;
 
-      setManualServices(serviceData || []);
+      setManualServices(
+        (serviceData || []).filter(
+          (service) => service.booking_type !== "group",
+        ),
+      );
+      setHasGroupServices(
+        (serviceData || []).some((service) => service.booking_type === "group"),
+      );
       setManualStaff(staffData || []);
 
       const staffIds = (staffData || []).map((staff) => staff.id);
@@ -368,15 +381,17 @@ export default function Bookings() {
         setManualStaffServices([]);
       }
 
-      const normalisedBookings = (data || []).map((booking: any) => ({
-        ...booking,
-        services: Array.isArray(booking.services)
-          ? booking.services[0] || null
-          : booking.services,
-        staff_members: Array.isArray(booking.staff_members)
-          ? booking.staff_members[0] || null
-          : booking.staff_members,
-      }));
+      const normalisedBookings = (data || [])
+        .filter((booking: any) => !booking.departure_id)
+        .map((booking: any) => ({
+          ...booking,
+          services: Array.isArray(booking.services)
+            ? booking.services[0] || null
+            : booking.services,
+          staff_members: Array.isArray(booking.staff_members)
+            ? booking.staff_members[0] || null
+            : booking.staff_members,
+        }));
 
       setBookings(normalisedBookings);
       setPageLoading(false);
@@ -2075,6 +2090,14 @@ export default function Bookings() {
                     ))}
                   </select>
                 </label>
+                {hasGroupServices && business && (
+                  <Link
+                    href={`/dashboard/departures?businessId=${business.id}`}
+                    className="btn btn-ghost calendar-departures-button"
+                  >
+                    {t("dashboardBookings.departures.open", "Group departures")}
+                  </Link>
+                )}
                 <button
                   type="button"
                   className="btn btn-accent calendar-add-button"
@@ -2716,7 +2739,8 @@ export default function Bookings() {
           font-size: 0.8rem;
         }
 
-        .calendar-add-button {
+        .calendar-add-button,
+        .calendar-departures-button {
           min-height: 2.75rem;
           padding: 0.55rem 0.95rem;
           white-space: nowrap;
@@ -3573,6 +3597,13 @@ export default function Bookings() {
             color: var(--bg);
             font-size: 1.35rem;
             font-weight: 900;
+          }
+
+          :global(.calendar-departures-button) {
+            grid-column: 1 / -1;
+            grid-row: 4;
+            width: 100%;
+            min-height: 2.75rem;
           }
 
           :global(.week-calendar) {

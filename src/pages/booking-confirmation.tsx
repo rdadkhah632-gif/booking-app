@@ -19,6 +19,10 @@ type Booking = {
   start_at: string;
   duration_minutes: number;
   status: string;
+  departure_id?: string | null;
+  party_size?: number | null;
+  booking_option?: "appointment" | "shared" | "private" | null;
+  total_price?: number | null;
   businesses?:
     | {
         id?: string;
@@ -47,10 +51,44 @@ type Booking = {
     | {
         name: string;
         price: number;
+        booking_type?: string | null;
       }
     | {
         name: string;
         price: number;
+        booking_type?: string | null;
+      }[]
+    | null;
+  service_departures?:
+    | {
+        meeting_point?: string | null;
+        capacity: number;
+        status: string;
+        staff_members?:
+          | {
+              name: string;
+              role_title?: string | null;
+            }
+          | {
+              name: string;
+              role_title?: string | null;
+            }[]
+          | null;
+      }
+    | {
+        meeting_point?: string | null;
+        capacity: number;
+        status: string;
+        staff_members?:
+          | {
+              name: string;
+              role_title?: string | null;
+            }
+          | {
+              name: string;
+              role_title?: string | null;
+            }[]
+          | null;
       }[]
     | null;
   staff_members?:
@@ -196,7 +234,21 @@ export default function BookingConfirmation() {
 
   function staffRelation(value: Booking | null = booking) {
     if (!value) return null;
-    return firstRelation(value.staff_members) || null;
+    const departure = firstRelation(value.service_departures);
+    return (
+      firstRelation(value.staff_members) ||
+      firstRelation(departure?.staff_members) ||
+      null
+    );
+  }
+
+  function departureRelation(value: Booking | null = booking) {
+    if (!value) return null;
+    return firstRelation(value.service_departures) || null;
+  }
+
+  function isGroupBooking() {
+    return Boolean(booking?.departure_id);
   }
 
   function businessName() {
@@ -211,7 +263,7 @@ export default function BookingConfirmation() {
   }
 
   function servicePrice() {
-    const value = serviceRelation()?.price;
+    const value = booking?.total_price ?? serviceRelation()?.price;
     if (value === null || value === undefined) return null;
     const numericValue = Number(value);
     return Number.isFinite(numericValue) && numericValue > 0
@@ -232,6 +284,8 @@ export default function BookingConfirmation() {
       "bookingConfirmation.fallback.staffMember",
       "Assigned staff",
     );
+    if (!staff && isGroupBooking())
+      return t("myBookings.group.guideLater", "Guide assigned by the business");
     if (!staff)
       return t("publicBusiness.anyAvailableStaff", "Any available staff");
     const displayName = publicStaffName(staff, fallback);
@@ -390,10 +444,12 @@ export default function BookingConfirmation() {
             <div className="card">
               <div className="booking-confirmation-details-header">
                 <h2 style={{ fontFamily: "var(--font-display)" }}>
-                  {t(
-                    "bookingConfirmation.details.title",
-                    "Appointment details",
-                  )}
+                  {isGroupBooking()
+                    ? t("bookingConfirmation.details.tripTitle", "Trip details")
+                    : t(
+                        "bookingConfirmation.details.title",
+                        "Appointment details",
+                      )}
                 </h2>
               </div>
 
@@ -414,8 +470,10 @@ export default function BookingConfirmation() {
                 <div>
                   <p className="small muted">
                     {t(
-                      "bookingConfirmation.details.staffMember",
-                      "Staff member",
+                      isGroupBooking()
+                        ? "publicBusiness.departures.guide"
+                        : "bookingConfirmation.details.staffMember",
+                      isGroupBooking() ? "Guide" : "Staff member",
                     )}
                   </p>
                   <strong>{staffName()}</strong>
@@ -430,15 +488,17 @@ export default function BookingConfirmation() {
                   }}
                 >
                   <p className="small muted">
-                    {isPendingApproval()
-                      ? t(
-                          "bookingConfirmation.details.requestedDateTime",
-                          "Requested date and time",
-                        )
-                      : t(
-                          "bookingConfirmation.details.confirmedDateTime",
-                          "Confirmed date and time",
-                        )}
+                    {isGroupBooking()
+                      ? t("myBookings.group.departureTime", "Departure time")
+                      : isPendingApproval()
+                        ? t(
+                            "bookingConfirmation.details.requestedDateTime",
+                            "Requested date and time",
+                          )
+                        : t(
+                            "bookingConfirmation.details.confirmedDateTime",
+                            "Confirmed date and time",
+                          )}
                   </p>
                   <strong>{appointmentDateTime()}</strong>
                 </div>
@@ -458,6 +518,43 @@ export default function BookingConfirmation() {
                   </p>
                   <strong>{priceLabel()}</strong>
                 </div>
+
+                {isGroupBooking() && (
+                  <div>
+                    <p className="small muted">
+                      {t(
+                        "publicBusiness.departures.bookingType",
+                        "Booking type",
+                      )}
+                    </p>
+                    <strong>
+                      {booking.booking_option === "private"
+                        ? t("publicBusiness.departures.private", "Private trip")
+                        : t("publicBusiness.departures.shared", "Shared seats")}
+                    </strong>
+                  </div>
+                )}
+
+                {isGroupBooking() && (
+                  <div>
+                    <p className="small muted">
+                      {t("publicBusiness.departures.guests", "Guests")}
+                    </p>
+                    <strong>{booking.party_size || 1}</strong>
+                  </div>
+                )}
+
+                {departureRelation()?.meeting_point && (
+                  <div>
+                    <p className="small muted">
+                      {t(
+                        "publicBusiness.departures.meetingPoint",
+                        "Meeting point",
+                      )}
+                    </p>
+                    <strong>{departureRelation()?.meeting_point}</strong>
+                  </div>
+                )}
 
                 <div>
                   <p className="small muted">

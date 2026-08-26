@@ -22,6 +22,20 @@ type ServiceRow = {
   business_id: string;
   name: string;
   active?: boolean | null;
+  booking_type?: string | null;
+};
+
+type DepartureRow = {
+  id: string;
+  business_id: string;
+  service_id: string;
+  capacity: number;
+};
+
+type DepartureBookingRow = {
+  departure_id: string;
+  party_size?: number | null;
+  booking_option?: string | null;
 };
 
 type StaffRow = {
@@ -148,7 +162,7 @@ export default async function handler(
     ] = await Promise.all([
       supabaseAdmin
         .from("services")
-        .select("id, business_id, name, active")
+        .select("id, business_id, name, active, booking_type")
         .in("business_id", businessIds)
         .eq("active", true)
         .returns<ServiceRow[]>(),
@@ -181,6 +195,61 @@ export default async function handler(
 
     if (staffServiceError) throw staffServiceError;
 
+    const groupServiceIds = (serviceRows || [])
+      .filter((service) => service.booking_type === "group")
+      .map((service) => service.id);
+    const { data: departureRows, error: departureError } =
+      groupServiceIds.length > 0
+        ? await supabaseAdmin
+            .from("service_departures")
+            .select("id, business_id, service_id, capacity")
+            .in("business_id", businessIds)
+            .in("service_id", groupServiceIds)
+            .eq("status", "scheduled")
+            .gte("start_at", new Date().toISOString())
+            .returns<DepartureRow[]>()
+        : { data: [] as DepartureRow[], error: null };
+
+    if (departureError) throw departureError;
+    const departureIds = (departureRows || []).map((departure) => departure.id);
+    const { data: departureBookings, error: departureBookingError } =
+      departureIds.length > 0
+        ? await supabaseAdmin
+            .from("bookings")
+            .select("departure_id, party_size, booking_option")
+            .in("departure_id", departureIds)
+            .in("status", ["pending", "confirmed"])
+            .returns<DepartureBookingRow[]>()
+        : { data: [] as DepartureBookingRow[], error: null };
+
+    if (departureBookingError) throw departureBookingError;
+    const departureById = new Map(
+      (departureRows || []).map((departure) => [departure.id, departure]),
+    );
+    const reservedByDeparture = new Map<string, number>();
+    for (const booking of departureBookings || []) {
+      const departure = departureById.get(booking.departure_id);
+      if (!departure) continue;
+      const reserved =
+        booking.booking_option === "private"
+          ? departure.capacity
+          : Math.max(Number(booking.party_size || 1), 1);
+      reservedByDeparture.set(
+        departure.id,
+        (reservedByDeparture.get(departure.id) || 0) + reserved,
+      );
+    }
+    const departureServicesByBusiness = new Map<string, Set<string>>();
+    for (const departure of departureRows || []) {
+      if ((reservedByDeparture.get(departure.id) || 0) >= departure.capacity) {
+        continue;
+      }
+      const current =
+        departureServicesByBusiness.get(departure.business_id) || new Set();
+      current.add(departure.service_id);
+      departureServicesByBusiness.set(departure.business_id, current);
+    }
+
     const servicesByBusiness = groupBy(serviceRows || [], "business_id");
     const staffByBusiness = groupBy(staffRows || [], "business_id");
     const availabilityByBusiness = groupBy(
@@ -199,6 +268,7 @@ export default async function handler(
             id: service.id,
             name: service.name,
             active: Boolean(service.active),
+            booking_type: service.booking_type,
             staff_services: (staffServicesByService[service.id] || []).map(
               (assignment) => ({
                 staff_member_id: assignment.staff_member_id,
@@ -233,6 +303,7 @@ export default async function handler(
           >,
           business.staff_members as StaffRow[],
           business.availability as AvailabilityRow[],
+          departureServicesByBusiness.get(business.id) || new Set(),
         ),
       );
 

@@ -2,6 +2,65 @@ import { useI18n } from "@/lib/useI18n";
 import ServiceImageUpload from "./ServiceImageUpload";
 import ServicePreviewCard from "./ServicePreviewCard";
 
+function normalizeBookingHint(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function suggestsScheduledGroup(name: string, category?: string | null) {
+  const value = ` ${normalizeBookingHint(`${name} ${category || ""}`)
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()} `;
+  const groupTerms = [
+    "tour",
+    "tours",
+    "trip",
+    "trips",
+    "cruise",
+    "cruises",
+    "excursion",
+    "excursions",
+    "boat",
+    "boats",
+    "charter",
+    "charters",
+    "safari",
+    "rafting",
+    "kayak",
+    "kayaking",
+    "workshop",
+    "workshops",
+    "class",
+    "classes",
+    "course",
+    "courses",
+    "retreat",
+    "retreats",
+    "experience",
+    "experiences",
+    "activity",
+    "activities",
+    "event",
+    "events",
+    "udhetim",
+    "udhetime",
+    "lundrim",
+    "lundrime",
+    "ekskursion",
+    "ekskursione",
+    "varke",
+    "varka",
+    "anije",
+    "kurs",
+    "kurse",
+    "klase",
+  ];
+
+  return groupTerms.some((term) => value.includes(` ${term} `));
+}
+
 type Props = {
   formExpanded: boolean;
   loading: boolean;
@@ -13,6 +72,11 @@ type Props = {
   imageFile: File | null;
   duration: number;
   price: number;
+  bookingType: "appointment" | "group";
+  groupCapacity: number;
+  privateBookingEnabled: boolean;
+  privatePrice: number;
+  businessCategory?: string | null;
   currency?: string | null;
   durationOptions: () => number[];
   setFormExpanded: (value: boolean | ((previous: boolean) => boolean)) => void;
@@ -20,6 +84,10 @@ type Props = {
   setDescription: (value: string) => void;
   setDuration: (value: number) => void;
   setPrice: (value: number) => void;
+  setBookingType: (value: "appointment" | "group") => void;
+  setGroupCapacity: (value: number) => void;
+  setPrivateBookingEnabled: (value: boolean) => void;
+  setPrivatePrice: (value: number) => void;
   handleCreateImageChange: (file: File | null) => void;
   uploadCreateImage: () => void;
   clearCreateImage: () => void;
@@ -38,6 +106,11 @@ export default function CreateServiceCard({
   imageFile,
   duration,
   price,
+  bookingType,
+  groupCapacity,
+  privateBookingEnabled,
+  privatePrice,
+  businessCategory,
   currency,
   durationOptions,
   setFormExpanded,
@@ -45,6 +118,10 @@ export default function CreateServiceCard({
   setDescription,
   setDuration,
   setPrice,
+  setBookingType,
+  setGroupCapacity,
+  setPrivateBookingEnabled,
+  setPrivatePrice,
   handleCreateImageChange,
   uploadCreateImage,
   clearCreateImage,
@@ -52,6 +129,9 @@ export default function CreateServiceCard({
   addService,
 }: Props) {
   const { t } = useI18n();
+  const showGroupSuggestion =
+    bookingType === "appointment" &&
+    suggestsScheduledGroup(name, businessCategory);
 
   return (
     <div
@@ -92,6 +172,64 @@ export default function CreateServiceCard({
               required
             />
 
+            {bookingType === "group" && (
+              <div className="service-format-active">
+                <div>
+                  <strong>
+                    {t(
+                      "dashboardServices.bookingType.groupActive",
+                      "Scheduled service with seats",
+                    )}
+                  </strong>
+                  <p className="small muted">
+                    {t(
+                      "dashboardServices.bookingType.groupActiveHint",
+                      "Customers choose a fixed departure and reserve one or more places.",
+                    )}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setBookingType("appointment")}
+                >
+                  {t(
+                    "dashboardServices.bookingType.useAppointment",
+                    "Use standard appointments",
+                  )}
+                </button>
+              </div>
+            )}
+
+            {showGroupSuggestion && (
+              <div className="service-format-suggestion">
+                <div>
+                  <strong>
+                    {t(
+                      "dashboardServices.bookingType.suggestionTitle",
+                      "Will several people join the same time?",
+                    )}
+                  </strong>
+                  <p className="small muted">
+                    {t(
+                      "dashboardServices.bookingType.suggestionBody",
+                      "This looks like a tour, class or group activity. Use departures only if customers share a fixed time and capacity.",
+                    )}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setBookingType("group")}
+                >
+                  {t(
+                    "dashboardServices.bookingType.useGroup",
+                    "Use departures and seats",
+                  )}
+                </button>
+              </div>
+            )}
+
             <div className="services-create-small-grid">
               <label className="small muted">
                 {t("dashboardServices.create.duration", "Duration")}
@@ -108,7 +246,13 @@ export default function CreateServiceCard({
               </label>
 
               <label className="small muted">
-                {t("dashboardServices.create.price", "Price")} ({currency || "GBP"})
+                {bookingType === "group"
+                  ? t(
+                      "dashboardServices.create.pricePerGuest",
+                      "Price per guest",
+                    )
+                  : t("dashboardServices.create.price", "Price")}{" "}
+                ({currency || "GBP"})
                 <input
                   type="number"
                   placeholder={t(
@@ -124,10 +268,99 @@ export default function CreateServiceCard({
               </label>
             </div>
 
+            {bookingType === "group" && (
+              <div className="group-service-settings">
+                <label className="small muted">
+                  {t("dashboardServices.group.capacity", "Default seats")}
+                  <input
+                    type="number"
+                    min={1}
+                    max={200}
+                    value={groupCapacity}
+                    onChange={(event) =>
+                      setGroupCapacity(Number(event.target.value))
+                    }
+                    required
+                  />
+                </label>
+                <label className="group-private-toggle">
+                  <input
+                    type="checkbox"
+                    checked={privateBookingEnabled}
+                    onChange={(event) =>
+                      setPrivateBookingEnabled(event.target.checked)
+                    }
+                  />
+                  <span>
+                    <strong>
+                      {t(
+                        "dashboardServices.group.privateEnabled",
+                        "Allow private trip booking",
+                      )}
+                    </strong>
+                    <small>
+                      {t(
+                        "dashboardServices.group.privateHint",
+                        "One customer reserves the whole departure.",
+                      )}
+                    </small>
+                  </span>
+                </label>
+                {privateBookingEnabled && (
+                  <label className="small muted">
+                    {t(
+                      "dashboardServices.group.privatePrice",
+                      "Private trip price",
+                    )}{" "}
+                    ({currency || "GBP"})
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={privatePrice}
+                      onChange={(event) =>
+                        setPrivatePrice(Number(event.target.value))
+                      }
+                      required
+                    />
+                  </label>
+                )}
+              </div>
+            )}
+
             <details className="services-more-details">
               <summary>
                 {t("dashboardServices.create.moreDetails", "More details")}
               </summary>
+
+              {bookingType === "appointment" && !showGroupSuggestion && (
+                <div className="service-format-optional">
+                  <div>
+                    <strong>
+                      {t(
+                        "dashboardServices.bookingType.optionalTitle",
+                        "Tour, class or shared trip?",
+                      )}
+                    </strong>
+                    <p className="small muted">
+                      {t(
+                        "dashboardServices.bookingType.optionalBody",
+                        "Only use scheduled departures when several customers can reserve places on the same fixed time.",
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setBookingType("group")}
+                  >
+                    {t(
+                      "dashboardServices.bookingType.useGroup",
+                      "Use departures and seats",
+                    )}
+                  </button>
+                </div>
+              )}
 
               <div className="services-create-grid">
                 <div className="services-create-fields">
@@ -217,6 +450,69 @@ export default function CreateServiceCard({
           gap: 0.75rem;
         }
 
+        .service-format-active,
+        .service-format-suggestion,
+        .service-format-optional {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.85rem;
+          padding: 0.8rem 0.9rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .service-format-active {
+          border-color: rgba(20, 184, 166, 0.42);
+          background: rgba(20, 184, 166, 0.08);
+        }
+
+        .service-format-suggestion {
+          border-color: rgba(255, 107, 53, 0.32);
+          background: rgba(255, 107, 53, 0.08);
+        }
+
+        .service-format-active p,
+        .service-format-suggestion p,
+        .service-format-optional p {
+          margin: 0.2rem 0 0;
+        }
+
+        .group-private-toggle span {
+          display: grid;
+          gap: 0.15rem;
+        }
+
+        .group-private-toggle small {
+          color: var(--text-muted);
+          line-height: 1.35;
+        }
+
+        .group-service-settings {
+          display: grid;
+          grid-template-columns:
+            minmax(150px, 0.55fr) minmax(240px, 1.45fr)
+            minmax(170px, 0.7fr);
+          gap: 0.75rem;
+          align-items: end;
+          padding: 0.8rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .group-service-settings label {
+          display: grid;
+          gap: 0.35rem;
+        }
+
+        .group-private-toggle {
+          grid-template-columns: auto minmax(0, 1fr) !important;
+          align-items: center;
+          cursor: pointer;
+        }
+
         .services-create-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
@@ -278,6 +574,10 @@ export default function CreateServiceCard({
           padding: 0.9rem;
         }
 
+        .service-format-optional {
+          margin: 0.9rem 0.9rem 0;
+        }
+
         .services-create-actions {
           display: flex;
           gap: 0.75rem;
@@ -293,8 +593,27 @@ export default function CreateServiceCard({
             grid-template-columns: 1fr;
           }
 
+          .group-service-settings {
+            grid-template-columns: 1fr;
+            align-items: stretch;
+          }
+
           .services-create-actions,
           .services-create-actions :global(.btn) {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .service-format-active,
+          .service-format-suggestion,
+          .service-format-optional {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .service-format-active :global(.btn),
+          .service-format-suggestion :global(.btn),
+          .service-format-optional :global(.btn) {
             width: 100%;
             justify-content: center;
           }

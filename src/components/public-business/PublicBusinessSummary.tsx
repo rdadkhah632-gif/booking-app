@@ -8,6 +8,14 @@ type Props = {
   selectedService: Service | null;
   selectedSlot: TimeSlot | null;
   selectedStaffSummary: () => string;
+  groupBooking?: {
+    bookingOption: "shared" | "private";
+    partySize: number;
+    remainingSeats: number;
+    meetingPoint?: string | null;
+    guideName?: string | null;
+    totalPrice: number;
+  } | null;
   selectedDateLabel?: string;
   customerName: string;
   customerEmail: string;
@@ -37,6 +45,7 @@ export default function PublicBusinessSummary({
   selectedService,
   selectedSlot,
   selectedStaffSummary,
+  groupBooking = null,
   selectedDateLabel,
   customerName,
   customerEmail,
@@ -66,6 +75,7 @@ export default function PublicBusinessSummary({
   );
   const hasSelectedService = Boolean(selectedService);
   const hasAppointmentSelection = Boolean(selectedService && selectedSlot);
+  const isGroupService = selectedService?.booking_type === "group";
 
   return (
     <aside className="card booking-summary-panel">
@@ -75,15 +85,24 @@ export default function PublicBusinessSummary({
         </p>
         <h2>
           {hasAppointmentSelection
-            ? t("publicBusiness.summary.reviewTitle", "Review appointment")
-            : t("publicBusiness.summary.emptyTitle", "Your appointment")}
+            ? groupBooking
+              ? t("publicBusiness.summary.reviewTrip", "Review booking")
+              : t("publicBusiness.summary.reviewTitle", "Review appointment")
+            : isGroupService
+              ? t("publicBusiness.summary.emptyTrip", "Your trip")
+              : t("publicBusiness.summary.emptyTitle", "Your appointment")}
         </h2>
         {!hasAppointmentSelection && hasSelectedService && (
           <p className="small muted" style={{ marginTop: "0.35rem" }}>
-            {t(
-              "publicBusiness.summary.pickAppointmentBody",
-              "Pick an appointment slot, then add your details to book.",
-            )}
+            {isGroupService
+              ? t(
+                  "publicBusiness.summary.pickDepartureBody",
+                  "Choose a departure and party size, then review your booking.",
+                )
+              : t(
+                  "publicBusiness.summary.pickAppointmentBody",
+                  "Pick an appointment slot, then add your details to book.",
+                )}
           </p>
         )}
       </div>
@@ -111,9 +130,33 @@ export default function PublicBusinessSummary({
             <span className="small muted">
               {selectedService?.duration_minutes}{" "}
               {t("common.minutes", "minutes")}
-              {Number(selectedService?.price || 0) > 0
-                ? ` · ${formatServicePrice(selectedService?.price || 0)}`
-                : ""}
+              {Number(groupBooking?.totalPrice ?? selectedService?.price ?? 0) >
+                0 && (
+                <>
+                  {" · "}
+                  {formatServicePrice(
+                    groupBooking
+                      ? groupBooking.totalPrice
+                      : selectedService?.price || 0,
+                  )}
+                </>
+              )}
+              {groupBooking && (
+                <>
+                  {" · "}
+                  {groupBooking.bookingOption === "private"
+                    ? `${t("publicBusiness.departures.private", "Private trip")} · ${groupBooking.partySize} ${t(
+                        "publicBusiness.departures.guests",
+                        "Guests",
+                      ).toLowerCase()}`
+                    : groupBooking.partySize +
+                      " " +
+                      t(
+                        "publicBusiness.departures.guests",
+                        "Guests",
+                      ).toLowerCase()}
+                </>
+              )}
             </span>
           </div>
 
@@ -130,10 +173,26 @@ export default function PublicBusinessSummary({
             </div>
           )}
 
-          {hasAppointmentSelection && (
+          {hasAppointmentSelection &&
+            (!groupBooking || groupBooking.guideName) && (
+              <div className="booking-summary-detail-row">
+                <span className="small muted">
+                  {groupBooking
+                    ? t("publicBusiness.departures.guide", "Guide")
+                    : t("common.staff", "Staff")}
+                </span>
+                <strong>
+                  {groupBooking?.guideName || selectedStaffSummary()}
+                </strong>
+              </div>
+            )}
+
+          {hasAppointmentSelection && groupBooking?.meetingPoint && (
             <div className="booking-summary-detail-row">
-              <span className="small muted">{t("common.staff", "Staff")}</span>
-              <strong>{selectedStaffSummary()}</strong>
+              <span className="small muted">
+                {t("publicBusiness.departures.meetingPoint", "Meeting point")}
+              </span>
+              <strong>{groupBooking.meetingPoint}</strong>
             </div>
           )}
 
@@ -328,9 +387,11 @@ export default function PublicBusinessSummary({
           <summary className="small muted">
             {t("publicBusiness.summary.policies", "Booking policies")}
           </summary>
-          <p className="small muted" style={{ marginTop: "0.6rem" }}>
-            {reschedulePolicyText()}
-          </p>
+          {!groupBooking && (
+            <p className="small muted" style={{ marginTop: "0.6rem" }}>
+              {reschedulePolicyText()}
+            </p>
+          )}
           {business.cancellation_policy && (
             <p className="small muted" style={{ marginTop: "0.45rem" }}>
               {business.cancellation_policy}

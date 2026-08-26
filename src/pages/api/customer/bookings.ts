@@ -22,6 +22,11 @@ type BookingRow = {
   duration_minutes: number;
   status: string;
   completed_at?: string | null;
+  departure_id?: string | null;
+  party_size?: number | null;
+  booking_option?: string | null;
+  unit_price?: number | null;
+  total_price?: number | null;
 };
 
 type BusinessRow = {
@@ -48,6 +53,17 @@ type ServiceRow = {
   name: string;
   duration_minutes?: number | null;
   price: number;
+  booking_type?: string | null;
+};
+
+type DepartureRow = {
+  id: string;
+  staff_member_id?: string | null;
+  start_at: string;
+  duration_minutes: number;
+  capacity: number;
+  meeting_point?: string | null;
+  status: string;
 };
 
 type StaffRow = {
@@ -239,7 +255,11 @@ function shapeBooking(
   businesses: Map<string, BusinessRow>,
   services: Map<string, ServiceRow>,
   staffMembers: Map<string, StaffRow>,
+  departures: Map<string, DepartureRow>,
 ) {
+  const departure = booking.departure_id
+    ? departures.get(booking.departure_id) || null
+    : null;
   return {
     ...booking,
     businesses: booking.business_id
@@ -250,6 +270,14 @@ function shapeBooking(
       : null,
     staff_members: booking.staff_member_id
       ? staffMembers.get(booking.staff_member_id) || null
+      : null,
+    service_departures: departure
+      ? {
+          ...departure,
+          staff_members: departure.staff_member_id
+            ? staffMembers.get(departure.staff_member_id) || null
+            : null,
+        }
       : null,
   };
 }
@@ -291,11 +319,28 @@ async function loadServices(supabaseAdmin: SupabaseAdminClient, ids: string[]) {
 
   const { data, error } = await supabaseAdmin
     .from("services")
-    .select("id, name, duration_minutes, price")
+    .select("id, name, duration_minutes, price, booking_type")
     .in("id", ids);
 
   if (error) throw error;
   return indexById((data || []) as ServiceRow[]);
+}
+
+async function loadDepartures(
+  supabaseAdmin: SupabaseAdminClient,
+  ids: string[],
+) {
+  if (ids.length === 0) return new Map<string, DepartureRow>();
+
+  const { data, error } = await supabaseAdmin
+    .from("service_departures")
+    .select(
+      "id, staff_member_id, start_at, duration_minutes, capacity, meeting_point, status",
+    )
+    .in("id", ids);
+
+  if (error) throw error;
+  return indexById((data || []) as DepartureRow[]);
 }
 
 async function loadStaffMembers(
@@ -326,14 +371,26 @@ async function loadBookingRelations(
   const staffIds = uniqueStrings(
     bookings.map((booking) => booking.staff_member_id),
   );
+  const departureIds = uniqueStrings(
+    bookings.map((booking) => booking.departure_id),
+  );
 
-  const [businesses, services, staffMembers] = await Promise.all([
+  const [businesses, services, departures] = await Promise.all([
     loadBusinesses(supabaseAdmin, businessIds),
     loadServices(supabaseAdmin, serviceIds),
-    loadStaffMembers(supabaseAdmin, staffIds),
+    loadDepartures(supabaseAdmin, departureIds),
   ]);
+  const departureStaffIds = uniqueStrings(
+    Array.from(departures.values()).map(
+      (departure) => departure.staff_member_id,
+    ),
+  );
+  const staffMembers = await loadStaffMembers(
+    supabaseAdmin,
+    uniqueStrings([...staffIds, ...departureStaffIds]),
+  );
 
-  return { businesses, services, staffMembers };
+  return { businesses, services, staffMembers, departures };
 }
 
 async function handleBookingList(
@@ -378,6 +435,7 @@ async function handleBookingList(
         relations.businesses,
         relations.services,
         relations.staffMembers,
+        relations.departures,
       ),
     ),
     requests: requests.map((request) =>
@@ -498,11 +556,12 @@ async function handleBookingDetail(
       relations.businesses,
       relations.services,
       relations.staffMembers,
+      relations.departures,
     ),
     viewerRole,
   };
 
-  if (includeReschedule && bookingRow.business_id) {
+  if (includeReschedule && bookingRow.business_id && !bookingRow.departure_id) {
     payload.rescheduleContext = await loadRescheduleContext(
       supabaseAdmin,
       bookingRow.business_id,
@@ -540,19 +599,16 @@ export default async function handler(
       return;
     }
 
-    const claimedBookings = await claimUnlinkedCustomerBookings(
-      supabaseAdmin,
-      {
-        userId: user.id,
-        email: user.email,
-        accountMode:
-          typeof user.user_metadata?.account_mode === "string"
-            ? user.user_metadata.account_mode
-            : typeof user.user_metadata?.role === "string"
-              ? user.user_metadata.role
-              : null,
-      },
-    );
+    const claimedBookings = await claimUnlinkedCustomerBookings(supabaseAdmin, {
+      userId: user.id,
+      email: user.email,
+      accountMode:
+        typeof user.user_metadata?.account_mode === "string"
+          ? user.user_metadata.account_mode
+          : typeof user.user_metadata?.role === "string"
+            ? user.user_metadata.role
+            : null,
+    });
 
     await ensureClaimedBookingNotifications(
       supabaseAdmin,

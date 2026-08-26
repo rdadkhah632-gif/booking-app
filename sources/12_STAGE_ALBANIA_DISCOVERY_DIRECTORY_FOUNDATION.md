@@ -2198,6 +2198,93 @@ admin data and legal disclosure.
 11. Finish with no business, listing, claim, booking, account or billing record
     changed.
 
+## Batch 34 - Scheduled-Capacity Services And Departures
+
+Batch 34 extends Mirëbook's existing appointment model for boat tours, classes,
+activities and other services where several customers reserve places on one
+fixed departure. Existing one-customer/one-staff services retain the
+`appointment` default and keep their current availability, overlap and booking
+lifecycle.
+
+A business can now:
+
+- create a `Scheduled group service` with a default seat capacity and per-guest
+  price
+- optionally offer a private-trip price that reserves the whole departure
+- add one departure or a repeated daily series with date, time, capacity,
+  meeting point and optional guide/staff assignment
+- review remaining seats, reservations and the private owner-only guest
+  manifest
+- confirm, decline, cancel or complete an individual reservation
+- cancel or complete a whole departure, with customer updates and one
+  departure-level guide/staff update
+
+Customers choose a fixed departure, select shared seats or an available private
+trip and enter the real number of guests. A private reservation records that
+guest count for the manifest and emails while consuming the full departure
+capacity. Shared reservations consume only their selected party size. The
+database locks the departure while checking and creating each booking, so two
+simultaneous requests cannot oversell it.
+
+The customer confirmation, My Bookings, transactional emails and reminders show
+the booking type, guest count, guide, meeting point and price snapshot. Group
+bookings cannot enter the appointment reschedule flow. Owner Calendar excludes
+individual group-reservation cards and links to Departures instead; assigned
+staff see one aggregate departure block without customer manifest data or owner
+controls.
+
+Before deploying this batch, run:
+
+`sources/sql/40_scheduled_capacity_booking_foundation.sql`
+
+The SQL must complete successfully before the matching website build is used.
+It creates the private departure table, extends services/bookings with backward-
+compatible defaults and installs service-role-only atomic functions. It does
+not enable customer checkout or payments.
+
+### Batch 34 deployment QA
+
+Use **Extra High effort** because this changes a core booking contract and must
+prove concurrency, capacity, privacy and legacy appointment isolation.
+
+1. Run SQL 40, deploy and create one hidden disposable business with one normal
+   appointment service and one scheduled group service. Confirm an ordinary
+   haircut stays a standard appointment without capacity/departure controls.
+   Confirm a tour-like service receives only a suggestion, never an automatic
+   format change, and requires a deliberate `Use departures and seats` action.
+2. Add a 12-seat departure with a meeting point and linked guide. Confirm it
+   appears once in Departures and once as an aggregate block in the linked staff
+   Calendar.
+3. Publish only the disposable business. As customer A, reserve 3 shared seats;
+   as customer B, reserve 4. Confirm 7 booked and 5 remaining, with each account
+   seeing only its own reservation.
+4. Attempt 6 more shared seats. It must fail cleanly without creating a booking,
+   notification or email. Attempt two simultaneous requests for the final five
+   seats and prove total active capacity never exceeds 12.
+5. On a fresh empty departure, make a private reservation for the whole trip
+   with an actual party size below capacity. Confirm the manifest, customer
+   pages and emails show that guest count while remaining capacity becomes zero.
+6. Confirm a private option disappears as soon as any active shared reservation
+   exists, and that cancelling/declining a reservation releases its capacity.
+7. Exercise pending/confirmed booking modes, individual reservation actions and
+   whole-departure cancellation. Every customer should receive one update and
+   the assigned guide/staff should receive one aggregate departure update, not
+   one email per passenger.
+8. Verify the owner sees customer names/contact details in the manifest. The
+   assigned staff API/UI must expose only aggregate capacity/reservation counts,
+   with no customer email, phone, notes or owner actions.
+9. Verify normal appointment booking, overlap prevention, Calendar details,
+   confirmation, My Bookings and reminders are unchanged.
+10. Verify EN/SQ at 1440x900, 768x1024 and 390x844, including long meeting-point
+    copy, party steppers, price formatting, keyboard controls, no overflow and
+    no raw SQL/RLS/provider errors.
+11. Hide the disposable business and leave all genuine businesses unchanged.
+
+For Toni's Boat Trip, confirm whether the stated 14-person capacity means 14
+sellable passenger seats or includes crew. Do not publish its real departures
+with an assumed capacity. Adult/child pricing and deposits remain a separate
+follow-up until the operator confirms those rules.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls

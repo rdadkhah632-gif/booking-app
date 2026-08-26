@@ -5,6 +5,7 @@ type SupabaseAdminClient = ReturnType<typeof createSupabaseAdminClient>;
 type ReadinessService = {
   id: string;
   active?: boolean | null;
+  booking_type?: string | null;
   staff_services?: { staff_member_id: string }[] | null;
 };
 
@@ -21,6 +22,20 @@ type ServiceRow = {
   id: string;
   business_id: string;
   active?: boolean | null;
+  booking_type?: string | null;
+};
+
+type DepartureRow = {
+  id: string;
+  business_id: string;
+  service_id: string;
+  capacity: number;
+};
+
+type DepartureBookingRow = {
+  departure_id: string;
+  party_size?: number | null;
+  booking_option?: string | null;
 };
 
 type StaffRow = {
@@ -43,23 +58,34 @@ export function isPublicBusinessBookable(
   services: ReadinessService[],
   staffMembers: ReadinessStaff[],
   availability: ReadinessAvailability[],
+  scheduledDepartureServiceIds: Set<string> = new Set(),
 ) {
   const activeStaffIds = new Set(
     staffMembers.filter((staff) => staff.active).map((staff) => staff.id),
   );
   const activeServices = services.filter((service) => service.active);
-  const hasAssignedService = activeServices.some((service) =>
-    (service.staff_services || []).some((assignment) =>
-      activeStaffIds.has(assignment.staff_member_id),
-    ),
+  const activeAppointmentServices = activeServices.filter(
+    (service) => service.booking_type !== "group",
+  );
+  const hasAssignedAppointmentService = activeAppointmentServices.some(
+    (service) =>
+      (service.staff_services || []).some((assignment) =>
+        activeStaffIds.has(assignment.staff_member_id),
+      ),
   );
   const hasOpenDay = availability.some((row) => row.is_closed !== true);
+  const hasScheduledGroupDeparture = activeServices.some(
+    (service) =>
+      service.booking_type === "group" &&
+      scheduledDepartureServiceIds.has(service.id),
+  );
 
   return (
-    activeServices.length > 0 &&
-    activeStaffIds.size > 0 &&
-    hasAssignedService &&
-    hasOpenDay
+    hasScheduledGroupDeparture ||
+    (activeAppointmentServices.length > 0 &&
+      activeStaffIds.size > 0 &&
+      hasAssignedAppointmentService &&
+      hasOpenDay)
   );
 }
 
@@ -67,9 +93,7 @@ export async function publicBookableBusinessIds(
   supabase: SupabaseAdminClient,
   requestedBusinessIds: string[],
 ) {
-  const businessIds = Array.from(
-    new Set(requestedBusinessIds.filter(Boolean)),
-  );
+  const businessIds = Array.from(new Set(requestedBusinessIds.filter(Boolean)));
   if (businessIds.length === 0) return new Set<string>();
 
   const { data: businesses, error: businessError } = await supabase
@@ -91,7 +115,7 @@ export async function publicBookableBusinessIds(
   ] = await Promise.all([
     supabase
       .from("services")
-      .select("id, business_id, active")
+      .select("id, business_id, active, booking_type")
       .in("business_id", publishedIds)
       .eq("active", true)
       .returns<ServiceRow[]>(),
@@ -126,6 +150,61 @@ export async function publicBookableBusinessIds(
 
   if (assignmentError) throw assignmentError;
 
+  const groupServiceIds = (services || [])
+    .filter((service) => service.booking_type === "group")
+    .map((service) => service.id);
+  const { data: departures, error: departureError } =
+    groupServiceIds.length > 0
+      ? await supabase
+          .from("service_departures")
+          .select("id, business_id, service_id, capacity")
+          .in("business_id", publishedIds)
+          .in("service_id", groupServiceIds)
+          .eq("status", "scheduled")
+          .gte("start_at", new Date().toISOString())
+          .returns<DepartureRow[]>()
+      : { data: [] as DepartureRow[], error: null };
+
+  if (departureError) throw departureError;
+  const departureIds = (departures || []).map((departure) => departure.id);
+  const { data: departureBookings, error: departureBookingError } =
+    departureIds.length > 0
+      ? await supabase
+          .from("bookings")
+          .select("departure_id, party_size, booking_option")
+          .in("departure_id", departureIds)
+          .in("status", ["pending", "confirmed"])
+          .returns<DepartureBookingRow[]>()
+      : { data: [] as DepartureBookingRow[], error: null };
+
+  if (departureBookingError) throw departureBookingError;
+  const departureById = new Map(
+    (departures || []).map((departure) => [departure.id, departure]),
+  );
+  const reservedByDeparture = new Map<string, number>();
+  for (const booking of departureBookings || []) {
+    const departure = departureById.get(booking.departure_id);
+    if (!departure) continue;
+    const reserved =
+      booking.booking_option === "private"
+        ? departure.capacity
+        : Math.max(Number(booking.party_size || 1), 1);
+    reservedByDeparture.set(
+      departure.id,
+      (reservedByDeparture.get(departure.id) || 0) + reserved,
+    );
+  }
+  const departureServicesByBusiness = new Map<string, Set<string>>();
+  for (const departure of departures || []) {
+    if ((reservedByDeparture.get(departure.id) || 0) >= departure.capacity) {
+      continue;
+    }
+    const current =
+      departureServicesByBusiness.get(departure.business_id) || new Set();
+    current.add(departure.service_id);
+    departureServicesByBusiness.set(departure.business_id, current);
+  }
+
   const assignmentsByService = new Map<string, StaffServiceRow[]>();
   for (const assignment of assignments || []) {
     const current = assignmentsByService.get(assignment.service_id) || [];
@@ -139,6 +218,7 @@ export async function publicBookableBusinessIds(
     current.push({
       id: service.id,
       active: service.active,
+      booking_type: service.booking_type,
       staff_services: assignmentsByService.get(service.id) || [],
     });
     servicesByBusiness.set(service.business_id, current);
@@ -151,10 +231,7 @@ export async function publicBookableBusinessIds(
     staffByBusiness.set(staff.business_id, current);
   }
 
-  const availabilityByBusiness = new Map<
-    string,
-    ReadinessAvailability[]
-  >();
+  const availabilityByBusiness = new Map<string, ReadinessAvailability[]>();
   for (const row of availability || []) {
     const current = availabilityByBusiness.get(row.business_id) || [];
     current.push({ is_closed: row.is_closed });
@@ -167,6 +244,7 @@ export async function publicBookableBusinessIds(
         servicesByBusiness.get(businessId) || [],
         staffByBusiness.get(businessId) || [],
         availabilityByBusiness.get(businessId) || [],
+        departureServicesByBusiness.get(businessId) || new Set(),
       ),
     ),
   );

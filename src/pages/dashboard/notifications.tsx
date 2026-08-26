@@ -64,6 +64,7 @@ type BookingRequest = {
 type Booking = {
   id: string;
   business_id: string;
+  departure_id?: string | null;
   customer_user_id?: string | null;
   customer_name: string;
   customer_email?: string | null;
@@ -381,6 +382,7 @@ function businessNotificationActionLabel(
   notification: NotificationRow,
   currentBookingStatus: string | null,
   t: (key: string, fallback?: string) => string,
+  departureId?: string | null,
 ) {
   const type = String(notification.type || "");
 
@@ -416,6 +418,12 @@ function businessNotificationActionLabel(
   }
 
   if (notification.booking_id) {
+    if (departureId) {
+      return t(
+        "dashboardNotifications.actions.openDeparture",
+        "Open departure",
+      );
+    }
     return t("dashboardNotifications.actions.openBooking", "Open appointment");
   }
 
@@ -512,6 +520,7 @@ export default function BusinessNotifications() {
           `
           id,
           business_id,
+          departure_id,
           customer_user_id,
           customer_name,
           customer_email,
@@ -1280,6 +1289,9 @@ export default function BusinessNotifications() {
   }
 
   function bookingCalendarUrl(booking: Booking) {
+    if (booking.departure_id) {
+      return `/dashboard/departures?businessId=${booking.business_id}&departureId=${booking.departure_id}`;
+    }
     const timeZone = firstRelation(booking.businesses)?.timezone;
     const date = dateKeyInTimeZone(new Date(booking.start_at), timeZone);
 
@@ -1494,13 +1506,21 @@ export default function BusinessNotifications() {
                         )}
                       </span>
                       <span>
-                        {t("support.business.staff", "Staff")}:{" "}
+                        {booking.departure_id
+                          ? t("publicBusiness.departures.guide", "Guide")
+                          : t("support.business.staff", "Staff")}
+                        :{" "}
                         {staffName(
                           booking,
-                          t(
-                            "dashboardBookings.card.noStaff",
-                            "Staff not recorded",
-                          ),
+                          booking.departure_id
+                            ? t(
+                                "dashboardNotifications.labels.guideInDeparture",
+                                "See departure details",
+                              )
+                            : t(
+                                "dashboardBookings.card.noStaff",
+                                "Staff not recorded",
+                              ),
                         )}
                       </span>
                       <span>
@@ -1579,8 +1599,12 @@ export default function BusinessNotifications() {
                       className="btn btn-ghost"
                     >
                       {t(
-                        "dashboardNotifications.actions.openBooking",
-                        "Open appointment",
+                        booking.departure_id
+                          ? "dashboardNotifications.actions.openDeparture"
+                          : "dashboardNotifications.actions.openBooking",
+                        booking.departure_id
+                          ? "Open departure"
+                          : "Open appointment",
                       )}
                     </Link>
                   </div>
@@ -1904,10 +1928,15 @@ export default function BusinessNotifications() {
                         <span>
                           {staffName(
                             linkedBooking,
-                            t(
-                              "dashboardBookings.card.noStaff",
-                              "Staff not recorded",
-                            ),
+                            linkedBooking.departure_id
+                              ? t(
+                                  "dashboardNotifications.labels.guideInDeparture",
+                                  "See departure details",
+                                )
+                              : t(
+                                  "dashboardBookings.card.noStaff",
+                                  "Staff not recorded",
+                                ),
                           )}
                         </span>
                         <span>
@@ -1932,6 +1961,7 @@ export default function BusinessNotifications() {
                           notification,
                           linkedBooking?.status || null,
                           t,
+                          linkedBooking?.departure_id,
                         )}
                       </Link>
                     )}

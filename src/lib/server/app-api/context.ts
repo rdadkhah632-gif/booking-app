@@ -20,6 +20,7 @@ export type AppBusiness = {
   category?: string | null;
   published?: boolean | null;
   timezone?: string | null;
+  currency?: string | null;
 };
 
 export type AppStaffProfile = {
@@ -164,12 +165,14 @@ export async function loadAppContext(req: NextApiRequest): Promise<AppContext> {
     await Promise.all([
       supabaseAdmin
         .from("profiles")
-        .select("id, email, full_name, phone, role, is_admin, preferred_language")
+        .select(
+          "id, email, full_name, phone, role, is_admin, preferred_language",
+        )
         .eq("id", user.id)
         .maybeSingle<AppProfile>(),
       supabaseAdmin
         .from("businesses")
-        .select("id, name, city, category, published, timezone")
+        .select("id, name, city, category, published, timezone, currency")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .returns<AppBusiness[]>(),
@@ -192,7 +195,8 @@ export async function loadAppContext(req: NextApiRequest): Promise<AppContext> {
             city,
             category,
             published,
-            timezone
+            timezone,
+            currency
           )
         `,
         )

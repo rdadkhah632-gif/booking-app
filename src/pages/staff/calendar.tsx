@@ -27,6 +27,27 @@ type Booking = {
   duration_minutes: number;
   status: string;
   services?: { name: string } | { name: string }[] | null;
+  is_departure?: boolean;
+  departure_id?: string | null;
+  capacity?: number | null;
+  booked_seats?: number | null;
+  remaining_seats?: number | null;
+  booking_count?: number | null;
+  meeting_point?: string | null;
+};
+
+type StaffDeparture = {
+  id: string;
+  business_id: string;
+  start_at: string;
+  duration_minutes: number;
+  capacity: number;
+  meeting_point?: string | null;
+  status: string;
+  bookedSeats: number;
+  remainingSeats: number;
+  bookingCount: number;
+  service?: { name?: string | null } | null;
 };
 
 function formatDateInputValue(date: Date) {
@@ -216,7 +237,7 @@ export default function StaffCalendarPage() {
     const from = weekStart.toISOString();
     const to = weekEnd.toISOString();
 
-    const { data: bookingData, error: bookingError } = await supabase
+    const bookingResult = await supabase
       .from("bookings")
       .select(
         `
@@ -240,13 +261,48 @@ export default function StaffCalendarPage() {
       .lte("start_at", to)
       .order("start_at", { ascending: true });
 
-    if (bookingError) {
-      setError(bookingError.message);
+    if (bookingResult.error) {
+      setError(bookingResult.error.message);
       setLoading(false);
       return;
     }
 
-    setBookings((bookingData || []) as unknown as Booking[]);
+    let departureBookings: Booking[] = [];
+    try {
+      const response = await fetch(
+        `/api/dashboard/departures?businessId=${normalisedStaff.business_id}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        { headers: { Authorization: `Bearer ${session.access_token}` } },
+      );
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          departures?: StaffDeparture[];
+        };
+        departureBookings = (payload.departures || []).map((departure) => ({
+          id: `departure:${departure.id}`,
+          business_id: departure.business_id,
+          customer_name: departure.service?.name || "Group departure",
+          start_at: departure.start_at,
+          duration_minutes: departure.duration_minutes,
+          status:
+            departure.status === "scheduled" ? "confirmed" : departure.status,
+          services: { name: departure.service?.name || "Group departure" },
+          is_departure: true,
+          departure_id: departure.id,
+          capacity: departure.capacity,
+          booked_seats: departure.bookedSeats,
+          remaining_seats: departure.remainingSeats,
+          booking_count: departure.bookingCount,
+          meeting_point: departure.meeting_point,
+        }));
+      }
+    } catch {
+      departureBookings = [];
+    }
+
+    setBookings([
+      ...((bookingResult.data || []) as unknown as Booking[]),
+      ...departureBookings,
+    ]);
     setLoading(false);
   }
 
@@ -321,12 +377,14 @@ export default function StaffCalendarPage() {
 
   useEffect(() => {
     const bookingId = dateQueryValue(router.query.bookingId);
-    if (!bookingId) return;
+    const departureId = dateQueryValue(router.query.departureId);
+    const selectedId = departureId ? `departure:${departureId}` : bookingId;
+    if (!selectedId) return;
 
-    if (bookings.some((booking) => booking.id === bookingId)) {
-      setSelectedBookingId(bookingId);
+    if (bookings.some((booking) => booking.id === selectedId)) {
+      setSelectedBookingId(selectedId);
     }
-  }, [bookings, router.query.bookingId]);
+  }, [bookings, router.query.bookingId, router.query.departureId]);
 
   function statusLabel(status: string) {
     if (status === "pending")
@@ -488,13 +546,29 @@ export default function StaffCalendarPage() {
           setSelectedBookingId(booking.id);
         }}
         aria-label={`${time.label} ${
-          booking.customer_name || t("common.customer", "Customer")
+          booking.is_departure
+            ? serviceName(
+                booking,
+                t("staffCalendar.departure", "Group departure"),
+              )
+            : booking.customer_name || t("common.customer", "Customer")
         }`}
       >
         <span>{time.label}</span>
         <strong>
-          {booking.customer_name || t("common.customer", "Customer")}
+          {booking.is_departure
+            ? serviceName(
+                booking,
+                t("staffCalendar.departure", "Group departure"),
+              )
+            : booking.customer_name || t("common.customer", "Customer")}
         </strong>
+        {!isCompactBlock && booking.is_departure && (
+          <em>
+            {booking.booked_seats || 0}/{booking.capacity || 0}{" "}
+            {t("departures.guests", "guests")}
+          </em>
+        )}
         {!isCompactBlock && booking.status === "pending" && (
           <em>{statusLabel(booking.status)}</em>
         )}
@@ -527,8 +601,15 @@ export default function StaffCalendarPage() {
           startMinutes: minutesSinceMidnight(time.start),
           endMinutes: minutesSinceMidnight(time.end),
           timeLabel: time.label,
-          title: booking.customer_name || t("common.customer", "Customer"),
-          subtitle: serviceName(booking, t("common.service", "Service")),
+          title: booking.is_departure
+            ? serviceName(
+                booking,
+                t("staffCalendar.departure", "Group departure"),
+              )
+            : booking.customer_name || t("common.customer", "Customer"),
+          subtitle: booking.is_departure
+            ? `${booking.booked_seats || 0}/${booking.capacity || 0} ${t("departures.guests", "guests")}`
+            : serviceName(booking, t("common.service", "Service")),
           status: booking.status,
           statusLabel: statusLabel(booking.status),
         };
@@ -665,6 +746,70 @@ export default function StaffCalendarPage() {
 
     const time = bookingTime(selectedBooking);
     const start = time.start;
+
+    if (selectedBooking.is_departure) {
+      return (
+        <section className="staff-selected-appointment">
+          <div className="staff-selected-heading">
+            <div>
+              <p className="small muted">
+                {t("staffCalendar.departure.kicker", "Assigned departure")}
+              </p>
+              <h2>
+                {serviceName(
+                  selectedBooking,
+                  t("staffCalendar.departure", "Group departure"),
+                )}
+              </h2>
+            </div>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => setSelectedBookingId(null)}
+            >
+              {t("common.close", "Close")}
+            </button>
+          </div>
+
+          <div className="staff-selected-card staff-departure-card">
+            <div className="staff-booking-time">
+              <strong>{time.label}</strong>
+              <span>
+                {selectedBooking.duration_minutes}{" "}
+                {t("common.minutes", "minutes")}
+              </span>
+            </div>
+            <dl className="staff-departure-details">
+              <div>
+                <dt>{t("departures.detail.booked", "Booked")}</dt>
+                <dd>
+                  {selectedBooking.booked_seats || 0}/
+                  {selectedBooking.capacity || 0}
+                </dd>
+              </div>
+              <div>
+                <dt>{t("departures.detail.reservations", "Reservations")}</dt>
+                <dd>{selectedBooking.booking_count || 0}</dd>
+              </div>
+              <div>
+                <dt>{t("departures.field.meetingPoint", "Meeting point")}</dt>
+                <dd>
+                  {selectedBooking.meeting_point ||
+                    t("departures.detail.notProvided", "Not provided")}
+                </dd>
+              </div>
+            </dl>
+            <p className="small muted">
+              {t(
+                "staffCalendar.departure.ownerManifest",
+                "The business owner manages the customer manifest and booking decisions.",
+              )}
+            </p>
+          </div>
+        </section>
+      );
+    }
+
     const isConfirmedAppointment = selectedBooking.status === "confirmed";
 
     return (
@@ -1761,6 +1906,32 @@ export default function StaffCalendarPage() {
           min-width: 0;
           display: grid;
           gap: 0.35rem;
+        }
+
+        .staff-departure-details {
+          display: grid;
+          gap: 0.5rem;
+          margin: 0;
+        }
+
+        .staff-departure-details div {
+          display: grid;
+          grid-template-columns: minmax(7rem, 0.7fr) minmax(0, 1.3fr);
+          gap: 0.6rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .staff-departure-details dt {
+          color: var(--text-muted);
+          font-size: 0.78rem;
+        }
+
+        .staff-departure-details dd {
+          min-width: 0;
+          margin: 0;
+          font-weight: 750;
+          overflow-wrap: anywhere;
         }
 
         .staff-booking-title-row {

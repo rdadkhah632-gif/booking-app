@@ -79,6 +79,15 @@ export default function PublicBusinessServices({
               <div className="public-business-service-copy">
                 <strong>{service.name}</strong>
 
+                {service.booking_type === "group" && (
+                  <span className="small public-business-group-label">
+                    {t(
+                      "publicBusiness.services.scheduledGroup",
+                      "Scheduled group trip",
+                    )}
+                  </span>
+                )}
+
                 {service.description && (
                   <p className="small muted public-business-service-description">
                     {service.description}
@@ -87,9 +96,18 @@ export default function PublicBusinessServices({
 
                 <p className="small muted public-business-service-meta">
                   {service.duration_minutes} {t("common.minutes", "minutes")}
-                  {Number(service.price || 0) > 0
-                    ? ` · ${formatServicePrice(service.price)}`
-                    : ""}
+                  {Number(service.price || 0) > 0 && (
+                    <>
+                      {" · "}
+                      {formatServicePrice(service.price)}
+                      {service.booking_type === "group" && (
+                        <>
+                          {" "}
+                          {t("publicBusiness.services.perGuest", "per guest")}
+                        </>
+                      )}
+                    </>
+                  )}
                 </p>
               </div>
 

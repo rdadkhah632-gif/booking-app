@@ -62,6 +62,10 @@ export default function MyBookingCard({
   const tone = cardTone(booking.status, Boolean(pendingRequest), mode);
   const appointmentTime = formatAppointmentDateTime(booking.start_at);
   const showLifecycleCopy = booking.status !== "confirmed" || hasPendingChange;
+  const isGroupBooking = Boolean(booking.departure_id);
+  const departure = Array.isArray(booking.service_departures)
+    ? booking.service_departures[0]
+    : booking.service_departures;
 
   function formatAppointmentDateTime(value: string) {
     return formatLocalizedDate(value, locale, {
@@ -139,17 +143,26 @@ export default function MyBookingCard({
                               "myBookings.card.declinedTime",
                               "Declined requested time",
                             )
-                          : t(
-                              "myBookings.card.appointmentTime",
-                              "Appointment time",
-                            )}
+                          : isGroupBooking
+                            ? t(
+                                "myBookings.group.departureTime",
+                                "Departure time",
+                              )
+                            : t(
+                                "myBookings.card.appointmentTime",
+                                "Appointment time",
+                              )}
               </p>
               <strong>{appointmentTime}</strong>
             </div>
 
             <div className="my-booking-meta-grid">
               <span>
-                <b>{t("common.staff", "Staff")}</b>
+                <b>
+                  {isGroupBooking
+                    ? t("publicBusiness.departures.guide", "Guide")
+                    : t("common.staff", "Staff")}
+                </b>
                 {staffName(booking)}
               </span>
               <span>
@@ -157,8 +170,7 @@ export default function MyBookingCard({
                 {booking.duration_minutes} {t("common.minutes", "minutes")}
               </span>
               <span>
-                <b>{t("myBookings.card.price", "Price")}</b>
-                {" "}
+                <b>{t("myBookings.card.price", "Price")}</b>{" "}
                 {formatCurrencyAmount(
                   servicePrice(booking),
                   businessCurrency(booking),
@@ -166,6 +178,34 @@ export default function MyBookingCard({
                 )}
               </span>
             </div>
+
+            {isGroupBooking && (
+              <div className="group-booking-details">
+                <span>
+                  <b>
+                    {t("publicBusiness.departures.bookingType", "Booking type")}
+                  </b>
+                  {booking.booking_option === "private"
+                    ? t("publicBusiness.departures.private", "Private trip")
+                    : t("publicBusiness.departures.shared", "Shared seats")}
+                </span>
+                <span>
+                  <b>{t("publicBusiness.departures.guests", "Guests")}</b>
+                  {booking.party_size || 1}
+                </span>
+                {departure?.meeting_point && (
+                  <span>
+                    <b>
+                      {t(
+                        "publicBusiness.departures.meetingPoint",
+                        "Meeting point",
+                      )}
+                    </b>
+                    {departure.meeting_point}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {hasPendingChange && (
@@ -246,6 +286,10 @@ export default function MyBookingCard({
                     "myBookings.card.originalStillConfirmed",
                     "Original time still confirmed",
                   )}
+                </span>
+              ) : isGroupBooking ? (
+                <span className="small muted">
+                  {t("myBookings.group.seatReservation", "Scheduled departure")}
                 </span>
               ) : (
                 <Link
@@ -345,14 +389,16 @@ export default function MyBookingCard({
         }
 
         .my-booking-meta-grid,
-        .my-booking-requested-time-box {
+        .my-booking-requested-time-box,
+        .group-booking-details {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0.55rem;
         }
 
         .my-booking-meta-grid span,
-        .my-booking-requested-time-box span {
+        .my-booking-requested-time-box span,
+        .group-booking-details span {
           display: grid;
           gap: 0.15rem;
           min-width: 0;

@@ -1502,6 +1502,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.missing.staff": "stafi aktiv",
   "dashboardBusinesses.missing.assignments": "caktimet staf-shërbim",
   "dashboardBusinesses.missing.hours": "orari i punës",
+  "dashboardBusinesses.missing.departures": "një nisje të ardhshme",
   "dashboardBusinesses.requiredProfileComplete":
     "Detajet e detyrueshme janë gati",
   "dashboardBusinesses.requiredProfileIncomplete": "Shto detajet e detyrueshme",
@@ -2410,6 +2411,7 @@ export const sq: TranslationTree = {
   "dashboardNotifications.labels.business": "Biznesi",
   "dashboardNotifications.labels.businessFallback": "Biznes",
   "dashboardNotifications.labels.serviceFallback": "Shërbim",
+  "dashboardNotifications.labels.guideInDeparture": "Shih detajet e nisjes",
   "dashboardNotifications.labels.duration": "Kohëzgjatja",
   "dashboardNotifications.labels.notProvided": "Nuk është dhënë",
   "dashboardNotifications.labels.notRecorded": "Nuk është regjistruar",
@@ -3768,6 +3770,7 @@ export const sq: TranslationTree = {
   "dashboardNotifications.actions.reviewRescheduleRequest":
     "Shqyrto kërkesën për ndryshim orari",
   "dashboardNotifications.actions.openBooking": "Hap takimin",
+  "dashboardNotifications.actions.openDeparture": "Hap nisjen",
   "dashboardNotifications.actions.openSupport": "Hap mbështetjen",
   "dashboardNotifications.actions.openUpdate": "Hap përditësimin",
   "notifications.types.businessBookingDeclined.message":
@@ -5327,4 +5330,174 @@ export const sq: TranslationTree = {
     "Kërkesa për ndryshim u tërhoq",
   "customerApp.lifecycle.rescheduleCancelled.businessMessage":
     "{customer} tërhoqi kërkesën për ndryshim orari te {business}.",
+  "bookingConfirmation.details.tripTitle": "Detajet e udhëtimit",
+  "dashboardBookings.departures.open": "Nisjet në grup",
+  "dashboardBusinesses.setup.departures": "Nisjet",
+  "dashboardBusinesses.setup.departuresAction": "Shto nisje",
+  "dashboardBusinesses.setup.departuresBody":
+    "Shto datat, oraret dhe kapacitetin e vendeve që klientët mund të rezervojnë.",
+  "dashboardBusinesses.setup.guide": "Guida ose operatori",
+  "dashboardBusinesses.setup.guideAction": "Menaxho nisjet",
+  "dashboardBusinesses.setup.guideBody":
+    "Shto një nisje dhe, nëse dëshiron, cakto guidën që e drejton.",
+  "dashboardServices.bookingType.label": "Si rezervojnë klientët",
+  "dashboardServices.bookingType.appointment": "Takim",
+  "dashboardServices.bookingType.appointmentHint":
+    "Një klient rezervon një orar me një anëtar stafi.",
+  "dashboardServices.bookingType.group": "Grup me orar",
+  "dashboardServices.bookingType.groupHint":
+    "Disa klientë rezervojnë vende në të njëjtën nisje.",
+  "dashboardServices.bookingType.groupActive": "Shërbim i planifikuar me vende",
+  "dashboardServices.bookingType.groupActiveHint":
+    "Klientët zgjedhin një nisje me orar dhe rezervojnë një ose më shumë vende.",
+  "dashboardServices.bookingType.useAppointment": "Përdor takime standarde",
+  "dashboardServices.bookingType.suggestionTitle":
+    "A do t’i bashkohen disa persona të njëjtit orar?",
+  "dashboardServices.bookingType.suggestionBody":
+    "Ky duket si tur, kurs ose aktivitet në grup. Përdor nisjet vetëm kur klientët ndajnë të njëjtin orar dhe kapacitet.",
+  "dashboardServices.bookingType.useGroup": "Përdor nisje dhe vende",
+  "dashboardServices.bookingType.optionalTitle":
+    "Tur, kurs apo udhëtim i përbashkët?",
+  "dashboardServices.bookingType.optionalBody":
+    "Përdor nisje me orar vetëm kur disa klientë mund të rezervojnë vende në të njëjtin orar.",
+  "dashboardServices.bookingType.standardSummary":
+    "Formati i rezervimit: takim standard",
+  "dashboardServices.card.perGuest": "për person",
+  "dashboardServices.card.scheduledGroup": "Grup me orar",
+  "dashboardServices.create.pricePerGuest": "Çmimi për person",
+  "dashboardServices.error.capacityRange":
+    "Kapaciteti i grupit duhet të jetë nga 1 deri në 200.",
+  "dashboardServices.error.bookingTypeLocked":
+    "Ky shërbim ka tashmë histori nisjesh. Mbaje si shërbim në grup me orar ose krijo një shërbim të ri me takime.",
+  "dashboardServices.group.capacity": "Vendet standarde",
+  "dashboardServices.group.created":
+    "Shërbimi në grup u shtua. Shto nisjen e parë që klientët të rezervojnë vende.",
+  "dashboardServices.group.hidden":
+    "I fshehur nga klientët. Shfaqe kur nisjet të jenë gati.",
+  "dashboardServices.group.manageDepartures": "Menaxho nisjet",
+  "dashboardServices.group.needsDeparture":
+    "Shto një nisje të ardhshme që klientët të mund të rezervojnë vende.",
+  "dashboardServices.group.privateEnabled":
+    "Lejo rezervimin privat të udhëtimit",
+  "dashboardServices.group.privateHint":
+    "Një klient rezervon të gjithë nisjen.",
+  "dashboardServices.group.privatePrice": "Çmimi i udhëtimit privat",
+  "dashboardServices.group.ready":
+    "Klientët mund të rezervojnë vende në nisjet e ardhshme.",
+  "dashboardServices.group.seats": "vende",
+  "dashboardServices.group.typeLocked":
+    "Lloji i rezervimit mbetet në grup pasi krijohen nisje.",
+  "dashboardServices.group.upcomingDepartures": "nisje të ardhshme",
+  "departures.pageTitle": "Nisjet",
+  "departures.pageSubtitle": "Shërbime në grup me orar",
+  "departures.loading": "Po ngarkohen nisjet...",
+  "departures.emptyService.title": "Shto fillimisht një shërbim në grup",
+  "departures.emptyService.body":
+    "Krijo një shërbim Grup me orar, pastaj kthehu këtu për të shtuar datat dhe kapacitetin.",
+  "departures.emptyService.cta": "Hap shërbimet",
+  "departures.create.kicker": "Orar i ri",
+  "departures.create.title": "Shto një nisje",
+  "departures.createOne": "Shto nisjen",
+  "departures.createMany": "Shto nisjet",
+  "departures.field.service": "Shërbimi në grup",
+  "departures.field.date": "Data",
+  "departures.field.time": "Ora e nisjes",
+  "departures.field.capacity": "Vendet",
+  "departures.field.guide": "Guida ose stafi (opsionale)",
+  "departures.field.noGuide": "Caktoje më vonë",
+  "departures.field.meetingPoint": "Pika e takimit",
+  "departures.field.meetingPlaceholder":
+    "Porti, hoteli ose udhëzimet e sakta të takimit",
+  "departures.field.repeat": "Nisje ditore",
+  "departures.perGuest": "për person",
+  "departures.privateTrip": "Udhëtim privat",
+  "departures.guests": "persona",
+  "departures.upcoming.kicker": "Operacionet aktive",
+  "departures.upcoming.title": "Nisjet e ardhshme",
+  "departures.upcoming.empty": "Nuk ka ende nisje të ardhshme.",
+  "departures.seatsBooked": "vende të rezervuara",
+  "departures.detail.kicker": "Lista e nisjes",
+  "departures.detail.booked": "Rezervuar",
+  "departures.detail.remaining": "Të lira",
+  "departures.detail.reservations": "Rezervime",
+  "departures.detail.guests": "Lista e klientëve",
+  "departures.detail.noGuests": "Nuk ka ende rezervime.",
+  "departures.detail.notProvided": "Nuk është dhënë",
+  "departures.detail.choose":
+    "Zgjidh një nisje për të parë kapacitetin dhe listën e klientëve.",
+  "departures.action.complete": "Shëno si të përfunduar",
+  "departures.action.cancel": "Anulo nisjen",
+  "departures.confirm.cancel":
+    "Ta anulosh këtë nisje dhe të njoftosh çdo rezervim aktiv? Ky veprim nuk mund të zhbëhet.",
+  "departures.cancelled.final":
+    "Nisjet e anuluara mbeten të mbyllura. Shto një nisje të re nëse udhëtimi ricaktohet.",
+  "departures.reservation.confirm": "Konfirmo",
+  "departures.reservation.decline": "Refuzo",
+  "departures.reservation.cancel": "Anulo",
+  "departures.error.load": "Nisjet me orar nuk u ngarkuan.",
+  "departures.error.chooseService": "Zgjidh fillimisht një shërbim në grup.",
+  "departures.error.create": "Nisja nuk u shtua.",
+  "departures.error.alreadyExists":
+    "Ekziston tashmë një nisje për këtë shërbim dhe orar.",
+  "departures.error.futureOnly": "Zgjidh një orar nisjeje në të ardhmen.",
+  "departures.error.notFinished":
+    "Kjo nisje nuk mund të përfundohet para mbarimit të saj.",
+  "departures.error.update": "Nisja nuk u përditësua.",
+  "departures.error.reservationUpdate": "Rezervimi nuk u përditësua.",
+  "departures.error.reservationChanged":
+    "Ky rezervim ndryshoi gjatë shqyrtimit. Rifresko faqen dhe provo përsëri.",
+  "departures.status.scheduled": "E planifikuar",
+  "departures.success.createdOne": "Nisja u shtua.",
+  "departures.success.createdMany": "Nisjet u shtuan.",
+  "departures.success.updated": "Nisja u përditësua.",
+  "departures.success.reservationUpdated": "Rezervimi u përditësua.",
+  "myBookings.group.departureTime": "Ora e nisjes",
+  "myBookings.group.guideLater": "Guida caktohet nga biznesi",
+  "myBookings.group.seatReservation": "Nisje me orar",
+  "myBookings.group.wholeDeparture": "E gjithë nisja është rezervuar",
+  "publicBusiness.bookingMode.instantBooking": "Rezervo menjëherë",
+  "publicBusiness.bookingMode.requestBooking": "Kërko rezervim",
+  "publicBusiness.departures.step": "Hapi 2",
+  "publicBusiness.departures.title": "Zgjidh një nisje",
+  "publicBusiness.departures.upcoming": "të ardhshme",
+  "publicBusiness.departures.none":
+    "Nuk ka ende nisje të ardhshme për këtë udhëtim.",
+  "publicBusiness.departures.seatLeft": "vend i lirë",
+  "publicBusiness.departures.seatsLeft": "vende të lira",
+  "publicBusiness.departures.bookingType": "Lloji i rezervimit",
+  "publicBusiness.departures.shared": "Vende të përbashkëta",
+  "publicBusiness.departures.private": "Udhëtim privat",
+  "publicBusiness.departures.wholeTrip": "i gjithë udhëtimi",
+  "publicBusiness.departures.privateUnavailable":
+    "Nuk disponohet pasi janë rezervuar vende",
+  "publicBusiness.departures.guests": "Persona",
+  "publicBusiness.departures.guestHint": "Zgjidh sa vende të nevojiten.",
+  "publicBusiness.departures.privateGuestHint":
+    "Tregoji operatorit sa persona do të marrin pjesë.",
+  "publicBusiness.departures.removeGuest": "Hiq një person",
+  "publicBusiness.departures.addGuest": "Shto një person",
+  "publicBusiness.departures.guide": "Guida",
+  "publicBusiness.departures.meetingPoint": "Pika e takimit",
+  "publicBusiness.departures.chooseFirst":
+    "Zgjidh një nisje të disponueshme para se të rezervosh.",
+  "publicBusiness.departures.partyUnavailable":
+    "Zgjidh një numër personash brenda vendeve ende të lira.",
+  "publicBusiness.departures.notEnoughSeats":
+    "Këto vende sapo u rezervuan. Zgjidh më pak persona ose një nisje tjetër.",
+  "publicBusiness.departures.noLongerAvailable":
+    "Kjo nisje nuk është më e disponueshme. Zgjidh një tjetër.",
+  "publicBusiness.departures.createFailed":
+    "Rezervimi nuk u krijua. Provo përsëri.",
+  "publicBusiness.services.scheduledGroup": "Udhëtim në grup me orar",
+  "publicBusiness.services.perGuest": "për person",
+  "publicBusiness.services.noDeparturesBody":
+    "Ky biznes ka shërbime aktive, por nuk ka ende nisje të ardhshme ose orare stafi të disponueshme.",
+  "publicBusiness.summary.emptyTrip": "Udhëtimi yt",
+  "publicBusiness.summary.pickDepartureBody":
+    "Zgjidh nisjen dhe numrin e personave, pastaj kontrollo rezervimin.",
+  "publicBusiness.summary.reviewTrip": "Kontrollo rezervimin",
+  "staffCalendar.departure": "Nisje në grup",
+  "staffCalendar.departure.kicker": "Nisja e caktuar",
+  "staffCalendar.departure.ownerManifest":
+    "Pronari i biznesit menaxhon listën e klientëve dhe vendimet për rezervimet.",
 };

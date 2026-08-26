@@ -10,6 +10,7 @@ import PublicBusinessSetupWarning from "@/components/public-business/PublicBusin
 import PublicBusinessServices from "@/components/public-business/PublicBusinessServices";
 import PublicBusinessStaffPicker from "@/components/public-business/PublicBusinessStaffPicker";
 import PublicBusinessAvailability from "@/components/public-business/PublicBusinessAvailability";
+import PublicBusinessDepartures from "@/components/public-business/PublicBusinessDepartures";
 import PublicBusinessSummary from "@/components/public-business/PublicBusinessSummary";
 import { publicStaffName } from "@/components/public-business/publicStaffDisplay";
 import { useI18n } from "@/lib/useI18n";
@@ -25,6 +26,21 @@ type Service = {
   price: number;
   description?: string | null;
   image_url?: string | null;
+  booking_type?: "appointment" | "group" | null;
+  group_capacity?: number | null;
+  private_booking_enabled?: boolean | null;
+  private_price?: number | null;
+};
+
+type PublicDeparture = {
+  id: string;
+  service_id: string;
+  staff_member_id?: string | null;
+  start_at: string;
+  duration_minutes: number;
+  capacity: number;
+  remaining_seats: number;
+  meeting_point?: string | null;
 };
 
 type StaffMember = {
@@ -91,6 +107,7 @@ type PublicBusinessProfile = {
   staffServices: StaffService[];
   staffAvailability: StaffAvailability[];
   availability: BusinessAvailability[];
+  departures: PublicDeparture[];
   ownerPreview: boolean;
 };
 
@@ -133,6 +150,7 @@ export default function BusinessBookingPage() {
   const [staffAvailability, setStaffAvailability] = useState<
     StaffAvailability[]
   >([]);
+  const [departures, setDepartures] = useState<PublicDeparture[]>([]);
 
   const [customerUserId, setCustomerUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -146,6 +164,11 @@ export default function BusinessBookingPage() {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedStaffChoice, setSelectedStaffChoice] =
     useState<StaffChoice>("any");
+  const [selectedDepartureId, setSelectedDepartureId] = useState("");
+  const [bookingOption, setBookingOption] = useState<"shared" | "private">(
+    "shared",
+  );
+  const [partySize, setPartySize] = useState(1);
 
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const today = new Date();
@@ -208,6 +231,7 @@ export default function BusinessBookingPage() {
     setStaffServices(profile.staffServices || []);
     setStaffAvailability(profile.staffAvailability || []);
     setAvailability(profile.availability || []);
+    setDepartures(profile.departures || []);
   }
 
   useEffect(() => {
@@ -347,8 +371,17 @@ export default function BusinessBookingPage() {
     const dateValue = queryStringValue(router.query.date);
     const timeValue = cleanTimeValue(queryStringValue(router.query.time));
     const staffValue = queryStringValue(router.query.staff);
+    const departureValue = queryStringValue(router.query.departure);
+    const partyValue = Number(queryStringValue(router.query.party));
+    const optionValue = queryStringValue(router.query.option);
 
-    if (!serviceId && !dateValue && !timeValue && !staffValue) {
+    if (
+      !serviceId &&
+      !dateValue &&
+      !timeValue &&
+      !staffValue &&
+      !departureValue
+    ) {
       restoredBookingIntentRef.current = true;
       return;
     }
@@ -379,8 +412,30 @@ export default function BusinessBookingPage() {
 
     if (timeValue) setSelectedTime(timeValue);
 
+    const intendedDeparture =
+      departureValue &&
+      departures.find((departure) => departure.id === departureValue);
+    if (departureValue && intendedDeparture) {
+      setSelectedDepartureId(departureValue);
+    }
+    if (Number.isInteger(partyValue) && partyValue > 0 && partyValue <= 200) {
+      setPartySize(partyValue);
+    }
+    if (optionValue === "shared" || optionValue === "private") {
+      const privateOptionAvailable = Boolean(
+        nextService?.private_booking_enabled &&
+        intendedDeparture &&
+        intendedDeparture.remaining_seats === intendedDeparture.capacity,
+      );
+      setBookingOption(
+        optionValue === "private" && !privateOptionAvailable
+          ? "shared"
+          : optionValue,
+      );
+    }
+
     restoredBookingIntentRef.current = true;
-  }, [router.isReady, router.query, services, staffMembers]);
+  }, [router.isReady, router.query, services, staffMembers, departures]);
 
   useEffect(() => {
     function refreshOnFocus() {
@@ -489,6 +544,11 @@ export default function BusinessBookingPage() {
   }
 
   function bookingModeText() {
+    if (selectedService?.booking_type === "group") {
+      return business?.auto_accept_bookings === false
+        ? t("publicBusiness.bookingMode.requestBooking", "Request booking")
+        : t("publicBusiness.bookingMode.instantBooking", "Book instantly");
+    }
     return business?.auto_accept_bookings === false
       ? t("publicBusiness.bookingMode.request", "Request appointment")
       : t("publicBusiness.bookingMode.instant", "Book instantly");
@@ -498,7 +558,7 @@ export default function BusinessBookingPage() {
     return business?.auto_accept_bookings === false
       ? t(
           "publicBusiness.bookingMode.requestBody",
-          "The business will review and confirm your request.",
+          "The business will review and confirm your booking request.",
         )
       : t(
           "publicBusiness.bookingMode.instantBody",
@@ -826,6 +886,23 @@ export default function BusinessBookingPage() {
     return getServiceStaff(selectedService);
   }, [selectedService, staffMembers, staffServices]);
 
+  const serviceDepartures = useMemo(
+    () =>
+      selectedService
+        ? departures.filter(
+            (departure) => departure.service_id === selectedService.id,
+          )
+        : [],
+    [departures, selectedService],
+  );
+
+  const selectedDeparture = useMemo(
+    () =>
+      departures.find((departure) => departure.id === selectedDepartureId) ||
+      null,
+    [departures, selectedDepartureId],
+  );
+
   const availableStaffForSelectedTime = useMemo(() => {
     if (!selectedTime) return [];
 
@@ -838,13 +915,19 @@ export default function BusinessBookingPage() {
   }, [selectedTime, timeSlots, selectableStaff]);
 
   const bookableServiceCount = services.filter((service) =>
-    staffServices.some((link) => link.service_id === service.id),
+    service.booking_type === "group"
+      ? departures.some((departure) => departure.service_id === service.id)
+      : staffServices.some((link) => link.service_id === service.id),
   ).length;
   const visibleServices = useMemo(() => {
     return services.map((service) => {
-      const assignedStaffCount = staffServices.filter(
-        (link) => link.service_id === service.id,
-      ).length;
+      const assignedStaffCount =
+        service.booking_type === "group"
+          ? departures.filter(
+              (departure) => departure.service_id === service.id,
+            ).length
+          : staffServices.filter((link) => link.service_id === service.id)
+              .length;
 
       return {
         service,
@@ -852,10 +935,13 @@ export default function BusinessBookingPage() {
         isBookable: assignedStaffCount > 0,
       };
     });
-  }, [services, staffServices]);
+  }, [services, staffServices, departures]);
 
   const setupIssueMessages = useMemo(() => {
     const issues: string[] = [];
+    const hasAppointmentServices = services.some(
+      (service) => service.booking_type !== "group",
+    );
 
     if (services.length === 0)
       issues.push(
@@ -864,21 +950,28 @@ export default function BusinessBookingPage() {
           "No active services are available yet.",
         ),
       );
-    if (staffMembers.length === 0)
+    if (hasAppointmentServices && staffMembers.length === 0)
       issues.push(
         t(
           "publicBusiness.setupIssue.noStaff",
           "No active staff are available yet.",
         ),
       );
-    if (availability.filter((row) => row.is_closed !== true).length === 0)
+    if (
+      hasAppointmentServices &&
+      availability.filter((row) => row.is_closed !== true).length === 0
+    )
       issues.push(
         t(
           "publicBusiness.setupIssue.noHours",
           "No working hours are available yet.",
         ),
       );
-    if (bookableServiceCount === 0 && services.length > 0)
+    if (
+      bookableServiceCount === 0 &&
+      services.length > 0 &&
+      hasAppointmentServices
+    )
       issues.push(
         t(
           "publicBusiness.setupIssue.servicesNotAssigned",
@@ -899,7 +992,11 @@ export default function BusinessBookingPage() {
 
   // useEffect for time slots
   useEffect(() => {
-    if (!selectedDate || !selectedService) {
+    if (
+      !selectedDate ||
+      !selectedService ||
+      selectedService.booking_type === "group"
+    ) {
       setTimeSlots([]);
       return;
     }
@@ -989,6 +1086,130 @@ export default function BusinessBookingPage() {
       : t("publicBusiness.staff.noneSelected", "No staff selected");
   }
 
+  async function createCapacityBooking() {
+    if (!selectedService || !selectedDeparture) {
+      setError(
+        t(
+          "publicBusiness.departures.chooseFirst",
+          "Choose an available departure before booking.",
+        ),
+      );
+      return;
+    }
+
+    const partyLimit =
+      bookingOption === "private"
+        ? selectedDeparture.capacity
+        : selectedDeparture.remaining_seats;
+    if (partySize < 1 || partySize > partyLimit) {
+      setError(
+        t(
+          "publicBusiness.departures.partyUnavailable",
+          "Choose a guest count within the seats still available.",
+        ),
+      );
+      return;
+    }
+
+    recordSiteEvent("booking_started", {
+      locale,
+      entityType: "business",
+      entityId:
+        business?.id || (typeof businessId === "string" ? businessId : ""),
+      metadata: {
+        surface: "scheduled_group",
+        authenticated: true,
+        category: business?.category || null,
+        city: business?.city || null,
+      },
+    });
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("auth_required");
+
+      const response = await fetch("/api/customer/capacity-bookings/create", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + session.access_token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          departureId: selectedDeparture.id,
+          partySize,
+          bookingOption,
+          customerName,
+          customerPhone,
+          customerNotes: customerNote,
+        }),
+      });
+      const result = (await response.json()) as {
+        code?: string;
+        error?: string;
+        booking?: { id: string };
+      };
+
+      if (!response.ok || !result.booking?.id) {
+        if (result.code === "not_enough_seats") {
+          throw new Error(
+            t(
+              "publicBusiness.departures.notEnoughSeats",
+              "Those seats were just reserved. Choose fewer guests or another departure.",
+            ),
+          );
+        }
+        if (result.code === "departure_unavailable") {
+          throw new Error(
+            t(
+              "publicBusiness.departures.noLongerAvailable",
+              "This departure is no longer available. Choose another one.",
+            ),
+          );
+        }
+        if (result.code === "party_size_invalid") {
+          throw new Error(
+            t(
+              "publicBusiness.departures.partyUnavailable",
+              "Choose a guest count within the seats still available.",
+            ),
+          );
+        }
+        if (result.code === "private_trip_unavailable") {
+          throw new Error(
+            t(
+              "publicBusiness.departures.privateUnavailable",
+              "Unavailable after seats are reserved",
+            ),
+          );
+        }
+        throw new Error(
+          t(
+            "publicBusiness.departures.createFailed",
+            "Could not create this booking. Please try again.",
+          ),
+        );
+      }
+
+      router.push("/booking-confirmation?id=" + result.booking.id);
+    } catch (capacityError) {
+      setLoading(false);
+      setError(
+        capacityError instanceof Error
+          ? capacityError.message
+          : t(
+              "publicBusiness.departures.createFailed",
+              "Could not create this booking. Please try again.",
+            ),
+      );
+      await loadBookingPage();
+    }
+  }
+
   async function createBooking(e: React.FormEvent) {
     e.preventDefault();
 
@@ -1000,6 +1221,11 @@ export default function BusinessBookingPage() {
       setError(
         `${t("publicBusiness.error.loginToBook", "Please login or create a customer account to book with")} ${business?.name || t("publicBusiness.thisBusiness", "this business")}.`,
       );
+      return;
+    }
+
+    if (selectedService?.booking_type === "group") {
+      await createCapacityBooking();
       return;
     }
 
@@ -1378,22 +1604,74 @@ export default function BusinessBookingPage() {
       })
     : "";
 
+  const selectedDepartureDateLabel = selectedDeparture
+    ? formatLocalizedDate(selectedDeparture.start_at, locale, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: business?.timezone || undefined,
+      })
+    : "";
+
   const canSubmit = Boolean(
-    selectedService &&
-    selectedDate &&
-    selectedTime &&
-    selectedStaffChoice &&
-    customerUserId &&
-    userRole === "customer",
+    selectedService?.booking_type === "group"
+      ? selectedDeparture &&
+          partySize >= 1 &&
+          partySize <=
+            (bookingOption === "private"
+              ? selectedDeparture.capacity
+              : selectedDeparture.remaining_seats) &&
+          (bookingOption !== "private" ||
+            selectedDeparture.remaining_seats === selectedDeparture.capacity) &&
+          customerUserId &&
+          userRole === "customer"
+      : selectedService &&
+          selectedDate &&
+          selectedTime &&
+          selectedStaffChoice &&
+          customerUserId &&
+          userRole === "customer",
   );
 
   const selectedSlotForComponents =
-    selectedDate && selectedTime
+    selectedService?.booking_type === "group" && selectedDeparture
       ? {
-          startAt: `${selectedDate}T${selectedTime}:00`,
-          label: selectedTime,
-          staffMemberId:
-            selectedStaffChoice === "any" ? null : selectedStaffChoice,
+          startAt: selectedDeparture.start_at,
+          label: selectedDepartureDateLabel,
+          staffMemberId: selectedDeparture.staff_member_id || null,
+        }
+      : selectedDate && selectedTime
+        ? {
+            startAt: `${selectedDate}T${selectedTime}:00`,
+            label: selectedTime,
+            staffMemberId:
+              selectedStaffChoice === "any" ? null : selectedStaffChoice,
+          }
+        : null;
+
+  const selectedDepartureGuide = selectedDeparture?.staff_member_id
+    ? staffMembers.find(
+        (staff) => staff.id === selectedDeparture.staff_member_id,
+      ) || null
+    : null;
+  const groupBookingSummary =
+    selectedService?.booking_type === "group" && selectedDeparture
+      ? {
+          bookingOption,
+          partySize,
+          remainingSeats: selectedDeparture.remaining_seats,
+          meetingPoint: selectedDeparture.meeting_point || null,
+          guideName: selectedDepartureGuide
+            ? publicStaffDisplayName(selectedDepartureGuide)
+            : null,
+          totalPrice:
+            bookingOption === "private"
+              ? Number(
+                  selectedService.private_price ?? selectedService.price ?? 0,
+                )
+              : Number(selectedService.price || 0) * partySize,
         }
       : null;
 
@@ -1439,6 +1717,11 @@ export default function BusinessBookingPage() {
     if (selectedDate) params.set("date", selectedDate);
     if (selectedTime) params.set("time", selectedTime);
     if (selectedStaffChoice) params.set("staff", selectedStaffChoice);
+    if (selectedDepartureId) params.set("departure", selectedDepartureId);
+    if (selectedService?.booking_type === "group") {
+      params.set("party", String(partySize));
+      params.set("option", bookingOption);
+    }
 
     const query = params.toString();
     return `/explore/${targetBusinessId}${query ? `?${query}` : ""}`;
@@ -1550,6 +1833,9 @@ export default function BusinessBookingPage() {
                 setStaffFilter("any");
                 setSelectedStaffChoice("any");
                 setSelectedTime("");
+                setSelectedDepartureId("");
+                setBookingOption("shared");
+                setPartySize(1);
               }}
               formatServicePrice={formatServicePrice}
               serviceImageBackground={serviceImageBackground}
@@ -1564,45 +1850,86 @@ export default function BusinessBookingPage() {
                   )}
                 </p>
                 <p className="small muted" style={{ marginTop: "0.35rem" }}>
-                  {t(
-                    "publicBusiness.services.notBookableBody",
-                    "This business has active services, but staff have not been assigned to them yet.",
-                  )}
+                  {services.some((service) => service.booking_type === "group")
+                    ? t(
+                        "publicBusiness.services.noDeparturesBody",
+                        "This business has active services, but no upcoming departures or staff times are available yet.",
+                      )
+                    : t(
+                        "publicBusiness.services.notBookableBody",
+                        "This business has active services, but staff have not been assigned to them yet.",
+                      )}
                 </p>
               </div>
             )}
             {selectedService && (
               <div className="booking-step-stack">
-                <PublicBusinessStaffPicker
-                  staffMembers={staffMembers}
-                  selectedStaffId={staffFilter}
-                  onSelectStaff={(staffId) => {
-                    setStaffFilter(staffId);
-                    setSelectedTime("");
-                    setSelectedStaffChoice("any");
-                  }}
-                  availableStaffForSelectedService={selectableStaff}
-                />
+                {selectedService.booking_type === "group" ? (
+                  <PublicBusinessDepartures
+                    service={selectedService}
+                    departures={serviceDepartures}
+                    staffMembers={staffMembers}
+                    selectedDepartureId={selectedDepartureId}
+                    bookingOption={bookingOption}
+                    partySize={partySize}
+                    timeZone={business.timezone}
+                    onSelectDeparture={(departureId) => {
+                      setSelectedDepartureId(departureId);
+                      const departure = departures.find(
+                        (item) => item.id === departureId,
+                      );
+                      if (departure) {
+                        if (departure.remaining_seats !== departure.capacity) {
+                          setBookingOption("shared");
+                        }
+                        setPartySize((current) =>
+                          Math.min(
+                            Math.max(current, 1),
+                            departure.remaining_seats,
+                          ),
+                        );
+                      }
+                    }}
+                    onBookingOptionChange={(option) => {
+                      setBookingOption(option);
+                    }}
+                    onPartySizeChange={setPartySize}
+                    formatPrice={formatServicePrice}
+                  />
+                ) : (
+                  <>
+                    <PublicBusinessStaffPicker
+                      staffMembers={staffMembers}
+                      selectedStaffId={staffFilter}
+                      onSelectStaff={(staffId) => {
+                        setStaffFilter(staffId);
+                        setSelectedTime("");
+                        setSelectedStaffChoice("any");
+                      }}
+                      availableStaffForSelectedService={selectableStaff}
+                    />
 
-                <PublicBusinessAvailability
-                  selectedServiceName={selectedService.name}
-                  selectedStaffLabel={staffPreferenceLabel}
-                  selectedDate={selectedDate}
-                  availableSlots={timeSlotsForComponents}
-                  selectedSlot={selectedSlotForComponents}
-                  loadingSlots={false}
-                  canPickDate={selectableStaff.length > 0}
-                  noSlotsMessage={availabilityEmptyMessage}
-                  onDateChange={(date) => {
-                    setSelectedDate(date);
-                    setSelectedTime("");
-                    setSelectedStaffChoice("any");
-                  }}
-                  onSelectSlot={(slot) => {
-                    setSelectedTime(slot.label);
-                    setSelectedStaffChoice(slot.staffMemberId || "any");
-                  }}
-                />
+                    <PublicBusinessAvailability
+                      selectedServiceName={selectedService.name}
+                      selectedStaffLabel={staffPreferenceLabel}
+                      selectedDate={selectedDate}
+                      availableSlots={timeSlotsForComponents}
+                      selectedSlot={selectedSlotForComponents}
+                      loadingSlots={false}
+                      canPickDate={selectableStaff.length > 0}
+                      noSlotsMessage={availabilityEmptyMessage}
+                      onDateChange={(date) => {
+                        setSelectedDate(date);
+                        setSelectedTime("");
+                        setSelectedStaffChoice("any");
+                      }}
+                      onSelectSlot={(slot) => {
+                        setSelectedTime(slot.label);
+                        setSelectedStaffChoice(slot.staffMemberId || "any");
+                      }}
+                    />
+                  </>
+                )}
               </div>
             )}
           </section>
@@ -1612,10 +1939,13 @@ export default function BusinessBookingPage() {
             selectedService={selectedService}
             selectedSlot={selectedSlotForComponents}
             selectedStaffSummary={selectedStaffSummary}
+            groupBooking={groupBookingSummary}
             selectedDateLabel={
-              selectedDateLabel && selectedTime
-                ? `${selectedDateLabel} · ${selectedTime}`
-                : selectedDateLabel
+              selectedService?.booking_type === "group"
+                ? selectedDepartureDateLabel
+                : selectedDateLabel && selectedTime
+                  ? `${selectedDateLabel} · ${selectedTime}`
+                  : selectedDateLabel
             }
             customerName={customerName}
             customerEmail={customerEmail}

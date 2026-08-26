@@ -13,6 +13,7 @@ type Props = {
   assignedStaff: StaffMember[];
   isEditing: boolean;
   isBookable: boolean;
+  departureCount: number;
   savingServiceId: string | null;
   uploadingServiceId: string | null;
   durationOptions: () => number[];
@@ -37,6 +38,7 @@ export default function ServiceCard({
   assignedStaff,
   isEditing,
   isBookable,
+  departureCount,
   savingServiceId,
   uploadingServiceId,
   durationOptions,
@@ -57,7 +59,7 @@ export default function ServiceCard({
       style={{
         borderColor: !service.active
           ? "rgba(255,190,11,0.25)"
-          : assignedStaff.length === 0
+          : !isBookable
             ? "rgba(255,190,11,0.35)"
             : "rgba(45,212,191,0.16)",
         overflow: "hidden",
@@ -109,6 +111,16 @@ export default function ServiceCard({
                   }
                   tone={isBookable ? "success" : "warning"}
                 />
+
+                {service.booking_type === "group" && (
+                  <ServiceStatusBadge
+                    label={t(
+                      "dashboardServices.card.scheduledGroup",
+                      "Scheduled group",
+                    )}
+                    tone="success"
+                  />
+                )}
               </div>
 
               {!isEditing && (
@@ -121,7 +133,22 @@ export default function ServiceCard({
                       business.currency,
                       locale,
                     )}
+                    {service.booking_type === "group" && (
+                      <> {t("dashboardServices.card.perGuest", "per guest")}</>
+                    )}
                   </p>
+
+                  {service.booking_type === "group" && (
+                    <p className="small muted service-line">
+                      {service.group_capacity || 0}{" "}
+                      {t("dashboardServices.group.seats", "seats")} ·{" "}
+                      {departureCount}{" "}
+                      {t(
+                        "dashboardServices.group.upcomingDepartures",
+                        "upcoming departures",
+                      )}
+                    </p>
+                  )}
 
                   {service.description && (
                     <p className="small muted service-line">
@@ -133,12 +160,20 @@ export default function ServiceCard({
                     className={`small service-assignment ${isBookable ? "ready" : "needs-setup"}`}
                   >
                     {isBookable
-                      ? assignedStaff
-                          .map(
-                            (staff) =>
-                              `${staff.name}${staff.role_title ? ` — ${staff.role_title}` : ""}`,
+                      ? service.booking_type === "group"
+                        ? t(
+                            "dashboardServices.group.ready",
+                            "Customers can reserve seats on upcoming departures.",
                           )
-                          .join(", ")
+                        : assignedStaff
+                            .map(
+                              (staff) =>
+                                staff.name +
+                                (staff.role_title
+                                  ? " — " + staff.role_title
+                                  : ""),
+                            )
+                            .join(", ")
                       : serviceReadinessText(service)}
                   </p>
                 </>
@@ -182,10 +217,15 @@ export default function ServiceCard({
 
                     <label>
                       <span>
-                        {t(
-                          "dashboardServices.create.pricePlaceholder",
-                          "Price",
-                        )}
+                        {service.booking_type === "group"
+                          ? t(
+                              "dashboardServices.create.pricePerGuest",
+                              "Price per guest",
+                            )
+                          : t(
+                              "dashboardServices.create.pricePlaceholder",
+                              "Price",
+                            )}
                       </span>
                       <input
                         type="number"
@@ -202,6 +242,149 @@ export default function ServiceCard({
                       />
                     </label>
                   </div>
+
+                  {service.booking_type === "group" ? (
+                    <div className="service-booking-format-active">
+                      <div>
+                        <strong>
+                          {t(
+                            "dashboardServices.bookingType.groupActive",
+                            "Scheduled service with seats",
+                          )}
+                        </strong>
+                        <p className="small muted service-line">
+                          {departureCount > 0
+                            ? t(
+                                "dashboardServices.group.typeLocked",
+                                "Booking type stays grouped once departures exist.",
+                              )
+                            : t(
+                                "dashboardServices.bookingType.groupActiveHint",
+                                "Customers choose a fixed departure and reserve one or more places.",
+                              )}
+                        </p>
+                      </div>
+                      {departureCount === 0 && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() =>
+                            updateLocalService(
+                              service.id,
+                              "booking_type",
+                              "appointment",
+                            )
+                          }
+                        >
+                          {t(
+                            "dashboardServices.bookingType.useAppointment",
+                            "Use standard appointments",
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <details className="service-booking-format-optional">
+                      <summary>
+                        {t(
+                          "dashboardServices.bookingType.standardSummary",
+                          "Booking format: standard appointment",
+                        )}
+                      </summary>
+                      <div>
+                        <p className="small muted service-line">
+                          {t(
+                            "dashboardServices.bookingType.optionalBody",
+                            "Only use scheduled departures when several customers can reserve places on the same fixed time.",
+                          )}
+                        </p>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() =>
+                            updateLocalService(
+                              service.id,
+                              "booking_type",
+                              "group",
+                            )
+                          }
+                        >
+                          {t(
+                            "dashboardServices.bookingType.useGroup",
+                            "Use departures and seats",
+                          )}
+                        </button>
+                      </div>
+                    </details>
+                  )}
+
+                  {service.booking_type === "group" && (
+                    <div className="service-edit-grid group-edit-grid">
+                      <label>
+                        <span>
+                          {t(
+                            "dashboardServices.group.capacity",
+                            "Default seats",
+                          )}
+                        </span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={200}
+                          value={service.group_capacity || 1}
+                          onChange={(event) =>
+                            updateLocalService(
+                              service.id,
+                              "group_capacity",
+                              Number(event.target.value),
+                            )
+                          }
+                        />
+                      </label>
+                      <label className="group-edit-toggle">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(service.private_booking_enabled)}
+                          onChange={(event) =>
+                            updateLocalService(
+                              service.id,
+                              "private_booking_enabled",
+                              event.target.checked,
+                            )
+                          }
+                        />
+                        <span>
+                          {t(
+                            "dashboardServices.group.privateEnabled",
+                            "Allow private trip booking",
+                          )}
+                        </span>
+                      </label>
+                      {service.private_booking_enabled && (
+                        <label>
+                          <span>
+                            {t(
+                              "dashboardServices.group.privatePrice",
+                              "Private trip price",
+                            )}
+                          </span>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={service.private_price || 0}
+                            onChange={(event) =>
+                              updateLocalService(
+                                service.id,
+                                "private_price",
+                                Number(event.target.value),
+                              )
+                            }
+                          />
+                        </label>
+                      )}
+                    </div>
+                  )}
 
                   <ServiceImageUpload
                     mode="edit"
@@ -313,12 +496,29 @@ export default function ServiceCard({
                       : t("dashboardServices.card.showService", "Show service")}
                   </button>
 
-                  <Link
-                    href={`/dashboard/staff?businessId=${business.id}`}
-                    className="btn btn-ghost"
-                  >
-                    {t("dashboardServices.hero.assignStaff", "Assign staff")}
-                  </Link>
+                  {service.booking_type === "group" ? (
+                    <Link
+                      href={
+                        "/dashboard/departures?businessId=" +
+                        business.id +
+                        "&serviceId=" +
+                        service.id
+                      }
+                      className="btn btn-ghost"
+                    >
+                      {t(
+                        "dashboardServices.group.manageDepartures",
+                        "Manage departures",
+                      )}
+                    </Link>
+                  ) : (
+                    <Link
+                      href={"/dashboard/staff?businessId=" + business.id}
+                      className="btn btn-ghost"
+                    >
+                      {t("dashboardServices.hero.assignStaff", "Assign staff")}
+                    </Link>
+                  )}
                 </>
               )}
             </div>
@@ -405,6 +605,44 @@ export default function ServiceCard({
           margin-top: 0.25rem;
         }
 
+        .service-booking-format-active {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          border: 1px solid rgba(20, 184, 166, 0.42);
+          border-radius: 8px;
+          background: rgba(20, 184, 166, 0.08);
+        }
+
+        .service-booking-format-active p {
+          margin-top: 0.2rem;
+        }
+
+        .service-booking-format-optional {
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .service-booking-format-optional summary {
+          min-height: 44px;
+          padding: 0.7rem 0.8rem;
+          cursor: pointer;
+          color: var(--text-muted);
+          font-size: 0.8rem;
+          font-weight: 750;
+        }
+
+        .service-booking-format-optional > div {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          padding: 0 0.8rem 0.8rem;
+        }
+
         .service-visibility-toggle {
           cursor: pointer;
         }
@@ -439,6 +677,21 @@ export default function ServiceCard({
           color: var(--text-muted);
           font-size: 0.78rem;
           font-weight: 700;
+        }
+
+        .group-edit-grid {
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .group-edit-toggle {
+          display: flex !important;
+          flex-direction: row;
+          align-items: center;
+          gap: 0.55rem;
+          min-height: 44px;
         }
 
         @media (max-width: 860px) {
@@ -483,6 +736,18 @@ export default function ServiceCard({
 
           .service-card-actions.editing {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .service-booking-format-active,
+          .service-booking-format-optional > div {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .service-booking-format-active :global(.btn),
+          .service-booking-format-optional :global(.btn) {
+            width: 100%;
+            justify-content: center;
           }
 
           .service-card-actions :global(.btn),
