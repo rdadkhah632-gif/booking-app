@@ -380,6 +380,17 @@ export default async function handler(
           "Scheduled departure booking is temporarily unavailable",
         );
       }
+      if (
+        createError?.code === "23P01" &&
+        message.includes("prevent_overlapping_bookings")
+      ) {
+        return errorResponse(
+          response,
+          503,
+          "capacity_contract_outdated",
+          "Scheduled departure booking is temporarily unavailable",
+        );
+      }
       throw createError || new Error(message);
     }
 
