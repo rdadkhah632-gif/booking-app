@@ -140,6 +140,7 @@ export const sq: TranslationTree = {
   "common.choose": "Zgjidh",
   "common.working": "Duke punuar...",
   "common.loading": "Duke u ngarkuar...",
+  "common.sessionExpired": "Sesioni yt ka skaduar. Hyr përsëri.",
   "common.needHelp": "Keni nevojë për ndihmë?",
   "legal.kicker": "Ligjore",
   "legal.lastUpdated": "Përditësuar së fundmi: 25 gusht 2026",

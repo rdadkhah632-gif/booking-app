@@ -93,6 +93,7 @@ export const en: TranslationTree = {
   "common.choose": "Choose",
   "common.working": "Working...",
   "common.loading": "Loading...",
+  "common.sessionExpired": "Your session has expired. Sign in again.",
   "common.needHelp": "Need help?",
   "legal.kicker": "Legal",
   "legal.lastUpdated": "Last updated: 25 August 2026",

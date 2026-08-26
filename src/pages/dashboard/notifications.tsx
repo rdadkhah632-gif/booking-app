@@ -791,6 +791,82 @@ export default function BusinessNotifications() {
     return "var(--surface)";
   }
 
+  async function updatePendingBookingStatus(
+    booking: Booking,
+    status: "confirmed" | "declined",
+  ) {
+    if (!booking.departure_id) {
+      const { data, error } = await supabase
+        .from("bookings")
+        .update({ status })
+        .eq("id", booking.id)
+        .in("business_id", businessIds)
+        .eq("status", "pending")
+        .select("id")
+        .maybeSingle();
+
+      return { data, error, handledByApi: false };
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      return {
+        data: null,
+        error: new Error(
+          t(
+            "common.sessionExpired",
+            "Your session has expired. Sign in again.",
+          ),
+        ),
+        handledByApi: true,
+      };
+    }
+
+    try {
+      const response = await fetch("/api/dashboard/departures", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          businessId: booking.business_id,
+          bookingId: booking.id,
+          bookingStatus: status,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok || !payload.booking?.id) {
+        throw new Error(
+          payload.error ||
+            t(
+              "dashboardBookings.error.actionNoLongerAvailable",
+              "This booking is no longer available for that action. Refresh notifications to see the latest status.",
+            ),
+        );
+      }
+
+      return { data: payload.booking, error: null, handledByApi: true };
+    } catch (error) {
+      return {
+        data: null,
+        error:
+          error instanceof Error
+            ? error
+            : new Error(
+                t(
+                  "dashboardBookings.error.actionNoLongerAvailable",
+                  "This booking is no longer available for that action. Refresh notifications to see the latest status.",
+                ),
+              ),
+        handledByApi: true,
+      };
+    }
+  }
+
   async function acceptBooking(booking: Booking) {
     if (actionLoadingId) return;
 
@@ -807,14 +883,11 @@ export default function BusinessNotifications() {
     setError(null);
     setSuccess(null);
 
-    const { data: updatedBooking, error } = await supabase
-      .from("bookings")
-      .update({ status: "confirmed" })
-      .eq("id", booking.id)
-      .in("business_id", businessIds)
-      .eq("status", "pending")
-      .select("id")
-      .maybeSingle();
+    const {
+      data: updatedBooking,
+      error,
+      handledByApi,
+    } = await updatePendingBookingStatus(booking, "confirmed");
 
     setActionLoadingId(null);
 
@@ -835,21 +908,23 @@ export default function BusinessNotifications() {
       ),
     );
 
-    await createCustomerNotification({
-      userId: booking.customer_user_id,
-      businessId: booking.business_id,
-      bookingId: booking.id,
-      type: "booking_accepted",
-      title: t(
-        "dashboardBookings.notification.acceptedTitle",
-        "Booking accepted",
-      ),
-      message: t(
-        "dashboardBookings.notification.acceptedMessage",
-        "Your booking has been accepted and confirmed.",
-      ),
-      actionUrl: `/booking-confirmation?id=${booking.id}`,
-    });
+    if (!handledByApi) {
+      await createCustomerNotification({
+        userId: booking.customer_user_id,
+        businessId: booking.business_id,
+        bookingId: booking.id,
+        type: "booking_accepted",
+        title: t(
+          "dashboardBookings.notification.acceptedTitle",
+          "Booking accepted",
+        ),
+        message: t(
+          "dashboardBookings.notification.acceptedMessage",
+          "Your booking has been accepted and confirmed.",
+        ),
+        actionUrl: `/booking-confirmation?id=${booking.id}`,
+      });
+    }
     void requestTransactionalEmail({
       event: "booking_status_changed",
       bookingId: booking.id,
@@ -880,14 +955,11 @@ export default function BusinessNotifications() {
     setError(null);
     setSuccess(null);
 
-    const { data: updatedBooking, error } = await supabase
-      .from("bookings")
-      .update({ status: "declined" })
-      .eq("id", booking.id)
-      .in("business_id", businessIds)
-      .eq("status", "pending")
-      .select("id")
-      .maybeSingle();
+    const {
+      data: updatedBooking,
+      error,
+      handledByApi,
+    } = await updatePendingBookingStatus(booking, "declined");
 
     setActionLoadingId(null);
 
@@ -916,21 +988,23 @@ export default function BusinessNotifications() {
       ),
     );
 
-    await createCustomerNotification({
-      userId: booking.customer_user_id,
-      businessId: booking.business_id,
-      bookingId: booking.id,
-      type: "booking_declined",
-      title: t(
-        "dashboardBookings.notification.declinedTitle",
-        "Booking declined",
-      ),
-      message: t(
-        "dashboardBookings.notification.declinedMessage",
-        "Your booking request was declined.",
-      ),
-      actionUrl: "/my-bookings",
-    });
+    if (!handledByApi) {
+      await createCustomerNotification({
+        userId: booking.customer_user_id,
+        businessId: booking.business_id,
+        bookingId: booking.id,
+        type: "booking_declined",
+        title: t(
+          "dashboardBookings.notification.declinedTitle",
+          "Booking declined",
+        ),
+        message: t(
+          "dashboardBookings.notification.declinedMessage",
+          "Your booking request was declined.",
+        ),
+        actionUrl: "/my-bookings",
+      });
+    }
     void requestTransactionalEmail({
       event: "booking_status_changed",
       bookingId: booking.id,
