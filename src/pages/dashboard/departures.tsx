@@ -238,9 +238,22 @@ export default function DeparturesPage() {
     return status;
   }
 
-  async function createDepartures(event: React.FormEvent) {
+  async function createDepartures(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!serviceId) {
+    const formData = new FormData(event.currentTarget);
+    const submittedServiceId = String(formData.get("serviceId") || "").trim();
+    const submittedStaffMemberId = String(
+      formData.get("staffMemberId") || "",
+    ).trim();
+    const submittedDate = String(formData.get("date") || "").trim();
+    const submittedTime = String(formData.get("time") || "").trim();
+    const submittedCapacity = Number(formData.get("capacity"));
+    const submittedMeetingPoint = String(
+      formData.get("meetingPoint") || "",
+    ).trim();
+    const submittedRepeatCount = Number(formData.get("repeatCount"));
+
+    if (!submittedServiceId) {
       setError(
         t("departures.error.chooseService", "Choose a group service first."),
       );
@@ -252,16 +265,16 @@ export default function DeparturesPage() {
     try {
       await authenticatedRequest("POST", {
         businessId,
-        serviceId,
-        staffMemberId: staffMemberId || null,
-        date,
-        time,
-        capacity,
-        meetingPoint,
-        repeatCount,
+        serviceId: submittedServiceId,
+        staffMemberId: submittedStaffMemberId || null,
+        date: submittedDate,
+        time: submittedTime,
+        capacity: submittedCapacity,
+        meetingPoint: submittedMeetingPoint,
+        repeatCount: submittedRepeatCount,
       });
       setSuccess(
-        repeatCount > 1
+        submittedRepeatCount > 1
           ? t("departures.success.createdMany", "Departures added.")
           : t("departures.success.createdOne", "Departure added."),
       );
@@ -445,6 +458,7 @@ export default function DeparturesPage() {
                 <label>
                   <span>{t("departures.field.service", "Group service")}</span>
                   <select
+                    name="serviceId"
                     value={serviceId}
                     onChange={(event) => {
                       const nextId = event.target.value;
@@ -466,6 +480,7 @@ export default function DeparturesPage() {
                 <label>
                   <span>{t("departures.field.date", "Date")}</span>
                   <input
+                    name="date"
                     type="date"
                     value={date}
                     min={dateInputValue(new Date())}
@@ -476,6 +491,7 @@ export default function DeparturesPage() {
                 <label>
                   <span>{t("departures.field.time", "Start time")}</span>
                   <input
+                    name="time"
                     type="time"
                     value={time}
                     onChange={(event) => setTime(event.target.value)}
@@ -485,6 +501,7 @@ export default function DeparturesPage() {
                 <label>
                   <span>{t("departures.field.capacity", "Seats")}</span>
                   <input
+                    name="capacity"
                     type="number"
                     min={1}
                     max={200}
@@ -503,6 +520,7 @@ export default function DeparturesPage() {
                     {t("departures.field.guide", "Guide or staff (optional)")}
                   </span>
                   <select
+                    name="staffMemberId"
                     value={staffMemberId}
                     onChange={(event) => setStaffMemberId(event.target.value)}
                   >
@@ -522,6 +540,7 @@ export default function DeparturesPage() {
                     {t("departures.field.meetingPoint", "Meeting point")}
                   </span>
                   <input
+                    name="meetingPoint"
                     value={meetingPoint}
                     onChange={(event) => setMeetingPoint(event.target.value)}
                     placeholder={t(
@@ -535,6 +554,7 @@ export default function DeparturesPage() {
                     {t("departures.field.repeat", "Daily departures")}
                   </span>
                   <input
+                    name="repeatCount"
                     type="number"
                     min={1}
                     max={31}

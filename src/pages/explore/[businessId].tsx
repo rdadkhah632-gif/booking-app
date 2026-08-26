@@ -1197,16 +1197,16 @@ export default function BusinessBookingPage() {
 
       router.push("/booking-confirmation?id=" + result.booking.id);
     } catch (capacityError) {
-      setLoading(false);
-      setError(
+      const message =
         capacityError instanceof Error
           ? capacityError.message
           : t(
               "publicBusiness.departures.createFailed",
               "Could not create this booking. Please try again.",
-            ),
-      );
+            );
+      setLoading(false);
       await loadBookingPage();
+      setError(message);
     }
   }
 

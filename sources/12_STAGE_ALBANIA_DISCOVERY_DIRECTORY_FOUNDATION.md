@@ -2237,18 +2237,24 @@ Before deploying this batch, run:
 
 `sources/sql/40_scheduled_capacity_booking_foundation.sql`
 
-The SQL must complete successfully before the matching website build is used.
-It creates the private departure table, extends services/bookings with backward-
-compatible defaults and installs service-role-only atomic functions. It does
-not enable customer checkout or payments.
+Then run:
+
+`sources/sql/41_capacity_booking_overlap_compatibility.sql`
+
+Both SQL files must complete successfully before the matching website build is
+used. SQL 40 creates the private departure table, extends services/bookings with
+backward-compatible defaults and installs service-role-only atomic functions.
+SQL 41 preserves legacy appointment overlap rules while allowing several
+customers to reserve seats on the same scheduled departure. Neither enables
+customer checkout or payments.
 
 ### Batch 34 deployment QA
 
 Use **Extra High effort** because this changes a core booking contract and must
 prove concurrency, capacity, privacy and legacy appointment isolation.
 
-1. Run SQL 40, deploy and create one hidden disposable business with one normal
-   appointment service and one scheduled group service. Confirm an ordinary
+1. Run SQL 40 and SQL 41, deploy and create one hidden disposable business with
+   one normal appointment service and one scheduled group service. Confirm an ordinary
    haircut stays a standard appointment without capacity/departure controls.
    Confirm a tour-like service receives only a suggestion, never an automatic
    format change, and requires a deliberate `Use departures and seats` action.

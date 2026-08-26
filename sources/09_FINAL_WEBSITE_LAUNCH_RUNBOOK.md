@@ -533,6 +533,10 @@ on one fixed time, run:
 
 `sources/sql/40_scheduled_capacity_booking_foundation.sql`
 
+Then run:
+
+`sources/sql/41_capacity_booking_overlap_compatibility.sql`
+
 Then deploy the matching website build. Do not expose a scheduled group service
 until both steps are complete. Without SQL 40, the website must report that the
 capacity contract is not installed rather than falling back to ordinary
@@ -541,12 +545,14 @@ appointment booking.
 Deployment order:
 
 1. Run SQL 40 in the production Supabase SQL editor and confirm it commits.
-2. Deploy the matching website build.
-3. Create a hidden disposable group service and departure.
-4. Run the Batch 34 capacity, concurrency, privacy and legacy-appointment QA in
+2. Run SQL 41 and confirm it commits. This retains appointment clash protection
+   while permitting separate customers on one scheduled departure.
+3. Deploy the matching website build.
+4. Create a hidden disposable group service and departure.
+5. Run the Batch 34 capacity, concurrency, privacy and legacy-appointment QA in
    `sources/12_STAGE_ALBANIA_DISCOVERY_DIRECTORY_FOUNDATION.md`.
-5. Hide the disposable business after QA.
-6. Confirm each real operator's sellable passenger capacity before publishing
+6. Hide the disposable business after QA.
+7. Confirm each real operator's sellable passenger capacity before publishing
    departures. For Toni's Boat Trip, resolve the current 12-versus-14 capacity
    ambiguity first.
 

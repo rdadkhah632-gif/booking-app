@@ -369,6 +369,17 @@ export default async function handler(
           "Scheduled departure booking is not configured yet",
         );
       }
+      if (
+        createError?.code === "23505" &&
+        message.includes("bookings_unique_")
+      ) {
+        return errorResponse(
+          response,
+          503,
+          "capacity_contract_outdated",
+          "Scheduled departure booking is temporarily unavailable",
+        );
+      }
       throw createError || new Error(message);
     }
 
