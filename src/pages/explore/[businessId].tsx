@@ -18,6 +18,11 @@ import { formatCurrencyAmount } from "@/lib/currency";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { requestTransactionalEmail } from "@/lib/email/client";
 import { recordSiteEvent } from "@/lib/siteAnalytics";
+import {
+  DEFAULT_TIME_ZONE,
+  dateKeyInTimeZone,
+  zonedDateTimeToUtc,
+} from "@/lib/timezone";
 
 type Service = {
   id: string;
@@ -500,6 +505,27 @@ export default function BusinessBookingPage() {
   function addMinutes(date: Date, minutes: number) {
     return new Date(date.getTime() + minutes * 60000);
   }
+
+  function timeValueToMinutes(value: string) {
+    const [hours, minutes] = value.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
+
+  function timeValueForMinutes(totalMinutes: number) {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  }
+
+  function addDateValueDays(value: string, days: number) {
+    const date = new Date(`${value}T12:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  function bookingTimeZone() {
+    return business?.timezone || DEFAULT_TIME_ZONE;
+  }
   function bookingIntervalMinutes() {
     return business?.booking_interval_minutes || 15;
   }
@@ -618,6 +644,7 @@ export default function BusinessBookingPage() {
     const appointmentTime = formatLocalizedDate(startAt, locale, {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: bookingTimeZone(),
     });
     const staff = staffMembers.find((member) => member.id === staffMemberId);
     const staffLabel = staff
@@ -730,26 +757,35 @@ export default function BusinessBookingPage() {
     if (!dayAvailability || dayAvailability.is_closed) return [];
 
     const slots: string[] = [];
-    let start = new Date(`${dateValue}T${dayAvailability.start_time}`);
-    const end = new Date(`${dateValue}T${dayAvailability.end_time}`);
+    const startMinutes = timeValueToMinutes(dayAvailability.start_time);
+    const endMinutes = timeValueToMinutes(dayAvailability.end_time);
     const now = new Date();
     const slotIntervalMinutes = bookingIntervalMinutes();
     const earliestBookableTime = addMinutes(now, minNoticeMinutes());
-    const maxAdvanceDate = new Date(now);
-    maxAdvanceDate.setDate(maxAdvanceDate.getDate() + maxAdvanceDays());
-    maxAdvanceDate.setHours(23, 59, 59, 999);
-    while (
-      start.getTime() + service.duration_minutes * 60000 <=
-      end.getTime()
+    const timeZone = bookingTimeZone();
+    const maxAdvanceDate = zonedDateTimeToUtc(
+      addDateValueDays(dateKeyInTimeZone(now, timeZone), maxAdvanceDays()),
+      "23:59",
+      timeZone,
+    );
+
+    for (
+      let candidateMinutes = startMinutes;
+      candidateMinutes + service.duration_minutes <= endMinutes;
+      candidateMinutes += slotIntervalMinutes
     ) {
-      const visibleSlotStart = new Date(start);
+      const timeString = timeValueForMinutes(candidateMinutes);
+      const visibleSlotStart = zonedDateTimeToUtc(
+        dateValue,
+        timeString,
+        timeZone,
+      );
       const slotStart = addMinutes(visibleSlotStart, -bufferBeforeMinutes());
       const appointmentEnd = addMinutes(
         visibleSlotStart,
         service.duration_minutes,
       );
       const slotEnd = addMinutes(appointmentEnd, bufferAfterMinutes());
-      const timeString = visibleSlotStart.toTimeString().slice(0, 5);
       const isPastSlot = visibleSlotStart < now;
       const isTooSoon = visibleSlotStart < earliestBookableTime;
       const isTooFarAhead = visibleSlotStart > maxAdvanceDate;
@@ -768,8 +804,6 @@ export default function BusinessBookingPage() {
       if (!isPastSlot && !isTooSoon && !isTooFarAhead && !overlapsBooking) {
         slots.push(timeString);
       }
-
-      start = addMinutes(start, slotIntervalMinutes);
     }
 
     return slots;
@@ -1390,27 +1424,38 @@ export default function BusinessBookingPage() {
       if (!dayAvailability || dayAvailability.is_closed) return [];
 
       const slots: string[] = [];
-      let start = new Date(`${selectedDate}T${dayAvailability.start_time}`);
-      const end = new Date(`${selectedDate}T${dayAvailability.end_time}`);
+      const startMinutes = timeValueToMinutes(dayAvailability.start_time);
+      const endMinutes = timeValueToMinutes(dayAvailability.end_time);
       const now = new Date();
       const slotIntervalMinutes = bookingIntervalMinutes();
       const earliestBookableTime = addMinutes(now, minNoticeMinutes());
-      const maxAdvanceDate = new Date(now);
-      maxAdvanceDate.setDate(maxAdvanceDate.getDate() + maxAdvanceDays());
-      maxAdvanceDate.setHours(23, 59, 59, 999);
+      const timeZone =
+        freshProfile.business.timezone ||
+        business?.timezone ||
+        DEFAULT_TIME_ZONE;
+      const maxAdvanceDate = zonedDateTimeToUtc(
+        addDateValueDays(dateKeyInTimeZone(now, timeZone), maxAdvanceDays()),
+        "23:59",
+        timeZone,
+      );
 
-      while (
-        start.getTime() + freshService.duration_minutes * 60000 <=
-        end.getTime()
+      for (
+        let candidateMinutes = startMinutes;
+        candidateMinutes + freshService.duration_minutes <= endMinutes;
+        candidateMinutes += slotIntervalMinutes
       ) {
-        const visibleSlotStart = new Date(start);
+        const timeString = timeValueForMinutes(candidateMinutes);
+        const visibleSlotStart = zonedDateTimeToUtc(
+          selectedDate,
+          timeString,
+          timeZone,
+        );
         const slotStart = addMinutes(visibleSlotStart, -bufferBeforeMinutes());
         const appointmentEnd = addMinutes(
           visibleSlotStart,
           freshService.duration_minutes,
         );
         const slotEnd = addMinutes(appointmentEnd, bufferAfterMinutes());
-        const timeString = visibleSlotStart.toTimeString().slice(0, 5);
 
         const overlapsBooking = nextBookings.some((booking) => {
           if (booking.staff_member_id !== staffMemberIdForBooking) return false;
@@ -1431,8 +1476,6 @@ export default function BusinessBookingPage() {
         ) {
           slots.push(timeString);
         }
-
-        start = addMinutes(start, slotIntervalMinutes);
       }
 
       return slots;
@@ -1450,8 +1493,10 @@ export default function BusinessBookingPage() {
       return;
     }
 
-    const startAt = new Date(
-      `${selectedDate}T${selectedTime}:00`,
+    const startAt = zonedDateTimeToUtc(
+      selectedDate,
+      selectedTime,
+      freshProfile.business.timezone || business?.timezone,
     ).toISOString();
     const bookingStatus =
       freshProfile.business.auto_accept_bookings === false
@@ -1644,7 +1689,11 @@ export default function BusinessBookingPage() {
         }
       : selectedDate && selectedTime
         ? {
-            startAt: `${selectedDate}T${selectedTime}:00`,
+            startAt: zonedDateTimeToUtc(
+              selectedDate,
+              selectedTime,
+              bookingTimeZone(),
+            ).toISOString(),
             label: selectedTime,
             staffMemberId:
               selectedStaffChoice === "any" ? null : selectedStaffChoice,
