@@ -56,38 +56,6 @@ export default function Services() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  async function getBusinessContext(sessionUserId: string) {
-    const { data: ownedBusinesses, error: businessesError } = await supabase
-      .from("businesses")
-      .select("id, name, published, category, currency")
-      .eq("user_id", sessionUserId)
-      .order("created_at", { ascending: false });
-
-    if (businessesError) throw businessesError;
-
-    const owned = ownedBusinesses || [];
-    setBusinesses(owned);
-
-    if (owned.length === 0) return null;
-
-    if (businessId && !Array.isArray(businessId)) {
-      const selected = owned.find((b) => b.id === businessId);
-
-      if (!selected) {
-        throw new Error(
-          t(
-            "dashboardServices.error.noAccess",
-            "You do not have access to this business.",
-          ),
-        );
-      }
-
-      return selected;
-    }
-
-    return owned[0];
-  }
-
   async function loadData() {
     setError(null);
     setPageLoading(true);
@@ -101,90 +69,58 @@ export default function Services() {
         router.replace("/login");
         return;
       }
-      const selectedBusiness = await getBusinessContext(session.user.id);
-
-      if (!selectedBusiness) {
-        setBusiness(null);
-        setServices([]);
-        setStaffMembers([]);
-        setStaffServices([]);
-        setPageLoading(false);
-        return;
+      const query = new URLSearchParams();
+      if (businessId && !Array.isArray(businessId)) {
+        query.set("businessId", businessId);
       }
 
-      setBusiness(selectedBusiness);
-
-      const { data: serviceData, error: serviceError } = await supabase
-        .from("services")
-        .select("*")
-        .eq("business_id", selectedBusiness.id)
-        .order("created_at", { ascending: false });
-
-      if (serviceError) throw serviceError;
-
-      setServices(serviceData || []);
-
-      const { data: staffData, error: staffError } = await supabase
-        .from("staff_members")
-        .select("id, business_id, name, role_title, active")
-        .eq("business_id", selectedBusiness.id)
-        .order("created_at", { ascending: false });
-
-      if (staffError) throw staffError;
-
-      setStaffMembers(staffData || []);
-
-      const staffIds = (staffData || []).map((staff) => staff.id);
-
-      if (staffIds.length > 0) {
-        const { data: staffServiceData, error: staffServiceError } =
-          await supabase
-            .from("staff_services")
-            .select("staff_member_id, service_id")
-            .in("staff_member_id", staffIds);
-
-        if (staffServiceError) throw staffServiceError;
-
-        setStaffServices(staffServiceData || []);
-      } else {
-        setStaffServices([]);
-      }
-
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 20_000);
+      let contextResponse: Response;
       try {
-        const departureResponse = await fetch(
-          "/api/dashboard/departures?businessId=" + selectedBusiness.id,
+        contextResponse = await fetch(
+          `/api/dashboard/services-context${query.size ? `?${query}` : ""}`,
           {
+            cache: "no-store",
             headers: {
               Authorization: "Bearer " + session.access_token,
             },
+            signal: controller.signal,
           },
         );
-        if (departureResponse.ok) {
-          const payload = (await departureResponse.json()) as {
-            departures?: Array<{ service_id: string; status: string }>;
-          };
-          const counts = (payload.departures || []).reduce<
-            Record<string, number>
-          >((current, departure) => {
-            if (departure.status !== "scheduled") return current;
-            current[departure.service_id] =
-              (current[departure.service_id] || 0) + 1;
-            return current;
-          }, {});
-          setDepartureCounts(counts);
-        } else {
-          setDepartureCounts({});
-        }
-      } catch {
-        setDepartureCounts({});
+      } finally {
+        window.clearTimeout(timeout);
       }
 
-      setPageLoading(false);
+      const payload = (await contextResponse.json().catch(() => ({}))) as {
+        error?: string;
+        businesses?: Business[];
+        business?: Business | null;
+        services?: Service[];
+        staffMembers?: StaffMember[];
+        staffServices?: StaffService[];
+        departureCounts?: Record<string, number>;
+      };
+      if (!contextResponse.ok) {
+        throw new Error(payload.error || "services_context_failed");
+      }
+
+      setBusinesses(payload.businesses || []);
+      setBusiness(payload.business || null);
+      setServices(payload.services || []);
+      setStaffMembers(payload.staffMembers || []);
+      setStaffServices(payload.staffServices || []);
+      setDepartureCounts(payload.departureCounts || {});
     } catch (err: any) {
       setError(
-        err.message ||
-          t("dashboardServices.error.load", "Could not load services."),
+        err?.name === "AbortError"
+          ? t(
+              "dashboardServices.error.timeout",
+              "Services are taking longer than expected. Try again.",
+            )
+          : t("dashboardServices.error.load", "Could not load services."),
       );
+    } finally {
       setPageLoading(false);
     }
   }
@@ -721,6 +657,16 @@ export default function Services() {
           style={{ borderColor: "rgba(255,77,109,0.35)", marginBottom: "1rem" }}
         >
           <p style={{ color: "var(--danger)" }}>{error}</p>
+          {!pageLoading && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => void loadData()}
+              style={{ marginTop: "0.75rem" }}
+            >
+              {t("common.retry", "Retry")}
+            </button>
+          )}
         </div>
       )}
 

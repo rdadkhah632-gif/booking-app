@@ -59,6 +59,7 @@ type DepartureRow = {
 type BookingRow = {
   id: string;
   departure_id?: string | null;
+  staff_member_id?: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
   customer_phone?: string | null;
@@ -142,7 +143,54 @@ export default async function handler(
     const context = await loadAppContext(request);
     const source =
       request.method === "GET" ? request.query : request.body || {};
-    const businessId = textValue(source.businessId);
+    let businessId = textValue(source.businessId);
+    const requestedDepartureId =
+      request.method === "GET" ? textValue(request.query.departureId) : "";
+    const requestedBookingId =
+      request.method === "GET" ? textValue(request.query.bookingId) : "";
+
+    if (businessId && !UUID_PATTERN.test(businessId)) {
+      return errorResponse(
+        response,
+        400,
+        "business_required",
+        "Choose a valid business",
+      );
+    }
+
+    if (!businessId && request.method === "GET") {
+      const authorizedBusinessIds = Array.from(
+        new Set([
+          ...context.ownedBusinesses.map((business) => business.id),
+          ...context.linkedStaffProfiles
+            .filter((staff) => staff.active !== false)
+            .map((staff) => staff.business_id),
+        ]),
+      );
+
+      if (
+        UUID_PATTERN.test(requestedDepartureId) &&
+        authorizedBusinessIds.length > 0
+      ) {
+        const { data: linkedDeparture, error: linkedDepartureError } =
+          await context.supabaseAdmin
+            .from("service_departures")
+            .select("business_id")
+            .eq("id", requestedDepartureId)
+            .in("business_id", authorizedBusinessIds)
+            .maybeSingle<{ business_id: string }>();
+
+        if (linkedDepartureError) throw linkedDepartureError;
+        businessId = linkedDeparture?.business_id || "";
+      }
+
+      businessId =
+        businessId ||
+        context.primaryBusinessId ||
+        context.linkedStaffProfiles.find((staff) => staff.active !== false)
+          ?.business_id ||
+        "";
+    }
 
     if (!UUID_PATTERN.test(businessId)) {
       return errorResponse(
@@ -184,7 +232,62 @@ export default async function handler(
       defaultTo.setDate(defaultTo.getDate() + 365);
       const from = textValue(request.query.from);
       const to = textValue(request.query.to);
-      const departureId = textValue(request.query.departureId);
+      let departureId = requestedDepartureId;
+      let resolvedBooking: {
+        id: string;
+        startAt: string;
+        departureId: string | null;
+      } | null = null;
+
+      if (UUID_PATTERN.test(requestedBookingId)) {
+        const { data: bookingTarget, error: bookingTargetError } =
+          await context.supabaseAdmin
+            .from("bookings")
+            .select("id, business_id, staff_member_id, departure_id, start_at")
+            .eq("id", requestedBookingId)
+            .eq("business_id", businessId)
+            .maybeSingle<BookingRow>();
+
+        if (bookingTargetError) throw bookingTargetError;
+
+        if (bookingTarget?.start_at) {
+          const linkedStaffIds = linkedStaff.map((staff) => staff.id);
+          let canOpenTarget = isOwner;
+
+          if (!canOpenTarget && bookingTarget.departure_id) {
+            const { data: targetDeparture, error: targetDepartureError } =
+              await context.supabaseAdmin
+                .from("service_departures")
+                .select("id, staff_member_id")
+                .eq("id", bookingTarget.departure_id)
+                .eq("business_id", businessId)
+                .maybeSingle<{
+                  id: string;
+                  staff_member_id?: string | null;
+                }>();
+
+            if (targetDepartureError) throw targetDepartureError;
+            canOpenTarget = Boolean(
+              targetDeparture?.staff_member_id &&
+              linkedStaffIds.includes(targetDeparture.staff_member_id),
+            );
+          } else if (!canOpenTarget) {
+            canOpenTarget = Boolean(
+              bookingTarget.staff_member_id &&
+              linkedStaffIds.includes(bookingTarget.staff_member_id),
+            );
+          }
+
+          if (canOpenTarget) {
+            resolvedBooking = {
+              id: bookingTarget.id,
+              startAt: bookingTarget.start_at,
+              departureId: bookingTarget.departure_id || null,
+            };
+            departureId = bookingTarget.departure_id || departureId;
+          }
+        }
+      }
 
       let departureQuery = context.supabaseAdmin
         .from("service_departures")
@@ -265,6 +368,7 @@ export default async function handler(
           timezone: safeTimeZone(business?.timezone),
           currency: business?.currency || null,
         },
+        resolvedBooking,
         services: serviceResult.data || [],
         staffMembers: staffResult.data || [],
         departures: departures.map((departure) => {
@@ -537,6 +641,101 @@ export default async function handler(
           message: copy.message,
           action_url: `/booking-confirmation?id=${booking.id}`,
         });
+      }
+
+      if (
+        booking.departure_id &&
+        (nextStatus === "confirmed" || nextStatus === "cancelled")
+      ) {
+        const [{ data: assignedDeparture }, { data: service }] =
+          await Promise.all([
+            context.supabaseAdmin
+              .from("service_departures")
+              .select("id, staff_member_id, start_at")
+              .eq("id", booking.departure_id)
+              .eq("business_id", businessId)
+              .maybeSingle<{
+                id: string;
+                staff_member_id?: string | null;
+                start_at: string;
+              }>(),
+            context.supabaseAdmin
+              .from("services")
+              .select("name")
+              .eq("id", booking.service_id)
+              .eq("business_id", businessId)
+              .maybeSingle<{ name?: string | null }>(),
+          ]);
+
+        if (assignedDeparture?.staff_member_id) {
+          const { data: assignedStaff } = await context.supabaseAdmin
+            .from("staff_members")
+            .select("user_id")
+            .eq("id", assignedDeparture.staff_member_id)
+            .eq("business_id", businessId)
+            .eq("active", true)
+            .maybeSingle<{ user_id?: string | null }>();
+
+          if (assignedStaff?.user_id) {
+            const { data: staffProfile } = await context.supabaseAdmin
+              .from("profiles")
+              .select("preferred_language")
+              .eq("id", assignedStaff.user_id)
+              .maybeSingle<{ preferred_language?: string | null }>();
+            const albanian = staffProfile?.preferred_language === "sq";
+            const guests = Math.max(Number(booking.party_size || 1), 1);
+            const departureDate = dateKeyInTimeZone(
+              new Date(assignedDeparture.start_at),
+              business?.timezone,
+            );
+            const departureTime = new Date(
+              assignedDeparture.start_at,
+            ).toLocaleString(albanian ? "sq-AL" : "en-GB", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: safeTimeZone(business?.timezone),
+            });
+            const staffCopy =
+              nextStatus === "confirmed"
+                ? {
+                    type: "booking_accepted",
+                    title: albanian
+                      ? "Rezervimi në grup u konfirmua"
+                      : "Group booking confirmed",
+                    message: albanian
+                      ? `${booking.customer_name || "Klienti"} u konfirmua për ${service?.name || "udhëtimin"}, ${guests} persona, më ${departureTime}.`
+                      : `${booking.customer_name || "The customer"} was confirmed for ${service?.name || "the trip"}, ${guests} ${guests === 1 ? "guest" : "guests"}, on ${departureTime}.`,
+                  }
+                : {
+                    type: "booking_cancelled",
+                    title: albanian
+                      ? "Rezervimi në grup u anulua"
+                      : "Group booking cancelled",
+                    message: albanian
+                      ? `Rezervimi i ${booking.customer_name || "klientit"} për ${service?.name || "udhëtimin"}, më ${departureTime}, u anulua.`
+                      : `${booking.customer_name || "The customer"}'s reservation for ${service?.name || "the trip"} on ${departureTime} was cancelled.`,
+                  };
+
+            const { error: staffNotificationError } =
+              await context.supabaseAdmin.from("notifications").insert({
+                user_id: assignedStaff.user_id,
+                business_id: businessId,
+                booking_id: booking.id,
+                audience: "staff",
+                type: staffCopy.type,
+                title: staffCopy.title,
+                message: staffCopy.message,
+                action_url: `/staff/calendar?date=${departureDate}&departureId=${assignedDeparture.id}`,
+              });
+
+            if (staffNotificationError) {
+              console.error("Reservation staff notification failed", {
+                bookingId: booking.id,
+                error: staffNotificationError.message,
+              });
+            }
+          }
+        }
       }
 
       return response.status(200).json({

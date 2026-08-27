@@ -1529,6 +1529,8 @@ export const sq: TranslationTree = {
   "dashboardServices.loading": "Duke ngarkuar shërbimet Mirëbook...",
   "dashboardServices.error.noAccess": "Nuk ke akses te ky biznes.",
   "dashboardServices.error.load": "Shërbimet nuk u ngarkuan.",
+  "dashboardServices.error.timeout":
+    "Shërbimet po marrin më shumë kohë se zakonisht. Provo përsëri.",
   "dashboardServices.error.chooseBusiness": "Zgjidh një biznes fillimisht.",
   "dashboardServices.error.nameRequired":
     "Emri i shërbimit është i detyrueshëm.",

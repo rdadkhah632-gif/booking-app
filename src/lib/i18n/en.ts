@@ -1543,6 +1543,8 @@ export const en: TranslationTree = {
   "dashboardServices.error.noAccess":
     "You do not have access to this business.",
   "dashboardServices.error.load": "Could not load services.",
+  "dashboardServices.error.timeout":
+    "Services are taking longer than expected. Try again.",
   "dashboardServices.error.chooseBusiness": "Choose a business first.",
   "dashboardServices.error.nameRequired": "Service name is required.",
   "dashboardServices.error.durationMin":

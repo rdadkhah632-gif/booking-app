@@ -286,8 +286,8 @@ export default function StaffCalendarPage() {
             if (bookingDate !== selectedDate) {
               setSelectedDate(bookingDate);
               setLoading(false);
-              return;
             }
+            return;
           }
 
           if (!isDateInputValue(requestedDate)) {
@@ -313,6 +313,46 @@ export default function StaffCalendarPage() {
               undefined,
               { shallow: true },
             );
+          }
+        } else {
+          const response = await fetch(
+            `/api/dashboard/departures?businessId=${normalisedStaff.business_id}&bookingId=${encodeURIComponent(requestedBookingId)}`,
+            {
+              cache: "no-store",
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            },
+          );
+          if (response.ok) {
+            const payload = (await response.json()) as {
+              resolvedBooking?: {
+                id: string;
+                startAt: string;
+                departureId: string | null;
+              } | null;
+            };
+            const groupTarget = payload.resolvedBooking;
+            if (groupTarget?.departureId) {
+              const bookingDate = dateKeyInTimeZone(
+                new Date(groupTarget.startAt),
+                timeZone,
+              );
+              await router.replace(
+                {
+                  pathname: "/staff/calendar",
+                  query: {
+                    date: bookingDate,
+                    departureId: groupTarget.departureId,
+                  },
+                },
+                undefined,
+                { shallow: true },
+              );
+              if (bookingDate !== selectedDate) {
+                setSelectedDate(bookingDate);
+              }
+              setLoading(false);
+              return;
+            }
           }
         }
       } catch {

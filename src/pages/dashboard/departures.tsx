@@ -109,34 +109,16 @@ export default function DeparturesPage() {
     (departure) => departure.id === selectedDepartureId,
   );
 
-  async function resolveBusinessId() {
-    const queryBusinessId =
-      typeof router.query.businessId === "string"
-        ? router.query.businessId.trim()
-        : "";
-    if (queryBusinessId) return queryBusinessId;
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) return "";
-    const { data } = await supabase
-      .from("businesses")
-      .select("id")
-      .eq("user_id", session.user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle<{ id: string }>();
-    return data?.id || "";
-  }
-
   async function loadDepartures(targetBusinessId?: string) {
     setLoading(true);
     setError("");
     try {
       const nextBusinessId =
-        targetBusinessId || businessId || (await resolveBusinessId());
-      if (!nextBusinessId) throw new Error("business_required");
+        targetBusinessId ||
+        businessId ||
+        (typeof router.query.businessId === "string"
+          ? router.query.businessId.trim()
+          : "");
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -146,19 +128,21 @@ export default function DeparturesPage() {
         );
         return;
       }
-      const response = await fetch(
-        "/api/dashboard/departures?businessId=" + nextBusinessId,
-        {
-          cache: "no-store",
-          headers: { Authorization: "Bearer " + session.access_token },
-        },
-      );
+      const query = new URLSearchParams();
+      if (nextBusinessId) query.set("businessId", nextBusinessId);
+      if (typeof router.query.departureId === "string") {
+        query.set("departureId", router.query.departureId);
+      }
+      const response = await fetch(`/api/dashboard/departures?${query}`, {
+        cache: "no-store",
+        headers: { Authorization: "Bearer " + session.access_token },
+      });
       const nextPayload = (await response.json()) as Payload & {
         error?: string;
       };
       if (!response.ok) throw new Error(nextPayload.error || "load_failed");
 
-      setBusinessId(nextBusinessId);
+      setBusinessId(nextPayload.business.id);
       setPayload(nextPayload);
       const requestedServiceId =
         typeof router.query.serviceId === "string"

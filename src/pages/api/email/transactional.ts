@@ -143,6 +143,8 @@ async function ensureStaffBookingNotification(params: {
   customerName: string;
   startAt: string;
   timeZone?: string | null;
+  departureId?: string | null;
+  locale?: string | null;
 }) {
   if (!params.staffUserId) return;
 
@@ -157,16 +159,57 @@ async function ensureStaffBookingNotification(params: {
     .eq("type", notification.type)
     .maybeSingle<{ id: string }>();
 
-  if (existing) return;
-
-  const appointmentTime = new Date(params.startAt).toLocaleString("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const albanian = params.locale === "sq";
+  const appointmentTime = new Date(params.startAt).toLocaleString(
+    albanian ? "sq-AL" : "en-GB",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: params.timeZone || undefined,
+    },
+  );
   const appointmentDate = dateKeyInTimeZone(
     new Date(params.startAt),
     params.timeZone,
   );
+  const actionUrl = params.departureId
+    ? `/staff/calendar?date=${appointmentDate}&departureId=${params.departureId}`
+    : `/staff/calendar?date=${appointmentDate}&bookingId=${params.bookingId}`;
+
+  if (existing) {
+    if (params.departureId) {
+      const { error: updateError } = await params.supabaseAdmin
+        .from("notifications")
+        .update({ action_url: actionUrl })
+        .eq("id", existing.id);
+      if (updateError) {
+        console.warn("[email] Could not repair staff notification link", {
+          bookingId: params.bookingId,
+          error: updateError.message,
+        });
+      }
+    }
+    return;
+  }
+
+  const localizedTitle = albanian
+    ? params.status === "confirmed"
+      ? "U konfirmua"
+      : params.status === "cancelled"
+        ? "U anulua"
+        : params.status === "declined"
+          ? "U refuzua"
+          : "U përfundua"
+    : notification.title;
+  const localizedStatus = albanian
+    ? params.status === "confirmed"
+      ? "u konfirmua"
+      : params.status === "cancelled"
+        ? "u anulua"
+        : params.status === "declined"
+          ? "u refuzua"
+          : "u përfundua"
+    : notification.statusText;
 
   const { error } = await params.supabaseAdmin.from("notifications").insert({
     user_id: params.staffUserId,
@@ -174,9 +217,11 @@ async function ensureStaffBookingNotification(params: {
     booking_id: params.bookingId,
     audience: "staff",
     type: notification.type,
-    title: notification.title,
-    message: `${params.customerName}'s ${params.serviceName} booking is ${notification.statusText} for ${appointmentTime}.`,
-    action_url: `/staff/calendar?date=${appointmentDate}&bookingId=${params.bookingId}`,
+    title: localizedTitle,
+    message: albanian
+      ? `Rezervimi i ${params.customerName} për ${params.serviceName} ${localizedStatus} për ${appointmentTime}.`
+      : `${params.customerName}'s ${params.serviceName} booking is ${localizedStatus} for ${appointmentTime}.`,
+    action_url: actionUrl,
   });
 
   if (error) {
@@ -703,6 +748,8 @@ export default async function handler(
         customerName: booking.customer_name || "Customer",
         startAt: booking.start_at,
         timeZone: business.timezone,
+        departureId: booking.departure_id,
+        locale: staffProfile?.preferred_language,
       });
     }
 
