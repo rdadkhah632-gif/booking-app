@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { formatLocalizedDate } from "@/lib/i18n";
+import { dateKeyInTimeZone } from "@/lib/timezone";
 
 type Notification = {
   id: string;
@@ -19,11 +20,14 @@ type Notification = {
 
 type BookingContext = {
   id: string;
+  departure_id?: string | null;
   customer_name: string;
   start_at: string;
   duration_minutes: number;
   status: string;
   services?: { name?: string | null } | { name?: string | null }[] | null;
+  businesses?:
+    { timezone?: string | null } | { timezone?: string | null }[] | null;
 };
 
 function bookingServiceName(booking: BookingContext, fallback: string) {
@@ -33,12 +37,11 @@ function bookingServiceName(booking: BookingContext, fallback: string) {
     : booking.services.name || fallback;
 }
 
-function dateInputValue(value: string) {
-  const date = new Date(value);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+function bookingTimeZone(booking: BookingContext) {
+  if (!booking.businesses) return undefined;
+  return Array.isArray(booking.businesses)
+    ? booking.businesses[0]?.timezone || undefined
+    : booking.businesses.timezone || undefined;
 }
 
 function staffNotificationText(
@@ -254,7 +257,7 @@ export default function StaffNotificationsPage() {
       const { data: bookingData } = await supabase
         .from("bookings")
         .select(
-          "id, customer_name, start_at, duration_minutes, status, services(name)",
+          "id, departure_id, customer_name, start_at, duration_minutes, status, services(name), businesses(timezone)",
         )
         .eq("staff_member_id", capabilities.primaryStaffId)
         .in("id", bookingIds);
@@ -434,8 +437,16 @@ export default function StaffNotificationsPage() {
               const booking = item.booking_id
                 ? bookingContexts[item.booking_id]
                 : null;
+              const bookingDate = booking
+                ? dateKeyInTimeZone(
+                    new Date(booking.start_at),
+                    bookingTimeZone(booking),
+                  )
+                : null;
               const actionUrl = booking
-                ? `/staff/calendar?date=${dateInputValue(booking.start_at)}&bookingId=${booking.id}`
+                ? booking.departure_id
+                  ? `/staff/calendar?date=${bookingDate}&departureId=${booking.departure_id}`
+                  : `/staff/calendar?date=${bookingDate}&bookingId=${booking.id}`
                 : item.action_url;
 
               return (

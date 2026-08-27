@@ -2367,6 +2367,9 @@ export const en: TranslationTree = {
     "Customer actions need review",
   "dashboardNotifications.overview.clearTitle": "No customer actions waiting",
   "dashboardNotifications.error.load": "Could not load notifications.",
+  "dashboardNotifications.error.timeout":
+    "The Inbox is taking longer than expected. Try loading it again.",
+  "dashboardNotifications.actions.retry": "Try again",
   "dashboardNotifications.success.markedRead":
     "Business notifications marked as read.",
   "dashboardNotifications.success.bookingAccepted":
@@ -5401,6 +5404,18 @@ export const en: TranslationTree = {
   "departures.reservation.confirm": "Confirm",
   "departures.reservation.decline": "Decline",
   "departures.reservation.cancel": "Cancel",
+  "departures.reservation.reviewLabel": "Review reservation decision",
+  "departures.reservation.confirmReview":
+    "Accept this request and reserve the selected seats?",
+  "departures.reservation.declineReview":
+    "Decline this request and release its held seats?",
+  "departures.reservation.cancelReview":
+    "Cancel this confirmed reservation and release its seats?",
+  "departures.reservation.confirmAcceptance": "Confirm acceptance",
+  "departures.reservation.confirmDecline": "Confirm decline",
+  "departures.reservation.confirmCancellation": "Confirm cancellation",
+  "departures.reservation.keepPending": "Keep pending",
+  "departures.reservation.keepReservation": "Keep reservation",
   "departures.error.load": "Could not load scheduled departures.",
   "departures.error.chooseService": "Choose a group service first.",
   "departures.error.create": "Could not add the departure.",

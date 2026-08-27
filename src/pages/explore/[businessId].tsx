@@ -2803,7 +2803,15 @@ export default function BusinessBookingPage() {
         }
 
         :global(.public-business-service-copy strong) {
+          display: block;
           font-size: 0.98rem;
+        }
+
+        :global(.public-business-group-label) {
+          display: block;
+          margin-top: 0.2rem;
+          color: var(--text-muted);
+          line-height: 1.35;
         }
 
         :global(.public-business-service-description) {

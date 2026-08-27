@@ -92,6 +92,11 @@ export default function DeparturesPage() {
   const [repeatCount, setRepeatCount] = useState(1);
   const [selectedDepartureId, setSelectedDepartureId] = useState("");
   const [confirmingDepartureId, setConfirmingDepartureId] = useState("");
+  const [confirmingReservationAction, setConfirmingReservationAction] =
+    useState<{
+      bookingId: string;
+      status: "confirmed" | "declined" | "cancelled";
+    } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -360,6 +365,7 @@ export default function DeparturesPage() {
       setSuccess(
         t("departures.success.reservationUpdated", "Reservation updated."),
       );
+      setConfirmingReservationAction(null);
       await loadDepartures(businessId);
     } catch (updateError) {
       setError(
@@ -673,6 +679,7 @@ export default function DeparturesPage() {
                     onClick={() => {
                       setSelectedDepartureId(departure.id);
                       setConfirmingDepartureId("");
+                      setConfirmingReservationAction(null);
                     }}
                   >
                     <span className="departure-date">
@@ -793,7 +800,10 @@ export default function DeparturesPage() {
                                 type="button"
                                 disabled={saving}
                                 onClick={() =>
-                                  changeReservationStatus(booking, "confirmed")
+                                  setConfirmingReservationAction({
+                                    bookingId: booking.id,
+                                    status: "confirmed",
+                                  })
                                 }
                               >
                                 <Check size={15} aria-hidden="true" />
@@ -803,7 +813,10 @@ export default function DeparturesPage() {
                                 type="button"
                                 disabled={saving}
                                 onClick={() =>
-                                  changeReservationStatus(booking, "declined")
+                                  setConfirmingReservationAction({
+                                    bookingId: booking.id,
+                                    status: "declined",
+                                  })
                                 }
                               >
                                 <X size={15} aria-hidden="true" />
@@ -816,13 +829,95 @@ export default function DeparturesPage() {
                               type="button"
                               disabled={saving}
                               onClick={() =>
-                                changeReservationStatus(booking, "cancelled")
+                                setConfirmingReservationAction({
+                                  bookingId: booking.id,
+                                  status: "cancelled",
+                                })
                               }
                             >
                               {t("departures.reservation.cancel", "Cancel")}
                             </button>
                           )}
                         </span>
+
+                        {confirmingReservationAction?.bookingId ===
+                          booking.id && (
+                          <div
+                            className="manifest-review"
+                            role="group"
+                            aria-label={t(
+                              "departures.reservation.reviewLabel",
+                              "Review reservation decision",
+                            )}
+                          >
+                            <p className="small">
+                              {confirmingReservationAction.status ===
+                              "confirmed"
+                                ? t(
+                                    "departures.reservation.confirmReview",
+                                    "Accept this request and reserve the selected seats?",
+                                  )
+                                : confirmingReservationAction.status ===
+                                    "declined"
+                                  ? t(
+                                      "departures.reservation.declineReview",
+                                      "Decline this request and release its held seats?",
+                                    )
+                                  : t(
+                                      "departures.reservation.cancelReview",
+                                      "Cancel this confirmed reservation and release its seats?",
+                                    )}
+                            </p>
+                            <div className="manifest-review-actions">
+                              <button
+                                type="button"
+                                className="btn btn-accent"
+                                disabled={saving}
+                                onClick={() =>
+                                  changeReservationStatus(
+                                    booking,
+                                    confirmingReservationAction.status,
+                                  )
+                                }
+                              >
+                                {confirmingReservationAction.status ===
+                                "confirmed"
+                                  ? t(
+                                      "departures.reservation.confirmAcceptance",
+                                      "Confirm acceptance",
+                                    )
+                                  : confirmingReservationAction.status ===
+                                      "declined"
+                                    ? t(
+                                        "departures.reservation.confirmDecline",
+                                        "Confirm decline",
+                                      )
+                                    : t(
+                                        "departures.reservation.confirmCancellation",
+                                        "Confirm cancellation",
+                                      )}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                disabled={saving}
+                                onClick={() =>
+                                  setConfirmingReservationAction(null)
+                                }
+                              >
+                                {booking.status === "pending"
+                                  ? t(
+                                      "departures.reservation.keepPending",
+                                      "Keep pending",
+                                    )
+                                  : t(
+                                      "departures.reservation.keepReservation",
+                                      "Keep reservation",
+                                    )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
@@ -1251,6 +1346,26 @@ export default function DeparturesPage() {
           opacity: 0.6;
         }
 
+        .manifest-review {
+          grid-column: 1 / -1;
+          display: grid;
+          gap: 0.6rem;
+          padding: 0.7rem;
+          border: 1px solid rgba(237, 90, 42, 0.3);
+          border-radius: 8px;
+          background: rgba(237, 90, 42, 0.06);
+        }
+
+        .manifest-review p {
+          margin: 0;
+        }
+
+        .manifest-review-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.45rem;
+        }
+
         .detail-actions {
           display: flex;
           flex-wrap: wrap;
@@ -1350,6 +1465,15 @@ export default function DeparturesPage() {
 
           .manifest-actions button {
             flex: 1 1 7rem;
+            min-height: 44px;
+          }
+
+          .manifest-review-actions,
+          .manifest-review-actions :global(.btn) {
+            width: 100%;
+          }
+
+          .manifest-review-actions :global(.btn) {
             min-height: 44px;
           }
 

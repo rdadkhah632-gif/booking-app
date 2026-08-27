@@ -249,6 +249,77 @@ export default function StaffCalendarPage() {
     const requestedDate = dateQueryValue(router.query.date);
     let effectiveRequestedDate = requestedDate;
     const requestedDepartureId = dateQueryValue(router.query.departureId);
+    const requestedBookingId = dateQueryValue(router.query.bookingId);
+
+    if (requestedBookingId && !requestedDepartureId) {
+      try {
+        const { data: requestedBooking } = await supabase
+          .from("bookings")
+          .select("id, start_at, departure_id")
+          .eq("id", requestedBookingId)
+          .eq("staff_member_id", normalisedStaff.id)
+          .maybeSingle<{
+            id: string;
+            start_at: string;
+            departure_id?: string | null;
+          }>();
+
+        if (requestedBooking) {
+          const bookingDate = dateKeyInTimeZone(
+            new Date(requestedBooking.start_at),
+            timeZone,
+          );
+          effectiveRequestedDate = bookingDate;
+
+          if (requestedBooking.departure_id) {
+            await router.replace(
+              {
+                pathname: "/staff/calendar",
+                query: {
+                  date: bookingDate,
+                  departureId: requestedBooking.departure_id,
+                },
+              },
+              undefined,
+              { shallow: true },
+            );
+            if (bookingDate !== selectedDate) {
+              setSelectedDate(bookingDate);
+              setLoading(false);
+              return;
+            }
+          }
+
+          if (!isDateInputValue(requestedDate)) {
+            if (bookingDate !== selectedDate) {
+              setSelectedDate(bookingDate);
+              await router.replace(
+                {
+                  pathname: "/staff/calendar",
+                  query: { date: bookingDate, bookingId: requestedBookingId },
+                },
+                undefined,
+                { shallow: true },
+              );
+              setLoading(false);
+              return;
+            }
+
+            void router.replace(
+              {
+                pathname: "/staff/calendar",
+                query: { date: bookingDate, bookingId: requestedBookingId },
+              },
+              undefined,
+              { shallow: true },
+            );
+          }
+        }
+      } catch {
+        // Invalid or old booking links fall back to the requested/current week.
+      }
+    }
+
     if (!isDateInputValue(requestedDate) && requestedDepartureId) {
       try {
         const response = await fetch(
@@ -338,6 +409,7 @@ export default function StaffCalendarPage() {
       `,
       )
       .eq("staff_member_id", normalisedStaff.id)
+      .is("departure_id", null)
       .gte("start_at", from)
       .lte("start_at", to)
       .order("start_at", { ascending: true });

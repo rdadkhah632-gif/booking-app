@@ -92,6 +92,55 @@ type NotificationRow = {
   created_at?: string | null;
 };
 
+const BUSINESS_INBOX_BOOKING_SELECT = `
+  id,
+  business_id,
+  departure_id,
+  customer_user_id,
+  customer_name,
+  customer_email,
+  customer_phone,
+  start_at,
+  duration_minutes,
+  status,
+  businesses (
+    name,
+    timezone
+  ),
+  services (
+    name,
+    price
+  ),
+  staff_members (
+    name,
+    role_title
+  )
+`;
+
+function withInboxTimeout<T>(
+  operation: PromiseLike<T>,
+  timeoutMessage: string,
+  timeoutMs = 15000,
+) {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = window.setTimeout(
+      () => reject(new Error(timeoutMessage)),
+      timeoutMs,
+    );
+
+    Promise.resolve(operation).then(
+      (result) => {
+        window.clearTimeout(timeoutId);
+        resolve(result);
+      },
+      (error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      },
+    );
+  });
+}
+
 function firstRelation<T>(value: T | T[] | null | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -495,9 +544,13 @@ export default function BusinessNotifications() {
         return;
       }
 
-      const capabilities = await getAccountCapabilities(
-        session.user.id,
-        session.user.email,
+      const timeoutMessage = t(
+        "dashboardNotifications.error.timeout",
+        "The Inbox is taking longer than expected. Try loading it again.",
+      );
+      const capabilities = await withInboxTimeout(
+        getAccountCapabilities(session.user.id, session.user.email),
+        timeoutMessage,
       );
 
       if (!capabilities.canUseBusiness) {
@@ -518,40 +571,116 @@ export default function BusinessNotifications() {
         return;
       }
 
-      const { data: bookingData, error: bookingError } = await supabase
-        .from("bookings")
-        .select(
-          `
-          id,
-          business_id,
-          departure_id,
-          customer_user_id,
-          customer_name,
-          customer_email,
-          customer_phone,
-          start_at,
-          duration_minutes,
-          status,
-          businesses (
-            name,
-            timezone
-          ),
-          services (
-            name,
-            price
-          ),
-          staff_members (
-            name,
-            role_title
-          )
-        `,
-        )
-        .in("business_id", ownedBusinessIds)
-        .order("start_at", { ascending: true });
+      const [pendingBookingResult, notificationResult, requestResult] =
+        await withInboxTimeout(
+          Promise.all([
+            supabase
+              .from("bookings")
+              .select(BUSINESS_INBOX_BOOKING_SELECT)
+              .in("business_id", ownedBusinessIds)
+              .eq("status", "pending")
+              .order("start_at", { ascending: true })
+              .limit(100),
+            supabase
+              .from("notifications")
+              .select(
+                "id, user_id, business_id, booking_id, booking_request_id, audience, type, title, message, action_url, read_at, created_at",
+              )
+              .in("business_id", ownedBusinessIds)
+              .eq("audience", "business")
+              .order("created_at", { ascending: false })
+              .limit(30),
+            supabase
+              .from("booking_requests")
+              .select(
+                `
+                id,
+                booking_id,
+                business_id,
+                customer_user_id,
+                requested_by,
+                request_type,
+                status,
+                current_start_at,
+                requested_start_at,
+                current_staff_member_id,
+                requested_staff_member_id,
+                requested_duration_minutes,
+                message,
+                response_message,
+                created_at,
+                updated_at,
+                bookings (
+                  customer_name,
+                  customer_email,
+                  customer_phone,
+                  start_at,
+                  duration_minutes,
+                  status,
+                  services (
+                    name,
+                    price
+                  ),
+                  staff_members (
+                    name,
+                    role_title
+                  )
+                ),
+                businesses (
+                  name,
+                  timezone
+                ),
+                requested_staff:staff_members!booking_requests_requested_staff_member_id_fkey (
+                  name,
+                  role_title
+                )
+              `,
+              )
+              .in("business_id", ownedBusinessIds)
+              .order("created_at", { ascending: false })
+              .limit(100),
+          ]),
+          timeoutMessage,
+        );
 
-      if (bookingError) throw bookingError;
+      if (pendingBookingResult.error) throw pendingBookingResult.error;
+      if (notificationResult.error) throw notificationResult.error;
+      if (requestResult.error) throw requestResult.error;
 
-      const normalisedBookings = (bookingData || []).map((booking: any) => ({
+      const notificationData = notificationResult.data || [];
+      const contextBookingIds = Array.from(
+        new Set(
+          notificationData
+            .map((notification) => notification.booking_id)
+            .filter((bookingId): bookingId is string => Boolean(bookingId)),
+        ),
+      );
+      const pendingBookingIds = new Set(
+        (pendingBookingResult.data || []).map((booking) => booking.id),
+      );
+      const missingContextIds = contextBookingIds.filter(
+        (bookingId) => !pendingBookingIds.has(bookingId),
+      );
+
+      let contextBookingData: any[] = [];
+      if (missingContextIds.length > 0) {
+        const contextBookingResult = await withInboxTimeout(
+          supabase
+            .from("bookings")
+            .select(BUSINESS_INBOX_BOOKING_SELECT)
+            .in("business_id", ownedBusinessIds)
+            .in("id", missingContextIds),
+          timeoutMessage,
+          10000,
+        );
+        if (contextBookingResult.error) throw contextBookingResult.error;
+        contextBookingData = contextBookingResult.data || [];
+      }
+
+      const normalisedBookings = [
+        ...(pendingBookingResult.data || []),
+        ...contextBookingData,
+      ].map((booking: any) => ({
         ...booking,
         businesses: Array.isArray(booking.businesses)
           ? booking.businesses[0] || null
@@ -564,73 +693,17 @@ export default function BusinessNotifications() {
           : booking.staff_members,
       }));
 
-      setBookings(normalisedBookings as Booking[]);
+      setBookings(
+        Array.from(
+          new Map(
+            normalisedBookings.map((booking) => [booking.id, booking]),
+          ).values(),
+        ) as Booking[],
+      );
 
-      const { data: notificationData, error: notificationError } =
-        await supabase
-          .from("notifications")
-          .select(
-            "id, user_id, business_id, booking_id, booking_request_id, audience, type, title, message, action_url, read_at, created_at",
-          )
-          .in("business_id", ownedBusinessIds)
-          .eq("audience", "business")
-          .order("created_at", { ascending: false })
-          .limit(30);
+      setNotifications(notificationData as NotificationRow[]);
 
-      if (notificationError) throw notificationError;
-
-      setNotifications((notificationData || []) as NotificationRow[]);
-
-      const { data: requestData, error: requestError } = await supabase
-        .from("booking_requests")
-        .select(
-          `
-          id,
-          booking_id,
-          business_id,
-          customer_user_id,
-          requested_by,
-          request_type,
-          status,
-          current_start_at,
-          requested_start_at,
-          current_staff_member_id,
-          requested_staff_member_id,
-          requested_duration_minutes,
-          message,
-          response_message,
-          created_at,
-          updated_at,
-          bookings (
-            customer_name,
-            customer_email,
-            customer_phone,
-            start_at,
-            duration_minutes,
-            status,
-            services (
-              name,
-              price
-            ),
-            staff_members (
-              name,
-              role_title
-            )
-          ),
-          businesses (
-            name,
-            timezone
-          ),
-          requested_staff:staff_members!booking_requests_requested_staff_member_id_fkey (
-            name,
-            role_title
-          )
-        `,
-        )
-        .in("business_id", ownedBusinessIds)
-        .order("created_at", { ascending: false });
-
-      if (requestError) throw requestError;
+      const requestData = requestResult.data || [];
 
       const normalisedRequests = (requestData || []).map((request: any) => ({
         ...request,
@@ -646,7 +719,6 @@ export default function BusinessNotifications() {
       }));
 
       setRequests(normalisedRequests as BookingRequest[]);
-      setLoading(false);
     } catch (err: any) {
       setError(
         err.message ||
@@ -655,7 +727,8 @@ export default function BusinessNotifications() {
             "Could not load notifications.",
           ),
       );
-      setLoading(false);
+    } finally {
+      if (!options?.silent) setLoading(false);
     }
   }
 
@@ -1431,6 +1504,13 @@ export default function BusinessNotifications() {
           style={{ borderColor: "rgba(255,77,109,0.35)", marginBottom: "1rem" }}
         >
           <p style={{ color: "var(--danger)" }}>{error}</p>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => loadNotifications()}
+          >
+            {t("dashboardNotifications.actions.retry", "Try again")}
+          </button>
         </div>
       )}
 

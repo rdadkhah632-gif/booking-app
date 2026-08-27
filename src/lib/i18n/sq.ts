@@ -2354,6 +2354,9 @@ export const sq: TranslationTree = {
   "dashboardNotifications.overview.clearTitle":
     "Nuk ka veprime klientësh në pritje",
   "dashboardNotifications.error.load": "Njoftimet nuk u ngarkuan.",
+  "dashboardNotifications.error.timeout":
+    "Kutia hyrëse po zgjat më shumë se pritej. Provo ta ngarkosh përsëri.",
+  "dashboardNotifications.actions.retry": "Provo përsëri",
   "dashboardNotifications.success.markedRead":
     "Njoftimet e biznesit u shënuan si të lexuara.",
   "dashboardNotifications.success.bookingAccepted":
@@ -5532,6 +5535,18 @@ export const sq: TranslationTree = {
   "departures.reservation.confirm": "Konfirmo",
   "departures.reservation.decline": "Refuzo",
   "departures.reservation.cancel": "Anulo",
+  "departures.reservation.reviewLabel": "Shqyrto vendimin e rezervimit",
+  "departures.reservation.confirmReview":
+    "Ta pranosh këtë kërkesë dhe t'i rezervosh vendet e zgjedhura?",
+  "departures.reservation.declineReview":
+    "Ta refuzosh këtë kërkesë dhe t'i lirosh vendet e mbajtura?",
+  "departures.reservation.cancelReview":
+    "Ta anulosh këtë rezervim të konfirmuar dhe t'i lirosh vendet?",
+  "departures.reservation.confirmAcceptance": "Konfirmo pranimin",
+  "departures.reservation.confirmDecline": "Konfirmo refuzimin",
+  "departures.reservation.confirmCancellation": "Konfirmo anulimin",
+  "departures.reservation.keepPending": "Lëre në pritje",
+  "departures.reservation.keepReservation": "Mbaje rezervimin",
   "departures.error.load": "Nisjet me orar nuk u ngarkuan.",
   "departures.error.chooseService": "Zgjidh fillimisht një shërbim në grup.",
   "departures.error.create": "Nisja nuk u shtua.",
