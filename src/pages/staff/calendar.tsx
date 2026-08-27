@@ -247,8 +247,57 @@ export default function StaffCalendarPage() {
 
     const timeZone = staffBusinessTimeZone(normalisedStaff);
     const requestedDate = dateQueryValue(router.query.date);
+    let effectiveRequestedDate = requestedDate;
+    const requestedDepartureId = dateQueryValue(router.query.departureId);
+    if (!isDateInputValue(requestedDate) && requestedDepartureId) {
+      try {
+        const response = await fetch(
+          `/api/dashboard/departures?businessId=${normalisedStaff.business_id}&departureId=${encodeURIComponent(requestedDepartureId)}`,
+          {
+            cache: "no-store",
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          },
+        );
+        if (response.ok) {
+          const payload = (await response.json()) as {
+            departures?: StaffDeparture[];
+          };
+          const requestedDeparture = payload.departures?.find(
+            (departure) => departure.id === requestedDepartureId,
+          );
+          if (requestedDeparture) {
+            const departureDate = dateKeyInTimeZone(
+              new Date(requestedDeparture.start_at),
+              timeZone,
+            );
+            effectiveRequestedDate = departureDate;
+            if (departureDate !== selectedDate) {
+              setSelectedDate(departureDate);
+              await router.replace(
+                {
+                  pathname: "/staff/calendar",
+                  query: {
+                    date: departureDate,
+                    departureId: requestedDepartureId,
+                  },
+                },
+                undefined,
+                { shallow: true },
+              );
+              setLoading(false);
+              return;
+            }
+          }
+        }
+      } catch {
+        // Fall back to the current week if an old or invalid link cannot resolve.
+      }
+    }
     const businessToday = dateKeyInTimeZone(new Date(), timeZone);
-    if (!isDateInputValue(requestedDate) && selectedDate !== businessToday) {
+    if (
+      !isDateInputValue(effectiveRequestedDate) &&
+      selectedDate !== businessToday
+    ) {
       setSelectedDate(businessToday);
       setLoading(false);
       return;
@@ -303,7 +352,10 @@ export default function StaffCalendarPage() {
     try {
       const response = await fetch(
         `/api/dashboard/departures?businessId=${normalisedStaff.business_id}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-        { headers: { Authorization: `Bearer ${session.access_token}` } },
+        {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        },
       );
       if (response.ok) {
         const payload = (await response.json()) as {

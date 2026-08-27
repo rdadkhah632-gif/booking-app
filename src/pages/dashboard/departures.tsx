@@ -91,6 +91,7 @@ export default function DeparturesPage() {
   const [meetingPoint, setMeetingPoint] = useState("");
   const [repeatCount, setRepeatCount] = useState(1);
   const [selectedDepartureId, setSelectedDepartureId] = useState("");
+  const [confirmingDepartureId, setConfirmingDepartureId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -142,7 +143,10 @@ export default function DeparturesPage() {
       }
       const response = await fetch(
         "/api/dashboard/departures?businessId=" + nextBusinessId,
-        { headers: { Authorization: "Bearer " + session.access_token } },
+        {
+          cache: "no-store",
+          headers: { Authorization: "Bearer " + session.access_token },
+        },
       );
       const nextPayload = (await response.json()) as Payload & {
         error?: string;
@@ -299,17 +303,6 @@ export default function DeparturesPage() {
   }
 
   async function changeStatus(departure: Departure, status: string) {
-    if (
-      status === "cancelled" &&
-      !window.confirm(
-        t(
-          "departures.confirm.cancel",
-          "Cancel this departure and notify every active reservation? This cannot be undone.",
-        ),
-      )
-    ) {
-      return;
-    }
     setSaving(true);
     setError("");
     setSuccess("");
@@ -331,6 +324,7 @@ export default function DeparturesPage() {
         departureId: departure.id,
       });
       setSuccess(t("departures.success.updated", "Departure updated."));
+      setConfirmingDepartureId("");
       await loadDepartures(businessId);
     } catch (updateError) {
       setError(
@@ -506,7 +500,7 @@ export default function DeparturesPage() {
                     type="date"
                     value={date}
                     min={dateInputValue(new Date())}
-                    onChange={(event) => setDate(event.target.value)}
+                    onInput={(event) => setDate(event.currentTarget.value)}
                     required
                   />
                 </label>
@@ -516,7 +510,7 @@ export default function DeparturesPage() {
                     name="time"
                     type="time"
                     value={time}
-                    onChange={(event) => setTime(event.target.value)}
+                    onInput={(event) => setTime(event.currentTarget.value)}
                     required
                   />
                 </label>
@@ -676,7 +670,10 @@ export default function DeparturesPage() {
                       "departure-row " +
                       (selectedDepartureId === departure.id ? "selected" : "")
                     }
-                    onClick={() => setSelectedDepartureId(departure.id)}
+                    onClick={() => {
+                      setSelectedDepartureId(departure.id);
+                      setConfirmingDepartureId("");
+                    }}
                   >
                     <span className="departure-date">
                       <strong>{departureTime(departure)}</strong>
@@ -845,17 +842,61 @@ export default function DeparturesPage() {
                         <Check size={17} aria-hidden="true" />
                         {t("departures.action.complete", "Mark complete")}
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-danger"
-                        disabled={saving}
-                        onClick={() =>
-                          changeStatus(selectedDeparture, "cancelled")
-                        }
-                      >
-                        <X size={17} aria-hidden="true" />
-                        {t("departures.action.cancel", "Cancel departure")}
-                      </button>
+                      {confirmingDepartureId === selectedDeparture.id ? (
+                        <div
+                          className="departure-cancel-review"
+                          role="group"
+                          aria-label={t(
+                            "departures.cancelReview.label",
+                            "Review departure cancellation",
+                          )}
+                        >
+                          <p className="small">
+                            {t(
+                              "departures.confirm.cancel",
+                              "Cancel this departure and notify every active reservation? This cannot be undone.",
+                            )}
+                          </p>
+                          <div className="departure-cancel-actions">
+                            <button
+                              type="button"
+                              className="btn btn-danger"
+                              disabled={saving}
+                              onClick={() =>
+                                changeStatus(selectedDeparture, "cancelled")
+                              }
+                            >
+                              <X size={17} aria-hidden="true" />
+                              {saving
+                                ? t("common.working", "Working...")
+                                : t(
+                                    "departures.action.confirmCancel",
+                                    "Confirm cancellation",
+                                  )}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-ghost"
+                              disabled={saving}
+                              onClick={() => setConfirmingDepartureId("")}
+                            >
+                              {t("departures.action.keep", "Keep departure")}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn btn-danger"
+                          disabled={saving}
+                          onClick={() =>
+                            setConfirmingDepartureId(selectedDeparture.id)
+                          }
+                        >
+                          <X size={17} aria-hidden="true" />
+                          {t("departures.action.cancel", "Cancel departure")}
+                        </button>
+                      )}
                     </>
                   )}
                   {selectedDeparture.status === "cancelled" && (
@@ -1217,6 +1258,26 @@ export default function DeparturesPage() {
           margin-top: 1rem;
         }
 
+        .departure-cancel-review {
+          display: grid;
+          flex: 1 1 100%;
+          gap: 0.65rem;
+          padding: 0.75rem;
+          border: 1px solid rgba(255, 77, 109, 0.35);
+          border-radius: 8px;
+          background: rgba(255, 77, 109, 0.06);
+        }
+
+        .departure-cancel-review p {
+          margin: 0;
+        }
+
+        .departure-cancel-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
         .empty-departures,
         .empty-list {
           display: grid;
@@ -1293,8 +1354,13 @@ export default function DeparturesPage() {
           }
 
           .detail-actions,
-          .detail-actions :global(.btn) {
+          .detail-actions :global(.btn),
+          .departure-cancel-actions {
             width: 100%;
+          }
+
+          .departure-cancel-actions :global(.btn) {
+            flex: 1 1 100%;
           }
         }
       `}</style>

@@ -3731,6 +3731,9 @@ export const en: TranslationTree = {
     "Review reschedule request",
   "dashboardNotifications.actions.openBooking": "Open appointment",
   "dashboardNotifications.actions.openDeparture": "Open departure",
+  "dashboardNotifications.actions.confirmAccept": "Confirm acceptance",
+  "dashboardNotifications.actions.keepPending": "Keep pending",
+  "dashboardNotifications.bookingReview.label": "Review booking decision",
   "dashboardNotifications.actions.openSupport": "Open support",
   "dashboardNotifications.actions.openUpdate": "Open update",
   "notifications.types.businessBookingDeclined.message":
@@ -5388,6 +5391,9 @@ export const en: TranslationTree = {
     "Choose a departure to see its capacity and guest list.",
   "departures.action.complete": "Mark complete",
   "departures.action.cancel": "Cancel departure",
+  "departures.action.confirmCancel": "Confirm cancellation",
+  "departures.action.keep": "Keep departure",
+  "departures.cancelReview.label": "Review departure cancellation",
   "departures.confirm.cancel":
     "Cancel this departure and notify every active reservation? This cannot be undone.",
   "departures.cancelled.final":

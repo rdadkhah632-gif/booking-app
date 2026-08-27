@@ -448,6 +448,10 @@ export default function BusinessNotifications() {
     bookingId: string;
     message: string;
   } | null>(null);
+  const [confirmingBookingAction, setConfirmingBookingAction] = useState<{
+    bookingId: string;
+    status: "confirmed" | "declined";
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [decliningRequestId, setDecliningRequestId] = useState<string | null>(
@@ -871,15 +875,8 @@ export default function BusinessNotifications() {
   async function acceptBooking(booking: Booking) {
     if (actionLoadingId) return;
 
-    const confirmed = confirm(
-      t(
-        "dashboardBookings.confirm.accept",
-        "Accept this booking request and confirm the appointment?",
-      ),
-    );
-    if (!confirmed) return;
-
     setActionLoadingId(`booking-${booking.id}`);
+    setConfirmingBookingAction(null);
     setActionError(null);
     setError(null);
     setSuccess(null);
@@ -943,15 +940,8 @@ export default function BusinessNotifications() {
   async function declineBooking(booking: Booking) {
     if (actionLoadingId) return;
 
-    const confirmed = confirm(
-      t(
-        "dashboardBookings.confirm.decline",
-        "Decline this booking request? The customer will see it as declined.",
-      ),
-    );
-    if (!confirmed) return;
-
     setActionLoadingId(`booking-${booking.id}`);
+    setConfirmingBookingAction(null);
     setActionError(null);
     setError(null);
     setSuccess(null);
@@ -1644,33 +1634,106 @@ export default function BusinessNotifications() {
                   </div>
 
                   <div className="business-notification-card-actions">
-                    <button
-                      type="button"
-                      onClick={() => acceptBooking(booking)}
-                      disabled={isWorking}
-                      className="btn btn-accent"
-                    >
-                      {isWorking
-                        ? t("dashboardBookings.actions.working", "Working...")
-                        : t(
+                    {confirmingBookingAction?.bookingId === booking.id ? (
+                      <div
+                        className="business-booking-review"
+                        role="group"
+                        aria-label={t(
+                          "dashboardNotifications.bookingReview.label",
+                          "Review booking decision",
+                        )}
+                      >
+                        <p className="small">
+                          {confirmingBookingAction.status === "confirmed"
+                            ? t(
+                                "dashboardBookings.confirm.accept",
+                                "Accept this booking request and confirm the appointment?",
+                              )
+                            : t(
+                                "dashboardBookings.confirm.decline",
+                                "Decline this booking request? The customer will see it as declined.",
+                              )}
+                        </p>
+                        <div className="business-booking-review-actions">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              confirmingBookingAction.status === "confirmed"
+                                ? acceptBooking(booking)
+                                : declineBooking(booking)
+                            }
+                            disabled={isWorking}
+                            className={
+                              confirmingBookingAction.status === "confirmed"
+                                ? "btn btn-accent"
+                                : "btn btn-danger"
+                            }
+                          >
+                            {isWorking
+                              ? t(
+                                  "dashboardBookings.actions.working",
+                                  "Working...",
+                                )
+                              : confirmingBookingAction.status === "confirmed"
+                                ? t(
+                                    "dashboardNotifications.actions.confirmAccept",
+                                    "Confirm acceptance",
+                                  )
+                                : t(
+                                    "dashboardNotifications.actions.confirmDecline",
+                                    "Confirm decline",
+                                  )}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            disabled={isWorking}
+                            onClick={() => setConfirmingBookingAction(null)}
+                          >
+                            {t(
+                              "dashboardNotifications.actions.keepPending",
+                              "Keep pending",
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setConfirmingBookingAction({
+                              bookingId: booking.id,
+                              status: "confirmed",
+                            })
+                          }
+                          disabled={isWorking}
+                          className="btn btn-accent"
+                        >
+                          {t(
                             "dashboardBookings.actions.accept",
                             "Accept booking",
                           )}
-                    </button>
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={() => declineBooking(booking)}
-                      disabled={isWorking}
-                      className="btn btn-danger"
-                    >
-                      {isWorking
-                        ? t("dashboardBookings.actions.working", "Working...")
-                        : t(
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setConfirmingBookingAction({
+                              bookingId: booking.id,
+                              status: "declined",
+                            })
+                          }
+                          disabled={isWorking}
+                          className="btn btn-danger"
+                        >
+                          {t(
                             "dashboardBookings.actions.decline",
                             "Decline booking",
                           )}
-                    </button>
+                        </button>
+                      </>
+                    )}
 
                     {actionError?.bookingId === booking.id && (
                       <p
@@ -2265,6 +2328,26 @@ export default function BusinessNotifications() {
           justify-content: flex-start;
         }
 
+        .business-booking-review {
+          display: grid;
+          gap: 0.65rem;
+          min-width: min(100%, 24rem);
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: rgba(255, 255, 255, 0.04);
+        }
+
+        .business-booking-review p {
+          margin: 0;
+        }
+
+        .business-booking-review-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
         .business-decline-composer {
           background: rgba(255, 255, 255, 0.04);
           border: 1px solid var(--border);
@@ -2438,6 +2521,11 @@ export default function BusinessNotifications() {
           .business-notification-empty-actions a {
             width: 100%;
             justify-content: center;
+          }
+
+          .business-booking-review,
+          .business-booking-review-actions {
+            width: 100%;
           }
         }
       `}</style>

@@ -3811,6 +3811,9 @@ export const sq: TranslationTree = {
     "Shqyrto kërkesën për ndryshim orari",
   "dashboardNotifications.actions.openBooking": "Hap takimin",
   "dashboardNotifications.actions.openDeparture": "Hap nisjen",
+  "dashboardNotifications.actions.confirmAccept": "Konfirmo pranimin",
+  "dashboardNotifications.actions.keepPending": "Lëre në pritje",
+  "dashboardNotifications.bookingReview.label": "Shqyrto vendimin e rezervimit",
   "dashboardNotifications.actions.openSupport": "Hap mbështetjen",
   "dashboardNotifications.actions.openUpdate": "Hap përditësimin",
   "notifications.types.businessBookingDeclined.message":
@@ -5519,6 +5522,9 @@ export const sq: TranslationTree = {
     "Zgjidh një nisje për të parë kapacitetin dhe listën e klientëve.",
   "departures.action.complete": "Shëno si të përfunduar",
   "departures.action.cancel": "Anulo nisjen",
+  "departures.action.confirmCancel": "Konfirmo anulimin",
+  "departures.action.keep": "Mbaje nisjen",
+  "departures.cancelReview.label": "Shqyrto anulimin e nisjes",
   "departures.confirm.cancel":
     "Ta anulosh këtë nisje dhe të njoftosh çdo rezervim aktiv? Ky veprim nuk mund të zhbëhet.",
   "departures.cancelled.final":
