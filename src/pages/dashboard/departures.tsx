@@ -387,7 +387,9 @@ export default function DeparturesPage() {
   const upcomingDepartures = useMemo(
     () =>
       (payload?.departures || []).filter(
-        (departure) => new Date(departure.start_at) >= new Date(),
+        (departure) =>
+          departure.status === "scheduled" &&
+          new Date(departure.start_at) >= new Date(),
       ),
     [payload?.departures],
   );

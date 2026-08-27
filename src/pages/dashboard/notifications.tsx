@@ -614,7 +614,8 @@ export default function BusinessNotifications() {
             )
           ),
           businesses (
-            name
+            name,
+            timezone
           ),
           requested_staff:staff_members!booking_requests_requested_staff_member_id_fkey (
             name,
@@ -1343,7 +1344,10 @@ export default function BusinessNotifications() {
     return "var(--surface-2)";
   }
 
-  function formatInboxDateTime(value?: string | null) {
+  function formatInboxDateTime(
+    value?: string | null,
+    timeZone?: string | null,
+  ) {
     if (!value) {
       return t("dashboardNotifications.inbox.recently", "Recently");
     }
@@ -1359,7 +1363,16 @@ export default function BusinessNotifications() {
       month: "short",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: timeZone || undefined,
     });
+  }
+
+  function bookingTimeZone(booking?: Booking | null) {
+    return firstRelation(booking?.businesses)?.timezone;
+  }
+
+  function requestTimeZone(request?: BookingRequest | null) {
+    return firstRelation(request?.businesses)?.timezone;
   }
 
   function bookingCalendarUrl(booking: Booking) {
@@ -1567,7 +1580,11 @@ export default function BusinessNotifications() {
                           "dashboardNotifications.labels.requestedTime",
                           "Requested time",
                         )}
-                        : {formatInboxDateTime(booking.start_at)}
+                        :{" "}
+                        {formatInboxDateTime(
+                          booking.start_at,
+                          bookingTimeZone(booking),
+                        )}
                       </span>
                       <span>
                         {t("dashboardBookings.card.service", "Service")}:{" "}
@@ -1740,9 +1757,15 @@ export default function BusinessNotifications() {
                         </p>
                         <strong>
                           {request.current_start_at
-                            ? formatInboxDateTime(request.current_start_at)
+                            ? formatInboxDateTime(
+                                request.current_start_at,
+                                requestTimeZone(request),
+                              )
                             : linkedBooking?.start_at
-                              ? formatInboxDateTime(linkedBooking.start_at)
+                              ? formatInboxDateTime(
+                                  linkedBooking.start_at,
+                                  requestTimeZone(request),
+                                )
                               : t(
                                   "dashboardNotifications.labels.notRecorded",
                                   "Not recorded",
@@ -1758,7 +1781,10 @@ export default function BusinessNotifications() {
                           )}
                         </p>
                         <strong>
-                          {formatInboxDateTime(request.requested_start_at)}
+                          {formatInboxDateTime(
+                            request.requested_start_at,
+                            requestTimeZone(request),
+                          )}
                         </strong>
                       </div>
                     </div>
@@ -2014,7 +2040,10 @@ export default function BusinessNotifications() {
                           )}
                         </span>
                         <span>
-                          {formatInboxDateTime(linkedBooking.start_at)}
+                          {formatInboxDateTime(
+                            linkedBooking.start_at,
+                            bookingTimeZone(linkedBooking),
+                          )}
                         </span>
                       </div>
                     )}
@@ -2105,7 +2134,11 @@ export default function BusinessNotifications() {
                       "dashboardNotifications.labels.requestedTime",
                       "Requested time",
                     )}
-                    : {formatInboxDateTime(request.requested_start_at)}
+                    :{" "}
+                    {formatInboxDateTime(
+                      request.requested_start_at,
+                      requestTimeZone(request),
+                    )}
                   </p>
 
                   <p className="small muted">
