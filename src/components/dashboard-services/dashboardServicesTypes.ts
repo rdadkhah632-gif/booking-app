@@ -19,6 +19,8 @@ export type Service = {
   group_capacity?: number | null;
   private_booking_enabled?: boolean | null;
   private_price?: number | null;
+  assisted_onboarding_case_id?: string | null;
+  owner_review_required?: boolean | null;
 };
 
 export type StaffService = {

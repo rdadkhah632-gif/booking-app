@@ -22,6 +22,7 @@ import OnboardingEntitySearch, {
   OnboardingSuggestion,
 } from "@/components/admin/OnboardingEntitySearch";
 import OnboardingHandoffPanel from "@/components/admin/OnboardingHandoffPanel";
+import PreparedProfilePanel from "@/components/admin/PreparedProfilePanel";
 import { getAdminLoginHref } from "@/lib/auth/getAdminLoginHref";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
@@ -1555,6 +1556,20 @@ export default function AdminOnboardingPage() {
                 )}
 
                 {draft.caseId && (
+                  <PreparedProfilePanel
+                    key={`prepared:${draft.caseId}`}
+                    caseId={draft.caseId}
+                    prospectName={draft.prospectName}
+                    categoryKey={draft.categoryKey}
+                    city={draft.city}
+                    address={draft.address}
+                    phone={draft.ownerPhone}
+                    ownerEmail={draft.ownerEmail}
+                    t={t}
+                  />
+                )}
+
+                {draft.caseId && (
                   <OnboardingHandoffPanel
                     key={draft.caseId}
                     caseId={draft.caseId}
@@ -1573,10 +1588,10 @@ export default function AdminOnboardingPage() {
                     marketingMediaPermission={draft.marketingMediaPermission}
                     permissionEvidenceComplete={Boolean(
                       hasMediaPermission &&
-                        draft.permissionConfirmed &&
-                        draft.permissionSource &&
-                        draft.permissionGrantedBy.trim() &&
-                        draft.permissionGrantedAt,
+                      draft.permissionConfirmed &&
+                      draft.permissionSource &&
+                      draft.permissionGrantedBy.trim() &&
+                      draft.permissionGrantedAt,
                     )}
                     claimLink={
                       draft.directoryPlaceId

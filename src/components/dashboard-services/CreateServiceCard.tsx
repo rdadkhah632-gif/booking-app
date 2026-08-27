@@ -89,7 +89,6 @@ type Props = {
   setPrivateBookingEnabled: (value: boolean) => void;
   setPrivatePrice: (value: number) => void;
   handleCreateImageChange: (file: File | null) => void;
-  uploadCreateImage: () => void;
   clearCreateImage: () => void;
   resetForm: () => void;
   addService: (event: React.FormEvent) => void;
@@ -123,7 +122,6 @@ export default function CreateServiceCard({
   setPrivateBookingEnabled,
   setPrivatePrice,
   handleCreateImageChange,
-  uploadCreateImage,
   clearCreateImage,
   resetForm,
   addService,
@@ -381,7 +379,6 @@ export default function CreateServiceCard({
                     imageFile={imageFile}
                     uploading={uploadingImage}
                     onCreateImageChange={handleCreateImageChange}
-                    onUploadCreate={uploadCreateImage}
                     onClearCreate={clearCreateImage}
                   />
                 </div>
@@ -399,10 +396,16 @@ export default function CreateServiceCard({
           </div>
 
           <div className="services-create-actions">
-            <button type="submit" disabled={loading} className="btn btn-accent">
-              {loading
-                ? t("dashboardServices.create.adding", "Adding...")
-                : t("dashboardServices.create.addService", "Add service")}
+            <button
+              type="submit"
+              disabled={loading || uploadingImage}
+              className="btn btn-accent"
+            >
+              {uploadingImage
+                ? t("dashboardServices.image.uploading", "Uploading...")
+                : loading
+                  ? t("dashboardServices.create.adding", "Adding...")
+                  : t("dashboardServices.create.addService", "Add service")}
             </button>
 
             <button type="button" onClick={resetForm} className="btn btn-ghost">

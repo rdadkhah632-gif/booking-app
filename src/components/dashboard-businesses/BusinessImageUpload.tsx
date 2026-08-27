@@ -1,39 +1,41 @@
-import { useI18n } from '@/lib/useI18n'
-import { Business } from './dashboardBusinessesTypes'
+import { ImagePlus } from "lucide-react";
+import { useI18n } from "@/lib/useI18n";
+import { Business } from "./dashboardBusinessesTypes";
 
 type Props = {
-  business: Business
-  uploadingBusinessId: string | null
-  onUpload: (business: Business, file: File | null) => void
-  onRemove: (business: Business) => void
-}
+  business: Business;
+  uploadingBusinessId: string | null;
+  onUpload: (business: Business, file: File | null) => void;
+  onRemove: (business: Business) => void;
+};
 
 export default function BusinessImageUpload({
   business,
   uploadingBusinessId,
   onUpload,
-  onRemove
+  onRemove,
 }: Props) {
-  const { t } = useI18n()
-  const uploading = uploadingBusinessId === business.id
+  const { t } = useI18n();
+  const uploading = uploadingBusinessId === business.id;
+  const inputId = `business-photo-${business.id}`;
 
   return (
-    <div className="image-upload-box" style={{ marginTop: '0.75rem' }}>
+    <div className="image-upload-box" style={{ marginTop: "0.75rem" }}>
       <div>
         <p className="small muted">
-          {t('dashboardBusinesses.image.kicker', 'Business image')}
+          {t("dashboardBusinesses.image.kicker", "Business image")}
         </p>
 
         <strong>
           {business.image_url
-            ? t('dashboardBusinesses.image.replace', 'Replace uploaded image')
-            : t('dashboardBusinesses.image.upload', 'Upload from your device')}
+            ? t("dashboardBusinesses.image.replace", "Replace uploaded image")
+            : t("dashboardBusinesses.image.upload", "Upload from your device")}
         </strong>
 
-        <p className="small muted" style={{ marginTop: '0.25rem' }}>
+        <p className="small muted" style={{ marginTop: "0.25rem" }}>
           {t(
-            'dashboardBusinesses.image.body',
-            'JPG, PNG, WEBP or GIF up to 5MB. This image appears on the marketplace and public booking page.'
+            "dashboardBusinesses.image.body",
+            "JPG, PNG, WEBP or GIF up to 5MB. This image appears on the marketplace and public booking page.",
           )}
         </p>
       </div>
@@ -46,6 +48,8 @@ export default function BusinessImageUpload({
       )}
 
       <input
+        id={inputId}
+        className="visually-hidden-file"
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         onChange={(e) => onUpload(business, e.target.files?.[0] || null)}
@@ -53,9 +57,22 @@ export default function BusinessImageUpload({
       />
 
       <div className="image-upload-actions">
+        <label
+          htmlFor={inputId}
+          className={`btn btn-ghost photo-picker ${uploading ? "disabled" : ""}`}
+          aria-disabled={uploading}
+        >
+          <ImagePlus aria-hidden="true" />
+          {business.image_url
+            ? t(
+                "dashboardBusinesses.image.chooseReplacement",
+                "Choose a new photo",
+              )
+            : t("dashboardBusinesses.image.choose", "Choose photo")}
+        </label>
         {uploading && (
           <p className="small muted">
-            {t('dashboardBusinesses.image.uploading', 'Uploading image...')}
+            {t("dashboardBusinesses.image.uploading", "Uploading image...")}
           </p>
         )}
 
@@ -65,7 +82,7 @@ export default function BusinessImageUpload({
             className="btn btn-ghost"
             onClick={() => onRemove(business)}
           >
-            {t('dashboardBusinesses.image.remove', 'Remove image')}
+            {t("dashboardBusinesses.image.remove", "Remove image")}
           </button>
         )}
       </div>
@@ -96,6 +113,32 @@ export default function BusinessImageUpload({
           align-items: center;
         }
 
+        .visually-hidden-file {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+
+        .photo-picker {
+          cursor: pointer;
+        }
+
+        .photo-picker.disabled {
+          pointer-events: none;
+          opacity: 0.6;
+        }
+
+        .photo-picker :global(svg) {
+          width: 18px;
+          height: 18px;
+        }
+
         @media (max-width: 640px) {
           .image-upload-actions,
           .image-upload-actions :global(.btn),
@@ -106,5 +149,5 @@ export default function BusinessImageUpload({
         }
       `}</style>
     </div>
-  )
+  );
 }

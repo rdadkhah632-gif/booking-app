@@ -1,3 +1,4 @@
+import { ImagePlus } from "lucide-react";
 import { useI18n } from "@/lib/useI18n";
 import { Service } from "./dashboardServicesTypes";
 
@@ -9,7 +10,6 @@ type Props = {
   imageFile?: File | null;
   uploading: boolean;
   onCreateImageChange?: (file: File | null) => void;
-  onUploadCreate?: () => void;
   onClearCreate?: () => void;
   onUploadService?: (service: Service, file: File | null) => void;
   onRemoveService?: (service: Service) => void;
@@ -22,7 +22,6 @@ export default function ServiceImageUpload({
   imagePreviewUrl = "",
   uploading,
   onCreateImageChange,
-  onUploadCreate,
   onClearCreate,
   onUploadService,
   onRemoveService,
@@ -30,6 +29,7 @@ export default function ServiceImageUpload({
   const { t } = useI18n();
   const displayUrl =
     mode === "create" ? imagePreviewUrl || imageUrl : service?.image_url || "";
+  const inputId = `service-photo-${mode}-${service?.id || "new"}`;
 
   return (
     <div className="image-upload-box">
@@ -58,6 +58,8 @@ export default function ServiceImageUpload({
       </div>
 
       <input
+        id={inputId}
+        className="visually-hidden-file"
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         aria-label={
@@ -84,22 +86,21 @@ export default function ServiceImageUpload({
       )}
 
       <div className="image-upload-actions">
-        {mode === "create" && (
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={onUploadCreate}
-            disabled={uploading}
-          >
-            {uploading
-              ? t("dashboardServices.image.uploading", "Uploading...")
-              : imageUrl
-                ? t("dashboardServices.image.replaceButton", "Replace image")
-                : t("dashboardServices.image.uploadButton", "Upload image")}
-          </button>
-        )}
+        <label
+          htmlFor={inputId}
+          className={`btn btn-ghost photo-picker ${uploading ? "disabled" : ""}`}
+          aria-disabled={uploading}
+        >
+          <ImagePlus aria-hidden="true" />
+          {displayUrl
+            ? t(
+                "dashboardServices.image.chooseReplacement",
+                "Choose a new photo",
+              )
+            : t("dashboardServices.image.choose", "Choose photo")}
+        </label>
 
-        {mode === "edit" && uploading && (
+        {uploading && (
           <p className="small muted">
             {t("dashboardServices.image.uploadingImage", "Uploading image...")}
           </p>
@@ -142,6 +143,32 @@ export default function ServiceImageUpload({
           display: flex;
           gap: 0.75rem;
           flex-wrap: wrap;
+        }
+
+        .visually-hidden-file {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+
+        .photo-picker {
+          cursor: pointer;
+        }
+
+        .photo-picker.disabled {
+          pointer-events: none;
+          opacity: 0.6;
+        }
+
+        .photo-picker :global(svg) {
+          width: 18px;
+          height: 18px;
         }
 
         @media (max-width: 640px) {

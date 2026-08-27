@@ -5505,4 +5505,119 @@ export const sq: TranslationTree = {
   "staffCalendar.departure.kicker": "Nisja e caktuar",
   "staffCalendar.departure.ownerManifest":
     "Pronari i biznesit menaxhon listën e klientëve dhe vendimet për rezervimet.",
+  "register.prepared.body":
+    "Kemi plotësuar paraprakisht të dhënat e njohura të biznesit. Verifiko emailin, kthehu te lidhja e sigurt e profilit dhe kontrollo gjithçka para publikimit.",
+  "register.prepared.title": "Lidh biznesin tënd të përgatitur",
+  "register.prepared.subtitle":
+    "Krijo llogarinë e verifikuar të pronarit. Profili dhe draftet e shërbimeve janë tashmë gati.",
+  "dashboardBusinesses.image.choose": "Zgjidh foto",
+  "dashboardBusinesses.image.chooseReplacement": "Zgjidh një foto të re",
+  "dashboardServices.image.choose": "Zgjidh foto",
+  "dashboardServices.image.chooseReplacement": "Zgjidh një foto të re",
+  "dashboardServices.assisted.reviewBadge": "Kërkon kontrollin tënd",
+  "dashboardServices.assisted.reviewAction": "Kontrollo shërbimin",
+  "dashboardServices.assisted.reviewHint":
+    "Përgatitur për ty. Kontrollo kohëzgjatjen, çmimin dhe mënyrën e rezervimit, pastaj ruaje.",
+  "dashboardServices.assisted.reviewBeforeShow":
+    "Kontrollo dhe ruaje këtë shërbim të përgatitur para se t'ua shfaqësh klientëve.",
+  "dashboardServices.assisted.priceNeeded": "Çmimi për t'u konfirmuar",
+  "dashboardServices.assisted.estimatedPrice": "Vlerë fillestare",
+  "admin.onboarding.prepared.loading": "Po ngarkohet profili i përgatitur...",
+  "admin.onboarding.prepared.loadError":
+    "Profili i përgatitur nuk mund të ngarkohej.",
+  "admin.onboarding.prepared.sessionError": "Hyr përsëri para se të ruash.",
+  "admin.onboarding.prepared.saveError":
+    "Profili i përgatitur nuk mund të ruhej.",
+  "admin.onboarding.prepared.saved": "Profili i përgatitur u ruajt privatisht.",
+  "admin.onboarding.prepared.linkError":
+    "Lidhja e sigurt nuk mund të krijohej.",
+  "admin.onboarding.prepared.linkReady":
+    "Lidhja e sigurt e pronarit u krijua. Kopjoje tani.",
+  "admin.onboarding.prepared.linkCopied": "Lidhja e pronarit u kopjua.",
+  "admin.onboarding.prepared.sqlTitle":
+    "Kalimi i profilit të përgatitur nuk është aktivizuar",
+  "admin.onboarding.prepared.sqlBody":
+    "Ekzekuto SQL 43 dhe SQL 44 para se të përgatitësh shërbime ose të krijosh lidhjen e pronarit.",
+  "admin.onboarding.prepared.kicker": "Draft privat i konfigurimit",
+  "admin.onboarding.prepared.title": "Profili i përgatitur për pronarin",
+  "admin.onboarding.prepared.body":
+    "Plotëso tani të dhënat e dobishme. Shërbimet e importuara mbeten të fshehura derisa pronari i verifikuar t'i kontrollojë.",
+  "admin.onboarding.prepared.connected": "Pronari u lidh",
+  "admin.onboarding.prepared.ownerEmail": "Emaili i verifikuar i pronarit",
+  "admin.onboarding.prepared.ownerEmailBody":
+    "Vetëm një llogari Biznesi e verifikuar me pikërisht këtë email mund ta lidhë profilin.",
+  "admin.onboarding.prepared.businessName": "Emri i biznesit",
+  "admin.onboarding.prepared.category": "Kategoria",
+  "admin.onboarding.prepared.city": "Qyteti",
+  "admin.onboarding.prepared.phone": "Telefoni i biznesit",
+  "admin.onboarding.prepared.address": "Adresa",
+  "admin.onboarding.prepared.currency": "Monedha",
+  "admin.onboarding.prepared.timezone": "Zona orare",
+  "admin.onboarding.prepared.description":
+    "Përshkrimi për kontroll nga pronari",
+  "admin.onboarding.prepared.ownerProvider":
+    "Përgatite pronarin si ofrues shërbimi",
+  "admin.onboarding.prepared.ownerProviderBody":
+    "E dobishme për biznese individuale me takime. Nuk aktivizon shërbime ose orare pune.",
+  "admin.onboarding.prepared.services": "Shërbimet e përgatitura",
+  "admin.onboarding.prepared.servicesBody":
+    "Përdor vlerat e konfirmuara kur ka dhe shëno qartë çmimet e panjohura.",
+  "admin.onboarding.prepared.addService": "Shto draft shërbimi",
+  "admin.onboarding.prepared.noServices":
+    "Nuk është shtuar ende asnjë draft shërbimi.",
+  "admin.onboarding.prepared.serviceNumber": "Shërbimi",
+  "admin.onboarding.prepared.removeService": "Hiq draftin e shërbimit",
+  "admin.onboarding.prepared.serviceName": "Emri i shërbimit",
+  "admin.onboarding.prepared.bookingType": "Lloji i rezervimit",
+  "admin.onboarding.prepared.appointment": "Takim",
+  "admin.onboarding.prepared.group": "Nisje me vende",
+  "admin.onboarding.prepared.priceConfirmed": "Çmim i konfirmuar nga pronari",
+  "admin.onboarding.prepared.estimateNote":
+    "Kjo do të shfaqet privatisht si vlerë fillestare e redaktueshme derisa pronari ta ruajë.",
+  "admin.onboarding.prepared.serviceNote": "Shënim për kontroll nga pronari",
+  "admin.onboarding.prepared.save": "Ruaj profilin e përgatitur",
+  "admin.onboarding.prepared.issuing": "Po krijohet lidhja...",
+  "admin.onboarding.prepared.replaceLink": "Krijo një lidhje të re të sigurt",
+  "admin.onboarding.prepared.issueLink": "Krijo lidhjen e sigurt të pronarit",
+  "admin.onboarding.prepared.ownerLink": "Lidhja e pronarit",
+  "admin.onboarding.prepared.copyLink": "Kopjo lidhjen e pronarit",
+  "admin.onboarding.prepared.linkWarning":
+    "Lidhja e plotë shfaqet vetëm tani. Krijimi i një lidhjeje të re e çaktivizon të mëparshmen.",
+  "onboardingJoin.metaTitle": "Profili i përgatitur i biznesit | Mirëbook",
+  "onboardingJoin.loading": "Po ngarkohet profili yt i përgatitur...",
+  "onboardingJoin.invalid":
+    "Kjo lidhje e profilit është e pavlefshme, ka skaduar ose është lidhur tashmë.",
+  "onboardingJoin.unavailableTitle":
+    "Lidhja e profilit nuk është e disponueshme",
+  "onboardingJoin.openBusiness": "Hap Mirëbook Business",
+  "onboardingJoin.prepared": "Përgatitur për ty",
+  "onboardingJoin.address": "Adresa",
+  "onboardingJoin.phone": "Telefoni i biznesit",
+  "onboardingJoin.currency": "Monedha e shërbimeve",
+  "onboardingJoin.services": "Shërbimet e përgatitura",
+  "onboardingJoin.servicesBody":
+    "Kontrollo çdo kohëzgjatje, çmim dhe mënyrë rezervimi para se ta bësh të dukshme.",
+  "onboardingJoin.priceNeeded": "Çmimi për t'u konfirmuar",
+  "onboardingJoin.suggestedPrice": "Vlerë fillestare",
+  "onboardingJoin.private": "Kalim privat te pronari",
+  "onboardingJoin.connectTitle": "Lidh biznesin tënd",
+  "onboardingJoin.connectBody":
+    "Lidh një llogari të verifikuar Biznesi për të marrë kontrollin e këtij profili. Asgjë nuk publikohet automatikisht.",
+  "onboardingJoin.emailBound":
+    "Përdor adresën e emailit që i dhe Mirëbook. Vetëm ajo llogari Biznesi e verifikuar mund ta lidhë këtë profil.",
+  "onboardingJoin.emailMismatch":
+    "Hyr me adresën e verifikuar të emailit ku u dërgua kjo ftesë.",
+  "onboardingJoin.checkProfile": "Ndrysho të gjitha të dhënat e biznesit",
+  "onboardingJoin.checkServices":
+    "Draftet e shërbimeve mbeten të fshehura deri në kontroll",
+  "onboardingJoin.checkPhotos": "Shto ose zëvendëso foto nga telefoni",
+  "onboardingJoin.priceNote":
+    "Disa çmime janë vlera paraprake. Mirëbook do t'i shënojë qartë për kontrollin tënd.",
+  "onboardingJoin.connect": "Lidh këtë profil",
+  "onboardingJoin.connecting": "Po lidhet profili...",
+  "onboardingJoin.connectError":
+    "Profili i përgatitur nuk mund të lidhej. Kontakto Mirëbook për ndihmë.",
+  "onboardingJoin.createAccount": "Krijo llogari Biznesi",
+  "onboardingJoin.signIn": "Hyr për ta lidhur",
+  "onboardingJoin.expires": "Lidhja e sigurt skadon",
 };

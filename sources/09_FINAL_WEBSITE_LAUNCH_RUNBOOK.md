@@ -559,8 +559,9 @@ Deployment order:
    `sources/12_STAGE_ALBANIA_DISCOVERY_DIRECTORY_FOUNDATION.md`.
 7. Hide the disposable business after QA.
 8. Confirm each real operator's sellable passenger capacity before publishing
-   departures. For Toni's Boat Trip, resolve the current 12-versus-14 capacity
-   ambiguity first.
+   departures. Toni's Boat Trip has supplied a revised maximum of 16 people;
+   the owner must still confirm whether that includes crew and review the exact
+   departure, Guide 1 currency and route-specific price.
 
 Shared reservations consume their selected guest count. A private reservation
 records the actual guest count but reserves the departure's whole capacity.
@@ -575,6 +576,41 @@ a tour, trip, class or group activity, but it must never switch formats
 automatically. Capacity and private-trip controls appear only after the owner
 deliberately chooses departures and seats. Haircuts, treatments, consultations
 and other ordinary staff appointments must not inherit group-capacity behavior.
+
+## Prepared Owner Handoffs
+
+Before issuing a secure connection link for a prebuilt business profile, run:
+
+`sources/sql/43_prepared_business_owner_handoff.sql`
+
+Then run:
+
+`sources/sql/44_email_bound_owner_handoff.sql`
+
+Then deploy the matching website build. An operator can prepare a private
+business profile and editable service estimates from `/admin/onboarding`, save
+the draft, and create a one-time owner link. The raw token is shown only when it
+is created; the database stores only its SHA-256 hash.
+
+Every newly issued link is bound to one normalized owner email. The owner must
+create or sign in to a verified Business account with that exact email before
+choosing `Connect this profile`. Mirëbook does not assign or know the owner's
+password. Connection creates or updates only a hidden business, imports services
+as inactive and marks every imported service for owner review.
+It never publishes the business, activates a service, creates departures, grants
+media permission or changes billing. If a reviewed directory place is attached,
+connection submits a pending ownership claim for operator review rather than
+approving it automatically.
+
+For the first prepared partners, use the private preparation command only after
+SQL 43 and SQL 44 are installed:
+
+`node scripts/onboarding/prepare-first-owner-handoffs.mjs --case=toni --owner-email=<owner-provided-email> --apply`
+
+Use a case filter and issue only after the preferred email is recorded. Send
+each output link only to its intended owner. Starter prices are estimates
+unless explicitly confirmed. The owner must review prices, durations, booking
+format, capacity, hours and photos before activating services or publishing.
 
 ## UI Position And Next Batch
 

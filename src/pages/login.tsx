@@ -24,17 +24,19 @@ export default function LoginPage() {
   const safeRedirectTo = router.isReady
     ? safeInternalRedirect(router.query.redirectTo)
     : null;
-  const businessClaimRedirect = safeRedirectTo?.startsWith("/claim/")
-    ? safeRedirectTo
-    : null;
+  const businessOwnerRedirect =
+    safeRedirectTo?.startsWith("/claim/") ||
+    safeRedirectTo?.startsWith("/join/")
+      ? safeRedirectTo
+      : null;
   const customerRegistrationPath = safeRedirectTo
     ? `/register?redirectTo=${encodeURIComponent(safeRedirectTo)}`
     : "/register";
   const registrationUrl = isBusinessEntry
     ? getBusinessAppUrl(
         `/register?accountType=business${
-          businessClaimRedirect
-            ? `&redirectTo=${encodeURIComponent(businessClaimRedirect)}`
+          businessOwnerRedirect
+            ? `&redirectTo=${encodeURIComponent(businessOwnerRedirect)}`
             : ""
         }`,
       )
@@ -96,6 +98,11 @@ export default function LoginPage() {
     }
 
     if (safeRedirectTo?.startsWith("/claim/") && capabilities.ownsBusiness) {
+      router.replace(safeRedirectTo);
+      return;
+    }
+
+    if (safeRedirectTo?.startsWith("/join/") && capabilities.ownsBusiness) {
       router.replace(safeRedirectTo);
       return;
     }
@@ -218,6 +225,7 @@ export default function LoginPage() {
     if (
       redirectTo?.startsWith("/staff/invite?token=") ||
       (isBusinessEntry && redirectTo?.startsWith("/claim/")) ||
+      (isBusinessEntry && redirectTo?.startsWith("/join/")) ||
       redirectTo?.startsWith("/admin")
     ) {
       verificationRedirect.searchParams.set("redirectTo", redirectTo);

@@ -100,6 +100,16 @@ export default function ServiceCard({
                   tone={service.active ? "success" : "warning"}
                 />
 
+                {service.owner_review_required && (
+                  <ServiceStatusBadge
+                    label={t(
+                      "dashboardServices.assisted.reviewBadge",
+                      "Needs your review",
+                    )}
+                    tone="warning"
+                  />
+                )}
+
                 <ServiceStatusBadge
                   label={
                     isBookable
@@ -128,11 +138,25 @@ export default function ServiceCard({
                   <p className="small muted service-line">
                     {service.duration_minutes} {t("common.minutes", "minutes")}{" "}
                     ·{" "}
-                    {formatCurrencyAmount(
-                      Number(service.price),
-                      business.currency,
-                      locale,
-                    )}
+                    {service.owner_review_required
+                      ? Number(service.price) === 0
+                        ? t(
+                            "dashboardServices.assisted.priceNeeded",
+                            "Price to confirm",
+                          )
+                        : `${t(
+                            "dashboardServices.assisted.estimatedPrice",
+                            "Starter estimate",
+                          )} · ${formatCurrencyAmount(
+                            Number(service.price),
+                            business.currency,
+                            locale,
+                          )}`
+                      : formatCurrencyAmount(
+                          Number(service.price),
+                          business.currency,
+                          locale,
+                        )}
                     {service.booking_type === "group" && (
                       <> {t("dashboardServices.card.perGuest", "per guest")}</>
                     )}
@@ -481,7 +505,12 @@ export default function ServiceCard({
                     onClick={() => setEditingServiceId(service.id)}
                     className="btn btn-ghost"
                   >
-                    {t("common.edit", "Edit")}
+                    {service.owner_review_required
+                      ? t(
+                          "dashboardServices.assisted.reviewAction",
+                          "Review service",
+                        )
+                      : t("common.edit", "Edit")}
                   </button>
 
                   <button

@@ -225,7 +225,7 @@ export default function Services() {
     }, 0);
   }
 
-  function handleCreateImageChange(file: File | null) {
+  async function handleCreateImageChange(file: File | null) {
     setError(null);
     setImageFile(file);
 
@@ -235,10 +235,11 @@ export default function Services() {
     }
 
     setImagePreviewUrl(URL.createObjectURL(file));
+    await uploadCreateImage(file);
   }
 
-  async function uploadCreateImage() {
-    if (!imageFile) {
+  async function uploadCreateImage(selectedFile: File | null = imageFile) {
+    if (!selectedFile) {
       setError(
         t("dashboardServices.image.chooseFirst", "Choose an image file first."),
       );
@@ -250,7 +251,7 @@ export default function Services() {
 
     try {
       const uploaded = await uploadMirebookImage({
-        file: imageFile,
+        file: selectedFile,
         folder: "services",
         recordId: business?.id || "new-service",
       });
@@ -511,6 +512,7 @@ export default function Services() {
           service.booking_type === "group" && service.private_booking_enabled
             ? Number(service.private_price || 0)
             : null,
+        owner_review_required: false,
       })
       .eq("id", service.id);
 
@@ -533,6 +535,17 @@ export default function Services() {
     setSuccess(null);
 
     const assignedStaff = assignedStaffForService(service.id);
+
+    if (!service.active && service.owner_review_required) {
+      setError(
+        t(
+          "dashboardServices.assisted.reviewBeforeShow",
+          "Review and save this prepared service before showing it to customers.",
+        ),
+      );
+      setEditingServiceId(service.id);
+      return;
+    }
 
     if (
       !service.active &&
@@ -573,6 +586,12 @@ export default function Services() {
     return service.active && assignedStaffForService(service.id).length > 0;
   }
   function serviceReadinessText(service: Service) {
+    if (service.owner_review_required) {
+      return t(
+        "dashboardServices.assisted.reviewHint",
+        "Prepared for you. Check the duration, price and booking format, then save it.",
+      );
+    }
     if (service.booking_type === "group") {
       if (!service.active) {
         return t(
@@ -731,7 +750,6 @@ export default function Services() {
                 setPrivateBookingEnabled={setPrivateBookingEnabled}
                 setPrivatePrice={setPrivatePrice}
                 handleCreateImageChange={handleCreateImageChange}
-                uploadCreateImage={uploadCreateImage}
                 clearCreateImage={() => {
                   setImageUrl("");
                   setImageFile(null);

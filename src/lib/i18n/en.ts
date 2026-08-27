@@ -5379,4 +5379,114 @@ export const en: TranslationTree = {
   "staffCalendar.departure.kicker": "Assigned departure",
   "staffCalendar.departure.ownerManifest":
     "The business owner manages the customer manifest and booking decisions.",
+  "register.prepared.body":
+    "We have prefilled the known business details. Verify your email, return to the secure profile link and review everything before going live.",
+  "register.prepared.title": "Connect your prepared business",
+  "register.prepared.subtitle":
+    "Create your verified owner account. Your profile and service drafts are already waiting.",
+  "dashboardBusinesses.image.choose": "Choose photo",
+  "dashboardBusinesses.image.chooseReplacement": "Choose a new photo",
+  "dashboardServices.image.choose": "Choose photo",
+  "dashboardServices.image.chooseReplacement": "Choose a new photo",
+  "dashboardServices.assisted.reviewBadge": "Needs your review",
+  "dashboardServices.assisted.reviewAction": "Review service",
+  "dashboardServices.assisted.reviewHint":
+    "Prepared for you. Check the duration, price and booking format, then save it.",
+  "dashboardServices.assisted.reviewBeforeShow":
+    "Review and save this prepared service before showing it to customers.",
+  "dashboardServices.assisted.priceNeeded": "Price to confirm",
+  "dashboardServices.assisted.estimatedPrice": "Starter estimate",
+  "admin.onboarding.prepared.loading": "Loading prepared profile...",
+  "admin.onboarding.prepared.loadError":
+    "The prepared profile could not be loaded.",
+  "admin.onboarding.prepared.sessionError": "Sign in again before saving.",
+  "admin.onboarding.prepared.saveError":
+    "The prepared profile could not be saved.",
+  "admin.onboarding.prepared.saved": "Prepared profile saved privately.",
+  "admin.onboarding.prepared.linkError":
+    "The secure link could not be created.",
+  "admin.onboarding.prepared.linkReady":
+    "Secure owner link created. Copy it now.",
+  "admin.onboarding.prepared.linkCopied": "Owner link copied.",
+  "admin.onboarding.prepared.sqlTitle": "Prepared handoff is not enabled",
+  "admin.onboarding.prepared.sqlBody":
+    "Run SQL 43 and SQL 44 before preparing services or creating an owner link.",
+  "admin.onboarding.prepared.kicker": "Private setup draft",
+  "admin.onboarding.prepared.title": "Prepared owner profile",
+  "admin.onboarding.prepared.body":
+    "Prefill the useful details now. Imported services stay hidden until the verified owner reviews them.",
+  "admin.onboarding.prepared.connected": "Owner connected",
+  "admin.onboarding.prepared.ownerEmail": "Owner's verified email",
+  "admin.onboarding.prepared.ownerEmailBody":
+    "Only a verified Business account using this exact email can connect the profile.",
+  "admin.onboarding.prepared.businessName": "Business name",
+  "admin.onboarding.prepared.category": "Category",
+  "admin.onboarding.prepared.city": "City",
+  "admin.onboarding.prepared.phone": "Business phone",
+  "admin.onboarding.prepared.address": "Address",
+  "admin.onboarding.prepared.currency": "Currency",
+  "admin.onboarding.prepared.timezone": "Timezone",
+  "admin.onboarding.prepared.description": "Owner-review description",
+  "admin.onboarding.prepared.ownerProvider": "Prepare the owner as a provider",
+  "admin.onboarding.prepared.ownerProviderBody":
+    "Useful for solo appointment businesses. It does not activate services or working hours.",
+  "admin.onboarding.prepared.services": "Prepared services",
+  "admin.onboarding.prepared.servicesBody":
+    "Use confirmed values where available and mark unknown prices clearly.",
+  "admin.onboarding.prepared.addService": "Add service draft",
+  "admin.onboarding.prepared.noServices": "No service drafts added yet.",
+  "admin.onboarding.prepared.serviceNumber": "Service",
+  "admin.onboarding.prepared.removeService": "Remove service draft",
+  "admin.onboarding.prepared.serviceName": "Service name",
+  "admin.onboarding.prepared.bookingType": "Booking type",
+  "admin.onboarding.prepared.appointment": "Appointment",
+  "admin.onboarding.prepared.group": "Departure with seats",
+  "admin.onboarding.prepared.priceConfirmed": "Owner-confirmed price",
+  "admin.onboarding.prepared.estimateNote":
+    "This will be shown privately as an editable starter estimate until the owner saves it.",
+  "admin.onboarding.prepared.serviceNote": "Owner-review note",
+  "admin.onboarding.prepared.save": "Save prepared profile",
+  "admin.onboarding.prepared.issuing": "Creating link...",
+  "admin.onboarding.prepared.replaceLink": "Create a new secure link",
+  "admin.onboarding.prepared.issueLink": "Create secure owner link",
+  "admin.onboarding.prepared.ownerLink": "Owner connection link",
+  "admin.onboarding.prepared.copyLink": "Copy owner link",
+  "admin.onboarding.prepared.linkWarning":
+    "The raw link is shown only now. Creating a new link invalidates the previous one.",
+  "onboardingJoin.metaTitle": "Prepared business profile | Mirëbook",
+  "onboardingJoin.loading": "Loading your prepared profile...",
+  "onboardingJoin.invalid":
+    "This prepared-profile link is invalid, expired or already connected.",
+  "onboardingJoin.unavailableTitle": "Profile link unavailable",
+  "onboardingJoin.openBusiness": "Open Mirëbook Business",
+  "onboardingJoin.prepared": "Prepared for you",
+  "onboardingJoin.address": "Address",
+  "onboardingJoin.phone": "Business phone",
+  "onboardingJoin.currency": "Service currency",
+  "onboardingJoin.services": "Prepared services",
+  "onboardingJoin.servicesBody":
+    "Review every duration, price and booking format before making it visible.",
+  "onboardingJoin.priceNeeded": "Price to confirm",
+  "onboardingJoin.suggestedPrice": "Starter estimate",
+  "onboardingJoin.private": "Private owner handoff",
+  "onboardingJoin.connectTitle": "Connect your business",
+  "onboardingJoin.connectBody":
+    "Connect a verified Business account to take control of this profile. Nothing is published automatically.",
+  "onboardingJoin.emailBound":
+    "Use the email address you gave Mirëbook. Only that verified Business account can connect this profile.",
+  "onboardingJoin.emailMismatch":
+    "Sign in with the verified email address this invitation was sent to.",
+  "onboardingJoin.checkProfile": "Edit all business details",
+  "onboardingJoin.checkServices":
+    "Prepared service drafts stay hidden until reviewed",
+  "onboardingJoin.checkPhotos": "Add or replace photos from your phone",
+  "onboardingJoin.priceNote":
+    "Some prices are placeholders. Mirëbook will clearly mark them for your review.",
+  "onboardingJoin.connect": "Connect this profile",
+  "onboardingJoin.connecting": "Connecting profile...",
+  "onboardingJoin.connectError":
+    "The prepared profile could not be connected. Contact Mirëbook for help.",
+  "onboardingJoin.createAccount": "Create Business account",
+  "onboardingJoin.signIn": "Sign in to connect",
+  "onboardingJoin.expires": "Secure link expires",
 };

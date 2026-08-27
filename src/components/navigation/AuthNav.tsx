@@ -96,7 +96,9 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
   const router = useRouter();
   const { t } = useI18n();
   const isPublicBusinessEntry =
-    router.pathname === "/business" || router.pathname.startsWith("/claim/");
+    router.pathname === "/business" ||
+    router.pathname.startsWith("/claim/") ||
+    router.pathname.startsWith("/join/");
 
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<Role>(null);

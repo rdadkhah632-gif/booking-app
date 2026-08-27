@@ -2292,10 +2292,50 @@ prove concurrency, capacity, privacy and legacy appointment isolation.
     no raw SQL/RLS/provider errors.
 11. Hide the disposable business and leave all genuine businesses unchanged.
 
-For Toni's Boat Trip, confirm whether the stated 14-person capacity means 14
-sellable passenger seats or includes crew. Do not publish its real departures
-with an assumed capacity. Adult/child pricing and deposits remain a separate
-follow-up until the operator confirms those rules.
+Toni's Boat Trip has since supplied a revised maximum of 16 people. Keep the
+prepared service at 16 seats for owner review, but do not publish real departures
+until the owner confirms whether that maximum includes crew, plus the exact
+departure times, meeting point, Guide 1 currency and route-specific private
+hourly price. Adult/child pricing and deposits remain a separate follow-up until
+the operator confirms those rules.
+
+### Batch 35: prepared business profile and owner connection
+
+Run `sources/sql/43_prepared_business_owner_handoff.sql`, followed by
+`sources/sql/44_email_bound_owner_handoff.sql`, before deploying this batch. The
+operator can prepare private profile details and service drafts from the
+assisted-onboarding case, then issue a hashed, expiring, one-time owner link.
+
+The verified owner flow must:
+
+- allow only a Business account to connect the prepared profile
+- bind each new link to the owner's normalized email and require the signed-in,
+  verified Supabase email to match it exactly
+- keep the resulting business hidden and every imported service inactive
+- label unconfirmed non-zero prices as editable starter estimates
+- require the owner to review and save each imported service before activation
+- preserve appointment booking for ordinary services and use group capacity only
+  on services explicitly prepared as departures with seats
+- submit any directory ownership claim as pending rather than approving it
+- let the owner choose, replace or remove business and service photos directly
+  from their device with a clear mobile-sized control
+- invalidate the raw handoff token after connection and expose no draft/token or
+  intended-owner email data through public tables or customer APIs
+
+For Emilio's Barber Shop, check that the owner receives the known profile and
+eleven inactive services with visible ALL starter estimates. For Toni's Boat
+Trip, check that the known tours use EUR and scheduled capacity while the
+revised 16-person maximum, sellable-seat count, departure times and meeting point
+remain clearly owner-review items. Neither business should appear in Explore until its owner
+deliberately completes readiness and publishes it.
+
+Use `node scripts/onboarding/prepare-first-owner-handoffs.mjs --case=toni` for a
+read-only preview. After SQL 44 is installed, add `--apply` to bind Toni's
+prepared profile to the owner-provided email and issue a fresh link:
+`--owner-email=<owner-provided-email> --apply`. Do not issue or send Emilio's
+link until his preferred owner email is recorded. Mirëbook must never choose an
+owner password: the owner registers with the bound email, sets their own
+password, verifies the inbox and then connects the hidden profile.
 
 ### Later
 

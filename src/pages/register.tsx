@@ -16,6 +16,7 @@ import {
 } from "@/lib/appUrls";
 import { detectRegionDefaults } from "@/lib/regionDefaults";
 import { recordSiteEvent } from "@/lib/siteAnalytics";
+import type { PreparedBusinessProfile } from "@/lib/onboardingPreparedProfile";
 
 const CURRENCY_OPTIONS = [
   { value: "ALL", labelKey: "currency.all", fallback: "ALL - Albanian lek" },
@@ -68,7 +69,9 @@ export default function RegisterPage() {
   const [isBusinessHostname, setIsBusinessHostname] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendingVerification, setResendingVerification] = useState(false);
+  const [preparedBusinessName, setPreparedBusinessName] = useState("");
   const registrationViewTracked = useRef(false);
+  const preparedProfileApplied = useRef(false);
   const safeRedirectTo = router.isReady
     ? safeInternalRedirect(router.query.redirectTo)
     : null;
@@ -76,7 +79,8 @@ export default function RegisterPage() {
     role === "business"
       ? getBusinessAppUrl(
           `/login?product=business${
-            safeRedirectTo?.startsWith("/claim/")
+            safeRedirectTo?.startsWith("/claim/") ||
+            safeRedirectTo?.startsWith("/join/")
               ? `&redirectTo=${encodeURIComponent(safeRedirectTo)}`
               : ""
           }`,
@@ -86,7 +90,8 @@ export default function RegisterPage() {
         : getCustomerAppUrl("/login");
   const businessRegisterUrl = getBusinessAppUrl(
     `/register?accountType=business${
-      safeRedirectTo?.startsWith("/claim/")
+      safeRedirectTo?.startsWith("/claim/") ||
+      safeRedirectTo?.startsWith("/join/")
         ? `&redirectTo=${encodeURIComponent(safeRedirectTo)}`
         : ""
     }`,
@@ -104,7 +109,10 @@ export default function RegisterPage() {
   ) {
     if (!value) return null;
     if (value.startsWith("/staff/invite?token=")) return value;
-    if (accountRole === "business" && value.startsWith("/claim/")) {
+    if (
+      accountRole === "business" &&
+      (value.startsWith("/claim/") || value.startsWith("/join/"))
+    ) {
       return value;
     }
     if (
@@ -201,6 +209,42 @@ export default function RegisterPage() {
       metadata: { surface: "register" },
     });
   }, [locale, router.isReady]);
+
+  useEffect(() => {
+    if (!router.isReady || preparedProfileApplied.current) return;
+    const redirectTo = safeInternalRedirect(router.query.redirectTo);
+    const match = redirectTo?.match(/^\/join\/([A-Za-z0-9_-]{32,160})$/);
+    if (!match) return;
+
+    let active = true;
+    async function loadPreparedProfile() {
+      const response = await fetch(
+        `/api/public/onboarding-handoff?token=${encodeURIComponent(match![1])}`,
+        { cache: "no-store" },
+      );
+      if (!active || !response.ok) return;
+      const payload = (await response.json()) as {
+        profile?: PreparedBusinessProfile;
+      };
+      if (!payload.profile) return;
+      preparedProfileApplied.current = true;
+      setRole("business");
+      setPreparedBusinessName(payload.profile.name);
+      setBusinessName(payload.profile.name);
+      setBusinessPhone(payload.profile.phone);
+      setPhone((current) => current || payload.profile!.phone);
+      setBusinessCategory(payload.profile.category);
+      setBusinessCity(payload.profile.city);
+      setBusinessCountry(payload.profile.country || "Albania");
+      setBusinessTimezone(payload.profile.timezone || "Europe/Tirane");
+      setBusinessCurrency(payload.profile.currency || "ALL");
+      setOwnerTakesBookings(payload.profile.ownerTakesBookings);
+    }
+    void loadPreparedProfile();
+    return () => {
+      active = false;
+    };
+  }, [router.isReady, router.query.redirectTo]);
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -596,34 +640,53 @@ export default function RegisterPage() {
               marginBottom: 8,
             }}
           >
-            {role === "business"
-              ? t(
-                  "register.businessAccountTitle",
-                  "Start with Mirëbook Business",
-                )
-              : role === "staff"
-                ? t("register.staffAccountTitle", "Create your staff account")
-                : t("register.title", "Create your Mirëbook account")}
+            {preparedBusinessName && role === "business"
+              ? t("register.prepared.title", "Connect your prepared business")
+              : role === "business"
+                ? t(
+                    "register.businessAccountTitle",
+                    "Start with Mirëbook Business",
+                  )
+                : role === "staff"
+                  ? t("register.staffAccountTitle", "Create your staff account")
+                  : t("register.title", "Create your Mirëbook account")}
           </h1>
 
           <p className="muted register-subtitle">
-            {role === "business"
+            {preparedBusinessName && role === "business"
               ? t(
-                  "register.businessAccountSubtitle",
-                  "Create your account and starter business profile.",
+                  "register.prepared.subtitle",
+                  "Create your verified owner account. Your profile and service drafts are already waiting.",
                 )
-              : role === "staff"
+              : role === "business"
                 ? t(
-                    "register.staffAccountSubtitle",
-                    "Create a staff account for your Mirëbook Business workspace.",
+                    "register.businessAccountSubtitle",
+                    "Create your account and starter business profile.",
                   )
-                : t(
-                    "register.customerAccountSubtitle",
-                    "Create an account to book and manage appointments.",
-                  )}
+                : role === "staff"
+                  ? t(
+                      "register.staffAccountSubtitle",
+                      "Create a staff account for your Mirëbook Business workspace.",
+                    )
+                  : t(
+                      "register.customerAccountSubtitle",
+                      "Create an account to book and manage appointments.",
+                    )}
           </p>
 
-          {isBusinessRegistrationSurface ? (
+          {preparedBusinessName && role === "business" && (
+            <div className="prepared-registration-note" role="status">
+              <strong>{preparedBusinessName}</strong>
+              <p>
+                {t(
+                  "register.prepared.body",
+                  "We have prefilled the known business details. Verify your email, return to the secure profile link and review everything before going live.",
+                )}
+              </p>
+            </div>
+          )}
+
+          {isBusinessRegistrationSurface && !preparedBusinessName ? (
             <>
               <p className="small muted register-business-choice-title">
                 {t(
@@ -787,7 +850,7 @@ export default function RegisterPage() {
               </label>
             </div>
 
-            {isBusinessRegistrationSurface && (
+            {isBusinessRegistrationSurface && !preparedBusinessName && (
               <div className="register-role-mobile">
                 <label
                   className="small muted"
@@ -831,7 +894,7 @@ export default function RegisterPage() {
               </select>
             </label>
 
-            {role === "business" && (
+            {role === "business" && !preparedBusinessName && (
               <div className="register-business-fields">
                 <div>
                   <p className="small muted">
@@ -914,6 +977,42 @@ export default function RegisterPage() {
                     </option>
                     <option value="Pet grooming">
                       {t("categories.petGrooming", "Pet grooming")}
+                    </option>
+                    <option value="Dental health">
+                      {t("directory.category.dental_health", "Dental health")}
+                    </option>
+                    <option value="Wellness and fitness">
+                      {t(
+                        "directory.category.wellness_fitness",
+                        "Wellness and fitness",
+                      )}
+                    </option>
+                    <option value="Events">
+                      {t("directory.category.events", "Events")}
+                    </option>
+                    <option value="Learning and lessons">
+                      {t(
+                        "directory.category.learning_lessons",
+                        "Learning and lessons",
+                      )}
+                    </option>
+                    <option value="Tours and activities">
+                      {t(
+                        "directory.category.tours_activities",
+                        "Tours and activities",
+                      )}
+                    </option>
+                    <option value="Rentals">
+                      {t("directory.category.rentals", "Rentals")}
+                    </option>
+                    <option value="Attractions">
+                      {t("directory.category.attractions", "Attractions")}
+                    </option>
+                    <option value="Food and drink">
+                      {t("directory.category.food_drink", "Food and drink")}
+                    </option>
+                    <option value="Accommodation">
+                      {t("directory.category.lodging", "Accommodation")}
                     </option>
                     <option value="Other">
                       {t("categories.other", "Other")}
@@ -1099,6 +1198,26 @@ export default function RegisterPage() {
 
         .register-subtitle {
           margin-bottom: 1rem;
+        }
+
+        .prepared-registration-note {
+          display: grid;
+          gap: 0.3rem;
+          margin: 0 0 1rem;
+          padding: 0.85rem;
+          border: 1px solid rgba(20, 125, 112, 0.3);
+          border-radius: 7px;
+          background: rgba(20, 125, 112, 0.07);
+        }
+
+        .prepared-registration-note strong {
+          color: #147d70;
+        }
+
+        .prepared-registration-note p {
+          margin: 0;
+          color: var(--text-muted);
+          font-size: 0.85rem;
         }
 
         .register-role-grid {

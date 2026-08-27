@@ -8,7 +8,9 @@ export default function PublicNav() {
   const { t } = useI18n();
   const router = useRouter();
   const isBusinessEntry =
-    router.pathname === "/business" || router.pathname.startsWith("/claim/");
+    router.pathname === "/business" ||
+    router.pathname.startsWith("/claim/") ||
+    router.pathname.startsWith("/join/");
   const businessHomeUrl = getBusinessAppUrl();
   const businessLoginUrl = getBusinessAppUrl("/login?product=business");
   const businessRegisterUrl = getBusinessAppUrl(
