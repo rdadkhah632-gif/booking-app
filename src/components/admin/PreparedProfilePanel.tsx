@@ -498,7 +498,10 @@ export default function PreparedProfilePanel({
                 </label>
                 <label>
                   <span>
-                    {t("dashboardServices.create.duration", "Duration")}
+                    {t(
+                      "admin.onboarding.prepared.durationMinutes",
+                      "Duration (minutes)",
+                    )}
                   </span>
                   <input
                     type="number"
@@ -515,7 +518,12 @@ export default function PreparedProfilePanel({
                 </label>
                 <label>
                   <span>
-                    {t("dashboardServices.create.pricePlaceholder", "Price")}
+                    {service.bookingType === "group"
+                      ? t(
+                          "admin.onboarding.prepared.pricePerGuest",
+                          "Price per guest",
+                        )
+                      : t("dashboardServices.create.pricePlaceholder", "Price")}
                   </span>
                   <input
                     type="number"
@@ -551,21 +559,35 @@ export default function PreparedProfilePanel({
                     <option value="appointment">
                       {t(
                         "admin.onboarding.prepared.appointment",
-                        "Appointment",
+                        "One-at-a-time appointment",
                       )}
                     </option>
                     <option value="group">
                       {t(
                         "admin.onboarding.prepared.group",
-                        "Departure with seats",
+                        "Shared departure with seats",
                       )}
                     </option>
                   </select>
                 </label>
+                <p className="booking-type-guidance">
+                  {service.bookingType === "group"
+                    ? t(
+                        "admin.onboarding.prepared.groupHint",
+                        "Use only when different customers share one fixed start time and seat capacity.",
+                      )
+                    : t(
+                        "admin.onboarding.prepared.appointmentHint",
+                        "Use for haircuts, consultations and other private time slots.",
+                      )}
+                </p>
                 {service.bookingType === "group" && (
                   <label>
                     <span>
-                      {t("dashboardServices.group.capacity", "Default seats")}
+                      {t(
+                        "dashboardServices.group.capacity",
+                        "Seats on each departure",
+                      )}
                     </span>
                     <input
                       type="number"
@@ -623,10 +645,18 @@ export default function PreparedProfilePanel({
                       }
                     />
                     <span>
-                      {t(
-                        "dashboardServices.group.privateEnabled",
-                        "Allow private trip booking",
-                      )}
+                      <strong>
+                        {t(
+                          "dashboardServices.group.privateEnabled",
+                          "Allow private trip booking",
+                        )}
+                      </strong>
+                      <small>
+                        {t(
+                          "dashboardServices.group.privateHint",
+                          "One customer reserves the whole departure while every seat is still free.",
+                        )}
+                      </small>
                     </span>
                   </label>
                 )}
@@ -875,15 +905,18 @@ export default function PreparedProfilePanel({
           height: 18px;
           flex: 0 0 auto;
         }
-        .owner-toggle span {
+        .owner-toggle span,
+        .prepared-service-list .confirm-toggle span {
           display: grid;
           gap: 0.2rem;
         }
-        .owner-toggle small {
+        .owner-toggle small,
+        .prepared-service-list .confirm-toggle small {
           color: var(--text-muted);
           font-weight: 500;
         }
-        .estimate-note {
+        .estimate-note,
+        .booking-type-guidance {
           align-self: center;
           margin: 0;
           color: var(--text-muted);

@@ -541,6 +541,10 @@ Then run:
 
 `sources/sql/42_capacity_booking_exclusion_compatibility.sql`
 
+For owner-created reservations from Calendar, also run:
+
+`sources/sql/45_manual_capacity_bookings.sql`
+
 Then deploy the matching website build. Do not expose a scheduled group service
 until all three steps are complete. Without SQL 40, the website must report
 that the capacity contract is not installed rather than falling back to
@@ -553,18 +557,25 @@ Deployment order:
    indexes for scheduled departures.
 3. Run SQL 42 and confirm it commits. This preserves legacy appointment
    exclusion constraints while exempting departure-linked seat reservations.
-4. Deploy the matching website build.
-5. Create a hidden disposable group service and departure.
-6. Run the Batch 34 capacity, concurrency, privacy and legacy-appointment QA in
+4. Run SQL 45 and confirm it commits. This installs the owner-only atomic path
+   used when a business adds guests to an existing departure from Calendar.
+5. Deploy the matching website build.
+6. Create a hidden disposable group service and departure.
+7. Run the Batch 34 capacity, concurrency, privacy and legacy-appointment QA in
    `sources/12_STAGE_ALBANIA_DISCOVERY_DIRECTORY_FOUNDATION.md`.
-7. Hide the disposable business after QA.
-8. Confirm each real operator's sellable passenger capacity before publishing
+8. Hide the disposable business after QA.
+9. Confirm each real operator's sellable passenger capacity before publishing
    departures. Toni's Boat Trip has supplied a revised maximum of 16 people;
    the owner must still confirm whether that includes crew and review the exact
    departure, Guide 1 currency and route-specific price.
 
 Shared reservations consume their selected guest count. A private reservation
 records the actual guest count but reserves the departure's whole capacity.
+Owners can use Calendar's `Add booking` action for both formats. Appointment
+services retain staff/date/time fields; scheduled group services instead require
+an existing departure, shared/private choice and guest count, then open the exact
+departure manifest after saving. Manual group reservations are confirmed by the
+owner and use the same row lock and capacity calculation as customer bookings.
 This feature does not collect customer payments or deposits. Adult/child price
 bands and app support remain separate approved follow-ups; existing appointment
 services must remain unchanged.

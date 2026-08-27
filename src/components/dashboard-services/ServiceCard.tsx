@@ -55,6 +55,7 @@ export default function ServiceCard({
 
   return (
     <div
+      id={`service-${service.id}`}
       className="card service-card"
       style={{
         borderColor: !service.active
@@ -273,7 +274,7 @@ export default function ServiceCard({
                         <strong>
                           {t(
                             "dashboardServices.bookingType.groupActive",
-                            "Scheduled service with seats",
+                            "Shared departure with seats",
                           )}
                         </strong>
                         <p className="small muted service-line">
@@ -284,7 +285,7 @@ export default function ServiceCard({
                               )
                             : t(
                                 "dashboardServices.bookingType.groupActiveHint",
-                                "Customers choose a fixed departure and reserve one or more places.",
+                                "Several customers can reserve places on the same fixed date and start time.",
                               )}
                         </p>
                       </div>
@@ -302,7 +303,7 @@ export default function ServiceCard({
                         >
                           {t(
                             "dashboardServices.bookingType.useAppointment",
-                            "Use standard appointments",
+                            "Use one-at-a-time appointments",
                           )}
                         </button>
                       )}
@@ -319,7 +320,7 @@ export default function ServiceCard({
                         <p className="small muted service-line">
                           {t(
                             "dashboardServices.bookingType.optionalBody",
-                            "Only use scheduled departures when several customers can reserve places on the same fixed time.",
+                            "Use shared departures only when different customers can reserve seats on the same fixed date and start time.",
                           )}
                         </p>
                         <button
@@ -335,7 +336,7 @@ export default function ServiceCard({
                         >
                           {t(
                             "dashboardServices.bookingType.useGroup",
-                            "Use departures and seats",
+                            "Set up shared departures",
                           )}
                         </button>
                       </div>
@@ -348,7 +349,7 @@ export default function ServiceCard({
                         <span>
                           {t(
                             "dashboardServices.group.capacity",
-                            "Default seats",
+                            "Seats on each departure",
                           )}
                         </span>
                         <input
@@ -378,10 +379,18 @@ export default function ServiceCard({
                           }
                         />
                         <span>
-                          {t(
-                            "dashboardServices.group.privateEnabled",
-                            "Allow private trip booking",
-                          )}
+                          <strong>
+                            {t(
+                              "dashboardServices.group.privateEnabled",
+                              "Allow private trip booking",
+                            )}
+                          </strong>
+                          <small>
+                            {t(
+                              "dashboardServices.group.privateHint",
+                              "One customer reserves the whole departure while every seat is still free.",
+                            )}
+                          </small>
                         </span>
                       </label>
                       {service.private_booking_enabled && (
@@ -513,40 +522,53 @@ export default function ServiceCard({
                       : t("common.edit", "Edit")}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => toggleService(service)}
-                    className={
-                      service.active ? "btn btn-ghost" : "btn btn-accent"
-                    }
-                  >
-                    {service.active
-                      ? t("dashboardServices.card.hideService", "Hide service")
-                      : t("dashboardServices.card.showService", "Show service")}
-                  </button>
+                  {!service.owner_review_required && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => toggleService(service)}
+                        className={
+                          service.active ? "btn btn-ghost" : "btn btn-accent"
+                        }
+                      >
+                        {service.active
+                          ? t(
+                              "dashboardServices.card.hideService",
+                              "Hide service",
+                            )
+                          : t(
+                              "dashboardServices.card.showService",
+                              "Show service",
+                            )}
+                      </button>
 
-                  {service.booking_type === "group" ? (
-                    <Link
-                      href={
-                        "/dashboard/departures?businessId=" +
-                        business.id +
-                        "&serviceId=" +
-                        service.id
-                      }
-                      className="btn btn-ghost"
-                    >
-                      {t(
-                        "dashboardServices.group.manageDepartures",
-                        "Manage departures",
+                      {service.booking_type === "group" ? (
+                        <Link
+                          href={
+                            "/dashboard/departures?businessId=" +
+                            business.id +
+                            "&serviceId=" +
+                            service.id
+                          }
+                          className="btn btn-ghost"
+                        >
+                          {t(
+                            "dashboardServices.group.manageDepartures",
+                            "Manage departures",
+                          )}
+                        </Link>
+                      ) : (
+                        <Link
+                          href={"/dashboard/staff?businessId=" + business.id}
+                          className="btn btn-ghost"
+                        >
+                          {t(
+                            "dashboardServices.hero.assignStaff",
+                            "Assign staff",
+                          )}
+                        </Link>
                       )}
-                    </Link>
-                  ) : (
-                    <Link
-                      href={"/dashboard/staff?businessId=" + business.id}
-                      className="btn btn-ghost"
-                    >
-                      {t("dashboardServices.hero.assignStaff", "Assign staff")}
-                    </Link>
+                    </>
                   )}
                 </>
               )}
@@ -647,6 +669,16 @@ export default function ServiceCard({
 
         .service-booking-format-active p {
           margin-top: 0.2rem;
+        }
+
+        .group-edit-toggle span {
+          display: grid;
+          gap: 0.15rem;
+        }
+
+        .group-edit-toggle small {
+          color: var(--text-muted);
+          line-height: 1.35;
         }
 
         .service-booking-format-optional {

@@ -289,7 +289,10 @@ export default function MyBookingCard({
                 </span>
               ) : isGroupBooking ? (
                 <span className="small muted">
-                  {t("myBookings.group.seatReservation", "Scheduled departure")}
+                  {t(
+                    "myBookings.group.seatReservation",
+                    "Scheduled group booking",
+                  )}
                 </span>
               ) : (
                 <Link

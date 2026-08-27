@@ -176,13 +176,13 @@ export default function CreateServiceCard({
                   <strong>
                     {t(
                       "dashboardServices.bookingType.groupActive",
-                      "Scheduled service with seats",
+                      "Shared departure with seats",
                     )}
                   </strong>
                   <p className="small muted">
                     {t(
                       "dashboardServices.bookingType.groupActiveHint",
-                      "Customers choose a fixed departure and reserve one or more places.",
+                      "Several customers can reserve places on the same fixed date and start time.",
                     )}
                   </p>
                 </div>
@@ -193,7 +193,7 @@ export default function CreateServiceCard({
                 >
                   {t(
                     "dashboardServices.bookingType.useAppointment",
-                    "Use standard appointments",
+                    "Use one-at-a-time appointments",
                   )}
                 </button>
               </div>
@@ -205,13 +205,13 @@ export default function CreateServiceCard({
                   <strong>
                     {t(
                       "dashboardServices.bookingType.suggestionTitle",
-                      "Will several people join the same time?",
+                      "Will different customers share one start time?",
                     )}
                   </strong>
                   <p className="small muted">
                     {t(
                       "dashboardServices.bookingType.suggestionBody",
-                      "This looks like a tour, class or group activity. Use departures only if customers share a fixed time and capacity.",
+                      "Tours, classes and shared activities use departures with a seat limit. Haircuts, consultations and private time slots stay as appointments.",
                     )}
                   </p>
                 </div>
@@ -222,7 +222,7 @@ export default function CreateServiceCard({
                 >
                   {t(
                     "dashboardServices.bookingType.useGroup",
-                    "Use departures and seats",
+                    "Set up shared departures",
                   )}
                 </button>
               </div>
@@ -269,7 +269,10 @@ export default function CreateServiceCard({
             {bookingType === "group" && (
               <div className="group-service-settings">
                 <label className="small muted">
-                  {t("dashboardServices.group.capacity", "Default seats")}
+                  {t(
+                    "dashboardServices.group.capacity",
+                    "Seats on each departure",
+                  )}
                   <input
                     type="number"
                     min={1}
@@ -299,7 +302,7 @@ export default function CreateServiceCard({
                     <small>
                       {t(
                         "dashboardServices.group.privateHint",
-                        "One customer reserves the whole departure.",
+                        "One customer reserves the whole departure while every seat is still free.",
                       )}
                     </small>
                   </span>
@@ -343,7 +346,7 @@ export default function CreateServiceCard({
                     <p className="small muted">
                       {t(
                         "dashboardServices.bookingType.optionalBody",
-                        "Only use scheduled departures when several customers can reserve places on the same fixed time.",
+                        "Use shared departures only when different customers can reserve seats on the same fixed date and start time.",
                       )}
                     </p>
                   </div>
@@ -354,7 +357,7 @@ export default function CreateServiceCard({
                   >
                     {t(
                       "dashboardServices.bookingType.useGroup",
-                      "Use departures and seats",
+                      "Set up shared departures",
                     )}
                   </button>
                 </div>

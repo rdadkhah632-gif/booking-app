@@ -18,6 +18,7 @@ export type Service = {
   business_id: string;
   active: boolean;
   booking_type?: "appointment" | "group" | null;
+  owner_review_required?: boolean | null;
 };
 
 export type StaffMember = {
@@ -48,6 +49,7 @@ export type Readiness = {
   hasActiveStaff: boolean;
   hasStaffServiceAssignments: boolean;
   hasWorkingHours: boolean;
+  hasBookableAppointments: boolean;
   hasScheduledDepartures: boolean;
   hasBusinessImage: boolean;
   activeServices: number;

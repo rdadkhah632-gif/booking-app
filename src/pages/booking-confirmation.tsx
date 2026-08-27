@@ -445,7 +445,10 @@ export default function BookingConfirmation() {
               <div className="booking-confirmation-details-header">
                 <h2 style={{ fontFamily: "var(--font-display)" }}>
                   {isGroupBooking()
-                    ? t("bookingConfirmation.details.tripTitle", "Trip details")
+                    ? t(
+                        "bookingConfirmation.details.tripTitle",
+                        "Group booking details",
+                      )
                     : t(
                         "bookingConfirmation.details.title",
                         "Appointment details",

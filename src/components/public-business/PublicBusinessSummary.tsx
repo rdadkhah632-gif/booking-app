@@ -89,7 +89,7 @@ export default function PublicBusinessSummary({
               ? t("publicBusiness.summary.reviewTrip", "Review booking")
               : t("publicBusiness.summary.reviewTitle", "Review appointment")
             : isGroupService
-              ? t("publicBusiness.summary.emptyTrip", "Your trip")
+              ? t("publicBusiness.summary.emptyTrip", "Your group booking")
               : t("publicBusiness.summary.emptyTitle", "Your appointment")}
         </h2>
         {!hasAppointmentSelection && hasSelectedService && (
@@ -97,7 +97,7 @@ export default function PublicBusinessSummary({
             {isGroupService
               ? t(
                   "publicBusiness.summary.pickDepartureBody",
-                  "Choose a departure and party size, then review your booking.",
+                  "Choose a date, time and guest count, then review your booking.",
                 )
               : t(
                   "publicBusiness.summary.pickAppointmentBody",

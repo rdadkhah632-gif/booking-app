@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import IllustratedEmptyState from "@/components/dashboard/IllustratedEmptyState";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 import CreateServiceCard from "@/components/dashboard-services/CreateServiceCard";
+import PreparedServiceReviewGuide from "@/components/dashboard-services/PreparedServiceReviewGuide";
 import ServiceCard from "@/components/dashboard-services/ServiceCard";
 import {
   Business,
@@ -192,6 +193,25 @@ export default function Services() {
     if (!router.isReady) return;
     loadData();
   }, [router.isReady, businessId]);
+
+  useEffect(() => {
+    if (!router.isReady || router.query.onboarding !== "connected") return;
+
+    setSuccess(
+      t(
+        "dashboardServices.assisted.connected",
+        "Profile connected. Review the prepared services below before showing anything to customers.",
+      ),
+    );
+
+    const nextQuery = { ...router.query };
+    delete nextQuery.onboarding;
+    void router.replace(
+      { pathname: router.pathname, query: nextQuery },
+      undefined,
+      { shallow: true },
+    );
+  }, [router.isReady, router.query.onboarding]);
 
   function assignedStaffForService(serviceId: string) {
     return staffMembers.filter((staff) =>
@@ -643,6 +663,28 @@ export default function Services() {
   function durationOptions() {
     return [15, 30, 45, 60, 75, 90, 120, 180, 240, 300, 360, 480, 600];
   }
+
+  const preparedServices = services.filter(
+    (service) => service.owner_review_required,
+  );
+  const preparedGroupCount = preparedServices.filter(
+    (service) => service.booking_type === "group",
+  ).length;
+  const preparedAppointmentCount = preparedServices.length - preparedGroupCount;
+
+  function reviewNextPreparedService() {
+    const nextService = preparedServices[0];
+    if (!nextService) return;
+
+    setEditingServiceId(nextService.id);
+    window.setTimeout(() => {
+      document.getElementById(`service-${nextService.id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  }
+
   return (
     <DashboardLayout
       title={t("dashboardServices.pageTitle", "Services")}
@@ -720,6 +762,12 @@ export default function Services() {
               </p>
             </div>
           )}
+          <PreparedServiceReviewGuide
+            reviewCount={preparedServices.length}
+            groupCount={preparedGroupCount}
+            appointmentCount={preparedAppointmentCount}
+            onReviewNext={reviewNextPreparedService}
+          />
           {(services.length > 0 || formExpanded) && (
             <div id="create-service-panel">
               <CreateServiceCard

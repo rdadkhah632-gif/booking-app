@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { CalendarPlus, Check, X } from "lucide-react";
+import { CalendarPlus, Check, UsersRound, X } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
@@ -416,6 +416,26 @@ export default function DeparturesPage() {
       {error && <div className="notice error-notice">{error}</div>}
       {success && <div className="notice success-notice">{success}</div>}
 
+      {!loading && payload && payload.services.length > 0 && (
+        <div className="departure-format-note">
+          <UsersRound size={20} aria-hidden="true" />
+          <div>
+            <strong>
+              {t(
+                "departures.guide.title",
+                "Use departures only for a shared start time",
+              )}
+            </strong>
+            <p className="small muted">
+              {t(
+                "departures.guide.body",
+                "Add one row for every trip, class or activity customers can join together. Haircuts, consultations and other one-at-a-time bookings continue to use Calendar and working hours.",
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="card">
           <p className="muted">
@@ -553,7 +573,7 @@ export default function DeparturesPage() {
                 </label>
                 <label>
                   <span>
-                    {t("departures.field.repeat", "Daily departures")}
+                    {t("departures.field.repeat", "Repeat on following days")}
                   </span>
                   <input
                     name="repeatCount"
@@ -565,8 +585,23 @@ export default function DeparturesPage() {
                       setRepeatCount(Number(event.target.value))
                     }
                   />
+                  <small className="field-hint">
+                    {t(
+                      "departures.field.repeatHint",
+                      "Keep this at 1 for a single departure.",
+                    )}
+                  </small>
                 </label>
               </div>
+
+              {repeatCount > 1 && (
+                <p className="repeat-preview" role="status">
+                  {t(
+                    "departures.field.repeatPreview",
+                    "This creates {count} departures on consecutive days with the same time and seat capacity.",
+                  ).replace("{count}", String(repeatCount))}
+                </p>
+              )}
 
               {selectedService && (
                 <p className="small service-pricing-note">
@@ -618,10 +653,16 @@ export default function DeparturesPage() {
 
             {upcomingDepartures.length === 0 ? (
               <div className="empty-list">
-                <p>
+                <strong>
                   {t(
                     "departures.upcoming.empty",
                     "No upcoming departures yet.",
+                  )}
+                </strong>
+                <p className="small muted">
+                  {t(
+                    "departures.upcoming.emptyBody",
+                    "Add the first real date and time above. Customers only see departures you schedule here.",
                   )}
                 </p>
               </div>
@@ -858,6 +899,41 @@ export default function DeparturesPage() {
         .success-notice {
           color: var(--success);
           border-color: rgba(45, 212, 191, 0.35);
+        }
+
+        .departure-format-note {
+          display: flex;
+          gap: 0.7rem;
+          align-items: flex-start;
+          margin-bottom: 1rem;
+          padding: 0.85rem 0.95rem;
+          border: 1px solid rgba(20, 125, 112, 0.25);
+          border-radius: 8px;
+          background: rgba(20, 125, 112, 0.07);
+        }
+
+        .departure-format-note :global(svg) {
+          flex: 0 0 auto;
+          color: #147d70;
+          margin-top: 0.1rem;
+        }
+
+        .departure-format-note p {
+          margin: 0.2rem 0 0;
+        }
+
+        .field-hint {
+          color: var(--text-muted);
+          line-height: 1.35;
+        }
+
+        .repeat-preview {
+          margin: -0.2rem 0 0;
+          padding: 0.7rem 0.8rem;
+          border-radius: 6px;
+          background: var(--surface-2);
+          color: var(--text-muted);
+          font-size: 0.86rem;
         }
 
         .departures-layout {

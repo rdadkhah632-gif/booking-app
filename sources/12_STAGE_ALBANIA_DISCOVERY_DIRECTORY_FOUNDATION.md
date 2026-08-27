@@ -2245,13 +2245,19 @@ Then run:
 
 `sources/sql/42_capacity_booking_exclusion_compatibility.sql`
 
+Then run:
+
+`sources/sql/45_manual_capacity_bookings.sql`
+
 All three SQL files must complete successfully before the matching website
 build is used. SQL 40 creates the private departure table, extends
 services/bookings with backward-compatible defaults and installs
 service-role-only atomic functions. SQL 41 updates legacy unique start-time
 indexes. SQL 42 preserves legacy appointment exclusion rules while allowing
-several customers to reserve seats on the same scheduled departure. None of
-these migrations enables customer checkout or payments.
+several customers to reserve seats on the same scheduled departure. SQL 45 adds
+the owner-only atomic path used by Calendar when an owner enters a customer against
+an existing departure. None of these migrations enables customer checkout or
+payments.
 
 ### Batch 34 deployment QA
 

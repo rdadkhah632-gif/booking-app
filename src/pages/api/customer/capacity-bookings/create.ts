@@ -158,7 +158,8 @@ export default async function handler(
     const body = (request.body || {}) as CapacityBookingBody;
     const departureId = cleanText(body.departureId, 100);
     const bookingOption = cleanText(body.bookingOption, 20) as
-      "shared" | "private";
+      | "shared"
+      | "private";
     const partySize = Number(body.partySize);
 
     if (!UUID_PATTERN.test(departureId)) {
@@ -366,7 +367,7 @@ export default async function handler(
           response,
           503,
           "capacity_contract_not_installed",
-          "Scheduled departure booking is not configured yet",
+          "Scheduled group booking is not configured yet",
         );
       }
       if (
@@ -377,7 +378,7 @@ export default async function handler(
           response,
           503,
           "capacity_contract_outdated",
-          "Scheduled departure booking is temporarily unavailable",
+          "Scheduled group booking is temporarily unavailable",
         );
       }
       if (
@@ -388,7 +389,7 @@ export default async function handler(
           response,
           503,
           "capacity_contract_outdated",
-          "Scheduled departure booking is temporarily unavailable",
+          "Scheduled group booking is temporarily unavailable",
         );
       }
       throw createError || new Error(message);

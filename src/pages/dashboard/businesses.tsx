@@ -103,7 +103,7 @@ export default function Businesses() {
 
     const { data: serviceData, error: serviceError } = await supabase
       .from("services")
-      .select("id, business_id, active, booking_type")
+      .select("id, business_id, active, booking_type, owner_review_required")
       .in("business_id", businessIds);
 
     if (serviceError) {
@@ -451,8 +451,8 @@ export default function Businesses() {
 
     const profileComplete = Boolean(
       business.name?.trim() &&
-      business.category?.trim() &&
-      business.city?.trim(),
+        business.category?.trim() &&
+        business.city?.trim(),
     );
 
     const hasActiveServices = activeServices > 0;
@@ -546,6 +546,7 @@ export default function Businesses() {
       hasActiveStaff,
       hasStaffServiceAssignments,
       hasWorkingHours,
+      hasBookableAppointments,
       hasScheduledDepartures,
       hasBusinessImage,
       activeServices,
@@ -602,9 +603,113 @@ export default function Businesses() {
           service.business_id === primaryBusiness.id && service.active,
       )
     : [];
+  const primaryPreparedServiceReviews = primaryBusiness
+    ? services.filter(
+        (service) =>
+          service.business_id === primaryBusiness.id &&
+          service.owner_review_required,
+      ).length
+    : 0;
+  const primaryHasAppointmentServices = primaryActiveServices.some(
+    (service) => service.booking_type !== "group",
+  );
+  const primaryHasGroupServices = primaryActiveServices.some(
+    (service) => service.booking_type === "group",
+  );
   const primaryUsesGroupSchedule =
-    primaryActiveServices.length > 0 &&
-    primaryActiveServices.every((service) => service.booking_type === "group");
+    primaryHasGroupServices && !primaryHasAppointmentServices;
+  const primaryUsesAppointmentSchedule =
+    primaryHasAppointmentServices && !primaryHasGroupServices;
+  const primaryUsesMixedSchedule =
+    primaryHasAppointmentServices && primaryHasGroupServices;
+  const bookingAvailabilitySteps =
+    primaryBusiness && primaryReadiness
+      ? primaryUsesGroupSchedule
+        ? [
+            {
+              key: "departures",
+              complete: primaryReadiness.hasScheduledDepartures,
+              href: "/dashboard/departures",
+              label: t(
+                "dashboardBusinesses.setup.departures",
+                "Departure schedule",
+              ),
+              helper: t(
+                "dashboardBusinesses.setup.departuresBody",
+                "Add the fixed dates, start times and seat capacity customers can book.",
+              ),
+              action: t(
+                "dashboardBusinesses.setup.departuresAction",
+                "Add departures",
+              ),
+            },
+          ]
+        : primaryUsesAppointmentSchedule
+          ? [
+              {
+                key: "team",
+                complete:
+                  primaryReadiness.hasActiveStaff &&
+                  primaryReadiness.hasStaffServiceAssignments,
+                href: "/dashboard/staff",
+                label: t("dashboardBusinesses.setup.team", "Provider or team"),
+                helper: t(
+                  "dashboardBusinesses.setup.teamBody",
+                  "Add a provider and assign at least one service customers can book.",
+                ),
+                action: t(
+                  "dashboardBusinesses.setup.teamAction",
+                  "Manage team",
+                ),
+              },
+              {
+                key: "hours",
+                complete: primaryReadiness.hasWorkingHours,
+                href: "/dashboard/availability",
+                label: t("dashboardBusinesses.setup.hours", "Working hours"),
+                helper: t(
+                  "dashboardBusinesses.setup.hoursBody",
+                  "Set the days and times customers can book.",
+                ),
+                action: t("dashboardBusinesses.setup.hoursAction", "Set hours"),
+              },
+            ]
+          : primaryUsesMixedSchedule
+            ? [
+                {
+                  key: "availability",
+                  complete: primaryReadiness.bookingReady,
+                  href: primaryReadiness.hasScheduledDepartures
+                    ? "/dashboard/departures"
+                    : primaryReadiness.hasBookableAppointments
+                      ? "/dashboard/bookings"
+                      : "/dashboard/services",
+                  label: t(
+                    "dashboardBusinesses.setup.availability",
+                    "Booking availability",
+                  ),
+                  helper: primaryReadiness.bookingReady
+                    ? t(
+                        "dashboardBusinesses.setup.availabilityReadyBody",
+                        "At least one service format is ready. You can finish the other format when you want to offer it.",
+                      )
+                    : t(
+                        "dashboardBusinesses.setup.availabilityBody",
+                        "Appointments need a provider and working hours. Shared services need at least one departure.",
+                      ),
+                  action: primaryReadiness.bookingReady
+                    ? t(
+                        "dashboardBusinesses.setup.availabilityReviewAction",
+                        "Review availability",
+                      )
+                    : t(
+                        "dashboardBusinesses.setup.availabilityAction",
+                        "Choose a booking setup",
+                      ),
+                },
+              ]
+            : []
+      : [];
   const setupSteps =
     primaryBusiness && primaryReadiness
       ? [
@@ -626,68 +731,35 @@ export default function Businesses() {
             key: "services",
             complete: primaryReadiness.hasActiveServices,
             href: "/dashboard/services",
-            label: t("dashboardBusinesses.setup.services", "Services"),
-            helper: t(
-              "dashboardBusinesses.setup.servicesBody",
-              "Create at least one active service customers can choose.",
-            ),
-            action: t(
-              "dashboardBusinesses.setup.servicesAction",
-              "Add service",
-            ),
+            label:
+              primaryPreparedServiceReviews > 0 &&
+              !primaryReadiness.hasActiveServices
+                ? t(
+                    "dashboardBusinesses.setup.reviewServices",
+                    "Review prepared services",
+                  )
+                : t("dashboardBusinesses.setup.services", "Services"),
+            helper:
+              primaryPreparedServiceReviews > 0 &&
+              !primaryReadiness.hasActiveServices
+                ? t(
+                    "dashboardBusinesses.setup.reviewServicesBody",
+                    "Confirm the prepared prices and booking formats before showing a service.",
+                  )
+                : t(
+                    "dashboardBusinesses.setup.servicesBody",
+                    "Create at least one active service customers can choose.",
+                  ),
+            action:
+              primaryPreparedServiceReviews > 0 &&
+              !primaryReadiness.hasActiveServices
+                ? t(
+                    "dashboardBusinesses.setup.reviewServicesAction",
+                    "Review services",
+                  )
+                : t("dashboardBusinesses.setup.servicesAction", "Add service"),
           },
-          {
-            key: "team",
-            complete: primaryUsesGroupSchedule
-              ? primaryReadiness.hasScheduledDepartures
-              : primaryReadiness.hasActiveStaff &&
-                primaryReadiness.hasStaffServiceAssignments,
-            href: primaryUsesGroupSchedule
-              ? "/dashboard/departures"
-              : "/dashboard/staff",
-            label: primaryUsesGroupSchedule
-              ? t("dashboardBusinesses.setup.guide", "Guide or operator")
-              : t("dashboardBusinesses.setup.team", "Provider or team"),
-            helper: primaryUsesGroupSchedule
-              ? t(
-                  "dashboardBusinesses.setup.guideBody",
-                  "Add a departure and optionally assign the guide running it.",
-                )
-              : t(
-                  "dashboardBusinesses.setup.teamBody",
-                  "Add a provider and assign at least one service customers can book.",
-                ),
-            action: primaryUsesGroupSchedule
-              ? t("dashboardBusinesses.setup.guideAction", "Manage departures")
-              : t("dashboardBusinesses.setup.teamAction", "Manage team"),
-          },
-          {
-            key: "hours",
-            complete: primaryUsesGroupSchedule
-              ? primaryReadiness.hasScheduledDepartures
-              : primaryReadiness.hasWorkingHours,
-            href: primaryUsesGroupSchedule
-              ? "/dashboard/departures"
-              : "/dashboard/availability",
-            label: primaryUsesGroupSchedule
-              ? t("dashboardBusinesses.setup.departures", "Departures")
-              : t("dashboardBusinesses.setup.hours", "Working hours"),
-            helper: primaryUsesGroupSchedule
-              ? t(
-                  "dashboardBusinesses.setup.departuresBody",
-                  "Add the fixed dates, times and seat capacity customers can book.",
-                )
-              : t(
-                  "dashboardBusinesses.setup.hoursBody",
-                  "Set the days and times customers can book.",
-                ),
-            action: primaryUsesGroupSchedule
-              ? t(
-                  "dashboardBusinesses.setup.departuresAction",
-                  "Add departures",
-                )
-              : t("dashboardBusinesses.setup.hoursAction", "Set hours"),
-          },
+          ...bookingAvailabilitySteps,
           {
             key: "bookingMode",
             complete: true,
@@ -748,8 +820,8 @@ export default function Businesses() {
       : "";
   const canPublishPrimaryBusiness = Boolean(
     primaryBusiness &&
-    primaryReadiness?.bookingReady &&
-    !primaryBusiness.published,
+      primaryReadiness?.bookingReady &&
+      !primaryBusiness.published,
   );
 
   function shouldOpenProfileDetails(href: string) {

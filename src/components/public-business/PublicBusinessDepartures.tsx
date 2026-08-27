@@ -41,7 +41,7 @@ export default function PublicBusinessDepartures({
   const maxGuests = Math.max(selectedDeparture?.remaining_seats || 1, 1);
   const privateAvailable = Boolean(
     selectedDeparture &&
-    selectedDeparture.remaining_seats === selectedDeparture.capacity,
+      selectedDeparture.remaining_seats === selectedDeparture.capacity,
   );
   const selectedGuide = selectedDeparture?.staff_member_id
     ? staffMembers.find(
@@ -67,7 +67,9 @@ export default function PublicBusinessDepartures({
           <p className="public-business-step-kicker">
             {t("publicBusiness.departures.step", "Step 2")}
           </p>
-          <h2>{t("publicBusiness.departures.title", "Choose a departure")}</h2>
+          <h2>
+            {t("publicBusiness.departures.title", "Choose a date and time")}
+          </h2>
         </div>
         <span className="small public-business-pill-muted">
           {departures.length}{" "}

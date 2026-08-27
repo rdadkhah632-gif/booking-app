@@ -250,13 +250,13 @@ const EMAIL_COPY: Record<EmailLocale, EmailCopy> = {
       note: "If anything looks wrong, open Mirëbook and contact the business from your booking details.",
     },
     groupReminder: {
-      subject: "Mirëbook: Trip reminder",
-      preview: "Your trip is coming up in about 24 hours.",
-      eyebrow: "Trip reminder",
-      title: "Your trip is coming up",
-      intro: "This is a reminder for your upcoming Mirëbook trip.",
-      actionLabel: "View trip booking",
-      note: "Check the departure and meeting point in Mirëbook before you travel.",
+      subject: "Mirëbook: Group booking reminder",
+      preview: "Your scheduled booking is coming up in about 24 hours.",
+      eyebrow: "Group booking reminder",
+      title: "Your scheduled booking is coming up",
+      intro: "This is a reminder for your upcoming Mirëbook group booking.",
+      actionLabel: "View booking",
+      note: "Check the scheduled time and meeting point in Mirëbook before it starts.",
     },
     invite: {
       subject: (businessName) =>
@@ -432,14 +432,14 @@ The in-app support conversation remains the authoritative record.`,
       note: "Nëse diçka nuk duket mirë, hap Mirëbook dhe kontakto biznesin nga detajet e rezervimit.",
     },
     groupReminder: {
-      subject: "Mirëbook: Kujtesë udhëtimi",
-      preview: "Udhëtimi yt është pas rreth 24 orësh.",
-      eyebrow: "Kujtesë udhëtimi",
-      title: "Udhëtimi yt po afrohet",
+      subject: "Mirëbook: Kujtesë për rezervimin në grup",
+      preview: "Rezervimi yt me orar është pas rreth 24 orësh.",
+      eyebrow: "Kujtesë për rezervimin në grup",
+      title: "Rezervimi yt me orar po afrohet",
       intro:
-        "Kjo është një kujtesë për udhëtimin tënd të ardhshëm në Mirëbook.",
+        "Kjo është një kujtesë për rezervimin tënd të ardhshëm në grup në Mirëbook.",
       actionLabel: "Shiko rezervimin",
-      note: "Kontrollo nisjen dhe pikën e takimit në Mirëbook para udhëtimit.",
+      note: "Kontrollo orarin dhe pikën e takimit në Mirëbook para fillimit.",
     },
     invite: {
       subject: (businessName) =>
@@ -707,9 +707,7 @@ ${copy.sourceOfTruthBookings}`;
         {
           label: copy.guestsLabel,
           value:
-            isGroupBooking && input.partySize
-              ? String(input.partySize)
-              : null,
+            isGroupBooking && input.partySize ? String(input.partySize) : null,
         },
         { label: dateTimeLabel, value: appointmentTime },
         { label: copy.meetingPointLabel, value: input.meetingPoint },
@@ -971,7 +969,10 @@ export function supportEmailTemplate(input: {
 }
 
 type OwnershipClaimStatus =
-  "submitted" | "needs_more_info" | "approved" | "rejected";
+  | "submitted"
+  | "needs_more_info"
+  | "approved"
+  | "rejected";
 
 const OWNERSHIP_CLAIM_COPY: Record<
   EmailLocale,

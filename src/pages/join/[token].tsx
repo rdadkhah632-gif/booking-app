@@ -229,10 +229,23 @@ export default function PreparedBusinessJoinPage() {
                           <Clock3 aria-hidden="true" />
                           {service.durationMinutes}{" "}
                           {t("common.minutes", "minutes")}
-                          {service.bookingType === "group"
-                            ? ` · ${service.groupCapacity || 0} ${t("dashboardServices.group.seats", "seats")}`
-                            : ""}
                         </small>
+                        <small className="service-format">
+                          {service.bookingType === "group"
+                            ? `${t("onboardingJoin.sharedDeparture", "Shared departure")} · ${service.groupCapacity || 0} ${t("dashboardServices.group.seats", "seats")}`
+                            : t(
+                                "onboardingJoin.appointmentFormat",
+                                "One customer at a time",
+                              )}
+                        </small>
+                        {service.privateBookingEnabled && (
+                          <small className="service-format">
+                            {t(
+                              "onboardingJoin.privateAvailable",
+                              "Private trip also available",
+                            )}
+                          </small>
+                        )}
                       </div>
                       <span data-known={service.priceKnown}>
                         {service.priceKnown
@@ -490,6 +503,10 @@ export default function PreparedBusinessJoinPage() {
           align-items: center;
           gap: 0.35rem;
           color: #777d84;
+        }
+        .service-list .service-format {
+          color: #147d70;
+          font-weight: 750;
         }
         .service-list article > span {
           flex: 0 0 auto;

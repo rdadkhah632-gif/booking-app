@@ -1105,7 +1105,7 @@ export const en: TranslationTree = {
   "dashboardSettings.tools.supportBody":
     "Get help with setup, bookings or account changes.",
   "dashboardHome.title": "Today",
-  "dashboardHome.subtitle": "Appointments and requests for today.",
+  "dashboardHome.subtitle": "Bookings and requests for today.",
   "dashboardHome.checkingAccount": "Checking your account...",
   "dashboardHome.refreshHint":
     "Mirëbook refreshes this dashboard when you return to the tab. Use refresh if a customer action does not appear straight away.",
@@ -2217,11 +2217,11 @@ export const en: TranslationTree = {
   "dashboardBookings.actions.complete": "Complete",
   "dashboardBookings.actions.reschedule": "Reschedule",
   "dashboardBookings.actions.cancel": "Cancel",
-  "dashboardBookings.manual.open": "Add appointment",
-  "dashboardBookings.manual.title": "Add appointment",
+  "dashboardBookings.manual.open": "Add booking",
+  "dashboardBookings.manual.title": "Add booking",
   "dashboardBookings.manual.body":
-    "Choose the customer, service, team member and time.",
-  "dashboardBookings.manual.addAt": "Add appointment",
+    "Choose a customer and service. Mirëbook will show the right schedule fields.",
+  "dashboardBookings.manual.addAt": "Add booking",
   "dashboardBookings.manual.setupNeeded":
     "Assign a team member to a service before adding appointments.",
   "dashboardBookings.manual.customerName": "Customer name",
@@ -2231,6 +2231,29 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.bookFor": "Book for",
   "dashboardBookings.manual.chooseService": "Choose service",
   "dashboardBookings.manual.chooseStaff": "Choose staff",
+  "dashboardBookings.manual.scheduledDepartureShort": "Scheduled departure",
+  "dashboardBookings.manual.group.title": "Add guests to a scheduled departure",
+  "dashboardBookings.manual.group.body":
+    "Choose the trip first. Mirëbook will reserve its seats and keep the guest list together.",
+  "dashboardBookings.manual.departure": "Departure",
+  "dashboardBookings.manual.chooseDeparture": "Choose departure",
+  "dashboardBookings.manual.seatsLeftShort": "left",
+  "dashboardBookings.manual.noDepartures":
+    "This service has no upcoming departures yet.",
+  "dashboardBookings.manual.scheduleDeparture": "Schedule a departure",
+  "dashboardBookings.manual.departureTime": "Departure",
+  "dashboardBookings.manual.seatsRemaining": "Seats remaining",
+  "dashboardBookings.manual.seatsRemainingShort": "seats remaining",
+  "dashboardBookings.manual.meetingPoint": "Meeting point",
+  "dashboardBookings.manual.bookingOption": "Booking type",
+  "dashboardBookings.manual.sharedSeats": "Shared seats",
+  "dashboardBookings.manual.sharedSeatsHint":
+    "Reserve only this group's seats.",
+  "dashboardBookings.manual.privateTrip": "Private trip",
+  "dashboardBookings.manual.privateTripHint": "Reserve the whole departure.",
+  "dashboardBookings.manual.privateTripTaken":
+    "Unavailable after seats have been reserved.",
+  "dashboardBookings.manual.partySize": "Guests",
   "dashboardBookings.manual.notes": "Notes",
   "dashboardBookings.manual.staffBusy": "Busy",
   "dashboardBookings.manual.staffAvailable": "Available",
@@ -2242,12 +2265,19 @@ export const en: TranslationTree = {
     "Duration follows the selected service.",
   "dashboardBookings.manual.saving": "Adding...",
   "dashboardBookings.manual.create": "Add appointment",
+  "dashboardBookings.manual.createReservation": "Add reservation",
   "dashboardBookings.manual.noAssignedStaff":
     "No active staff are assigned to this service.",
   "dashboardBookings.manual.noStaffShort": "No staff assigned",
   "dashboardBookings.manual.error.customerName": "Add the customer's name.",
   "dashboardBookings.manual.error.customerEmail": "Add a valid customer email.",
   "dashboardBookings.manual.error.service": "Choose a service.",
+  "dashboardBookings.manual.error.departure": "Choose an upcoming departure.",
+  "dashboardBookings.manual.error.partySize": "Choose how many guests to add.",
+  "dashboardBookings.manual.error.notEnoughSeats":
+    "There are not enough seats left for this booking.",
+  "dashboardBookings.manual.error.privateUnavailable":
+    "A private trip is only available before any seats are reserved.",
   "dashboardBookings.manual.error.staff": "Choose staff.",
   "dashboardBookings.manual.error.time": "Choose a date and time.",
   "dashboardBookings.manual.error.invalidTime":
@@ -2267,6 +2297,10 @@ export const en: TranslationTree = {
     "Sign in again before adding appointments.",
   "dashboardBookings.manual.error.config":
     "Manual appointment saving is not configured yet.",
+  "dashboardBookings.manual.error.capacityConfig":
+    "Manual group booking is not configured yet.",
+  "dashboardBookings.manual.error.ownerRequired":
+    "Only the business owner can add a group reservation.",
   "dashboardBookings.manual.error.forbidden":
     "You can only add appointments for a business you own or your own staff calendar.",
   "dashboardBookings.manual.success":
@@ -4116,18 +4150,19 @@ export const en: TranslationTree = {
     "Choose the help route that matches what you are doing.",
   "dashboardHome.today.title": "What needs attention today",
   "dashboardHome.today.body":
-    "Requests, appointments and the next setup action in one place.",
+    "Requests, bookings and the next setup action in one place.",
   "dashboardHome.today.overviewTitle": "Your day",
-  "dashboardHome.today.nextAppointment": "Next appointment",
+  "dashboardHome.today.nextAppointment": "Next booking",
   "dashboardHome.today.openCalendar": "Open in Calendar",
-  "dashboardHome.today.noUpcoming": "No upcoming appointments",
+  "dashboardHome.today.openDeparture": "Open departure",
+  "dashboardHome.today.noUpcoming": "No upcoming bookings",
   "dashboardHome.today.noUpcomingBody":
-    "New confirmed appointments will appear here.",
+    "New confirmed bookings will appear here.",
   "dashboardHome.today.requests": "Needs attention",
   "dashboardHome.today.confirmedToday": "Today",
   "dashboardHome.today.upcoming": "Upcoming",
   "dashboardHome.today.nextLabel": "Next action",
-  "dashboardHome.today.nextRequests": "Review appointment requests",
+  "dashboardHome.today.nextRequests": "Review booking requests",
   "dashboardHome.today.nextRequestsBody":
     "Customers are waiting for a decision.",
   "dashboardHome.today.nextRequestsCta": "Open inbox",
@@ -4135,6 +4170,10 @@ export const en: TranslationTree = {
   "dashboardHome.today.nextCalendarBody":
     "Confirmed appointments for today are ready.",
   "dashboardHome.today.nextCalendarCta": "Open today",
+  "dashboardHome.today.nextDeparture": "Open today's departure",
+  "dashboardHome.today.nextDepartureBody":
+    "Review the seats, guest list and meeting details for the next departure.",
+  "dashboardHome.today.nextDepartureCta": "Open departure",
   "dashboardHome.today.nextSetupBody":
     "Finish this setup step so customers can book with confidence.",
   "dashboardHome.today.nextPublishBody":
@@ -4152,11 +4191,17 @@ export const en: TranslationTree = {
   "dashboardHome.setup.profileCta": "Add details",
   "dashboardHome.setup.services": "First service",
   "dashboardHome.setup.servicesCta": "Add service",
+  "dashboardHome.setup.reviewServices": "Review prepared services",
+  "dashboardHome.setup.reviewServicesCta": "Review services",
   "dashboardHome.setup.team": "Team",
   "dashboardHome.setup.teamCta": "Add staff",
   "dashboardHome.setup.teamAssignCta": "Assign services",
   "dashboardHome.setup.hours": "Working hours",
   "dashboardHome.setup.hoursCta": "Set hours",
+  "dashboardHome.setup.bookingAvailability": "Booking availability",
+  "dashboardHome.setup.bookingAvailabilityCta": "Choose a booking setup",
+  "dashboardHome.setup.departures": "First departure",
+  "dashboardHome.setup.departuresCta": "Add departure",
   "dashboardHome.setup.publish": "Customer profile",
   "dashboardHome.setup.publishCta": "Review profile",
   "dashboardHome.setup.preview": "See what customers see",
@@ -5211,16 +5256,27 @@ export const en: TranslationTree = {
     "Reschedule request withdrawn",
   "customerApp.lifecycle.rescheduleCancelled.businessMessage":
     "{customer} withdrew their reschedule request at {business}.",
-  "bookingConfirmation.details.tripTitle": "Trip details",
+  "bookingConfirmation.details.tripTitle": "Group booking details",
   "dashboardBookings.departures.open": "Group departures",
-  "dashboardBusinesses.setup.departures": "Departures",
+  "dashboardBusinesses.setup.departures": "Departure schedule",
   "dashboardBusinesses.setup.departuresAction": "Add departures",
   "dashboardBusinesses.setup.departuresBody":
-    "Add the fixed dates, times and seat capacity customers can book.",
+    "Add the fixed dates, start times and seat capacity customers can book.",
+  "dashboardBusinesses.setup.availability": "Booking availability",
+  "dashboardBusinesses.setup.availabilityBody":
+    "Appointments need a provider and working hours. Shared services need at least one departure.",
+  "dashboardBusinesses.setup.availabilityReadyBody":
+    "At least one service format is ready. You can finish the other format when you want to offer it.",
+  "dashboardBusinesses.setup.availabilityAction": "Choose a booking setup",
+  "dashboardBusinesses.setup.availabilityReviewAction": "Review availability",
   "dashboardBusinesses.setup.guide": "Guide or operator",
   "dashboardBusinesses.setup.guideAction": "Manage departures",
   "dashboardBusinesses.setup.guideBody":
     "Add a departure and optionally assign the guide running it.",
+  "dashboardBusinesses.setup.reviewServices": "Review prepared services",
+  "dashboardBusinesses.setup.reviewServicesBody":
+    "Confirm the prepared prices and booking formats before showing a service.",
+  "dashboardBusinesses.setup.reviewServicesAction": "Review services",
   "dashboardServices.bookingType.label": "How customers book",
   "dashboardServices.bookingType.appointment": "Appointment",
   "dashboardServices.bookingType.appointmentHint":
@@ -5228,18 +5284,19 @@ export const en: TranslationTree = {
   "dashboardServices.bookingType.group": "Scheduled group",
   "dashboardServices.bookingType.groupHint":
     "Several customers reserve seats on one departure.",
-  "dashboardServices.bookingType.groupActive": "Scheduled service with seats",
+  "dashboardServices.bookingType.groupActive": "Shared departure with seats",
   "dashboardServices.bookingType.groupActiveHint":
-    "Customers choose a fixed departure and reserve one or more places.",
-  "dashboardServices.bookingType.useAppointment": "Use standard appointments",
+    "Several customers can reserve places on the same fixed date and start time.",
+  "dashboardServices.bookingType.useAppointment":
+    "Use one-at-a-time appointments",
   "dashboardServices.bookingType.suggestionTitle":
-    "Will several people join the same time?",
+    "Will different customers share one start time?",
   "dashboardServices.bookingType.suggestionBody":
-    "This looks like a tour, class or group activity. Use departures only if customers share a fixed time and capacity.",
-  "dashboardServices.bookingType.useGroup": "Use departures and seats",
+    "Tours, classes and shared activities use departures with a seat limit. Haircuts, consultations and private time slots stay as appointments.",
+  "dashboardServices.bookingType.useGroup": "Set up shared departures",
   "dashboardServices.bookingType.optionalTitle": "Tour, class or shared trip?",
   "dashboardServices.bookingType.optionalBody":
-    "Only use scheduled departures when several customers can reserve places on the same fixed time.",
+    "Use shared departures only when different customers can reserve seats on the same fixed date and start time.",
   "dashboardServices.bookingType.standardSummary":
     "Booking format: standard appointment",
   "dashboardServices.card.perGuest": "per guest",
@@ -5249,7 +5306,7 @@ export const en: TranslationTree = {
     "Group capacity must be between 1 and 200.",
   "dashboardServices.error.bookingTypeLocked":
     "This service already has departure history. Keep it as a scheduled group service, or create a new appointment service.",
-  "dashboardServices.group.capacity": "Default seats",
+  "dashboardServices.group.capacity": "Seats on each departure",
   "dashboardServices.group.created":
     "Group service added. Add its first departure so customers can reserve seats.",
   "dashboardServices.group.hidden":
@@ -5259,7 +5316,7 @@ export const en: TranslationTree = {
     "Add an upcoming departure before customers can reserve seats.",
   "dashboardServices.group.privateEnabled": "Allow private trip booking",
   "dashboardServices.group.privateHint":
-    "One customer reserves the whole departure.",
+    "One customer reserves the whole departure while every seat is still free.",
   "dashboardServices.group.privatePrice": "Private trip price",
   "dashboardServices.group.ready":
     "Customers can reserve seats on upcoming departures.",
@@ -5267,6 +5324,23 @@ export const en: TranslationTree = {
   "dashboardServices.group.typeLocked":
     "Booking type stays grouped once departures exist.",
   "dashboardServices.group.upcomingDepartures": "upcoming departures",
+  "dashboardServices.assisted.connected":
+    "Profile connected. Review the prepared services below before showing anything to customers.",
+  "dashboardServices.assisted.kicker": "Prepared profile",
+  "dashboardServices.assisted.title": "Review your prepared services",
+  "dashboardServices.assisted.body":
+    "Nothing is visible yet. Check each prepared service, correct anything that changed, then save it.",
+  "dashboardServices.assisted.checkDetails": "Check the details",
+  "dashboardServices.assisted.checkDetailsHint":
+    "Confirm the duration, price, description and booking format.",
+  "dashboardServices.assisted.groupNext": "Shared trips or classes",
+  "dashboardServices.assisted.groupNextHint":
+    "Save the service, then add the real departure dates, times and seats.",
+  "dashboardServices.assisted.appointmentNext": "One-at-a-time appointments",
+  "dashboardServices.assisted.appointmentNextHint":
+    "Save the service, then assign staff and the hours customers can choose.",
+  "dashboardServices.assisted.remaining": "{count} still need your review.",
+  "dashboardServices.assisted.reviewNext": "Review next service",
   "departures.pageTitle": "Departures",
   "departures.pageSubtitle": "Scheduled group services",
   "departures.loading": "Loading departures...",
@@ -5274,6 +5348,9 @@ export const en: TranslationTree = {
   "departures.emptyService.body":
     "Create a Scheduled group service, then return here to add its dates and seat capacity.",
   "departures.emptyService.cta": "Open services",
+  "departures.guide.title": "Use departures only for a shared start time",
+  "departures.guide.body":
+    "Add one row for every trip, class or activity customers can join together. Haircuts, consultations and other one-at-a-time bookings continue to use Calendar and working hours.",
   "departures.create.kicker": "New schedule",
   "departures.create.title": "Add a departure",
   "departures.createOne": "Add departure",
@@ -5287,13 +5364,18 @@ export const en: TranslationTree = {
   "departures.field.meetingPoint": "Meeting point",
   "departures.field.meetingPlaceholder":
     "Harbour, hotel, or exact meeting instructions",
-  "departures.field.repeat": "Daily departures",
+  "departures.field.repeat": "Repeat on following days",
+  "departures.field.repeatHint": "Keep this at 1 for a single departure.",
+  "departures.field.repeatPreview":
+    "This creates {count} departures on consecutive days with the same time and seat capacity.",
   "departures.perGuest": "per guest",
   "departures.privateTrip": "Private trip",
   "departures.guests": "guests",
   "departures.upcoming.kicker": "Live operations",
   "departures.upcoming.title": "Upcoming departures",
   "departures.upcoming.empty": "No upcoming departures yet.",
+  "departures.upcoming.emptyBody":
+    "Add the first real date and time above. Customers only see departures you schedule here.",
   "departures.seatsBooked": "seats booked",
   "departures.detail.kicker": "Departure manifest",
   "departures.detail.booked": "Booked",
@@ -5330,17 +5412,17 @@ export const en: TranslationTree = {
   "departures.success.createdMany": "Departures added.",
   "departures.success.updated": "Departure updated.",
   "departures.success.reservationUpdated": "Reservation updated.",
-  "myBookings.group.departureTime": "Departure time",
+  "myBookings.group.departureTime": "Scheduled time",
   "myBookings.group.guideLater": "Guide assigned by the business",
-  "myBookings.group.seatReservation": "Scheduled departure",
+  "myBookings.group.seatReservation": "Scheduled group booking",
   "myBookings.group.wholeDeparture": "Whole departure reserved",
   "publicBusiness.bookingMode.instantBooking": "Book instantly",
   "publicBusiness.bookingMode.requestBooking": "Request booking",
   "publicBusiness.departures.step": "Step 2",
-  "publicBusiness.departures.title": "Choose a departure",
+  "publicBusiness.departures.title": "Choose a date and time",
   "publicBusiness.departures.upcoming": "upcoming",
   "publicBusiness.departures.none":
-    "No upcoming departures are available for this trip yet.",
+    "No upcoming times are available for this service yet.",
   "publicBusiness.departures.seatLeft": "seat left",
   "publicBusiness.departures.seatsLeft": "seats left",
   "publicBusiness.departures.bookingType": "Booking type",
@@ -5358,22 +5440,22 @@ export const en: TranslationTree = {
   "publicBusiness.departures.guide": "Guide",
   "publicBusiness.departures.meetingPoint": "Meeting point",
   "publicBusiness.departures.chooseFirst":
-    "Choose an available departure before booking.",
+    "Choose an available date and time before booking.",
   "publicBusiness.departures.partyUnavailable":
     "Choose a guest count within the seats still available.",
   "publicBusiness.departures.notEnoughSeats":
-    "Those seats were just reserved. Choose fewer guests or another departure.",
+    "Those seats were just reserved. Choose fewer guests or another time.",
   "publicBusiness.departures.noLongerAvailable":
-    "This departure is no longer available. Choose another one.",
+    "This scheduled time is no longer available. Choose another one.",
   "publicBusiness.departures.createFailed":
     "Could not create this booking. Please try again.",
-  "publicBusiness.services.scheduledGroup": "Scheduled group trip",
+  "publicBusiness.services.scheduledGroup": "Shared booking at a fixed time",
   "publicBusiness.services.perGuest": "per guest",
   "publicBusiness.services.noDeparturesBody":
     "This business has active services, but no upcoming departures or staff times are available yet.",
-  "publicBusiness.summary.emptyTrip": "Your trip",
+  "publicBusiness.summary.emptyTrip": "Your group booking",
   "publicBusiness.summary.pickDepartureBody":
-    "Choose a departure and party size, then review your booking.",
+    "Choose a date, time and guest count, then review your booking.",
   "publicBusiness.summary.reviewTrip": "Review booking",
   "staffCalendar.departure": "Group departure",
   "staffCalendar.departure.kicker": "Assigned departure",
@@ -5439,8 +5521,8 @@ export const en: TranslationTree = {
   "admin.onboarding.prepared.removeService": "Remove service draft",
   "admin.onboarding.prepared.serviceName": "Service name",
   "admin.onboarding.prepared.bookingType": "Booking type",
-  "admin.onboarding.prepared.appointment": "Appointment",
-  "admin.onboarding.prepared.group": "Departure with seats",
+  "admin.onboarding.prepared.appointment": "One-at-a-time appointment",
+  "admin.onboarding.prepared.group": "Shared departure with seats",
   "admin.onboarding.prepared.priceConfirmed": "Owner-confirmed price",
   "admin.onboarding.prepared.estimateNote":
     "This will be shown privately as an editable starter estimate until the owner saves it.",
@@ -5466,6 +5548,9 @@ export const en: TranslationTree = {
   "onboardingJoin.services": "Prepared services",
   "onboardingJoin.servicesBody":
     "Review every duration, price and booking format before making it visible.",
+  "onboardingJoin.sharedDeparture": "Shared departure",
+  "onboardingJoin.appointmentFormat": "One customer at a time",
+  "onboardingJoin.privateAvailable": "Private trip also available",
   "onboardingJoin.priceNeeded": "Price to confirm",
   "onboardingJoin.suggestedPrice": "Starter estimate",
   "onboardingJoin.private": "Private owner handoff",
@@ -5489,4 +5574,10 @@ export const en: TranslationTree = {
   "onboardingJoin.createAccount": "Create Business account",
   "onboardingJoin.signIn": "Sign in to connect",
   "onboardingJoin.expires": "Secure link expires",
+  "admin.onboarding.prepared.durationMinutes": "Duration (minutes)",
+  "admin.onboarding.prepared.pricePerGuest": "Price per guest",
+  "admin.onboarding.prepared.appointmentHint":
+    "Use for haircuts, consultations and other private time slots.",
+  "admin.onboarding.prepared.groupHint":
+    "Use only when different customers share one fixed start time and seat capacity.",
 };

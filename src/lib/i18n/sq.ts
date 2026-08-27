@@ -1153,7 +1153,7 @@ export const sq: TranslationTree = {
   "dashboardSettings.tools.supportBody":
     "Merr ndihmë për konfigurim, rezervime ose ndryshime llogarie.",
   "dashboardHome.title": "Sot",
-  "dashboardHome.subtitle": "Takimet dhe kërkesat për sot.",
+  "dashboardHome.subtitle": "Rezervimet dhe kërkesat për sot.",
   "dashboardHome.checkingAccount": "Duke kontrolluar llogarinë...",
   "dashboardHome.refreshHint":
     "Mirëbook e rifreskon këtë panel kur kthehesh në këtë tab. Përdor rifreskimin nëse një veprim i klientit nuk shfaqet menjëherë.",
@@ -2198,11 +2198,11 @@ export const sq: TranslationTree = {
   "dashboardBookings.actions.complete": "Përfundo",
   "dashboardBookings.actions.reschedule": "Ndrysho orarin",
   "dashboardBookings.actions.cancel": "Anulo",
-  "dashboardBookings.manual.open": "Shto takim",
-  "dashboardBookings.manual.title": "Shto takim",
+  "dashboardBookings.manual.open": "Shto rezervim",
+  "dashboardBookings.manual.title": "Shto rezervim",
   "dashboardBookings.manual.body":
-    "Zgjidh klientin, shërbimin, anëtarin e ekipit dhe orarin.",
-  "dashboardBookings.manual.addAt": "Shto takim",
+    "Zgjidh klientin dhe shërbimin. Mirëbook do të shfaqë fushat e duhura të orarit.",
+  "dashboardBookings.manual.addAt": "Shto rezervim",
   "dashboardBookings.manual.setupNeeded":
     "Lidh një anëtar ekipi me një shërbim para se të shtosh takime.",
   "dashboardBookings.manual.customerName": "Emri i klientit",
@@ -2212,6 +2212,30 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.bookFor": "Rezervo për",
   "dashboardBookings.manual.chooseService": "Zgjidh shërbimin",
   "dashboardBookings.manual.chooseStaff": "Zgjidh stafin",
+  "dashboardBookings.manual.scheduledDepartureShort": "Nisje e planifikuar",
+  "dashboardBookings.manual.group.title":
+    "Shto klientë në një nisje të planifikuar",
+  "dashboardBookings.manual.group.body":
+    "Zgjidh fillimisht nisjen. Mirëbook do të rezervojë vendet dhe do ta mbajë listën e klientëve së bashku.",
+  "dashboardBookings.manual.departure": "Nisja",
+  "dashboardBookings.manual.chooseDeparture": "Zgjidh nisjen",
+  "dashboardBookings.manual.seatsLeftShort": "të lira",
+  "dashboardBookings.manual.noDepartures":
+    "Ky shërbim nuk ka ende nisje të ardhshme.",
+  "dashboardBookings.manual.scheduleDeparture": "Planifiko një nisje",
+  "dashboardBookings.manual.departureTime": "Nisja",
+  "dashboardBookings.manual.seatsRemaining": "Vende të lira",
+  "dashboardBookings.manual.seatsRemainingShort": "vende të lira",
+  "dashboardBookings.manual.meetingPoint": "Pikëtakimi",
+  "dashboardBookings.manual.bookingOption": "Lloji i rezervimit",
+  "dashboardBookings.manual.sharedSeats": "Vende në grup",
+  "dashboardBookings.manual.sharedSeatsHint":
+    "Rezervo vetëm vendet e këtij grupi.",
+  "dashboardBookings.manual.privateTrip": "Udhëtim privat",
+  "dashboardBookings.manual.privateTripHint": "Rezervo të gjithë nisjen.",
+  "dashboardBookings.manual.privateTripTaken":
+    "Nuk ofrohet pasi janë rezervuar vende.",
+  "dashboardBookings.manual.partySize": "Persona",
   "dashboardBookings.manual.notes": "Shënime",
   "dashboardBookings.manual.staffBusy": "I zënë",
   "dashboardBookings.manual.staffAvailable": "I lirë",
@@ -2223,6 +2247,7 @@ export const sq: TranslationTree = {
     "Kohëzgjatja merret nga shërbimi i zgjedhur.",
   "dashboardBookings.manual.saving": "Duke shtuar...",
   "dashboardBookings.manual.create": "Shto takim",
+  "dashboardBookings.manual.createReservation": "Shto rezervimin",
   "dashboardBookings.manual.noAssignedStaff":
     "Nuk ka staf aktiv të lidhur me këtë shërbim.",
   "dashboardBookings.manual.noStaffShort": "Nuk ka staf të caktuar",
@@ -2230,6 +2255,12 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.error.customerEmail":
     "Shto një email të vlefshëm të klientit.",
   "dashboardBookings.manual.error.service": "Zgjidh një shërbim.",
+  "dashboardBookings.manual.error.departure": "Zgjidh një nisje të ardhshme.",
+  "dashboardBookings.manual.error.partySize": "Zgjidh sa persona do të shtosh.",
+  "dashboardBookings.manual.error.notEnoughSeats":
+    "Nuk ka mjaft vende të lira për këtë rezervim.",
+  "dashboardBookings.manual.error.privateUnavailable":
+    "Udhëtimi privat ofrohet vetëm para se të rezervohet ndonjë vend.",
   "dashboardBookings.manual.error.staff": "Zgjidh stafin.",
   "dashboardBookings.manual.error.time": "Zgjidh datën dhe orën.",
   "dashboardBookings.manual.error.invalidTime":
@@ -2250,6 +2281,10 @@ export const sq: TranslationTree = {
     "Hyr përsëri para se të shtosh takime.",
   "dashboardBookings.manual.error.config":
     "Ruajtja manuale e takimeve nuk është konfiguruar ende.",
+  "dashboardBookings.manual.error.capacityConfig":
+    "Rezervimi manual në grup nuk është konfiguruar ende.",
+  "dashboardBookings.manual.error.ownerRequired":
+    "Vetëm pronari i biznesit mund të shtojë një rezervim në grup.",
   "dashboardBookings.manual.error.forbidden":
     "Mund të shtosh takime vetëm për një biznes që zotëron ose për kalendarin tënd të stafit.",
   "dashboardBookings.manual.success":
@@ -4215,24 +4250,29 @@ export const sq: TranslationTree = {
   "support.stage8.subtitle": "Zgjidh ndihmën që përputhet me atë që po bën.",
   "dashboardHome.today.title": "Çfarë kërkon vëmendje sot",
   "dashboardHome.today.body":
-    "Kërkesat, takimet dhe veprimi tjetër i konfigurimit në një vend.",
+    "Kërkesat, rezervimet dhe veprimi tjetër i konfigurimit në një vend.",
   "dashboardHome.today.overviewTitle": "Dita jote",
-  "dashboardHome.today.nextAppointment": "Takimi i ardhshëm",
+  "dashboardHome.today.nextAppointment": "Rezervimi i ardhshëm",
   "dashboardHome.today.openCalendar": "Hap në Kalendar",
-  "dashboardHome.today.noUpcoming": "Nuk ka takime të ardhshme",
+  "dashboardHome.today.openDeparture": "Hap nisjen",
+  "dashboardHome.today.noUpcoming": "Nuk ka rezervime të ardhshme",
   "dashboardHome.today.noUpcomingBody":
-    "Takimet e reja të konfirmuara do të shfaqen këtu.",
+    "Rezervimet e reja të konfirmuara do të shfaqen këtu.",
   "dashboardHome.today.requests": "Kërkon vëmendje",
   "dashboardHome.today.confirmedToday": "Sot",
   "dashboardHome.today.upcoming": "Në vijim",
   "dashboardHome.today.nextLabel": "Veprimi tjetër",
-  "dashboardHome.today.nextRequests": "Shqyrto kërkesat për takim",
+  "dashboardHome.today.nextRequests": "Shqyrto kërkesat për rezervim",
   "dashboardHome.today.nextRequestsBody": "Klientët presin një vendim.",
   "dashboardHome.today.nextRequestsCta": "Hap Inbox",
   "dashboardHome.today.nextCalendar": "Menaxho ditën nga Kalendari",
   "dashboardHome.today.nextCalendarBody":
     "Takimet e konfirmuara për sot janë gati.",
   "dashboardHome.today.nextCalendarCta": "Hap ditën e sotme",
+  "dashboardHome.today.nextDeparture": "Hap nisjen e sotme",
+  "dashboardHome.today.nextDepartureBody":
+    "Kontrollo vendet, listën e klientëve dhe pikën e takimit për nisjen e radhës.",
+  "dashboardHome.today.nextDepartureCta": "Hap nisjen",
   "dashboardHome.today.nextSetupBody":
     "Përfundo këtë hap që klientët të rezervojnë me besim.",
   "dashboardHome.today.nextPublishBody":
@@ -4251,11 +4291,18 @@ export const sq: TranslationTree = {
   "dashboardHome.setup.profileCta": "Shto detaje",
   "dashboardHome.setup.services": "Shërbimi i parë",
   "dashboardHome.setup.servicesCta": "Shto shërbim",
+  "dashboardHome.setup.reviewServices": "Shqyrto shërbimet e përgatitura",
+  "dashboardHome.setup.reviewServicesCta": "Shqyrto shërbimet",
   "dashboardHome.setup.team": "Ekipi",
   "dashboardHome.setup.teamCta": "Shto staf",
   "dashboardHome.setup.teamAssignCta": "Cakto shërbimet",
   "dashboardHome.setup.hours": "Orari i punës",
   "dashboardHome.setup.hoursCta": "Vendos orarin",
+  "dashboardHome.setup.bookingAvailability": "Disponueshmëria e rezervimeve",
+  "dashboardHome.setup.bookingAvailabilityCta":
+    "Zgjidh konfigurimin e rezervimeve",
+  "dashboardHome.setup.departures": "Nisja e parë",
+  "dashboardHome.setup.departuresCta": "Shto nisje",
   "dashboardHome.setup.publish": "Profili për klientët",
   "dashboardHome.setup.publishCta": "Shqyrto profilin",
   "dashboardHome.setup.preview": "Shiko çfarë shohin klientët",
@@ -5335,16 +5382,29 @@ export const sq: TranslationTree = {
     "Kërkesa për ndryshim u tërhoq",
   "customerApp.lifecycle.rescheduleCancelled.businessMessage":
     "{customer} tërhoqi kërkesën për ndryshim orari te {business}.",
-  "bookingConfirmation.details.tripTitle": "Detajet e udhëtimit",
+  "bookingConfirmation.details.tripTitle": "Detajet e rezervimit në grup",
   "dashboardBookings.departures.open": "Nisjet në grup",
-  "dashboardBusinesses.setup.departures": "Nisjet",
+  "dashboardBusinesses.setup.departures": "Orari i nisjeve",
   "dashboardBusinesses.setup.departuresAction": "Shto nisje",
   "dashboardBusinesses.setup.departuresBody":
-    "Shto datat, oraret dhe kapacitetin e vendeve që klientët mund të rezervojnë.",
+    "Shto datat fikse, oraret e nisjes dhe kapacitetin e vendeve që klientët mund të rezervojnë.",
+  "dashboardBusinesses.setup.availability": "Disponueshmëria e rezervimeve",
+  "dashboardBusinesses.setup.availabilityBody":
+    "Takimet kërkojnë një ofrues dhe orar pune. Shërbimet e përbashkëta kërkojnë të paktën një nisje.",
+  "dashboardBusinesses.setup.availabilityReadyBody":
+    "Të paktën një format rezervimi është gati. Mund ta përfundosh formatin tjetër kur të dëshirosh ta ofrosh.",
+  "dashboardBusinesses.setup.availabilityAction":
+    "Zgjidh konfigurimin e rezervimeve",
+  "dashboardBusinesses.setup.availabilityReviewAction":
+    "Shqyrto disponueshmërinë",
   "dashboardBusinesses.setup.guide": "Guida ose operatori",
   "dashboardBusinesses.setup.guideAction": "Menaxho nisjet",
   "dashboardBusinesses.setup.guideBody":
     "Shto një nisje dhe, nëse dëshiron, cakto guidën që e drejton.",
+  "dashboardBusinesses.setup.reviewServices": "Shqyrto shërbimet e përgatitura",
+  "dashboardBusinesses.setup.reviewServicesBody":
+    "Konfirmo çmimet dhe formatet e përgatitura të rezervimit para se të shfaqësh një shërbim.",
+  "dashboardBusinesses.setup.reviewServicesAction": "Shqyrto shërbimet",
   "dashboardServices.bookingType.label": "Si rezervojnë klientët",
   "dashboardServices.bookingType.appointment": "Takim",
   "dashboardServices.bookingType.appointmentHint":
@@ -5352,19 +5412,19 @@ export const sq: TranslationTree = {
   "dashboardServices.bookingType.group": "Grup me orar",
   "dashboardServices.bookingType.groupHint":
     "Disa klientë rezervojnë vende në të njëjtën nisje.",
-  "dashboardServices.bookingType.groupActive": "Shërbim i planifikuar me vende",
+  "dashboardServices.bookingType.groupActive": "Nisje e përbashkët me vende",
   "dashboardServices.bookingType.groupActiveHint":
-    "Klientët zgjedhin një nisje me orar dhe rezervojnë një ose më shumë vende.",
-  "dashboardServices.bookingType.useAppointment": "Përdor takime standarde",
+    "Disa klientë mund të rezervojnë vende në të njëjtën datë dhe orë nisjeje.",
+  "dashboardServices.bookingType.useAppointment": "Përdor takime një nga një",
   "dashboardServices.bookingType.suggestionTitle":
-    "A do t’i bashkohen disa persona të njëjtit orar?",
+    "A do ta ndajnë klientë të ndryshëm të njëjtën orë nisjeje?",
   "dashboardServices.bookingType.suggestionBody":
-    "Ky duket si tur, kurs ose aktivitet në grup. Përdor nisjet vetëm kur klientët ndajnë të njëjtin orar dhe kapacitet.",
-  "dashboardServices.bookingType.useGroup": "Përdor nisje dhe vende",
+    "Turet, kurset dhe aktivitetet e përbashkëta përdorin nisje me kufi vendesh. Prerjet e flokëve, konsultat dhe oraret private mbeten takime.",
+  "dashboardServices.bookingType.useGroup": "Konfiguro nisje të përbashkëta",
   "dashboardServices.bookingType.optionalTitle":
     "Tur, kurs apo udhëtim i përbashkët?",
   "dashboardServices.bookingType.optionalBody":
-    "Përdor nisje me orar vetëm kur disa klientë mund të rezervojnë vende në të njëjtin orar.",
+    "Përdor nisje të përbashkëta vetëm kur klientë të ndryshëm mund të rezervojnë vende në të njëjtën datë dhe orë nisjeje.",
   "dashboardServices.bookingType.standardSummary":
     "Formati i rezervimit: takim standard",
   "dashboardServices.card.perGuest": "për person",
@@ -5374,7 +5434,7 @@ export const sq: TranslationTree = {
     "Kapaciteti i grupit duhet të jetë nga 1 deri në 200.",
   "dashboardServices.error.bookingTypeLocked":
     "Ky shërbim ka tashmë histori nisjesh. Mbaje si shërbim në grup me orar ose krijo një shërbim të ri me takime.",
-  "dashboardServices.group.capacity": "Vendet standarde",
+  "dashboardServices.group.capacity": "Vendet për çdo nisje",
   "dashboardServices.group.created":
     "Shërbimi në grup u shtua. Shto nisjen e parë që klientët të rezervojnë vende.",
   "dashboardServices.group.hidden":
@@ -5385,7 +5445,7 @@ export const sq: TranslationTree = {
   "dashboardServices.group.privateEnabled":
     "Lejo rezervimin privat të udhëtimit",
   "dashboardServices.group.privateHint":
-    "Një klient rezervon të gjithë nisjen.",
+    "Një klient rezervon të gjithë nisjen ndërsa të gjitha vendet janë ende të lira.",
   "dashboardServices.group.privatePrice": "Çmimi i udhëtimit privat",
   "dashboardServices.group.ready":
     "Klientët mund të rezervojnë vende në nisjet e ardhshme.",
@@ -5393,6 +5453,24 @@ export const sq: TranslationTree = {
   "dashboardServices.group.typeLocked":
     "Lloji i rezervimit mbetet në grup pasi krijohen nisje.",
   "dashboardServices.group.upcomingDepartures": "nisje të ardhshme",
+  "dashboardServices.assisted.connected":
+    "Profili u lidh. Shqyrto shërbimet e përgatitura më poshtë para se t'u shfaqësh diçka klientëve.",
+  "dashboardServices.assisted.kicker": "Profili i përgatitur",
+  "dashboardServices.assisted.title": "Shqyrto shërbimet e përgatitura",
+  "dashboardServices.assisted.body":
+    "Asgjë nuk është e dukshme ende. Kontrollo çdo shërbim, korrigjo çdo ndryshim dhe pastaj ruaje.",
+  "dashboardServices.assisted.checkDetails": "Kontrollo detajet",
+  "dashboardServices.assisted.checkDetailsHint":
+    "Konfirmo kohëzgjatjen, çmimin, përshkrimin dhe formatin e rezervimit.",
+  "dashboardServices.assisted.groupNext": "Udhëtime ose kurse të përbashkëta",
+  "dashboardServices.assisted.groupNextHint":
+    "Ruaj shërbimin, pastaj shto datat, oraret dhe vendet reale të nisjes.",
+  "dashboardServices.assisted.appointmentNext": "Takime një nga një",
+  "dashboardServices.assisted.appointmentNextHint":
+    "Ruaj shërbimin, pastaj cakto stafin dhe oraret që mund të zgjedhin klientët.",
+  "dashboardServices.assisted.remaining":
+    "{count} kanë ende nevojë për shqyrtimin tënd.",
+  "dashboardServices.assisted.reviewNext": "Shqyrto shërbimin tjetër",
   "departures.pageTitle": "Nisjet",
   "departures.pageSubtitle": "Shërbime në grup me orar",
   "departures.loading": "Po ngarkohen nisjet...",
@@ -5400,6 +5478,10 @@ export const sq: TranslationTree = {
   "departures.emptyService.body":
     "Krijo një shërbim Grup me orar, pastaj kthehu këtu për të shtuar datat dhe kapacitetin.",
   "departures.emptyService.cta": "Hap shërbimet",
+  "departures.guide.title":
+    "Përdor nisjet vetëm për një orë të përbashkët fillimi",
+  "departures.guide.body":
+    "Shto një rresht për çdo udhëtim, kurs ose aktivitet ku klientët marrin pjesë së bashku. Prerjet e flokëve, konsultat dhe rezervimet një nga një vazhdojnë të përdorin Kalendarin dhe orarin e punës.",
   "departures.create.kicker": "Orar i ri",
   "departures.create.title": "Shto një nisje",
   "departures.createOne": "Shto nisjen",
@@ -5413,13 +5495,18 @@ export const sq: TranslationTree = {
   "departures.field.meetingPoint": "Pika e takimit",
   "departures.field.meetingPlaceholder":
     "Porti, hoteli ose udhëzimet e sakta të takimit",
-  "departures.field.repeat": "Nisje ditore",
+  "departures.field.repeat": "Përsërite në ditët në vijim",
+  "departures.field.repeatHint": "Mbaje në 1 për një nisje të vetme.",
+  "departures.field.repeatPreview":
+    "Kjo krijon {count} nisje në ditë të njëpasnjëshme me të njëjtën orë dhe kapacitet.",
   "departures.perGuest": "për person",
   "departures.privateTrip": "Udhëtim privat",
   "departures.guests": "persona",
   "departures.upcoming.kicker": "Operacionet aktive",
   "departures.upcoming.title": "Nisjet e ardhshme",
   "departures.upcoming.empty": "Nuk ka ende nisje të ardhshme.",
+  "departures.upcoming.emptyBody":
+    "Shto më sipër datën dhe orën e parë reale. Klientët shohin vetëm nisjet që planifikon këtu.",
   "departures.seatsBooked": "vende të rezervuara",
   "departures.detail.kicker": "Lista e nisjes",
   "departures.detail.booked": "Rezervuar",
@@ -5456,17 +5543,17 @@ export const sq: TranslationTree = {
   "departures.success.createdMany": "Nisjet u shtuan.",
   "departures.success.updated": "Nisja u përditësua.",
   "departures.success.reservationUpdated": "Rezervimi u përditësua.",
-  "myBookings.group.departureTime": "Ora e nisjes",
+  "myBookings.group.departureTime": "Orari i caktuar",
   "myBookings.group.guideLater": "Guida caktohet nga biznesi",
-  "myBookings.group.seatReservation": "Nisje me orar",
+  "myBookings.group.seatReservation": "Rezervim në grup me orar",
   "myBookings.group.wholeDeparture": "E gjithë nisja është rezervuar",
   "publicBusiness.bookingMode.instantBooking": "Rezervo menjëherë",
   "publicBusiness.bookingMode.requestBooking": "Kërko rezervim",
   "publicBusiness.departures.step": "Hapi 2",
-  "publicBusiness.departures.title": "Zgjidh një nisje",
+  "publicBusiness.departures.title": "Zgjidh datën dhe orën",
   "publicBusiness.departures.upcoming": "të ardhshme",
   "publicBusiness.departures.none":
-    "Nuk ka ende nisje të ardhshme për këtë udhëtim.",
+    "Nuk ka ende orare të ardhshme për këtë shërbim.",
   "publicBusiness.departures.seatLeft": "vend i lirë",
   "publicBusiness.departures.seatsLeft": "vende të lira",
   "publicBusiness.departures.bookingType": "Lloji i rezervimit",
@@ -5484,22 +5571,23 @@ export const sq: TranslationTree = {
   "publicBusiness.departures.guide": "Guida",
   "publicBusiness.departures.meetingPoint": "Pika e takimit",
   "publicBusiness.departures.chooseFirst":
-    "Zgjidh një nisje të disponueshme para se të rezervosh.",
+    "Zgjidh një datë dhe orë të disponueshme para se të rezervosh.",
   "publicBusiness.departures.partyUnavailable":
     "Zgjidh një numër personash brenda vendeve ende të lira.",
   "publicBusiness.departures.notEnoughSeats":
-    "Këto vende sapo u rezervuan. Zgjidh më pak persona ose një nisje tjetër.",
+    "Këto vende sapo u rezervuan. Zgjidh më pak persona ose një orar tjetër.",
   "publicBusiness.departures.noLongerAvailable":
-    "Kjo nisje nuk është më e disponueshme. Zgjidh një tjetër.",
+    "Ky orar nuk është më i disponueshëm. Zgjidh një tjetër.",
   "publicBusiness.departures.createFailed":
     "Rezervimi nuk u krijua. Provo përsëri.",
-  "publicBusiness.services.scheduledGroup": "Udhëtim në grup me orar",
+  "publicBusiness.services.scheduledGroup":
+    "Rezervim i përbashkët me orar fiks",
   "publicBusiness.services.perGuest": "për person",
   "publicBusiness.services.noDeparturesBody":
     "Ky biznes ka shërbime aktive, por nuk ka ende nisje të ardhshme ose orare stafi të disponueshme.",
-  "publicBusiness.summary.emptyTrip": "Udhëtimi yt",
+  "publicBusiness.summary.emptyTrip": "Rezervimi yt në grup",
   "publicBusiness.summary.pickDepartureBody":
-    "Zgjidh nisjen dhe numrin e personave, pastaj kontrollo rezervimin.",
+    "Zgjidh datën, orën dhe numrin e personave, pastaj kontrollo rezervimin.",
   "publicBusiness.summary.reviewTrip": "Kontrollo rezervimin",
   "staffCalendar.departure": "Nisje në grup",
   "staffCalendar.departure.kicker": "Nisja e caktuar",
@@ -5569,8 +5657,8 @@ export const sq: TranslationTree = {
   "admin.onboarding.prepared.removeService": "Hiq draftin e shërbimit",
   "admin.onboarding.prepared.serviceName": "Emri i shërbimit",
   "admin.onboarding.prepared.bookingType": "Lloji i rezervimit",
-  "admin.onboarding.prepared.appointment": "Takim",
-  "admin.onboarding.prepared.group": "Nisje me vende",
+  "admin.onboarding.prepared.appointment": "Takim një nga një",
+  "admin.onboarding.prepared.group": "Nisje e përbashkët me vende",
   "admin.onboarding.prepared.priceConfirmed": "Çmim i konfirmuar nga pronari",
   "admin.onboarding.prepared.estimateNote":
     "Kjo do të shfaqet privatisht si vlerë fillestare e redaktueshme derisa pronari ta ruajë.",
@@ -5597,6 +5685,9 @@ export const sq: TranslationTree = {
   "onboardingJoin.services": "Shërbimet e përgatitura",
   "onboardingJoin.servicesBody":
     "Kontrollo çdo kohëzgjatje, çmim dhe mënyrë rezervimi para se ta bësh të dukshme.",
+  "onboardingJoin.sharedDeparture": "Nisje e përbashkët",
+  "onboardingJoin.appointmentFormat": "Një klient për çdo orar",
+  "onboardingJoin.privateAvailable": "Ofrohet edhe udhëtim privat",
   "onboardingJoin.priceNeeded": "Çmimi për t'u konfirmuar",
   "onboardingJoin.suggestedPrice": "Vlerë fillestare",
   "onboardingJoin.private": "Kalim privat te pronari",
@@ -5620,4 +5711,10 @@ export const sq: TranslationTree = {
   "onboardingJoin.createAccount": "Krijo llogari Biznesi",
   "onboardingJoin.signIn": "Hyr për ta lidhur",
   "onboardingJoin.expires": "Lidhja e sigurt skadon",
+  "admin.onboarding.prepared.durationMinutes": "Kohëzgjatja (minuta)",
+  "admin.onboarding.prepared.pricePerGuest": "Çmimi për person",
+  "admin.onboarding.prepared.appointmentHint":
+    "Përdore për prerje flokësh, konsultime dhe orare të tjera private.",
+  "admin.onboarding.prepared.groupHint":
+    "Përdore vetëm kur klientë të ndryshëm ndajnë të njëjtën orë fikse nisjeje dhe kapacitet vendesh.",
 };

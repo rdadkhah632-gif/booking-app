@@ -73,6 +73,8 @@ type ManualBookingService = {
   duration_minutes: number;
   active: boolean;
   booking_type?: "appointment" | "group" | null;
+  group_capacity?: number | null;
+  private_booking_enabled?: boolean | null;
 };
 
 type ManualBookingStaff = {
@@ -90,6 +92,29 @@ type ManualStaffService = {
   service_id: string;
 };
 
+type ManualDeparture = {
+  id: string;
+  business_id: string;
+  service_id: string;
+  start_at: string;
+  duration_minutes: number;
+  capacity: number;
+  meeting_point?: string | null;
+  status: string;
+  bookedSeats: number;
+  remainingSeats: number;
+  service?: ManualBookingService | null;
+  staffMember?: {
+    id: string;
+    name: string;
+    role_title?: string | null;
+  } | null;
+};
+
+type ManualDeparturePayload = {
+  departures?: ManualDeparture[];
+};
+
 type ManualBookingDraft = {
   customerName: string;
   customerEmail: string;
@@ -99,6 +124,9 @@ type ManualBookingDraft = {
   staffMemberId: string;
   date: string;
   time: string;
+  departureId: string;
+  partySize: string;
+  bookingOption: "shared" | "private";
 };
 
 const emptyManualBookingDraft: ManualBookingDraft = {
@@ -110,6 +138,9 @@ const emptyManualBookingDraft: ManualBookingDraft = {
   staffMemberId: "",
   date: "",
   time: "09:00",
+  departureId: "",
+  partySize: "1",
+  bookingOption: "shared",
 };
 
 function manualBookingDraftFromForm(form: HTMLFormElement) {
@@ -126,6 +157,9 @@ function manualBookingDraftFromForm(form: HTMLFormElement) {
     staffMemberId: field("staffMemberId"),
     date: field("date"),
     time: field("time"),
+    departureId: field("departureId"),
+    partySize: field("partySize"),
+    bookingOption: field("bookingOption") === "private" ? "private" : "shared",
   } satisfies ManualBookingDraft;
 }
 
@@ -168,6 +202,9 @@ export default function Bookings() {
   const [manualStaffServices, setManualStaffServices] = useState<
     ManualStaffService[]
   >([]);
+  const [manualDepartures, setManualDepartures] = useState<ManualDeparture[]>(
+    [],
+  );
   const [hasGroupServices, setHasGroupServices] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(() =>
@@ -292,6 +329,7 @@ export default function Bookings() {
         setManualServices([]);
         setManualStaff([]);
         setManualStaffServices([]);
+        setManualDepartures([]);
         setHasGroupServices(false);
         setPageLoading(false);
         return;
@@ -303,6 +341,7 @@ export default function Bookings() {
         { data, error },
         { data: serviceData, error: serviceError },
         { data: staffData, error: staffError },
+        departurePayload,
       ] = await Promise.all([
         supabase
           .from("bookings")
@@ -338,7 +377,7 @@ export default function Bookings() {
         supabase
           .from("services")
           .select(
-            "id, business_id, name, duration_minutes, active, booking_type",
+            "id, business_id, name, duration_minutes, active, booking_type, group_capacity, private_booking_enabled",
           )
           .eq("business_id", selectedBusiness.id)
           .eq("active", true)
@@ -349,21 +388,34 @@ export default function Bookings() {
           .eq("business_id", selectedBusiness.id)
           .eq("active", true)
           .order("name", { ascending: true }),
+        fetch(
+          `/api/dashboard/departures?businessId=${encodeURIComponent(
+            selectedBusiness.id,
+          )}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          },
+        )
+          .then(async (response) =>
+            response.ok
+              ? ((await response.json()) as ManualDeparturePayload)
+              : null,
+          )
+          .catch(() => null),
       ]);
 
       if (error) throw error;
       if (serviceError) throw serviceError;
       if (staffError) throw staffError;
 
-      setManualServices(
-        (serviceData || []).filter(
-          (service) => service.booking_type !== "group",
-        ),
-      );
+      setManualServices(serviceData || []);
       setHasGroupServices(
         (serviceData || []).some((service) => service.booking_type === "group"),
       );
       setManualStaff(staffData || []);
+      setManualDepartures(departurePayload?.departures || []);
 
       const staffIds = (staffData || []).map((staff) => staff.id);
 
@@ -835,6 +887,33 @@ export default function Bookings() {
       ) || null,
     [manualServices, manualBooking.serviceId],
   );
+  const isManualGroupBooking = selectedManualService?.booking_type === "group";
+
+  const upcomingManualDepartures = useMemo(
+    () =>
+      manualDepartures.filter(
+        (departure) =>
+          departure.status === "scheduled" &&
+          new Date(departure.start_at).getTime() > Date.now(),
+      ),
+    [manualDepartures],
+  );
+
+  const manualDepartureOptions = useMemo(
+    () =>
+      upcomingManualDepartures.filter(
+        (departure) => departure.service_id === manualBooking.serviceId,
+      ),
+    [manualBooking.serviceId, upcomingManualDepartures],
+  );
+
+  const selectedManualDeparture = useMemo(
+    () =>
+      manualDepartureOptions.find(
+        (departure) => departure.id === manualBooking.departureId,
+      ) || null,
+    [manualBooking.departureId, manualDepartureOptions],
+  );
 
   const manualServiceStaffCounts = useMemo(() => {
     const activeStaffIds = new Set(manualStaff.map((staff) => staff.id));
@@ -855,7 +934,11 @@ export default function Bookings() {
 
   const bookableManualServices = useMemo(
     () =>
-      manualServices.filter((service) => manualServiceStaffCount(service.id)),
+      manualServices.filter(
+        (service) =>
+          service.booking_type === "group" ||
+          manualServiceStaffCount(service.id) > 0,
+      ),
     [manualServices, manualServiceStaffCounts],
   );
 
@@ -870,11 +953,29 @@ export default function Bookings() {
     return manualStaff.filter((staff) => assignedStaffIds.has(staff.id));
   }, [manualBooking.serviceId, manualStaff, manualStaffServices]);
 
-  const manualBookingSetupReady =
-    manualServices.length > 0 &&
-    manualStaff.length > 0 &&
-    bookableManualServices.length > 0;
+  const manualBookingSetupReady = bookableManualServices.length > 0;
   const calendarTimeZone = business?.timezone || DEFAULT_TIME_ZONE;
+
+  function preferredDepartureIdForService(
+    serviceId: string,
+    preferredDate?: string,
+  ) {
+    const options = upcomingManualDepartures.filter(
+      (departure) =>
+        departure.service_id === serviceId && departure.remainingSeats > 0,
+    );
+    const matchingDate = preferredDate
+      ? options.find(
+          (departure) =>
+            dateKeyInTimeZone(
+              new Date(departure.start_at),
+              calendarTimeZone,
+            ) === preferredDate,
+        )
+      : null;
+
+    return (matchingDate || options[0])?.id || "";
+  }
 
   function preferredStaffIdForService(serviceId: string) {
     const options = staffOptionsForService(serviceId);
@@ -1037,10 +1138,38 @@ export default function Bookings() {
   ) {
     setManualBooking((current) => {
       if (field === "serviceId") {
+        const service = manualServices.find((item) => item.id === value);
+        if (service?.booking_type === "group") {
+          return {
+            ...current,
+            serviceId: value,
+            staffMemberId: "",
+            departureId: preferredDepartureIdForService(value, current.date),
+            partySize: "1",
+            bookingOption: "shared",
+          };
+        }
+
         return {
           ...current,
           serviceId: value,
           staffMemberId: preferredStaffIdForService(value),
+          departureId: "",
+          partySize: "1",
+          bookingOption: "shared",
+        };
+      }
+
+      if (field === "departureId") {
+        const departure = manualDepartures.find((item) => item.id === value);
+        return {
+          ...current,
+          departureId: value,
+          bookingOption:
+            current.bookingOption === "private" &&
+            departure?.remainingSeats !== departure?.capacity
+              ? "shared"
+              : current.bookingOption,
         };
       }
 
@@ -1056,18 +1185,39 @@ export default function Bookings() {
     }
 
     setManualBooking((current) => {
-      const currentServiceIsBookable =
-        current.serviceId && manualServiceStaffCount(current.serviceId) > 0;
+      const requestedDate =
+        next?.date || selectedDate || toDateInputValue(new Date());
+      const currentServiceIsBookable = bookableManualServices.some(
+        (service) => service.id === current.serviceId,
+      );
+      const departureOnRequestedDate = upcomingManualDepartures.find(
+        (departure) =>
+          departure.remainingSeats > 0 &&
+          dateKeyInTimeZone(new Date(departure.start_at), calendarTimeZone) ===
+            requestedDate,
+      );
       const serviceId = currentServiceIsBookable
         ? current.serviceId
-        : bookableManualServices[0]?.id || "";
+        : departureOnRequestedDate?.service_id ||
+          bookableManualServices[0]?.id ||
+          "";
+      const service = manualServices.find((item) => item.id === serviceId);
+      const groupBooking = service?.booking_type === "group";
 
       return {
         ...current,
         serviceId,
-        staffMemberId: serviceId ? preferredStaffIdForService(serviceId) : "",
-        date: next?.date || selectedDate || toDateInputValue(new Date()),
+        staffMemberId:
+          serviceId && !groupBooking
+            ? preferredStaffIdForService(serviceId)
+            : "",
+        date: requestedDate,
         time: next?.time || current.time || "09:00",
+        departureId: groupBooking
+          ? preferredDepartureIdForService(serviceId, requestedDate)
+          : "",
+        partySize: groupBooking ? current.partySize || "1" : "1",
+        bookingOption: groupBooking ? current.bookingOption : "shared",
       };
     });
     setManualBookingError(null);
@@ -1178,6 +1328,57 @@ export default function Bookings() {
       return t("dashboardBookings.manual.error.service", "Choose a service.");
     }
 
+    if (selectedService.booking_type === "group") {
+      const departure = manualDepartures.find(
+        (item) =>
+          item.id === draft.departureId &&
+          item.service_id === selectedService.id,
+      );
+      if (
+        !departure ||
+        departure.status !== "scheduled" ||
+        new Date(departure.start_at).getTime() <= Date.now()
+      ) {
+        return t(
+          "dashboardBookings.manual.error.departure",
+          "Choose an upcoming departure.",
+        );
+      }
+
+      const partySize = Number(draft.partySize);
+      if (!Number.isInteger(partySize) || partySize < 1) {
+        return t(
+          "dashboardBookings.manual.error.partySize",
+          "Choose how many guests to add.",
+        );
+      }
+
+      if (draft.bookingOption === "private") {
+        if (!selectedService.private_booking_enabled) {
+          return t(
+            "dashboardBookings.manual.error.privateUnavailable",
+            "Private booking is not available for this service.",
+          );
+        }
+        if (
+          departure.remainingSeats !== departure.capacity ||
+          partySize > departure.capacity
+        ) {
+          return t(
+            "dashboardBookings.manual.error.privateUnavailable",
+            "A private trip is only available before any seats are reserved.",
+          );
+        }
+      } else if (partySize > departure.remainingSeats) {
+        return t(
+          "dashboardBookings.manual.error.notEnoughSeats",
+          "There are not enough seats left for this booking.",
+        );
+      }
+
+      return null;
+    }
+
     if (!draft.staffMemberId) {
       return t("dashboardBookings.manual.error.staff", "Choose staff.");
     }
@@ -1233,6 +1434,48 @@ export default function Bookings() {
       return t(
         "dashboardBookings.manual.error.serviceUnavailable",
         "This service is no longer active.",
+      );
+    }
+
+    if (code === "departure_required" || code === "departure_unavailable") {
+      return t(
+        "dashboardBookings.manual.error.departure",
+        "Choose an upcoming departure.",
+      );
+    }
+
+    if (code === "party_size_invalid") {
+      return t(
+        "dashboardBookings.manual.error.partySize",
+        "Choose how many guests to add.",
+      );
+    }
+
+    if (code === "not_enough_seats") {
+      return t(
+        "dashboardBookings.manual.error.notEnoughSeats",
+        "There are not enough seats left for this booking.",
+      );
+    }
+
+    if (code === "private_trip_unavailable") {
+      return t(
+        "dashboardBookings.manual.error.privateUnavailable",
+        "A private trip is only available before any seats are reserved.",
+      );
+    }
+
+    if (code === "manual_capacity_contract_not_installed") {
+      return t(
+        "dashboardBookings.manual.error.capacityConfig",
+        "Manual group booking is not configured yet.",
+      );
+    }
+
+    if (code === "owner_required") {
+      return t(
+        "dashboardBookings.manual.error.ownerRequired",
+        "Only the business owner can add a group reservation.",
       );
     }
 
@@ -1296,11 +1539,65 @@ export default function Bookings() {
     setError(null);
     setSuccess(null);
 
-    const start = zonedDateTimeToUtc(draft.date, draft.time, calendarTimeZone);
     const customerName = draft.customerName.trim();
     const customerEmail = draft.customerEmail.trim().toLowerCase();
 
     try {
+      if (selectedService.booking_type === "group") {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
+          setManualBookingError(manualBookingSaveError("auth_required"));
+          return;
+        }
+
+        const response = await fetch("/api/dashboard/manual-capacity-booking", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            businessId: business.id,
+            departureId: draft.departureId,
+            customerName,
+            customerEmail,
+            customerPhone: draft.customerPhone,
+            customerNotes: draft.customerNotes,
+            partySize: Number(draft.partySize),
+            bookingOption: draft.bookingOption,
+          }),
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          setManualBookingError(manualBookingSaveError(result?.code));
+          return;
+        }
+
+        setManualBooking({
+          ...emptyManualBookingDraft,
+          date: draft.date,
+          time: draft.time,
+        });
+        setManualBookingOpen(false);
+        await router.push({
+          pathname: "/dashboard/departures",
+          query: {
+            businessId: business.id,
+            departureId: result.departureId || draft.departureId,
+          },
+        });
+        return;
+      }
+
+      const start = zonedDateTimeToUtc(
+        draft.date,
+        draft.time,
+        calendarTimeZone,
+      );
       const [
         { data: freshService, error: freshServiceError },
         { data: freshStaff, error: freshStaffError },
@@ -1765,7 +2062,7 @@ export default function Bookings() {
               "dashboardBookings.calendar.emptySlotTitle",
               "No appointments on this day",
             )}
-            addAtLabel={t("dashboardBookings.manual.addAt", "Add appointment")}
+            addAtLabel={t("dashboardBookings.manual.addAt", "Add booking")}
             onSelectDay={changeCalendarDate}
             onSelectAppointment={(bookingId) => {
               setManualBookingOpen(false);
@@ -1868,7 +2165,7 @@ export default function Bookings() {
                       }
                       aria-label={`${t(
                         "dashboardBookings.manual.addAt",
-                        "Add appointment",
+                        "Add booking",
                       )} ${group.shortLabel} ${String(hour).padStart(
                         2,
                         "0",
@@ -2103,7 +2400,7 @@ export default function Bookings() {
                   className="btn btn-accent calendar-add-button"
                   onClick={openManualBooking}
                 >
-                  {t("dashboardBookings.manual.open", "Add appointment")}
+                  {t("dashboardBookings.manual.open", "Add booking")}
                 </button>
               </div>
             </div>
@@ -2125,21 +2422,18 @@ export default function Bookings() {
                     className="manual-booking-panel"
                     aria-label={t(
                       "dashboardBookings.manual.title",
-                      "Add appointment",
+                      "Add booking",
                     )}
                   >
                     <div className="manual-booking-heading">
                       <div>
                         <strong>
-                          {t(
-                            "dashboardBookings.manual.title",
-                            "Add appointment",
-                          )}
+                          {t("dashboardBookings.manual.title", "Add booking")}
                         </strong>
                         <p className="small muted">
                           {t(
                             "dashboardBookings.manual.body",
-                            "Choose the customer, service, team member and time.",
+                            "Choose a customer and service. Mirëbook will show the right schedule fields.",
                           )}
                         </p>
                       </div>
@@ -2276,16 +2570,26 @@ export default function Bookings() {
                               const staffCount = manualServiceStaffCount(
                                 service.id,
                               );
+                              const groupService =
+                                service.booking_type === "group";
 
                               return (
                                 <option
                                   key={service.id}
                                   value={service.id}
-                                  disabled={staffCount === 0}
+                                  disabled={!groupService && staffCount === 0}
                                 >
-                                  {service.name} · {service.duration_minutes}{" "}
-                                  {t("common.minutes", "minutes")}
-                                  {staffCount === 0
+                                  {service.name} ·{" "}
+                                  {groupService
+                                    ? t(
+                                        "dashboardBookings.manual.scheduledDepartureShort",
+                                        "Scheduled departure",
+                                      )
+                                    : `${service.duration_minutes} ${t(
+                                        "common.minutes",
+                                        "minutes",
+                                      )}`}
+                                  {!groupService && staffCount === 0
                                     ? ` · ${t(
                                         "dashboardBookings.manual.noStaffShort",
                                         "No staff assigned",
@@ -2297,72 +2601,341 @@ export default function Bookings() {
                           </select>
                         </label>
 
-                        <label>
-                          <span>
-                            {t("dashboardBookings.manual.bookFor", "Book for")}
-                          </span>
-                          <select
-                            name="staffMemberId"
-                            value={manualBooking.staffMemberId}
-                            onChange={(event) =>
-                              updateManualBookingField(
-                                "staffMemberId",
-                                event.target.value,
-                              )
-                            }
-                            disabled={!manualBooking.serviceId}
-                          >
-                            <option value="">
-                              {t(
-                                "dashboardBookings.manual.chooseStaff",
-                                "Choose staff",
-                              )}
-                            </option>
-                            {manualStaffOptions.map((staff) => {
-                              const availabilityLabel =
-                                manualStaffAvailabilityLabel(staff);
+                        {isManualGroupBooking ? (
+                          <div className="manual-group-booking-fields">
+                            <input
+                              type="hidden"
+                              name="staffMemberId"
+                              value=""
+                            />
+                            <input
+                              type="hidden"
+                              name="date"
+                              value={manualBooking.date}
+                            />
+                            <input
+                              type="hidden"
+                              name="time"
+                              value={manualBooking.time}
+                            />
 
-                              return (
-                                <option key={staff.id} value={staff.id}>
-                                  {manualStaffLabel(staff)}
-                                  {availabilityLabel
-                                    ? ` · ${availabilityLabel}`
-                                    : ""}
+                            <div className="manual-group-booking-intro">
+                              <strong>
+                                {t(
+                                  "dashboardBookings.manual.group.title",
+                                  "Add guests to a scheduled departure",
+                                )}
+                              </strong>
+                              <p className="small muted">
+                                {t(
+                                  "dashboardBookings.manual.group.body",
+                                  "Choose the trip first. Mirëbook will reserve its seats and keep the guest list together.",
+                                )}
+                              </p>
+                            </div>
+
+                            <label>
+                              <span>
+                                {t(
+                                  "dashboardBookings.manual.departure",
+                                  "Departure",
+                                )}
+                              </span>
+                              <select
+                                name="departureId"
+                                value={manualBooking.departureId}
+                                onChange={(event) =>
+                                  updateManualBookingField(
+                                    "departureId",
+                                    event.target.value,
+                                  )
+                                }
+                              >
+                                <option value="">
+                                  {t(
+                                    "dashboardBookings.manual.chooseDeparture",
+                                    "Choose departure",
+                                  )}
                                 </option>
-                              );
-                            })}
-                          </select>
-                        </label>
+                                {manualDepartureOptions.map((departure) => (
+                                  <option
+                                    key={departure.id}
+                                    value={departure.id}
+                                    disabled={departure.remainingSeats < 1}
+                                  >
+                                    {formatLocalizedDate(
+                                      departure.start_at,
+                                      locale,
+                                      {
+                                        dateStyle: "medium",
+                                        timeStyle: "short",
+                                        timeZone: calendarTimeZone,
+                                      },
+                                    )}
+                                    {` · ${departure.remainingSeats}/${departure.capacity} ${t(
+                                      "dashboardBookings.manual.seatsLeftShort",
+                                      "left",
+                                    )}`}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
 
-                        <label>
-                          <span>{t("common.date", "Date")}</span>
-                          <input
-                            name="date"
-                            type="date"
-                            value={manualBooking.date}
-                            onInput={(event) =>
-                              updateManualBookingField(
-                                "date",
-                                event.currentTarget.value,
-                              )
-                            }
-                          />
-                        </label>
+                            {manualDepartureOptions.length === 0 && (
+                              <div className="manual-group-booking-empty">
+                                <p className="small">
+                                  {t(
+                                    "dashboardBookings.manual.noDepartures",
+                                    "This service has no upcoming departures yet.",
+                                  )}
+                                </p>
+                                {business && (
+                                  <Link
+                                    href={`/dashboard/departures?businessId=${business.id}&serviceId=${manualBooking.serviceId}`}
+                                    className="btn btn-ghost"
+                                  >
+                                    {t(
+                                      "dashboardBookings.manual.scheduleDeparture",
+                                      "Schedule a departure",
+                                    )}
+                                  </Link>
+                                )}
+                              </div>
+                            )}
 
-                        <label>
-                          <span>{t("common.time", "Time")}</span>
-                          <input
-                            name="time"
-                            type="time"
-                            value={manualBooking.time}
-                            onInput={(event) =>
-                              updateManualBookingField(
-                                "time",
-                                event.currentTarget.value,
-                              )
-                            }
-                          />
-                        </label>
+                            {selectedManualDeparture && (
+                              <>
+                                <div className="manual-departure-summary">
+                                  <span>
+                                    {t(
+                                      "dashboardBookings.manual.departureTime",
+                                      "Departure",
+                                    )}
+                                    <strong>
+                                      {formatLocalizedDate(
+                                        selectedManualDeparture.start_at,
+                                        locale,
+                                        {
+                                          dateStyle: "full",
+                                          timeStyle: "short",
+                                          timeZone: calendarTimeZone,
+                                        },
+                                      )}
+                                    </strong>
+                                  </span>
+                                  <span>
+                                    {t(
+                                      "dashboardBookings.manual.seatsRemaining",
+                                      "Seats remaining",
+                                    )}
+                                    <strong>
+                                      {selectedManualDeparture.remainingSeats} /{" "}
+                                      {selectedManualDeparture.capacity}
+                                    </strong>
+                                  </span>
+                                  {selectedManualDeparture.meeting_point && (
+                                    <span>
+                                      {t(
+                                        "dashboardBookings.manual.meetingPoint",
+                                        "Meeting point",
+                                      )}
+                                      <strong>
+                                        {selectedManualDeparture.meeting_point}
+                                      </strong>
+                                    </span>
+                                  )}
+                                </div>
+
+                                <fieldset className="manual-booking-option">
+                                  <legend>
+                                    {t(
+                                      "dashboardBookings.manual.bookingOption",
+                                      "Booking type",
+                                    )}
+                                  </legend>
+                                  <label>
+                                    <input
+                                      type="radio"
+                                      name="bookingOption"
+                                      value="shared"
+                                      checked={
+                                        manualBooking.bookingOption === "shared"
+                                      }
+                                      onChange={() =>
+                                        updateManualBookingField(
+                                          "bookingOption",
+                                          "shared",
+                                        )
+                                      }
+                                    />
+                                    <span>
+                                      <strong>
+                                        {t(
+                                          "dashboardBookings.manual.sharedSeats",
+                                          "Shared seats",
+                                        )}
+                                      </strong>
+                                      <small>
+                                        {t(
+                                          "dashboardBookings.manual.sharedSeatsHint",
+                                          "Reserve only this group's seats.",
+                                        )}
+                                      </small>
+                                    </span>
+                                  </label>
+                                  {selectedManualService?.private_booking_enabled && (
+                                    <label>
+                                      <input
+                                        type="radio"
+                                        name="bookingOption"
+                                        value="private"
+                                        checked={
+                                          manualBooking.bookingOption ===
+                                          "private"
+                                        }
+                                        disabled={
+                                          selectedManualDeparture.remainingSeats !==
+                                          selectedManualDeparture.capacity
+                                        }
+                                        onChange={() =>
+                                          updateManualBookingField(
+                                            "bookingOption",
+                                            "private",
+                                          )
+                                        }
+                                      />
+                                      <span>
+                                        <strong>
+                                          {t(
+                                            "dashboardBookings.manual.privateTrip",
+                                            "Private trip",
+                                          )}
+                                        </strong>
+                                        <small>
+                                          {selectedManualDeparture.remainingSeats ===
+                                          selectedManualDeparture.capacity
+                                            ? t(
+                                                "dashboardBookings.manual.privateTripHint",
+                                                "Reserve the whole departure.",
+                                              )
+                                            : t(
+                                                "dashboardBookings.manual.privateTripTaken",
+                                                "Unavailable after seats have been reserved.",
+                                              )}
+                                        </small>
+                                      </span>
+                                    </label>
+                                  )}
+                                </fieldset>
+
+                                <label>
+                                  <span>
+                                    {t(
+                                      "dashboardBookings.manual.partySize",
+                                      "Guests",
+                                    )}
+                                  </span>
+                                  <input
+                                    name="partySize"
+                                    type="number"
+                                    min={1}
+                                    max={
+                                      manualBooking.bookingOption === "private"
+                                        ? selectedManualDeparture.capacity
+                                        : selectedManualDeparture.remainingSeats
+                                    }
+                                    value={manualBooking.partySize}
+                                    onChange={(event) =>
+                                      updateManualBookingField(
+                                        "partySize",
+                                        event.target.value,
+                                      )
+                                    }
+                                  />
+                                </label>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            <input type="hidden" name="departureId" value="" />
+                            <input type="hidden" name="partySize" value="1" />
+                            <input
+                              type="hidden"
+                              name="bookingOption"
+                              value="shared"
+                            />
+                            <label>
+                              <span>
+                                {t(
+                                  "dashboardBookings.manual.bookFor",
+                                  "Book for",
+                                )}
+                              </span>
+                              <select
+                                name="staffMemberId"
+                                value={manualBooking.staffMemberId}
+                                onChange={(event) =>
+                                  updateManualBookingField(
+                                    "staffMemberId",
+                                    event.target.value,
+                                  )
+                                }
+                                disabled={!manualBooking.serviceId}
+                              >
+                                <option value="">
+                                  {t(
+                                    "dashboardBookings.manual.chooseStaff",
+                                    "Choose staff",
+                                  )}
+                                </option>
+                                {manualStaffOptions.map((staff) => {
+                                  const availabilityLabel =
+                                    manualStaffAvailabilityLabel(staff);
+
+                                  return (
+                                    <option key={staff.id} value={staff.id}>
+                                      {manualStaffLabel(staff)}
+                                      {availabilityLabel
+                                        ? ` · ${availabilityLabel}`
+                                        : ""}
+                                    </option>
+                                  );
+                                })}
+                              </select>
+                            </label>
+
+                            <label>
+                              <span>{t("common.date", "Date")}</span>
+                              <input
+                                name="date"
+                                type="date"
+                                value={manualBooking.date}
+                                onInput={(event) =>
+                                  updateManualBookingField(
+                                    "date",
+                                    event.currentTarget.value,
+                                  )
+                                }
+                              />
+                            </label>
+
+                            <label>
+                              <span>{t("common.time", "Time")}</span>
+                              <input
+                                name="time"
+                                type="time"
+                                value={manualBooking.time}
+                                onInput={(event) =>
+                                  updateManualBookingField(
+                                    "time",
+                                    event.currentTarget.value,
+                                  )
+                                }
+                              />
+                            </label>
+                          </>
+                        )}
 
                         <label className="manual-booking-notes">
                           <span>
@@ -2383,15 +2956,20 @@ export default function Bookings() {
 
                         <div className="manual-booking-footer">
                           <p className="small muted">
-                            {selectedManualService
-                              ? `${selectedManualService.duration_minutes} ${t(
-                                  "common.minutes",
-                                  "minutes",
+                            {isManualGroupBooking && selectedManualDeparture
+                              ? `${selectedManualDeparture.remainingSeats} ${t(
+                                  "dashboardBookings.manual.seatsRemainingShort",
+                                  "seats remaining",
                                 )}`
-                              : t(
-                                  "dashboardBookings.manual.durationHint",
-                                  "Duration follows the selected service.",
-                                )}
+                              : selectedManualService
+                                ? `${selectedManualService.duration_minutes} ${t(
+                                    "common.minutes",
+                                    "minutes",
+                                  )}`
+                                : t(
+                                    "dashboardBookings.manual.durationHint",
+                                    "Duration follows the selected service.",
+                                  )}
                           </p>
                           <button
                             type="submit"
@@ -2404,13 +2982,18 @@ export default function Bookings() {
                                   "Adding...",
                                 )
                               : t(
-                                  "dashboardBookings.manual.create",
-                                  "Add appointment",
+                                  isManualGroupBooking
+                                    ? "dashboardBookings.manual.createReservation"
+                                    : "dashboardBookings.manual.create",
+                                  isManualGroupBooking
+                                    ? "Add reservation"
+                                    : "Add appointment",
                                 )}
                           </button>
                         </div>
 
-                        {manualBooking.serviceId &&
+                        {!isManualGroupBooking &&
+                          manualBooking.serviceId &&
                           manualStaffOptions.length === 0 && (
                             <p className="small manual-booking-warning">
                               {t(
@@ -2420,7 +3003,8 @@ export default function Bookings() {
                             </p>
                           )}
 
-                        {manualBooking.serviceId &&
+                        {!isManualGroupBooking &&
+                          manualBooking.serviceId &&
                           manualBooking.date &&
                           manualBooking.time &&
                           manualStaffOptions.length > 0 && (
@@ -2597,6 +3181,118 @@ export default function Bookings() {
 
         .manual-booking-form textarea {
           resize: vertical;
+        }
+
+        .manual-group-booking-fields {
+          display: grid;
+          gap: 0.75rem;
+          min-width: 0;
+        }
+
+        .manual-group-booking-intro {
+          display: grid;
+          gap: 0.25rem;
+          padding: 0.75rem 0.85rem;
+          border-left: 3px solid var(--success);
+          background: rgba(45, 212, 191, 0.06);
+        }
+
+        .manual-group-booking-intro p,
+        .manual-group-booking-empty p {
+          margin: 0;
+        }
+
+        .manual-group-booking-empty {
+          display: flex;
+          gap: 0.75rem;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.75rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .manual-departure-summary {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.7rem 1rem;
+          padding: 0.8rem 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .manual-departure-summary span {
+          display: grid;
+          gap: 0.2rem;
+          min-width: 0;
+          color: var(--text-muted);
+          font-size: 0.75rem;
+        }
+
+        .manual-departure-summary strong {
+          overflow-wrap: anywhere;
+          color: var(--text);
+          font-size: 0.86rem;
+        }
+
+        .manual-booking-option {
+          display: grid;
+          gap: 0.5rem;
+          min-width: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+        }
+
+        .manual-booking-option legend {
+          margin-bottom: 0.35rem;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .manual-booking-option label {
+          display: grid;
+          grid-template-columns: 1.2rem minmax(0, 1fr);
+          gap: 0.65rem;
+          align-items: start;
+          min-height: 3.25rem;
+          padding: 0.65rem 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          background: var(--surface-2);
+          cursor: pointer;
+        }
+
+        .manual-booking-option label:has(input:checked) {
+          border-color: rgba(45, 212, 191, 0.55);
+          background: rgba(45, 212, 191, 0.08);
+        }
+
+        .manual-booking-option label:has(input:disabled) {
+          cursor: not-allowed;
+          opacity: 0.62;
+        }
+
+        .manual-booking-option input[type="radio"] {
+          width: 1.1rem;
+          min-height: 1.1rem;
+          margin: 0.15rem 0 0;
+          padding: 0;
+          accent-color: var(--success);
+        }
+
+        .manual-booking-option label > span {
+          display: grid;
+          gap: 0.15rem;
+          color: var(--text);
+          font-size: 0.85rem;
+        }
+
+        .manual-booking-option small {
+          color: var(--text-muted);
+          font-weight: 600;
+          line-height: 1.35;
         }
 
         .manual-booking-notes,
@@ -3490,6 +4186,15 @@ export default function Bookings() {
 
           .manual-booking-form {
             grid-template-columns: 1fr;
+          }
+
+          .manual-departure-summary {
+            grid-template-columns: 1fr;
+          }
+
+          .manual-group-booking-empty {
+            display: grid;
+            align-items: stretch;
           }
 
           .manual-booking-heading {

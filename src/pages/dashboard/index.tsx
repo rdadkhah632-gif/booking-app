@@ -8,6 +8,7 @@ import {
   Booking,
   BookingRequest,
   Business,
+  DepartureSummary,
   Service,
   SetupStep,
   StaffMember,
@@ -33,6 +34,9 @@ export default function DashboardHome() {
   const [availabilityRows, setAvailabilityRows] = useState<AvailabilityRow[]>(
     [],
   );
+  const [scheduledDepartures, setScheduledDepartures] = useState<
+    DepartureSummary[]
+  >([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,32 +88,65 @@ export default function DashboardHome() {
       setStaffMembers([]);
       setStaffServices([]);
       setAvailabilityRows([]);
+      setScheduledDepartures([]);
       setLoading(false);
       return;
     }
 
-    const { data: bookingData, error: bookingError } = await supabase
-      .from("bookings")
-      .select(
-        `
-        id,
-        business_id,
-        customer_name,
-        start_at,
-        duration_minutes,
-        service_id,
-        status,
-        created_at,
-        businesses ( name ),
-        services ( id, name, price ),
-        staff_members ( name, role_title )
-      `,
-      )
-      .in("business_id", businessIds)
-      .order("start_at", { ascending: true });
+    const [
+      { data: bookingData, error: bookingError },
+      { data: requestData, error: requestError },
+      { data: serviceData, error: serviceError },
+      { data: staffData, error: staffError },
+      { data: availabilityData, error: availabilityError },
+    ] = await Promise.all([
+      supabase
+        .from("bookings")
+        .select(
+          `
+          id,
+          business_id,
+          customer_name,
+          start_at,
+          duration_minutes,
+          service_id,
+          departure_id,
+          status,
+          created_at,
+          businesses ( name ),
+          services ( id, name, price ),
+          staff_members ( name, role_title )
+        `,
+        )
+        .in("business_id", businessIds)
+        .order("start_at", { ascending: true }),
+      supabase
+        .from("booking_requests")
+        .select("id, booking_id, business_id, status, created_at")
+        .in("business_id", businessIds)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("services")
+        .select("id, business_id, active, booking_type, owner_review_required")
+        .in("business_id", businessIds),
+      supabase
+        .from("staff_members")
+        .select("id, business_id, active")
+        .in("business_id", businessIds),
+      supabase
+        .from("availability")
+        .select("id, business_id, is_closed")
+        .in("business_id", businessIds),
+    ]);
 
-    if (bookingError) {
-      setError(bookingError.message);
+    const initialLoadError =
+      bookingError ||
+      requestError ||
+      serviceError ||
+      staffError ||
+      availabilityError;
+    if (initialLoadError) {
+      setError(initialLoadError.message);
       setLoading(false);
       return;
     }
@@ -129,80 +166,74 @@ export default function DashboardHome() {
 
     setBookings(normalisedBookings);
 
-    const { data: requestData, error: requestError } = await supabase
-      .from("booking_requests")
-      .select("id, booking_id, business_id, status, created_at")
-      .in("business_id", businessIds)
-      .order("created_at", { ascending: false });
-
-    if (requestError) {
-      setError(requestError.message);
-      setLoading(false);
-      return;
-    }
-
     setRequests(requestData || []);
-
-    const { data: serviceData, error: serviceError } = await supabase
-      .from("services")
-      .select("id, business_id, active")
-      .in("business_id", businessIds);
-
-    if (serviceError) {
-      setError(serviceError.message);
-      setLoading(false);
-      return;
-    }
-
     setServices(serviceData || []);
-
-    const { data: staffData, error: staffError } = await supabase
-      .from("staff_members")
-      .select("id, business_id, active")
-      .in("business_id", businessIds);
-
-    if (staffError) {
-      setError(staffError.message);
-      setLoading(false);
-      return;
-    }
-
     setStaffMembers(staffData || []);
+    setAvailabilityRows(availabilityData || []);
 
     const activeStaffIds = (staffData || [])
       .filter((staff) => staff.active)
       .map((staff) => staff.id);
 
-    if (activeStaffIds.length > 0) {
-      const { data: staffServiceData, error: staffServiceError } =
-        await supabase
-          .from("staff_services")
-          .select("staff_member_id, service_id")
-          .in("staff_member_id", activeStaffIds);
-
-      if (staffServiceError) {
-        setError(staffServiceError.message);
-        setLoading(false);
-        return;
-      }
-
-      setStaffServices(staffServiceData || []);
-    } else {
-      setStaffServices([]);
-    }
-
-    const { data: availabilityData, error: availabilityError } = await supabase
-      .from("availability")
-      .select("id, business_id, is_closed")
-      .in("business_id", businessIds);
-
-    if (availabilityError) {
-      setError(availabilityError.message);
+    const groupBusinessIds = Array.from(
+      new Set(
+        (serviceData || [])
+          .filter((service) => service.booking_type === "group")
+          .map((service) => service.business_id),
+      ),
+    );
+    const [staffServiceResult, departureResponses] = await Promise.all([
+      activeStaffIds.length > 0
+        ? supabase
+            .from("staff_services")
+            .select("staff_member_id, service_id")
+            .in("staff_member_id", activeStaffIds)
+        : Promise.resolve({
+            data: [] as StaffServiceAssignment[],
+            error: null,
+          }),
+      Promise.all(
+        groupBusinessIds.map(async (ownedBusinessId) => {
+          try {
+            const response = await fetch(
+              `/api/dashboard/departures?businessId=${ownedBusinessId}`,
+              {
+                headers: { Authorization: `Bearer ${session.access_token}` },
+              },
+            );
+            if (!response.ok) return [];
+            const payload = (await response.json()) as {
+              departures?: Array<{
+                business_id: string;
+                service_id: string;
+                start_at: string;
+                status: string;
+              }>;
+            };
+            return (payload.departures || [])
+              .filter(
+                (departure) =>
+                  departure.status === "scheduled" &&
+                  new Date(departure.start_at) > new Date(),
+              )
+              .map((departure) => ({
+                business_id: departure.business_id,
+                service_id: departure.service_id,
+              }));
+          } catch {
+            return [];
+          }
+        }),
+      ),
+    ]);
+    if (staffServiceResult.error) {
+      setError(staffServiceResult.error.message);
       setLoading(false);
       return;
     }
 
-    setAvailabilityRows(availabilityData || []);
+    setStaffServices(staffServiceResult.data || []);
+    setScheduledDepartures(departureResponses.flat());
     setLoading(false);
   }
 
@@ -283,15 +314,29 @@ export default function DashboardHome() {
   }, [requests]);
 
   const pendingActionCount = pendingBookings.length + pendingRescheduleCount;
-  const nextAppointment = upcomingBookings[0] || null;
+  const nextBooking = upcomingBookings[0] || null;
+  const nextTodayBooking = todayBookings[0] || null;
   const primaryBusinessId = businesses[0]?.id;
   const primaryBusiness = businesses[0];
+  const primaryServices = services.filter(
+    (service) => service.business_id === primaryBusinessId,
+  );
+  const preparedServiceReviewCount = primaryServices.filter(
+    (service) => service.owner_review_required,
+  ).length;
   const activeServiceIds = new Set(
-    services
-      .filter(
-        (service) =>
-          service.business_id === primaryBusinessId && service.active,
-      )
+    primaryServices
+      .filter((service) => service.active)
+      .map((service) => service.id),
+  );
+  const activeAppointmentServiceIds = new Set(
+    primaryServices
+      .filter((service) => service.active && service.booking_type !== "group")
+      .map((service) => service.id),
+  );
+  const activeGroupServiceIds = new Set(
+    primaryServices
+      .filter((service) => service.active && service.booking_type === "group")
       .map((service) => service.id),
   );
   const activeStaffIds = new Set(
@@ -306,7 +351,7 @@ export default function DashboardHome() {
   const activeAssignments = staffServices.filter(
     (assignment) =>
       activeStaffIds.has(assignment.staff_member_id) &&
-      activeServiceIds.has(assignment.service_id),
+      activeAppointmentServiceIds.has(assignment.service_id),
   ).length;
   const openWorkingDays = availabilityRows.filter(
     (row) => row.business_id === primaryBusinessId && row.is_closed !== true,
@@ -317,11 +362,22 @@ export default function DashboardHome() {
       primaryBusiness.city?.trim(),
   );
   const isPublished = Boolean(primaryBusiness?.published);
+  const hasBookableAppointments =
+    activeAppointmentServiceIds.size > 0 &&
+    activeStaff > 0 &&
+    activeAssignments > 0 &&
+    openWorkingDays > 0;
+  const hasScheduledDepartures = scheduledDepartures.some(
+    (departure) =>
+      departure.business_id === primaryBusinessId &&
+      activeGroupServiceIds.has(departure.service_id),
+  );
+  const hasReadyBookingPath = hasBookableAppointments || hasScheduledDepartures;
   const publicPreviewHref = primaryBusinessId
     ? `/explore/${primaryBusinessId}`
     : undefined;
   const setupSteps = useMemo<SetupStep[]>(() => {
-    return [
+    const steps: SetupStep[] = [
       {
         key: "profile",
         complete: businesses.length > 0 && hasProfileBasics,
@@ -332,50 +388,100 @@ export default function DashboardHome() {
       {
         key: "services",
         complete: activeServices > 0,
-        label: t("dashboardHome.setup.services", "First service"),
+        label:
+          preparedServiceReviewCount > 0 && activeServices === 0
+            ? t(
+                "dashboardHome.setup.reviewServices",
+                "Review prepared services",
+              )
+            : t("dashboardHome.setup.services", "First service"),
         href: "/dashboard/services",
-        cta: t("dashboardHome.setup.servicesCta", "Add service"),
-      },
-      {
-        key: "team",
-        complete: activeStaff > 0 && activeAssignments > 0,
-        label: t("dashboardHome.setup.team", "Team"),
-        href: "/dashboard/staff",
         cta:
-          activeStaff > 0
-            ? t("dashboardHome.setup.teamAssignCta", "Assign services")
-            : t("dashboardHome.setup.teamCta", "Add staff"),
-      },
-      {
-        key: "hours",
-        complete: openWorkingDays > 0,
-        label: t("dashboardHome.setup.hours", "Working hours"),
-        href: "/dashboard/availability",
-        cta: t("dashboardHome.setup.hoursCta", "Set hours"),
-      },
-      {
-        key: "publish",
-        complete: isPublished,
-        label: t("dashboardHome.setup.publish", "Customer profile"),
-        href: "/dashboard/businesses",
-        cta: t("dashboardHome.setup.publishCta", "Review profile"),
+          preparedServiceReviewCount > 0 && activeServices === 0
+            ? t("dashboardHome.setup.reviewServicesCta", "Review services")
+            : t("dashboardHome.setup.servicesCta", "Add service"),
       },
     ];
+
+    if (activeServices > 0 && !hasReadyBookingPath) {
+      const hasAppointmentServices = activeAppointmentServiceIds.size > 0;
+      const hasGroupServices = activeGroupServiceIds.size > 0;
+
+      if (hasAppointmentServices && hasGroupServices) {
+        steps.push({
+          key: "availability",
+          complete: false,
+          label: t(
+            "dashboardHome.setup.bookingAvailability",
+            "Booking availability",
+          ),
+          href: "/dashboard/services",
+          cta: t(
+            "dashboardHome.setup.bookingAvailabilityCta",
+            "Choose a booking setup",
+          ),
+        });
+      } else if (hasAppointmentServices) {
+        steps.push(
+          {
+            key: "team",
+            complete: activeStaff > 0 && activeAssignments > 0,
+            label: t("dashboardHome.setup.team", "Team"),
+            href: "/dashboard/staff",
+            cta:
+              activeStaff > 0
+                ? t("dashboardHome.setup.teamAssignCta", "Assign services")
+                : t("dashboardHome.setup.teamCta", "Add staff"),
+          },
+          {
+            key: "hours",
+            complete: openWorkingDays > 0,
+            label: t("dashboardHome.setup.hours", "Working hours"),
+            href: "/dashboard/availability",
+            cta: t("dashboardHome.setup.hoursCta", "Set hours"),
+          },
+        );
+      }
+
+      if (hasGroupServices && !hasAppointmentServices) {
+        steps.push({
+          key: "departures",
+          complete: hasScheduledDepartures,
+          label: t("dashboardHome.setup.departures", "First departure"),
+          href: "/dashboard/departures",
+          cta: t("dashboardHome.setup.departuresCta", "Add departure"),
+        });
+      }
+    }
+
+    steps.push({
+      key: "publish",
+      complete: isPublished,
+      label: t("dashboardHome.setup.publish", "Customer profile"),
+      href: "/dashboard/businesses",
+      cta: t("dashboardHome.setup.publishCta", "Review profile"),
+    });
+
+    return steps;
   }, [
     businesses.length,
     hasProfileBasics,
     activeServices,
+    preparedServiceReviewCount,
+    hasReadyBookingPath,
+    activeAppointmentServiceIds.size,
+    activeGroupServiceIds.size,
     activeStaff,
     activeAssignments,
     openWorkingDays,
+    hasScheduledDepartures,
     isPublished,
     t,
   ]);
 
   const nextSetupStep = setupSteps.find((step) => !step.complete) || null;
-  const requiredSetupReady = setupSteps.every(
-    (step) => step.key === "publish" || step.complete,
-  );
+  const requiredSetupReady =
+    hasProfileBasics && activeServices > 0 && hasReadyBookingPath;
   const readyToTakeBookings = requiredSetupReady && isPublished;
   const todayStatusLabel = readyToTakeBookings
     ? t("dashboardHome.status.ready", "Ready to take bookings")
@@ -397,18 +503,29 @@ export default function DashboardHome() {
       }
     : todayBookings.length
       ? {
-          title: t(
-            "dashboardHome.today.nextCalendar",
-            "Run today from Calendar",
-          ),
-          body: t(
-            "dashboardHome.today.nextCalendarBody",
-            "Confirmed appointments for today are ready.",
-          ),
-          href: bookingsLinkForDate(
-            dateKeyInTimeZone(new Date(), primaryBusiness?.timezone),
-          ),
-          cta: t("dashboardHome.today.nextCalendarCta", "Open today"),
+          title: nextTodayBooking?.departure_id
+            ? t("dashboardHome.today.nextDeparture", "Open today's departure")
+            : t("dashboardHome.today.nextCalendar", "Run today from Calendar"),
+          body: nextTodayBooking?.departure_id
+            ? t(
+                "dashboardHome.today.nextDepartureBody",
+                "Review the seats, guest list and meeting details for the next departure.",
+              )
+            : t(
+                "dashboardHome.today.nextCalendarBody",
+                "Confirmed appointments for today are ready.",
+              ),
+          href: nextTodayBooking?.departure_id
+            ? `/dashboard/departures?${new URLSearchParams({
+                businessId: nextTodayBooking.business_id,
+                departureId: nextTodayBooking.departure_id,
+              }).toString()}`
+            : bookingsLinkForDate(
+                dateKeyInTimeZone(new Date(), primaryBusiness?.timezone),
+              ),
+          cta: nextTodayBooking?.departure_id
+            ? t("dashboardHome.today.nextDepartureCta", "Open departure")
+            : t("dashboardHome.today.nextCalendarCta", "Open today"),
         }
       : nextSetupStep
         ? {
@@ -462,7 +579,7 @@ export default function DashboardHome() {
       title={t("dashboardHome.title", "Today")}
       subtitle={
         primaryBusiness?.name ||
-        t("dashboardHome.subtitle", "Appointments and requests for today.")
+        t("dashboardHome.subtitle", "Bookings and requests for today.")
       }
     >
       {error && (
@@ -511,46 +628,58 @@ export default function DashboardHome() {
           <div className="dashboard-today-grid">
             <article className="today-next-card">
               <span className="today-section-label">
-                {t("dashboardHome.today.nextAppointment", "Next appointment")}
+                {t("dashboardHome.today.nextAppointment", "Next booking")}
               </span>
-              {nextAppointment ? (
+              {nextBooking ? (
                 <>
                   <div className="today-appointment-time">
-                    {formatLocalizedDate(nextAppointment.start_at, locale, {
+                    {formatLocalizedDate(nextBooking.start_at, locale, {
                       weekday: "short",
                       day: "numeric",
                       month: "short",
-                      timeZone: timeZoneForBooking(nextAppointment),
+                      timeZone: timeZoneForBooking(nextBooking),
                     })}
                     <strong>
-                      {formatLocalizedDate(nextAppointment.start_at, locale, {
+                      {formatLocalizedDate(nextBooking.start_at, locale, {
                         hour: "2-digit",
                         minute: "2-digit",
-                        timeZone: timeZoneForBooking(nextAppointment),
+                        timeZone: timeZoneForBooking(nextBooking),
                       })}
                     </strong>
                   </div>
                   <div className="today-appointment-copy">
-                    <strong>{nextAppointment.customer_name}</strong>
+                    <strong>{nextBooking.customer_name}</strong>
                     <span>
-                      {nextAppointment.services?.name ||
+                      {nextBooking.services?.name ||
                         t("common.service", "Service")}
-                      {nextAppointment.staff_members?.name
-                        ? ` · ${nextAppointment.staff_members.name}`
+                      {nextBooking.staff_members?.name
+                        ? ` · ${nextBooking.staff_members.name}`
                         : ""}
                     </span>
                   </div>
                   <Link
-                    href={bookingsLinkForDate(
-                      dateKeyInTimeZone(
-                        new Date(nextAppointment.start_at),
-                        timeZoneForBooking(nextAppointment),
-                      ),
-                      nextAppointment.business_id,
-                    )}
+                    href={
+                      nextBooking.departure_id
+                        ? `/dashboard/departures?${new URLSearchParams({
+                            businessId: nextBooking.business_id,
+                            departureId: nextBooking.departure_id,
+                          }).toString()}`
+                        : bookingsLinkForDate(
+                            dateKeyInTimeZone(
+                              new Date(nextBooking.start_at),
+                              timeZoneForBooking(nextBooking),
+                            ),
+                            nextBooking.business_id,
+                          )
+                    }
                     className="today-inline-link"
                   >
-                    {t("dashboardHome.today.openCalendar", "Open in Calendar")}
+                    {nextBooking.departure_id
+                      ? t("dashboardHome.today.openDeparture", "Open departure")
+                      : t(
+                          "dashboardHome.today.openCalendar",
+                          "Open in Calendar",
+                        )}
                   </Link>
                 </>
               ) : (
@@ -558,13 +687,13 @@ export default function DashboardHome() {
                   <strong>
                     {t(
                       "dashboardHome.today.noUpcoming",
-                      "No upcoming appointments",
+                      "No upcoming bookings",
                     )}
                   </strong>
                   <span>
                     {t(
                       "dashboardHome.today.noUpcomingBody",
-                      "New confirmed appointments will appear here.",
+                      "New confirmed bookings will appear here.",
                     )}
                   </span>
                 </div>

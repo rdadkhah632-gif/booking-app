@@ -14,6 +14,7 @@ export type Booking = {
   start_at: string;
   duration_minutes: number;
   service_id?: string | null;
+  departure_id?: string | null;
   status: string;
   created_at?: string;
   businesses?: {
@@ -42,6 +43,13 @@ export type Service = {
   id: string;
   business_id: string;
   active: boolean;
+  booking_type?: "appointment" | "group" | null;
+  owner_review_required?: boolean | null;
+};
+
+export type DepartureSummary = {
+  business_id: string;
+  service_id: string;
 };
 
 export type StaffMember = {

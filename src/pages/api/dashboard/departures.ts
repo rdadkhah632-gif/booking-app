@@ -496,24 +496,26 @@ export default async function handler(
                 type: "booking_accepted",
                 title: albanian ? "Rezervimi u konfirmua" : "Booking confirmed",
                 message: albanian
-                  ? "Biznesi e konfirmoi rezervimin tënd të udhëtimit."
-                  : "The business confirmed your trip booking.",
+                  ? "Biznesi e konfirmoi rezervimin tënd në grup."
+                  : "The business confirmed your group booking.",
               }
             : nextStatus === "declined"
               ? {
                   type: "booking_declined",
                   title: albanian ? "Rezervimi u refuzua" : "Booking declined",
                   message: albanian
-                    ? "Biznesi nuk mundi ta pranonte këtë rezervim udhëtimi."
-                    : "The business could not accept this trip booking.",
+                    ? "Biznesi nuk mundi ta pranonte këtë rezervim në grup."
+                    : "The business could not accept this group booking.",
                 }
               : nextStatus === "completed"
                 ? {
                     type: "booking_completed",
-                    title: albanian ? "Udhëtimi u përfundua" : "Trip completed",
+                    title: albanian
+                      ? "Rezervimi në grup u përfundua"
+                      : "Group booking completed",
                     message: albanian
-                      ? "Rezervimi yt i udhëtimit u shënua si i përfunduar."
-                      : "Your trip booking was marked as completed.",
+                      ? "Rezervimi yt në grup u shënua si i përfunduar."
+                      : "Your group booking was marked as completed.",
                   }
                 : {
                     type: "booking_cancelled",
@@ -521,8 +523,8 @@ export default async function handler(
                       ? "Rezervimi u anulua"
                       : "Booking cancelled",
                     message: albanian
-                      ? "Biznesi anuloi rezervimin tënd të udhëtimit."
-                      : "The business cancelled your trip booking.",
+                      ? "Biznesi anuloi rezervimin tënd në grup."
+                      : "The business cancelled your group booking.",
                   };
 
         await context.supabaseAdmin.from("notifications").insert({
@@ -662,16 +664,16 @@ export default async function handler(
                 ? "Nisja u anulua"
                 : "Departure cancelled"
               : albanian
-                ? "Udhëtimi u përfundua"
-                : "Trip completed",
+                ? "Rezervimi në grup u përfundua"
+                : "Group booking completed",
           message:
             targetBookingStatus === "cancelled"
               ? albanian
                 ? "Biznesi e anuloi nisjen e rezervuar."
                 : "The business cancelled the booked departure."
               : albanian
-                ? "Rezervimi yt i udhëtimit u shënua si i përfunduar."
-                : "Your trip booking was marked as completed.",
+                ? "Rezervimi yt në grup u shënua si i përfunduar."
+                : "Your group booking was marked as completed.",
           action_url: `/booking-confirmation?id=${booking.id}`,
         };
       });
