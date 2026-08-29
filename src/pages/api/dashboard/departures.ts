@@ -73,7 +73,6 @@ type BookingRow = {
   service_id?: string | null;
   customer_user_id?: string | null;
   start_at?: string | null;
-  duration_minutes?: number | null;
 };
 
 const UUID_PATTERN =
@@ -238,21 +237,13 @@ export default async function handler(
         id: string;
         startAt: string;
         departureId: string | null;
-        customerName: string;
-        partySize: number;
-        durationMinutes: number;
-        status: string;
-        serviceId: string;
-        businessId: string;
       } | null = null;
 
       if (UUID_PATTERN.test(requestedBookingId)) {
         const { data: bookingTarget, error: bookingTargetError } =
           await context.supabaseAdmin
             .from("bookings")
-            .select(
-              "id, business_id, service_id, staff_member_id, departure_id, customer_name, party_size, start_at, duration_minutes, status",
-            )
+            .select("id, business_id, staff_member_id, departure_id, start_at")
             .eq("id", requestedBookingId)
             .eq("business_id", businessId)
             .maybeSingle<BookingRow>();
@@ -292,15 +283,6 @@ export default async function handler(
               id: bookingTarget.id,
               startAt: bookingTarget.start_at,
               departureId: bookingTarget.departure_id || null,
-              customerName: bookingTarget.customer_name || "Customer",
-              partySize: Math.max(Number(bookingTarget.party_size || 1), 1),
-              durationMinutes: Math.max(
-                Number(bookingTarget.duration_minutes || 0),
-                1,
-              ),
-              status: bookingTarget.status,
-              serviceId: bookingTarget.service_id || "",
-              businessId: bookingTarget.business_id || businessId,
             };
             departureId = bookingTarget.departure_id || departureId;
           }

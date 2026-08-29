@@ -9,7 +9,6 @@ import { dateKeyInTimeZone } from "@/lib/timezone";
 
 type Notification = {
   id: string;
-  business_id: string | null;
   booking_id: string | null;
   title: string | null;
   message: string | null;
@@ -32,24 +31,8 @@ type BookingContext = {
     { timezone?: string | null } | { timezone?: string | null }[] | null;
 };
 
-type DepartureLookupPayload = {
-  business?: {
-    timezone?: string | null;
-  } | null;
-  resolvedBooking?: {
-    id: string;
-    departureId: string | null;
-    customerName: string;
-    partySize: number;
-    startAt: string;
-    durationMinutes: number;
-    status: string;
-    serviceId: string;
-  } | null;
-  departures?: Array<{
-    id: string;
-    service?: { name?: string | null } | null;
-  }>;
+type NotificationContextPayload = {
+  contexts?: BookingContext[];
 };
 
 function bookingServiceName(booking: BookingContext, fallback: string) {
@@ -69,8 +52,64 @@ function bookingTimeZone(booking: BookingContext) {
 function staffNotificationText(
   notification: Notification,
   t: (key: string, fallback?: string) => string,
+  booking?: BookingContext | null,
 ) {
   const type = String(notification.type || "");
+
+  if (booking) {
+    if (booking.status === "pending") {
+      return {
+        title: t(
+          "staffNotifications.booking.pendingTitle",
+          "Awaiting business approval",
+        ),
+        message: t(
+          "staffNotifications.booking.pendingBody",
+          "This assigned booking request is waiting for the business to approve it. No staff action is required.",
+        ),
+      };
+    }
+
+    if (booking.status === "confirmed") {
+      return {
+        title: t("staff.status.confirmed", "Confirmed"),
+        message: t(
+          "staffNotifications.booking.confirmedBody",
+          "This assigned booking is confirmed and belongs in your active schedule.",
+        ),
+      };
+    }
+
+    if (booking.status === "declined") {
+      return {
+        title: t("staff.status.declined", "Declined"),
+        message: t(
+          "staffNotifications.booking.declinedBody",
+          "This booking request was declined and is not active work.",
+        ),
+      };
+    }
+
+    if (booking.status === "cancelled") {
+      return {
+        title: t("staff.status.cancelled", "Cancelled"),
+        message: t(
+          "staffNotifications.booking.cancelledBody",
+          "This booking was cancelled and is no longer active work.",
+        ),
+      };
+    }
+
+    if (booking.status === "completed") {
+      return {
+        title: t("staff.status.completed", "Completed"),
+        message: t(
+          "staffNotifications.booking.completedBody",
+          "This assigned appointment has been completed.",
+        ),
+      };
+    }
+  }
 
   if (
     type === "booking_created" ||
@@ -251,7 +290,7 @@ export default function StaffNotificationsPage() {
     const { data, error } = await supabase
       .from("notifications")
       .select(
-        "id, business_id, booking_id, title, message, type, action_url, read_at, created_at",
+        "id, booking_id, title, message, type, action_url, read_at, created_at",
       )
       .eq("user_id", session.user.id)
       .in("audience", ["staff", "general"])
@@ -267,93 +306,25 @@ export default function StaffNotificationsPage() {
     const nextNotifications = (data || []) as Notification[];
     setNotifications(nextNotifications);
 
-    const bookingIds = Array.from(
-      new Set(
-        nextNotifications
-          .map((notification) => notification.booking_id)
-          .filter((bookingId): bookingId is string => Boolean(bookingId)),
-      ),
-    );
-
-    if (bookingIds.length > 0) {
-      const { data: bookingData } = await supabase
-        .from("bookings")
-        .select(
-          "id, departure_id, customer_name, party_size, start_at, duration_minutes, status, services(name), businesses(timezone)",
-        )
-        .eq("staff_member_id", capabilities.primaryStaffId)
-        .in("id", bookingIds);
-
-      const nextBookingContexts = (
-        (bookingData || []) as unknown as BookingContext[]
-      ).reduce(
-        (map, booking) => {
-          map[booking.id] = booking;
-          return map;
+    if (nextNotifications.some((notification) => notification.booking_id)) {
+      const contextResponse = await fetch("/api/staff/notification-contexts", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
         },
-        {} as Record<string, BookingContext>,
-      );
-
-      const unresolvedGroupNotifications = Array.from(
-        new Map(
-          nextNotifications
-            .filter(
-              (notification) =>
-                notification.booking_id &&
-                notification.business_id &&
-                !nextBookingContexts[notification.booking_id] &&
-                notification.action_url?.includes("departureId="),
-            )
-            .map((notification) => [
-              notification.booking_id as string,
-              notification,
-            ]),
-        ).values(),
-      );
-
-      const groupContexts = await Promise.all(
-        unresolvedGroupNotifications.map(async (notification) => {
-          const search = new URLSearchParams({
-            businessId: notification.business_id as string,
-            bookingId: notification.booking_id as string,
-          });
-          const response = await fetch(
-            `/api/dashboard/departures?${search.toString()}`,
-            {
-              headers: {
-                Authorization: `Bearer ${session.access_token}`,
-              },
-            },
-          );
-
-          if (!response.ok) return null;
-          const payload = (await response.json()) as DepartureLookupPayload;
-          const resolved = payload.resolvedBooking;
-          const departure = payload.departures?.find(
-            (item) => item.id === resolved?.departureId,
-          );
-
-          if (!resolved?.departureId || !departure) return null;
-
-          return {
-            id: resolved.id,
-            departure_id: resolved.departureId,
-            customer_name: resolved.customerName,
-            party_size: resolved.partySize,
-            start_at: resolved.startAt,
-            duration_minutes: resolved.durationMinutes,
-            status: resolved.status,
-            services: departure.service || null,
-            businesses: payload.business || null,
-          } satisfies BookingContext;
-        }),
-      );
-
-      groupContexts.forEach((booking) => {
-        if (booking) nextBookingContexts[booking.id] = booking;
       });
+      const contextPayload = contextResponse.ok
+        ? ((await contextResponse.json()) as NotificationContextPayload)
+        : null;
 
-      setBookingContexts(nextBookingContexts);
+      setBookingContexts(
+        (contextPayload?.contexts || []).reduce(
+          (map, booking) => {
+            map[booking.id] = booking;
+            return map;
+          },
+          {} as Record<string, BookingContext>,
+        ),
+      );
     } else {
       setBookingContexts({});
     }
@@ -516,10 +487,14 @@ export default function StaffNotificationsPage() {
         {!loading && !error && filteredNotifications.length > 0 && (
           <div className="staff-notification-list">
             {filteredNotifications.map((item) => {
-              const displayNotification = staffNotificationText(item, t);
               const booking = item.booking_id
                 ? bookingContexts[item.booking_id]
                 : null;
+              const displayNotification = staffNotificationText(
+                item,
+                t,
+                booking,
+              );
               const bookingDate = booking
                 ? dateKeyInTimeZone(
                     new Date(booking.start_at),
