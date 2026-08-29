@@ -5749,4 +5749,40 @@ export const sq: TranslationTree = {
     "Përdore për prerje flokësh, konsultime dhe orare të tjera private.",
   "admin.onboarding.prepared.groupHint":
     "Përdore vetëm kur klientë të ndryshëm ndajnë të njëjtën orë fikse nisjeje dhe kapacitet vendesh.",
+  "account.needsAction": "Kërkon veprim",
+  "account.passwordResetSent":
+    "Kërkesa për rivendosjen e fjalëkalimit u pranua. Kontrollo kutinë hyrëse dhe dosjen e mesazheve të padëshiruara për të vazhduar.",
+  "categories.barber": "Berber",
+  "categories.beauty": "Estetikë",
+  "categories.hairSalon": "Sallon flokësh",
+  "categories.nails": "Thonj",
+  "categories.other": "Tjetër",
+  "categories.petGrooming": "Kujdes për kafshë",
+  "categories.tattoo": "Tatuazhe",
+  "common.done": "Përfunduar",
+  "common.edit": "Ndrysho",
+  "common.updating": "Po përditësohet...",
+  "dashboardBookings.multiBusinessNotice":
+    "Kjo llogari ka më shumë se një biznes. Mirëbook po përdor biznesin tënd kryesor në këtë version fillestar. Kontakto mbështetjen nëse duhet ndryshuar.",
+  "dashboardBusinesses.create.limitReached":
+    "Llogaria jote ka tashmë një profil biznesi. Për të shtuar një biznes ose vendndodhje tjetër, kontakto mbështetjen e Mirëbook.",
+  "dashboardSettings.pageSubtitle": "Vendos rregullat e takimeve.",
+  "myBookings.actions.viewPendingChanges":
+    "Shiko kërkesat e ndryshimit në pritje",
+  "myBookings.confirm.cancel": "Ta anulosh këtë rezervim?",
+  "myBookings.fallback.serviceNotRecorded": "Shërbimi nuk është regjistruar",
+  "myBookings.lifecycle.defaultBody": "Detajet e rezervimit shfaqen më poshtë.",
+  "myBookings.lifecycle.pendingChangeBody":
+    "Takimi yt fillestar mbetet i konfirmuar. Ora e re e kërkuar do ta zëvendësojë vetëm nëse biznesi e pranon kërkesën.",
+  "myBookings.notification.cancelledTitle": "Klienti anuloi rezervimin",
+  "myBookings.notification.cancelledWord": "anuloi rezervimin për",
+  "myBookings.success.cancelled":
+    "Rezervimi u anulua. Biznesi është njoftuar dhe rezervimi tani është i kyçur si i anuluar.",
+  "myBookings.success.pendingCancelled":
+    "Kërkesa e rezervimit u anulua. Nuk pret më miratimin e biznesit.",
+  "publicBusiness.anyAvailableStaff": "Cilido staf i disponueshëm",
+  "register.business.createError": "Profili i biznesit nuk mund të krijohej.",
+  "register.staffNotice.title": "Lidhja e llogarisë së stafit",
+  "support.thread.loginRequired": "Hyr për t'u përgjigjur.",
+  "support.thread.replyError": "Përgjigjja e mbështetjes nuk mund të dërgohej.",
 };

@@ -5612,4 +5612,39 @@ export const en: TranslationTree = {
     "Use for haircuts, consultations and other private time slots.",
   "admin.onboarding.prepared.groupHint":
     "Use only when different customers share one fixed start time and seat capacity.",
+  "account.needsAction": "Needs action",
+  "account.passwordResetSent":
+    "Password reset request accepted. Check your inbox and spam folder to continue.",
+  "categories.barber": "Barber",
+  "categories.beauty": "Beauty",
+  "categories.hairSalon": "Hair salon",
+  "categories.nails": "Nails",
+  "categories.other": "Other",
+  "categories.petGrooming": "Pet grooming",
+  "categories.tattoo": "Tattoo",
+  "common.done": "Done",
+  "common.edit": "Edit",
+  "common.updating": "Updating...",
+  "dashboardBookings.multiBusinessNotice":
+    "This account has more than one business. Mirëbook is using your primary business for this launch version. Contact support if this needs changing.",
+  "dashboardBusinesses.create.limitReached":
+    "Your account already has a business profile. To add another business or location, contact Mirëbook support.",
+  "dashboardSettings.pageSubtitle": "Set appointment rules.",
+  "myBookings.actions.viewPendingChanges": "View pending change requests",
+  "myBookings.confirm.cancel": "Cancel this booking?",
+  "myBookings.fallback.serviceNotRecorded": "Service not recorded",
+  "myBookings.lifecycle.defaultBody": "Booking details are shown below.",
+  "myBookings.lifecycle.pendingChangeBody":
+    "Your original appointment is still confirmed. The new requested time will only replace it if the business accepts your request.",
+  "myBookings.notification.cancelledTitle": "Customer cancelled booking",
+  "myBookings.notification.cancelledWord": "cancelled their booking for",
+  "myBookings.success.cancelled":
+    "Booking cancelled. The business has been notified and this booking is now locked as cancelled.",
+  "myBookings.success.pendingCancelled":
+    "Booking request cancelled. It is no longer waiting for business approval.",
+  "publicBusiness.anyAvailableStaff": "Any available staff",
+  "register.business.createError": "Could not create business profile.",
+  "register.staffNotice.title": "Staff account linking",
+  "support.thread.loginRequired": "Sign in to reply.",
+  "support.thread.replyError": "Could not send support reply.",
 };
