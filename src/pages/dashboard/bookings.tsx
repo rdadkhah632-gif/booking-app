@@ -190,7 +190,7 @@ export default function Bookings() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const bookingStatusLabel = useBookingStatusLabel();
-  const { businessId, date, bookingId } = router.query;
+  const { businessId, date, bookingId, departureId } = router.query;
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [business, setBusiness] = useState<Business | null>(null);
@@ -543,6 +543,25 @@ export default function Bookings() {
       setSelectedCalendarBookingId(bookingId);
     }
   }, [bookingId, bookings]);
+
+  useEffect(() => {
+    if (
+      !router.isReady ||
+      !business?.id ||
+      typeof departureId !== "string" ||
+      !departureId
+    ) {
+      return;
+    }
+
+    void router.replace({
+      pathname: "/dashboard/departures",
+      query: {
+        businessId: business.id,
+        departureId,
+      },
+    });
+  }, [business?.id, departureId, router]);
 
   async function createCustomerNotification(params: {
     booking: Booking;
@@ -1999,12 +2018,17 @@ export default function Bookings() {
           top: `${Math.max(0, blockTop)}px`,
           height: `${blockHeight}px`,
         }}
-        aria-label={`${time.label} ${
+        aria-label={`${time.label} ${statusLabel(booking.status)} ${
           booking.customer_name ||
           t("dashboardBookings.card.customerFallback", "Customer")
         }`}
       >
-        <span className="schedule-block-time">{time.label}</span>
+        <span className="schedule-block-time">
+          {time.label}
+          {(isCompactBlock || booking.status !== "confirmed") && (
+            <> · {statusLabel(booking.status)}</>
+          )}
+        </span>
         <strong>
           {booking.customer_name ||
             t("dashboardBookings.card.customerFallback", "Customer")}
