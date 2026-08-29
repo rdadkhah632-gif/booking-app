@@ -228,6 +228,9 @@ export default function Bookings() {
   const [manualBookingError, setManualBookingError] = useState<string | null>(
     null,
   );
+  const [cancelReviewBookingId, setCancelReviewBookingId] = useState<
+    string | null
+  >(null);
   const [calendarStaffFilter, setCalendarStaffFilter] = useState("all");
   const [manualBooking, setManualBooking] = useState<ManualBookingDraft>(
     () => ({
@@ -729,14 +732,6 @@ export default function Bookings() {
   async function cancelBooking(booking: Booking) {
     if (actionLoadingId) return;
 
-    const confirmed = confirm(
-      t(
-        "dashboardBookings.confirm.cancel",
-        "Cancel this booking? This will also show as cancelled to the customer.",
-      ),
-    );
-    if (!confirmed) return;
-
     setActionLoadingId(booking.id);
     setActionError(null);
     setError(null);
@@ -765,6 +760,7 @@ export default function Bookings() {
     }
 
     updateLocalBookingStatus(booking.id, "cancelled");
+    setCancelReviewBookingId(null);
 
     await createCustomerNotification({
       booking,
@@ -876,7 +872,7 @@ export default function Bookings() {
       end,
       startMinutes: minutesSinceMidnightInTimeZone(start, timeZone),
       endMinutes: minutesSinceMidnightInTimeZone(end, timeZone),
-      label: formatTimeRangeInTimeZone(start, end, timeZone),
+      label: formatTimeRangeInTimeZone(start, end, timeZone, locale),
     };
   }
 
@@ -1899,9 +1895,15 @@ export default function Bookings() {
               </button>
               <button
                 type="button"
-                onClick={() => cancelBooking(booking)}
+                onClick={() =>
+                  setCancelReviewBookingId((current) =>
+                    current === booking.id ? null : booking.id,
+                  )
+                }
                 className="btn btn-ghost"
                 disabled={isWorking}
+                aria-expanded={cancelReviewBookingId === booking.id}
+                aria-controls={`cancel-review-${booking.id}`}
               >
                 {t("dashboardBookings.actions.cancel", "Cancel")}
               </button>
@@ -1912,6 +1914,48 @@ export default function Bookings() {
             {t("dashboardBookings.card.customerDetails", "Customer details")}
           </Link>
         </div>
+
+        {cancelReviewBookingId === booking.id && (
+          <div
+            id={`cancel-review-${booking.id}`}
+            className="calendar-cancel-review"
+            role="group"
+            aria-label={t(
+              "dashboardBookings.cancelReview.label",
+              "Review booking cancellation",
+            )}
+          >
+            <p className="small">
+              {t(
+                "dashboardBookings.confirm.cancel",
+                "Cancel this booking? This will also show as cancelled to the customer.",
+              )}
+            </p>
+            <div className="calendar-cancel-review-actions">
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={isWorking}
+                onClick={() => cancelBooking(booking)}
+              >
+                {isWorking
+                  ? t("dashboardBookings.actions.working", "Working...")
+                  : t(
+                      "dashboardBookings.cancelReview.confirm",
+                      "Confirm cancellation",
+                    )}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={isWorking}
+                onClick={() => setCancelReviewBookingId(null)}
+              >
+                {t("dashboardBookings.cancelReview.keep", "Keep booking")}
+              </button>
+            </div>
+          </div>
+        )}
 
         {actionError?.bookingId === booking.id && (
           <p role="alert" className="small calendar-action-error">
@@ -3525,6 +3569,25 @@ export default function Bookings() {
           justify-content: center;
         }
 
+        :global(.calendar-cancel-review) {
+          display: grid;
+          gap: 0.65rem;
+          padding: 0.75rem;
+          border: 1px solid rgba(255, 77, 109, 0.32);
+          border-radius: calc(var(--radius) - 3px);
+          background: rgba(255, 77, 109, 0.06);
+        }
+
+        :global(.calendar-cancel-review p) {
+          margin: 0;
+        }
+
+        :global(.calendar-cancel-review-actions) {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.55rem;
+        }
+
         .calendar-selected-heading {
           display: flex;
           justify-content: space-between;
@@ -4491,6 +4554,15 @@ export default function Bookings() {
           :global(.calendar-actions .btn),
           :global(.calendar-actions button),
           :global(.calendar-actions a) {
+            width: 100%;
+            justify-content: center;
+          }
+
+          :global(.calendar-cancel-review-actions) {
+            display: grid;
+          }
+
+          :global(.calendar-cancel-review-actions .btn) {
             width: 100%;
             justify-content: center;
           }

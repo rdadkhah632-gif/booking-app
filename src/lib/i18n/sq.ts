@@ -2336,6 +2336,9 @@ export const sq: TranslationTree = {
     "Ta refuzosh këtë kërkesë rezervimi? Klienti do ta shohë si të refuzuar.",
   "dashboardBookings.confirm.cancel":
     "Ta anulosh këtë rezervim? Do të shfaqet si i anuluar edhe për klientin.",
+  "dashboardBookings.cancelReview.label": "Shqyrto anulimin e rezervimit",
+  "dashboardBookings.cancelReview.confirm": "Konfirmo anulimin",
+  "dashboardBookings.cancelReview.keep": "Mbaje rezervimin",
   "dashboardBookings.confirm.complete":
     "Ta shënosh këtë takim si të përfunduar?",
   "dashboardBookings.success.accepted":
@@ -3837,6 +3840,12 @@ export const sq: TranslationTree = {
     "Ky rezervim u anulua dhe nuk është më punë aktive.",
   "staffNotifications.booking.completedBody":
     "Ky takim i caktuar është përfunduar.",
+  "staffNotifications.appointment.customer": "Klienti",
+  "staffNotifications.appointment.service": "Shërbimi",
+  "staffNotifications.appointment.partySize": "Numri i personave",
+  "staffNotifications.appointment.guestSingle": "person",
+  "staffNotifications.appointment.guestPlural": "persona",
+  "staffNotifications.appointment.when": "Kur",
   "staffNotifications.actions.viewSchedule": "Shiko kalendarin",
   "staffNotifications.actions.openSchedule": "Hap kalendarin",
   "staffNotifications.actions.openSupport": "Hap mbështetjen",

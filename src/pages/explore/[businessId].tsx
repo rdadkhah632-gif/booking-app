@@ -1762,8 +1762,16 @@ export default function BusinessBookingPage() {
       business.id || (typeof businessId === "string" ? businessId : "");
     const params = new URLSearchParams();
 
+    const intentDate =
+      selectedService?.booking_type === "group" && selectedDeparture
+        ? dateKeyInTimeZone(
+            new Date(selectedDeparture.start_at),
+            business?.timezone,
+          )
+        : selectedDate;
+
     if (selectedService?.id) params.set("serviceId", selectedService.id);
-    if (selectedDate) params.set("date", selectedDate);
+    if (intentDate) params.set("date", intentDate);
     if (selectedTime) params.set("time", selectedTime);
     if (selectedStaffChoice) params.set("staff", selectedStaffChoice);
     if (selectedDepartureId) params.set("departure", selectedDepartureId);

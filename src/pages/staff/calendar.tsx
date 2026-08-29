@@ -617,7 +617,7 @@ export default function StaffCalendarPage() {
       end,
       startMinutes: minutesSinceMidnightInTimeZone(start, calendarTimeZone),
       endMinutes: minutesSinceMidnightInTimeZone(end, calendarTimeZone),
-      label: formatTimeRangeInTimeZone(start, end, calendarTimeZone),
+      label: formatTimeRangeInTimeZone(start, end, calendarTimeZone, locale),
     };
   }
 

@@ -22,6 +22,7 @@ type BookingContext = {
   id: string;
   departure_id?: string | null;
   customer_name: string;
+  party_size?: number | null;
   start_at: string;
   duration_minutes: number;
   status: string;
@@ -257,7 +258,7 @@ export default function StaffNotificationsPage() {
       const { data: bookingData } = await supabase
         .from("bookings")
         .select(
-          "id, departure_id, customer_name, start_at, duration_minutes, status, services(name), businesses(timezone)",
+          "id, departure_id, customer_name, party_size, start_at, duration_minutes, status, services(name), businesses(timezone)",
         )
         .eq("staff_member_id", capabilities.primaryStaffId)
         .in("id", bookingIds);
@@ -467,24 +468,69 @@ export default function StaffNotificationsPage() {
                     <p className="muted">{displayNotification.message}</p>
 
                     {booking && (
-                      <div className="staff-notification-appointment">
-                        <strong>{booking.customer_name}</strong>
-                        <span>
-                          {bookingServiceName(
-                            booking,
-                            t("common.service", "Service"),
-                          )}
-                        </span>
-                        <span>
-                          {formatLocalizedDate(booking.start_at, locale, {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
+                      <dl className="staff-notification-appointment">
+                        <div>
+                          <dt>
+                            {t(
+                              "staffNotifications.appointment.customer",
+                              "Customer",
+                            )}
+                          </dt>
+                          <dd>{booking.customer_name}</dd>
+                        </div>
+                        <div>
+                          <dt>
+                            {t(
+                              "staffNotifications.appointment.service",
+                              "Service",
+                            )}
+                          </dt>
+                          <dd>
+                            {bookingServiceName(
+                              booking,
+                              t("common.service", "Service"),
+                            )}
+                          </dd>
+                        </div>
+                        {booking.departure_id && (
+                          <div>
+                            <dt>
+                              {t(
+                                "staffNotifications.appointment.partySize",
+                                "Party size",
+                              )}
+                            </dt>
+                            <dd>
+                              {Math.max(Number(booking.party_size || 1), 1)}{" "}
+                              {Math.max(Number(booking.party_size || 1), 1) ===
+                              1
+                                ? t(
+                                    "staffNotifications.appointment.guestSingle",
+                                    "guest",
+                                  )
+                                : t(
+                                    "staffNotifications.appointment.guestPlural",
+                                    "guests",
+                                  )}
+                            </dd>
+                          </div>
+                        )}
+                        <div>
+                          <dt>
+                            {t("staffNotifications.appointment.when", "When")}
+                          </dt>
+                          <dd>
+                            {formatLocalizedDate(booking.start_at, locale, {
+                              weekday: "short",
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              timeZone: bookingTimeZone(booking),
+                            })}
+                          </dd>
+                        </div>
+                      </dl>
                     )}
 
                     <p className="small muted">
@@ -583,21 +629,36 @@ export default function StaffNotificationsPage() {
         }
 
         .staff-notification-appointment {
-          display: flex;
-          gap: 0.35rem 0.65rem;
-          flex-wrap: wrap;
-          margin-top: 0.5rem;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 0.55rem;
+          margin: 0.7rem 0 0;
+        }
+
+        .staff-notification-appointment > div {
+          display: grid;
+          gap: 0.15rem;
+          min-width: 0;
+          padding: 0.55rem 0.6rem;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--surface-2);
+        }
+
+        .staff-notification-appointment dt {
           color: var(--text-muted);
-          font-size: 0.82rem;
+          font-size: 0.68rem;
+          font-weight: 800;
+          text-transform: uppercase;
         }
 
-        .staff-notification-appointment strong {
+        .staff-notification-appointment dd {
+          min-width: 0;
+          margin: 0;
+          overflow-wrap: anywhere;
           color: var(--text);
-        }
-
-        .staff-notification-appointment span + span::before {
-          content: "·";
-          margin-right: 0.65rem;
+          font-size: 0.82rem;
+          font-weight: 750;
         }
 
         .staff-notification-card {
@@ -656,6 +717,10 @@ export default function StaffNotificationsPage() {
             grid-column: 1 / -1;
             min-height: 2.15rem;
             padding-block: 0.45rem;
+          }
+
+          .staff-notification-appointment {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
       `}</style>

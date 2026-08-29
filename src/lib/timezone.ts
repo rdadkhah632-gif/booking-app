@@ -1,3 +1,5 @@
+import type { Locale } from "./i18n/types";
+
 export const DEFAULT_TIME_ZONE = "Europe/London";
 
 type DateTimeParts = {
@@ -156,15 +158,15 @@ export function formatTimeRangeInTimeZone(
   start: Date,
   end: Date,
   timeZone?: string | null,
+  locale: Locale = "en",
 ) {
   const options: Intl.DateTimeFormatOptions = {
     timeZone: safeTimeZone(timeZone),
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   };
+  const localeCode = locale === "sq" ? "sq-AL" : "en-GB";
 
-  return `${start.toLocaleTimeString([], options)} - ${end.toLocaleTimeString(
-    [],
-    options,
-  )}`;
+  return `${start.toLocaleTimeString(localeCode, options)} - ${end.toLocaleTimeString(localeCode, options)}`;
 }

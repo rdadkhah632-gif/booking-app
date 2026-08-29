@@ -2351,6 +2351,9 @@ export const en: TranslationTree = {
     "Decline this booking request? The customer will see it as declined.",
   "dashboardBookings.confirm.cancel":
     "Cancel this booking? This will also show as cancelled to the customer.",
+  "dashboardBookings.cancelReview.label": "Review booking cancellation",
+  "dashboardBookings.cancelReview.confirm": "Confirm cancellation",
+  "dashboardBookings.cancelReview.keep": "Keep booking",
   "dashboardBookings.confirm.complete": "Mark this appointment as completed?",
   "dashboardBookings.success.accepted":
     "Booking accepted. The customer has been notified and the appointment is now confirmed.",
@@ -3756,6 +3759,12 @@ export const en: TranslationTree = {
     "This booking was cancelled and is no longer active work.",
   "staffNotifications.booking.completedBody":
     "This assigned appointment has been completed.",
+  "staffNotifications.appointment.customer": "Customer",
+  "staffNotifications.appointment.service": "Service",
+  "staffNotifications.appointment.partySize": "Party size",
+  "staffNotifications.appointment.guestSingle": "guest",
+  "staffNotifications.appointment.guestPlural": "guests",
+  "staffNotifications.appointment.when": "When",
   "staffNotifications.actions.viewSchedule": "View calendar",
   "staffNotifications.actions.openSchedule": "Open calendar",
   "staffNotifications.actions.openSupport": "Open support",
