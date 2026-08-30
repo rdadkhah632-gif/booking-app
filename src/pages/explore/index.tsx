@@ -40,6 +40,7 @@ import {
 } from "@/components/explore/exploreTypes";
 import { useI18n } from "@/lib/useI18n";
 import { recordSiteEvent } from "@/lib/siteAnalytics";
+import { matchesDiscoverySearch } from "@/lib/discoverySearch";
 
 type Coordinates = {
   latitude: number;
@@ -419,14 +420,13 @@ export default function Explore() {
       t,
     );
     return businesses.filter((business) => {
-      const searchText =
-        `${business.name || ""} ${business.description || ""} ${
-          business.category || ""
-        } ${business.city || ""} ${business.country || ""} ${
-          business.address || ""
-        }`.toLocaleLowerCase();
+      const searchText = `${business.name || ""} ${
+        business.description || ""
+      } ${business.category || ""} ${business.city || ""} ${
+        business.country || ""
+      } ${business.address || ""}`;
       const matchesSearch = appliedFilters.query
-        ? searchText.includes(appliedFilters.query.toLocaleLowerCase())
+        ? matchesDiscoverySearch(searchText, appliedFilters.query)
         : true;
       const matchesCity = appliedFilters.city
         ? (business.city || "")
@@ -455,9 +455,9 @@ export default function Explore() {
     return directoryPlaces.filter((place) => {
       const searchText = `${place.name} ${place.description || ""} ${
         place.address || ""
-      } ${place.city || ""} ${place.region || ""}`.toLocaleLowerCase();
+      } ${place.city || ""} ${place.region || ""}`;
       const matchesSearch = appliedFilters.query
-        ? searchText.includes(appliedFilters.query.toLocaleLowerCase())
+        ? matchesDiscoverySearch(searchText, appliedFilters.query)
         : true;
       const matchesCity = appliedFilters.city
         ? (place.city || "").toLocaleLowerCase() ===
