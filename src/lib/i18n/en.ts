@@ -5479,7 +5479,7 @@ export const en: TranslationTree = {
   "publicBusiness.departures.guests": "Guests",
   "publicBusiness.departures.guestHint": "Choose how many seats you need.",
   "publicBusiness.departures.privateGuestHint":
-    "Tell the operator how many people are coming.",
+    "Enter the actual guest count. The whole departure will be reserved.",
   "publicBusiness.departures.removeGuest": "Remove one guest",
   "publicBusiness.departures.addGuest": "Add one guest",
   "publicBusiness.departures.guide": "Guide",

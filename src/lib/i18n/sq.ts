@@ -5611,7 +5611,7 @@ export const sq: TranslationTree = {
   "publicBusiness.departures.guests": "Persona",
   "publicBusiness.departures.guestHint": "Zgjidh sa vende të nevojiten.",
   "publicBusiness.departures.privateGuestHint":
-    "Tregoji operatorit sa persona do të marrin pjesë.",
+    "Vendos numrin real të personave. Do të rezervohet e gjithë nisja.",
   "publicBusiness.departures.removeGuest": "Hiq një person",
   "publicBusiness.departures.addGuest": "Shto një person",
   "publicBusiness.departures.guide": "Guida",

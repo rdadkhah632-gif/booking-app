@@ -41,7 +41,7 @@ export default function PublicBusinessDepartures({
   const maxGuests = Math.max(selectedDeparture?.remaining_seats || 1, 1);
   const privateAvailable = Boolean(
     selectedDeparture &&
-      selectedDeparture.remaining_seats === selectedDeparture.capacity,
+    selectedDeparture.remaining_seats === selectedDeparture.capacity,
   );
   const selectedGuide = selectedDeparture?.staff_member_id
     ? staffMembers.find(
@@ -177,7 +177,7 @@ export default function PublicBusinessDepartures({
                 {bookingOption === "private"
                   ? t(
                       "publicBusiness.departures.privateGuestHint",
-                      "Tell the operator how many people are coming.",
+                      "Enter the actual guest count. The whole departure will be reserved.",
                     )
                   : t(
                       "publicBusiness.departures.guestHint",

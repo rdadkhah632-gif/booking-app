@@ -1198,7 +1198,7 @@ export default function AnalyticsPage() {
                           style={{ marginTop: "0.45rem" }}
                         >
                           {formatCurrencyAmount(
-                            Number(booking.services?.price || 0),
+                            bookingEstimatedValue(booking),
                             businessById.get(booking.business_id)?.currency,
                             locale,
                           )}
