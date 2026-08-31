@@ -59,6 +59,7 @@ type RecentBooking = {
   customer_user_id?: string | null;
   business_id?: string | null;
   service_name?: string | null;
+  services?: { name?: string | null } | { name?: string | null }[] | null;
   status?: string | null;
   start_at?: string | null;
   created_at?: string | null;
@@ -368,7 +369,7 @@ export default function AdminUsersPage() {
           ? await supabase
               .from("bookings")
               .select(
-                "id, customer_user_id, business_id, service_name, status, start_at, created_at",
+                "id, customer_user_id, business_id, status, start_at, created_at, services ( name )",
               )
               .in("customer_user_id", userIds)
               .order("created_at", { ascending: false })
@@ -378,6 +379,10 @@ export default function AdminUsersPage() {
       const bookingRows = ((bookingData || []) as RecentBooking[]).map(
         (booking) => ({
           ...booking,
+          service_name:
+            (Array.isArray(booking.services)
+              ? booking.services[0]?.name
+              : booking.services?.name) || null,
           business: booking.business_id
             ? businessMap[booking.business_id] || null
             : null,
