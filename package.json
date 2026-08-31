@@ -17,7 +17,7 @@
     "@vercel/analytics": "^2.0.1",
     "lucide-react": "^1.25.0",
     "mapbox-gl": "^3.26.0",
-    "next": "^14.0.0",
+    "next": "15.5.24",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "stripe": "^22.2.0"
@@ -25,5 +25,10 @@
   "devDependencies": {
     "@types/react": "19.2.14",
     "typescript": "6.0.3"
+  },
+  "overrides": {
+    "nanoid": "3.3.18",
+    "postcss": "8.5.26",
+    "ws": "8.21.3"
   }
 }
