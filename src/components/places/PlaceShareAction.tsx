@@ -17,6 +17,7 @@ export default function PlaceShareAction({
 }: PlaceShareActionProps) {
   const { t } = useI18n();
   const [status, setStatus] = useState<ShareStatus>("");
+  const [requiresManualCopy, setRequiresManualCopy] = useState(false);
   const fallbackRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -24,12 +25,25 @@ export default function PlaceShareAction({
   }, [url]);
 
   useEffect(() => {
+    setRequiresManualCopy(
+      typeof window.navigator.share !== "function" &&
+        typeof window.navigator.clipboard?.writeText !== "function",
+    );
+  }, []);
+
+  useEffect(() => {
     if (status !== "manual") return;
-    fallbackRef.current?.focus();
-    fallbackRef.current?.select();
+    const fallback = fallbackRef.current;
+    fallback?.focus();
+    fallback?.select();
+    if (fallback) fallback.scrollLeft = 0;
   }, [status]);
 
   async function sharePlace() {
+    // Keep a usable link visible while browser-native sharing is pending or
+    // unavailable. Successful native share/copy replaces this state.
+    setStatus("manual");
+
     const text =
       description?.trim() ||
       t(
@@ -37,21 +51,26 @@ export default function PlaceShareAction({
         "Take a closer look at this local place on Mirëbook.",
       );
 
-    if (navigator.share) {
+    if (typeof window.navigator.share === "function") {
       try {
-        await navigator.share({ title: name, text, url });
+        await window.navigator.share({ title: name, text, url });
         setStatus("shared");
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
+          setStatus("");
           return;
         }
       }
     }
 
+    if (typeof window.navigator.clipboard?.writeText !== "function") {
+      setStatus("manual");
+      return;
+    }
+
     try {
-      if (!navigator.clipboard) throw new Error("clipboard_unavailable");
-      await navigator.clipboard.writeText(url);
+      await window.navigator.clipboard.writeText(url);
       setStatus("copied");
     } catch {
       setStatus("manual");
@@ -83,7 +102,7 @@ export default function PlaceShareAction({
             : ""}
       </span>
 
-      {status === "manual" && (
+      {(status === "manual" || requiresManualCopy) && (
         <label className="place-share-fallback">
           <span>
             {t("directory.profile.copyFallback", "Copy this place link")}
