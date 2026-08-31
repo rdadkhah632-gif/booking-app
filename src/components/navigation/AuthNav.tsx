@@ -9,7 +9,7 @@ import StaffNav from "./StaffNav";
 import AdminNav from "./AdminNav";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
-import { getBusinessAppUrl } from "@/lib/appUrls";
+import { getBusinessAppUrl, isBusinessAppHostname } from "@/lib/appUrls";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
 import { Role } from "./navTypes";
 import MobileCustomerDock from "./MobileCustomerDock";
@@ -29,6 +29,16 @@ function isBusinessRoute(pathname: string) {
 
 function isStaffRoute(pathname: string) {
   return pathname.startsWith("/staff");
+}
+
+function isRoleAuthRoute(pathname: string) {
+  return (
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
+    pathname === "/staff/invite"
+  );
 }
 
 function supportRouteRole(
@@ -95,10 +105,16 @@ function fallbackLogoHref(pathname: string) {
 export default function AuthNav({ contextRole }: AuthNavProps = {}) {
   const router = useRouter();
   const { t } = useI18n();
+  const [hostnameChecked, setHostnameChecked] = useState(false);
+  const [isBusinessHostname, setIsBusinessHostname] = useState(false);
   const isPublicBusinessEntry =
     router.pathname === "/business" ||
     router.pathname.startsWith("/claim/") ||
-    router.pathname.startsWith("/join/");
+    router.pathname.startsWith("/join/") ||
+    (isBusinessHostname && isRoleAuthRoute(router.pathname));
+  const hideMobileDock =
+    isPublicBusinessEntry ||
+    (!hostnameChecked && isRoleAuthRoute(router.pathname));
 
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<Role>(null);
@@ -106,6 +122,11 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
   const [primaryBusinessId, setPrimaryBusinessId] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    setIsBusinessHostname(isBusinessAppHostname(window.location.hostname));
+    setHostnameChecked(true);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -554,18 +575,18 @@ export default function AuthNav({ contextRole }: AuthNavProps = {}) {
       </nav>
 
       {!loading &&
-        !isPublicBusinessEntry &&
+        !hideMobileDock &&
         (role === null || role === "customer") && (
           <MobileCustomerDock notificationCount={notificationCount} />
         )}
-      {!loading && !isPublicBusinessEntry && role === "business" && (
+      {!loading && !hideMobileDock && role === "business" && (
         <MobileWorkspaceDock
           workspace="business"
           badgeCount={notificationCount}
           badgeTarget="inbox"
         />
       )}
-      {!loading && !isPublicBusinessEntry && role === "staff" && (
+      {!loading && !hideMobileDock && role === "staff" && (
         <MobileWorkspaceDock
           workspace="staff"
           badgeCount={notificationCount}
