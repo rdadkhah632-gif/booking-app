@@ -34,10 +34,12 @@ function notificationText(
   if (type === "booking_accepted") {
     return {
       title: t("notifications.types.bookingAccepted.title", "Booking accepted"),
-      message: t(
-        "notifications.types.bookingAccepted.message",
-        "Your booking has been accepted and confirmed.",
-      ),
+      message:
+        formatCustomerNotificationText(notification.message) ||
+        t(
+          "notifications.types.bookingAccepted.message",
+          "Your booking has been accepted and confirmed.",
+        ),
     };
   }
 
