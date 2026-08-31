@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   DEFAULT_LOCALE,
+  getCookieLocale,
   getStoredLocale,
   isLocale,
   Locale,
@@ -39,6 +40,9 @@ function guestStartingLocale(): Locale {
 
   const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
   if (isLocale(stored)) return stored;
+
+  const cookieLocale = getCookieLocale();
+  if (cookieLocale) return cookieLocale;
 
   return browserLocale();
 }
