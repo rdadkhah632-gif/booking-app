@@ -21,8 +21,7 @@ type Notification = {
 type BookingContext = {
   id: string;
   departure_id?: string | null;
-  customer_name: string;
-  party_size?: number | null;
+  customer_name?: string | null;
   start_at: string;
   duration_minutes: number;
   status: string;
@@ -57,6 +56,19 @@ function staffNotificationText(
   const type = String(notification.type || "");
 
   if (booking) {
+    if (booking.departure_id) {
+      return {
+        title: t(
+          "staffNotifications.departure.updatedTitle",
+          "Departure reservation updated",
+        ),
+        message: t(
+          "staffNotifications.departure.updatedBody",
+          "Open the assigned departure to see current seats and reservation totals.",
+        ),
+      };
+    }
+
     if (booking.status === "pending") {
       return {
         title: t(
@@ -277,25 +289,25 @@ export default function StaffNotificationsPage() {
       return;
     }
 
-    const capabilities = await getAccountCapabilities(
-      session.user.id,
-      session.user.email,
-    );
+    const [capabilities, notificationResult] = await Promise.all([
+      getAccountCapabilities(session.user.id, session.user.email),
+      supabase
+        .from("notifications")
+        .select(
+          "id, booking_id, title, message, type, action_url, read_at, created_at",
+        )
+        .eq("user_id", session.user.id)
+        .in("audience", ["staff", "general"])
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
 
     if (!capabilities.canUseStaff || !capabilities.primaryStaffId) {
       window.location.href = capabilities.defaultRoute;
       return;
     }
 
-    const { data, error } = await supabase
-      .from("notifications")
-      .select(
-        "id, booking_id, title, message, type, action_url, read_at, created_at",
-      )
-      .eq("user_id", session.user.id)
-      .in("audience", ["staff", "general"])
-      .order("created_at", { ascending: false })
-      .limit(50);
+    const { data, error } = notificationResult;
 
     if (error) {
       setError(error.message);
@@ -305,30 +317,36 @@ export default function StaffNotificationsPage() {
 
     const nextNotifications = (data || []) as Notification[];
     setNotifications(nextNotifications);
+    setBookingContexts({});
+    setLoading(false);
 
     if (nextNotifications.some((notification) => notification.booking_id)) {
-      const contextResponse = await fetch("/api/staff/notification-contexts", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      const contextPayload = contextResponse.ok
-        ? ((await contextResponse.json()) as NotificationContextPayload)
-        : null;
-
-      setBookingContexts(
-        (contextPayload?.contexts || []).reduce(
-          (map, booking) => {
-            map[booking.id] = booking;
-            return map;
+      try {
+        const contextResponse = await fetch(
+          "/api/staff/notification-contexts",
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
           },
-          {} as Record<string, BookingContext>,
-        ),
-      );
-    } else {
-      setBookingContexts({});
+        );
+        const contextPayload = contextResponse.ok
+          ? ((await contextResponse.json()) as NotificationContextPayload)
+          : null;
+
+        setBookingContexts(
+          (contextPayload?.contexts || []).reduce(
+            (map, booking) => {
+              map[booking.id] = booking;
+              return map;
+            },
+            {} as Record<string, BookingContext>,
+          ),
+        );
+      } catch {
+        setBookingContexts({});
+      }
     }
-    setLoading(false);
   }
 
   async function markRead(id: string) {
@@ -526,15 +544,17 @@ export default function StaffNotificationsPage() {
 
                     {booking && (
                       <dl className="staff-notification-appointment">
-                        <div>
-                          <dt>
-                            {t(
-                              "staffNotifications.appointment.customer",
-                              "Customer",
-                            )}
-                          </dt>
-                          <dd>{booking.customer_name}</dd>
-                        </div>
+                        {!booking.departure_id && booking.customer_name && (
+                          <div>
+                            <dt>
+                              {t(
+                                "staffNotifications.appointment.customer",
+                                "Customer",
+                              )}
+                            </dt>
+                            <dd>{booking.customer_name}</dd>
+                          </div>
+                        )}
                         <div>
                           <dt>
                             {t(
@@ -549,29 +569,6 @@ export default function StaffNotificationsPage() {
                             )}
                           </dd>
                         </div>
-                        {booking.departure_id && (
-                          <div>
-                            <dt>
-                              {t(
-                                "staffNotifications.appointment.partySize",
-                                "Party size",
-                              )}
-                            </dt>
-                            <dd>
-                              {Math.max(Number(booking.party_size || 1), 1)}{" "}
-                              {Math.max(Number(booking.party_size || 1), 1) ===
-                              1
-                                ? t(
-                                    "staffNotifications.appointment.guestSingle",
-                                    "guest",
-                                  )
-                                : t(
-                                    "staffNotifications.appointment.guestPlural",
-                                    "guests",
-                                  )}
-                            </dd>
-                          </div>
-                        )}
                         <div>
                           <dt>
                             {t("staffNotifications.appointment.when", "When")}

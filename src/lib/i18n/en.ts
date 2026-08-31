@@ -3764,6 +3764,9 @@ export const en: TranslationTree = {
     "This booking was cancelled and is no longer active work.",
   "staffNotifications.booking.completedBody":
     "This assigned appointment has been completed.",
+  "staffNotifications.departure.updatedTitle": "Departure reservation updated",
+  "staffNotifications.departure.updatedBody":
+    "Open the assigned departure to see current seats and reservation totals.",
   "staffNotifications.appointment.customer": "Customer",
   "staffNotifications.appointment.service": "Service",
   "staffNotifications.appointment.partySize": "Party size",

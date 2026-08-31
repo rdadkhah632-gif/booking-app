@@ -683,38 +683,22 @@ export default async function handler(
               .eq("id", assignedStaff.user_id)
               .maybeSingle<{ preferred_language?: string | null }>();
             const albanian = staffProfile?.preferred_language === "sq";
-            const guests = Math.max(Number(booking.party_size || 1), 1);
             const departureDate = dateKeyInTimeZone(
               new Date(assignedDeparture.start_at),
               business?.timezone,
             );
-            const departureTime = new Date(
-              assignedDeparture.start_at,
-            ).toLocaleString(albanian ? "sq-AL" : "en-GB", {
-              dateStyle: "medium",
-              timeStyle: "short",
-              timeZone: safeTimeZone(business?.timezone),
-            });
-            const staffCopy =
-              nextStatus === "confirmed"
-                ? {
-                    type: "booking_accepted",
-                    title: albanian
-                      ? "Rezervimi në grup u konfirmua"
-                      : "Group booking confirmed",
-                    message: albanian
-                      ? `${booking.customer_name || "Klienti"} u konfirmua për ${service?.name || "udhëtimin"}, ${guests} persona, më ${departureTime}.`
-                      : `${booking.customer_name || "The customer"} was confirmed for ${service?.name || "the trip"}, ${guests} ${guests === 1 ? "guest" : "guests"}, on ${departureTime}.`,
-                  }
-                : {
-                    type: "booking_cancelled",
-                    title: albanian
-                      ? "Rezervimi në grup u anulua"
-                      : "Group booking cancelled",
-                    message: albanian
-                      ? `Rezervimi i ${booking.customer_name || "klientit"} për ${service?.name || "udhëtimin"}, më ${departureTime}, u anulua.`
-                      : `${booking.customer_name || "The customer"}'s reservation for ${service?.name || "the trip"} on ${departureTime} was cancelled.`,
-                  };
+            const staffCopy = {
+              type:
+                nextStatus === "confirmed"
+                  ? "booking_accepted"
+                  : "booking_cancelled",
+              title: albanian
+                ? "Rezervimi i nisjes u përditësua"
+                : "Departure reservation updated",
+              message: albanian
+                ? `Totalet e rezervimeve për ${service?.name || "udhëtimin"} ndryshuan. Hap nisjen e caktuar për vendet dhe rezervimet aktuale.`
+                : `Reservation totals changed for ${service?.name || "the trip"}. Open the assigned departure for current seats and reservations.`,
+            };
 
             const { error: staffNotificationError } =
               await context.supabaseAdmin.from("notifications").insert({

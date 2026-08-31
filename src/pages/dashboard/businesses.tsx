@@ -800,13 +800,17 @@ export default function Businesses() {
           },
         ]
       : [];
-  const completedSetupSteps = setupSteps.filter((step) => step.complete).length;
+  const bookingSetupSteps = setupSteps.filter((step) => step.key !== "preview");
+  const completedSetupSteps = bookingSetupSteps.filter(
+    (step) => step.complete,
+  ).length;
+  const setupProgressTotal = bookingSetupSteps.length;
   const nextSetupStep =
     setupSteps.find((step) => !step.complete) ||
     setupSteps[setupSteps.length - 1];
   const setupProgressPercent =
-    setupSteps.length > 0
-      ? Math.round((completedSetupSteps / setupSteps.length) * 100)
+    setupProgressTotal > 0
+      ? Math.round((completedSetupSteps / setupProgressTotal) * 100)
       : 0;
   const setupStatus =
     primaryBusiness && primaryReadiness
@@ -942,7 +946,7 @@ export default function Businesses() {
               <span className="setup-progress-count">
                 <strong>{completedSetupSteps}</strong>
                 <small>
-                  {t("dashboardBusinesses.setup.of", "of")} {setupSteps.length}
+                  {t("dashboardBusinesses.setup.of", "of")} {setupProgressTotal}
                 </small>
               </span>
               <div>

@@ -176,11 +176,45 @@ async function ensureStaffBookingNotification(params: {
     ? `/staff/calendar?date=${appointmentDate}&departureId=${params.departureId}`
     : `/staff/calendar?date=${appointmentDate}&bookingId=${params.bookingId}`;
 
+  const localizedTitle = params.departureId
+    ? albanian
+      ? "Rezervimi i nisjes u përditësua"
+      : "Departure reservation updated"
+    : albanian
+      ? params.status === "confirmed"
+        ? "U konfirmua"
+        : params.status === "cancelled"
+          ? "U anulua"
+          : params.status === "declined"
+            ? "U refuzua"
+            : "U përfundua"
+      : notification.title;
+  const localizedStatus = albanian
+    ? params.status === "confirmed"
+      ? "u konfirmua"
+      : params.status === "cancelled"
+        ? "u anulua"
+        : params.status === "declined"
+          ? "u refuzua"
+          : "u përfundua"
+    : notification.statusText;
+  const localizedMessage = params.departureId
+    ? albanian
+      ? `Totalet e rezervimeve për ${params.serviceName} ndryshuan. Hap nisjen e caktuar për vendet dhe rezervimet aktuale.`
+      : `Reservation totals changed for ${params.serviceName}. Open the assigned departure for current seats and reservations.`
+    : albanian
+      ? `Rezervimi i ${params.customerName} për ${params.serviceName} ${localizedStatus} për ${appointmentTime}.`
+      : `${params.customerName}'s ${params.serviceName} booking is ${localizedStatus} for ${appointmentTime}.`;
+
   if (existing) {
     if (params.departureId) {
       const { error: updateError } = await params.supabaseAdmin
         .from("notifications")
-        .update({ action_url: actionUrl })
+        .update({
+          action_url: actionUrl,
+          title: localizedTitle,
+          message: localizedMessage,
+        })
         .eq("id", existing.id);
       if (updateError) {
         console.warn("[email] Could not repair staff notification link", {
@@ -192,25 +226,6 @@ async function ensureStaffBookingNotification(params: {
     return;
   }
 
-  const localizedTitle = albanian
-    ? params.status === "confirmed"
-      ? "U konfirmua"
-      : params.status === "cancelled"
-        ? "U anulua"
-        : params.status === "declined"
-          ? "U refuzua"
-          : "U përfundua"
-    : notification.title;
-  const localizedStatus = albanian
-    ? params.status === "confirmed"
-      ? "u konfirmua"
-      : params.status === "cancelled"
-        ? "u anulua"
-        : params.status === "declined"
-          ? "u refuzua"
-          : "u përfundua"
-    : notification.statusText;
-
   const { error } = await params.supabaseAdmin.from("notifications").insert({
     user_id: params.staffUserId,
     business_id: params.businessId,
@@ -218,9 +233,7 @@ async function ensureStaffBookingNotification(params: {
     audience: "staff",
     type: notification.type,
     title: localizedTitle,
-    message: albanian
-      ? `Rezervimi i ${params.customerName} për ${params.serviceName} ${localizedStatus} për ${appointmentTime}.`
-      : `${params.customerName}'s ${params.serviceName} booking is ${localizedStatus} for ${appointmentTime}.`,
+    message: localizedMessage,
     action_url: actionUrl,
   });
 

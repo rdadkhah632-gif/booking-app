@@ -17,7 +17,6 @@ type BookingRow = {
   staff_member_id?: string | null;
   departure_id?: string | null;
   customer_name?: string | null;
-  party_size?: number | null;
   start_at: string;
   duration_minutes: number;
   status: string;
@@ -102,7 +101,7 @@ export default async function handler(
     const { data: bookings, error: bookingError } = await context.supabaseAdmin
       .from("bookings")
       .select(
-        "id, business_id, service_id, staff_member_id, departure_id, customer_name, party_size, start_at, duration_minutes, status",
+        "id, business_id, service_id, staff_member_id, departure_id, customer_name, start_at, duration_minutes, status",
       )
       .in("id", bookingIds)
       .in("business_id", linkedBusinessIds)
@@ -179,18 +178,23 @@ export default async function handler(
     );
 
     return response.status(200).json({
-      contexts: authorizedBookings.map((booking) => ({
-        id: booking.id,
-        departure_id: booking.departure_id || null,
-        customer_name: booking.customer_name || "Customer",
-        party_size: Math.max(Number(booking.party_size || 1), 1),
-        start_at: booking.start_at,
-        duration_minutes: booking.duration_minutes,
-        status: booking.status,
-        services: firstRelation(serviceById.get(booking.service_id)) || null,
-        businesses:
-          firstRelation(businessById.get(booking.business_id)) || null,
-      })),
+      contexts: authorizedBookings.map((booking) => {
+        const departureId = booking.departure_id || null;
+
+        return {
+          id: booking.id,
+          departure_id: departureId,
+          ...(departureId
+            ? {}
+            : { customer_name: booking.customer_name || "Customer" }),
+          start_at: booking.start_at,
+          duration_minutes: booking.duration_minutes,
+          status: booking.status,
+          services: firstRelation(serviceById.get(booking.service_id)) || null,
+          businesses:
+            firstRelation(businessById.get(booking.business_id)) || null,
+        };
+      }),
     });
   } catch (error) {
     return handleAppApiError(response, error);

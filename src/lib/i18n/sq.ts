@@ -3845,6 +3845,10 @@ export const sq: TranslationTree = {
     "Ky rezervim u anulua dhe nuk është më punë aktive.",
   "staffNotifications.booking.completedBody":
     "Ky takim i caktuar është përfunduar.",
+  "staffNotifications.departure.updatedTitle":
+    "Rezervimi i nisjes u përditësua",
+  "staffNotifications.departure.updatedBody":
+    "Hap nisjen e caktuar për të parë vendet dhe totalet aktuale të rezervimeve.",
   "staffNotifications.appointment.customer": "Klienti",
   "staffNotifications.appointment.service": "Shërbimi",
   "staffNotifications.appointment.partySize": "Numri i personave",
