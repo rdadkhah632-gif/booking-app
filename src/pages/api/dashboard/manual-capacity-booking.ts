@@ -5,6 +5,7 @@ import {
   loadAppContext,
 } from "@/lib/server/app-api/context";
 import { requestBookingStatusEmail } from "@/lib/server/app-api/transactionalEmail";
+import { formatLocalizedDate } from "@/lib/i18n";
 import { DEFAULT_TIME_ZONE } from "@/lib/timezone";
 
 type ManualCapacityBookingBody = {
@@ -260,14 +261,11 @@ export default async function handler(
         ? "sq"
         : "en";
     const timeZone = safeTimeZone(business.timezone);
-    const departureTime = new Intl.DateTimeFormat(
-      locale === "sq" ? "sq-AL" : "en-GB",
-      {
-        timeZone,
-        dateStyle: "medium",
-        timeStyle: "short",
-      },
-    ).format(new Date(departure.start_at));
+    const departureTime = formatLocalizedDate(departure.start_at, locale, {
+      timeZone,
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
     const copy = localizedCopy({
       locale,
       businessName: business.name || "Mirëbook",

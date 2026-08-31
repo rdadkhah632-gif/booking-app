@@ -5,6 +5,7 @@ import {
   loadAppContext,
 } from "@/lib/server/app-api/context";
 import { requestBookingCreatedEmail } from "@/lib/server/app-api/transactionalEmail";
+import { formatLocalizedDate } from "@/lib/i18n";
 import { DEFAULT_TIME_ZONE } from "@/lib/timezone";
 
 type CapacityBookingBody = {
@@ -158,8 +159,7 @@ export default async function handler(
     const body = (request.body || {}) as CapacityBookingBody;
     const departureId = cleanText(body.departureId, 100);
     const bookingOption = cleanText(body.bookingOption, 20) as
-      | "shared"
-      | "private";
+      "shared" | "private";
     const partySize = Number(body.partySize);
 
     if (!UUID_PATTERN.test(departureId)) {
@@ -280,14 +280,11 @@ export default async function handler(
       business.auto_accept_bookings === false ? "pending" : "confirmed";
     const locale = context.profile?.preferred_language === "sq" ? "sq" : "en";
     const timeZone = safeTimeZone(business.timezone);
-    const departureTime = new Intl.DateTimeFormat(
-      locale === "sq" ? "sq-AL" : "en-GB",
-      {
-        timeZone,
-        dateStyle: "medium",
-        timeStyle: "short",
-      },
-    ).format(new Date(departure.start_at));
+    const departureTime = formatLocalizedDate(departure.start_at, locale, {
+      timeZone,
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
     const copy = localizedCopy({
       locale,
       status,
