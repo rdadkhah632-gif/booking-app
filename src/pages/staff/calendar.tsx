@@ -982,12 +982,14 @@ export default function StaffCalendarPage() {
 
           <div className="staff-selected-card staff-departure-card">
             <div className="staff-booking-time">
-              <strong>{time.label}</strong>
-              <span>
+              <div>
+                <strong>{time.label}</strong>
+              </div>
+              <div className="staff-booking-duration">
                 {t("bookingConfirmation.details.duration", "Duration")}:{" "}
                 {selectedBooking.duration_minutes}{" "}
                 {t("common.minutes", "minutes")}
-              </span>
+              </div>
             </div>
             <dl className="staff-departure-details">
               <div>
@@ -1045,12 +1047,14 @@ export default function StaffCalendarPage() {
 
         <div className="staff-selected-card">
           <div className="staff-booking-time">
-            <strong>{time.label}</strong>
-            <span>
+            <div>
+              <strong>{time.label}</strong>
+            </div>
+            <div className="staff-booking-duration">
               {t("bookingConfirmation.details.duration", "Duration")}:{" "}
               {selectedBooking.duration_minutes}{" "}
               {t("common.minutes", "minutes")}
-            </span>
+            </div>
           </div>
 
           <div className="staff-booking-main">
@@ -2104,11 +2108,11 @@ export default function StaffCalendarPage() {
         }
 
         .staff-booking-time strong,
-        .staff-booking-time span {
+        .staff-booking-duration {
           line-height: 1.1;
         }
 
-        .staff-booking-time span {
+        .staff-booking-duration {
           color: var(--text-muted);
           font-size: 0.82rem;
         }
