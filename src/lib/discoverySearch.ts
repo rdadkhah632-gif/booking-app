@@ -66,6 +66,11 @@ export function discoverySearchTerms(value: string) {
   return Array.from(expanded, normalizeDiscoverySearch).filter(Boolean);
 }
 
+export function discoveryServerSearchTerm(value: string) {
+  const [normalized = "", firstEquivalent] = discoverySearchTerms(value);
+  return firstEquivalent || normalized;
+}
+
 export function matchesDiscoverySearch(searchText: string, query: string) {
   const normalizedText = normalizeDiscoverySearch(searchText);
   const terms = discoverySearchTerms(query);

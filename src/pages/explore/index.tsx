@@ -40,7 +40,10 @@ import {
 } from "@/components/explore/exploreTypes";
 import { useI18n } from "@/lib/useI18n";
 import { recordSiteEvent } from "@/lib/siteAnalytics";
-import { matchesDiscoverySearch } from "@/lib/discoverySearch";
+import {
+  discoveryServerSearchTerm,
+  matchesDiscoverySearch,
+} from "@/lib/discoverySearch";
 
 type Coordinates = {
   latitude: number;
@@ -262,7 +265,9 @@ export default function Explore() {
         limit: "100",
         locale,
       });
-      if (filters.query) directoryParams.set("q", filters.query);
+      if (filters.query) {
+        directoryParams.set("q", discoveryServerSearchTerm(filters.query));
+      }
       if (filters.city) directoryParams.set("city", filters.city);
 
       const directoryCategory = directoryCategoryFromLabel(filters.category, t);
