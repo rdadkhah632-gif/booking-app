@@ -142,6 +142,11 @@ export const sq: TranslationTree = {
   "common.loading": "Duke u ngarkuar...",
   "common.sessionExpired": "Sesioni yt ka skaduar. Hyr përsëri.",
   "common.needHelp": "Keni nevojë për ndihmë?",
+  "notFound.kicker": "404",
+  "notFound.title": "Kjo faqe nuk u gjet",
+  "notFound.body":
+    "Lidhja mund të jetë e vjetër ose faqja mund të mos jetë më e disponueshme.",
+  "notFound.explore": "Eksploro Mirëbook",
   "legal.kicker": "Ligjore",
   "legal.lastUpdated": "Përditësuar së fundmi: 25 gusht 2026",
   "legal.important": "E rëndësishme",

@@ -95,6 +95,11 @@ export const en: TranslationTree = {
   "common.loading": "Loading...",
   "common.sessionExpired": "Your session has expired. Sign in again.",
   "common.needHelp": "Need help?",
+  "notFound.kicker": "404",
+  "notFound.title": "This page could not be found",
+  "notFound.body":
+    "The link may be out of date, or the page may no longer be available.",
+  "notFound.explore": "Explore Mirëbook",
   "legal.kicker": "Legal",
   "legal.lastUpdated": "Last updated: 25 August 2026",
   "legal.important": "Important",
