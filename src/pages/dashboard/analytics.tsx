@@ -27,6 +27,7 @@ type Booking = {
   duration_minutes: number;
   status: string;
   service_id?: string | null;
+  total_price?: number | null;
   businesses?: {
     name: string;
   } | null;
@@ -61,6 +62,10 @@ type DailySummary = {
   cancelled: number;
   value: number;
 };
+
+function bookingEstimatedValue(booking: Booking) {
+  return Number(booking.total_price ?? booking.services?.price ?? 0);
+}
 
 export default function AnalyticsPage() {
   const router = useRouter();
@@ -131,6 +136,7 @@ export default function AnalyticsPage() {
         duration_minutes,
         status,
         service_id,
+        total_price,
         businesses ( name ),
         services ( id, name, price ),
         staff_members ( name, role_title )
@@ -221,15 +227,15 @@ export default function AnalyticsPage() {
     );
 
     const estimatedCompletedValue = completed.reduce((total, booking) => {
-      return total + Number(booking.services?.price || 0);
+      return total + bookingEstimatedValue(booking);
     }, 0);
 
     const estimatedConfirmedValue = confirmed.reduce((total, booking) => {
-      return total + Number(booking.services?.price || 0);
+      return total + bookingEstimatedValue(booking);
     }, 0);
 
     const estimatedAllValue = filteredBookings.reduce((total, booking) => {
-      return total + Number(booking.services?.price || 0);
+      return total + bookingEstimatedValue(booking);
     }, 0);
 
     const averageBookingValue =
@@ -256,7 +262,7 @@ export default function AnalyticsPage() {
           t("dashboardAnalytics.fallback.unknownService", "Unknown service");
         const serviceKey =
           booking.services?.id || booking.service_id || serviceName;
-        const price = Number(booking.services?.price || 0);
+        const price = bookingEstimatedValue(booking);
 
         if (!acc[serviceKey]) {
           acc[serviceKey] = {
@@ -294,7 +300,7 @@ export default function AnalyticsPage() {
         booking.businesses?.name ||
         t("dashboardNotifications.labels.businessFallback", "Business");
       const businessKey = booking.business_id;
-      const price = Number(booking.services?.price || 0);
+      const price = bookingEstimatedValue(booking);
 
       if (!acc[businessKey]) {
         acc[businessKey] = {
@@ -326,7 +332,7 @@ export default function AnalyticsPage() {
           month: "short",
           timeZone: timeZone || undefined,
         });
-        const price = Number(booking.services?.price || 0);
+        const price = bookingEstimatedValue(booking);
 
         if (!acc[dateKey]) {
           acc[dateKey] = {
@@ -389,13 +395,7 @@ export default function AnalyticsPage() {
       mostValuableDay,
       recentActivity,
     };
-  }, [
-    filteredBookings,
-    businessById,
-    displayTimeZone,
-    locale,
-    t,
-  ]);
+  }, [filteredBookings, businessById, displayTimeZone, locale, t]);
 
   function timeframeLabel() {
     if (timeframe === "7d")
