@@ -107,8 +107,8 @@ function localizedCopy(params: {
           ? "Rezervim grupi për miratim"
           : "Rezervim grupi i konfirmuar",
       businessMessage: `${params.customerName} rezervoi ${params.serviceName}, ${guestLabel}, për ${params.departureTime}.`,
-      staffTitle: "Rezervim grupi i konfirmuar",
-      staffMessage: `${params.customerName} rezervoi ${params.serviceName}, ${guestLabel}, për ${params.departureTime}.`,
+      staffTitle: "Rezervimi i nisjes u përditësua",
+      staffMessage: `Totalet e rezervimeve për ${params.serviceName} ndryshuan. Hap nisjen e caktuar për vendet dhe rezervimet aktuale.`,
     };
   }
 
@@ -123,8 +123,8 @@ function localizedCopy(params: {
         ? "Group booking needs approval"
         : "Group booking confirmed",
     businessMessage: `${params.customerName} booked ${params.serviceName} for ${guestLabel} on ${params.departureTime}.`,
-    staffTitle: "Group booking confirmed",
-    staffMessage: `${params.customerName} booked ${params.serviceName} for ${guestLabel} on ${params.departureTime}.`,
+    staffTitle: "Departure reservation updated",
+    staffMessage: `Reservation totals changed for ${params.serviceName}. Open the assigned departure for current seats and reservations.`,
   };
 }
 

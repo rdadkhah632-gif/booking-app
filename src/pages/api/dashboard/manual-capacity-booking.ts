@@ -72,7 +72,6 @@ function localizedCopy(params: {
   locale: "en" | "sq";
   businessName: string;
   serviceName: string;
-  customerName: string;
   partySize: number;
   bookingOption: "shared" | "private";
   departureTime: string;
@@ -90,16 +89,16 @@ function localizedCopy(params: {
     return {
       customerTitle: "Rezervimi u konfirmua",
       customerMessage: `${params.businessName} e konfirmoi rezervimin tënd për ${params.serviceName}, ${guests}, më ${params.departureTime}.`,
-      staffTitle: "Rezervim grupi i shtuar",
-      staffMessage: `${params.customerName} u shtua te ${params.serviceName}, ${guests}, më ${params.departureTime}.`,
+      staffTitle: "Rezervimi i nisjes u përditësua",
+      staffMessage: `Totalet e rezervimeve për ${params.serviceName} ndryshuan. Hap nisjen e caktuar për vendet dhe rezervimet aktuale.`,
     };
   }
 
   return {
     customerTitle: "Booking confirmed",
     customerMessage: `${params.businessName} confirmed your ${params.serviceName} booking for ${guests} on ${params.departureTime}.`,
-    staffTitle: "Group booking added",
-    staffMessage: `${params.customerName} was added to ${params.serviceName} for ${guests} on ${params.departureTime}.`,
+    staffTitle: "Departure reservation updated",
+    staffMessage: `Reservation totals changed for ${params.serviceName}. Open the assigned departure for current seats and reservations.`,
   };
 }
 
@@ -273,7 +272,6 @@ export default async function handler(
       locale,
       businessName: business.name || "Mirëbook",
       serviceName: service.name,
-      customerName,
       partySize,
       bookingOption,
       departureTime,

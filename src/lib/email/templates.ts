@@ -650,6 +650,8 @@ export function bookingEmailTemplate(
     input.bookingType === "group" ||
     input.bookingOption === "shared" ||
     input.bookingOption === "private";
+  const staffGroupAggregate =
+    input.recipientRole === "staff" && isGroupBooking;
   const staffLabel = isGroupBooking ? copy.guideLabel : copy.staffLabel;
   const dateTimeLabel = isGroupBooking
     ? copy.departureLabel
@@ -657,7 +659,7 @@ export function bookingEmailTemplate(
   const staffLine = input.staffName
     ? `\n${staffLabel}: ${input.staffName}`
     : "";
-  const bookingOptionLabel = isGroupBooking
+  const bookingOptionLabel = isGroupBooking && !staffGroupAggregate
     ? input.bookingOption === "private"
       ? copy.privateTripLabel
       : copy.sharedSeatsLabel
@@ -666,20 +668,24 @@ export function bookingEmailTemplate(
     ? `\n${copy.bookingTypeLabel}: ${bookingOptionLabel}`
     : "";
   const guestsLine =
-    isGroupBooking && input.partySize
+    isGroupBooking && !staffGroupAggregate && input.partySize
       ? `\n${copy.guestsLabel}: ${input.partySize}`
       : "";
   const meetingPointLine = input.meetingPoint
     ? `\n${copy.meetingPointLabel}: ${input.meetingPoint}`
     : "";
-  const totalPrice = formatMoney(input.totalPrice, input.currency, copy);
+  const totalPrice = staffGroupAggregate
+    ? null
+    : formatMoney(input.totalPrice, input.currency, copy);
   const totalLine = totalPrice ? `\n${copy.totalLabel}: ${totalPrice}` : "";
+  const customerLine = staffGroupAggregate
+    ? ""
+    : `${copy.customerLabel}: ${customerName}\n`;
 
   const text = `${status.intro}
 
 ${copy.businessLabel}: ${businessName}
-${copy.customerLabel}: ${customerName}
-${copy.serviceLabel}: ${serviceName}${staffLine}${bookingTypeLine}${guestsLine}
+${customerLine}${copy.serviceLabel}: ${serviceName}${staffLine}${bookingTypeLine}${guestsLine}
 ${dateTimeLabel}: ${appointmentTime}${meetingPointLine}${totalLine}
 
 ${copy.openMirebook}: ${input.actionUrl}
@@ -700,14 +706,19 @@ ${copy.sourceOfTruthBookings}`;
       intro: status.intro,
       details: [
         { label: copy.businessLabel, value: businessName },
-        { label: copy.customerLabel, value: customerName },
+        {
+          label: copy.customerLabel,
+          value: staffGroupAggregate ? null : customerName,
+        },
         { label: copy.serviceLabel, value: serviceName },
         { label: staffLabel, value: input.staffName },
         { label: copy.bookingTypeLabel, value: bookingOptionLabel },
         {
           label: copy.guestsLabel,
           value:
-            isGroupBooking && input.partySize ? String(input.partySize) : null,
+            isGroupBooking && !staffGroupAggregate && input.partySize
+              ? String(input.partySize)
+              : null,
         },
         { label: dateTimeLabel, value: appointmentTime },
         { label: copy.meetingPointLabel, value: input.meetingPoint },
