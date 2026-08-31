@@ -2243,6 +2243,10 @@ export const sq: TranslationTree = {
   "dashboardBookings.manual.privateTripTaken":
     "Nuk ofrohet pasi janë rezervuar vende.",
   "dashboardBookings.manual.partySize": "Persona",
+  "dashboardBookings.manual.privateGuestCountHint":
+    "Shkruaj numrin real të personave. E gjithë nisja do të rezervohet gjithsesi.",
+  "dashboardBookings.manual.sharedGuestLimit":
+    "Maksimumi me vendet e lira aktuale:",
   "dashboardBookings.manual.notes": "Shënime",
   "dashboardBookings.manual.staffBusy": "I zënë",
   "dashboardBookings.manual.staffAvailable": "I lirë",

@@ -2920,6 +2920,17 @@ export default function Bookings() {
                                       )
                                     }
                                   />
+                                  <small className="muted">
+                                    {manualBooking.bookingOption === "private"
+                                      ? t(
+                                          "dashboardBookings.manual.privateGuestCountHint",
+                                          "Enter the actual guest count. The whole departure will still be reserved.",
+                                        )
+                                      : `${t(
+                                          "dashboardBookings.manual.sharedGuestLimit",
+                                          "Maximum with the seats currently available:",
+                                        )} ${selectedManualDeparture.remainingSeats}`}
+                                  </small>
                                 </label>
                               </>
                             )}

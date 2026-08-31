@@ -2262,6 +2262,10 @@ export const en: TranslationTree = {
   "dashboardBookings.manual.privateTripTaken":
     "Unavailable after seats have been reserved.",
   "dashboardBookings.manual.partySize": "Guests",
+  "dashboardBookings.manual.privateGuestCountHint":
+    "Enter the actual guest count. The whole departure will still be reserved.",
+  "dashboardBookings.manual.sharedGuestLimit":
+    "Maximum with the seats currently available:",
   "dashboardBookings.manual.notes": "Notes",
   "dashboardBookings.manual.staffBusy": "Busy",
   "dashboardBookings.manual.staffAvailable": "Available",
