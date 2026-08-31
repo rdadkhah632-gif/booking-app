@@ -984,6 +984,7 @@ export default function StaffCalendarPage() {
             <div className="staff-booking-time">
               <strong>{time.label}</strong>
               <span>
+                {t("bookingConfirmation.details.duration", "Duration")}:{" "}
                 {selectedBooking.duration_minutes}{" "}
                 {t("common.minutes", "minutes")}
               </span>
@@ -1011,7 +1012,7 @@ export default function StaffCalendarPage() {
             <p className="small muted">
               {t(
                 "staffCalendar.departure.ownerManifest",
-                "The business owner manages the customer manifest and booking decisions.",
+                "The business owner manages reservation details and booking decisions.",
               )}
             </p>
           </div>
@@ -1046,6 +1047,7 @@ export default function StaffCalendarPage() {
           <div className="staff-booking-time">
             <strong>{time.label}</strong>
             <span>
+              {t("bookingConfirmation.details.duration", "Duration")}:{" "}
               {selectedBooking.duration_minutes}{" "}
               {t("common.minutes", "minutes")}
             </span>

@@ -1332,6 +1332,7 @@ export const en: TranslationTree = {
   "dashboardBusinesses.setup.previewAction": "Preview profile",
   "dashboardBusinesses.setup.finishFirst": "Finish setup",
   "dashboardBusinesses.setup.of": "of",
+  "dashboardBusinesses.setup.bookingProgress": "Booking setup",
   "dashboardBusinesses.setup.nextTitle": "Next step",
   "dashboardBusinesses.setup.nextInline": "Next",
   "dashboardBusinesses.setup.outcome": "Get ready to accept bookings",
@@ -5500,7 +5501,7 @@ export const en: TranslationTree = {
   "staffCalendar.departure": "Group departure",
   "staffCalendar.departure.kicker": "Assigned departure",
   "staffCalendar.departure.ownerManifest":
-    "The business owner manages the customer manifest and booking decisions.",
+    "The business owner manages reservation details and booking decisions.",
   "register.prepared.body":
     "We have prefilled the known business details. Verify your email, return to the secure profile link and review everything before going live.",
   "register.prepared.title": "Connect your prepared business",

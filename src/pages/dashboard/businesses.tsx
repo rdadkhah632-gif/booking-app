@@ -944,9 +944,14 @@ export default function Businesses() {
           <div className="setup-summary-panel">
             <div className="setup-progress-main">
               <span className="setup-progress-count">
-                <strong>{completedSetupSteps}</strong>
+                <strong>
+                  {completedSetupSteps}/{setupProgressTotal}
+                </strong>
                 <small>
-                  {t("dashboardBusinesses.setup.of", "of")} {setupProgressTotal}
+                  {t(
+                    "dashboardBusinesses.setup.bookingProgress",
+                    "Booking setup",
+                  )}
                 </small>
               </span>
               <div>

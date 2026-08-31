@@ -2692,6 +2692,7 @@ export const sq: TranslationTree = {
   "dashboardBusinesses.setup.previewAction": "Shiko profilin",
   "dashboardBusinesses.setup.finishFirst": "Përfundo konfigurimin",
   "dashboardBusinesses.setup.of": "nga",
+  "dashboardBusinesses.setup.bookingProgress": "Konfigurimi i rezervimeve",
   "dashboardBusinesses.setup.nextTitle": "Hapi tjetër",
   "dashboardBusinesses.setup.nextInline": "Hapi tjetër",
   "dashboardBusinesses.setup.outcome": "Bëhu gati të pranosh rezervime",
@@ -5633,7 +5634,7 @@ export const sq: TranslationTree = {
   "staffCalendar.departure": "Nisje në grup",
   "staffCalendar.departure.kicker": "Nisja e caktuar",
   "staffCalendar.departure.ownerManifest":
-    "Pronari i biznesit menaxhon listën e klientëve dhe vendimet për rezervimet.",
+    "Pronari i biznesit menaxhon detajet dhe vendimet për rezervimet.",
   "register.prepared.body":
     "Kemi plotësuar paraprakisht të dhënat e njohura të biznesit. Verifiko emailin, kthehu te lidhja e sigurt e profilit dhe kontrollo gjithçka para publikimit.",
   "register.prepared.title": "Lidh biznesin tënd të përgatitur",
