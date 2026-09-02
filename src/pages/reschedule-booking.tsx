@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 import {
   CalendarDays,
   Check,
@@ -146,7 +147,7 @@ export default function RescheduleBooking() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login");
+      router.replace(getRoleLoginHref(router.asPath, "/reschedule-booking"));
       return;
     }
 
@@ -169,7 +170,7 @@ export default function RescheduleBooking() {
     const payload = await response.json().catch(() => ({}));
 
     if (response.status === 401) {
-      router.replace("/login");
+      router.replace(getRoleLoginHref(router.asPath, "/reschedule-booking"));
       return;
     }
 

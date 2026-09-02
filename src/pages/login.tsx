@@ -112,6 +112,35 @@ export default function LoginPage() {
       return;
     }
 
+    if (
+      safeRedirectTo?.startsWith("/dashboard") &&
+      capabilities.canUseBusiness
+    ) {
+      router.replace(safeRedirectTo);
+      return;
+    }
+
+    if (safeRedirectTo?.startsWith("/staff") && capabilities.canUseStaff) {
+      router.replace(safeRedirectTo);
+      return;
+    }
+
+    if (
+      safeRedirectTo &&
+      ((safeRedirectTo.startsWith("/support/business") &&
+        capabilities.canUseBusiness) ||
+        (safeRedirectTo.startsWith("/support/staff") &&
+          capabilities.canUseStaff) ||
+        safeRedirectTo.startsWith("/support/messages") ||
+        safeRedirectTo.startsWith("/account") ||
+        (safeRedirectTo.startsWith("/reschedule-booking") &&
+          (capabilities.canUseBusiness ||
+            capabilities.defaultRoute === "/my-bookings")))
+    ) {
+      router.replace(safeRedirectTo);
+      return;
+    }
+
     if (capabilities.defaultRoute === "/my-bookings") {
       router.replace(safeRedirectTo || "/my-bookings");
       return;

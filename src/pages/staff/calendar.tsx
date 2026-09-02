@@ -1,6 +1,7 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
@@ -196,10 +197,10 @@ export default function StaffCalendarPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      const redirectTo = encodeURIComponent(
+      window.location.href = getRoleLoginHref(
+        router.asPath,
         `/staff/calendar?date=${selectedDate}`,
       );
-      window.location.href = `/login?redirectTo=${redirectTo}`;
       return;
     }
     const capabilities = await getAccountCapabilities(

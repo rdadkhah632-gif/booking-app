@@ -8,6 +8,7 @@ import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { formatCurrencyAmount } from "@/lib/currency";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { dateKeyInTimeZone } from "@/lib/timezone";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 type Timeframe = "7d" | "30d" | "90d" | "all";
 
@@ -88,7 +89,7 @@ export default function AnalyticsPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login");
+      router.replace(getRoleLoginHref(router.asPath, "/dashboard/analytics"));
       return;
     }
 

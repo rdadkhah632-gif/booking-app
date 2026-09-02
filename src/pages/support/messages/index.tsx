@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 
 type SupportMessage = {
@@ -72,7 +73,10 @@ export default function SupportMessagesPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      window.location.href = "/login?redirectTo=/support/messages";
+      window.location.href = getRoleLoginHref(
+        `${window.location.pathname}${window.location.search}${window.location.hash}`,
+        "/support/messages",
+      );
       return;
     }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 import AuthNav from "@/components/AuthNav";
 import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import { supabase } from "@/lib/supabaseClient";
@@ -64,7 +65,7 @@ export default function StaffSupportPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login?redirectTo=/support/staff");
+      router.replace(getRoleLoginHref(router.asPath, "/support/staff"));
       return;
     }
 

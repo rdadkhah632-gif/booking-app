@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { DEFAULT_TIME_ZONE, dateKeyInTimeZone } from "@/lib/timezone";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 type StaffMember = {
   id: string;
@@ -107,7 +108,7 @@ export default function StaffDashboardPage() {
 
       if (!session) {
         setIsStaffIntentAccount(false);
-        router.replace("/login?redirectTo=/staff");
+        router.replace(getRoleLoginHref(router.asPath, "/staff"));
         return;
       }
 
@@ -293,7 +294,7 @@ export default function StaffDashboardPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/staff");
+        router.replace(getRoleLoginHref(router.asPath, "/staff"));
         return;
       }
 

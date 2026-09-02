@@ -17,6 +17,7 @@ import {
 } from "@/components/dashboard-staff/dashboardStaffTypes";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 export default function StaffPage() {
   const router = useRouter();
@@ -102,7 +103,7 @@ export default function StaffPage() {
 
       if (!session) {
         setAccountUserId(null);
-        router.replace("/login");
+        router.replace(getRoleLoginHref(router.asPath, "/dashboard/staff"));
         return;
       }
       setAccountUserId(session.user.id);

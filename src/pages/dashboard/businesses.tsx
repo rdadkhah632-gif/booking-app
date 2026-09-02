@@ -18,6 +18,7 @@ import {
   StaffService,
 } from "@/components/dashboard-businesses/dashboardBusinessesTypes";
 import { useI18n } from "@/lib/useI18n";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 export default function Businesses() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function Businesses() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login");
+      router.replace(getRoleLoginHref(router.asPath, "/dashboard/businesses"));
       return;
     }
 
@@ -298,7 +299,7 @@ export default function Businesses() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login");
+      router.replace(getRoleLoginHref(router.asPath, "/dashboard/businesses"));
       return;
     }
 
@@ -451,8 +452,8 @@ export default function Businesses() {
 
     const profileComplete = Boolean(
       business.name?.trim() &&
-        business.category?.trim() &&
-        business.city?.trim(),
+      business.category?.trim() &&
+      business.city?.trim(),
     );
 
     const hasActiveServices = activeServices > 0;
@@ -824,8 +825,8 @@ export default function Businesses() {
       : "";
   const canPublishPrimaryBusiness = Boolean(
     primaryBusiness &&
-      primaryReadiness?.bookingReady &&
-      !primaryBusiness.published,
+    primaryReadiness?.bookingReady &&
+    !primaryBusiness.published,
   );
 
   function shouldOpenProfileDetails(href: string) {

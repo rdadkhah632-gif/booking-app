@@ -10,6 +10,7 @@ import { Business } from "@/components/dashboard-settings/dashboardSettingsTypes
 import { defaultSettings } from "@/components/dashboard-settings/settingsOptions";
 import { useI18n } from "@/lib/useI18n";
 import { supabase } from "@/lib/supabaseClient";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 const SETTINGS_SAVED_FEEDBACK_KEY = "mirebook:booking-rules-saved";
 
@@ -42,7 +43,7 @@ export default function DashboardSettingsPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/dashboard/settings");
+        router.replace(getRoleLoginHref(router.asPath, "/dashboard/settings"));
         return;
       }
 

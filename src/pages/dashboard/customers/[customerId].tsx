@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { useI18n } from "@/lib/useI18n";
 import CustomerHistoryView from "@/components/dashboard-customers/CustomerHistoryView";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 type Business = {
   id: string;
@@ -75,7 +76,7 @@ export default function CustomerDetailPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login");
+        router.replace(getRoleLoginHref(router.asPath, "/dashboard/customers"));
         return;
       }
 

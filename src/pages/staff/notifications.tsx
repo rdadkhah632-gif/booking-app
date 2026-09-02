@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { dateKeyInTimeZone } from "@/lib/timezone";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 type Notification = {
   id: string;
@@ -285,7 +286,10 @@ export default function StaffNotificationsPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      window.location.href = "/login?redirectTo=/staff/notifications";
+      window.location.href = getRoleLoginHref(
+        `${window.location.pathname}${window.location.search}${window.location.hash}`,
+        "/staff/notifications",
+      );
       return;
     }
 

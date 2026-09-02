@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { signOutCurrentSession } from "@/lib/auth/signOutCurrentSession";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 import MobileWorkspaceDock from "@/components/navigation/MobileWorkspaceDock";
 
 type Props = {
@@ -42,9 +43,10 @@ export default function DashboardLayout({
 
       if (!session) {
         router.replace(
-          workspace === "staff"
-            ? `/login?redirectTo=${encodeURIComponent(router.asPath)}`
-            : "/login",
+          getRoleLoginHref(
+            router.asPath,
+            workspace === "staff" ? "/staff" : "/dashboard",
+          ),
         );
         return;
       }

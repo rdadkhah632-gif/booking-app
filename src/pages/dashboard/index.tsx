@@ -18,6 +18,7 @@ import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
 import { dateKeyInTimeZone } from "@/lib/timezone";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 export default function DashboardHome() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function DashboardHome() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login");
+      router.replace(getRoleLoginHref(router.asPath, "/dashboard"));
       return;
     }
 
@@ -358,8 +359,8 @@ export default function DashboardHome() {
   ).length;
   const hasProfileBasics = Boolean(
     primaryBusiness?.name?.trim() &&
-      primaryBusiness.category?.trim() &&
-      primaryBusiness.city?.trim(),
+    primaryBusiness.category?.trim() &&
+    primaryBusiness.city?.trim(),
   );
   const isPublished = Boolean(primaryBusiness?.published);
   const hasBookableAppointments =

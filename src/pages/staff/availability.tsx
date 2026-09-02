@@ -5,6 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { getAccountCapabilities } from "@/lib/accountCapabilities";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 type StaffMember = {
   id: string;
@@ -97,7 +98,7 @@ export default function StaffAvailabilityPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/staff/availability");
+        router.replace(getRoleLoginHref(router.asPath, "/staff/availability"));
         return;
       }
 

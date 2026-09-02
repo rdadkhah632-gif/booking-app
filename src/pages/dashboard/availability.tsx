@@ -12,6 +12,7 @@ import {
   Business,
 } from "@/components/dashboard-availability/dashboardAvailabilityTypes";
 import { useI18n } from "@/lib/useI18n";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 const dayKeys = [
   "common.days.sunday",
@@ -103,7 +104,9 @@ export default function Availability() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login");
+        router.replace(
+          getRoleLoginHref(router.asPath, "/dashboard/availability"),
+        );
         return;
       }
 

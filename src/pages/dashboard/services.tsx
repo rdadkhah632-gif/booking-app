@@ -15,6 +15,7 @@ import {
   StaffService,
 } from "@/components/dashboard-services/dashboardServicesTypes";
 import { useI18n } from "@/lib/useI18n";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 export default function Services() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function Services() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login");
+        router.replace(getRoleLoginHref(router.asPath, "/dashboard/services"));
         return;
       }
       const query = new URLSearchParams();

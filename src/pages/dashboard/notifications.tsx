@@ -12,6 +12,7 @@ import {
 import { requestTransactionalEmail } from "@/lib/email/client";
 import { formatLocalizedDate } from "@/lib/i18n/dateFormatting";
 import { dateKeyInTimeZone } from "@/lib/timezone";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 type RelatedBusiness = {
   name: string;
@@ -540,7 +541,9 @@ export default function BusinessNotifications() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/dashboard/notifications");
+        router.replace(
+          getRoleLoginHref(router.asPath, "/dashboard/notifications"),
+        );
         return;
       }
 

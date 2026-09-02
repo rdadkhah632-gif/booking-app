@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 import AuthNav from "@/components/AuthNav";
 import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import MyBookingsHeader from "@/components/my-bookings/MyBookingsHeader";
@@ -46,7 +47,7 @@ export default function MyBookings() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login?redirectTo=/my-bookings");
+      router.replace(getRoleLoginHref(router.asPath, "/my-bookings"));
       return;
     }
 
@@ -58,7 +59,7 @@ export default function MyBookings() {
     const payload = await response.json().catch(() => ({}));
 
     if (response.status === 401) {
-      router.replace("/login?redirectTo=/my-bookings");
+      router.replace(getRoleLoginHref(router.asPath, "/my-bookings"));
       return;
     }
 
@@ -192,7 +193,7 @@ export default function MyBookings() {
 
     if (!session) {
       setActionLoadingId(null);
-      router.replace("/login?redirectTo=/my-bookings");
+      router.replace(getRoleLoginHref(router.asPath, "/my-bookings"));
       return;
     }
 

@@ -16,6 +16,7 @@ import {
   supabaseErrorDetails,
 } from "@/lib/bookingStatusErrors";
 import { requestTransactionalEmail } from "@/lib/email/client";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 import {
   DEFAULT_TIME_ZONE,
   dateKeyInTimeZone,
@@ -319,7 +320,7 @@ export default function Bookings() {
 
       if (!session) {
         setAccountUserId(null);
-        router.replace("/login");
+        router.replace(getRoleLoginHref(router.asPath, "/dashboard/bookings"));
         return;
       }
       setAccountUserId(session.user.id);

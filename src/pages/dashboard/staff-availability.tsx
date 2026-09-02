@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useI18n } from "@/lib/useI18n";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 const days = [
   "Sunday",
@@ -118,7 +119,9 @@ export default function StaffAvailabilityPage() {
     } = await supabase.auth.getSession();
 
     if (!session) {
-      router.replace("/login");
+      router.replace(
+        getRoleLoginHref(router.asPath, "/dashboard/staff-availability"),
+      );
       return;
     }
 

@@ -9,6 +9,7 @@ import {
 } from "@/lib/billing";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
+import { getRoleLoginHref } from "@/lib/auth/getRoleLoginHref";
 
 type Business = {
   id: string;
@@ -114,7 +115,7 @@ export default function DashboardBillingPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login?redirectTo=/dashboard/billing");
+        router.replace(getRoleLoginHref(router.asPath, "/dashboard/billing"));
         return;
       }
 
