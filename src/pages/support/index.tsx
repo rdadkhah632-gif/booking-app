@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Head from "next/head";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -9,11 +10,13 @@ import {
 import AuthNav from "@/components/AuthNav";
 import CustomerPortalStyles from "@/components/CustomerPortalStyles";
 import SupportEntryStyles from "@/components/SupportEntryStyles";
+import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 import { useI18n } from "@/lib/useI18n";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function SupportPage() {
   const { t } = useI18n();
+  const canonicalUrl = `${getPublicSiteOrigin() || "https://mirebook.com"}/support`;
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
@@ -52,6 +55,15 @@ export default function SupportPage() {
           : undefined
       }
     >
+      <Head>
+        <title>{`${t("support.title")} | Mirëbook`}</title>
+        <meta
+          key="description"
+          name="description"
+          content={t("support.subtitle")}
+        />
+        <link key="canonical" rel="canonical" href={canonicalUrl} />
+      </Head>
       {showCustomerSupportHub && <CustomerPortalStyles />}
       <SupportEntryStyles />
       <AuthNav />

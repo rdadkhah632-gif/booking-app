@@ -1,3 +1,4 @@
+import Head from "next/head";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
@@ -44,6 +45,7 @@ import {
   discoveryServerSearchTerm,
   matchesDiscoverySearch,
 } from "@/lib/discoverySearch";
+import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 
 type Coordinates = {
   latitude: number;
@@ -183,6 +185,7 @@ function approximateCoordinate(value: number) {
 export default function Explore() {
   const router = useRouter();
   const { locale, t } = useI18n();
+  const canonicalUrl = `${getPublicSiteOrigin() || "https://mirebook.com"}/explore`;
   const requestSequence = useRef(0);
   const suggestionInventoryLocale = useRef("");
 
@@ -928,6 +931,18 @@ export default function Explore() {
 
   return (
     <main className="marketplace-surface explore-marketplace">
+      <Head>
+        <title>{t("explore.metaTitle", "Explore Albania | Mirëbook")}</title>
+        <meta
+          key="description"
+          name="description"
+          content={t(
+            "explore.metaDescription",
+            "Find reviewed local places and bookable services across Albania.",
+          )}
+        />
+        <link key="canonical" rel="canonical" href={canonicalUrl} />
+      </Head>
       <AuthNav />
       <MarketplaceSurfaceStyles />
 

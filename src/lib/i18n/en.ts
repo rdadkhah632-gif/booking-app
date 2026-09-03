@@ -507,6 +507,9 @@ export const en: TranslationTree = {
   "businessHome.tabs.staff.panelTwo": "Calendar",
   "businessHome.tabs.staff.panelThree": "Inbox",
 
+  "explore.metaTitle": "Explore Albania | Mirëbook",
+  "explore.metaDescription":
+    "Find reviewed local places and bookable services across Albania.",
   "explore.hero.kicker": "Mirëbook marketplace",
   "explore.hero.title": "Find and book local services",
   "explore.hero.subtitle":

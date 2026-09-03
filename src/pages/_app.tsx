@@ -2,11 +2,24 @@ import "../styles/globals.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { Analytics } from "@vercel/analytics/next";
 import { I18nProvider } from "@/lib/useI18n";
 import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 
+const INDEXABLE_PUBLIC_ROUTES = new Set([
+  "/",
+  "/business",
+  "/explore",
+  "/explore/[businessId]",
+  "/places/[placeId]",
+  "/privacy",
+  "/support",
+  "/terms",
+]);
+
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   const publicSiteOrigin = getPublicSiteOrigin();
   const socialPreview = publicSiteOrigin
     ? `${publicSiteOrigin}/mirebook-customer-discovery-hero.jpg`
@@ -62,6 +75,9 @@ export default function App({ Component, pageProps }: AppProps) {
           name="twitter:description"
           content="Discover reviewed places and book local services across Albania with Mirëbook."
         />
+        {!INDEXABLE_PUBLIC_ROUTES.has(router.pathname) ? (
+          <meta key="robots" name="robots" content="noindex, nofollow" />
+        ) : null}
         {socialPreview ? (
           <>
             <meta key="og-image" property="og:image" content={socialPreview} />

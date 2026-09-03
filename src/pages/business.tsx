@@ -3,6 +3,7 @@ import Link from "next/link";
 import AuthNav from "@/components/AuthNav";
 import { useI18n } from "@/lib/useI18n";
 import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
+import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 import { useState } from "react";
 
 type BusinessTabId = "how" | "setup" | "pricing" | "staff";
@@ -146,6 +147,10 @@ export default function BusinessHomePage() {
   ];
   const activeTab =
     businessTabs.find((tab) => tab.id === activeTabId) || businessTabs[0];
+  const configuredBusinessHome = getBusinessAppUrl("/");
+  const canonicalUrl = configuredBusinessHome.startsWith("http")
+    ? configuredBusinessHome
+    : `${getPublicSiteOrigin() || "https://mirebook.com"}/business`;
 
   return (
     <main className="business-site">
@@ -163,6 +168,7 @@ export default function BusinessHomePage() {
             "Manage bookings, staff, services, availability and your public business profile with Mirëbook Business.",
           )}
         />
+        <link key="canonical" rel="canonical" href={canonicalUrl} />
       </Head>
 
       <AuthNav />

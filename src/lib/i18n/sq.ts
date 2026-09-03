@@ -555,6 +555,9 @@ export const sq: TranslationTree = {
   "businessHome.tabs.staff.panelTwo": "Kalendari",
   "businessHome.tabs.staff.panelThree": "Inbox",
 
+  "explore.metaTitle": "Eksploro Shqipërinë | Mirëbook",
+  "explore.metaDescription":
+    "Gjej vende lokale të shqyrtuara dhe shërbime të rezervueshme në të gjithë Shqipërinë.",
   "explore.hero.kicker": "Tregu Mirëbook",
   "explore.hero.title": "Gjej dhe rezervo shërbime lokale",
   "explore.hero.subtitle":

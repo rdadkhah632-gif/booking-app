@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /staff
+Disallow: /account
+Disallow: /my-bookings
+Disallow: /notifications
+Disallow: /booking-confirmation
+Disallow: /reschedule-booking
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /logout
+Disallow: /claim/
+Disallow: /join/
+Disallow: /support/business
+Disallow: /support/customer
+Disallow: /support/staff
+Disallow: /support/messages
+
+Sitemap: https://mirebook.com/sitemap.xml

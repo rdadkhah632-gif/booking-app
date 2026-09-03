@@ -32,6 +32,7 @@ import type {
 } from "@/components/explore/exploreTypes";
 import HomeFeaturedPlaces from "@/components/home/HomeFeaturedPlaces";
 import { getBusinessAppUrl } from "@/lib/appUrls";
+import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 import { recordSiteEvent } from "@/lib/siteAnalytics";
 import { useI18n } from "@/lib/useI18n";
 
@@ -79,6 +80,7 @@ function isBookableBusiness(business: Business) {
 export default function Home() {
   const router = useRouter();
   const { locale, t } = useI18n();
+  const canonicalUrl = `${getPublicSiteOrigin() || "https://mirebook.com"}/`;
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
   const [directoryPlaces, setDirectoryPlaces] = useState<DirectoryPlace[]>([]);
@@ -228,6 +230,7 @@ export default function Home() {
             "Discover local services, activities and places across Albania, then book participating businesses through Mirëbook.",
           )}
         />
+        <link key="canonical" rel="canonical" href={canonicalUrl} />
         <link
           rel="preload"
           as="image"

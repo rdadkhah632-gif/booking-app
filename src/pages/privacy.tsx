@@ -1,12 +1,24 @@
 import Link from "next/link";
+import Head from "next/head";
 import AuthNav from "@/components/AuthNav";
 import CustomerLegalStyles from "@/components/CustomerLegalStyles";
+import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 import { useI18n } from "@/lib/useI18n";
 
 export default function PrivacyPage() {
   const { t } = useI18n();
+  const canonicalUrl = `${getPublicSiteOrigin() || "https://mirebook.com"}/privacy`;
   return (
     <main className="marketplace-surface customer-legal-surface">
+      <Head>
+        <title>{`${t("privacy.title")} | Mirëbook`}</title>
+        <meta
+          key="description"
+          name="description"
+          content={t("privacy.subtitle")}
+        />
+        <link key="canonical" rel="canonical" href={canonicalUrl} />
+      </Head>
       <CustomerLegalStyles />
       <AuthNav />
 
