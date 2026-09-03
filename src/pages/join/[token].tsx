@@ -13,6 +13,7 @@ import AuthNav from "@/components/AuthNav";
 import CustomerAuthStyles from "@/components/CustomerAuthStyles";
 import { formatCurrencyAmount } from "@/lib/currency";
 import { getBusinessAppUrl } from "@/lib/appUrls";
+import { formatLocalizedDate } from "@/lib/i18n/dateFormatting";
 import type {
   PreparedBusinessProfile,
   PreparedServiceDraft,
@@ -49,6 +50,10 @@ export default function PreparedBusinessJoinPage() {
   const knownPrices = useMemo(
     () => preview?.services.filter((service) => service.priceKnown).length || 0,
     [preview],
+  );
+  const hasPreparedMedia = Boolean(
+    preview?.profile.imageUrl ||
+    preview?.services.some((service) => service.imageUrl),
   );
 
   useEffect(() => {
@@ -169,6 +174,15 @@ export default function PreparedBusinessJoinPage() {
         ) : preview ? (
           <div className="join-layout">
             <section className="join-card profile-summary">
+              {preview.profile.imageUrl && (
+                <div className="profile-media">
+                  <img
+                    src={preview.profile.imageUrl}
+                    alt={preview.profile.name}
+                    decoding="async"
+                  />
+                </div>
+              )}
               <header className="profile-heading">
                 <span>
                   <BadgeCheck aria-hidden="true" />
@@ -223,29 +237,43 @@ export default function PreparedBusinessJoinPage() {
                 <div className="service-list">
                   {preview.services.map((service) => (
                     <article key={service.id}>
-                      <div>
-                        <strong>{service.name}</strong>
-                        <small>
-                          <Clock3 aria-hidden="true" />
-                          {service.durationMinutes}{" "}
-                          {t("common.minutes", "minutes")}
-                        </small>
-                        <small className="service-format">
-                          {service.bookingType === "group"
-                            ? `${t("onboardingJoin.sharedDeparture", "Shared departure")} · ${service.groupCapacity || 0} ${t("dashboardServices.group.seats", "seats")}`
-                            : t(
-                                "onboardingJoin.appointmentFormat",
-                                "One customer at a time",
-                              )}
-                        </small>
-                        {service.privateBookingEnabled && (
-                          <small className="service-format">
-                            {t(
-                              "onboardingJoin.privateAvailable",
-                              "Private trip also available",
-                            )}
-                          </small>
+                      <div
+                        className={`service-info ${
+                          service.imageUrl ? "has-media" : ""
+                        }`}
+                      >
+                        {service.imageUrl && (
+                          <img
+                            src={service.imageUrl}
+                            alt={service.name}
+                            loading="lazy"
+                            decoding="async"
+                          />
                         )}
+                        <div className="service-copy">
+                          <strong>{service.name}</strong>
+                          <small>
+                            <Clock3 aria-hidden="true" />
+                            {service.durationMinutes}{" "}
+                            {t("common.minutes", "minutes")}
+                          </small>
+                          <small className="service-format">
+                            {service.bookingType === "group"
+                              ? `${t("onboardingJoin.sharedDeparture", "Shared departure")} · ${service.groupCapacity || 0} ${t("dashboardServices.group.seats", "seats")}`
+                              : t(
+                                  "onboardingJoin.appointmentFormat",
+                                  "One customer at a time",
+                                )}
+                          </small>
+                          {service.privateBookingEnabled && (
+                            <small className="service-format">
+                              {t(
+                                "onboardingJoin.privateAvailable",
+                                "Private trip also available",
+                              )}
+                            </small>
+                          )}
+                        </div>
                       </div>
                       <span data-known={service.priceKnown}>
                         {service.priceKnown
@@ -272,6 +300,22 @@ export default function PreparedBusinessJoinPage() {
             </section>
 
             <aside className="join-card connection-panel">
+              <div className="connection-identity">
+                {preview.profile.imageUrl && (
+                  <img src={preview.profile.imageUrl} alt="" decoding="async" />
+                )}
+                <div>
+                  <small>
+                    {t("onboardingJoin.prepared", "Prepared for you")}
+                  </small>
+                  <strong>{preview.profile.name}</strong>
+                  <span>
+                    {[preview.profile.category, preview.profile.city]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                </div>
+              </div>
               <span className="connection-kicker">
                 <ShieldCheck aria-hidden="true" />
                 {t("onboardingJoin.private", "Private owner handoff")}
@@ -308,9 +352,28 @@ export default function PreparedBusinessJoinPage() {
                 </li>
                 <li>
                   <ImagePlus aria-hidden="true" />
+                  {hasPreparedMedia
+                    ? t(
+                        "onboardingJoin.checkPreparedPhotos",
+                        "Review or replace the prepared photos",
+                      )
+                    : t(
+                        "onboardingJoin.checkPhotos",
+                        "Add or replace photos from your phone",
+                      )}
+                </li>
+                <li>
+                  <Check aria-hidden="true" />
                   {t(
-                    "onboardingJoin.checkPhotos",
-                    "Add or replace photos from your phone",
+                    "onboardingJoin.checkPayments",
+                    "Customers pay you directly as usual",
+                  )}
+                </li>
+                <li>
+                  <Check aria-hidden="true" />
+                  {t(
+                    "onboardingJoin.checkManualBookings",
+                    "Add phone, walk-in or social bookings to the same calendar",
                   )}
                 </li>
               </ul>
@@ -353,9 +416,9 @@ export default function PreparedBusinessJoinPage() {
               )}
               <small className="expiry">
                 {t("onboardingJoin.expires", "Secure link expires")}:{" "}
-                {new Intl.DateTimeFormat(locale === "sq" ? "sq-AL" : "en-GB", {
+                {formatLocalizedDate(preview.expiresAt, locale, {
                   dateStyle: "medium",
-                }).format(new Date(preview.expiresAt))}
+                })}
               </small>
             </aside>
           </div>
@@ -394,6 +457,21 @@ export default function PreparedBusinessJoinPage() {
         }
         .profile-summary {
           padding: 1.5rem;
+        }
+        .profile-media {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          margin-bottom: 1.25rem;
+          overflow: hidden;
+          border: 1px solid #e6e8eb;
+          border-radius: 7px;
+          background: #f3f5f5;
+        }
+        .profile-media img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
         .profile-heading {
           display: grid;
@@ -493,10 +571,28 @@ export default function PreparedBusinessJoinPage() {
           padding: 0.9rem 0;
           border-bottom: 1px solid #e6e8eb;
         }
-        .service-list article > div {
+        .service-info,
+        .service-copy {
           min-width: 0;
           display: grid;
           gap: 0.28rem;
+        }
+        .service-info {
+          grid-template-columns: minmax(0, 1fr);
+          align-items: start;
+          gap: 0.75rem;
+        }
+        .service-info.has-media {
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+        .service-info > img {
+          display: block;
+          width: 72px;
+          aspect-ratio: 4 / 3;
+          border: 1px solid #e6e8eb;
+          border-radius: 6px;
+          object-fit: cover;
+          background: #f3f5f5;
         }
         .service-list small {
           display: flex;
@@ -522,6 +618,9 @@ export default function PreparedBusinessJoinPage() {
           display: grid;
           gap: 1rem;
           padding: 1.35rem;
+        }
+        .connection-identity {
+          display: none;
         }
         .connection-panel .email-bound-note {
           padding: 0.75rem;
@@ -582,6 +681,45 @@ export default function PreparedBusinessJoinPage() {
             position: static;
             grid-row: 1;
           }
+          .connection-identity {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.75rem;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e6e8eb;
+          }
+          .connection-identity > img {
+            display: block;
+            width: 64px;
+            aspect-ratio: 1;
+            border: 1px solid #e6e8eb;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #f3f5f5;
+          }
+          .connection-identity > div {
+            min-width: 0;
+            display: grid;
+            gap: 0.15rem;
+          }
+          .connection-identity small {
+            color: #147d70;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
+          .connection-identity strong,
+          .connection-identity span {
+            overflow-wrap: anywhere;
+          }
+          .connection-identity strong {
+            font-size: 1rem;
+          }
+          .connection-identity span {
+            color: #626870;
+            font-size: 0.82rem;
+          }
           .profile-facts {
             grid-template-columns: 1fr;
           }
@@ -619,6 +757,9 @@ export default function PreparedBusinessJoinPage() {
           }
           .service-list article {
             align-items: flex-start;
+          }
+          .service-info > img {
+            width: 64px;
           }
         }
       `}</style>

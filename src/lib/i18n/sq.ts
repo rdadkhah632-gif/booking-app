@@ -5692,6 +5692,26 @@ export const sq: TranslationTree = {
   "admin.onboarding.prepared.timezone": "Zona orare",
   "admin.onboarding.prepared.description":
     "Përshkrimi për kontroll nga pronari",
+  "admin.onboarding.prepared.businessPhoto": "Foto e përgatitur e biznesit",
+  "admin.onboarding.prepared.servicePhoto": "Foto e përgatitur e shërbimit",
+  "admin.onboarding.prepared.servicePhotoBody":
+    "Opsionale. Do të mbetet e fshehur me shërbimin derisa pronari ta kontrollojë dhe aktivizojë.",
+  "admin.onboarding.prepared.mediaPermissionReady":
+    "Leja për përdorim në profil është regjistruar. Kjo foto mbetet jashtë zbulimit publik derisa pronari ta publikojë.",
+  "admin.onboarding.prepared.mediaPermissionMissing":
+    "Regjistro lejen për fotot e profilit në rastin privat para se të shtosh një foto.",
+  "admin.onboarding.prepared.mediaPermissionRequired":
+    "Regjistro lejen për fotot e profilit në rastin e integrimit para se të ngarkosh foto.",
+  "admin.onboarding.prepared.mediaHandoffUnavailable":
+    "Kalimi i fotove të përgatitura nuk është aktivizuar ende në këtë mjedis.",
+  "admin.onboarding.prepared.mediaUploading": "Po ngarkohet...",
+  "admin.onboarding.prepared.mediaUploaded":
+    "Fotoja u ngarkua. Ruaj profilin e përgatitur që ta përfshish në kalimin te pronari.",
+  "admin.onboarding.prepared.mediaUploadError":
+    "Fotoja e përgatitur nuk mund të ngarkohej.",
+  "admin.onboarding.prepared.addPhoto": "Shto foto",
+  "admin.onboarding.prepared.replacePhoto": "Zëvendëso foton",
+  "admin.onboarding.prepared.removePhoto": "Hiq foton",
   "admin.onboarding.prepared.ownerProvider":
     "Përgatite pronarin si ofrues shërbimi",
   "admin.onboarding.prepared.ownerProviderBody":
@@ -5751,6 +5771,12 @@ export const sq: TranslationTree = {
   "onboardingJoin.checkServices":
     "Draftet e shërbimeve mbeten të fshehura deri në kontroll",
   "onboardingJoin.checkPhotos": "Shto ose zëvendëso foto nga telefoni",
+  "onboardingJoin.checkPreparedPhotos":
+    "Kontrollo ose zëvendëso fotot e përgatitura",
+  "onboardingJoin.checkPayments":
+    "Klientët të paguajnë drejtpërdrejt si zakonisht",
+  "onboardingJoin.checkManualBookings":
+    "Shto rezervimet nga telefoni, vizitat pa rezervim ose rrjetet sociale në të njëjtin kalendar",
   "onboardingJoin.priceNote":
     "Disa çmime janë vlera paraprake. Mirëbook do t'i shënojë qartë për kontrollin tënd.",
   "onboardingJoin.connect": "Lidh këtë profil",

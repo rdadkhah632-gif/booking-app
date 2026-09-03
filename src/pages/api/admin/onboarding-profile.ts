@@ -40,6 +40,17 @@ function cleanEmail(value: unknown) {
   return cleanText(value, 320).toLowerCase();
 }
 
+function cleanHttpsUrl(value: unknown) {
+  const candidate = cleanText(value, 1200);
+  if (!candidate) return "";
+  try {
+    const url = new URL(candidate);
+    return url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 function cleanBoolean(value: unknown) {
   return value === true;
 }
@@ -64,6 +75,7 @@ function safeProfile(value: unknown): PreparedBusinessProfile {
   return {
     name: cleanText(input.name, 160),
     description: cleanText(input.description, 1200),
+    imageUrl: cleanHttpsUrl(input.imageUrl),
     phone: cleanText(input.phone, 40),
     address: cleanText(input.address, 240),
     city: cleanText(input.city, 100),
@@ -92,6 +104,7 @@ function safeServices(value: unknown): PreparedServiceDraft[] {
       id: cleanText(input.id, 100) || `prepared-${index + 1}`,
       name: cleanText(input.name, 160),
       description: cleanText(input.description, 800),
+      imageUrl: cleanHttpsUrl(input.imageUrl),
       durationMinutes: Math.round(
         cleanNumber(input.durationMinutes, 30, 5, 10080),
       ),
@@ -130,8 +143,8 @@ async function requireAdmin(request: NextApiRequest) {
 function serialize(row: DraftRow): PreparedProfileDraft {
   return {
     caseId: row.case_id,
-    profile: row.profile,
-    services: row.services || [],
+    profile: safeProfile(row.profile),
+    services: safeServices(row.services),
     intendedOwnerEmail: row.intended_owner_email,
     handoffIssuedAt: row.handoff_issued_at,
     handoffExpiresAt: row.handoff_expires_at,
@@ -169,13 +182,17 @@ export default async function handler(
   }
 
   if (request.method === "GET") {
-    const { data, error } = await context.supabase
-      .from("business_onboarding_profile_drafts")
-      .select(
-        "case_id, profile, services, intended_owner_email, handoff_issued_at, handoff_expires_at, adopted_at, adopted_business_id",
-      )
-      .eq("case_id", caseId)
-      .maybeSingle<DraftRow>();
+    const [draftResult, mediaVersionResult] = await Promise.all([
+      context.supabase
+        .from("business_onboarding_profile_drafts")
+        .select(
+          "case_id, profile, services, intended_owner_email, handoff_issued_at, handoff_expires_at, adopted_at, adopted_business_id",
+        )
+        .eq("case_id", caseId)
+        .maybeSingle<DraftRow>(),
+      context.supabase.rpc("mirebook_prepared_media_handoff_version"),
+    ]);
+    const { data, error } = draftResult;
     if (error) {
       if (isMissingSchema(error)) {
         return response
@@ -186,9 +203,20 @@ export default async function handler(
         .status(500)
         .json({ error: "The prepared profile could not be loaded." });
     }
-    return response
-      .status(200)
-      .json({ storageAvailable: true, draft: data ? serialize(data) : null });
+    if (
+      mediaVersionResult.error &&
+      !isMissingSchema(mediaVersionResult.error)
+    ) {
+      return response
+        .status(500)
+        .json({ error: "The prepared-media status could not be checked." });
+    }
+    return response.status(200).json({
+      storageAvailable: true,
+      mediaHandoffAvailable:
+        !mediaVersionResult.error && Number(mediaVersionResult.data) >= 1,
+      draft: data ? serialize(data) : null,
+    });
   }
 
   const action = cleanText(request.body?.action, 30) || "save";
@@ -208,6 +236,39 @@ export default async function handler(
       return response
         .status(400)
         .json({ error: "Every prepared service needs a name." });
+    }
+
+    const hasPreparedMedia = Boolean(
+      profile.imageUrl || services.some((service) => service.imageUrl),
+    );
+    if (hasPreparedMedia) {
+      const mediaVersionResult = await context.supabase.rpc(
+        "mirebook_prepared_media_handoff_version",
+      );
+      if (mediaVersionResult.error || Number(mediaVersionResult.data) < 1) {
+        return response.status(409).json({
+          error:
+            "Prepared photo handoff is not enabled. Apply the current media-handoff migration first.",
+        });
+      }
+      const { data: onboardingCase, error: caseError } = await context.supabase
+        .from("business_onboarding_cases")
+        .select("profile_media_permission")
+        .eq("id", caseId)
+        .maybeSingle<{ profile_media_permission?: boolean | null }>();
+      if (caseError) {
+        return response
+          .status(500)
+          .json({
+            error: "The profile-media permission could not be checked.",
+          });
+      }
+      if (!onboardingCase?.profile_media_permission) {
+        return response.status(400).json({
+          error:
+            "Record profile-media permission before adding prepared photos.",
+        });
+      }
     }
 
     const { data, error } = await context.supabase.rpc(

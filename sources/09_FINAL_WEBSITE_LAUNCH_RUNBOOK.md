@@ -598,6 +598,10 @@ Then run:
 
 `sources/sql/44_email_bound_owner_handoff.sql`
 
+For prepared business and service photos, then run:
+
+`sources/sql/46_prepared_profile_media_handoff.sql`
+
 Then deploy the matching website build. An operator can prepare a private
 business profile and editable service estimates from `/admin/onboarding`, save
 the draft, and create a one-time owner link. The raw token is shown only when it
@@ -622,6 +626,11 @@ Use a case filter and issue only after the preferred email is recorded. Send
 each output link only to its intended owner. Starter prices are estimates
 unless explicitly confirmed. The owner must review prices, durations, booking
 format, capacity, hours and photos before activating services or publishing.
+
+Prepared photos require profile-media permission on the private onboarding
+case. SQL 46 previews those photos in the secure owner handoff and imports them
+only into the hidden business and inactive service drafts. Profile permission
+does not grant Mirëbook advertising or social-promotion permission.
 
 ## UI Position And Next Batch
 

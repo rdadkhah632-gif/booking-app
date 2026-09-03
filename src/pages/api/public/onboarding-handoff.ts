@@ -19,6 +19,21 @@ function tokenValue(value: string | string[] | undefined) {
   return /^[A-Za-z0-9_-]{32,160}$/.test(token) ? token : "";
 }
 
+function cleanText(value: unknown, maxLength: number) {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
+function safeHttpsUrl(value: unknown) {
+  const candidate = cleanText(value, 1200);
+  if (!candidate) return "";
+  try {
+    const url = new URL(candidate);
+    return url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
@@ -33,6 +48,7 @@ export default async function handler(
   const token = tokenValue(request.query.token);
   if (!token)
     return response.status(404).json({ error: "Prepared profile not found." });
+
   const tokenHash = createHash("sha256").update(token).digest("hex");
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
@@ -47,12 +63,35 @@ export default async function handler(
     return response.status(404).json({ error: "Prepared profile not found." });
   }
 
+  const { data: onboardingCase, error: caseError } = await supabase
+    .from("business_onboarding_cases")
+    .select("profile_media_permission")
+    .eq("id", data.case_id)
+    .maybeSingle<{ profile_media_permission?: boolean | null }>();
+  if (caseError || !onboardingCase) {
+    return response.status(404).json({ error: "Prepared profile not found." });
+  }
+  const mediaAllowed = onboardingCase.profile_media_permission === true;
+
   return response.status(200).json({
-    profile: data.profile,
+    profile: {
+      name: cleanText(data.profile.name, 160),
+      description: cleanText(data.profile.description, 1200),
+      imageUrl: mediaAllowed ? safeHttpsUrl(data.profile.imageUrl) : "",
+      phone: cleanText(data.profile.phone, 40),
+      address: cleanText(data.profile.address, 240),
+      city: cleanText(data.profile.city, 100),
+      country: cleanText(data.profile.country, 100),
+      category: cleanText(data.profile.category, 80),
+      timezone: cleanText(data.profile.timezone, 80),
+      currency: data.profile.currency,
+      ownerTakesBookings: data.profile.ownerTakesBookings === true,
+    },
     services: (data.services || []).map((service) => ({
       id: service.id,
       name: service.name,
       description: service.description,
+      imageUrl: mediaAllowed ? safeHttpsUrl(service.imageUrl) : "",
       durationMinutes: service.durationMinutes,
       price: service.price,
       priceKnown: service.priceKnown,

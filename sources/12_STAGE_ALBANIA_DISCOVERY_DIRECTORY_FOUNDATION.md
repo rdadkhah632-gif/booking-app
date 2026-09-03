@@ -2343,6 +2343,30 @@ link until his preferred owner email is recorded. Mirëbook must never choose an
 owner password: the owner registers with the bound email, sets their own
 password, verifies the inbox and then connects the hidden profile.
 
+### Batch 36: permissioned prepared-profile media
+
+Run `sources/sql/46_prepared_profile_media_handoff.sql` after SQL 43 and SQL 44. An operator can then add a business photo and optional service photos to a
+private prepared profile only when the onboarding case already records
+profile-media permission.
+
+The owner handoff previews those images before connection. After the verified
+email owner connects, SQL 46 carries them into the hidden business and inactive
+service drafts. It does not publish the business, activate services, grant
+promotional permission or expose private permission evidence publicly. The
+owner can replace or remove every imported image from the normal Business
+workspace.
+
+Profile and promotional permission remain separate. Profile-only permission
+may populate the private handoff and eventual business profile, but it must
+never authorize Mirëbook advertisements, posts or social campaigns.
+
+Batch 36 deployment QA should use one disposable email-bound case with one
+business image and two service images. Confirm the private preview, wrong-email
+denial, hidden adoption, inactive services, imported images, replacement and
+removal controls, EN/SQ rendering, mobile fit and absence of all media and
+permission evidence from public APIs before publication. Restore or remove the
+disposable case afterward.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls

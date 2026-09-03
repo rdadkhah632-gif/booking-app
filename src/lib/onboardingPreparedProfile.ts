@@ -2,6 +2,7 @@ export type PreparedServiceDraft = {
   id: string;
   name: string;
   description: string;
+  imageUrl: string;
   durationMinutes: number;
   price: number;
   priceKnown: boolean;
@@ -14,6 +15,7 @@ export type PreparedServiceDraft = {
 export type PreparedBusinessProfile = {
   name: string;
   description: string;
+  imageUrl: string;
   phone: string;
   address: string;
   city: string;
@@ -38,6 +40,7 @@ export type PreparedProfileDraft = {
 export const EMPTY_PREPARED_PROFILE: PreparedBusinessProfile = {
   name: "",
   description: "",
+  imageUrl: "",
   phone: "",
   address: "",
   city: "",
@@ -56,6 +59,7 @@ export function newPreparedService(): PreparedServiceDraft {
         : `service-${Date.now()}`,
     name: "",
     description: "",
+    imageUrl: "",
     durationMinutes: 30,
     price: 0,
     priceKnown: false,

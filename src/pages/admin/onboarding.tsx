@@ -263,6 +263,8 @@ export default function AdminOnboardingPage() {
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [storageAvailable, setStorageAvailable] = useState(true);
+  const [savedProfileMediaPermission, setSavedProfileMediaPermission] =
+    useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -471,7 +473,15 @@ export default function AdminOnboardingPage() {
       setCases(payload.cases || []);
       setSuggestions(payload.suggestions || []);
       setCounts(payload.counts || EMPTY_COUNTS);
-      if (caseId) setEvents(payload.events || []);
+      if (caseId) {
+        setEvents(payload.events || []);
+        const selectedCase =
+          payload.selectedCase ||
+          payload.cases.find((item) => item.id === caseId);
+        setSavedProfileMediaPermission(
+          selectedCase?.profile_media_permission === true,
+        );
+      }
       return payload;
     } catch {
       if (currentRequestId !== requestId.current) return null;
@@ -529,6 +539,7 @@ export default function AdminOnboardingPage() {
     });
     setSearch(name);
     setDraft({ ...EMPTY_DRAFT, prospectName: name });
+    setSavedProfileMediaPermission(false);
     setEvents([]);
     setEditorOpen(true);
     setError("");
@@ -549,6 +560,7 @@ export default function AdminOnboardingPage() {
     });
     setSearch(item.prospect_name);
     setDraft(caseToDraft(item));
+    setSavedProfileMediaPermission(item.profile_media_permission === true);
     setEditorOpen(true);
     setError("");
     setSuccess("");
@@ -559,6 +571,7 @@ export default function AdminOnboardingPage() {
     setSelectedSuggestion(null);
     setSearch("");
     setDraft(EMPTY_DRAFT);
+    setSavedProfileMediaPermission(false);
     setEvents([]);
     setEditorOpen(false);
     setError("");
@@ -597,6 +610,9 @@ export default function AdminOnboardingPage() {
       if (!response.ok) throw new Error(payload.error || "save_failed");
       if (!payload.case) throw new Error("save_failed");
       setDraft(caseToDraft(payload.case));
+      setSavedProfileMediaPermission(
+        payload.case.profile_media_permission === true,
+      );
       setSelectedSuggestion((current) => ({
         type: "onboarding",
         id: payload.case?.id || current?.id || "",
@@ -1565,6 +1581,10 @@ export default function AdminOnboardingPage() {
                     address={draft.address}
                     phone={draft.ownerPhone}
                     ownerEmail={draft.ownerEmail}
+                    profileMediaPermission={
+                      draft.profileMediaPermission &&
+                      savedProfileMediaPermission
+                    }
                     t={t}
                   />
                 )}

@@ -2,13 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import {
   Check,
   Clipboard,
+  ImagePlus,
   Link2,
   Plus,
   Save,
   ShieldCheck,
   Trash2,
+  X,
 } from "lucide-react";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
+import { uploadMirebookImage } from "@/lib/imageUpload";
 import {
   EMPTY_PREPARED_PROFILE,
   newPreparedService,
@@ -25,6 +28,7 @@ type Props = {
   address: string;
   phone: string;
   ownerEmail: string;
+  profileMediaPermission: boolean;
   t: (key: string, fallback?: string) => string;
 };
 
@@ -55,6 +59,7 @@ export default function PreparedProfilePanel({
   address,
   phone,
   ownerEmail: initialOwnerEmail,
+  profileMediaPermission,
   t,
 }: Props) {
   const [profile, setProfile] = useState<PreparedBusinessProfile>({
@@ -69,7 +74,11 @@ export default function PreparedProfilePanel({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [issuing, setIssuing] = useState(false);
+  const [uploadingImageKey, setUploadingImageKey] = useState<string | null>(
+    null,
+  );
   const [storageAvailable, setStorageAvailable] = useState(true);
+  const [mediaHandoffAvailable, setMediaHandoffAvailable] = useState(true);
   const [saved, setSaved] = useState(false);
   const [handoffUrl, setHandoffUrl] = useState("");
   const [ownerEmail, setOwnerEmail] = useState(
@@ -96,6 +105,7 @@ export default function PreparedProfilePanel({
       );
       const payload = (await response.json()) as {
         storageAvailable?: boolean;
+        mediaHandoffAvailable?: boolean;
         draft?: PreparedProfileDraft | null;
         error?: string;
       };
@@ -110,16 +120,19 @@ export default function PreparedProfilePanel({
         );
       } else if (payload.storageAvailable === false) {
         setStorageAvailable(false);
-      } else if (payload.draft) {
-        setProfile(payload.draft.profile);
-        setServices(payload.draft.services || []);
-        setOwnerEmail(
-          payload.draft.intendedOwnerEmail ||
-            initialOwnerEmail.trim().toLowerCase(),
-        );
-        setSaved(true);
-        setHandoffIssuedAt(payload.draft.handoffIssuedAt || null);
-        setAdoptedBusinessId(payload.draft.adoptedBusinessId || null);
+      } else {
+        setMediaHandoffAvailable(payload.mediaHandoffAvailable !== false);
+        if (payload.draft) {
+          setProfile(payload.draft.profile);
+          setServices(payload.draft.services || []);
+          setOwnerEmail(
+            payload.draft.intendedOwnerEmail ||
+              initialOwnerEmail.trim().toLowerCase(),
+          );
+          setSaved(true);
+          setHandoffIssuedAt(payload.draft.handoffIssuedAt || null);
+          setAdoptedBusinessId(payload.draft.adoptedBusinessId || null);
+        }
       }
       setLoading(false);
     }
@@ -150,6 +163,67 @@ export default function PreparedProfilePanel({
     );
     setSaved(false);
     setMessage("");
+  }
+
+  async function uploadPreparedImage(
+    file: File | null,
+    target: { type: "profile" } | { type: "service"; serviceId: string },
+  ) {
+    if (!file) return;
+    if (!mediaHandoffAvailable) {
+      setError(
+        t(
+          "admin.onboarding.prepared.mediaHandoffUnavailable",
+          "Prepared photo handoff is not enabled in this environment yet.",
+        ),
+      );
+      return;
+    }
+    if (!profileMediaPermission) {
+      setError(
+        t(
+          "admin.onboarding.prepared.mediaPermissionRequired",
+          "Record profile-media permission on the onboarding case before uploading photos.",
+        ),
+      );
+      return;
+    }
+
+    const imageKey =
+      target.type === "profile" ? "profile" : `service:${target.serviceId}`;
+    setUploadingImageKey(imageKey);
+    setError("");
+    setMessage("");
+    try {
+      const uploaded = await uploadMirebookImage({
+        file,
+        folder: target.type === "profile" ? "businesses" : "services",
+        recordId:
+          target.type === "profile"
+            ? `onboarding-${caseId}`
+            : `onboarding-${caseId}-${target.serviceId}`,
+      });
+      if (target.type === "profile") {
+        updateProfile("imageUrl", uploaded.publicUrl);
+      } else {
+        updateService(target.serviceId, "imageUrl", uploaded.publicUrl);
+      }
+      setMessage(
+        t(
+          "admin.onboarding.prepared.mediaUploaded",
+          "Photo uploaded. Save the prepared profile to include it in the owner handoff.",
+        ),
+      );
+    } catch {
+      setError(
+        t(
+          "admin.onboarding.prepared.mediaUploadError",
+          "The prepared photo could not be uploaded.",
+        ),
+      );
+    } finally {
+      setUploadingImageKey(null);
+    }
   }
 
   async function saveProfile() {
@@ -401,6 +475,91 @@ export default function PreparedProfilePanel({
             }
           />
         </label>
+        <section className="prepared-media wide-field">
+          <div className="media-copy">
+            <span>
+              {t(
+                "admin.onboarding.prepared.businessPhoto",
+                "Prepared business photo",
+              )}
+            </span>
+            <small>
+              {profileMediaPermission
+                ? mediaHandoffAvailable
+                  ? t(
+                      "admin.onboarding.prepared.mediaPermissionReady",
+                      "Profile-use permission is recorded. This photo remains outside public discovery until the owner publishes.",
+                    )
+                  : t(
+                      "admin.onboarding.prepared.mediaHandoffUnavailable",
+                      "Prepared photo handoff is not enabled in this environment yet.",
+                    )
+                : t(
+                    "admin.onboarding.prepared.mediaPermissionMissing",
+                    "Record profile-media permission on the private case before adding a photo.",
+                  )}
+            </small>
+          </div>
+          {profile.imageUrl && (
+            <img
+              src={profile.imageUrl}
+              alt={profile.name || prospectName}
+              className="profile-media-preview"
+              decoding="async"
+            />
+          )}
+          <div className="media-actions">
+            <input
+              id={`prepared-profile-photo-${caseId}`}
+              className="visually-hidden-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              disabled={
+                !profileMediaPermission ||
+                !mediaHandoffAvailable ||
+                uploadingImageKey === "profile"
+              }
+              onChange={(event) => {
+                void uploadPreparedImage(event.target.files?.[0] || null, {
+                  type: "profile",
+                });
+                event.target.value = "";
+              }}
+            />
+            <label
+              htmlFor={`prepared-profile-photo-${caseId}`}
+              className={`btn btn-ghost media-picker ${
+                !profileMediaPermission ||
+                !mediaHandoffAvailable ||
+                uploadingImageKey === "profile"
+                  ? "disabled"
+                  : ""
+              }`}
+              aria-disabled={
+                !profileMediaPermission ||
+                !mediaHandoffAvailable ||
+                uploadingImageKey === "profile"
+              }
+            >
+              <ImagePlus aria-hidden="true" />
+              {uploadingImageKey === "profile"
+                ? t("admin.onboarding.prepared.mediaUploading", "Uploading...")
+                : profile.imageUrl
+                  ? t("admin.onboarding.prepared.replacePhoto", "Replace photo")
+                  : t("admin.onboarding.prepared.addPhoto", "Add photo")}
+            </label>
+            {profile.imageUrl && (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => updateProfile("imageUrl", "")}
+              >
+                <X aria-hidden="true" />
+                {t("admin.onboarding.prepared.removePhoto", "Remove photo")}
+              </button>
+            )}
+          </div>
+        </section>
         <label className="owner-toggle wide-field">
           <input
             type="checkbox"
@@ -496,6 +655,107 @@ export default function PreparedProfilePanel({
                     }
                   />
                 </label>
+                <section className="service-media wide-field">
+                  <div className="media-copy">
+                    <span>
+                      {t(
+                        "admin.onboarding.prepared.servicePhoto",
+                        "Prepared service photo",
+                      )}
+                    </span>
+                    <small>
+                      {profileMediaPermission
+                        ? mediaHandoffAvailable
+                          ? t(
+                              "admin.onboarding.prepared.servicePhotoBody",
+                              "Optional. It will remain hidden with the service until the owner reviews and activates it.",
+                            )
+                          : t(
+                              "admin.onboarding.prepared.mediaHandoffUnavailable",
+                              "Prepared photo handoff is not enabled in this environment yet.",
+                            )
+                        : t(
+                            "admin.onboarding.prepared.mediaPermissionMissing",
+                            "Record profile-media permission on the private case before adding a photo.",
+                          )}
+                    </small>
+                  </div>
+                  {service.imageUrl && (
+                    <img
+                      src={service.imageUrl}
+                      alt={service.name}
+                      className="service-media-preview"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  <div className="media-actions">
+                    <input
+                      id={`prepared-service-photo-${caseId}-${service.id}`}
+                      className="visually-hidden-file"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      disabled={
+                        !profileMediaPermission ||
+                        !mediaHandoffAvailable ||
+                        uploadingImageKey === `service:${service.id}`
+                      }
+                      onChange={(event) => {
+                        void uploadPreparedImage(
+                          event.target.files?.[0] || null,
+                          { type: "service", serviceId: service.id },
+                        );
+                        event.target.value = "";
+                      }}
+                    />
+                    <label
+                      htmlFor={`prepared-service-photo-${caseId}-${service.id}`}
+                      className={`btn btn-ghost media-picker ${
+                        !profileMediaPermission ||
+                        !mediaHandoffAvailable ||
+                        uploadingImageKey === `service:${service.id}`
+                          ? "disabled"
+                          : ""
+                      }`}
+                      aria-disabled={
+                        !profileMediaPermission ||
+                        !mediaHandoffAvailable ||
+                        uploadingImageKey === `service:${service.id}`
+                      }
+                    >
+                      <ImagePlus aria-hidden="true" />
+                      {uploadingImageKey === `service:${service.id}`
+                        ? t(
+                            "admin.onboarding.prepared.mediaUploading",
+                            "Uploading...",
+                          )
+                        : service.imageUrl
+                          ? t(
+                              "admin.onboarding.prepared.replacePhoto",
+                              "Replace photo",
+                            )
+                          : t(
+                              "admin.onboarding.prepared.addPhoto",
+                              "Add photo",
+                            )}
+                    </label>
+                    {service.imageUrl && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() =>
+                          updateService(service.id, "imageUrl", "")
+                        }
+                      >
+                        <X aria-hidden="true" />
+                        {t(
+                          "admin.onboarding.prepared.removePhoto",
+                          "Remove photo",
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </section>
                 <label>
                   <span>
                     {t(
@@ -889,6 +1149,76 @@ export default function PreparedProfilePanel({
         .wide-field {
           grid-column: 1 / -1;
         }
+        .prepared-media,
+        .service-media {
+          display: grid;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          background: var(--surface-2);
+        }
+        .service-media {
+          background: var(--surface);
+        }
+        .media-copy {
+          display: grid;
+          gap: 0.2rem;
+        }
+        .media-copy > span {
+          font-size: 0.8rem;
+          font-weight: 750;
+        }
+        .media-copy small {
+          color: var(--text-muted);
+          font-weight: 500;
+          line-height: 1.45;
+        }
+        .profile-media-preview,
+        .service-media-preview {
+          display: block;
+          width: 100%;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          object-fit: cover;
+          background: var(--surface);
+        }
+        .profile-media-preview {
+          max-width: 440px;
+          aspect-ratio: 16 / 9;
+        }
+        .service-media-preview {
+          width: 132px;
+          aspect-ratio: 4 / 3;
+        }
+        .media-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+          flex-wrap: wrap;
+        }
+        .visually-hidden-file {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+        .media-picker {
+          cursor: pointer;
+        }
+        .media-picker.disabled {
+          pointer-events: none;
+          opacity: 0.55;
+        }
+        .media-actions :global(svg) {
+          width: 17px;
+          height: 17px;
+        }
         .owner-toggle,
         .confirm-toggle {
           display: flex;
@@ -1026,7 +1356,8 @@ export default function PreparedProfilePanel({
             display: grid;
           }
           .prepared-actions :global(.btn),
-          .handoff-output :global(.btn) {
+          .handoff-output :global(.btn),
+          .media-actions :global(.btn) {
             width: 100%;
             justify-content: center;
           }

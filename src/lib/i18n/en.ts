@@ -5557,6 +5557,26 @@ export const en: TranslationTree = {
   "admin.onboarding.prepared.currency": "Currency",
   "admin.onboarding.prepared.timezone": "Timezone",
   "admin.onboarding.prepared.description": "Owner-review description",
+  "admin.onboarding.prepared.businessPhoto": "Prepared business photo",
+  "admin.onboarding.prepared.servicePhoto": "Prepared service photo",
+  "admin.onboarding.prepared.servicePhotoBody":
+    "Optional. It will remain hidden with the service until the owner reviews and activates it.",
+  "admin.onboarding.prepared.mediaPermissionReady":
+    "Profile-use permission is recorded. This photo remains outside public discovery until the owner publishes.",
+  "admin.onboarding.prepared.mediaPermissionMissing":
+    "Record profile-media permission on the private case before adding a photo.",
+  "admin.onboarding.prepared.mediaPermissionRequired":
+    "Record profile-media permission on the onboarding case before uploading photos.",
+  "admin.onboarding.prepared.mediaHandoffUnavailable":
+    "Prepared photo handoff is not enabled in this environment yet.",
+  "admin.onboarding.prepared.mediaUploading": "Uploading...",
+  "admin.onboarding.prepared.mediaUploaded":
+    "Photo uploaded. Save the prepared profile to include it in the owner handoff.",
+  "admin.onboarding.prepared.mediaUploadError":
+    "The prepared photo could not be uploaded.",
+  "admin.onboarding.prepared.addPhoto": "Add photo",
+  "admin.onboarding.prepared.replacePhoto": "Replace photo",
+  "admin.onboarding.prepared.removePhoto": "Remove photo",
   "admin.onboarding.prepared.ownerProvider": "Prepare the owner as a provider",
   "admin.onboarding.prepared.ownerProviderBody":
     "Useful for solo appointment businesses. It does not activate services or working hours.",
@@ -5613,6 +5633,10 @@ export const en: TranslationTree = {
   "onboardingJoin.checkServices":
     "Prepared service drafts stay hidden until reviewed",
   "onboardingJoin.checkPhotos": "Add or replace photos from your phone",
+  "onboardingJoin.checkPreparedPhotos": "Review or replace the prepared photos",
+  "onboardingJoin.checkPayments": "Customers pay you directly as usual",
+  "onboardingJoin.checkManualBookings":
+    "Add phone, walk-in or social bookings to the same calendar",
   "onboardingJoin.priceNote":
     "Some prices are placeholders. Mirëbook will clearly mark them for your review.",
   "onboardingJoin.connect": "Connect this profile",
