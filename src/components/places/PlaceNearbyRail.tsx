@@ -11,6 +11,7 @@ import type {
   DirectoryPlace,
 } from "@/components/explore/exploreTypes";
 import { useI18n } from "@/lib/useI18n";
+import { discoveryImageSources } from "@/lib/discoveryImage";
 
 const RELATED_PLACE_COUNT = 3;
 
@@ -58,7 +59,7 @@ function NearbyPlaceCard({ place }: { place: DirectoryPlace }) {
         <DirectoryCategoryArtwork category={place.categoryKey} />
         {hasImage && place.image && (
           <img
-            src={place.image.url}
+            {...discoveryImageSources(place.image.url)}
             alt={place.image.alt}
             loading="lazy"
             decoding="async"

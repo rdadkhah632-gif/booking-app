@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarCheck, MapPin } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useI18n } from "@/lib/useI18n";
+import { discoveryImageSources } from "@/lib/discoveryImage";
 import type { DiscoveryMapItem } from "./exploreTypes";
 
 type Props = {
@@ -74,7 +75,12 @@ export default function ExploreMapResultList({
               >
                 <span className="map-result-media" aria-hidden="true">
                   {item.imageUrl ? (
-                    <img src={item.imageUrl} alt="" loading="lazy" />
+                    <img
+                      {...discoveryImageSources(item.imageUrl, "thumbnail")}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : item.resultType === "business" ? (
                     <CalendarCheck size={22} />
                   ) : (

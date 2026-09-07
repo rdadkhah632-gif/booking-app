@@ -27,6 +27,7 @@ import { getBusinessAppUrl, getCustomerAppUrl } from "@/lib/appUrls";
 import { recordSiteEvent } from "@/lib/siteAnalytics";
 import type { PublicDirectoryPlace } from "@/lib/server/publicDirectoryPlace";
 import { useI18n } from "@/lib/useI18n";
+import { discoveryImageSources } from "@/lib/discoveryImage";
 
 type PlaceDetail = PublicDirectoryPlace & {
   categoryKey: DirectoryCategoryKey;
@@ -371,7 +372,7 @@ export default function DirectoryPlacePage({
               {place.image && !imageFailed ? (
                 <>
                   <img
-                    src={place.image.url}
+                    {...discoveryImageSources(place.image.url, "detail")}
                     alt={place.image.alt}
                     decoding="async"
                     onError={() => setImageFailed(true)}

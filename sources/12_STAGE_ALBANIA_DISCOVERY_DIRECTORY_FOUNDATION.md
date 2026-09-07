@@ -2396,6 +2396,9 @@ services, alter booking/RLS rules or change the iOS apps.
   remain enforced by the existing backend.
 - Customer departure-booking errors use localized copy, distinguish uncertain
   network outcomes, and recover confirmation navigation after a successful save.
+- Reviewed Commons photography uses responsive provider thumbnails on cards,
+  map rows, nearby places and detail pages instead of multi-megabyte originals.
+  Stored source URLs, social metadata, licensing and credits remain unchanged.
 
 Verification includes `node scripts/verify-discovery-regressions.cjs`, a fresh
 production build, synthetic browser-only owner/booking/handoff tests and EN/SQ

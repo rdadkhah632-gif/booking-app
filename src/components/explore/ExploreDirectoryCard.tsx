@@ -2,6 +2,7 @@ import { ArrowRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/useI18n";
+import { discoveryImageSources } from "@/lib/discoveryImage";
 import DirectoryCategoryArtwork from "./DirectoryCategoryArtwork";
 import {
   directoryCategoryLabel,
@@ -56,7 +57,7 @@ export default function ExploreDirectoryCard({ place, onShowOnMap }: Props) {
           <DirectoryCategoryArtwork category={place.categoryKey} />
           {hasImage && place.image && (
             <img
-              src={place.image.url}
+              {...discoveryImageSources(place.image.url)}
               alt={place.image.alt}
               loading="lazy"
               decoding="async"

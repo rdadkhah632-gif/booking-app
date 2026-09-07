@@ -33,6 +33,7 @@ const {
   matchesDiscoverySearch,
   discoveryServerSearchTerm,
 } = loadTypescript("src/lib/discoverySearch.ts");
+const { discoveryImageSources } = loadTypescript("src/lib/discoveryImage.ts");
 
 test("a group-only business needs a departure, not appointment staff or hours", () => {
   const services = [{ id: "tour", active: true, booking_type: "group" }];
@@ -156,4 +157,45 @@ test("main search resolves city aliases, not only the separate City field", () =
   assert.equal(discoveryServerSearchTerm("barber"), "barber");
   assert.equal(discoveryServerSearchTerm("parukeri"), "hair");
   assert.equal(discoveryServerSearchTerm("parukeri alma"), "hair alma");
+});
+
+test("reviewed Commons photos use responsive thumbnails without rewriting originals", () => {
+  const original =
+    "https://commons.wikimedia.org/wiki/Special:Redirect/file/Lake_Koman_Albania_2016.jpg";
+  const card = discoveryImageSources(original);
+  assert.equal(new URL(card.src).searchParams.get("width"), "960");
+  assert.equal(card.srcSet.split(", ").length, 4);
+  assert(card.srcSet.includes("width=500 500w"));
+  assert.equal(
+    new URL(discoveryImageSources(original, "detail").src).searchParams.get(
+      "width",
+    ),
+    "1280",
+  );
+  assert.equal(
+    new URL(discoveryImageSources(original, "thumbnail").src).searchParams.get(
+      "width",
+    ),
+    "250",
+  );
+  assert(!original.includes("width="));
+  assert.equal(
+    new URL(
+      discoveryImageSources(original + "?width=6000&height=100").src,
+    ).searchParams.has("height"),
+    false,
+  );
+});
+
+test("image sizing leaves unrelated hosts, private storage and malformed URLs unchanged", () => {
+  for (const src of [
+    "https://example.com/photo.jpg?token=private",
+    "https://commons.wikimedia.org.evil.test/wiki/Special:Redirect/file/test.jpg",
+    "http://commons.wikimedia.org/wiki/Special:Redirect/file/test.jpg",
+    "https://commons.wikimedia.org/wiki/File:test.jpg",
+    "/local-photo.jpg",
+    "bad url",
+  ]) {
+    assert.deepEqual(discoveryImageSources(src), { src });
+  }
 });

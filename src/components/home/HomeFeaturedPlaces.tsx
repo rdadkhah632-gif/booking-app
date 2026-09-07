@@ -8,6 +8,7 @@ import {
 } from "@/components/explore/directoryCategories";
 import type { DirectoryPlace } from "@/components/explore/exploreTypes";
 import { useI18n } from "@/lib/useI18n";
+import { discoveryImageSources } from "@/lib/discoveryImage";
 
 const FEATURED_PLACE_COUNT = 6;
 
@@ -68,7 +69,7 @@ function FeaturedPlaceCard({ place }: { place: DirectoryPlace }) {
         <DirectoryCategoryArtwork category={place.categoryKey} />
         {hasImage && place.image && (
           <img
-            src={place.image.url}
+            {...discoveryImageSources(place.image.url)}
             alt={place.image.alt}
             loading="lazy"
             decoding="async"
