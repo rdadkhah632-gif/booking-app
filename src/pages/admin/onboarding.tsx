@@ -1581,6 +1581,8 @@ export default function AdminOnboardingPage() {
                     address={draft.address}
                     phone={draft.ownerPhone}
                     ownerEmail={draft.ownerEmail}
+                    preferredLanguage={draft.preferredLanguage}
+                    uiLocale={locale}
                     profileMediaPermission={
                       draft.profileMediaPermission &&
                       savedProfileMediaPermission

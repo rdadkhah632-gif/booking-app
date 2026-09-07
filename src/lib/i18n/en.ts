@@ -5603,6 +5603,31 @@ export const en: TranslationTree = {
   "admin.onboarding.prepared.copyLink": "Copy owner link",
   "admin.onboarding.prepared.linkWarning":
     "The raw link is shown only now. Creating a new link invalidates the previous one.",
+  "admin.onboarding.prepared.statusTitle": "Owner handoff status",
+  "admin.onboarding.prepared.statusDraft":
+    "Save the prepared profile before creating a secure link.",
+  "admin.onboarding.prepared.statusEmailNeeded":
+    "Add the owner-provided email before creating a secure link.",
+  "admin.onboarding.prepared.statusReady":
+    "Ready to create an email-bound owner link.",
+  "admin.onboarding.prepared.statusIssued":
+    "A secure link is active for {email} until {expires}. Create a new link if you need the raw URL again.",
+  "admin.onboarding.prepared.statusIssuedNoExpiry":
+    "A secure link is active for {email}. Create a new link if you need the raw URL again.",
+  "admin.onboarding.prepared.statusExpired":
+    "The last secure link for {email} expired on {expires}. Create a new link before contacting the owner.",
+  "admin.onboarding.prepared.statusEmailChanged":
+    "The last link remains bound to {email}. Create a new link to use the edited address.",
+  "admin.onboarding.prepared.statusConnected":
+    "The verified owner connected this profile on {date}.",
+  "admin.onboarding.prepared.statusConnectedNoDate":
+    "The verified owner connected this profile.",
+  "admin.onboarding.prepared.ownerMessage":
+    "Ready-to-send owner message ({language})",
+  "admin.onboarding.prepared.ownerMessageTemplate":
+    "Hello! Your private Mirëbook profile for {businessName} is ready to review. Open this secure link, then create or sign in to Mirëbook Business with {ownerEmail}: {handoffUrl}\n\nYour profile and services stay hidden until you review them and choose to publish. Mirëbook will never ask for your password.",
+  "admin.onboarding.prepared.copyMessage": "Copy owner message",
+  "admin.onboarding.prepared.ownerMessageCopied": "Owner message copied.",
   "onboardingJoin.metaTitle": "Prepared business profile | Mirëbook",
   "onboardingJoin.loading": "Loading your prepared profile...",
   "onboardingJoin.invalid":

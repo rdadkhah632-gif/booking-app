@@ -19,6 +19,7 @@ import {
   type PreparedProfileDraft,
   type PreparedServiceDraft,
 } from "@/lib/onboardingPreparedProfile";
+import { type Locale, translate } from "@/lib/i18n";
 
 type Props = {
   caseId: string;
@@ -28,12 +29,28 @@ type Props = {
   address: string;
   phone: string;
   ownerEmail: string;
+  preferredLanguage: Locale;
+  uiLocale: Locale;
   profileMediaPermission: boolean;
   t: (key: string, fallback?: string) => string;
 };
 
 const CURRENCIES = ["ALL", "EUR", "GBP", "USD"] as const;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function interpolate(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] || "");
+}
+
+function formatHandoffDate(value: string | null, locale: Locale) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(locale === "sq" ? "sq-AL" : "en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
 
 function preparedBusinessCategory(categoryKey: string) {
   const values: Record<string, string> = {
@@ -59,6 +76,8 @@ export default function PreparedProfilePanel({
   address,
   phone,
   ownerEmail: initialOwnerEmail,
+  preferredLanguage,
+  uiLocale,
   profileMediaPermission,
   t,
 }: Props) {
@@ -85,12 +104,16 @@ export default function PreparedProfilePanel({
     initialOwnerEmail.trim().toLowerCase(),
   );
   const [handoffIssuedAt, setHandoffIssuedAt] = useState<string | null>(null);
+  const [handoffExpiresAt, setHandoffExpiresAt] = useState<string | null>(null);
+  const [boundOwnerEmail, setBoundOwnerEmail] = useState("");
+  const [adoptedAt, setAdoptedAt] = useState<string | null>(null);
   const [adoptedBusinessId, setAdoptedBusinessId] = useState<string | null>(
     null,
   );
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const linkRef = useRef<HTMLInputElement>(null);
+  const ownerMessageRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -131,6 +154,9 @@ export default function PreparedProfilePanel({
           );
           setSaved(true);
           setHandoffIssuedAt(payload.draft.handoffIssuedAt || null);
+          setHandoffExpiresAt(payload.draft.handoffExpiresAt || null);
+          setBoundOwnerEmail(payload.draft.intendedOwnerEmail || "");
+          setAdoptedAt(payload.draft.adoptedAt || null);
           setAdoptedBusinessId(payload.draft.adoptedBusinessId || null);
         }
       }
@@ -314,6 +340,10 @@ export default function PreparedProfilePanel({
       setHandoffIssuedAt(
         payload.draft?.handoffIssuedAt || new Date().toISOString(),
       );
+      setHandoffExpiresAt(payload.draft?.handoffExpiresAt || null);
+      setBoundOwnerEmail(
+        payload.draft?.intendedOwnerEmail || ownerEmail.trim().toLowerCase(),
+      );
       setMessage(
         t(
           "admin.onboarding.prepared.linkReady",
@@ -333,6 +363,110 @@ export default function PreparedProfilePanel({
       linkRef.current?.select();
     }
     setMessage(t("admin.onboarding.prepared.linkCopied", "Owner link copied."));
+  }
+
+  const ownerMessage = handoffUrl
+    ? interpolate(
+        translate(
+          preferredLanguage,
+          "admin.onboarding.prepared.ownerMessageTemplate",
+          "Hello! Your private Mirëbook profile for {businessName} is ready to review. Open this secure link, then create or sign in to Mirëbook Business with {ownerEmail}: {handoffUrl}\n\nYour profile and services stay hidden until you review them and choose to publish. Mirëbook will never ask for your password.",
+        ),
+        {
+          businessName: profile.name || prospectName,
+          ownerEmail,
+          handoffUrl,
+        },
+      )
+    : "";
+
+  async function copyOwnerMessage() {
+    if (!ownerMessage) return;
+    try {
+      await navigator.clipboard.writeText(ownerMessage);
+    } catch {
+      ownerMessageRef.current?.focus();
+      ownerMessageRef.current?.select();
+    }
+    setMessage(
+      t(
+        "admin.onboarding.prepared.ownerMessageCopied",
+        "Owner message copied.",
+      ),
+    );
+  }
+
+  const expiresAtTime = handoffExpiresAt
+    ? new Date(handoffExpiresAt).getTime()
+    : Number.NaN;
+  const handoffExpired = Number.isFinite(expiresAtTime)
+    ? expiresAtTime <= Date.now()
+    : false;
+  const ownerEmailChanged = Boolean(
+    boundOwnerEmail && ownerEmail !== boundOwnerEmail,
+  );
+  const formattedExpiry = formatHandoffDate(handoffExpiresAt, uiLocale);
+  const formattedAdoption = formatHandoffDate(adoptedAt, uiLocale);
+
+  let handoffStatus = t(
+    "admin.onboarding.prepared.statusDraft",
+    "Save the prepared profile before creating a secure link.",
+  );
+  if (adoptedBusinessId) {
+    handoffStatus = formattedAdoption
+      ? interpolate(
+          t(
+            "admin.onboarding.prepared.statusConnected",
+            "The verified owner connected this profile on {date}.",
+          ),
+          { date: formattedAdoption },
+        )
+      : t(
+          "admin.onboarding.prepared.statusConnectedNoDate",
+          "The verified owner connected this profile.",
+        );
+  } else if (!EMAIL_PATTERN.test(ownerEmail)) {
+    handoffStatus = t(
+      "admin.onboarding.prepared.statusEmailNeeded",
+      "Add the owner-provided email before creating a secure link.",
+    );
+  } else if (ownerEmailChanged) {
+    handoffStatus = interpolate(
+      t(
+        "admin.onboarding.prepared.statusEmailChanged",
+        "The last link remains bound to {email}. Create a new link to use the edited address.",
+      ),
+      { email: boundOwnerEmail },
+    );
+  } else if (handoffExpired) {
+    handoffStatus = interpolate(
+      t(
+        "admin.onboarding.prepared.statusExpired",
+        "The last secure link for {email} expired on {expires}. Create a new link before contacting the owner.",
+      ),
+      { email: boundOwnerEmail || ownerEmail, expires: formattedExpiry },
+    );
+  } else if (handoffIssuedAt) {
+    handoffStatus = formattedExpiry
+      ? interpolate(
+          t(
+            "admin.onboarding.prepared.statusIssued",
+            "A secure link is active for {email} until {expires}. Create a new link if you need the raw URL again.",
+          ),
+          { email: boundOwnerEmail || ownerEmail, expires: formattedExpiry },
+        )
+      : interpolate(
+          t(
+            "admin.onboarding.prepared.statusIssuedNoExpiry",
+            "A secure link is active for {email}. Create a new link if you need the raw URL again.",
+          ),
+          { email: boundOwnerEmail || ownerEmail },
+        );
+  } else if (saved) {
+    handoffStatus = t(
+      "admin.onboarding.prepared.statusReady",
+      "Ready to create an email-bound owner link.",
+    );
   }
 
   if (loading) {
@@ -1001,6 +1135,13 @@ export default function PreparedProfilePanel({
         </label>
       </section>
 
+      <section className="handoff-status" aria-live="polite">
+        <strong>
+          {t("admin.onboarding.prepared.statusTitle", "Owner handoff status")}
+        </strong>
+        <p>{handoffStatus}</p>
+      </section>
+
       <footer className="prepared-actions">
         <button
           type="button"
@@ -1064,6 +1205,36 @@ export default function PreparedProfilePanel({
               "The raw link is shown only now. Creating a new link invalidates the previous one.",
             )}
           </small>
+          <label className="owner-message-field">
+            <span>
+              {interpolate(
+                t(
+                  "admin.onboarding.prepared.ownerMessage",
+                  "Ready-to-send owner message ({language})",
+                ),
+                {
+                  language:
+                    preferredLanguage === "sq"
+                      ? t("language.albanian", "Albanian")
+                      : t("language.english", "English"),
+                },
+              )}
+            </span>
+            <textarea
+              ref={ownerMessageRef}
+              readOnly
+              rows={7}
+              value={ownerMessage}
+            />
+          </label>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => void copyOwnerMessage()}
+          >
+            <Clipboard aria-hidden="true" />
+            {t("admin.onboarding.prepared.copyMessage", "Copy owner message")}
+          </button>
         </div>
       )}
 
@@ -1320,6 +1491,23 @@ export default function PreparedProfilePanel({
           border-radius: 7px;
           background: rgba(20, 184, 166, 0.05);
         }
+        .handoff-status {
+          display: grid;
+          gap: 0.25rem;
+          padding: 0.85rem;
+          border: 1px solid var(--border);
+          border-radius: 7px;
+          background: var(--surface-2);
+        }
+        .handoff-status strong {
+          font-size: 0.8rem;
+        }
+        .handoff-status p {
+          margin: 0;
+          color: var(--text-muted);
+          font-size: 0.8rem;
+          line-height: 1.5;
+        }
         .owner-binding small {
           color: var(--text-muted);
           font-weight: 500;
@@ -1333,6 +1521,15 @@ export default function PreparedProfilePanel({
         }
         .handoff-output label {
           flex: 1 1 360px;
+        }
+        .handoff-output .owner-message-field {
+          flex-basis: 100%;
+        }
+        .owner-message-field textarea {
+          min-height: 9rem;
+          resize: vertical;
+          font-weight: 500;
+          line-height: 1.5;
         }
         .handoff-output small {
           flex-basis: 100%;

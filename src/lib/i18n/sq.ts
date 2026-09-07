@@ -5740,6 +5740,32 @@ export const sq: TranslationTree = {
   "admin.onboarding.prepared.copyLink": "Kopjo lidhjen e pronarit",
   "admin.onboarding.prepared.linkWarning":
     "Lidhja e plotë shfaqet vetëm tani. Krijimi i një lidhjeje të re e çaktivizon të mëparshmen.",
+  "admin.onboarding.prepared.statusTitle": "Gjendja e kalimit te pronari",
+  "admin.onboarding.prepared.statusDraft":
+    "Ruaj profilin e përgatitur para se të krijosh një lidhje të sigurt.",
+  "admin.onboarding.prepared.statusEmailNeeded":
+    "Shto emailin e dhënë nga pronari para se të krijosh një lidhje të sigurt.",
+  "admin.onboarding.prepared.statusReady":
+    "Gati për të krijuar një lidhje pronari të kufizuar te emaili.",
+  "admin.onboarding.prepared.statusIssued":
+    "Një lidhje e sigurt është aktive për {email} deri më {expires}. Krijo një lidhje të re nëse të duhet përsëri URL-ja e plotë.",
+  "admin.onboarding.prepared.statusIssuedNoExpiry":
+    "Një lidhje e sigurt është aktive për {email}. Krijo një lidhje të re nëse të duhet përsëri URL-ja e plotë.",
+  "admin.onboarding.prepared.statusExpired":
+    "Lidhja e fundit e sigurt për {email} skadoi më {expires}. Krijo një lidhje të re para se të kontaktosh pronarin.",
+  "admin.onboarding.prepared.statusEmailChanged":
+    "Lidhja e fundit mbetet e kufizuar te {email}. Krijo një lidhje të re për të përdorur adresën e redaktuar.",
+  "admin.onboarding.prepared.statusConnected":
+    "Pronari i verifikuar e lidhi këtë profil më {date}.",
+  "admin.onboarding.prepared.statusConnectedNoDate":
+    "Pronari i verifikuar e lidhi këtë profil.",
+  "admin.onboarding.prepared.ownerMessage":
+    "Mesazh gati për t'ia dërguar pronarit ({language})",
+  "admin.onboarding.prepared.ownerMessageTemplate":
+    "Përshëndetje! Profili privat në Mirëbook për {businessName} është gati për kontroll. Hapeni këtë lidhje të sigurt, pastaj krijoni ose hyni në Mirëbook Business me emailin {ownerEmail}: {handoffUrl}\n\nProfili dhe shërbimet tuaja mbeten të fshehura derisa t'i kontrolloni dhe të zgjidhni t'i publikoni. Mirëbook nuk do t'ju kërkojë kurrë fjalëkalimin.",
+  "admin.onboarding.prepared.copyMessage": "Kopjo mesazhin për pronarin",
+  "admin.onboarding.prepared.ownerMessageCopied":
+    "Mesazhi për pronarin u kopjua.",
   "onboardingJoin.metaTitle": "Profili i përgatitur i biznesit | Mirëbook",
   "onboardingJoin.loading": "Po ngarkohet profili yt i përgatitur...",
   "onboardingJoin.invalid":
