@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { CalendarPlus, Check, UsersRound, X } from "lucide-react";
+import { CalendarPlus, Check, RefreshCw, UsersRound, X } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/useI18n";
 import { formatLocalizedDate } from "@/lib/i18n";
 import { formatCurrencyAmount } from "@/lib/currency";
 import { requestTransactionalEmail } from "@/lib/email/client";
+import { dateKeyInTimeZone } from "@/lib/timezone";
 
 type GroupService = {
   id: string;
@@ -98,9 +99,20 @@ export default function DeparturesPage() {
       status: "confirmed" | "declined" | "cancelled";
     } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [departureView, setDepartureView] = useState<"upcoming" | "past">(
+    "upcoming",
+  );
+  const [now, setNow] = useState(() => Date.now());
+  const loadController = useRef<AbortController | null>(null);
+  const loadSequence = useRef(0);
+  const savingRef = useRef(false);
+  const dataReady = useRef(false);
+  const detailRef = useRef<HTMLElement | null>(null);
+  const actionsDisabled = saving || loading || Boolean(loadError);
 
   const selectedService = payload?.services.find(
     (service) => service.id === serviceId,
@@ -109,19 +121,30 @@ export default function DeparturesPage() {
     (departure) => departure.id === selectedDepartureId,
   );
 
-  async function loadDepartures(targetBusinessId?: string) {
+  async function loadDepartures(
+    targetBusinessId?: string,
+    resetSelection = false,
+  ) {
+    const sequence = ++loadSequence.current;
+    loadController.current?.abort();
+    const controller = new AbortController();
+    loadController.current = controller;
+    const timeout = window.setTimeout(() => controller.abort(), 20_000);
+    dataReady.current = false;
     setLoading(true);
-    setError("");
+    setLoadError("");
+    setConfirmingDepartureId("");
+    setConfirmingReservationAction(null);
     try {
       const nextBusinessId =
-        targetBusinessId ||
-        businessId ||
+        targetBusinessId ??
         (typeof router.query.businessId === "string"
           ? router.query.businessId.trim()
-          : "");
+          : businessId);
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      if (sequence !== loadSequence.current) return;
       if (!session) {
         router.replace(
           "/login?redirectTo=" + encodeURIComponent(router.asPath),
@@ -135,15 +158,27 @@ export default function DeparturesPage() {
       }
       const response = await fetch(`/api/dashboard/departures?${query}`, {
         cache: "no-store",
+        signal: controller.signal,
         headers: { Authorization: "Bearer " + session.access_token },
       });
       const nextPayload = (await response.json()) as Payload & {
         error?: string;
       };
       if (!response.ok) throw new Error(nextPayload.error || "load_failed");
+      if (
+        !nextPayload.business?.id ||
+        !Array.isArray(nextPayload.services) ||
+        !Array.isArray(nextPayload.staffMembers) ||
+        !Array.isArray(nextPayload.departures)
+      ) {
+        throw new Error("load_failed");
+      }
+      if (sequence !== loadSequence.current) return;
 
       setBusinessId(nextPayload.business.id);
       setPayload(nextPayload);
+      dataReady.current = true;
+      setNow(Date.now());
       const requestedServiceId =
         typeof router.query.serviceId === "string"
           ? router.query.serviceId
@@ -152,35 +187,113 @@ export default function DeparturesPage() {
         nextPayload.services.find(
           (service) => service.id === requestedServiceId,
         ) || nextPayload.services[0];
-      if (initialService && !serviceId) {
-        setServiceId(initialService.id);
-        setCapacity(Number(initialService.group_capacity || 12));
+      if (
+        resetSelection ||
+        businessId !== nextPayload.business.id ||
+        !nextPayload.services.some((service) => service.id === serviceId)
+      ) {
+        setServiceId(initialService?.id || "");
+        setCapacity(Number(initialService?.group_capacity || 12));
       }
+      setStaffMemberId((current) =>
+        nextPayload.staffMembers.some((staff) => staff.id === current)
+          ? current
+          : "",
+      );
       const requestedDepartureId =
         typeof router.query.departureId === "string"
           ? router.query.departureId
           : "";
-      if (
-        requestedDepartureId &&
-        nextPayload.departures.some(
-          (departure) => departure.id === requestedDepartureId,
-        )
-      ) {
-        setSelectedDepartureId(requestedDepartureId);
+      const requestedDeparture = nextPayload.departures.find(
+        (departure) => departure.id === requestedDepartureId,
+      );
+      if (requestedDeparture && (resetSelection || !selectedDepartureId)) {
+        setSelectedDepartureId(requestedDeparture.id);
+        setDepartureView(
+          requestedDeparture.status === "scheduled" &&
+            new Date(requestedDeparture.start_at).getTime() >= Date.now()
+            ? "upcoming"
+            : "past",
+        );
+      } else {
+        if (resetSelection) setDepartureView("upcoming");
+        setSelectedDepartureId((current) =>
+          nextPayload.departures.some((departure) => departure.id === current)
+            ? current
+            : "",
+        );
       }
     } catch (loadError) {
-      setError(
+      if (sequence !== loadSequence.current) return;
+      setLoadError(
         t("departures.error.load", "Could not load scheduled departures."),
       );
     } finally {
-      setLoading(false);
+      window.clearTimeout(timeout);
+      if (sequence === loadSequence.current) {
+        loadController.current = null;
+        setLoading(false);
+      }
     }
   }
 
   useEffect(() => {
     if (!router.isReady) return;
-    loadDepartures();
-  }, [router.isReady]);
+    setPayload(null);
+    setBusinessId("");
+    setSelectedDepartureId("");
+    setConfirmingDepartureId("");
+    setConfirmingReservationAction(null);
+    setError("");
+    setSuccess("");
+    void loadDepartures(
+      typeof router.query.businessId === "string"
+        ? router.query.businessId.trim()
+        : "",
+      true,
+    );
+    return () => {
+      loadSequence.current += 1;
+      loadController.current?.abort();
+    };
+  }, [
+    router.isReady,
+    router.query.businessId,
+    router.query.departureId,
+    router.query.serviceId,
+  ]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    function refreshOnReturn() {
+      if (
+        router.isReady &&
+        document.visibilityState === "visible" &&
+        !savingRef.current &&
+        !loadController.current
+      ) {
+        void loadDepartures();
+      }
+    }
+    window.addEventListener("focus", refreshOnReturn);
+    document.addEventListener("visibilitychange", refreshOnReturn);
+    return () => {
+      window.removeEventListener("focus", refreshOnReturn);
+      document.removeEventListener("visibilitychange", refreshOnReturn);
+    };
+  }, [
+    router.isReady,
+    router.query.businessId,
+    router.query.departureId,
+    router.query.serviceId,
+    businessId,
+    serviceId,
+    selectedDepartureId,
+  ]);
 
   async function authenticatedRequest(
     method: "POST" | "PATCH",
@@ -233,6 +346,8 @@ export default function DeparturesPage() {
 
   async function createDepartures(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (savingRef.current || !dataReady.current) return;
+    const operationSequence = loadSequence.current;
     const formData = new FormData(event.currentTarget);
     const submittedServiceId = String(formData.get("serviceId") || "").trim();
     const submittedStaffMemberId = String(
@@ -252,6 +367,7 @@ export default function DeparturesPage() {
       );
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     setError("");
     setSuccess("");
@@ -266,6 +382,7 @@ export default function DeparturesPage() {
         meetingPoint: submittedMeetingPoint,
         repeatCount: submittedRepeatCount,
       });
+      if (operationSequence !== loadSequence.current) return;
       setSuccess(
         submittedRepeatCount > 1
           ? t("departures.success.createdMany", "Departures added.")
@@ -273,6 +390,7 @@ export default function DeparturesPage() {
       );
       await loadDepartures(businessId);
     } catch (saveError) {
+      if (operationSequence !== loadSequence.current) return;
       setError(
         requestCode(saveError) === "departure_already_exists"
           ? t(
@@ -287,11 +405,15 @@ export default function DeparturesPage() {
             : t("departures.error.create", "Could not add the departure."),
       );
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
 
   async function changeStatus(departure: Departure, status: string) {
+    if (savingRef.current || !dataReady.current) return;
+    const operationSequence = loadSequence.current;
+    savingRef.current = true;
     setSaving(true);
     setError("");
     setSuccess("");
@@ -312,10 +434,12 @@ export default function DeparturesPage() {
         event: "departure_status_changed",
         departureId: departure.id,
       });
+      if (operationSequence !== loadSequence.current) return;
       setSuccess(t("departures.success.updated", "Departure updated."));
       setConfirmingDepartureId("");
       await loadDepartures(businessId);
     } catch (updateError) {
+      if (operationSequence !== loadSequence.current) return;
       setError(
         requestCode(updateError) === "departure_not_finished"
           ? t(
@@ -325,6 +449,7 @@ export default function DeparturesPage() {
           : t("departures.error.update", "Could not update the departure."),
       );
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -333,6 +458,9 @@ export default function DeparturesPage() {
     booking: ManifestBooking,
     bookingStatus: "confirmed" | "declined" | "cancelled" | "completed",
   ) {
+    if (savingRef.current || !dataReady.current) return;
+    const operationSequence = loadSequence.current;
+    savingRef.current = true;
     setSaving(true);
     setError("");
     setSuccess("");
@@ -346,12 +474,18 @@ export default function DeparturesPage() {
         event: "booking_status_changed",
         bookingId: booking.id,
       });
+      if (operationSequence !== loadSequence.current) return;
       setSuccess(
         t("departures.success.reservationUpdated", "Reservation updated."),
       );
       setConfirmingReservationAction(null);
       await loadDepartures(businessId);
     } catch (updateError) {
+      if (operationSequence !== loadSequence.current) return;
+      setConfirmingReservationAction(null);
+      if (requestCode(updateError) === "reservation_action_unavailable") {
+        await loadDepartures(businessId);
+      }
       setError(
         requestCode(updateError) === "reservation_action_unavailable"
           ? t(
@@ -364,18 +498,20 @@ export default function DeparturesPage() {
             ),
       );
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
 
-  const upcomingDepartures = useMemo(
+  const visibleDepartures = useMemo(
     () =>
-      (payload?.departures || []).filter(
-        (departure) =>
+      (payload?.departures || []).filter((departure) => {
+        const upcoming =
           departure.status === "scheduled" &&
-          new Date(departure.start_at) >= new Date(),
-      ),
-    [payload?.departures],
+          new Date(departure.start_at).getTime() >= now;
+        return departureView === "upcoming" ? upcoming : !upcoming;
+      }),
+    [payload?.departures, departureView, now],
   );
 
   function departureTime(departure: Departure) {
@@ -397,8 +533,51 @@ export default function DeparturesPage() {
         t("departures.pageSubtitle", "Scheduled group services")
       }
     >
-      {error && <div className="notice error-notice">{error}</div>}
-      {success && <div className="notice success-notice">{success}</div>}
+      {loadError && (
+        <div className="notice error-notice" role="alert">
+          <span>{loadError}</span>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            disabled={loading || saving}
+            onClick={() => void loadDepartures()}
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+            {t("common.retry", "Retry")}
+          </button>
+        </div>
+      )}
+      {error && (
+        <div className="notice error-notice" role="alert">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="notice success-notice" role="status">
+          {success}
+        </div>
+      )}
+
+      {payload && (
+        <div className="departure-refresh">
+          <span className="small muted" role="status">
+            {loading ? t("departures.loading", "Loading departures...") : ""}
+          </span>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            disabled={loading || saving}
+            onClick={() => {
+              setConfirmingDepartureId("");
+              setConfirmingReservationAction(null);
+              void loadDepartures();
+            }}
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+            {t("common.refresh", "Refresh")}
+          </button>
+        </div>
+      )}
 
       {!loading && payload && payload.services.length > 0 && (
         <div className="departure-format-note">
@@ -420,13 +599,13 @@ export default function DeparturesPage() {
         </div>
       )}
 
-      {loading ? (
+      {loading && !payload ? (
         <div className="card">
           <p className="muted">
             {t("departures.loading", "Loading departures...")}
           </p>
         </div>
-      ) : payload?.services.length === 0 ? (
+      ) : !payload ? null : payload.services.length === 0 ? (
         <div className="card empty-departures">
           <CalendarPlus size={28} aria-hidden="true" />
           <h2>
@@ -450,179 +629,191 @@ export default function DeparturesPage() {
         <div className="departures-layout">
           <section className="departures-main">
             <form className="card departure-form" onSubmit={createDepartures}>
-              <div className="departure-section-heading">
-                <div>
-                  <p className="eyebrow">
-                    {t("departures.create.kicker", "New schedule")}
-                  </p>
-                  <h2>{t("departures.create.title", "Add a departure")}</h2>
-                </div>
-                <span className="small muted">{payload.business.timezone}</span>
-              </div>
-
-              <div className="departure-fields primary-fields">
-                <label>
-                  <span>{t("departures.field.service", "Group service")}</span>
-                  <select
-                    name="serviceId"
-                    value={serviceId}
-                    onChange={(event) => {
-                      const nextId = event.target.value;
-                      setServiceId(nextId);
-                      const nextService = payload.services.find(
-                        (service) => service.id === nextId,
-                      );
-                      setCapacity(Number(nextService?.group_capacity || 12));
-                    }}
-                    required
-                  >
-                    {payload.services.map((service) => (
-                      <option key={service.id} value={service.id}>
-                        {service.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>{t("departures.field.date", "Date")}</span>
-                  <input
-                    name="date"
-                    type="date"
-                    value={date}
-                    min={dateInputValue(new Date())}
-                    onInput={(event) => setDate(event.currentTarget.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  <span>{t("departures.field.time", "Start time")}</span>
-                  <input
-                    name="time"
-                    type="time"
-                    value={time}
-                    onInput={(event) => setTime(event.currentTarget.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  <span>{t("departures.field.capacity", "Seats")}</span>
-                  <input
-                    name="capacity"
-                    type="number"
-                    min={1}
-                    max={200}
-                    value={capacity}
-                    onChange={(event) =>
-                      setCapacity(Number(event.target.value))
-                    }
-                    required
-                  />
-                </label>
-              </div>
-
-              <div className="departure-fields secondary-fields">
-                <label>
-                  <span>
-                    {t("departures.field.guide", "Guide or staff (optional)")}
-                  </span>
-                  <select
-                    name="staffMemberId"
-                    value={staffMemberId}
-                    onChange={(event) => setStaffMemberId(event.target.value)}
-                  >
-                    <option value="">
-                      {t("departures.field.noGuide", "Assign later")}
-                    </option>
-                    {payload.staffMembers.map((staff) => (
-                      <option key={staff.id} value={staff.id}>
-                        {staff.name}
-                        {staff.role_title ? " · " + staff.role_title : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>
-                    {t("departures.field.meetingPoint", "Meeting point")}
-                  </span>
-                  <input
-                    name="meetingPoint"
-                    value={meetingPoint}
-                    onChange={(event) => setMeetingPoint(event.target.value)}
-                    placeholder={t(
-                      "departures.field.meetingPlaceholder",
-                      "Harbour, hotel, or exact meeting instructions",
-                    )}
-                  />
-                </label>
-                <label>
-                  <span>
-                    {t("departures.field.repeat", "Repeat on following days")}
-                  </span>
-                  <input
-                    name="repeatCount"
-                    type="number"
-                    min={1}
-                    max={31}
-                    value={repeatCount}
-                    onChange={(event) =>
-                      setRepeatCount(Number(event.target.value))
-                    }
-                  />
-                  <small className="field-hint">
-                    {t(
-                      "departures.field.repeatHint",
-                      "Keep this at 1 for a single departure.",
-                    )}
-                  </small>
-                </label>
-              </div>
-
-              {repeatCount > 1 && (
-                <p className="repeat-preview" role="status">
-                  {t(
-                    "departures.field.repeatPreview",
-                    "This creates {count} departures on consecutive days with the same time and seat capacity.",
-                  ).replace("{count}", String(repeatCount))}
-                </p>
-              )}
-
-              {selectedService && (
-                <p className="small service-pricing-note">
-                  {selectedService.duration_minutes}{" "}
-                  {t("common.minutes", "minutes")} ·{" "}
-                  {formatCurrencyAmount(
-                    Number(selectedService.price || 0),
-                    payload.business.currency,
-                    locale,
-                  )}{" "}
-                  {t("departures.perGuest", "per guest")}
-                  {selectedService.private_booking_enabled && (
-                    <>
-                      {" · "}
-                      {formatCurrencyAmount(
-                        Number(selectedService.private_price || 0),
-                        payload.business.currency,
-                        locale,
-                      )}{" "}
-                      {t("departures.privateTrip", "private trip")}
-                    </>
-                  )}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                className="btn btn-accent"
-                disabled={saving}
+              <fieldset
+                className="departure-form-content"
+                disabled={actionsDisabled}
               >
-                <CalendarPlus size={18} aria-hidden="true" />
-                {saving
-                  ? t("common.working", "Working...")
-                  : repeatCount > 1
-                    ? t("departures.createMany", "Add departures")
-                    : t("departures.createOne", "Add departure")}
-              </button>
+                <div className="departure-section-heading">
+                  <div>
+                    <p className="eyebrow">
+                      {t("departures.create.kicker", "New schedule")}
+                    </p>
+                    <h2>{t("departures.create.title", "Add a departure")}</h2>
+                  </div>
+                  <span className="small muted">
+                    {payload.business.timezone}
+                  </span>
+                </div>
+
+                <div className="departure-fields primary-fields">
+                  <label>
+                    <span>
+                      {t("departures.field.service", "Group service")}
+                    </span>
+                    <select
+                      name="serviceId"
+                      value={serviceId}
+                      onChange={(event) => {
+                        const nextId = event.target.value;
+                        setServiceId(nextId);
+                        const nextService = payload.services.find(
+                          (service) => service.id === nextId,
+                        );
+                        setCapacity(Number(nextService?.group_capacity || 12));
+                      }}
+                      required
+                    >
+                      {payload.services.map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>{t("departures.field.date", "Date")}</span>
+                    <input
+                      name="date"
+                      type="date"
+                      value={date}
+                      min={dateKeyInTimeZone(
+                        new Date(now),
+                        payload.business.timezone,
+                      )}
+                      onInput={(event) => setDate(event.currentTarget.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>{t("departures.field.time", "Start time")}</span>
+                    <input
+                      name="time"
+                      type="time"
+                      value={time}
+                      onInput={(event) => setTime(event.currentTarget.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>{t("departures.field.capacity", "Seats")}</span>
+                    <input
+                      name="capacity"
+                      type="number"
+                      min={1}
+                      max={200}
+                      value={capacity}
+                      onChange={(event) =>
+                        setCapacity(Number(event.target.value))
+                      }
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div className="departure-fields secondary-fields">
+                  <label>
+                    <span>
+                      {t("departures.field.guide", "Guide or staff (optional)")}
+                    </span>
+                    <select
+                      name="staffMemberId"
+                      value={staffMemberId}
+                      onChange={(event) => setStaffMemberId(event.target.value)}
+                    >
+                      <option value="">
+                        {t("departures.field.noGuide", "Assign later")}
+                      </option>
+                      {payload.staffMembers.map((staff) => (
+                        <option key={staff.id} value={staff.id}>
+                          {staff.name}
+                          {staff.role_title ? " · " + staff.role_title : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>
+                      {t("departures.field.meetingPoint", "Meeting point")}
+                    </span>
+                    <input
+                      name="meetingPoint"
+                      value={meetingPoint}
+                      onChange={(event) => setMeetingPoint(event.target.value)}
+                      placeholder={t(
+                        "departures.field.meetingPlaceholder",
+                        "Harbour, hotel, or exact meeting instructions",
+                      )}
+                    />
+                  </label>
+                  <label>
+                    <span>
+                      {t("departures.field.repeat", "Repeat on following days")}
+                    </span>
+                    <input
+                      name="repeatCount"
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={repeatCount}
+                      onChange={(event) =>
+                        setRepeatCount(Number(event.target.value))
+                      }
+                    />
+                    <small className="field-hint">
+                      {t(
+                        "departures.field.repeatHint",
+                        "Keep this at 1 for a single departure.",
+                      )}
+                    </small>
+                  </label>
+                </div>
+
+                {repeatCount > 1 && (
+                  <p className="repeat-preview" role="status">
+                    {t(
+                      "departures.field.repeatPreview",
+                      "This creates {count} departures on consecutive days with the same time and seat capacity.",
+                    ).replace("{count}", String(repeatCount))}
+                  </p>
+                )}
+
+                {selectedService && (
+                  <p className="small service-pricing-note">
+                    {selectedService.duration_minutes}{" "}
+                    {t("common.minutes", "minutes")} ·{" "}
+                    {formatCurrencyAmount(
+                      Number(selectedService.price || 0),
+                      payload.business.currency,
+                      locale,
+                    )}{" "}
+                    {t("departures.perGuest", "per guest")}
+                    {selectedService.private_booking_enabled && (
+                      <>
+                        {" · "}
+                        {formatCurrencyAmount(
+                          Number(selectedService.private_price || 0),
+                          payload.business.currency,
+                          locale,
+                        )}{" "}
+                        {t("departures.privateTrip", "private trip")}
+                      </>
+                    )}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  className="btn btn-accent"
+                  disabled={actionsDisabled}
+                >
+                  <CalendarPlus size={18} aria-hidden="true" />
+                  {saving
+                    ? t("common.working", "Working...")
+                    : repeatCount > 1
+                      ? t("departures.createMany", "Add departures")
+                      : t("departures.createOne", "Add departure")}
+                </button>
+              </fieldset>
             </form>
 
             <div className="departure-list-heading">
@@ -630,32 +821,70 @@ export default function DeparturesPage() {
                 <p className="eyebrow">
                   {t("departures.upcoming.kicker", "Live operations")}
                 </p>
-                <h2>{t("departures.upcoming.title", "Upcoming departures")}</h2>
+                <h2>
+                  {departureView === "upcoming"
+                    ? t("departures.upcoming.title", "Upcoming departures")
+                    : t(
+                        "departures.past.title",
+                        "Started and closed departures",
+                      )}
+                </h2>
               </div>
-              <span className="count-badge">{upcomingDepartures.length}</span>
+              <span className="count-badge">{visibleDepartures.length}</span>
             </div>
 
-            {upcomingDepartures.length === 0 ? (
+            <div
+              className="departure-view-switch"
+              role="group"
+              aria-label={t("departures.pageTitle", "Departures")}
+            >
+              <button
+                type="button"
+                aria-pressed={departureView === "upcoming"}
+                onClick={() => setDepartureView("upcoming")}
+              >
+                {t("departures.view.upcoming", "Upcoming")}
+              </button>
+              <button
+                type="button"
+                aria-pressed={departureView === "past"}
+                onClick={() => setDepartureView("past")}
+              >
+                {t("departures.view.past", "Started and closed")}
+              </button>
+            </div>
+
+            {visibleDepartures.length === 0 ? (
               <div className="empty-list">
                 <strong>
-                  {t(
-                    "departures.upcoming.empty",
-                    "No upcoming departures yet.",
-                  )}
+                  {departureView === "past"
+                    ? t(
+                        "departures.past.empty",
+                        "No started or closed departures in the last 30 days.",
+                      )
+                    : t(
+                        "departures.upcoming.empty",
+                        "No upcoming departures yet.",
+                      )}
                 </strong>
-                <p className="small muted">
-                  {t(
-                    "departures.upcoming.emptyBody",
-                    "Add the first real date and time above. Customers only see departures you schedule here.",
-                  )}
-                </p>
+                {departureView === "upcoming" && (
+                  <p className="small muted">
+                    {t(
+                      "departures.upcoming.emptyBody",
+                      "Add the first real date and time above. Customers only see departures you schedule here.",
+                    )}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="departure-list">
-                {upcomingDepartures.map((departure) => (
+                {visibleDepartures.map((departure) => (
                   <button
                     key={departure.id}
                     type="button"
+                    aria-pressed={selectedDepartureId === departure.id}
+                    aria-controls="departure-detail"
+                    disabled={saving}
                     className={
                       "departure-row " +
                       (selectedDepartureId === departure.id ? "selected" : "")
@@ -664,6 +893,12 @@ export default function DeparturesPage() {
                       setSelectedDepartureId(departure.id);
                       setConfirmingDepartureId("");
                       setConfirmingReservationAction(null);
+                      if (window.matchMedia("(max-width: 1100px)").matches) {
+                        requestAnimationFrame(() => {
+                          detailRef.current?.focus({ preventScroll: true });
+                          detailRef.current?.scrollIntoView({ block: "start" });
+                        });
+                      }
                     }}
                   >
                     <span className="departure-date">
@@ -701,7 +936,14 @@ export default function DeparturesPage() {
             )}
           </section>
 
-          <aside className="departure-detail">
+          <aside
+            className="departure-detail"
+            id="departure-detail"
+            ref={detailRef}
+            tabIndex={-1}
+            aria-label={t("departures.detail.kicker", "Departure manifest")}
+            aria-busy={loading}
+          >
             {selectedDeparture ? (
               <div className="detail-panel">
                 <p className="eyebrow">
@@ -782,7 +1024,7 @@ export default function DeparturesPage() {
                             <>
                               <button
                                 type="button"
-                                disabled={saving}
+                                disabled={actionsDisabled}
                                 onClick={() =>
                                   setConfirmingReservationAction({
                                     bookingId: booking.id,
@@ -795,7 +1037,7 @@ export default function DeparturesPage() {
                               </button>
                               <button
                                 type="button"
-                                disabled={saving}
+                                disabled={actionsDisabled}
                                 onClick={() =>
                                   setConfirmingReservationAction({
                                     bookingId: booking.id,
@@ -811,7 +1053,7 @@ export default function DeparturesPage() {
                           {booking.status === "confirmed" && (
                             <button
                               type="button"
-                              disabled={saving}
+                              disabled={actionsDisabled}
                               onClick={() =>
                                 setConfirmingReservationAction({
                                   bookingId: booking.id,
@@ -856,7 +1098,7 @@ export default function DeparturesPage() {
                               <button
                                 type="button"
                                 className="btn btn-accent"
-                                disabled={saving}
+                                disabled={actionsDisabled}
                                 onClick={() =>
                                   changeReservationStatus(
                                     booking,
@@ -884,7 +1126,7 @@ export default function DeparturesPage() {
                               <button
                                 type="button"
                                 className="btn btn-ghost"
-                                disabled={saving}
+                                disabled={actionsDisabled}
                                 onClick={() =>
                                   setConfirmingReservationAction(null)
                                 }
@@ -913,7 +1155,22 @@ export default function DeparturesPage() {
                       <button
                         type="button"
                         className="btn btn-ghost"
-                        disabled={saving}
+                        disabled={
+                          actionsDisabled ||
+                          new Date(selectedDeparture.start_at).getTime() +
+                            selectedDeparture.duration_minutes * 60_000 >
+                            now
+                        }
+                        title={
+                          new Date(selectedDeparture.start_at).getTime() +
+                            selectedDeparture.duration_minutes * 60_000 >
+                          now
+                            ? t(
+                                "departures.error.notFinished",
+                                "This departure cannot be completed before it finishes.",
+                              )
+                            : undefined
+                        }
                         onClick={() =>
                           changeStatus(selectedDeparture, "completed")
                         }
@@ -940,7 +1197,7 @@ export default function DeparturesPage() {
                             <button
                               type="button"
                               className="btn btn-danger"
-                              disabled={saving}
+                              disabled={actionsDisabled}
                               onClick={() =>
                                 changeStatus(selectedDeparture, "cancelled")
                               }
@@ -956,7 +1213,7 @@ export default function DeparturesPage() {
                             <button
                               type="button"
                               className="btn btn-ghost"
-                              disabled={saving}
+                              disabled={actionsDisabled}
                               onClick={() => setConfirmingDepartureId("")}
                             >
                               {t("departures.action.keep", "Keep departure")}
@@ -967,7 +1224,7 @@ export default function DeparturesPage() {
                         <button
                           type="button"
                           className="btn btn-danger"
-                          disabled={saving}
+                          disabled={actionsDisabled}
                           onClick={() =>
                             setConfirmingDepartureId(selectedDeparture.id)
                           }
@@ -1005,6 +1262,11 @@ export default function DeparturesPage() {
 
       <style jsx>{`
         .notice {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.65rem;
           padding: 0.8rem 0.95rem;
           margin-bottom: 0.85rem;
           border: 1px solid var(--border);
@@ -1068,9 +1330,53 @@ export default function DeparturesPage() {
         }
 
         .departure-form {
+          container-type: inline-size;
           display: grid;
           gap: 1rem;
           margin-bottom: 1.2rem;
+        }
+
+        .departure-form-content {
+          display: grid;
+          gap: 1rem;
+          min-width: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+        }
+
+        .departure-refresh {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.65rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .departure-view-switch {
+          display: flex;
+          margin-bottom: 0.75rem;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .departure-view-switch button {
+          flex: 1;
+          min-width: 0;
+          min-height: 44px;
+          padding: 0.5rem;
+          border: 0;
+          border-bottom: 2px solid transparent;
+          background: transparent;
+          color: var(--text-muted);
+          font: inherit;
+          font-size: 0.85rem;
+          cursor: pointer;
+        }
+
+        .departure-view-switch button[aria-pressed="true"] {
+          border-bottom-color: var(--accent);
+          color: var(--text);
+          font-weight: 700;
         }
 
         .departure-section-heading,
@@ -1078,6 +1384,7 @@ export default function DeparturesPage() {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
+          flex-wrap: wrap;
           gap: 0.75rem;
         }
 
@@ -1117,10 +1424,31 @@ export default function DeparturesPage() {
 
         .departure-fields label {
           display: grid;
+          min-width: 0;
           gap: 0.35rem;
           color: var(--text-muted);
           font-size: 0.78rem;
           font-weight: 700;
+        }
+
+        .departure-fields input,
+        .departure-fields select {
+          min-width: 0;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .departure-row,
+        .departure-detail,
+        .notice {
+          overflow-wrap: anywhere;
+        }
+
+        @container (max-width: 620px) {
+          .primary-fields,
+          .secondary-fields {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
         }
 
         .service-pricing-note {
@@ -1212,6 +1540,7 @@ export default function DeparturesPage() {
           position: sticky;
           top: 1rem;
           min-width: 0;
+          scroll-margin-top: 1rem;
           border: 1px solid var(--border);
           border-radius: 8px;
           background: var(--surface);
@@ -1289,7 +1618,7 @@ export default function DeparturesPage() {
 
         .manifest-row {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) auto auto auto;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 0.5rem;
           align-items: center;
           padding: 0.6rem 0;
@@ -1302,10 +1631,15 @@ export default function DeparturesPage() {
         }
 
         .manifest-actions {
+          grid-column: 1 / -1;
           display: flex;
           flex-wrap: wrap;
           justify-content: flex-end;
           gap: 0.35rem;
+        }
+
+        .manifest-row > span:first-child {
+          grid-column: 1 / -1;
         }
 
         .manifest-actions button {

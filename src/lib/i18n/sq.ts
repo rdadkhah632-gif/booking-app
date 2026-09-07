@@ -5854,4 +5854,28 @@ export const sq: TranslationTree = {
   "register.staffNotice.title": "Lidhja e llogarisë së stafit",
   "support.thread.loginRequired": "Hyr për t'u përgjigjur.",
   "support.thread.replyError": "Përgjigjja e mbështetjes nuk mund të dërgohej.",
+  "explore.discovery.partialUnavailable":
+    "Disa rezultate nuk u ngarkuan. Vendet më poshtë janë ende të disponueshme.",
+  "departures.view.upcoming": "Të ardhshme",
+  "departures.view.past": "Të nisura dhe të mbyllura",
+  "departures.past.title": "Nisje të filluara dhe të mbyllura",
+  "departures.past.empty":
+    "Nuk ka nisje të filluara ose të mbyllura në 30 ditët e fundit.",
+  "admin.onboarding.prepared.copyManual":
+    "Kopjimi automatik nuk ishte i mundur. Përzgjidhni dhe kopjoni tekstin manualisht.",
+  "admin.onboarding.prepared.statusUncertain":
+    "Statusi i fundit i lidhjes nuk mund të konfirmohej. Krijoni një lidhje të re të sigurt përpara se ta ndani.",
+  "admin.onboarding.prepared.statusUnsaved":
+    "Ruani ndryshimet përpara se të ndani ose të krijoni një lidhje për pronarin. Një lidhje e krijuar më parë hap ende profilin e fundit të ruajtur.",
+  "onboardingJoin.loadError":
+    "Profili juaj i përgatitur nuk mund të ngarkohej. Kontrolloni lidhjen me internetin dhe provoni përsëri.",
+  "onboardingJoin.connectedTitle": "Profili u lidh",
+  "onboardingJoin.unknownTitle": "Rezultati i lidhjes nuk u konfirmua",
+  "onboardingJoin.unknownBody":
+    "Nuk mund ta konfirmonim rezultatin. Profili juaj mund të jetë lidhur tashmë. Kontrolloni panelin e biznesit përpara se të vazhdoni, ose kontaktoni Mirëbook për ndihmë.",
+  "onboardingJoin.openDashboard": "Hap panelin e biznesit",
+  "publicBusiness.departures.sessionExpired":
+    "Hyni përsëri përpara se të dërgoni kërkesën e rezervimit.",
+  "publicBusiness.departures.saveUncertain":
+    "Nuk mund të konfirmonim nëse rezervimi juaj u ruajt. Kontrolloni Rezervimet e mia përpara se të provoni përsëri.",
 };

@@ -5,12 +5,17 @@ import {
   ImagePlus,
   Link2,
   Plus,
+  RefreshCw,
   Save,
   ShieldCheck,
   Trash2,
   X,
 } from "lucide-react";
 import { getStableBrowserSession } from "@/lib/auth/getStableBrowserSession";
+import {
+  onboardingRequest,
+  OnboardingResponseError,
+} from "@/lib/onboardingRequest";
 import { uploadMirebookImage } from "@/lib/imageUpload";
 import {
   EMPTY_PREPARED_PROFILE,
@@ -91,6 +96,8 @@ export default function PreparedProfilePanel({
   });
   const [services, setServices] = useState<PreparedServiceDraft[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [issuing, setIssuing] = useState(false);
   const [uploadingImageKey, setUploadingImageKey] = useState<string | null>(
@@ -112,69 +119,202 @@ export default function PreparedProfilePanel({
   );
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [handoffUncertain, setHandoffUncertain] = useState(false);
+  const [now, setNow] = useState(Date.now);
   const linkRef = useRef<HTMLInputElement>(null);
   const ownerMessageRef = useRef<HTMLTextAreaElement>(null);
+  const operationRef = useRef(false);
+  const copyingRef = useRef(false);
+  const outputVersionRef = useRef(0);
+  const requestScopeRef = useRef<AbortController | null>(null);
+  const loadDefaultsRef = useRef({ profile, initialOwnerEmail, t });
+  loadDefaultsRef.current = {
+    profile: {
+      ...EMPTY_PREPARED_PROFILE,
+      name: prospectName,
+      category: preparedBusinessCategory(categoryKey),
+      city,
+      address,
+      phone,
+    },
+    initialOwnerEmail,
+    t,
+  };
+  const busy = saving || issuing || Boolean(uploadingImageKey);
+  const controlsDisabled = busy || Boolean(adoptedBusinessId || adoptedAt);
+
+  function applyDraft(draft: PreparedProfileDraft) {
+    setProfile(draft.profile);
+    setServices(draft.services || []);
+    setSaved(true);
+    setHandoffIssuedAt(draft.handoffIssuedAt || null);
+    setHandoffExpiresAt(draft.handoffExpiresAt || null);
+    setBoundOwnerEmail(draft.intendedOwnerEmail || "");
+    setAdoptedAt(draft.adoptedAt || null);
+    setAdoptedBusinessId(draft.adoptedBusinessId || null);
+    setHandoffUncertain(false);
+  }
 
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
+    requestScopeRef.current = controller;
+    const defaults = loadDefaultsRef.current;
+    const t = defaults.t;
     async function load() {
       setLoading(true);
+      setLoadFailed(false);
       setError("");
-      const session = await getStableBrowserSession();
-      if (!session || !active) return;
-      const response = await fetch(
-        `/api/admin/onboarding-profile?caseId=${encodeURIComponent(caseId)}`,
-        { headers: { Authorization: `Bearer ${session.access_token}` } },
-      );
-      const payload = (await response.json()) as {
-        storageAvailable?: boolean;
-        mediaHandoffAvailable?: boolean;
-        draft?: PreparedProfileDraft | null;
-        error?: string;
-      };
-      if (!active) return;
-      if (!response.ok) {
-        setError(
-          payload.error ||
-            t(
-              "admin.onboarding.prepared.loadError",
-              "The prepared profile could not be loaded.",
-            ),
+      setHandoffUrl("");
+      setMessage("");
+      try {
+        const { response, payload } = await onboardingRequest(
+          async (signal) => {
+            const session = await getStableBrowserSession();
+            if (!session)
+              throw new OnboardingResponseError(
+                t(
+                  "admin.onboarding.prepared.sessionError",
+                  "Sign in again before saving.",
+                ),
+              );
+            const response = await fetch(
+              `/api/admin/onboarding-profile?caseId=${encodeURIComponent(caseId)}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+                cache: "no-store",
+                signal,
+              },
+            );
+            const payload = (await response.json()) as {
+              storageAvailable?: boolean;
+              mediaHandoffAvailable?: boolean;
+              draft?: PreparedProfileDraft | null;
+              error?: string;
+            };
+            return { response, payload };
+          },
+          controller.signal,
         );
-      } else if (payload.storageAvailable === false) {
-        setStorageAvailable(false);
-      } else {
+        if (controller.signal.aborted) return;
+        if (!response.ok || !payload || !("draft" in payload)) {
+          throw new OnboardingResponseError(
+            payload?.error ||
+              t(
+                "admin.onboarding.prepared.loadError",
+                "The prepared profile could not be loaded.",
+              ),
+          );
+        }
+        setStorageAvailable(payload.storageAvailable !== false);
         setMediaHandoffAvailable(payload.mediaHandoffAvailable !== false);
         if (payload.draft) {
-          setProfile(payload.draft.profile);
-          setServices(payload.draft.services || []);
+          applyDraft(payload.draft);
           setOwnerEmail(
             payload.draft.intendedOwnerEmail ||
-              initialOwnerEmail.trim().toLowerCase(),
+              defaults.initialOwnerEmail.trim().toLowerCase(),
           );
-          setSaved(true);
-          setHandoffIssuedAt(payload.draft.handoffIssuedAt || null);
-          setHandoffExpiresAt(payload.draft.handoffExpiresAt || null);
-          setBoundOwnerEmail(payload.draft.intendedOwnerEmail || "");
-          setAdoptedAt(payload.draft.adoptedAt || null);
-          setAdoptedBusinessId(payload.draft.adoptedBusinessId || null);
+        } else {
+          setProfile(defaults.profile);
+          setServices([]);
+          setOwnerEmail(defaults.initialOwnerEmail.trim().toLowerCase());
+          setSaved(false);
+          setHandoffIssuedAt(null);
+          setHandoffExpiresAt(null);
+          setBoundOwnerEmail("");
+          setAdoptedAt(null);
+          setAdoptedBusinessId(null);
+          setHandoffUncertain(false);
         }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setLoadFailed(true);
+          setError(
+            (error instanceof OnboardingResponseError && error.message) ||
+              t(
+                "admin.onboarding.prepared.loadError",
+                "The prepared profile could not be loaded.",
+              ),
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
-      setLoading(false);
     }
     void load();
     return () => {
-      active = false;
+      controller.abort();
     };
-  }, [caseId, initialOwnerEmail, t]);
+  }, [caseId, loadAttempt]);
+
+  useEffect(() => {
+    setNow(Date.now());
+    if (!handoffExpiresAt) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, [handoffExpiresAt]);
+
+  function clearOutput() {
+    outputVersionRef.current += 1;
+    setHandoffUrl("");
+    setMessage("");
+    setError("");
+  }
+
+  function markEdited() {
+    setSaved(false);
+    clearOutput();
+  }
+
+  function canMutate() {
+    return (
+      !loading &&
+      !loadFailed &&
+      storageAvailable &&
+      !controlsDisabled &&
+      !operationRef.current
+    );
+  }
+
+  async function postProfile(body: Record<string, unknown>) {
+    return onboardingRequest(async (signal) => {
+      const session = await getStableBrowserSession();
+      if (!session) {
+        throw new OnboardingResponseError(
+          t(
+            "admin.onboarding.prepared.sessionError",
+            "Sign in again before saving.",
+          ),
+        );
+      }
+      const response = await fetch("/api/admin/onboarding-profile", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...body, caseId }),
+        signal,
+      });
+      const payload = (await response.json()) as {
+        handoffUrl?: string;
+        draft?: PreparedProfileDraft;
+        error?: string;
+      };
+      if (!response.ok) {
+        throw new OnboardingResponseError(payload?.error || "");
+      }
+      return payload;
+    }, requestScopeRef.current?.signal);
+  }
 
   function updateProfile<K extends keyof PreparedBusinessProfile>(
     key: K,
     value: PreparedBusinessProfile[K],
   ) {
     setProfile((current) => ({ ...current, [key]: value }));
-    setSaved(false);
-    setMessage("");
+    markEdited();
   }
 
   function updateService<K extends keyof PreparedServiceDraft>(
@@ -187,15 +327,14 @@ export default function PreparedProfilePanel({
         service.id === id ? { ...service, [key]: value } : service,
       ),
     );
-    setSaved(false);
-    setMessage("");
+    markEdited();
   }
 
   async function uploadPreparedImage(
     file: File | null,
     target: { type: "profile" } | { type: "service"; serviceId: string },
   ) {
-    if (!file) return;
+    if (!file || !canMutate()) return;
     if (!mediaHandoffAvailable) {
       setError(
         t(
@@ -217,6 +356,8 @@ export default function PreparedProfilePanel({
 
     const imageKey =
       target.type === "profile" ? "profile" : `service:${target.serviceId}`;
+    operationRef.current = true;
+    const scope = requestScopeRef.current;
     setUploadingImageKey(imageKey);
     setError("");
     setMessage("");
@@ -229,6 +370,7 @@ export default function PreparedProfilePanel({
             ? `onboarding-${caseId}`
             : `onboarding-${caseId}-${target.serviceId}`,
       });
+      if (scope?.signal.aborted) return;
       if (target.type === "profile") {
         updateProfile("imageUrl", uploaded.publicUrl);
       } else {
@@ -241,6 +383,7 @@ export default function PreparedProfilePanel({
         ),
       );
     } catch {
+      if (scope?.signal.aborted) return;
       setError(
         t(
           "admin.onboarding.prepared.mediaUploadError",
@@ -248,121 +391,126 @@ export default function PreparedProfilePanel({
         ),
       );
     } finally {
+      operationRef.current = false;
       setUploadingImageKey(null);
     }
   }
 
   async function saveProfile() {
+    if (!canMutate()) return;
+    operationRef.current = true;
+    const scope = requestScopeRef.current;
     setSaving(true);
-    setError("");
-    setMessage("");
-    const session = await getStableBrowserSession();
-    if (!session) {
-      setError(
-        t(
-          "admin.onboarding.prepared.sessionError",
-          "Sign in again before saving.",
-        ),
-      );
-      setSaving(false);
-      return;
-    }
-    const response = await fetch("/api/admin/onboarding-profile", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ action: "save", caseId, profile, services }),
-    });
-    const payload = (await response.json()) as {
-      draft?: PreparedProfileDraft;
-      error?: string;
-    };
-    if (!response.ok) {
-      setError(
-        payload.error ||
-          t(
-            "admin.onboarding.prepared.saveError",
-            "The prepared profile could not be saved.",
-          ),
-      );
-    } else {
-      setSaved(true);
+    clearOutput();
+    try {
+      const payload = await postProfile({
+        action: "save",
+        profile,
+        services,
+      });
+      if (scope?.signal.aborted) return;
+      if (!payload?.draft) throw new Error("");
+      applyDraft(payload.draft);
       setMessage(
         t(
           "admin.onboarding.prepared.saved",
           "Prepared profile saved privately.",
         ),
       );
+    } catch (error) {
+      if (!scope?.signal.aborted) {
+        setSaved(false);
+        setError(
+          (error instanceof OnboardingResponseError && error.message) ||
+            t(
+              "admin.onboarding.prepared.saveError",
+              "The prepared profile could not be saved.",
+            ),
+        );
+      }
+    } finally {
+      operationRef.current = false;
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   async function issueHandoff() {
+    if (!canMutate() || !saved || !EMAIL_PATTERN.test(ownerEmail)) return;
+    operationRef.current = true;
+    const scope = requestScopeRef.current;
     setIssuing(true);
-    setError("");
-    setMessage("");
-    const session = await getStableBrowserSession();
-    if (!session) {
-      setError(
-        t(
-          "admin.onboarding.prepared.sessionError",
-          "Sign in again before saving.",
-        ),
-      );
-      setIssuing(false);
-      return;
-    }
-    const response = await fetch("/api/admin/onboarding-profile", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ action: "issue", caseId, ownerEmail }),
-    });
-    const payload = (await response.json()) as {
-      handoffUrl?: string;
-      draft?: PreparedProfileDraft;
-      error?: string;
-    };
-    if (!response.ok || !payload.handoffUrl) {
-      setError(
-        payload.error ||
-          t(
-            "admin.onboarding.prepared.linkError",
-            "The secure link could not be created.",
-          ),
-      );
-    } else {
+    clearOutput();
+    // A lost response may still have replaced the previous token on the server.
+    setHandoffUncertain(true);
+    try {
+      const payload = await postProfile({ action: "issue", ownerEmail });
+      if (scope?.signal.aborted) return;
+      if (
+        !payload?.handoffUrl ||
+        !payload.draft?.intendedOwnerEmail ||
+        !payload.draft.handoffIssuedAt ||
+        !payload.draft.handoffExpiresAt
+      ) {
+        throw new Error("");
+      }
+      applyDraft(payload.draft);
+      setOwnerEmail(payload.draft.intendedOwnerEmail);
       setHandoffUrl(payload.handoffUrl);
-      setHandoffIssuedAt(
-        payload.draft?.handoffIssuedAt || new Date().toISOString(),
-      );
-      setHandoffExpiresAt(payload.draft?.handoffExpiresAt || null);
-      setBoundOwnerEmail(
-        payload.draft?.intendedOwnerEmail || ownerEmail.trim().toLowerCase(),
-      );
       setMessage(
         t(
           "admin.onboarding.prepared.linkReady",
           "Secure owner link created. Copy it now.",
         ),
       );
+    } catch (error) {
+      if (!scope?.signal.aborted) {
+        setError(
+          (error instanceof OnboardingResponseError && error.message) ||
+            t(
+              "admin.onboarding.prepared.linkError",
+              "The secure link could not be created.",
+            ),
+        );
+      }
+    } finally {
+      operationRef.current = false;
+      setIssuing(false);
     }
-    setIssuing(false);
   }
 
   async function copyLink() {
-    if (!handoffUrl) return;
+    if (!canShare || copyingRef.current) return;
+    copyingRef.current = true;
+    const version = outputVersionRef.current;
+    setMessage("");
+    setError("");
     try {
       await navigator.clipboard.writeText(handoffUrl);
+      if (
+        version !== outputVersionRef.current ||
+        requestScopeRef.current?.signal.aborted
+      )
+        return;
+      setMessage(
+        t("admin.onboarding.prepared.linkCopied", "Owner link copied."),
+      );
     } catch {
+      if (
+        version !== outputVersionRef.current ||
+        requestScopeRef.current?.signal.aborted
+      )
+        return;
       linkRef.current?.focus();
       linkRef.current?.select();
+      setError(
+        t(
+          "admin.onboarding.prepared.copyManual",
+          "Automatic copying was unavailable. Select and copy the text manually.",
+        ),
+      );
+    } finally {
+      copyingRef.current = false;
     }
-    setMessage(t("admin.onboarding.prepared.linkCopied", "Owner link copied."));
   }
 
   const ownerMessage = handoffUrl
@@ -374,36 +522,68 @@ export default function PreparedProfilePanel({
         ),
         {
           businessName: profile.name || prospectName,
-          ownerEmail,
+          ownerEmail: boundOwnerEmail,
           handoffUrl,
         },
       )
     : "";
 
   async function copyOwnerMessage() {
-    if (!ownerMessage) return;
+    if (!canShare || !ownerMessage || copyingRef.current) return;
+    copyingRef.current = true;
+    const version = outputVersionRef.current;
+    setMessage("");
+    setError("");
     try {
       await navigator.clipboard.writeText(ownerMessage);
+      if (
+        version !== outputVersionRef.current ||
+        requestScopeRef.current?.signal.aborted
+      )
+        return;
+      setMessage(
+        t(
+          "admin.onboarding.prepared.ownerMessageCopied",
+          "Owner message copied.",
+        ),
+      );
     } catch {
+      if (
+        version !== outputVersionRef.current ||
+        requestScopeRef.current?.signal.aborted
+      )
+        return;
       ownerMessageRef.current?.focus();
       ownerMessageRef.current?.select();
+      setError(
+        t(
+          "admin.onboarding.prepared.copyManual",
+          "Automatic copying was unavailable. Select and copy the text manually.",
+        ),
+      );
+    } finally {
+      copyingRef.current = false;
     }
-    setMessage(
-      t(
-        "admin.onboarding.prepared.ownerMessageCopied",
-        "Owner message copied.",
-      ),
-    );
   }
 
   const expiresAtTime = handoffExpiresAt
     ? new Date(handoffExpiresAt).getTime()
     : Number.NaN;
   const handoffExpired = Number.isFinite(expiresAtTime)
-    ? expiresAtTime <= Date.now()
+    ? expiresAtTime <= now
     : false;
   const ownerEmailChanged = Boolean(
-    boundOwnerEmail && ownerEmail !== boundOwnerEmail,
+    boundOwnerEmail &&
+    ownerEmail.trim().toLowerCase() !== boundOwnerEmail.trim().toLowerCase(),
+  );
+  const canShare = Boolean(
+    handoffUrl &&
+    saved &&
+    !controlsDisabled &&
+    !handoffUncertain &&
+    !ownerEmailChanged &&
+    !handoffExpired &&
+    Number.isFinite(expiresAtTime),
   );
   const formattedExpiry = formatHandoffDate(handoffExpiresAt, uiLocale);
   const formattedAdoption = formatHandoffDate(adoptedAt, uiLocale);
@@ -412,7 +592,7 @@ export default function PreparedProfilePanel({
     "admin.onboarding.prepared.statusDraft",
     "Save the prepared profile before creating a secure link.",
   );
-  if (adoptedBusinessId) {
+  if (adoptedBusinessId || adoptedAt) {
     handoffStatus = formattedAdoption
       ? interpolate(
           t(
@@ -425,6 +605,20 @@ export default function PreparedProfilePanel({
           "admin.onboarding.prepared.statusConnectedNoDate",
           "The verified owner connected this profile.",
         );
+  } else if (issuing) {
+    handoffStatus = t("admin.onboarding.prepared.issuing", "Creating link...");
+  } else if (handoffUncertain) {
+    handoffStatus = t(
+      "admin.onboarding.prepared.statusUncertain",
+      "The latest link status could not be confirmed. Create a new secure link before sharing.",
+    );
+  } else if (!saved) {
+    if (handoffIssuedAt) {
+      handoffStatus = t(
+        "admin.onboarding.prepared.statusUnsaved",
+        "Save your changes before sharing or creating an owner link. A previously issued link still opens the last saved profile.",
+      );
+    }
   } else if (!EMAIL_PATTERN.test(ownerEmail)) {
     handoffStatus = t(
       "admin.onboarding.prepared.statusEmailNeeded",
@@ -446,14 +640,21 @@ export default function PreparedProfilePanel({
       ),
       { email: boundOwnerEmail || ownerEmail, expires: formattedExpiry },
     );
-  } else if (handoffIssuedAt) {
+  } else if (
+    handoffIssuedAt &&
+    boundOwnerEmail &&
+    Number.isFinite(expiresAtTime)
+  ) {
     handoffStatus = formattedExpiry
       ? interpolate(
           t(
             "admin.onboarding.prepared.statusIssued",
             "A secure link is active for {email} until {expires}. Create a new link if you need the raw URL again.",
           ),
-          { email: boundOwnerEmail || ownerEmail, expires: formattedExpiry },
+          {
+            email: boundOwnerEmail || ownerEmail,
+            expires: formattedExpiry,
+          },
         )
       : interpolate(
           t(
@@ -473,6 +674,22 @@ export default function PreparedProfilePanel({
     return (
       <section className="prepared-panel prepared-state" role="status">
         {t("admin.onboarding.prepared.loading", "Loading prepared profile...")}
+      </section>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <section className="prepared-panel prepared-state">
+        <p role="alert">{error}</p>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+        >
+          <RefreshCw aria-hidden="true" />
+          {t("common.retry", "Try again")}
+        </button>
       </section>
     );
   }
@@ -533,7 +750,7 @@ export default function PreparedProfilePanel({
         </div>
       )}
 
-      <div className="profile-grid">
+      <fieldset className="profile-grid" disabled={controlsDisabled}>
         <label>
           <span>
             {t("admin.onboarding.prepared.businessName", "Business name")}
@@ -717,9 +934,9 @@ export default function PreparedProfilePanel({
             </small>
           </span>
         </label>
-      </div>
+      </fieldset>
 
-      <section className="prepared-services">
+      <fieldset className="prepared-services" disabled={controlsDisabled}>
         <header>
           <div>
             <h4>
@@ -737,7 +954,7 @@ export default function PreparedProfilePanel({
             className="btn btn-ghost"
             onClick={() => {
               setServices((current) => [...current, newPreparedService()]);
-              setSaved(false);
+              markEdited();
             }}
           >
             <Plus aria-hidden="true" />
@@ -771,7 +988,7 @@ export default function PreparedProfilePanel({
                     setServices((current) =>
                       current.filter((item) => item.id !== service.id),
                     );
-                    setSaved(false);
+                    markEdited();
                   }}
                 >
                   <Trash2 aria-hidden="true" />
@@ -1101,9 +1318,9 @@ export default function PreparedProfilePanel({
             </article>
           ))}
         </div>
-      </section>
+      </fieldset>
 
-      <section className="owner-binding">
+      <fieldset className="owner-binding" disabled={controlsDisabled}>
         <label>
           <span>
             {t(
@@ -1122,8 +1339,7 @@ export default function PreparedProfilePanel({
             }
             onChange={(event) => {
               setOwnerEmail(event.target.value.trim().toLowerCase());
-              setHandoffUrl("");
-              setMessage("");
+              clearOutput();
             }}
           />
           <small>
@@ -1133,7 +1349,7 @@ export default function PreparedProfilePanel({
             )}
           </small>
         </label>
-      </section>
+      </fieldset>
 
       <section className="handoff-status" aria-live="polite">
         <strong>
@@ -1146,7 +1362,7 @@ export default function PreparedProfilePanel({
         <button
           type="button"
           className="btn btn-accent"
-          disabled={saving || Boolean(adoptedBusinessId)}
+          disabled={controlsDisabled}
           onClick={() => void saveProfile()}
         >
           <Save aria-hidden="true" />
@@ -1159,7 +1375,7 @@ export default function PreparedProfilePanel({
           className="btn btn-ghost"
           disabled={
             !saved ||
-            issuing ||
+            controlsDisabled ||
             !EMAIL_PATTERN.test(ownerEmail) ||
             Boolean(adoptedBusinessId)
           }
@@ -1180,7 +1396,7 @@ export default function PreparedProfilePanel({
         </button>
       </footer>
 
-      {handoffUrl && (
+      {canShare && (
         <div className="handoff-output">
           <label>
             <span>
@@ -1239,6 +1455,12 @@ export default function PreparedProfilePanel({
       )}
 
       <style jsx>{`
+        fieldset {
+          min-width: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+        }
         .prepared-panel {
           display: grid;
           gap: 1rem;

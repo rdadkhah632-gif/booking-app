@@ -44,8 +44,9 @@ export default function ExploreBusinessCard({
 }: Props) {
   const { t } = useI18n();
   const hasImage = Boolean(business.image_url);
-  const serviceText = `${stats.assignedServices} ${
-    stats.assignedServices === 1
+  const availableServices = stats.assignedServices + stats.scheduledServices;
+  const serviceText = `${availableServices} ${
+    availableServices === 1
       ? t("explore.card.serviceSingle", "service")
       : t("explore.card.servicePlural", "services")
   }`;
@@ -106,7 +107,8 @@ export default function ExploreBusinessCard({
             {distance && <strong>{distance}</strong>}
           </span>
           <span>
-            {serviceText} · {staffText}
+            {serviceText}
+            {stats.activeStaff > 0 ? ` · ${staffText}` : ""}
           </span>
         </div>
 

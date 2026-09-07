@@ -312,7 +312,7 @@ export default function ExploreViewControls({
           }
 
           .kind-note {
-            order: 4;
+            display: none;
           }
         }
       `}</style>

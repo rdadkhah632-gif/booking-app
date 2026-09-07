@@ -1,12 +1,13 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BadgeCheck,
   Check,
   Clock3,
   ImagePlus,
+  RefreshCw,
   ShieldCheck,
 } from "lucide-react";
 import AuthNav from "@/components/AuthNav";
@@ -14,6 +15,7 @@ import CustomerAuthStyles from "@/components/CustomerAuthStyles";
 import { formatCurrencyAmount } from "@/lib/currency";
 import { getBusinessAppUrl } from "@/lib/appUrls";
 import { formatLocalizedDate } from "@/lib/i18n/dateFormatting";
+import { onboardingRequest } from "@/lib/onboardingRequest";
 import type {
   PreparedBusinessProfile,
   PreparedServiceDraft,
@@ -38,6 +40,17 @@ export default function PreparedBusinessJoinPage() {
   const [signedIn, setSignedIn] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState("");
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [retryable, setRetryable] = useState(false);
+  const [connectedBusinessId, setConnectedBusinessId] = useState("");
+  const [connectionUncertain, setConnectionUncertain] = useState(false);
+  const connectingRef = useRef(false);
+  const requestScopeRef = useRef<AbortController | null>(null);
+  const tRef = useRef(t);
+  tRef.current = t;
+  const connectedUrl = connectedBusinessId
+    ? `/dashboard/services?businessId=${encodeURIComponent(connectedBusinessId)}&onboarding=connected`
+    : "";
 
   const joinPath = token ? `/join/${token}` : "/business";
   const loginUrl = getBusinessAppUrl(
@@ -57,84 +70,207 @@ export default function PreparedBusinessJoinPage() {
   );
 
   useEffect(() => {
-    if (!router.isReady || !token) return;
-    let active = true;
+    if (!router.isReady) return;
+    const controller = new AbortController();
+    requestScopeRef.current = controller;
+    const t = tRef.current;
+    setConnectedBusinessId("");
+    setConnectionUncertain(false);
+    connectingRef.current = false;
+    setConnecting(false);
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_, session) => {
+        if (!controller.signal.aborted) setSignedIn(Boolean(session));
+      },
+    );
     async function load() {
       setLoading(true);
+      setSessionReady(false);
+      setPreview(null);
+      setSignedIn(false);
       setError("");
-      const [previewResponse, sessionResult] = await Promise.all([
-        fetch(
-          `/api/public/onboarding-handoff?token=${encodeURIComponent(token)}`,
-          {
-            cache: "no-store",
-          },
-        ),
-        supabase.auth.getSession(),
-      ]);
-      if (!active) return;
-      if (!previewResponse.ok) {
+      setRetryable(false);
+      try {
+        if (!/^[A-Za-z0-9_-]{32,160}$/.test(token)) {
+          setError(
+            t(
+              "onboardingJoin.invalid",
+              "This prepared-profile link is invalid, expired or already connected.",
+            ),
+          );
+          return;
+        }
+        const previewResult = await onboardingRequest(async (signal) => {
+          const sessionResult = await supabase.auth.getSession();
+          if (sessionResult.error) throw sessionResult.error;
+          const response = await fetch(
+            `/api/public/onboarding-handoff?token=${encodeURIComponent(token)}`,
+            { cache: "no-store", signal },
+          );
+          if (!response.ok)
+            return {
+              response,
+              session: sessionResult.data.session,
+              preview: null,
+            };
+          const preview = (await response.json()) as HandoffPreview;
+          if (
+            !preview?.profile ||
+            !Array.isArray(preview.services) ||
+            !Number.isFinite(Date.parse(preview.expiresAt))
+          ) {
+            throw new Error("Invalid preview response.");
+          }
+          return { response, session: sessionResult.data.session, preview };
+        }, controller.signal);
+        if (controller.signal.aborted) return;
+        if (!previewResult.response.ok) {
+          if (
+            previewResult.response.status === 404 ||
+            previewResult.response.status === 410
+          ) {
+            setError(
+              t(
+                "onboardingJoin.invalid",
+                "This prepared-profile link is invalid, expired or already connected.",
+              ),
+            );
+            return;
+          }
+          throw new Error("Preview unavailable.");
+        }
+        setPreview(previewResult.preview);
+        setSignedIn(Boolean(previewResult.session));
+      } catch {
+        if (controller.signal.aborted) return;
+        setRetryable(true);
         setError(
           t(
-            "onboardingJoin.invalid",
-            "This prepared-profile link is invalid, expired or already connected.",
+            "onboardingJoin.loadError",
+            "Your prepared profile could not be loaded. Check your connection and try again.",
           ),
         );
-        setPreview(null);
-      } else {
-        setPreview((await previewResponse.json()) as HandoffPreview);
+      } finally {
+        if (!controller.signal.aborted) {
+          setSessionReady(true);
+          setLoading(false);
+        }
       }
-      setSignedIn(Boolean(sessionResult.data.session));
-      setSessionReady(true);
-      setLoading(false);
     }
     void load();
     return () => {
-      active = false;
+      controller.abort();
+      authListener.subscription.unsubscribe();
     };
-  }, [router.isReady, t, token]);
+  }, [router.isReady, token, loadAttempt]);
 
   async function connectProfile() {
+    if (
+      connectingRef.current ||
+      connectedBusinessId ||
+      connectionUncertain ||
+      !preview ||
+      loading
+    )
+      return;
+    connectingRef.current = true;
+    const scope = requestScopeRef.current;
     setConnecting(true);
     setError("");
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.assign(loginUrl);
-      return;
-    }
-    const response = await fetch("/api/dashboard/onboarding-handoff", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token }),
-    });
-    const payload = (await response.json()) as {
-      businessId?: string;
-      error?: string;
-      errorCode?: string;
-    };
-    if (!response.ok || !payload.businessId) {
-      setError(
-        payload.errorCode === "owner_email_mismatch"
-          ? t(
-              "onboardingJoin.emailMismatch",
-              "Sign in with the verified email address this invitation was sent to.",
-            )
-          : payload.error ||
-              t(
+    let postStarted = false;
+    let responseStatus: number | null = null;
+    let outcomeUncertain = false;
+    try {
+      const result = await onboardingRequest(async (signal) => {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session) return null;
+        if (signal.aborted) throw new Error("Request cancelled.");
+        postStarted = true;
+        const response = await fetch("/api/dashboard/onboarding-handoff", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token }),
+          signal,
+        });
+        responseStatus = response.status;
+        if (response.status >= 500) throw new Error("Unconfirmed result.");
+        if (response.status === 401) return { response, payload: null };
+        const payload = (await response.json().catch(() => null)) as {
+          businessId?: string;
+          errorCode?: string;
+        } | null;
+        return { response, payload };
+      }, scope?.signal);
+      if (scope?.signal.aborted) return;
+      if (!result || result.response.status === 401) {
+        setSignedIn(false);
+        setError(t("onboardingJoin.signIn", "Sign in to connect"));
+        return;
+      }
+      const { response, payload } = result;
+      if (!response.ok) {
+        setError(
+          payload?.errorCode === "owner_email_mismatch"
+            ? t(
+                "onboardingJoin.emailMismatch",
+                "Sign in with the verified email address this invitation was sent to.",
+              )
+            : t(
                 "onboardingJoin.connectError",
                 "The prepared profile could not be connected. Contact Mirëbook for help.",
               ),
-      );
-      setConnecting(false);
-      return;
+        );
+        return;
+      }
+      if (
+        typeof payload?.businessId !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          payload.businessId,
+        )
+      ) {
+        throw new Error("Unconfirmed result.");
+      }
+      // Retain success before navigating so a router failure cannot submit again.
+      setConnectedBusinessId(payload.businessId);
+      try {
+        await router.replace(
+          `/dashboard/services?businessId=${encodeURIComponent(payload.businessId)}&onboarding=connected`,
+        );
+      } catch {
+        // The completed state below provides a normal link to continue.
+      }
+    } catch {
+      if (!scope?.signal.aborted) {
+        outcomeUncertain =
+          postStarted &&
+          (responseStatus === null ||
+            responseStatus < 400 ||
+            responseStatus >= 500);
+        if (outcomeUncertain) {
+          // Aborting the browser request cannot undo an adoption already committed.
+          setConnectionUncertain(true);
+        } else {
+          setError(
+            t(
+              "onboardingJoin.connectError",
+              "The prepared profile could not be connected. Contact Mirëbook for help.",
+            ),
+          );
+        }
+      }
+    } finally {
+      if (!scope?.signal.aborted) {
+        connectingRef.current = outcomeUncertain;
+        setConnecting(false);
+      }
     }
-    await router.replace(
-      `/dashboard/services?businessId=${encodeURIComponent(payload.businessId)}&onboarding=connected`,
-    );
   }
 
   return (
@@ -161,12 +297,47 @@ export default function PreparedBusinessJoinPage() {
               {t("onboardingJoin.loading", "Loading your prepared profile...")}
             </p>
           </div>
+        ) : connectedUrl ? (
+          <div className="join-card join-state" role="status">
+            <h1>{t("onboardingJoin.connectedTitle", "Profile connected")}</h1>
+            <a className="btn btn-accent" href={connectedUrl}>
+              {t("onboardingJoin.openBusiness", "Open Mirëbook Business")}
+            </a>
+          </div>
+        ) : connectionUncertain ? (
+          <div className="join-card join-state" role="status">
+            <h1>
+              {t("onboardingJoin.unknownTitle", "Connection result unknown")}
+            </h1>
+            <p>
+              {t(
+                "onboardingJoin.unknownBody",
+                "We could not confirm the result. Your profile may already be connected. Check your Business dashboard before taking further action, or contact Mirëbook for help.",
+              )}
+            </p>
+            <a
+              className="btn btn-accent"
+              href={getBusinessAppUrl("/dashboard/businesses")}
+            >
+              {t("onboardingJoin.openDashboard", "Open Business dashboard")}
+            </a>
+          </div>
         ) : error && !preview ? (
           <div className="join-card join-state">
             <h1>
               {t("onboardingJoin.unavailableTitle", "Profile link unavailable")}
             </h1>
-            <p>{error}</p>
+            <p role="alert">{error}</p>
+            {retryable && (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+              >
+                <RefreshCw aria-hidden="true" />
+                {t("common.retry", "Try again")}
+              </button>
+            )}
             <Link href={getBusinessAppUrl("/")} className="btn btn-accent">
               {t("onboardingJoin.openBusiness", "Open Mirëbook Business")}
             </Link>

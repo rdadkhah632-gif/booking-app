@@ -1590,6 +1590,41 @@ export default function Bookings() {
 
         if (!response.ok) {
           setManualBookingError(manualBookingSaveError(result?.code));
+          if (
+            [
+              "not_enough_seats",
+              "private_trip_unavailable",
+              "departure_unavailable",
+            ].includes(result?.code)
+          ) {
+            try {
+              const refreshResponse = await fetch(
+                `/api/dashboard/departures?businessId=${encodeURIComponent(business.id)}`,
+                {
+                  cache: "no-store",
+                  headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                  },
+                },
+              );
+              if (!refreshResponse.ok) {
+                throw new Error("departure_refresh_failed");
+              }
+              const refreshed =
+                (await refreshResponse.json()) as ManualDeparturePayload;
+              if (!Array.isArray(refreshed.departures)) {
+                throw new Error("departure_refresh_failed");
+              }
+              setManualDepartures(refreshed.departures);
+            } catch (refreshError) {
+              setManualDepartures((current) =>
+                current.filter(
+                  (departure) => departure.id !== draft.departureId,
+                ),
+              );
+              throw refreshError;
+            }
+          }
           return;
         }
 
@@ -1762,14 +1797,8 @@ export default function Bookings() {
         ),
       );
       await loadBookings({ keepSuccess: true, silent: true });
-    } catch (err: any) {
-      setManualBookingError(
-        err.message ||
-          t(
-            "dashboardBookings.manual.error.create",
-            "Could not add this booking. Try again.",
-          ),
-      );
+    } catch {
+      setManualBookingError(manualBookingSaveError());
     } finally {
       setManualBookingSaving(false);
     }

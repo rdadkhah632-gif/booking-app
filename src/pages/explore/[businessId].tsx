@@ -1161,11 +1161,21 @@ export default function BusinessBookingPage() {
     setLoading(true);
     setError(null);
 
+    let failureMessage = t(
+      "publicBusiness.departures.saveUncertain",
+      "We could not confirm whether your booking was saved. Check My Bookings before trying again.",
+    );
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) throw new Error("auth_required");
+      if (!session) {
+        failureMessage = t(
+          "publicBusiness.departures.sessionExpired",
+          "Please sign in again before sending your booking request.",
+        );
+        throw new Error("auth_required");
+      }
 
       const response = await fetch("/api/customer/capacity-bookings/create", {
         method: "POST",
@@ -1189,58 +1199,55 @@ export default function BusinessBookingPage() {
       };
 
       if (!response.ok || !result.booking?.id) {
+        if (response.status >= 400 && response.status < 500) {
+          failureMessage = t(
+            "publicBusiness.departures.createFailed",
+            "Could not create this booking. Please try again.",
+          );
+        }
         if (result.code === "not_enough_seats") {
-          throw new Error(
-            t(
-              "publicBusiness.departures.notEnoughSeats",
-              "Those seats were just reserved. Choose fewer guests or another departure.",
-            ),
+          failureMessage = t(
+            "publicBusiness.departures.notEnoughSeats",
+            "Those seats were just reserved. Choose fewer guests or another departure.",
           );
         }
         if (result.code === "departure_unavailable") {
-          throw new Error(
-            t(
-              "publicBusiness.departures.noLongerAvailable",
-              "This departure is no longer available. Choose another one.",
-            ),
+          failureMessage = t(
+            "publicBusiness.departures.noLongerAvailable",
+            "This departure is no longer available. Choose another one.",
           );
         }
         if (result.code === "party_size_invalid") {
-          throw new Error(
-            t(
-              "publicBusiness.departures.partyUnavailable",
-              "Choose a guest count within the seats still available.",
-            ),
+          failureMessage = t(
+            "publicBusiness.departures.partyUnavailable",
+            "Choose a guest count within the seats still available.",
           );
         }
         if (result.code === "private_trip_unavailable") {
-          throw new Error(
-            t(
-              "publicBusiness.departures.privateUnavailable",
-              "Unavailable after seats are reserved",
-            ),
+          failureMessage = t(
+            "publicBusiness.departures.privateUnavailable",
+            "Unavailable after seats are reserved",
           );
         }
-        throw new Error(
-          t(
-            "publicBusiness.departures.createFailed",
-            "Could not create this booking. Please try again.",
-          ),
-        );
+        if (response.status === 401)
+          failureMessage = t(
+            "publicBusiness.departures.sessionExpired",
+            "Please sign in again before sending your booking request.",
+          );
+        throw new Error("capacity_booking_failed");
       }
 
-      router.push("/booking-confirmation?id=" + result.booking.id);
-    } catch (capacityError) {
-      const message =
-        capacityError instanceof Error
-          ? capacityError.message
-          : t(
-              "publicBusiness.departures.createFailed",
-              "Could not create this booking. Please try again.",
-            );
+      const confirmationUrl = "/booking-confirmation?id=" + result.booking.id;
+      try {
+        const navigated = await router.push(confirmationUrl);
+        if (!navigated) window.location.assign(confirmationUrl);
+      } catch {
+        window.location.assign(confirmationUrl);
+      }
+    } catch {
       setLoading(false);
       await loadBookingPage();
-      setError(message);
+      setError(failureMessage);
     }
   }
 

@@ -62,6 +62,7 @@ export default function ExploreFilters({
   function submitFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     onApplyFilters();
+    setFiltersOpen(false);
   }
 
   return (
@@ -273,27 +274,7 @@ export default function ExploreFilters({
           display: none;
         }
 
-        @media (max-width: 1050px) {
-          .explore-filter-grid {
-            grid-template-columns:
-              minmax(220px, 1fr) repeat(2, minmax(135px, 0.65fr))
-              auto auto;
-          }
-
-          .filter-sort {
-            display: none;
-          }
-
-          .filter-apply {
-            grid-column: 4;
-          }
-
-          .filter-clear {
-            grid-column: 5;
-          }
-        }
-
-        @media (max-width: 820px) {
+        @media (max-width: 1120px) {
           .explore-filter-grid {
             grid-template-columns: minmax(0, 1fr) 44px 44px;
             gap: 0.45rem;

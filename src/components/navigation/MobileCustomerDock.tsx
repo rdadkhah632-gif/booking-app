@@ -11,6 +11,16 @@ export default function MobileCustomerDock({ notificationCount }: Props) {
   const router = useRouter();
   const { t } = useI18n();
   const isMap = router.pathname === "/explore" && router.query.view === "map";
+  const exploreQuery = new URLSearchParams();
+  if (router.pathname === "/explore") {
+    for (const key of ["query", "city", "category", "kind", "sort", "page"]) {
+      const value = router.query[key];
+      if (typeof value === "string" && value) exploreQuery.set(key, value);
+    }
+  }
+  const listHref = `/explore${exploreQuery.size ? `?${exploreQuery}` : ""}`;
+  exploreQuery.set("view", "map");
+  const mapHref = `/explore?${exploreQuery}`;
 
   const items: Array<{
     href: string;
@@ -20,7 +30,7 @@ export default function MobileCustomerDock({ notificationCount }: Props) {
     count?: number;
   }> = [
     {
-      href: "/explore",
+      href: listHref,
       label: t("nav.mobile.explore", "Explore"),
       icon: Search,
       active:
@@ -28,7 +38,7 @@ export default function MobileCustomerDock({ notificationCount }: Props) {
         (router.pathname.startsWith("/explore") && !isMap),
     },
     {
-      href: "/explore?view=map",
+      href: mapHref,
       label: t("nav.mobile.map", "Map"),
       icon: Map,
       active: isMap,

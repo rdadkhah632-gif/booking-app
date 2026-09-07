@@ -32,7 +32,6 @@ import {
 } from "@/components/explore/directoryCategories";
 import {
   Business,
-  BusinessCardStats,
   DiscoveryKind,
   DirectoryPlace,
   DiscoveryMapItem,
@@ -44,7 +43,13 @@ import { recordSiteEvent } from "@/lib/siteAnalytics";
 import {
   discoveryServerSearchTerm,
   matchesDiscoverySearch,
+  canonicalDiscoveryCity,
+  matchesDiscoveryCity,
 } from "@/lib/discoverySearch";
+import {
+  businessCardStats as businessStats,
+  isDiscoverableBusiness,
+} from "@/lib/discoveryBusiness";
 import { getPublicSiteOrigin } from "@/lib/appStoreUrls";
 
 type Coordinates = {
@@ -99,43 +104,6 @@ function queryText(value: string | string[] | undefined) {
 function positiveIntegerQuery(value: string | string[] | undefined) {
   const parsed = Number.parseInt(queryText(value), 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
-}
-
-function businessStats(business: Business): BusinessCardStats {
-  const activeStaffIds = new Set(
-    (business.staff_members || [])
-      .filter((staff) => staff.active)
-      .map((staff) => staff.id),
-  );
-  const activeServices = (business.services || []).filter(
-    (service) => service.active,
-  ).length;
-  const assignedServices = (business.services || []).filter(
-    (service) =>
-      service.active &&
-      (service.staff_services || []).some((assignment) =>
-        activeStaffIds.has(assignment.staff_member_id),
-      ),
-  ).length;
-  const activeStaff = activeStaffIds.size;
-  const openDays = (business.availability || []).filter(
-    (row) => row.is_closed !== true,
-  ).length;
-  const missing: string[] = [];
-
-  if (activeServices === 0) missing.push("active services");
-  if (activeStaff === 0) missing.push("active staff");
-  if (assignedServices === 0) missing.push("staff-service assignments");
-  if (openDays === 0) missing.push("working hours");
-
-  return {
-    activeServices,
-    activeStaff,
-    openDays,
-    assignedServices,
-    missing,
-    bookable: assignedServices > 0 && activeStaff > 0 && openDays > 0,
-  };
 }
 
 function normaliseBusiness(value: Business): Business {
@@ -238,6 +206,10 @@ export default function Explore() {
   const [locationState, setLocationState] = useState<LocationState>("idle");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sourceFailures, setSourceFailures] = useState({
+    businesses: false,
+    places: false,
+  });
   const listPage = positiveIntegerQuery(router.query.page);
 
   useEffect(() => {
@@ -271,7 +243,8 @@ export default function Explore() {
       if (filters.query) {
         directoryParams.set("q", discoveryServerSearchTerm(filters.query));
       }
-      if (filters.city) directoryParams.set("city", filters.city);
+      if (filters.city)
+        directoryParams.set("city", canonicalDiscoveryCity(filters.city));
 
       const directoryCategory = directoryCategoryFromLabel(filters.category, t);
       if (directoryCategory) {
@@ -299,7 +272,8 @@ export default function Explore() {
 
       if (requestId !== requestSequence.current) return;
 
-      let successfulSource = false;
+      let businessesLoaded = false;
+      let placesLoaded = false;
       let nextBusinesses: Business[] = [];
       let nextPlaces: DirectoryPlace[] = [];
 
@@ -310,13 +284,12 @@ export default function Explore() {
         const payload = businessResult.value.payload as {
           businesses?: Business[];
         } | null;
-        nextBusinesses = (payload?.businesses || [])
+        nextBusinesses = (
+          Array.isArray(payload?.businesses) ? payload.businesses : []
+        )
           .map(normaliseBusiness)
-          .filter(
-            (business) =>
-              business.published === true && businessStats(business).bookable,
-          );
-        successfulSource = true;
+          .filter(isDiscoverableBusiness);
+        businessesLoaded = Array.isArray(payload?.businesses);
       }
 
       if (
@@ -326,21 +299,27 @@ export default function Explore() {
         const payload = directoryResult.value.payload as {
           places?: DirectoryPlace[];
         } | null;
-        nextPlaces = (payload?.places || []).filter(
+        nextPlaces = (
+          Array.isArray(payload?.places) ? payload.places : []
+        ).filter(
           (place) =>
             place.resultType === "directory_place" &&
             DIRECTORY_CATEGORIES.includes(place.categoryKey) &&
             Number.isFinite(place.mapPosition?.latitude) &&
             Number.isFinite(place.mapPosition?.longitude),
         );
-        successfulSource = true;
+        placesLoaded = Array.isArray(payload?.places);
       }
 
       setBusinesses(nextBusinesses);
       setDirectoryPlaces(nextPlaces);
+      setSourceFailures({
+        businesses: !businessesLoaded,
+        places: !placesLoaded,
+      });
       setLoading(false);
 
-      if (!successfulSource) {
+      if (!businessesLoaded && !placesLoaded) {
         setError(t("explore.empty.genericError"));
       }
     },
@@ -432,14 +411,15 @@ export default function Explore() {
         business.description || ""
       } ${business.category || ""} ${business.city || ""} ${
         business.country || ""
-      } ${business.address || ""}`;
+      } ${business.address || ""} ${(business.services || [])
+        .filter((service) => service.active)
+        .map((service) => service.name || "")
+        .join(" ")}`;
       const matchesSearch = appliedFilters.query
         ? matchesDiscoverySearch(searchText, appliedFilters.query)
         : true;
       const matchesCity = appliedFilters.city
-        ? (business.city || "")
-            .toLocaleLowerCase()
-            .includes(appliedFilters.city.toLocaleLowerCase())
+        ? matchesDiscoveryCity(business.city || "", appliedFilters.city)
         : true;
       const matchesCategory = selectedDirectoryCategory
         ? businessMatchesDirectoryCategory(
@@ -468,8 +448,7 @@ export default function Explore() {
         ? matchesDiscoverySearch(searchText, appliedFilters.query)
         : true;
       const matchesCity = appliedFilters.city
-        ? (place.city || "").toLocaleLowerCase() ===
-          appliedFilters.city.toLocaleLowerCase()
+        ? matchesDiscoveryCity(place.city || "", appliedFilters.city)
         : true;
       const matchesCategory = selectedDirectoryCategory
         ? place.categoryKey === selectedDirectoryCategory
@@ -610,7 +589,13 @@ export default function Explore() {
           right.services - left.services || left.name.localeCompare(right.name),
       );
     }
-    return visibleItems;
+    return visibleItems.sort((left, right) => {
+      const score = (item: DiscoveryListItem) =>
+        item.resultType === "business"
+          ? 2 + Number(Boolean(item.business.image_url))
+          : Number(Boolean(item.place.image?.url));
+      return score(right) - score(left);
+    });
   }, [
     appliedFilters.kind,
     appliedFilters.sort,
@@ -660,12 +645,16 @@ export default function Explore() {
             distanceMeters: place.distanceMeters ?? null,
             href: `/places/${place.id}`,
           }));
-    return [...businessItems, ...directoryItems];
+    const order = new Map(listItems.map((item, index) => [item.id, index]));
+    return [...businessItems, ...directoryItems].sort(
+      (left, right) => (order.get(left.id) ?? 0) - (order.get(right.id) ?? 0),
+    );
   }, [
     appliedFilters.kind,
     filteredBusinesses,
     linkedPlaceByBusinessId,
     visibleDirectoryPlaces,
+    listItems,
     t,
   ]);
 
@@ -926,8 +915,18 @@ export default function Explore() {
     });
   }
 
-  const hasAnyResults =
-    businesses.length > 0 || visibleDirectoryPlaces.length > 0;
+  const sourceUnavailable =
+    !loading &&
+    ((kind !== "places" && sourceFailures.businesses) ||
+      (kind !== "bookable" && sourceFailures.places));
+  const hasSearchFilters = Boolean(
+    appliedFilters.query || appliedFilters.city || appliedFilters.category,
+  );
+  const emptyMarketplace =
+    !hasSearchFilters &&
+    kind === "all" &&
+    businesses.length === 0 &&
+    directoryPlaces.length === 0;
 
   return (
     <main className="marketplace-surface explore-marketplace">
@@ -982,7 +981,7 @@ export default function Explore() {
           onClearLocation={clearCurrentLocation}
         />
 
-        {error && (
+        {(error || (sourceUnavailable && listItems.length === 0)) && (
           <ExploreEmptyState
             type="error"
             error={error}
@@ -990,8 +989,25 @@ export default function Explore() {
           />
         )}
 
-        {!error && (
+        {!error && !(sourceUnavailable && listItems.length === 0) && (
           <section className="explore-results-section">
+            {sourceUnavailable && (
+              <div className="explore-source-warning" role="status">
+                <p>
+                  {t(
+                    "explore.discovery.partialUnavailable",
+                    "Some results could not be loaded. The places below are still available.",
+                  )}
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => loadDiscovery(discoveryQuery, userLocation)}
+                >
+                  {t("explore.empty.retryMarketplace")}
+                </button>
+              </div>
+            )}
             {loading && (
               <div className="card explore-loading-state" role="status">
                 <p className="muted">
@@ -1000,11 +1016,11 @@ export default function Explore() {
               </div>
             )}
 
-            {!loading && !hasAnyResults && (
+            {!loading && emptyMarketplace && (
               <ExploreEmptyState type="no-businesses" />
             )}
 
-            {!loading && hasAnyResults && listItems.length === 0 && (
+            {!loading && !emptyMarketplace && listItems.length === 0 && (
               <ExploreEmptyState
                 type="no-results"
                 kind={kind}
@@ -1048,6 +1064,8 @@ export default function Explore() {
                   </p>
                   <Link
                     href={nextListPageHref}
+                    scroll={false}
+                    shallow
                     className="btn btn-ghost"
                     onClick={() =>
                       recordSiteEvent("explore_more_results", {
@@ -1232,6 +1250,24 @@ export default function Explore() {
         .explore-map-layout,
         .map-canvas-panel {
           min-width: 0;
+        }
+
+        .explore-source-warning {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
+          padding: 1rem 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .explore-source-warning p {
+          flex: 1 1 240px;
+          margin: 0;
+          color: var(--text-muted);
+          font-size: 0.9rem;
         }
 
         .is-map-view :global(.explore-hero-compact),

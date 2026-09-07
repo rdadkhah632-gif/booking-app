@@ -67,8 +67,54 @@ export function discoverySearchTerms(value: string) {
 }
 
 export function discoveryServerSearchTerm(value: string) {
-  const [normalized = "", firstEquivalent] = discoverySearchTerms(value);
-  return firstEquivalent || normalized;
+  const [, firstEquivalent] = discoverySearchTerms(value);
+  return firstEquivalent || value.trim();
+}
+
+const DISCOVERY_CITIES = [
+  "Tiranë",
+  "Durrës",
+  "Vlorë",
+  "Sarandë",
+  "Shkodër",
+  "Korçë",
+  "Himarë",
+  "Berat",
+  "Gjirokastër",
+  "Elbasan",
+  "Fier",
+  "Lezhë",
+  "Dhërmi",
+  "Ksamil",
+];
+
+const CITY_ALIASES: Record<string, string> = {
+  tirana: "Tiranë",
+  durazzo: "Durrës",
+  vlora: "Vlorë",
+  saranda: "Sarandë",
+  shkodra: "Shkodër",
+  korca: "Korçë",
+  himara: "Himarë",
+  gjirokastra: "Gjirokastër",
+};
+
+export function canonicalDiscoveryCity(value: string) {
+  const normalized = normalizeDiscoverySearch(value);
+  return (
+    CITY_ALIASES[normalized] ||
+    DISCOVERY_CITIES.find(
+      (city) => normalizeDiscoverySearch(city) === normalized,
+    ) ||
+    value.trim()
+  );
+}
+
+export function matchesDiscoveryCity(city: string, query: string) {
+  return (
+    normalizeDiscoverySearch(canonicalDiscoveryCity(city)) ===
+    normalizeDiscoverySearch(canonicalDiscoveryCity(query))
+  );
 }
 
 export function matchesDiscoverySearch(searchText: string, query: string) {

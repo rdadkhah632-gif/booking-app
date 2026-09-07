@@ -269,6 +269,9 @@ export default async function handler(
             name: service.name,
             active: Boolean(service.active),
             booking_type: service.booking_type,
+            has_available_departures:
+              departureServicesByBusiness.get(business.id)?.has(service.id) ||
+              false,
             staff_services: (staffServicesByService[service.id] || []).map(
               (assignment) => ({
                 staff_member_id: assignment.staff_member_id,
@@ -298,11 +301,9 @@ export default async function handler(
       })
       .filter((business) =>
         isPublicBusinessBookable(
-          business.services as Array<
-            ServiceRow & { staff_services: StaffServiceRow[] }
-          >,
-          business.staff_members as StaffRow[],
-          business.availability as AvailabilityRow[],
+          business.services,
+          business.staff_members,
+          business.availability,
           departureServicesByBusiness.get(business.id) || new Set(),
         ),
       );
@@ -350,6 +351,7 @@ export default async function handler(
         const distanceMeters = distances.get(business.id);
         return {
           ...business,
+          bookable: true,
           location: mapLocation
             ? {
                 latitude: mapLocation.latitude,

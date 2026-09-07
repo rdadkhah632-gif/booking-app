@@ -58,13 +58,24 @@ export default function ExploreHero({ marketplaceStats }: Props) {
 
         @media (max-width: 700px) {
           .explore-hero-compact {
-            display: grid;
-            gap: 0.35rem;
-            margin-bottom: 0.9rem;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
           }
 
           .explore-hero-compact :global(.page-title) {
-            font-size: 1.75rem;
+            font-size: 1.4rem;
+            margin: 0;
+          }
+
+          .explore-hero-compact :global(.page-sub) {
+            display: none;
+          }
+
+          .explore-hero-compact > p {
+            margin: 0;
+            flex-shrink: 0;
+            font-size: 0.75rem;
           }
         }
       `}</style>

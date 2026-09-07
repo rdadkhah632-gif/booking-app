@@ -2367,6 +2367,43 @@ removal controls, EN/SQ rendering, mobile fit and absence of all media and
 permission evidence from public APIs before publication. Restore or remove the
 disposable case afterward.
 
+### Batch 37: website readiness and first-use recovery
+
+This batch does not require SQL and does not publish businesses, activate
+services, alter booking/RLS rules or change the iOS apps.
+
+- Explore consumes the public API's bookability decision. A scheduled group
+  business with available departures no longer disappears because it lacks
+  appointment staff or weekly hours. Ordinary appointment readiness stays on
+  the same server-side checks.
+- Service names participate in business search; common Albanian/English city
+  spellings resolve consistently. Named searches retain accented characters for
+  the directory database lookup.
+- Failed sources show retry/degraded-result states, never a false empty-market
+  claim. A search with no matches has search-specific recovery.
+- Mobile discovery is more compact, all tablet filters remain reachable, the
+  dock preserves current search/filter state, and progressive results do not
+  jump to the top. Recommended results lead with bookable businesses and
+  reviewed photographs; explicit sorts apply consistently in List and Map.
+- Departures retain editable drafts across refreshes, reject duplicate UI
+  submissions, refresh stale manifests, and expose started/closed departures.
+  Short appointments have separate visual hit areas without changing occupied
+  slots. Manual capacity conflicts refresh options while preserving customer
+  input.
+- Prepared-profile loading and mutations have bounded recovery, accurate
+  clipboard fallback, stale-link prevention and a recovery link if navigation
+  fails after an owner connection. Email binding and hidden/inactive adoption
+  remain enforced by the existing backend.
+- Customer departure-booking errors use localized copy, distinguish uncertain
+  network outcomes, and recover confirmation navigation after a successful save.
+
+Verification includes `node scripts/verify-discovery-regressions.cjs`, a fresh
+production build, synthetic browser-only owner/booking/handoff tests and EN/SQ
+public rendering at 320, 390, 430, 768, 1024, 1280 and 1440 pixels. Synthetic
+tests do not certify production mutations. Before unconditional launch closure,
+rerun the real linked-owner/staff/customer lifecycle on a confirmed disposable
+fixture. No genuine partner record may be used as a disposable booking test.
+
 ### Later
 
 - reviews only with moderation, eligibility and anti-abuse controls

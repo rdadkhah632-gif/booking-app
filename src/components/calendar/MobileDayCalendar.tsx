@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { Plus } from "lucide-react";
+import { useI18n } from "@/lib/useI18n";
 
 export type MobileCalendarAppointment = {
   id: string;
@@ -39,6 +41,7 @@ type Props = {
 
 const HOUR_HEIGHT = 64;
 const SLOT_MINUTES = 30;
+const MIN_APPOINTMENT_HEIGHT = 42;
 
 type PositionedAppointment = MobileCalendarAppointment & {
   column: number;
@@ -61,15 +64,20 @@ function positionAppointments(
 
     const columnEnds: number[] = [];
     const groupWithColumns = group.map((appointment) => {
+      // Keep short appointment labels apart without changing occupied slots.
+      const visualEnd = Math.max(
+        appointment.endMinutes,
+        appointment.startMinutes + (MIN_APPOINTMENT_HEIGHT / HOUR_HEIGHT) * 60,
+      );
       let column = columnEnds.findIndex(
         (endMinutes) => endMinutes <= appointment.startMinutes,
       );
 
       if (column === -1) {
         column = columnEnds.length;
-        columnEnds.push(appointment.endMinutes);
+        columnEnds.push(visualEnd);
       } else {
-        columnEnds[column] = appointment.endMinutes;
+        columnEnds[column] = visualEnd;
       }
 
       return { appointment, column };
@@ -89,7 +97,11 @@ function positionAppointments(
     }
 
     group.push(appointment);
-    groupEnd = Math.max(groupEnd, appointment.endMinutes);
+    groupEnd = Math.max(
+      groupEnd,
+      appointment.endMinutes,
+      appointment.startMinutes + (MIN_APPOINTMENT_HEIGHT / HOUR_HEIGHT) * 60,
+    );
   });
   flushGroup();
 
@@ -118,6 +130,7 @@ export default function MobileDayCalendar({
   onSelectAppointment,
   onAddSlot,
 }: Props) {
+  const { t } = useI18n();
   const positionedAppointments = useMemo(
     () => positionAppointments(appointments),
     [appointments],
@@ -217,9 +230,11 @@ export default function MobileDayCalendar({
                     height: `${(SLOT_MINUTES / 60) * HOUR_HEIGHT}px`,
                   }}
                   onClick={() => onAddSlot(slotStart)}
-                  aria-label={`${addAtLabel || "Add appointment"} ${timeLabel(slotStart)}`}
+                  aria-label={`${addAtLabel || t("dashboardBookings.manual.addAt", "Add booking")} ${timeLabel(slotStart)}`}
                 >
-                  <span aria-hidden="true">+</span>
+                  <span aria-hidden="true">
+                    <Plus size={14} />
+                  </span>
                 </button>
               );
             })}
@@ -239,7 +254,7 @@ export default function MobileDayCalendar({
                 ((appointment.startMinutes - startHour * 60) / 60) *
                 HOUR_HEIGHT;
               const height = Math.max(
-                42,
+                MIN_APPOINTMENT_HEIGHT,
                 ((appointment.endMinutes - appointment.startMinutes) / 60) *
                   HOUR_HEIGHT,
               );
@@ -258,7 +273,16 @@ export default function MobileDayCalendar({
                     width: `calc(${width}% - 0.55rem)`,
                   }}
                   onClick={() => onSelectAppointment(appointment.id)}
-                  aria-label={`${appointment.timeLabel} ${appointment.title}`}
+                  aria-label={[
+                    appointment.timeLabel,
+                    appointment.title,
+                    appointment.subtitle,
+                    appointment.meta,
+                    appointment.statusLabel,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                  aria-pressed={selectedAppointmentId === appointment.id}
                 >
                   <span>{appointment.timeLabel}</span>
                   <strong>{appointment.title}</strong>

@@ -5712,4 +5712,28 @@ export const en: TranslationTree = {
   "register.staffNotice.title": "Staff account linking",
   "support.thread.loginRequired": "Sign in to reply.",
   "support.thread.replyError": "Could not send support reply.",
+  "explore.discovery.partialUnavailable":
+    "Some results could not be loaded. The places below are still available.",
+  "departures.view.upcoming": "Upcoming",
+  "departures.view.past": "Started and closed",
+  "departures.past.title": "Started and closed departures",
+  "departures.past.empty":
+    "No started or closed departures in the last 30 days.",
+  "admin.onboarding.prepared.copyManual":
+    "Automatic copying was unavailable. Select and copy the text manually.",
+  "admin.onboarding.prepared.statusUncertain":
+    "The latest link status could not be confirmed. Create a new secure link before sharing.",
+  "admin.onboarding.prepared.statusUnsaved":
+    "Save your changes before sharing or creating an owner link. A previously issued link still opens the last saved profile.",
+  "onboardingJoin.loadError":
+    "Your prepared profile could not be loaded. Check your connection and try again.",
+  "onboardingJoin.connectedTitle": "Profile connected",
+  "onboardingJoin.unknownTitle": "Connection result unknown",
+  "onboardingJoin.unknownBody":
+    "We could not confirm the result. Your profile may already be connected. Check your Business dashboard before taking further action, or contact Mirëbook for help.",
+  "onboardingJoin.openDashboard": "Open Business dashboard",
+  "publicBusiness.departures.sessionExpired":
+    "Please sign in again before sending your booking request.",
+  "publicBusiness.departures.saveUncertain":
+    "We could not confirm whether your booking was saved. Check My Bookings before trying again.",
 };
