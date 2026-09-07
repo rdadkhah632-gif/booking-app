@@ -51,6 +51,7 @@ export function discoverySearchTerms(value: string) {
   if (!normalized) return [];
 
   const expanded = new Set([normalized]);
+  expanded.add(normalizeDiscoverySearch(canonicalDiscoveryCity(value)));
   const exactEquivalents = SEARCH_EQUIVALENTS[normalized] || [];
   exactEquivalents.forEach((term) => expanded.add(term));
 
@@ -67,6 +68,8 @@ export function discoverySearchTerms(value: string) {
 }
 
 export function discoveryServerSearchTerm(value: string) {
+  const canonicalCity = canonicalDiscoveryCity(value);
+  if (canonicalCity !== value.trim()) return canonicalCity;
   const [, firstEquivalent] = discoverySearchTerms(value);
   return firstEquivalent || value.trim();
 }

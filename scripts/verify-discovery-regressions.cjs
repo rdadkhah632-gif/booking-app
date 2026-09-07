@@ -135,3 +135,25 @@ test("named place queries retain accents for database matching", () => {
   );
   assert.equal(matchesDiscoverySearch("Boat trip", "varkë"), true);
 });
+
+test("main search resolves city aliases, not only the separate City field", () => {
+  for (const [input, city] of [
+    ["Tirane", "Tiranë"],
+    ["Tirana", "Tiranë"],
+    ["Vlore", "Vlorë"],
+    ["Vlora", "Vlorë"],
+    ["Shkoder", "Shkodër"],
+    ["Durres", "Durrës"],
+    ["Korce", "Korçë"],
+    ["Saranda", "Sarandë"],
+  ]) {
+    assert.equal(discoveryServerSearchTerm(input), city);
+    assert.equal(
+      matchesDiscoverySearch(`A local place in ${city}`, input),
+      true,
+    );
+  }
+  assert.equal(discoveryServerSearchTerm("barber"), "barber");
+  assert.equal(discoveryServerSearchTerm("parukeri"), "hair");
+  assert.equal(discoveryServerSearchTerm("parukeri alma"), "hair alma");
+});
